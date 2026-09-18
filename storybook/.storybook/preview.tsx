@@ -3,8 +3,7 @@ import React from 'react';
 import { ThemeProvider } from '@fluentui/react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils';
-import { useControlTheme } from '@talxis/base-controls/hooks';
+import { PcfContextProvider, usePcfContext, useControlTheme } from '@talxis/base-controls';
 
 const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
   const context = usePcfContext();

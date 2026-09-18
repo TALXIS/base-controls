@@ -1,5 +1,5 @@
 import React from "react";
-import type { IXrmFormComponents } from "@components/Form/extensions/xrm-form/interfaces";
+import type { IXrmFormComponents } from "@controls/form/extensions/xrm-form/interfaces";
 import { XrmFormComponents } from "./components";
 
 export const XrmFormComponentsContext = React.createContext<IXrmFormComponents>(XrmFormComponents);

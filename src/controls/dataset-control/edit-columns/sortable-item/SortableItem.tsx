@@ -3,10 +3,11 @@ import { CSS } from '@dnd-kit/utilities';
 import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
-import { useTheme, Text, ThemeProvider } from "@fluentui/react";
-import { useModel } from "@components/DatasetControl/useModel";
+import { useTheme, Text } from "@fluentui/react";
+import { ThemeProvider } from "@utils";
+import { useModel } from "@controls/dataset-control/useModel";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeGenerator } from "@legacy";
+import { useThemeGenerator } from "@theme";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;

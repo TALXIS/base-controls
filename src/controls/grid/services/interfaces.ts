@@ -1,6 +1,6 @@
 import type { GridApi } from "@ag-grid-community/core";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
-import type { ITheme } from "@legacy";
+import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { GridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";

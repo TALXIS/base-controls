@@ -1,8 +1,8 @@
 import * as React from "react"
-import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@components/Grid"
+import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
 import { IRecord } from "@talxis/client-libraries";
-import { IDatasetControlProps } from "@components/DatasetControl/interfaces";
-import { useAgGridLicenseKey, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
+import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
+import { useAgGridLicenseKey, useServices, useTaskDataProvider } from "@controls/task-grid/context";
 import { GridCustomizer } from "./grid-customizer/GridCustomizer";
 
 type IControlProps = Parameters<IDatasetControlProps['onGetControlComponent']>[0];

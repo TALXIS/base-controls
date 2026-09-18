@@ -1,10 +1,10 @@
-import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
-import type { IFormLabels } from "@components/Form/labels";
-import type { IFormStrategy } from "@components/Form/strategies";
-import type { IControlComponents } from "@components/Form/components/adapters/control/components";
-import type { IRibbonComponents } from "@components/Form/components/adapters/ribbon/components";
-import type { IFormNotificationsComponents } from "@components/Form/components/adapters/notifications/components";
-import { ITabsComponents } from "@components/Form/components/ui";
+import type { IFormApi, IFormEventHandlers } from "@controls/form/interfaces";
+import type { IFormLabels } from "@controls/form/labels";
+import type { IFormStrategy } from "@controls/form/strategies";
+import type { IControlComponents } from "@controls/form/components/adapters/control/components";
+import type { IRibbonComponents } from "@controls/form/components/adapters/ribbon/components";
+import type { IFormNotificationsComponents } from "@controls/form/components/adapters/notifications/components";
+import { ITabsComponents } from "@controls/form/components/ui";
 
 /**
  * Public Xrm section context exposed by `XrmForm`.

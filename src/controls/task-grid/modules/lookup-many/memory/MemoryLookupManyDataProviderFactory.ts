@@ -1,6 +1,6 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
-import { IMemoryEntitySource } from "@components/TaskGrid/descriptors/memory/interfaces";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { IMemoryEntitySource } from "@controls/task-grid/descriptors/memory/interfaces";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Parameters for {@link MemoryLookupManyDataProviderFactory.create}. */
 export interface IMemoryLookupManyFactoryParams {

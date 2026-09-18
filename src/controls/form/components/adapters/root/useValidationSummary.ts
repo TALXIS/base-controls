@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "./context";
-import { IValidation } from "@components/Form/interfaces";
+import { IValidation } from "@controls/form/interfaces";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 

@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getCachedThemeProviderStyles = (theme: ITheme) => {
+export const getThemeProviderStyles = (theme: ITheme) => {
     const { semanticColors, fonts } = theme;
     return mergeStyleSets({
         //what `ThemeProvider` paints its element in

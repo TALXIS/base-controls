@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
 import { IContext, IMultiSelectOptionSetProperty } from "@interfaces";
 import { useControlTheme } from "@utils";
-import { OptionTag } from "@components/ui";
+import { OptionTag } from "@ui";
 
 interface IColorfulOptionsProps {
     value: IMultiSelectOptionSetProperty;

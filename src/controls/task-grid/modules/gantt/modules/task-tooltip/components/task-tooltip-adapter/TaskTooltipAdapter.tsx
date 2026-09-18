@@ -1,6 +1,6 @@
 import { Task } from 'gantt-trial';
 import { Formatting } from '@talxis/client-libraries';
-import { useServices, useTaskDataProvider } from '@components/TaskGrid/context';
+import { useServices, useTaskDataProvider } from '@controls/task-grid/context';
 import { useGanttServices } from '../../../../context';
 import { useGanttTaskTooltipComponents } from '../../context';
 

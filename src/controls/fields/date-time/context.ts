@@ -1,6 +1,6 @@
 import { createContext, MutableRefObject, useContext } from "react";
 import { ITranslation } from "@hooks";
-import { ITheme } from "@legacy";
+import { ITheme } from "@theme";
 import { IDateTime, IDateTimeParameters } from "./interfaces";
 import { useDateTime } from "./hooks/useDateTime";
 
@@ -25,8 +25,6 @@ export interface IDateTimeContext {
     labels: ITranslation<Required<IDateTime>['translations']>;
     /** The control's own theme. */
     theme: ITheme;
-    /** The host's theme, which is what a callout is drawn in rather than the cell's. */
-    applicationTheme?: ITheme;
     /** What was last typed into the time input, which is what an invalid time is reported from. */
     lastInputedTimeString: MutableRefObject<string | undefined>;
 }

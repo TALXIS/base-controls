@@ -1,4 +1,4 @@
-import { GridCellRenderer, IGridCellRenderer } from "@components/GridCellRenderer";
+import { GridCellRenderer, IGridCellRenderer } from "@controls/grid/cell-renderer";
 import { CellUi, ICellControlProps } from "../ui";
 
 /** The replaceable pieces of a cell's control. */

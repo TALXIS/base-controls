@@ -1,6 +1,6 @@
 import { GanttStatic, Task } from 'gantt-trial';
-import { ITaskDataProvider } from '@components/TaskGrid/providers';
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskDataProvider } from '@controls/task-grid/providers';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
 
 /** Which tasks are selected. Every write to the grid's selection goes through here. */

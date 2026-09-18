@@ -1,4 +1,4 @@
-import { Form } from "@components/Form/components/Form";
+import { Form } from "@controls/form/components/Form";
 import { XrmTab } from "../xrm-tab";
 import { useTabs } from "./useTabs";
 import { useXrmFormComponents } from "../xrm-form/context";

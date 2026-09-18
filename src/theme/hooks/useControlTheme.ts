@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ControlTheme, IFluentDesignState } from "../ControlTheme";
-import { ITheme } from "@legacy";
+import { ITheme } from "../Theming";
 import { getTheme, useTheme } from "@fluentui/react";
 
 export const useControlTheme = (fluentDesignLanguage?: IFluentDesignState): ITheme => {

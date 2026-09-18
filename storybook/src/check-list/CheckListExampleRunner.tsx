@@ -1,7 +1,7 @@
 import React from 'react'
 import { initializeIcons } from '@fluentui/react'
 import type { IRawRecord } from '@talxis/client-libraries'
-import { PcfContextProvider } from '@talxis/base-controls/utils/adapters/pcf-context/PcfContextProvider'
+import { PcfContextProvider } from '@talxis/base-controls'
 import { ExampleRunner } from '../stories/form/storyHelpers'
 import { CheckListCodeEditor } from './CheckListCodeEditor'
 import { CheckListLivePreview } from './CheckListLivePreview'

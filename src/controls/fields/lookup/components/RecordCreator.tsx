@@ -1,6 +1,7 @@
 
 //@ts-nocheck - typescript
 import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+import { useSurfaceMenuProps } from "@ui";
 import { CommandBarButton } from "@fluentui/react";
 import { IEntity, ILookupTranslations } from "../interfaces";
 import { getLookupStyles } from "../styles";
@@ -24,6 +25,27 @@ export const RecordCreator = (props: IRecordCreator) => {
     const styles = getLookupStyles(theme, 0)
     const selectedEntity = entities.find(x => x.selected);
 
+    const menuProps = useSurfaceMenuProps(!selectedEntity ? {
+        calloutProps: {
+            coverTarget: false
+        },
+        isBeakVisible: true,
+        items: loadedEntities ? (() => {
+            const items: IContextualMenuItem[] = [{
+                key: 'header',
+                itemType: ContextualMenuItemType.Header,
+                text: 'Vyberte tabulku'
+            }]
+            return [...items, ...loadedEntities.map(entity => {
+                return {
+                    key: entity.entityName,
+                    text: entity.metadata.DisplayName,
+                    onClick: () => onCreateRecord(entity.entityName)
+                }
+            })];
+        })() : []
+    } : undefined);
+
     return (
         <CommandBarButton
             className={styles.createRecordBtn}
@@ -31,26 +53,7 @@ export const RecordCreator = (props: IRecordCreator) => {
                 iconName: 'Add'
             }}
             onClick={selectedEntity ? () => onCreateRecord(selectedEntity.entityName) : undefined}
-            menuProps={!selectedEntity ? {
-                calloutProps: {
-                    coverTarget: false  
-                },
-                isBeakVisible: true,
-                items: loadedEntities ? (() => {
-                    const items: IContextualMenuItem[] = [{
-                        key: 'header',
-                        itemType: ContextualMenuItemType.Header,
-                        text: 'Vyberte tabulku'
-                       }]
-                       return [...items, ...loadedEntities.map(entity => {
-                           return {
-                               key: entity.entityName,
-                               text: entity.metadata.DisplayName,
-                               onClick: () => onCreateRecord(entity.entityName)
-                           }
-                       })];
-                })() : []
-            }: undefined} 
+            menuProps={menuProps}
             text={labels.newRecord()} />
     )
 }

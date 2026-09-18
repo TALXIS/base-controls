@@ -1,4 +1,4 @@
-import { IFormXmlColumn } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
+import { IFormXmlColumn } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
 
 export const getXrmTabGridTemplateColumns = (columns: IFormXmlColumn[], columnsPerRow: number): string | undefined => {
     if (columns.length === 0 || columnsPerRow <= 0) {

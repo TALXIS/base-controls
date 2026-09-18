@@ -1,5 +1,5 @@
 import { IColumn } from "@talxis/client-libraries";
-import { applyColumn, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
+import { applyColumn, ISavedQuery } from "@controls/task-grid/providers/saved-query";
 import { IGanttServiceLocator } from "../services";
 
 /**

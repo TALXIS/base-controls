@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { ContextualMenu, IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } from '@fluentui/react';
+import { IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } from '@fluentui/react';
+import { ContextualMenu } from '@ui/surfaces';
 import { INotificationsComponents } from './components';
 import { getNotificationsStyles } from './styles';
 import { LocalizationService } from '@utils';

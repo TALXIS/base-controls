@@ -1,4 +1,4 @@
-import type { IXrmFormStrategy } from "@talxis/base-controls/components/Form"
+import type { IXrmFormStrategy } from "@talxis/base-controls"
 import type { FormXml, FormXmlCell, FormXmlSection, FormXmlTab } from "@talxis/client-metadata"
 import type { IColumn } from "@talxis/client-libraries"
 

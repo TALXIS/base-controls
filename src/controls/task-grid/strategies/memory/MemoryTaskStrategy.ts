@@ -15,9 +15,9 @@ import {
     ITaskDataProvider,
     ITaskDataProviderStrategy,
     ITaskMoveParams,
-} from "@components/TaskGrid/providers";
-import { INativeColumns } from "@components/TaskGrid/interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+} from "@controls/task-grid/providers";
+import { INativeColumns } from "@controls/task-grid/interfaces";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import {
     IMemoryTaskActivityParams,
     IMemoryTaskAvailableColumnsParams,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { components, OptionProps } from 'react-select';
 import { useTheme } from '@fluentui/react';
-import { useColorfulLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/colorful-lookup-many/context';
+import { useColorfulLookupManyProps } from '@controls/task-grid/modules/lookup-many/components/colorful-lookup-many/context';
 import { getOptionStyles } from './styles';
 
 /** A candidate record as a coloured tag. */

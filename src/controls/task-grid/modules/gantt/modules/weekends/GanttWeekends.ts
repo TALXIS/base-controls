@@ -1,6 +1,6 @@
 import { EventEmitter, IEventEmitter } from '@talxis/client-libraries';
 import { GanttStatic } from 'gantt-trial';
-import { IModuleState } from '@components/TaskGrid/providers/state';
+import { IModuleState } from '@controls/task-grid/providers/state';
 import { IGanttServiceLocator } from '../../services';
 import { isWeekend } from '../../gantt-chart-config';
 import { isDayScaleVisible } from '../../gantt-zooming';

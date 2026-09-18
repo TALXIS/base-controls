@@ -16,13 +16,13 @@ import {
 } from "@fluentui/react"
 import { DataProvider, DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react"
-import { DatasetControl, Grid } from "@talxis/base-controls/components"
-import { DatasetControl as DatasetControlUtil } from "@talxis/base-controls/utils/dataset-control"
-import { usePcfContext } from "@talxis/base-controls/utils"
-import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls/components/Form"
-import { ICommandBarItemProps } from "@talxis/base-controls/legacy/react-components"
-import type { IComponentProps as IDatasetControlRenderProps, IHeaderProps, IRibbonQuickFindWrapperProps } from "@talxis/base-controls/components/DatasetControl/interfaces"
-import type { IRibbonComponentProps } from "@talxis/base-controls/components/Ribbon/interfaces"
+import { DatasetControl, Grid } from "@talxis/base-controls"
+import { DatasetControl as DatasetControlUtil } from "@talxis/base-controls"
+import { usePcfContext } from "@talxis/base-controls"
+import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls"
+import { ICommandBarItemProps } from "@talxis/base-controls"
+import type { IComponentProps as IDatasetControlRenderProps, IHeaderProps, IRibbonQuickFindWrapperProps } from "@talxis/base-controls"
+import type { IRibbonComponentProps } from "@talxis/base-controls"
 
 type TRibbonRenderProps = Parameters<IRibbonComponentProps["onRender"]>[0]
 type TRibbonDefaultRender = Parameters<IRibbonComponentProps["onRender"]>[1]

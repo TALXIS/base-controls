@@ -1,6 +1,6 @@
-import { ControlComponents, RibbonComponents, FormNotificationsComponents } from "@components/Form/components/adapters";
+import { ControlComponents, RibbonComponents, FormNotificationsComponents } from "@controls/form/components/adapters";
 import { IXrmFormComponents } from "../../../interfaces";
-import { TabComponents } from "@components/Form/components/ui";
+import { TabComponents } from "@controls/form/components/ui";
 
 export const XrmFormComponents: IXrmFormComponents = {
     control: ControlComponents,

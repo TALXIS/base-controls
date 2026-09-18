@@ -2,8 +2,8 @@ import * as React from "react";
 import { Icon, Text, useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { IGridCellParams } from "@components/Grid";
-import { useServices } from "@components/TaskGrid/context";
+import { IGridCellParams } from "@controls/grid";
+import { useServices } from "@controls/task-grid/context";
 import { getChecklistCellRendererStyles } from "./styles";
 
 export interface IChecklistCellRendererProps extends IGridCellParams { }

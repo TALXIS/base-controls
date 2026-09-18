@@ -1,9 +1,9 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
 import { MessageBar, MessageBarType, Toggle, mergeStyleSets } from "@fluentui/react"
-import { XrmForm } from "@talxis/base-controls/components/Form"
-import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
-import { CommandBar, ICommandBarItemProps } from "@legacy"
+import { XrmForm } from "@talxis/base-controls"
+import type { IXrmFormContext } from "@talxis/base-controls"
+import { CommandBar, ICommandBarItemProps } from "@legacy";
 import { createFormContextSandboxState } from "../../form/xrm-form/formContextModel"
 import { resetXrmBusinessFlows } from "../../form/xrm-form/xrmBusinessFlows"
 import { XrmComponentsCodeEditor } from "../../form/xrm-form/XrmComponentsCodeEditor"

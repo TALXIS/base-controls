@@ -2,11 +2,11 @@ import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedC
 import { IRecordTree, RecordTree } from "./record-tree/RecordTree";
 import { ErrorHelper } from "@utils/error-handling";
 import { ILocalizationService } from "@utils";
-import { ITaskGridLabels } from "@components/TaskGrid/labels";
-import { INativeColumns } from "@components/TaskGrid/interfaces";
+import { ITaskGridLabels } from "@controls/task-grid/labels";
+import { INativeColumns } from "@controls/task-grid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
-import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** One record an operation could not complete, and why. */
 export interface IFailedRecord {

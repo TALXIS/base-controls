@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTheme } from '@fluentui/react';
-import { useTaskDataProvider } from '@components/TaskGrid/context';
-import { Grid } from '@components/TaskGrid/components/grid';
-import type { IDatasetControlProps } from '@components/DatasetControl/interfaces';
+import { useTaskDataProvider } from '@controls/task-grid/context';
+import { Grid } from '@controls/task-grid/components/grid';
+import type { IDatasetControlProps } from '@controls/dataset-control/interfaces';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { getGanttViewStyles } from './styles';
 import { GanttTimeline } from '../gantt-timeline';

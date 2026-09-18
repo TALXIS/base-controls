@@ -1,4 +1,5 @@
-import { Callout, DirectionalHint, ICalloutProps, useTheme } from '@fluentui/react';
+import { DirectionalHint, ICalloutProps, useTheme } from '@fluentui/react';
+import { Callout } from '@ui';
 import { useMemo } from 'react';
 import { getDatePreviewCalloutStyles } from './styles';
 

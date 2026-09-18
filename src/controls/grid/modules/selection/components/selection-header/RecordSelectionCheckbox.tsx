@@ -1,7 +1,8 @@
-import { Checkbox, ThemeProvider, useTheme } from "@fluentui/react";
+import { Checkbox } from "@fluentui/react";
 import { getGlobalCheckboxStyles } from "./styles";
-import { Theming, useRerender, useThemeGenerator } from "@legacy";
-import { useGridService } from "@components/Grid/useGridService";
+import { Theming, useThemeGenerator } from "@theme";
+import { useRerender } from "@legacy";
+import { useGridService } from "@controls/grid/useGridService";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IGridSelectionState } from "../../GridSelection";

@@ -1,8 +1,8 @@
 import { IRawRecord, IRecord } from "@talxis/client-libraries";
 import { GanttStatic, Task } from "gantt-trial";
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
-import { IDeleteTasksResult, ITaskDataProvider } from '@components/TaskGrid/providers';
+import { IDeleteTasksResult, ITaskDataProvider } from '@controls/task-grid/providers';
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { toGanttTask } from './toGanttTask';
 

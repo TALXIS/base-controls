@@ -2,7 +2,7 @@ import { ComboBox } from "@legacy";
 import { useEffect, useMemo, useRef } from 'react';
 import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
-import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { ThemeContext } from '@utils';
 import numeral from "numeral";
 import { getDefaultDurationTranslations } from './translations';
@@ -93,7 +93,7 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme, surfaceTheme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
@@ -131,10 +131,6 @@ export const Duration = (props: IDuration) => {
                 height: 300
             }
         },
-        calloutProps: {
-            theme: props.context.fluentDesignLanguage?.applicationTheme ?? theme
-        },
-        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
         onInputValueChange: (text) => {
             setValue(text ?? '');
         },
@@ -155,7 +151,7 @@ export const Duration = (props: IDuration) => {
     });
 
     return (
-        <ThemeContext theme={theme}>
+        <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>
             <ComboBox {...componentProps} />
         </ThemeContext>
     );

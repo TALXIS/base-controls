@@ -3,6 +3,7 @@ import { IFooterProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { getPaginationStyles } from "./styles";
 import { useMemo } from "react";
+import { useSurfaceMenuProps } from "@ui";
 import { CommandBar } from "@legacy";
 import { PaginationModel } from "./PaginationModel";
 import { IInternalDataProvider } from "@talxis/client-libraries";
@@ -26,6 +27,27 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
   }
 
 
+  const pageSizeMenuProps = useSurfaceMenuProps({
+    items: [
+      {
+        key: 'header',
+        itemType: ContextualMenuItemType.Header,
+        text: labels['page-record-count'](),
+      },
+      {
+        key: 'divider',
+        itemType: ContextualMenuItemType.Divider,
+      },
+      ...PAGE_SIZE_OPTIONS.map((size) => ({
+        key: size,
+        text: size,
+        className: styles.selectedPageSizeButton,
+        checked: parseInt(size) === paging.pageSize,
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
+      } as IContextualMenuItem))
+    ]
+  });
+
   return props.onRenderPagination({
     pageSizeSwitcherProps: {
       disabled: !datasetControl.isPageSizeSwitcherVisible() || dataset.loading,
@@ -33,27 +55,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
       styles: {
         root: styles.pageSizeSwitcherRoot,
       },
-      menuProps: {
-        items: [
-          {
-            key: 'header',
-            itemType: ContextualMenuItemType.Header,
-            text: labels['page-record-count'](),
-          },
-          {
-            key: 'divider',
-            itemType: ContextualMenuItemType.Divider,
-          },
-          ...PAGE_SIZE_OPTIONS.map((size) => ({
-            key: size,
-            text: size,
-            className: styles.selectedPageSizeButton,
-            checked: parseInt(size) === paging.pageSize,
-            onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
-          } as IContextualMenuItem))
-
-        ]
-      }
+      menuProps: pageSizeMenuProps
     },
     paginationContainerProps: {
       className: styles.paginationRoot

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { getColumnStyles } from "./styles";
 import { ColumnContext } from "./context";
-import { Layout } from "@components/Form/layout";
+import { Layout } from "@controls/form/layout";
 import { useTabContext } from "../tab";
 
 export interface IColumnProps {

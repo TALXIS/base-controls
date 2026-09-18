@@ -1,5 +1,5 @@
-import { ICalendarDayGridStyles, ICalendarProps, IComboBox, IProcessedStyleSet, ITheme, ThemeProvider } from "@fluentui/react";
-import { useTheme } from "@fluentui/react";
+import { ICalendarDayGridStyles, ICalendarProps, IComboBox, IProcessedStyleSet, ITheme } from "@fluentui/react";
+import { ThemeProvider, useSurfaceTheme } from "@utils";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
@@ -23,9 +23,10 @@ export interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChan
 }
 
 export const Calendar = (calendarProps: ICalendarProps) => {
-    const { parameters, isDateTime, date, patterns, labels, applicationTheme, lastInputedTimeString } = useDateTimeContext();
-    const theme = useTheme();
-    const styles = getDateTimeStyles(theme);
+    const { parameters, isDateTime, date, patterns, labels, lastInputedTimeString } = useDateTimeContext();
+    const surfaceTheme = useSurfaceTheme();
+    //the calendar is drawn on the surface, so what it is styled by is the surface's theme
+    const styles = getDateTimeStyles(surfaceTheme);
     const timePickerRef = useRef<IComboBox>(null);
     const [error, setError] = useState(false);
 
@@ -87,7 +88,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
                 invalidInputErrorMessage: labels.invalidTimeInput()
             }
         },
-        theme: applicationTheme ?? theme,
+        theme: surfaceTheme,
         //a date and time calendar reports the date itself, since its own time picker is part of the value.
         //Left to the picker on a date only one, which closes as it reports
         ...(isDateTime && { onSelectDate: (newDate: Date) => date.set(newDate) })
@@ -139,7 +140,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
 
 
     return (
-        <ThemeProvider theme={props.theme} className={styles.calendarCallout}>
+        <ThemeProvider theme={props.theme!} className={styles.calendarCallout}>
             <CalendarBase {...props} value={props.value} />
             <hr />
             {timePickerProps.visible &&

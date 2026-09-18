@@ -1,5 +1,5 @@
-import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@controls/task-grid/providers";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 export interface IMemoryUserQueryStrategyParams {
     /**

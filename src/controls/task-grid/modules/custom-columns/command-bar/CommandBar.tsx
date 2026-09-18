@@ -1,8 +1,8 @@
-import { components } from "@components/DatasetControl/EditColumns/components";
+import { components } from "@controls/dataset-control/edit-columns/components";
 import { ICommandBarItemProps, ICommandBarProps } from "@legacy";
 import * as React from 'react';
 import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
-import { useLocalizationService, useServices } from "@components/TaskGrid/context";
+import { useLocalizationService, useServices } from "@controls/task-grid/context";
 
 
 /** The ribbon inside the custom-columns Edit Columns panel, adding the create-column command. */

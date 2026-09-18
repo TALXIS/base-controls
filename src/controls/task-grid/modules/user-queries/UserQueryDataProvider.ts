@@ -1,9 +1,9 @@
 import { EventEmitter, IColumn, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
-import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryMetadata, IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
-import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryMetadata, IUserQueryStrategy } from "@controls/task-grid/providers/saved-query";
+import { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import { ICreateUserQueryParams, IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../interfaces";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /**
  * Wraps an {@link IUserQueryStrategy} with everything the grid needs around it: the lifecycle events, the

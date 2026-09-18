@@ -2,7 +2,7 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CachedThemeProvider } from "@utils";
+import { ThemeProvider, useControlSurfaceTheme } from "@utils";
 import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "@hooks/useMouseOver";
@@ -22,7 +22,7 @@ export const Lookup = (props: ILookup) => {
     const { height, fillsAvailableSpace } = useControlSizing(props.context.mode, props.parameters);
     const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
-    const suggestionsCalloutTheme = props.context.fluentDesignLanguage?.applicationTheme ?? theme;
+    const suggestionsCalloutTheme = useControlSurfaceTheme(context.fluentDesignLanguage);
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref, 100);
@@ -192,7 +192,6 @@ export const Lookup = (props: ILookup) => {
                 eventBubblingEnabled: true
             },
             className: suggestionsCalloutStyles.suggestionsCallout,
-            theme: suggestionsCalloutTheme,
         },
         inputProps: {
             placeholder: placeholder,
@@ -209,7 +208,6 @@ export const Lookup = (props: ILookup) => {
         },
         pickerSuggestionsProps: {
             loadingText: labels.searching(),
-            theme: suggestionsCalloutTheme,
             noResultsFoundText: labels.noRecordsFound(),
             className: suggestionsCalloutStyles.suggestionsContainer,
             // @ts-ignore
@@ -288,8 +286,8 @@ export const Lookup = (props: ILookup) => {
     });
 
     return (
-        <CachedThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
+        <ThemeProvider applyTo="none" theme={theme} surfaceTheme={suggestionsCalloutTheme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
             <TagPicker {...componentProps} />
-        </CachedThemeProvider>
+        </ThemeProvider>
     );
 };

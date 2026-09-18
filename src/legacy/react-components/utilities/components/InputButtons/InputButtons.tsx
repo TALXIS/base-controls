@@ -1,12 +1,13 @@
-import { ThemeProvider, useTheme } from "@fluentui/react";
+import { useTheme } from "@fluentui/react";
+import { ThemeProvider } from "@theme";
 import { getSuffixStyles } from "./styles";
 import { useInputButtons } from "./useInputButtons";
 import { useMemo } from "react";
 import { CommandBar, ICommandBarItemProps } from "@legacy/components/CommandBar/CommandBar";
 import { useClassNames } from "@legacy/hooks/useClassNames";
 import { ICopyButton } from "@legacy/interfaces/components";
-import { useThemeGenerator } from "@legacy/utilities/theming/hooks/useThemeGenerator";
-import { Theming } from "@legacy/utilities/theming";
+import { useThemeGenerator } from "@theme/hooks/useThemeGenerator";
+import { Theming } from "@theme";
 
 export interface IInputButtons {
     /**
@@ -46,7 +47,6 @@ export const InputButtons = (props: IInputButtons) => {
         className={`${classNames} ${suffixStyles.root}`}
         theme={theme} applyTo="none">
         <CommandBar
-            contextualMenuTheme={parentTheme}
             items={[]}
             theme={theme}
             farItems={items} />

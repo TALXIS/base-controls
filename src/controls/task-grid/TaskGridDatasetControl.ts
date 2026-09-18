@@ -1,4 +1,4 @@
-import { IDatasetControlParameters } from "../DatasetControl";
+import { IDatasetControlParameters } from "@controls/dataset-control";
 import { IDatasetControlEvents } from "@utils/dataset-control";
 import { EditColumns, IEditColumns } from "@utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";

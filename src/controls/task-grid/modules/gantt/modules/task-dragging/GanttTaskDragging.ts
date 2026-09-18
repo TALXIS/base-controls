@@ -1,6 +1,6 @@
 import { GanttStatic } from 'gantt-trial';
-import { ITaskDataProvider } from '@components/TaskGrid/providers';
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskDataProvider } from '@controls/task-grid/providers';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttFieldMapping, IGanttServiceLocator } from '../../services';
 import { GANTT_TASK_LINE_CLASS } from '../../classNames';
 import { IGanttDates } from '../../gantt-dates';

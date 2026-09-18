@@ -1,9 +1,9 @@
 import * as React from "react";
-import {  ICommandBarItemProps } from "@legacy";
+import { ICommandBarItemProps } from "@legacy";
 import { getCustomColumnSuffixStyles } from "./styles";
 import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
-import { IOptionCommandBarProps, components } from "@components/DatasetControl/EditColumns/components";
-import { useServices } from "@components/TaskGrid/context";
+import { IOptionCommandBarProps, components } from "@controls/dataset-control/edit-columns/components";
+import { useServices } from "@controls/task-grid/context";
 
 
 /** Per-column commands in the Edit Columns catalogue: edit and delete a custom column. */

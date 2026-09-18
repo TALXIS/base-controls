@@ -1,6 +1,6 @@
 import { DataTypes, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
-import { IGridCellRenderer, IGridCellRendererParameters } from "@components/GridCellRenderer";
+import { IGridCellRenderer, IGridCellRendererParameters } from "@controls/grid/cell-renderer";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";

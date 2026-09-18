@@ -1,7 +1,7 @@
 import React from "react";
-import { IForm } from "@components/Form/internal/FormModel";
+import { IForm } from "@controls/form/internal/FormModel";
 import { ILocalizationService, useContextWithNullCheck } from "@utils";
-import { IFormLabels } from "@components/Form/labels";
+import { IFormLabels } from "@controls/form/labels";
 
 export const FormContext = React.createContext<IForm | null>(null);
 export const FormLocalizationServiceContext = React.createContext<ILocalizationService<IFormLabels> | null>(null);

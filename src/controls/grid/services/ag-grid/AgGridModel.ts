@@ -4,8 +4,8 @@ import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
-import { FullRowLoading } from "@components/Grid/components/loading/full-row/FullRowLoading";
-import { IGridServiceLocator } from "@components/Grid/services";
+import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
+import { IGridServiceLocator } from "@controls/grid/services";
 //both row models are registered because a grid picks one per instance
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClientSideRowModelModule, ClipboardModule,]);
 

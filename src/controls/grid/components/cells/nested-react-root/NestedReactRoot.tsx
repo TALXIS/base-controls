@@ -1,7 +1,7 @@
 import { useContext, useLayoutEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useTheme } from "@fluentui/react";
-import { ThemeContext } from "@utils";
+import { ThemeContext, useSurfaceTheme } from "@utils";
 import { PcfContext } from "@utils/adapters/pcf-context/context";
 import { GridServicesContext } from "../../../context";
 import { GridCellContext, GridCellRevisionContext } from "../root/context";
@@ -30,6 +30,7 @@ export const NestedReactRoot = (props: INestedReactRootProps) => {
     const control = useContext(GridControlContext);
     const pcfContext = useContext(PcfContext);
     const theme = useTheme();
+    const surfaceTheme = useSurfaceTheme();
 
     //every render, so the children the root holds are the ones this component was last given
     useLayoutEffect(() => {
@@ -40,7 +41,7 @@ export const NestedReactRoot = (props: INestedReactRootProps) => {
                         <GridCellRevisionContext.Provider value={revision}>
                             <GridFieldContext.Provider value={field}>
                                 <GridControlContext.Provider value={control}>
-                                    <ThemeContext theme={theme}>{props.children}</ThemeContext>
+                                    <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>{props.children}</ThemeContext>
                                 </GridControlContext.Provider>
                             </GridFieldContext.Provider>
                         </GridCellRevisionContext.Provider>

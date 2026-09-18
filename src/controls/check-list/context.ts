@@ -1,4 +1,4 @@
-import { useModel } from "@components/DatasetControl/useModel";
+import { useModel } from "@controls/dataset-control/useModel";
 import { ICheckListDatasetControl } from "./CheckListDatasetControl";
 
 /**

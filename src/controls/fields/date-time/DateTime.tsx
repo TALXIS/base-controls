@@ -1,6 +1,6 @@
 import { IDateTime } from "./interfaces";
 import { IDatePicker } from "@fluentui/react";
-import { CachedThemeProvider } from "@utils";
+import { ThemeProvider, useControlSurfaceTheme } from "@utils";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -21,6 +21,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const context = componentProps.context;
     const parameters = componentProps.parameters;
     const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
+    const surfaceTheme = useControlSurfaceTheme(componentProps.context.fluentDesignLanguage);
     const styles = getDateTimeStyles(theme);
     const { height, width, fillsAvailableSpace } = useControlSizing(componentProps.context.mode, componentProps.parameters);
     const lastInputedTimeString = useRef<string>();
@@ -46,7 +47,6 @@ export const DateTime = (componentProps: IDateTime) => {
         patterns: patterns,
         labels: labels,
         theme: theme,
-        applicationTheme: componentProps.context.fluentDesignLanguage?.applicationTheme,
         lastInputedTimeString: lastInputedTimeString
     };
 
@@ -113,9 +113,9 @@ export const DateTime = (componentProps: IDateTime) => {
 
     return (
         <DateTimeContext.Provider value={dateTime}>
-            <CachedThemeProvider theme={theme} applyTo="none" ref={ref} style={fillsAvailableSpace ? FILL_STYLE : undefined}>
+            <ThemeProvider theme={theme} surfaceTheme={surfaceTheme} applyTo="none" ref={ref} style={fillsAvailableSpace ? FILL_STYLE : undefined}>
                 <DatePicker {...datePickerProps} />
-            </CachedThemeProvider>
+            </ThemeProvider>
         </DateTimeContext.Provider>
     );
 };

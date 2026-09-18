@@ -1,7 +1,7 @@
 import { DataTypes, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { applyColumn } from "@components/TaskGrid/providers/saved-query";
-import type { ITaskGridLabels } from "@components/TaskGrid/labels";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { applyColumn } from "@controls/task-grid/providers/saved-query";
+import type { ITaskGridLabels } from "@controls/task-grid/labels";
 
 /** Name of the virtual column showing what a task waits on. Only exists with this module. */
 export const PREDECESSORS_COLUMN_NAME = 'predecessors__virtual';

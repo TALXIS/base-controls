@@ -1,9 +1,9 @@
 import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { IChecklistModule, IGanttModule, IProjectModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
-import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { IChecklistModule, IGanttModule, IProjectModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@controls/task-grid/modules/interfaces";
+import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@controls/task-grid/providers";
+import { MemoryTaskStrategy } from "@controls/task-grid/strategies/memory/MemoryTaskStrategy";
 
 /** What the descriptor has resolved by the time it builds an optional strategy. */
 export interface IMemoryStrategyContext {

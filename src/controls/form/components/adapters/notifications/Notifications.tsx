@@ -1,5 +1,5 @@
 import { useForm, useLocalizationService } from '../root/context';
-import { INotificationsProps } from '@components/Notifications';
+import { INotificationsProps } from '@ui/notifications';
 import { useValidationSummary } from '../root';
 import { FormNotificationsComponents, IFormNotificationsComponents } from './components';
 

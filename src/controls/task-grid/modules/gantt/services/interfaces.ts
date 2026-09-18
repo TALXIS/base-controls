@@ -2,8 +2,8 @@
 //implementation into the bundle
 import type { GanttStatic } from "gantt-trial";
 import type { ILocalizationService, IServiceLocator } from "@utils";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import type { IGanttComponents } from "@components/TaskGrid/modules/interfaces";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import type { IGanttComponents } from "@controls/task-grid/modules/interfaces";
 import type { IGanttExpansion } from "../gantt-expansion";
 import type { IGanttViewStateProvider } from "../gantt-view-state";
 import type { IGanttData } from "../gantt-data";

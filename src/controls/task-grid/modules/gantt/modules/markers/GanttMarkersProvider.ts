@@ -1,7 +1,7 @@
 import { GanttStatic } from "gantt-trial";
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { ErrorHelper, ILocalizationService } from "@utils";
-import { IProjectProvider } from '@components/TaskGrid/modules/project';
+import { IProjectProvider } from '@controls/task-grid/modules/project';
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { IGanttServiceLocator } from '../../services';
 import { IGanttMarkersLabels } from "./labels";

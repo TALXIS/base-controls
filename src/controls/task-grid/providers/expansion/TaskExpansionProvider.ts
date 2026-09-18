@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { ITaskDataProvider } from "../task";
 
 /** What the module's state slice is stored under. Part of what a session carries, so it is fixed. */

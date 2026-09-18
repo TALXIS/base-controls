@@ -1,5 +1,5 @@
 import { Fragment, useMemo } from "react";
-import { GridCellRenderer, IGridCellRenderer } from "@components/GridCellRenderer";
+import { GridCellRenderer, IGridCellRenderer } from "@controls/grid/cell-renderer";
 import { useGridCell } from "../root/context";
 import { useGridField } from "../field";
 import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";

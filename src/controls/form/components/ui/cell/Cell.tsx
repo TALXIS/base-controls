@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Icon, Label, TextField, TooltipHost, useTheme } from "@fluentui/react";
+import { Icon, Label, TextField, useTheme } from "@fluentui/react";
+import { TooltipHost } from "@ui";
 import { getCellStyles } from "./styles";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { DisabledContext } from "./context";
 import { useSectionContext } from "../section";
-import { Layout } from "@components/Form/layout";
+import { Layout } from "@controls/form/layout";
 
 export interface ICellProps {
     id?: string;

@@ -1,5 +1,5 @@
 import { IDataProvider, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** What every {@link ITemplateDataProvider} implementation is constructed with. */
 export interface ITemplateDataProviderParams {

@@ -1,4 +1,4 @@
-import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls/components/Form"
+import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls"
 import { formMetadata, getDemoRecord } from "../shared/formModel"
 import { createModelStore } from "../shared/modelStore"
 import { formContextFormXml } from "./formContextFormXml"

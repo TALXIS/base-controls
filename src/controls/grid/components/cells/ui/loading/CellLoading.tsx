@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Shimmer } from "@components/ui";
+import { Shimmer } from "@ui";
 import { getCellLoadingStyles } from "./styles";
 
 /** What a cell shows while its value is still being fetched. */

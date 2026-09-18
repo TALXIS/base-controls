@@ -1,8 +1,8 @@
-import { IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
+import { IUserQueryStrategy } from "@controls/task-grid/providers/saved-query";
 import { IUserQueryComponents, IUserQueryModule } from "../interfaces";
 import { UserQueryComponents } from "./moduleComponents";
 import { UserQueryDataProvider } from "./UserQueryDataProvider";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Options for {@link createUserQueryModule}. */
 export interface IUserQueryModuleOptions {

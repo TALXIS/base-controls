@@ -5,11 +5,23 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@components": [
-        "src/components/index.ts"
+      "@controls": [
+        "src/controls/index.ts"
       ],
-      "@components/*": [
-        "src/components/*"
+      "@controls/*": [
+        "src/controls/*"
+      ],
+      "@ui": [
+        "src/ui/index.ts"
+      ],
+      "@ui/*": [
+        "src/ui/*"
+      ],
+      "@theme": [
+        "src/theme/index.ts"
+      ],
+      "@theme/*": [
+        "src/theme/*"
       ],
       "@hooks": [
         "src/hooks/index.ts"

@@ -1,4 +1,4 @@
-import { OptionTag } from "@components/ui";
+import { OptionTag } from "@ui";
 import { IOptionProps } from "../../OptionSetRenderer";
 
 /** One option of a cell's set, as the tag every option is drawn as. */

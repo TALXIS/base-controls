@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useForm } from "../root/context";
 import { useField } from "../field";
-import { useDisabledContext } from "@components/Form/components/ui/cell";
+import { useDisabledContext } from "@controls/form/components/ui/cell";
 import { ControlComponents, IControlComponents } from "./components";
 import { ControlComponentContext, useControlComponents } from "./context";
 

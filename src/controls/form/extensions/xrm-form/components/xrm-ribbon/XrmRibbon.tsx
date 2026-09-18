@@ -1,4 +1,4 @@
-import { Form } from "@components/Form/components/Form"
+import { Form } from "@controls/form/components/Form"
 import { useXrmFormContext } from "../context";
 import { useXrmFormComponents } from "../xrm-form/context";
 

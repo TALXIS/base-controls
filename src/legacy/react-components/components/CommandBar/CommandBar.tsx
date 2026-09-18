@@ -1,9 +1,10 @@
-import { CommandBar as FluentCommandBar, IButtonProps, ICommandBarProps as ICommandBarPropsBase, useTheme } from '@fluentui/react';
+import { ICommandBarProps as ICommandBarPropsBase, useTheme } from '@fluentui/react';
+import { CommandBar as CommandBarBase } from '@ui/command-bar';
 import { useClassNames } from "@legacy/hooks/useClassNames";
 import { useMemo } from "react";
 import { getCommandBarStyles } from "./styles";
 import { ICommandBarItemProps as ICommandBarItemPropsBase } from "@fluentui/react";
-import { ITheme, Theming } from '@legacy/utilities';
+import { ITheme, SurfaceTheme } from '@theme';
 
 
 /**  
@@ -19,7 +20,10 @@ export interface ICommandBarItemProps extends ICommandBarItemPropsBase {
 
 export interface ICommandBarProps extends ICommandBarPropsBase {
     /**
-     * Optional theme to be used for contextual menus created by the command bar.
+     * What a menu one of the buttons opens is drawn in.
+     *
+     * Defaults to the theme the application draws its surfaces in, so a bar in a cell of its own colours
+     * still opens its menus in the application's.
      */
     contextualMenuTheme?: ITheme
 }
@@ -37,37 +41,25 @@ export const CommandBar = (props: ICommandBarProps) => {
             }
             return newItem;
         })
-        if(props.contextualMenuTheme) {
-            return Theming.GetThemedContextualItems(newItems, props.contextualMenuTheme);
-        }
-        return newItems
+        return newItems;
     }
 
-    const getInjectedOverflowButtonProps = (buttonProps?: IButtonProps): IButtonProps => {
-        return {
-            ...buttonProps,
-            menuProps: {
-                ...buttonProps?.menuProps,
-                items: buttonProps?.menuProps?.items ?? [],
-                theme: props.contextualMenuTheme ? props.contextualMenuTheme : theme,
-                calloutProps: {
-                    ...buttonProps?.menuProps?.calloutProps,
-                    theme: props.contextualMenuTheme ? props.contextualMenuTheme : theme
-                }
-            }
-        }
-    }
     //replace is done for back compat - command bar did not include the __root suffix before
     //replace due to back comp with old CSS where it often targets the class name directly
     //the decision to add the properties as --propName directly to className instead of creating
     //another class was really unfortunate, we need to abandon this practice
     const classNames = useClassNames('Command-Bar', {className: props.className}).replace('__root', '').replace('--underlined', '');
 
-    return <FluentCommandBar
+    //the menus are themed by the shared command bar this one draws with, from the surface it is told about
+    const bar = <CommandBarBase
         {...props}
         className={`${classNames} ${commandBarStyles.root}`}
         items={getInjectedProps(props.items)}
         farItems={getInjectedProps(props.farItems)}
-        overflowButtonProps={getInjectedOverflowButtonProps(props.overflowButtonProps)}
-         />
+        overflowItems={props.overflowItems && getInjectedProps(props.overflowItems)} />;
+
+    if (!props.contextualMenuTheme) {
+        return bar;
+    }
+    return <SurfaceTheme theme={props.contextualMenuTheme}>{bar}</SurfaceTheme>;
 }

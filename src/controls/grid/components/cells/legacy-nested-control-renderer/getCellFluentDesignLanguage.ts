@@ -1,6 +1,6 @@
 import { merge } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { ITheme } from "@legacy";
+import { ITheme } from "@theme";
 import { ControlTheme, IFluentDesignState } from "@utils";
 import { IGridServiceLocator } from "../../../services";
 import { GridCell } from "../../../services/cells";

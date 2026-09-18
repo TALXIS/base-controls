@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { Checkbox } from "@fluentui/react";
-import { CellRenderer } from "@components/Grid/components/cells/cell-renderer/CellRenderer";
-import { useGridService } from "@components/Grid/useGridService";
-import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/components/record-save-indicator";
+import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
+import { useGridService } from "@controls/grid/useGridService";
+import { RecordSaveIndicator, useRecordSaveStatus } from "@controls/grid/components/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
 
 /** The checkbox a row is selected by, or what the row has to report about its last save. */

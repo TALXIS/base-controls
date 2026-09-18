@@ -1,10 +1,10 @@
 import { Dataset, DataTypes, ICommand, IDataset, IRetrieveRecordCommandOptions, MemoryDataProvider } from "@talxis/client-libraries";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
-import { ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridDatasetControl } from "@controls/task-grid/interfaces";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { ILocalizationService } from "@utils";
-import { ITaskGridLabels } from "@components/TaskGrid/labels";
-import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
+import { ITaskGridLabels } from "@controls/task-grid/labels";
+import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "@controls/task-grid/providers/saved-query";
 import { IUserQueryDataProvider } from "../../interfaces";
 import { ErrorHelper } from "@utils";
 

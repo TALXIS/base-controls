@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Shimmer, ShimmerElementType, useTheme } from '@fluentui/react';
+import { ShimmerElementType, useTheme } from '@fluentui/react';
+import { Shimmer } from '@ui';
 import { getSkeletonStyles } from './styles';
 
 export interface ISkeletonProps {

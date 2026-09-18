@@ -1,1 +1,1 @@
-export * from './CachedThemeProvider';
+export * from './ThemeProvider';

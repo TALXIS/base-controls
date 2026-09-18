@@ -1,5 +1,5 @@
 import { IChecklistItem, IChecklistStrategy } from "../ChecklistProvider";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 export interface IMemoryChecklistStrategyParams {
     /**

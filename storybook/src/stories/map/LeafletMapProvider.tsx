@@ -5,7 +5,7 @@ import L from 'leaflet'
 import { useEffect, useMemo } from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import { mergeStyleSets } from '@fluentui/react'
-import { IMapProvider, IMapProviderProps } from '@talxis/base-controls/components/Map'
+import { IMapProvider, IMapProviderProps } from '@talxis/base-controls'
 
 const markerIconInstance = new L.Icon({
     iconRetinaUrl: markerIcon2x,

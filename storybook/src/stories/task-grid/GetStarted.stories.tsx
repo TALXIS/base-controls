@@ -22,7 +22,7 @@ The control ships no data access at all. Loading, saving, reordering and saved v
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
-import { PcfContextProvider } from '@talxis/base-controls/utils'
+import { PcfContextProvider } from '@talxis/base-controls'
 
 export const MyTaskGridPage = () => (
     <PcfContextProvider>

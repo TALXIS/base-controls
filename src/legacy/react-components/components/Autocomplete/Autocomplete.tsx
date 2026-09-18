@@ -1,4 +1,5 @@
-import { Callout, ICommandBarItemProps } from "@fluentui/react";
+import { ICommandBarItemProps } from "@fluentui/react";
+import { Callout, TooltipHost } from "@ui/surfaces";
 import * as React from 'react';
 import { CommandBar } from '../CommandBar/CommandBar';
 import { ITextFieldProps, TextField } from '../TextField/TextField';
@@ -6,7 +7,6 @@ import { areEqual, FixedSizeList as List } from 'react-window';
 import { ITextField } from "@fluentui/react";
 import { ICalloutProps } from "@fluentui/react";
 import { Spinner } from "@fluentui/react";
-import { TooltipHost } from "@fluentui/react";
 import { ITooltipHostProps } from "@fluentui/react";
 import { CommandBarButton as CommandBarButtonBase, IButtonProps } from "@fluentui/react";
 import { getAutocompleteStyles, getCalloutStyles, getItemContainerStyles, getSuggestionsContainerStyles } from './styles';

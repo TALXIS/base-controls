@@ -1,8 +1,8 @@
 import React from "react"
 import { FormControl, InputLabel, MenuItem, Select, Slider as MuiSlider, TextField as MuiTextField } from "@mui/material"
-import { XrmForm } from "@talxis/base-controls/components/Form"
-import { ControlComponents } from "@talxis/base-controls/components/Form/components/adapters/control"
-import { useField } from "@talxis/base-controls/components/Form"
+import { XrmForm } from "@talxis/base-controls"
+import { ControlComponents } from "@talxis/base-controls"
+import { useField } from "@talxis/base-controls"
 import { getCustomComponentsStrategy } from "../../form/xrm-form/xrmCustomComponentsModel"
 
 const customControlIds = new Set(["customLeadName", "customPhoneNumber", "customEngagementStage", "customMomentumScore", "customWorkspaceUrl", "customNotesPanel"])

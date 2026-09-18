@@ -1,6 +1,6 @@
 import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { ITheme } from "@legacy";
+import { ITheme } from "@theme";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";

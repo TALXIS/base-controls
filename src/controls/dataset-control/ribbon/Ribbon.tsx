@@ -4,7 +4,9 @@ import { useControl } from "@hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
-import { getIcon, Shimmer, ThemeProvider } from "@fluentui/react";
+import { getIcon } from "@fluentui/react";
+import { Shimmer } from "@ui";
+import { ThemeProvider } from "@utils";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 
@@ -24,7 +26,7 @@ const fluentIconMap: { [key: string]: string } = {
 }
 
 export const Ribbon = (props: IRibbon) => {
-    const { theme, className } = useControl('Ribbon', props, {});
+    const { theme, surfaceTheme, className } = useControl('Ribbon', props, {});
     const propsRef = useRef<IRibbon>(props);
     propsRef.current = props;
     const model = useMemo(() => new RibbonModel(() => propsRef.current), [])
@@ -111,7 +113,7 @@ export const Ribbon = (props: IRibbon) => {
                     return props.onRenderCommandBar({
                         theme: theme,
                         items: getCommandBarItems(),
-                        contextualMenuTheme: propsRef.current.context.fluentDesignLanguage?.applicationTheme ?? theme
+                        contextualMenuTheme: surfaceTheme
                     }, (props) => {
                         return <CommandBar {...props} />
                     })

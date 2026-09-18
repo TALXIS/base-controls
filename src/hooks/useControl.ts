@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
-import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
+import { useControlTheme } from "@theme";
+import { useControlSurfaceTheme } from "@theme";
 import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
-import { ITheme } from "../legacy/react-components";
+import { ITheme } from "@theme";
 import dayjs from "dayjs";
 import { IDefaultTranslations, ITranslation, useControlLabels } from "./useControlLabels";
 
@@ -12,6 +13,8 @@ export interface IControlController<TTranslations, TOutputs> {
     sizing: IControlSizing,
     className: string;
     theme: ITheme;
+    /** What a callout, menu or tooltip the control opens is drawn in. */
+    surfaceTheme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
 }
 /**
@@ -72,6 +75,7 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         labels,
         sizing,
         theme: useControlTheme(context.fluentDesignLanguage),
+        surfaceTheme: useControlSurfaceTheme(context.fluentDesignLanguage),
         onNotifyOutputChanged
     }
 };

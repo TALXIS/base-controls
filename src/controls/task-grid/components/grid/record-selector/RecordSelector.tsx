@@ -1,4 +1,4 @@
-import { DatasetControl } from "@components/DatasetControl"
+import { DatasetControl } from "@controls/dataset-control"
 import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlModel } from '@utils/dataset-control';
 import * as React from "react"
@@ -7,7 +7,7 @@ import { getClassNames, usePcfContext } from "@utils";
 import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
 import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';
-import { useLocalizationService } from "@components/TaskGrid/context";
+import { useLocalizationService } from "@controls/task-grid/context";
 
 /** Props for {@link RecordSelector}. */
 export interface IRecordSelectorProps {

@@ -1,7 +1,7 @@
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks";
-import { useTaskDataProvider } from "@components/TaskGrid/context";
-import { ZoomSlider } from "@components/zoom-slider";
+import { useTaskDataProvider } from "@controls/task-grid/context";
+import { ZoomSlider } from "@ui/zoom-slider";
 import { IGanttZoomingEvents } from '../gantt-zooming';
 import { useGanttLabels, useGanttService } from "../context";
 

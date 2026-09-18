@@ -1,6 +1,6 @@
 import { DataTypes, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { applyColumn } from "@components/TaskGrid/providers/saved-query";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { applyColumn } from "@controls/task-grid/providers/saved-query";
 
 /** Name of the virtual column showing a task's checklist. Only exists with this module. */
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';

@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Form, MemoryStrategy, XrmForm } from '@talxis/base-controls/components/Form'
+import { Form, MemoryStrategy, XrmForm } from '@talxis/base-controls'
 import { renderStory } from './storyHelpers'
 import { getDemoRecord, getFormColumns, formMetadata } from '../../form/shared/formModel'
 

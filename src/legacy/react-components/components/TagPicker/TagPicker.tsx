@@ -4,7 +4,7 @@ import { IPickerItemProps } from "@fluentui/react";
 import { ISuggestionModel } from "@fluentui/react";
 import { ISuggestionItemProps } from "@fluentui/react";
 import { IButtonProps } from '@fluentui/react';
-import { TagPicker as TagPickerBase } from '@fluentui/react';
+import { TagPicker as TagPickerBase } from '@ui/tag-picker';
 import { ITag, ITagPickerProps as ITagPickerPropsBase } from '@fluentui/react/lib/Pickers';
 import { CommandBarButton as CommandBarButtonBase } from '@fluentui/react/lib/Button';
 import { IBasePicker, ValidationState } from '@fluentui/react';
@@ -376,11 +376,14 @@ export const TagPicker = React.forwardRef<any, ITagPickerProps>((props, ref) => 
                     className={undefined}
                     ref={ref}
                     componentRef={componentRef}
+                    pickerCalloutProps={{
+                                ...props.pickerCalloutProps
+                    }}
                     pickerSuggestionsProps={
                         {
-                            ...props.pickerSuggestionsProps,
+                                            ...props.pickerSuggestionsProps,
                             className: getSuggestionsClassNames(),
-                        }
+                        } as ITagPickerPropsBase['pickerSuggestionsProps']
                     }
                     itemLimit={props.itemLimit}
                     onChange={async (items) => await onChange(items as IItemProps[])}

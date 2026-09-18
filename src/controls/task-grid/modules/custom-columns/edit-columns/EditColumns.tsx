@@ -1,9 +1,9 @@
-import { EditColumns as EditColumnsBase, IEditColumnsProps, IEditColumnsRef } from '@components/DatasetControl/EditColumns/EditColumns';
+import { EditColumns as EditColumnsBase, IEditColumnsProps, IEditColumnsRef } from '@controls/dataset-control/edit-columns/EditColumns';
 import { usePcfContext } from "@utils";
 import * as React from 'react';
 import { useIsLoading } from '@hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
-import { useLocalizationService, useServices } from '@components/TaskGrid/context';
+import { useLocalizationService, useServices } from '@controls/task-grid/context';
 import { CommandBar } from '../command-bar/CommandBar';
 import { OptionCommandBar } from '../option-command-bar/OptionCommandBar';
 import { SortableItemCommandBar } from '../sortable-item-command-bar/SortableItemCommandBar';

@@ -1,4 +1,5 @@
-import { Callout, DirectionalHint, ICalloutProps } from "@fluentui/react";
+import { DirectionalHint, ICalloutProps } from "@fluentui/react";
+import { Callout } from "@ui";
 
 
 export const TaskTooltipCallout = (props: ICalloutProps) => {

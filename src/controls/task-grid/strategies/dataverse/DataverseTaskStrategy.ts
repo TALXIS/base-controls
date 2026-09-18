@@ -6,14 +6,14 @@ import {
     ITaskDataProvider,
     ITaskDataProviderStrategy,
     ITaskMoveParams,
-} from "@components/TaskGrid/providers";
-import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { IDataverseProject, toDataverseProject } from "@components/TaskGrid/modules/project";
+} from "@controls/task-grid/providers";
+import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
+import { IDataverseProject, toDataverseProject } from "@controls/task-grid/modules/project";
 import { Liquid } from "liquidjs";
-import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
+import { IDataverseFieldMapping } from "@controls/task-grid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ITalxisCustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/talxis";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { ITalxisCustomColumnsStrategy } from "@controls/task-grid/modules/custom-columns/talxis";
 import {
     DataverseFormOperation,
     DataverseTaskActions,

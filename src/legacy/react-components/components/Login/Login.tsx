@@ -3,7 +3,7 @@ import { BaseButton } from "@fluentui/react";
 import { Button } from "@fluentui/react";
 import { IButtonProps } from "@fluentui/react";
 import { CommandBarButton } from "@fluentui/react";
-import { Callout } from "@fluentui/react";
+import { Callout } from "@ui/surfaces";
 import { Persona } from "@fluentui/react";
 import { IPersonaProps} from "@fluentui/react";
 import { Text } from "@fluentui/react";

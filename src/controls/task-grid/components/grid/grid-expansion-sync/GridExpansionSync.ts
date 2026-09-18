@@ -1,7 +1,7 @@
 import { GridApi, IRowNode, RowGroupOpenedEvent } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ITaskExpansionDelta, ITaskExpansionProvider } from "@components/TaskGrid/providers/expansion";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { ITaskExpansionDelta, ITaskExpansionProvider } from "@controls/task-grid/providers/expansion";
 
 export interface IGridExpansionSyncParameters {
     /** Where the grid's api and the expansion authority are reached. */

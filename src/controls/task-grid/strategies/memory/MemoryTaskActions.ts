@@ -13,9 +13,9 @@ import {
     ISavedQueryDataProvider,
     ITaskCreateParams,
     ITaskMoveParams,
-} from "@components/TaskGrid/providers";
-import { IRecordStructure } from "@components/TaskGrid/providers/task/record-tree";
-import { INativeColumns } from "@components/TaskGrid/interfaces";
+} from "@controls/task-grid/providers";
+import { IRecordStructure } from "@controls/task-grid/providers/task/record-tree";
+import { INativeColumns } from "@controls/task-grid/interfaces";
 import { StackRank } from "@utils/stack-rank";
 
 /** What every action that resolves a task by id needs. */

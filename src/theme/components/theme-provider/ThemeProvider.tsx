@@ -1,36 +1,35 @@
 import React, { useMemo } from "react";
 import { ITheme } from "@fluentui/react";
-import { getClassNames } from "@utils";
+import { getClassNames } from "@utils/styling";
 import { ThemeContext } from "../theme-context";
-import { getCachedThemeProviderStyles } from "./styles";
+import { getThemeProviderStyles } from "./styles";
 
-export interface ICachedThemeProviderProps extends React.HTMLAttributes<HTMLDivElement> {
-    /** Whole, rather than the partial `ThemeProvider` allows: nothing is merged into it. */
+export interface IThemeProviderProps extends React.HTMLAttributes<HTMLDivElement> {
+    /** Whole, rather than the partial Fluent's allows: nothing is merged into it. */
     theme: ITheme;
+    /** What a callout, menu or tooltip opened in here is drawn in, where the theme itself is not it. */
+    surfaceTheme?: ITheme;
     /** Whether the element it renders is painted in the theme's surface. */
     applyTo?: 'element' | 'none';
     children?: React.ReactNode;
 }
 
 /**
- * An element painted in a theme, and everything inside it themed by it.
+ * An element painted in a theme, and everything inside it drawn in it.
  *
- * `ThemeProvider` for a theme that is already whole, which is what to reach for where many of them are
- * rendered at once: the theme goes through as it came rather than being deep-merged into the one above,
- * and the contexts come from {@link ThemeContext}, which caches the customizations per theme rather than
- * building a context value per instance.
- *
- * What it does not do is `applyTo='body'`, which paints the document rather than what is rendered here.
+ * This is the one to reach for: the theme goes through as it came rather than being deep-merged into the
+ * one above, and {@link ThemeContext} hands it to Fluent from a cache rather than per instance, which is
+ * what makes it cheap enough for a grid cell. It has no `applyTo='body'`.
  */
-export const CachedThemeProvider = React.forwardRef<HTMLDivElement, ICachedThemeProviderProps>((props, ref) => {
-    const { theme, applyTo = 'element', className, children, ...divProps } = props;
-    const styles = useMemo(() => getCachedThemeProviderStyles(theme), [theme]);
+export const ThemeProvider = React.forwardRef<HTMLDivElement, IThemeProviderProps>((props, ref) => {
+    const { theme, surfaceTheme, applyTo = 'element', className, children, ...divProps } = props;
+    const styles = useMemo(() => getThemeProviderStyles(theme), [theme]);
 
     return <div
         ref={ref}
         {...divProps}
         className={getClassNames([className, applyTo === 'element' ? styles.root : undefined])}>
-        <ThemeContext theme={theme}>{children}</ThemeContext>
+        <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>{children}</ThemeContext>
     </div>;
 });
-CachedThemeProvider.displayName = 'CachedThemeProvider';
+ThemeProvider.displayName = 'ThemeProvider';

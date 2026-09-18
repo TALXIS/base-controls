@@ -1,7 +1,7 @@
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
 import { IAlignment } from "@utils";
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
-import type { GridCell } from "@components/Grid";
+import type { GridCell } from "@controls/grid";
 import { IGridCellRendererComponents } from "./components";
 
 /** A file or an image, as a record holds one. */

@@ -2,8 +2,9 @@ import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, ICont
 import { usePcfContext } from "@utils";
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@controls/task-grid/context";
 import { useEventEmitter } from "@hooks";
+import { useSurfaceMenuProps } from "@ui";
 import { withButtonLoading } from "@legacy";
 
 const CommandBarButton = withButtonLoading(CommandBarButtonBase);
@@ -95,6 +96,8 @@ export const ViewSwitcher = () => {
             ] : [])
         ];
     }
+    const menuProps = useSurfaceMenuProps({ items: getViewSwitcherItems() });
+
     return <>
         <CommandBarButton
             isLoading={isLoading}
@@ -104,9 +107,7 @@ export const ViewSwitcher = () => {
                 menuIcon: styles.menuIcon,
                 menuIconExpanded: styles.menuIconExpanded
             }}
-            menuProps={{
-                items: getViewSwitcherItems()
-            }} text={currentQuery.name} />
+            menuProps={menuProps} text={currentQuery.name} />
         {showCreateViewDialog && userQueriesModule
             && userQueriesModule.components.onRenderCreateView({ onDismiss: () => setShowCreateViewDialog(false) })}
         {showViewManagerDialog && userQueriesModule

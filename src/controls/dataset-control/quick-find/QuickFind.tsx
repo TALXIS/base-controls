@@ -4,7 +4,8 @@ import { useModel } from "../useModel";
 import { TextField } from "@legacy";
 import { getQuickFindStyles } from "./styles";
 import { IInternalDataProvider } from "@talxis/client-libraries";
-import { Callout, FontIcon } from "@fluentui/react";
+import { FontIcon } from "@fluentui/react";
+import { Callout } from "@ui";
 import { Text } from "@fluentui/react";
 
 export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperProps['onRenderQuickFind'] }) => {

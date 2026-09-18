@@ -1,13 +1,13 @@
-import { IHeaderProps } from "@components/DatasetControl/interfaces"
+import { IHeaderProps } from "@controls/dataset-control/interfaces"
 import { ICommandBarItemProps } from "@legacy";
 import { usePcfContext } from "@utils";
 import * as React from "react"
 import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
-import { useDatasetControl, useLocalizationService, useRootElementId, useServices, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useRootElementId, useServices, useTaskDataProvider, useTaskGridComponents } from "@controls/task-grid/context";
 import { ViewSwitcher } from "./view-switcher";
-import { EditColumns as EditColumnsBase, IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
+import { EditColumns as EditColumnsBase, IEditColumnsProps } from "@controls/dataset-control/edit-columns/EditColumns";
 
 interface ITaskGridHeaderProps {
     headerProps: IHeaderProps;

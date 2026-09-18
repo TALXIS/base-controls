@@ -1,5 +1,5 @@
 import { DataverseTaskDependencyStrategy, IDataverseTaskDependencyStrategyParams } from "../dataverse/DataverseTaskDependencyStrategy";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /**
  * The `talxis_taskdependency` table as {@link DataverseTaskDependencyStrategy} needs it described: the two

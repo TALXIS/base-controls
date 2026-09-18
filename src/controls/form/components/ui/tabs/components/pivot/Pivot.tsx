@@ -1,7 +1,7 @@
 import { PivotItem, useTheme } from "@fluentui/react";
 import { ITabsComponentProps } from "../components";
 import React, { useMemo } from "react";
-import type { TabLikeChild } from "@components/Form/components/ui/tabs/Tabs";
+import type { TabLikeChild } from "@controls/form/components/ui/tabs/Tabs";
 import { getPivotStyles } from "./styles";
 import { IPivotComponents, PivotComponents } from "./components";
 

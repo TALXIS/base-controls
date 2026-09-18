@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { DataTypes, IRecord } from "@talxis/client-libraries";
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
-import { ITaskDataProvider } from '@components/TaskGrid/providers';
+import { ITaskDataProvider } from '@controls/task-grid/providers';
 
 /** Whether a date column carries a time of day, or only a date. */
 export type IGanttDatePrecision = 'date' | 'dateTime';

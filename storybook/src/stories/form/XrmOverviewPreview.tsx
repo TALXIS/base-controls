@@ -1,7 +1,7 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
-import { XrmForm } from "@talxis/base-controls/components/Form"
-import { XrmMemoryStrategy } from "@talxis/base-controls/components/Form"
+import { XrmForm } from "@talxis/base-controls"
+import { XrmMemoryStrategy } from "@talxis/base-controls"
 import { formMetadata } from "../../form/shared/formModel"
 import { getXrmRecord, xrmModelStore } from "../../form/xrm-form/xrmModel"
 

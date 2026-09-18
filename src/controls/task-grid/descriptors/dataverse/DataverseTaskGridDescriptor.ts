@@ -1,9 +1,9 @@
 import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { IChecklistModule, IGanttModule, IProjectModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
-import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
+import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@controls/task-grid/providers";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { IChecklistModule, IGanttModule, IProjectModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@controls/task-grid/modules/interfaces";
+import { DataverseTaskStrategy } from "@controls/task-grid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
 

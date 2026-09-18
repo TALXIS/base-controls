@@ -1,5 +1,5 @@
 import { DataTypes, type IColumn } from "@talxis/client-libraries"
-import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls/components/Form"
+import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls"
 import { createModelStore } from "../shared/modelStore"
 import { createModelColumn } from "../shared/modelDefinition"
 

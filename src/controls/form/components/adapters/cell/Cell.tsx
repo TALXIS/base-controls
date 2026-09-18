@@ -1,7 +1,7 @@
-import { ICellProps } from "@components/Form/components/ui/cell";
-import { FormUi } from "@components/Form/components/ui";
+import { ICellProps } from "@controls/form/components/ui/cell";
+import { FormUi } from "@controls/form/components/ui";
 import { useField } from "../field";
-import { FormModel } from "@components/Form/internal/FormModel";
+import { FormModel } from "@controls/form/internal/FormModel";
 
 export const Cell = (props: ICellProps) => {
     const field = useField();

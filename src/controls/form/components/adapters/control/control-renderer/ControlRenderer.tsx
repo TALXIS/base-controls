@@ -1,6 +1,6 @@
-import { NestedControlRenderer } from "@components/NestedControlRenderer";
+import { NestedControlRenderer } from "@controls/nested-control-renderer";
 import { IControlProps } from "../Control";
-import { useField, useForm } from "@components/Form/hooks";
+import { useField, useForm } from "@controls/form/hooks";
 import { BaseControls, usePcfContext } from "@utils";
 import { IColumn } from "@talxis/client-libraries";
 import { Sanitizer } from "@talxis/client-libraries";

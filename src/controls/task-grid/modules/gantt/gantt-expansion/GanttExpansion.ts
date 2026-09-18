@@ -1,6 +1,6 @@
 import debounce from "debounce";
 import { GanttStatic } from "gantt-trial";
-import { ITaskExpansionDelta, ITaskExpansionProvider } from "@components/TaskGrid/providers/expansion";
+import { ITaskExpansionDelta, ITaskExpansionProvider } from "@controls/task-grid/providers/expansion";
 import { IGanttServiceLocator } from "../services";
 
 /** A double click opens the task, so the toggle has to wait to see whether a second click is coming. */

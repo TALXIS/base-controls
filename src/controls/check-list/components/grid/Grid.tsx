@@ -1,9 +1,9 @@
 import * as React from "react";
 import { IRecord } from "@talxis/client-libraries";
-import { AgGridReact, createAggregationModule, createGroupingModule, createServerSideGroupingStrategy, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@components/Grid";
+import { AgGridReact, createAggregationModule, createGroupingModule, createServerSideGroupingStrategy, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
 import { useTheme } from "@fluentui/react";
 import { getClassNames } from "@utils";
-import { IDatasetControlProps } from "@components/DatasetControl/interfaces";
+import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
 import { ICheckListDatasetControl } from "../../CheckListDatasetControl";
 import { CheckListGridCustomizer } from "./grid-customizer";
 import { getCheckListGridStyles } from "./styles";

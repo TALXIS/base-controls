@@ -1,6 +1,6 @@
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { ITheme, Theming } from "@legacy";
+import { ITheme, Theming } from "@theme";
 import { getJustifyContent, IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { GridCell } from "./GridCell";

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { components, OptionProps } from 'react-select';
 import { Persona, PersonaSize } from '@fluentui/react';
-import { usePeopleLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/people-lookup-many/context';
+import { usePeopleLookupManyProps } from '@controls/task-grid/modules/lookup-many/components/people-lookup-many/context';
 import { getOptionStyles } from './styles';
 
 /** A candidate record as a persona. */

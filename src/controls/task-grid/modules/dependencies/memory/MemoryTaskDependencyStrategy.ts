@@ -1,6 +1,6 @@
 import { ITaskDependency, ITaskDependencyStrategy } from "../DependenciesProvider";
 import { refreshDependenciesOnTaskDeletion } from "../refreshDependenciesOnTaskDeletion";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 export interface IMemoryTaskDependencyStrategyParams {
     /** Where the task side is reached, so a deleted task takes its dependencies with it. */

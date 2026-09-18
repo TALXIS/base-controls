@@ -1,7 +1,7 @@
 import { Module, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
-import { ITheme } from "@legacy";
+import { ITheme } from "@theme";
 import { LocalizationService, ServiceLocator } from "@utils";
 import { IGridModule, IGridModules } from "./modules";
 import { IGrid } from "./interfaces";

@@ -1,8 +1,8 @@
 import { ICommandBarItemProps } from '@legacy';
 import * as React from 'react';
-import { components, ISortableItemCommandBarProps } from '@components/DatasetControl/EditColumns/components';
+import { components, ISortableItemCommandBarProps } from '@controls/dataset-control/edit-columns/components';
 import { useTaskGridEditColumns } from '../edit-columns/useTaskGridEditColumns';
-import { useServices } from '@components/TaskGrid/context';
+import { useServices } from '@controls/task-grid/context';
 
 
 /** Per-column commands on a selected column in the Edit Columns panel. */

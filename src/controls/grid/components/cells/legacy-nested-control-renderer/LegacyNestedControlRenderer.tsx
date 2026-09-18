@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { Client } from "@talxis/client-libraries";
-import { NestedControlRenderer } from "@components/NestedControlRenderer";
-import { INestedControlRendererComponentProps } from "@components/NestedControlRenderer/interfaces";
-import { IGridCellRenderer } from "@components/GridCellRenderer";
+import { NestedControlRenderer } from "@controls/nested-control-renderer";
+import { INestedControlRendererComponentProps } from "@controls/nested-control-renderer/interfaces";
+import { IGridCellRenderer } from "@controls/grid/cell-renderer";
 import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";

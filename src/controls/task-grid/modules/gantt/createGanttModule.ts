@@ -1,5 +1,5 @@
 import { LocalizationService, ServiceLocator } from "@utils";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { IGanttComponents, IGanttModule } from "../interfaces";
 import { GanttManager } from "./gantt-manager";
 import { GanttViewState } from "./gantt-view-state";

@@ -1,8 +1,8 @@
 import { EventEmitter, Formatting, IEventEmitter, IRecord } from '@talxis/client-libraries';
 import { GanttStatic, ZoomLevel } from 'gantt-trial';
-import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
+import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
-import { ITaskDataProvider } from '@components/TaskGrid/providers';
+import { ITaskDataProvider } from '@controls/task-grid/providers';
 import { IGanttDates } from '../gantt-dates';
 import { IGanttInfiniteTimeline } from '../gantt-infinite-timeline';
 import { ZoomingConfig } from './ZoomingConfig';

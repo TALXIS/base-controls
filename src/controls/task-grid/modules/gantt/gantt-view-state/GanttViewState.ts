@@ -1,4 +1,4 @@
-import { IModuleState } from "@components/TaskGrid/providers/state";
+import { IModuleState } from "@controls/task-grid/providers/state";
 import { IGanttServiceLocator } from "../services";
 
 /**

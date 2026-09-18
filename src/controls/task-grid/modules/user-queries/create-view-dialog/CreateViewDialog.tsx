@@ -1,9 +1,10 @@
-import { DefaultButton, Dialog, DialogFooter, MessageBar, MessageBarType, PrimaryButton } from "@fluentui/react";
-import { TextField } from "@components/TextField";
+import { DefaultButton, DialogFooter, MessageBar, MessageBarType, PrimaryButton } from "@fluentui/react";
+import { Dialog } from "@ui";
+import { TextField } from "@controls/fields/text-field";
 import { usePcfContext } from "@utils";
 import * as React from "react";
 import { withButtonLoading } from '@legacy';
-import { useLocalizationService, useServices } from "@components/TaskGrid/context";
+import { useLocalizationService, useServices } from "@controls/task-grid/context";
 import { useEventEmitter } from "@hooks";
 import { IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../../interfaces";
 

@@ -1,10 +1,10 @@
 import { ICommandBarProps } from "@legacy";
-import { CommandBar } from "./CommandBar/CommandBar";
+import { CommandBar } from "./command-bar/CommandBar";
 import { IColumn } from "@talxis/client-libraries";
 import { GroupBase, OptionProps } from "react-select";
-import { OptionText } from "./OptionText/OptionText";
-import { SortableItemCommandBar } from "./SortableItem/SortableItemCommandBar/SortableItemCommandBar";
-import { OptionCommandBar } from "./OptionCommandBar/OptionCommandBar";
+import { OptionText } from "./option-text/OptionText";
+import { SortableItemCommandBar } from "./sortable-item/sortable-item-command-bar/SortableItemCommandBar";
+import { OptionCommandBar } from "./option-command-bar/OptionCommandBar";
 
 export interface IOptionCommandBarProps extends ICommandBarProps {
     context: 'scopeSelector' | 'columnSelector';

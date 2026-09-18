@@ -1,8 +1,8 @@
-import { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfaces";
+import { ILookupManyDataProviderParameters } from "@controls/task-grid/interfaces";
 import { IDataProvider } from "@talxis/client-libraries";
 import { ILookupManyModule, ILookupManyModuleComponents } from "../interfaces";
 import { LookupManyModuleComponents } from "./moduleComponents";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Options for {@link createLookupManyModule}. */
 export interface ILookupManyModuleOptions {

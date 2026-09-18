@@ -1,4 +1,4 @@
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { IProjectModule } from "../interfaces";
 import { IProjectStrategy, ProjectData, ProjectProvider } from "./ProjectProvider";
 

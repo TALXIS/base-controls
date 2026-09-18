@@ -1,8 +1,8 @@
-import { ThemeProvider, useTheme } from '@fluentui/react';
+import { useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
-import { Theming, useThemeGenerator } from '@legacy';
-import { MultiValueContainer as NativeMultiValueContainer } from '@components/TaskGrid/modules/lookup-many/components/components/multi-value-container/MultiValueContainer';
-import { useColorfulLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/colorful-lookup-many/context';
+import { ThemeProvider, Theming, useThemeGenerator } from '@theme';
+import { MultiValueContainer as NativeMultiValueContainer } from '@controls/task-grid/modules/lookup-many/components/components/multi-value-container/MultiValueContainer';
+import { useColorfulLookupManyProps } from '@controls/task-grid/modules/lookup-many/components/colorful-lookup-many/context';
 
 /** A selected record as a coloured tag. */
 export const MultiValueContainer = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {

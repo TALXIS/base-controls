@@ -1,6 +1,6 @@
 import { DataTypes, IColumn, ICustomColumnControl, Sanitizer } from "@talxis/client-libraries";
 import { GridField } from "../../../services/fields";
-import { IBinding } from "@components/NestedControlRenderer/interfaces";
+import { IBinding } from "@controls/nested-control-renderer/interfaces";
 
 export interface IBindingsParameters {
     /** The field the cell draws, where the cell is bound to one. */

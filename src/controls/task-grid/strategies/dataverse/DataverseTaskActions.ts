@@ -17,12 +17,12 @@ import {
     ITaskCreateParams,
     ITaskDataProvider,
     ITaskMoveParams,
-} from "@components/TaskGrid/providers";
-import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { IDataverseProject } from "@components/TaskGrid/modules/project";
-import { INativeColumns } from "@components/TaskGrid/interfaces";
+} from "@controls/task-grid/providers";
+import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
+import { IDataverseProject } from "@controls/task-grid/modules/project";
+import { INativeColumns } from "@controls/task-grid/interfaces";
 import { StackRank } from "@utils/stack-rank";
-import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
+import { IDataverseFieldMapping } from "@controls/task-grid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
 
 /** The `Xrm.Navigation.navigateTo` arguments behind every form the grid opens. */

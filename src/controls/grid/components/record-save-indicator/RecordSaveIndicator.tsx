@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { IconButton, SpinnerSize } from "@fluentui/react";
 import { IRecord } from "@talxis/client-libraries";
 import { Spinner } from "@legacy";
-import { useGridService } from "@components/Grid/useGridService";
+import { useGridService } from "@controls/grid/useGridService";
 import { IRecordSaveStatus } from "./useRecordSaveStatus";
 import { RecordSaveErrorCallout } from "./record-save-error-callout/RecordSaveErrorCallout";
 import { getRecordSaveIndicatorStyles } from "./styles";

@@ -1,13 +1,14 @@
-import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
+import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps } from "@fluentui/react";
+import { IThemeProviderProps } from "@utils";
 import { ITranslation } from "@hooks";
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
 import { IDataset } from "@talxis/client-libraries";
 
-import { gridTranslations } from "../Grid/translations";
+import { gridTranslations } from "@controls/grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
 import React from "react";
-import { IRibbonComponentProps } from "../Ribbon/interfaces";
+import { IRibbonComponentProps } from "@controls/dataset-control/ribbon/interfaces";
 import { IDatasetControl } from "@utils/dataset-control";
 import { IColumn } from "@talxis/client-libraries";
 
@@ -66,7 +67,8 @@ export interface IDatasetControlComponentProps {
 }
 
 export interface IComponentProps {
-    container: ThemeProviderProps;
+    /** What the control is drawn in, and what it paints its own element with. */
+    container: IThemeProviderProps;
     onRenderControlContainer: (props: IControlContainerProps, defaultRender: (props: IControlContainerProps) => React.ReactElement) => React.ReactElement;
     onRenderHeader: (props: IHeaderProps, defaultRender: (props: IHeaderProps) => React.ReactElement) => React.ReactElement;
     onRenderFooter: (props: IFooterProps, defaultRender: (props: IFooterProps) => React.ReactElement) => React.ReactElement;

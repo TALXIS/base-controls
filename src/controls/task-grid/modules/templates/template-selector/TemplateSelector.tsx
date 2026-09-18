@@ -1,6 +1,6 @@
 import * as React from "react";
-import { RecordSelector } from "@components/TaskGrid/components/grid/record-selector";
-import { useServices } from "@components/TaskGrid/context";
+import { RecordSelector } from "@controls/task-grid/components/grid/record-selector";
+import { useServices } from "@controls/task-grid/context";
 import { ITemplateSelectorProps } from "../../interfaces";
 
 /**

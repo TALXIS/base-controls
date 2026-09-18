@@ -3,7 +3,7 @@ import { ThemeContext } from '@utils';
 import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
-import { OptionSet } from '../OptionSet';
+import { OptionSet } from '@controls/fields/option-set';
 import { twoOptionsTranslations } from './translations';
 
 export const TwoOptions = (props: ITwoOptions) => {

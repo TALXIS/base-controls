@@ -4,14 +4,16 @@ import path from 'path';
 
 const distRoot = path.resolve('dist');
 const aliasTargets = [
-    ['@components', path.join(distRoot, 'components')],
+    ['@controls', path.join(distRoot, 'controls')],
+    ['@ui', path.join(distRoot, 'ui')],
+    ['@theme', path.join(distRoot, 'theme')],
     ['@hooks', path.join(distRoot, 'hooks')],
     ['@interfaces', path.join(distRoot, 'interfaces')],
     ['@legacy', path.join(distRoot, 'legacy', 'react-components')],
     ['@utils', path.join(distRoot, 'utils')],
 ];
 
-const aliasPattern = /(['"])(@components(?:\/[^'"]*)?|@hooks(?:\/[^'"]*)?|@interfaces(?:\/[^'"]*)?|@legacy(?:\/[^'"]*)?|@utils(?:\/[^'"]*)?|@\/[^'"]+)\1/g;
+const aliasPattern = /(['"])(@controls(?:\/[^'"]*)?|@ui(?:\/[^'"]*)?|@theme(?:\/[^'"]*)?|@hooks(?:\/[^'"]*)?|@interfaces(?:\/[^'"]*)?|@legacy(?:\/[^'"]*)?|@utils(?:\/[^'"]*)?|@\/[^'"]+)\1/g;
 
 const toPosixPath = (value) => value.split(path.sep).join('/');
 

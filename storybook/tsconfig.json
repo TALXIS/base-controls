@@ -16,6 +16,51 @@
       ],
       "@talxis/base-controls/*": [
         "../src/*"
+      ],
+      "@controls": [
+        "../src/controls/index.ts"
+      ],
+      "@controls/*": [
+        "../src/controls/*"
+      ],
+      "@ui": [
+        "../src/ui/index.ts"
+      ],
+      "@ui/*": [
+        "../src/ui/*"
+      ],
+      "@theme": [
+        "../src/theme/index.ts"
+      ],
+      "@theme/*": [
+        "../src/theme/*"
+      ],
+      "@hooks": [
+        "../src/hooks/index.ts"
+      ],
+      "@hooks/*": [
+        "../src/hooks/*"
+      ],
+      "@interfaces": [
+        "../src/interfaces/index.ts"
+      ],
+      "@interfaces/*": [
+        "../src/interfaces/*"
+      ],
+      "@legacy": [
+        "../src/legacy/react-components/index.ts"
+      ],
+      "@legacy/*": [
+        "../src/legacy/react-components/*"
+      ],
+      "@utils": [
+        "../src/utils/index.ts"
+      ],
+      "@utils/*": [
+        "../src/utils/*"
+      ],
+      "@/*": [
+        "../src/*"
       ]
     }
   },

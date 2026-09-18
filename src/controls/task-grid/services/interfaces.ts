@@ -1,15 +1,15 @@
 //types only: the map names every dependency by its contract, so registering a service can never pull an
 //implementation into the bundle
 import type { ILocalizationService, IServiceLocator } from "@utils";
-import type { ITaskGridLabels } from "@components/TaskGrid/labels";
-import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
-import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-import type { ITaskExpansionProvider } from "@components/TaskGrid/providers/expansion";
-import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
-import type { ITaskGridStateProvider } from "@components/TaskGrid/providers/state";
-import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
-import type { GridApi, IGridCustomizer } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
-import type { ITaskGridComponents } from "@components/TaskGrid/components/components";
+import type { ITaskGridLabels } from "@controls/task-grid/labels";
+import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@controls/task-grid/interfaces";
+import type { ITaskDataProvider } from "@controls/task-grid/providers/task";
+import type { ITaskExpansionProvider } from "@controls/task-grid/providers/expansion";
+import type { ISavedQueryDataProvider } from "@controls/task-grid/providers/saved-query";
+import type { ITaskGridStateProvider } from "@controls/task-grid/providers/state";
+import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@controls/task-grid/modules/interfaces";
+import type { GridApi, IGridCustomizer } from "@controls/task-grid/components/grid/grid-customizer/GridCustomizer";
+import type { ITaskGridComponents } from "@controls/task-grid/components/components";
 
 /**
  * Every dependency the grid can hand out, keyed by name and typed by its contract.

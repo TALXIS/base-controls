@@ -1,7 +1,7 @@
 import React from "react"
 import { ComboBox, Stack, Text } from "@fluentui/react"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
-import { XrmForm } from "@talxis/base-controls/components/Form"
+import { XrmForm } from "@talxis/base-controls"
 import { getCustomComponentsStrategy } from "../../form/xrm-form/xrmCustomComponentsModel"
 
 interface IXrmCustomTabsProps {

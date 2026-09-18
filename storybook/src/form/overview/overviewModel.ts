@@ -1,4 +1,4 @@
-import { MemoryStrategy } from '@talxis/base-controls/components/Form'
+import { MemoryStrategy } from '@talxis/base-controls'
 import { DataTypes, type IColumn } from '@talxis/client-libraries'
 import { createModelColumn, formMetadata } from '../shared/overviewShared'
 import { createModelStore } from '../shared/modelStore'

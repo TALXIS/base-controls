@@ -1,4 +1,4 @@
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { IDependenciesComponents, IDependenciesModule } from "../interfaces";
 import { DependenciesComponents } from "./moduleComponents";
 import { DependenciesProvider, ITaskDependencyStrategy } from "./DependenciesProvider";

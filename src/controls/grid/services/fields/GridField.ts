@@ -1,6 +1,6 @@
 import { IColumn, IControlParameters, ICustomColumnControl, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
-import { Theming } from "@legacy";
+import { Theming } from "@theme";
 import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
 import type { IGridServiceLocator } from "../../services";
 

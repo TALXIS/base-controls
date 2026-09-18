@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Formatting } from "@talxis/client-libraries";
-import { useTaskDataProvider } from '@components/TaskGrid/context';
+import { useTaskDataProvider } from '@controls/task-grid/context';
 import { useGanttService, useGanttServices } from '../../../../context';
 import { getTaskCreateCursorStyles } from '../../styles';
 import { getCreateTarget, getTimelineX, isCreateTarget, ITimelineCreateTarget } from './timelineGeometry';

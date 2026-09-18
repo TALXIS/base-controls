@@ -1,6 +1,6 @@
 import * as Babel from "@babel/standalone"
 import React, { useEffect, useMemo, useRef } from "react"
-import { Form, MemoryStrategy, useField } from "@talxis/base-controls/components/Form"
+import { Form, MemoryStrategy, useField } from "@talxis/base-controls"
 import { ComboBox, Icon, IconButton, Slider, Stack, Text, TextField } from "@fluentui/react"
 import { OpenMap } from "./OpenMap"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"

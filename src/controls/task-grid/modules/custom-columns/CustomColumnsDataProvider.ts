@@ -1,6 +1,6 @@
 import { DatasetConstants, IColumn, IEventEmitter, EventEmitter, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 
 /** Strategy interface for managing user-defined (dynamic) column definitions. */

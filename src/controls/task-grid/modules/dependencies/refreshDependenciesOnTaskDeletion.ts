@@ -1,4 +1,4 @@
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /**
  * Wires a dependency strategy to the task side: after a delete, the provider reloads the deleted tasks,

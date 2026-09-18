@@ -1,8 +1,8 @@
 import { FetchXmlDataProvider } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query/SavedQueryDataProvider";
+import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@controls/task-grid/providers/saved-query/SavedQueryDataProvider";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 const FETCH_XML = `
 <fetch count="5000" page="1">

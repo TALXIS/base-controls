@@ -1,5 +1,5 @@
 import { IRawRecord } from "@talxis/client-libraries";
-import { IMemoryEntitySource } from "@components/TaskGrid/descriptors/memory/interfaces";
+import { IMemoryEntitySource } from "@controls/task-grid/descriptors/memory/interfaces";
 
 /** A node in a template's task hierarchy, recreated by `onCreateTasksFromTemplate`. */
 export interface IMemoryTaskTemplateNode {

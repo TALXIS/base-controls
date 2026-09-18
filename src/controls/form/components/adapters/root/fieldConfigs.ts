@@ -1,5 +1,5 @@
 import React from "react";
-import { IForm } from "@components/Form/internal/FormModel";
+import { IForm } from "@controls/form/internal/FormModel";
 import { Field, IFieldProps } from "../field";
 
 interface IRegisteredFieldConfig {

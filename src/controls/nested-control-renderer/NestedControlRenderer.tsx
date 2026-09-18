@@ -1,24 +1,25 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { NestedControl } from './NestedControl';
 import { INestedControlRenderer, INestedControlRendererComponentProps, INestedControlRendererParameters } from './interfaces';
-import { TextField } from '../TextField';
-import { Decimal } from '../Decimal';
-import { Duration } from '../Duration';
-import { TwoOptions } from '../TwoOptions';
-import { DateTime } from '../DateTime';
-import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
-import { Lookup } from '../Lookup';
-import { OptionSet } from '../OptionSet';
+import { TextField } from '@controls/fields/text-field';
+import { Decimal } from '@controls/fields/decimal';
+import { Duration } from '@controls/fields/duration';
+import { TwoOptions } from '@controls/fields/two-options';
+import { DateTime } from '@controls/fields/date-time';
+import { MultiSelectOptionSet } from '@controls/fields/multi-select-option-set';
+import { Lookup } from '@controls/fields/lookup';
+import { OptionSet } from '@controls/fields/option-set';
 import { BaseControls } from '@utils';
 import { getInternalNestedControlStyles, getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@legacy';
-import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
+import { MessageBar, MessageBarButton, MessageBarType, SpinnerSize } from '@fluentui/react';
+import { Shimmer } from '@ui';
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '@hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
-import { Ribbon } from '../Ribbon/Ribbon';
-import { GridInlineRibbon } from '../GridInlineRibbon/GridInlineRibbon';
-import { GridCellRenderer } from '../GridCellRenderer';
+import { Ribbon } from '@controls/dataset-control/ribbon';
+import { GridInlineRibbon } from '@controls/grid/inline-ribbon';
+import { GridCellRenderer } from '@controls/grid/cell-renderer';
 
 interface IRef {
     control: NestedControl | null;

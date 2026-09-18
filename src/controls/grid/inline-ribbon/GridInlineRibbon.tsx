@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Ribbon } from "../Ribbon/Ribbon";
+import { Ribbon } from "@controls/dataset-control/ribbon";
 import { IGridInlineRibbon } from "./interfaces"
 import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "./GridInlineRibbonModel";
 import { useEventEmitter } from "@hooks/useEventEmitter";

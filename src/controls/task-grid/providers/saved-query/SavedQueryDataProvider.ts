@@ -1,10 +1,10 @@
 import { DataTypes, IColumn } from "@talxis/client-libraries";
-import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { INativeColumns } from "@components/TaskGrid/interfaces";
+import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
+import { INativeColumns } from "@controls/task-grid/interfaces";
 import { HookRegistry, ILocalizationService } from "@utils";
-import { ITaskGridLabels } from "@components/TaskGrid/labels";
-import { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridLabels } from "@controls/task-grid/labels";
+import { IUserQueryDataProvider } from "@controls/task-grid/modules/interfaces";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 
 /** Per-view outcome of deleting personal views. */

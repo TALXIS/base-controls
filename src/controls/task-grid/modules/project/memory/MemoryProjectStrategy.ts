@@ -1,4 +1,4 @@
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { IProject, IProjectStrategy, ProjectData } from "../ProjectProvider";
 
 export interface IMemoryProjectStrategyParams<TData extends ProjectData = ProjectData> {

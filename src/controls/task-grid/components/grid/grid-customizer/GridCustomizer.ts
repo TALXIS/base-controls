@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsGroupOpenByDefaultParams, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
-import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GridExpansionSync } from "../grid-expansion-sync";
@@ -8,14 +8,14 @@ import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { HookRegistry } from "@utils";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
-import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
-import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
-import { CHECKLIST_COLUMN_NAME } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
+import { INativeColumns, ITaskGridDatasetControl } from "@controls/task-grid/interfaces";
+import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@controls/task-grid/modules/dependencies/DependenciesProvider";
+import { CHECKLIST_COLUMN_NAME } from "@controls/task-grid/modules/checklist/ChecklistProvider";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
-import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
-import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
+import type { ITaskGridCellProps, ITaskGridComponents } from "@controls/task-grid/components/components";
+import type { IDependenciesCellRendererProps } from "@controls/task-grid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 
 /** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';

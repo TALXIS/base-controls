@@ -1,9 +1,9 @@
 import type { IXrmFormStrategy } from '../../interfaces';
 import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
-import type { IFormLabels } from '@components/Form/labels';
-import { ControlTheme } from '@utils/theme';
-import type { ITheme } from '@legacy';
+import type { IFormLabels } from '@controls/form/labels';
+import { ControlTheme } from '@theme';
+import type { ITheme } from '@theme';
 
 export interface IPcfXrmFormAdapterInputs {
     Height?: ComponentFramework.PropertyTypes.StringProperty;

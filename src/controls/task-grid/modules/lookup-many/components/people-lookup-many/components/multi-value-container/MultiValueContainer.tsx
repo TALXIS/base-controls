@@ -1,5 +1,5 @@
 import { MultiValueGenericProps } from 'react-select';
-import { MultiValueContainer as NativeMultiValueContainer } from '@components/TaskGrid/modules/lookup-many/components/components/multi-value-container/MultiValueContainer';
+import { MultiValueContainer as NativeMultiValueContainer } from '@controls/task-grid/modules/lookup-many/components/components/multi-value-container/MultiValueContainer';
 import { getMultiValueContainerStyles } from './styles';
 import { useMemo } from 'react';
 

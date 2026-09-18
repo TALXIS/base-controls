@@ -1,5 +1,5 @@
-import { Form } from "@components/Form/components/Form";
-import { INotification } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
+import { Form } from "@controls/form/components/Form";
+import { INotification } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
 import { useNotifications } from "./useNotifications";
 import { useXrmFormComponents } from "../xrm-form/context";
 

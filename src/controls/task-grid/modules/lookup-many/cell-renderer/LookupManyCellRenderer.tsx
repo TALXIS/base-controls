@@ -1,10 +1,11 @@
-import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/context";
+import { useDatasetControl, useTaskDataProvider } from "@controls/task-grid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { IGridCellParams } from "@components/Grid";
-import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
-import { ThemeProvider } from "@fluentui/react";
-import { useGridService } from "@components/Grid";
+import { IGridCellParams } from "@controls/grid";
+import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@controls/task-grid/modules/lookup-many/components";
+import { useTheme } from "@fluentui/react";
+import { ThemeProvider } from "@utils";
+import { useGridService } from "@controls/grid";
 
 enum ControlName {
     LookupMany = 'LookupMany',
@@ -19,6 +20,7 @@ enum ControlName {
  * `datasetControl.createLookupManyDataProvider`, and the visual variant from the column's custom control.
  */
 export const LookupManyCellRenderer = (props: IGridCellParams) => {
+    const theme = useTheme();
     const { api, data: record } = props;
     const datasetControl = useDatasetControl();
     //the column this is drawing, as the record's own provider has it
@@ -131,7 +133,7 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
         }
     }, [onSwitchToEditMode]);
 
-    return <ThemeProvider>
+    return <ThemeProvider theme={theme}>
         {getComponent()}
     </ThemeProvider>
 }

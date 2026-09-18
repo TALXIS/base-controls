@@ -8,7 +8,7 @@ import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 import { IGridCellComponents } from "./components";
-import { Theming } from "@legacy";
+import { Theming } from "@theme";
 
 export interface IGridCellRendererProps extends ICellRendererParams {
     components?: IGridCellComponents;

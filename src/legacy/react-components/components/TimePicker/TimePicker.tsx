@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { IComboBox, ITimePickerProps as ITimePickerPropsBase, useTheme } from "@fluentui/react";
-import { TimePicker as TimePickerBase } from "@fluentui/react";
+import { TimePicker as TimePickerBase } from "@ui/time-picker";
 import { IReadOnly, IDisabled } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
@@ -55,7 +55,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, ITimePickerProps>((pr
                     ...(props.readOnly ? { onKeyDown: () => { } } : {})
                 }}
                 calloutProps={{
-                    ...props.calloutProps,
+                        ...props.calloutProps,
                     styles: {
                         ...props.calloutProps?.styles,
                         root: {

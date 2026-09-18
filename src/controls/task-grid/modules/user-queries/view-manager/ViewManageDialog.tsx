@@ -1,11 +1,11 @@
-import { Dialog } from "@fluentui/react"
+import { Dialog } from "@ui";
 import * as React from "react"
 import { getViewManagerDialogStyles } from "./styles";
-import { DatasetControl as DatasetControlRenderer } from '@components/DatasetControl';
-import { createServerSideRowModelModule, Grid } from '@components/Grid';
+import { DatasetControl as DatasetControlRenderer } from '@controls/dataset-control';
+import { createServerSideRowModelModule, Grid } from '@controls/grid';
 import { getClassNames } from "@utils";
 import { ViewManager } from "./ViewManager";
-import { useDatasetControl, useLocalizationService, useRootElementId } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useRootElementId } from "@controls/task-grid/context";
 
 interface IViewManagerDialogProps {
     onDismiss: () => void;

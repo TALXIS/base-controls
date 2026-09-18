@@ -4,12 +4,12 @@ import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
 import { ICommandBarItemProps, useRerender } from "@legacy";
-import { QuickFind } from "../QuickFind/QuickFind";
-import { Ribbon } from "@components/Ribbon/Ribbon";
+import { QuickFind } from "../quick-find/QuickFind";
+import { Ribbon } from "@controls/dataset-control/ribbon/Ribbon";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "@utils/dataset-control";
-import { EditColumns } from "../EditColumns/EditColumns";
+import { EditColumns } from "../edit-columns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();

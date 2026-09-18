@@ -2,24 +2,23 @@
 import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { ColorfulOptions } from './ColofulOptions/ColorfulOptions';
-import { getIsColorFeatureEnabled, onRenderColorfulOption } from '../OptionSet/shared';
+import { ColorfulOptions } from './colorful-options/ColorfulOptions';
+import { getIsColorFeatureEnabled, onRenderColorfulOption } from '@controls/fields/option-set/shared';
 import { getComboBoxStyles } from './styles';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme, surfaceTheme } = useControl('MultiSelectOptionSet', props);
     const ref = useRef<HTMLDivElement>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
     const { Options } = parameters.value.attributes;
     const context = props.context;
-    const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableOptionSetColors?.raw, Options), [props.parameters.EnableOptionSetColors?.raw, Options]);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
@@ -108,11 +107,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         autofill: parameters.AutoFocus?.raw === true ? {
             autoFocus: true,
         } : undefined,
-        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
         onRenderOption: isColorFeatureEnabled ? (option) => onRenderColorfulOption(Options, option, theme) : undefined,
-        calloutProps: applicationTheme ? {
-            theme: applicationTheme
-        } : undefined,
         readOnly: context.mode.isControlDisabled,
         errorMessage: boundValue.errorMessage,
         selectedKey: boundValue.raw ? boundValue.raw.map(key => key.toString()) : null,
@@ -141,7 +136,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     });
 
     return (
-        <ThemeContext theme={theme}>
+        <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>
             <ComboBox {...componentProps} />
         </ThemeContext>
     );

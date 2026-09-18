@@ -1,15 +1,15 @@
 import { useMemo } from "react";
-import { IOnLoadResult } from "@components/Form/strategies/interfaces";
+import { IOnLoadResult } from "@controls/form/strategies/interfaces";
 import { useEventEmitter, useIsMounted } from "@hooks";
 import { initializeIcons } from "@fluentui/react";
-import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';
+import { FormModel, IFormEvents } from '@controls/form/internal/FormModel';
 import { FormContext, FormLocalizationServiceContext } from "./context";
 import { getFormStyles } from "./styles";
 import React from "react";
-import { FormUi } from "@components/Form/components/ui";
-import { FormApi } from "@components/Form/internal/FormApi";
-import { IFormAfterSaveParams, IFormProps, IValidation } from "@components/Form/interfaces";
-import { FORM_LABELS } from "@components/Form/labels";
+import { FormUi } from "@controls/form/components/ui";
+import { FormApi } from "@controls/form/internal/FormApi";
+import { IFormAfterSaveParams, IFormProps, IValidation } from "@controls/form/interfaces";
+import { FORM_LABELS } from "@controls/form/labels";
 import { LocalizationService } from "@utils";
 import { applyFieldConfigs } from "./fieldConfigs";
 

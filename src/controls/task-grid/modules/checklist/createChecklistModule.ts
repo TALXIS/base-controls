@@ -1,4 +1,4 @@
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { IChecklistComponents, IChecklistModule } from "../interfaces";
 import { ChecklistComponents } from "./moduleComponents";
 import { ChecklistProvider, IChecklistStrategy } from "./ChecklistProvider";

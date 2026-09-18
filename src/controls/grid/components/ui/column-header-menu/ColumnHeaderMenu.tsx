@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { ContextualMenu, IContextualMenuProps, useTheme } from "@fluentui/react";
+import { IContextualMenuProps, useTheme } from "@fluentui/react";
+import { ContextualMenu } from "@ui";
 import { getColumnHeaderMenuStyles } from "./styles";
 
 export interface IColumnHeaderMenuProps extends IContextualMenuProps { }

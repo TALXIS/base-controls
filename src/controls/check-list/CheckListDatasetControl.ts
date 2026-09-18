@@ -1,6 +1,6 @@
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 import { EventEmitter, IDataset, IDataProvider, IRawRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { IDatasetControlParameters } from "@components/DatasetControl";
+import { IDatasetControlParameters } from "@controls/dataset-control";
 import { ILocalizationService } from "@utils";
 import { ICheckListLabels } from "./labels";
 

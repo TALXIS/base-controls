@@ -1,4 +1,4 @@
-import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
+import { ITemplateDataProvider } from "@controls/task-grid/providers/template/TemplateDataProvider";
 import { ITemplateComponents, ITemplateModule } from "../interfaces";
 import { TemplateComponents } from "./moduleComponents";
 

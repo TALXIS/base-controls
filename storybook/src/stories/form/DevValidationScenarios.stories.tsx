@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { MessageBar, MessageBarType, Stack, Text } from '@fluentui/react'
 import { RequiredLevelEnum } from '@talxis/client-metadata'
-import { Form, MemoryStrategy } from '@talxis/base-controls/components/Form'
+import { Form, MemoryStrategy } from '@talxis/base-controls'
 import { renderStory } from './storyHelpers'
 import { getDemoRecord, getFormColumns, formMetadata } from '../../form/shared/formModel'
 

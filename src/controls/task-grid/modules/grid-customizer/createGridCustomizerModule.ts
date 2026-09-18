@@ -1,4 +1,4 @@
-import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
+import { IGridCustomizerStrategy } from "@controls/task-grid/components/grid/grid-customizer/GridCustomizer";
 import { IGridCustomizerModule } from "../interfaces";
 
 /** Options for {@link createGridCustomizerModule}. */

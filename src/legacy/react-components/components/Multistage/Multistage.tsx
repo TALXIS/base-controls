@@ -6,7 +6,7 @@ import { IButtonProps } from "@fluentui/react";
 import { BaseButton } from "@fluentui/react";
 import { Button } from "@fluentui/react";
 import { IconButton } from "@fluentui/react";
-import { TooltipHost } from "@fluentui/react";
+import { TooltipHost } from "@ui/surfaces";
 import { Icon } from "@fluentui/react";
 import { IndicatorService } from "./IndicatorService";
 import { IMessageBarProps } from "@fluentui/react";

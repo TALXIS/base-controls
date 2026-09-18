@@ -1,5 +1,5 @@
 import React from "react"
-import { Form } from "@talxis/base-controls/components/Form"
+import { Form } from "@talxis/base-controls"
 import { getMemoryStrategy } from "../../form/shared/formModel"
 
 export const ReactComposeOverviewFormPreview = () => {

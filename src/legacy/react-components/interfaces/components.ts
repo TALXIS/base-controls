@@ -1,5 +1,5 @@
 import { ITheme } from "@fluentui/react";
-import { ICommandBarItemProps } from "../components/CommandBar/CommandBar";
+import { ICommandBarItemProps } from "@legacy/components/CommandBar/CommandBar";
 
 export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];

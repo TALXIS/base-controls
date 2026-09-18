@@ -1,6 +1,6 @@
 import { mergeStyles } from "@fluentui/react";
 import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IDataset, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlParameters, IDatasetControlProps } from "@components";
+import { IDatasetControlParameters, IDatasetControlProps } from "@controls";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 
 interface IOutputs {

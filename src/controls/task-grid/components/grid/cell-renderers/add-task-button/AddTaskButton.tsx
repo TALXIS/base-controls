@@ -1,9 +1,10 @@
 import { ContextualMenuItemType, Icon, IconButton, IContextualMenuItem } from "@fluentui/react"
-import { IGridCellParams } from "@components/Grid"
+import { IGridCellParams } from "@controls/grid"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
-import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider, useTaskGridDescriptor } from "@controls/task-grid/context";
+import { useSurfaceMenuProps } from "@ui";
 
 /** Trailing per-row button that adds a subtask, or expands a template beneath the row. */
 export const AddTaskButton = (props: IGridCellParams) => {
@@ -62,6 +63,8 @@ export const AddTaskButton = (props: IGridCellParams) => {
         }])];
     }
 
+    const menuProps = useSurfaceMenuProps(isTemplatingEnabled ? { items: getMenuItems() } : undefined);
+
     if (!record.isActive()) {
         return <div className={styles.uneditableIconContainer} title={localizationService.getLocalizedString('canNotEditCompletedTask')}>
             <Icon
@@ -75,7 +78,7 @@ export const AddTaskButton = (props: IGridCellParams) => {
             className={`${styles.addTaskBtnRoot} talxis_task-grid_add-task-button`}
             iconProps={{ iconName: 'Add' }}
             onClick={!isTemplatingEnabled ? () => taskDataProvider.createTask(record.getRecordId()) : undefined}
-            menuProps={isTemplatingEnabled ? { items: getMenuItems() } : undefined}
+            menuProps={menuProps}
             styles={{ menuIcon: styles.addTaskMenuIcon }} />
     }
     else {

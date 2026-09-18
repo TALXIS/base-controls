@@ -1,5 +1,5 @@
 import { FetchXmlDataProvider, IRawRecord, IRecord } from "@talxis/client-libraries";
-import { TemplateDataProviderBase } from "@components/TaskGrid/providers";
+import { TemplateDataProviderBase } from "@controls/task-grid/providers";
 
 /**
  * {@link ITemplateDataProvider} implementation for Dataverse — templates are

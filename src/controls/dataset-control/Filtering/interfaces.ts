@@ -1,8 +1,8 @@
-import { ThemeProviderProps } from "@fluentui/react";
+import { IThemeProviderProps } from "@utils";
 import { IControl, IParameters, IStringProperty, ITranslations } from "@interfaces";
-import { IOptionSet } from "@components/OptionSet";
+import { IOptionSet } from "@controls/fields/option-set";
 import { datasetColumnFilteringTranslations } from "./translations";
-import { INestedControlRenderer } from "@components/NestedControlRenderer/interfaces";
+import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
 import { IButtonProps as IFluentButtonProps } from "@fluentui/react";
 import React from "react";
 import { Filtering } from "@talxis/client-libraries";
@@ -21,7 +21,8 @@ interface IDatasetColumnFilteringComponentProps {
 }
 
 interface IComponentProps {
-    container: ThemeProviderProps;
+    /** What the control is drawn in, and what it paints its own element with. */
+    container: IThemeProviderProps;
     valueControlsContainer: React.HTMLAttributes<HTMLDivElement>;
     onRenderConditionOperatorControl: (props: IOptionSet, defaultRender: (props: IOptionSet) => React.ReactElement) => React.ReactElement;
     onRenderConditionValueControl: (props: INestedControlRenderer, defaultRender: (props: INestedControlRenderer) => React.ReactElement) => React.ReactElement;

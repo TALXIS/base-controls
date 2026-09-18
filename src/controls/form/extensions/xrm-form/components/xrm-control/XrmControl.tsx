@@ -1,5 +1,5 @@
-import { IFormXmlControl } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
-import { Form } from "@components/Form/components/Form";
+import { IFormXmlControl } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
+import { Form } from "@controls/form/components/Form";
 import { useXrmControl } from "./useXrmControl";
 import { useXrmFormComponents } from "../xrm-form/context";
 

@@ -2,7 +2,7 @@
 import { IOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
@@ -12,14 +12,13 @@ import { onRenderColorfulOption } from './shared';
 
 export const OptionSet = (props: IOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
-    const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme, surfaceTheme } = useControl('OptionSet', props);
     const styles = useMemo(() => getComboBoxStyles(sizing.width, sizing.height), [sizing.width, sizing.height]);
     const [colorFeatureEnabled, overridenTheme] = useComboBoxTheme(props, theme);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const { Options } = parameters.value.attributes;
     const context = props.context;
-    const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
@@ -56,10 +55,6 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         styles: { root: styles.root, callout: styles.callout },
-        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
-        calloutProps: applicationTheme ? {
-            theme: applicationTheme
-        } : undefined,
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {
                 key: 'copy',
@@ -87,7 +82,7 @@ export const OptionSet = (props: IOptionSet) => {
     });
 
     return (
-        <ThemeContext theme={overridenTheme}>
+        <ThemeContext theme={overridenTheme} surfaceTheme={surfaceTheme}>
             <ComboBox
                 {...componentProps} />
         </ThemeContext>);

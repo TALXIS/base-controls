@@ -2,7 +2,7 @@ import { SpinnerSize, Text } from '@fluentui/react';
 import { Spinner } from '@legacy';
 import { useMemo } from 'react';
 import { getLoadingOverlayStyles } from './styles';
-import { useGridService } from "@components/Grid/useGridService";
+import { useGridService } from "@controls/grid/useGridService";
 
 export const LoadingOverlay = () => {
     const provider = useGridService('provider');

@@ -1,4 +1,4 @@
-import { MemoryStrategy } from "@talxis/base-controls/components/Form"
+import { MemoryStrategy } from "@talxis/base-controls"
 import { getDemoData } from "../../data"
 import { reactModelStore } from "../react-form/reactModel"
 

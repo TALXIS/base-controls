@@ -1,7 +1,7 @@
 import { Label, Toggle } from "@fluentui/react";
 import * as React from "react"
 import { getSettingsCalloutStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@controls/task-grid/context";
 
 /**
  * The gear callout: the grid's own toggles, then the timeline's when the gantt module is registered.

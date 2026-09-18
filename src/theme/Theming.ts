@@ -1,6 +1,6 @@
 import { BaseSlots, createTheme, getColorFromString, ICheckboxStyleProps, isDark, IThemeRules, IToggleStyleProps, ThemeGenerator, themeRulesStandardCreator, ITheme as IBaseTheme, IEffects, IButtonStyles, IComboBoxOptionStyles, ICalloutContentStyleProps, ICalloutContentStyles, ContextualMenuItem, IContextualMenuItemProps, IContextualMenuItemStyleProps, IContextualMenuItemStyles, ContextualMenuBase, ContextualMenuItemBase, IContextualMenuStyleProps, IContextualMenuStyles, IContextualMenuItem, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles, ICheckStyleProps, ICheckboxStyles, IComboBoxStyles, ComponentsStyles, ChoiceGroupOption, mergeThemes } from "@fluentui/react";
 import Color from 'color';
-import { DeepPartial } from "@legacy/interfaces/components";
+import { DeepPartial } from "@talxis/client-libraries";
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
 
 //cloning disabled on purpose: MemoryCache deep-clones on every *hit*, and a generated v8 theme is a large
@@ -107,34 +107,9 @@ export class Theming {
         return v8Theme;
     }
 
-    /**
-    * Resolves an issue where not all colors from a nested theme are applied to callout components.
-    * 
-    * The issue seems to stem from Microsoft's logic for merging styles, particularly because 
-    * callouts are rendered at the top level of the DOM. Despite being correctly set up in the theme, 
-    * the colors are not passed to the final CSS class. 
-    * 
-    * Attempts to directly set the CSS property are overridden. To work around this, the 
-    * `-webkit-text-fill-color` property is used instead of the original styles property.
-    * 
-    */
+    /** What a control of this theme looks like where Fluent's own default is not what it wants. */
     private static _GetComponents(v8Theme: ITheme) {
         return {
-            ActionButton: {
-                styles: {
-                    root: {
-                        '&&.ms-ComboBox-option:hover': {
-                            background: `${v8Theme.semanticColors.buttonBackgroundHovered} !important`
-                        },
-                        '.ms-ComboBox-optionText': {
-                            color: v8Theme.semanticColors.buttonText
-                        },
-                        '&.ms-ComboBox-option::after': {
-                            borderColor: `${v8Theme.palette.black} !important`
-                        }
-                    }
-                }
-            },
             Toggle: {
                 styles: {
                     root: {

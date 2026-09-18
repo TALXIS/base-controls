@@ -40,12 +40,28 @@ const config: StorybookConfig = {
         replacement: path.resolve(storybookDir, '../../src/$1'),
       },
       {
-        find: /^@components$/,
-        replacement: path.resolve(storybookDir, '../../src/components/index.ts'),
+        find: /^@controls$/,
+        replacement: path.resolve(storybookDir, '../../src/controls/index.ts'),
       },
       {
-        find: /^@components\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/components/$1'),
+        find: /^@controls\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/controls/$1'),
+      },
+      {
+        find: /^@ui$/,
+        replacement: path.resolve(storybookDir, '../../src/ui/index.ts'),
+      },
+      {
+        find: /^@ui\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/ui/$1'),
+      },
+      {
+        find: /^@theme$/,
+        replacement: path.resolve(storybookDir, '../../src/theme/index.ts'),
+      },
+      {
+        find: /^@theme\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/theme/$1'),
       },
       {
         find: /^@hooks$/,

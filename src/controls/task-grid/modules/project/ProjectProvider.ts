@@ -1,6 +1,6 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Anything a strategy carries on a project beyond the fields the grid names itself. */
 export type ProjectData = { [columnName: string]: any };

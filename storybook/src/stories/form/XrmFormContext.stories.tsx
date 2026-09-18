@@ -31,7 +31,7 @@ This overview page focuses on the interactive runtime surface: the form preview 
 Use the \`onFormReady\` callback on \`XrmForm\` to get access to \`formContext\`.
 
 \`\`\`tsx
-import { XrmForm, XrmMemoryStrategy } from "@talxis/base-controls/components/Form";
+import { XrmForm, XrmMemoryStrategy } from "@talxis/base-controls";
 
 const strategy = new XrmMemoryStrategy({
   onGetData: () => record,

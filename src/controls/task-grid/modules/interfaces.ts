@@ -1,22 +1,22 @@
 import { IEventEmitter } from "@talxis/client-libraries";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import type { IDataProvider } from "@talxis/client-libraries";
-import type { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfaces";
-import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
-import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
-import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import type { IChecklistProvider } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
-import type { IChecklistCellRendererProps } from "@components/TaskGrid/modules/checklist/cell-renderer/ChecklistCellRenderer";
-import type { IDependenciesProvider } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
-import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
-import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
-import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
-import type { IGridCellParams } from "@components/Grid";
+import type { ILookupManyDataProviderParameters } from "@controls/task-grid/interfaces";
+import { IDeletedUserQueriesResult, ISavedQuery } from "@controls/task-grid/providers/saved-query";
+import { ITaskDataProvider } from "@controls/task-grid/providers/task";
+import { ITemplateDataProvider } from "@controls/task-grid/providers/template/TemplateDataProvider";
+import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
+import type { IChecklistProvider } from "@controls/task-grid/modules/checklist/ChecklistProvider";
+import type { IChecklistCellRendererProps } from "@controls/task-grid/modules/checklist/cell-renderer/ChecklistCellRenderer";
+import type { IDependenciesProvider } from "@controls/task-grid/modules/dependencies/DependenciesProvider";
+import type { IDependenciesCellRendererProps } from "@controls/task-grid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
+import type { IEditColumnsProps } from "@controls/dataset-control/edit-columns/EditColumns";
+import type { IGridCustomizerStrategy } from "@controls/task-grid/components/grid/grid-customizer/GridCustomizer";
+import type { IGridCellParams } from "@controls/grid";
 import type { ICommandBarItemProps } from "@legacy";
-import type { IGanttServiceLocator } from "@components/TaskGrid/modules/gantt/services";
-import type { IGanttViewProps } from "@components/TaskGrid/modules/gantt/gantt-view/GanttView";
-import type { IProjectProvider, ProjectData } from "@components/TaskGrid/modules/project";
+import type { IGanttServiceLocator } from "@controls/task-grid/modules/gantt/services";
+import type { IGanttViewProps } from "@controls/task-grid/modules/gantt/gantt-view/GanttView";
+import type { IProjectProvider, ProjectData } from "@controls/task-grid/modules/project";
 
 /** Lifecycle events for the personal-views operations. */
 export interface IUserQueryDataProviderEvents {

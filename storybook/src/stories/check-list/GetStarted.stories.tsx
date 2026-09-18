@@ -23,7 +23,7 @@ The control takes no data source — you hand it the records themselves:
 
 \`\`\`tsx
 import { CheckList } from '@talxis/base-controls'
-import { PcfContextProvider } from '@talxis/base-controls/utils'
+import { PcfContextProvider } from '@talxis/base-controls'
 
 export const MyCheckListPage = () => (
     <PcfContextProvider>

@@ -1,4 +1,4 @@
-import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
+import type { IXrmFormContext } from "@talxis/base-controls"
 
 export interface IXrmBusinessFlowScenario {
     id: string

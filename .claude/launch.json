@@ -4,8 +4,28 @@
     {
       "name": "storybook",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "./storybook", "run", "storybook"],
+      "runtimeArgs": [
+        "--prefix",
+        "./storybook",
+        "run",
+        "storybook"
+      ],
       "port": 6006
+    },
+    {
+      "name": "storybook-verify",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "./storybook",
+        "run",
+        "storybook",
+        "--",
+        "--port",
+        "6007",
+        "--no-open"
+      ],
+      "port": 6007
     }
   ]
 }

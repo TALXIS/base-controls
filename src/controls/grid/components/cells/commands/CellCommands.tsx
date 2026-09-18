@@ -14,7 +14,6 @@ export interface IGridCellCommandsProps {
 export const CellCommands = (props: IGridCellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridService('rows');
-    const gridTheme = useGridService('theme');
     const components = { ...CellCommandsComponents, ...props.components };
     const rerender = useRerender();
     const isActive = rows.isActive(cell.getRecord());
@@ -38,6 +37,5 @@ export const CellCommands = (props: IGridCellCommandsProps) => {
         items: items,
         overflowItems: overflowItems,
         alignment: cell.getAlignment(),
-        surfaceTheme: gridTheme,
     });
 };

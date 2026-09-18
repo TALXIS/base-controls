@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CommandBarButton, IContextualMenuItem } from '@fluentui/react';
 import { IHeaderParams } from '@ag-grid-community/core';
-import { useGridService } from '@components/Grid/useGridService';
+import { useGridService } from '@controls/grid/useGridService';
 import { ColumnHeaderSuffix, GridUi, IColumnHeaderComponents } from '../ui';
 
 export interface IColumnHeader extends IHeaderParams {

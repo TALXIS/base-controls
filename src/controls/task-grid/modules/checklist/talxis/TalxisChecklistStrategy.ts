@@ -1,7 +1,7 @@
 import { DataTypes } from "@talxis/client-libraries";
 import { IChecklistItem, IChecklistStrategy } from "../ChecklistProvider";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { applyColumn } from "@components/TaskGrid/providers/saved-query";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { applyColumn } from "@controls/task-grid/providers/saved-query";
 
 /** The field each task carries its whole checklist in, as a JSON array. */
 const CHECKLIST_FIELD = 'talxis_checklistjson';

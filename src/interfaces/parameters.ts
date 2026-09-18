@@ -1,4 +1,4 @@
-import type { GridCell } from "@components/Grid";
+import type { GridCell } from "@controls/grid";
 import { IProperty, ITwoOptionsProperty } from "./property";
 
 export interface IParameters {

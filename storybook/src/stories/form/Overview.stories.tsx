@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { MessageBarType } from '@fluentui/react'
-import { Form } from '@talxis/base-controls/components/Form'
+import { Form } from '@talxis/base-controls'
 import { getOverviewStrategy } from '../../form/overview/overviewModel'
 import { renderStory } from './storyHelpers'
 import { docsPageWithExample } from '../docsPageWithExample'

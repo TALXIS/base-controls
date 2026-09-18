@@ -1,6 +1,6 @@
 import * as React from "react";
-import { DatasetControl as DatasetControlRenderer } from "@components/DatasetControl";
-import { Skeleton } from "@components/DatasetControl/skeleton";
+import { DatasetControl as DatasetControlRenderer } from "@controls/dataset-control";
+import { Skeleton } from "@controls/dataset-control/skeleton";
 import { Grid } from "./components/grid";
 import { LocalizationService, usePcfContext } from "@utils";
 import { CheckListApi, ICheckListApi } from "./CheckListApi";

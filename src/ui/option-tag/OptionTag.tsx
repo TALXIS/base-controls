@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Text, useTheme } from "@fluentui/react";
-import { Theming } from "@legacy";
+import { Theming } from "@theme";
 import { getOptionTagStyles } from "./styles";
 
 export interface IOptionTagProps {

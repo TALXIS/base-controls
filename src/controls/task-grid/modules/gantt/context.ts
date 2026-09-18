@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useServices } from "@components/TaskGrid/context";
+import { useServices } from "@controls/task-grid/context";
 import { IGanttServiceMap } from "./services";
 
 /**

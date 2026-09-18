@@ -1,6 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { CellRenderer } from "@components/Grid/components/cells/cell-renderer/CellRenderer";
+import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
 
 /** The key the expansion column takes. */
 export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';

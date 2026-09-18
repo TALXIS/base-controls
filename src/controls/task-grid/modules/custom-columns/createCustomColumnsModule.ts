@@ -1,7 +1,7 @@
 import { CustomColumnsDataProvider, ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
 import { ICustomColumnsComponents, ICustomColumnsModule } from "../interfaces";
 import { CustomColumnsComponents } from "./moduleComponents";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Options for {@link createCustomColumnsModule}. */
 export interface ICustomColumnsModuleOptions {

@@ -1,4 +1,5 @@
-import { ITooltipHostProps, TooltipHost } from "@fluentui/react";
+import { ITooltipHostProps } from "@fluentui/react";
+import { TooltipHost } from "@ui";
 
 export interface IMarkerComponents {
     onRenderTooltipHost: (props: ITooltipHostProps) => JSX.Element;

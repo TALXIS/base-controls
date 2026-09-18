@@ -1,6 +1,6 @@
 import { ITaskDependency, ITaskDependencyStrategy, TaskDependencyType } from "../DependenciesProvider";
 import { refreshDependenciesOnTaskDeletion } from "../refreshDependenciesOnTaskDeletion";
-import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** How many task ids one request filters on. The number the task strategy batches at. */
 const MAX_IDS_PER_REQUEST = 800;

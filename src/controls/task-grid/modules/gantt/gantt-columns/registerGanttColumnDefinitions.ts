@@ -1,5 +1,5 @@
 import { DatasetConstants } from "@talxis/client-libraries";
-import { ColDef } from "@components/TaskGrid/components/grid";
+import { ColDef } from "@controls/task-grid/components/grid";
 import { IGanttServiceLocator } from "../services";
 
 /**

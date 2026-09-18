@@ -1,6 +1,6 @@
 import React from 'react'
 import { CheckList, ICheckListApi, ICheckListFieldMapping, ICheckListInitializeResult } from '@talxis/base-controls'
-import { PcfContextProvider } from '@talxis/base-controls/utils/adapters/pcf-context/PcfContextProvider'
+import { PcfContextProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COLUMNS, COMPLETED_COL, DATA_SOURCE, NAME_COL, PRIMARY_ID, STACK_RANK_COL } from './scratchCheckListData'
 

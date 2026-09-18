@@ -25,7 +25,7 @@ import type {
     FormXmlControlParameters,
     RequiredLevelEnum,
 } from "@talxis/client-metadata";
-import type { IForm } from "@components/Form/internal/FormModel";
+import type { IForm } from "@controls/form/internal/FormModel";
 
 export interface IFormXmlFormProps {
     formXml: string;

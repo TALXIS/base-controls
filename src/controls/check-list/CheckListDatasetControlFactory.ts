@@ -1,5 +1,5 @@
 import { Dataset, IColumn, IDataset, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlParameters } from "@components/DatasetControl";
+import { IDatasetControlParameters } from "@controls/dataset-control";
 import { ILocalizationService } from "@utils";
 import { CheckListDatasetControl, ICheckListDatasetControl, ICheckListFieldMapping } from "./CheckListDatasetControl";
 import { ICheckListLabels } from "./labels";
