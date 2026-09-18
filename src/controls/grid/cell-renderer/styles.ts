@@ -9,9 +9,9 @@ export const getGridCellRendererStyles = (columnAlignment: IAlignment, isMultili
             //fills whatever it is put in, so a wrapper can place it between a chevron and a count, or under
             //a label, and it still behaves as the value
             flex: 1,
-            //the value keeps off the edge it is aligned to, rather than every caller insetting it
-            paddingLeft: 8,
-            paddingRight: 8,
+            //8 off the edge, and the pixel the border of a control drawn in the cell's place takes
+            paddingLeft: 9,
+            paddingRight: 9,
             display: 'flex',
             alignItems: isMultiline ? 'flex-start' : 'center',
             justifyContent: getJustifyContent(columnAlignment),

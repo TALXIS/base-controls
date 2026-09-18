@@ -70,6 +70,11 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 overflow: 'hidden',
                 borderWidth: 0,
             },
+            //the cell draws its own outline, and the border would inset what the editor holds by a pixel
+            //`!important`: AG Grid's focus border is a more specific selector than any class chain here
+            '.ag-cell.ag-cell-inline-editing': {
+                borderWidth: '0 !important',
+            },
             //AG Grid gives every child of a cell's wrapper the height of a row.
             '.ag-cell.ag-cell-inline-editing .ag-cell-wrapper > *': {
                 height: '100%',

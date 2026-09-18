@@ -1,5 +1,5 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions, useGridService, Theming } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { APPROVED_OPTIONS, BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
@@ -63,24 +63,6 @@ const MultiSelectOptionSetPreview = (props: {
             }}
             onNotifyOutputChanged={(outputs: { value?: number[] }) => setValue(outputs.value ?? [])} />
     </div>
-}
-
-/** The columns whose control takes input in the cell itself, with no editor to open. */
-const ONE_CLICK_EDIT_COLUMNS = COLUMNS.map(column => column.name)
-
-/**
- * The wash a row takes from the state it is in, by status value.
- *
- * Pale on purpose: this is the background of every cell in the row, and what is drawn on it - the values,
- * the option set's own colours - still has to read.
- */
-const STATUS_TINTS: { [status: number]: string } = {
-    1: '#fdf3f3',
-    2: '#fdf8e7',
-    3: '#eff8ef',
-    4: '#fdf0f0',
-    5: '#eff6fd',
-    6: '#f4f4f4',
 }
 
 /** The column of the grid's own that the story hangs its loading and its commands off. */
@@ -215,12 +197,11 @@ const useUnboundValue = (key: string, seed: () => any): [any, (value: any) => vo
 /** A cell of a column the provider has no field for: the same pieces a bound cell is drawn from. */
 const UnboundCell = (props: { column: IUnboundColumn, rowId: string, rowNumber: number }) => {
     const { column, rowId, rowNumber } = props
-    const gridTheme = useGridService('theme')
     const [value, setValue] = useUnboundValue(getUnboundKey(rowId, column.colId), () => column.seed(rowNumber))
     const error = column.getError?.(value)
 
     return <>
-        {error && <CellUi.FieldError message={error} surfaceTheme={gridTheme} />}
+        {error && <CellUi.FieldError message={error} />}
         <Grid.Control components={{
             //a root of its own, so the control answers Enter before the grid navigates on it
             onRenderControl: controlProps => <Grid.NestedReactRoot>
@@ -237,8 +218,7 @@ const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
     width: column.width,
     valueGetter: () => null,
     valueFormatter: () => '',
-    //what the column is: no record has a field for it, so it says so itself
-    settings: { oneClickEdit: true, alignment: column.alignment },
+    settings: { alignment: column.alignment },
     cellRenderer: (props: IGridCellParams) => {
         //a pinned row stands for no record, and a record is what tells one row's values from another's
         if (!props.data) {
@@ -246,7 +226,7 @@ const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
         }
         //the pieces rather than `Grid.CellRenderer`: the error is the story's own, and no field's
         return <Grid.CellRoot {...props}>
-            <Grid.CellTheme theme={Theming.GenerateThemeV8('blue', 'red', 'black')}>
+            <Grid.CellTheme>
                 <Grid.RowResizeGrip>
                     <Grid.CellContainer>
                         <Grid.CellLoading>
@@ -296,17 +276,7 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
             })
         })
         //a row of commands on the two text columns, some labelled and some not, so what a bar does with
-        //both is part of what the story shows - and one of those columns edits on a click while the other
-        //opens an editor, so what commands do beside an input is in the story too
-        //the state a row is in, washed over every cell of it - the checkboxes included, which is what a
-        //theme hook reaches and the record's own formatting expression cannot: that one is a field's, and
-        //a column the grid added itself has no field
-/*         services.get('cells').registerCellThemeHook((result, params) => {
-            const background = STATUS_TINTS[Number(params.record.getValue('status') ?? 0)]
-            if (background) {
-                result.colors.background = background
-            }
-        }) */
+        //both is part of what the story shows
         services.get('cells').registerCellCommandsHook((result, params) => {
             //two of them on the estimates, which change the value rather than log it: an estimate dragged
             //over what the team plans in is what makes the cell say the record refuses it
@@ -402,7 +372,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 EntitySetName: 'mem_tasks',
             },
         })
-        provider.setColumns(COLUMNS.map(column => ONE_CLICK_EDIT_COLUMNS.includes(column.name) ? { ...column, oneClickEdit: true } : column))
+        provider.setColumns(COLUMNS)
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)
