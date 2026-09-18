@@ -127,6 +127,7 @@ const preview: Preview = {
           'Map',
           [
             'Overview',
+            'Everything on',
             'Core',
             ['Data', 'Pins', 'Providers'],
             'Modules',
