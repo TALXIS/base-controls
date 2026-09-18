@@ -208,7 +208,7 @@ const MapBody = (props: IMapBodyProps) => {
         onResolveFallbackLocation: resolveFallbackLocation,
         isDatasetLoading,
         isLoadingAllRecords: isLoadingAllPages,
-        isGeocoding: !!pins.isResolving,
+        isResolving: !!pins.isResolving,
         onChange: (changedViewport) => onNotifyOutputChanged({ Viewport: changedViewport })
     });
 

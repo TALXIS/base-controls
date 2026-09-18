@@ -15,8 +15,8 @@ export interface IUseMapViewport {
     isDatasetLoading?: boolean;
     /** Whether the control is still draining the remaining pages of the view. */
     isLoadingAllRecords?: boolean;
-    /** Whether addresses are still being geo-coded into coordinates. */
-    isGeocoding?: boolean;
+    /** Whether a module is still placing records - geo-coding an address, say. */
+    isResolving?: boolean;
     /** Called with what the provider reports, deduplicated. */
     onChange: (viewport: IMapViewport) => void;
 }
@@ -33,7 +33,7 @@ const FALLBACK_LOCATION_TIMEOUT_MS = 12000;
  */
 export const useMapViewport = (props: IUseMapViewport) => {
     const { locations, provider, options, onResolveFallbackLocation, onChange } = props;
-    const { isDatasetLoading, isLoadingAllRecords, isGeocoding } = props;
+    const { isDatasetLoading, isLoadingAllRecords, isResolving } = props;
     const [fallbackLocation, setFallbackLocation] = useState<IMapResolvedLocation>();
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
@@ -46,7 +46,7 @@ export const useMapViewport = (props: IUseMapViewport) => {
         hasLocations,
         isDatasetLoading: !!isDatasetLoading,
         isLoadingAllRecords: !!isLoadingAllRecords,
-        isResolving: !!isGeocoding
+        isResolving: !!isResolving
     });
 
     useEffect(() => {
