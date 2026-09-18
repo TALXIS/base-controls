@@ -11,6 +11,8 @@ import { IMapCoordinates } from '../core/coordinates';
 import { IMapLabels } from '../labels';
 import { IMapLocation, IMapProviderProps, IMapRoute } from '../providers/provider';
 import { IMapOutputs } from '../interfaces';
+//type only, so a module typing its own slot does not put the folder in the runtime graph
+import type { IMapEditingState } from './editing/createEditingModule';
 
 /**
  * The pins the core read off the records, and what a module may add to them.
@@ -196,7 +198,7 @@ export interface IMapModules {
     /** Draws pins that overlap in the current view as one pin carrying the count. */
     clustering?: IMapModule;
     /** Moves a record by dragging its pin, and creates one by clicking the map. */
-    editing?: IMapModule;
+    editing?: IMapModule<IMapEditingState>;
     /** What a pin opens when it is activated. */
     cards?: IMapModule;
     /** A search box: the entity's quick find, and places from the geo-coding service. */

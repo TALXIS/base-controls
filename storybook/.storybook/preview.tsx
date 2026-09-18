@@ -130,7 +130,7 @@ const preview: Preview = {
             'Core',
             ['Data', 'Pins', 'Providers'],
             'Modules',
-            ['Routes', 'Clustering', 'Legend', 'Filter', 'Search', 'Geocoding'],
+            ['Routes', 'Clustering', 'Legend', 'Filter', 'Search', 'Geocoding', 'Editing'],
           ],
           'Checklist',
           ['Get started', 'Reacting to changes', 'Dev'],

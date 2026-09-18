@@ -6,3 +6,4 @@ export * from './legend';
 export * from './filter';
 export * from './search';
 export * from './geocoding';
+export * from './editing';
