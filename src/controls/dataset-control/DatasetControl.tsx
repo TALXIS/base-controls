@@ -1,3 +1,4 @@
+import { useTheme } from "@fluentui/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useControl } from "@hooks";
 import { ThemeProvider } from "@utils";
@@ -13,11 +14,12 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
 
 export const DatasetControl = (props: IDatasetControlProps) => {
-  const { labels, theme } = useControl('DatasetControl', {
+  const { labels } = useControl('DatasetControl', {
     ...props,
     context: props.onGetDatasetControlInstance().getPcfContext(),
     parameters: props.onGetDatasetControlInstance().getParameters(),
   }, datasetControlTranslations);
+  const theme = useTheme();
   
   const propsRef = useRef<IDatasetControlProps>(props);
   propsRef.current = props;

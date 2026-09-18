@@ -2,7 +2,7 @@
 import { IOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption } from '@fluentui/react';
+import { IComboBox, IComboBoxOption, useTheme } from '@fluentui/react';
 import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
@@ -12,7 +12,8 @@ import { onRenderColorfulOption } from './shared';
 
 export const OptionSet = (props: IOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
-    const { sizing, onNotifyOutputChanged, theme, surfaceTheme } = useControl('OptionSet', props);
+    const { sizing, onNotifyOutputChanged } = useControl('OptionSet', props);
+    const theme = useTheme();
     const styles = useMemo(() => getComboBoxStyles(sizing.width, sizing.height), [sizing.width, sizing.height]);
     const [colorFeatureEnabled, overridenTheme] = useComboBoxTheme(props, theme);
     const parameters = props.parameters;
@@ -82,7 +83,7 @@ export const OptionSet = (props: IOptionSet) => {
     });
 
     return (
-        <ThemeContext theme={overridenTheme} surfaceTheme={surfaceTheme}>
+        <ThemeContext theme={overridenTheme}>
             <ComboBox
                 {...componentProps} />
         </ThemeContext>);

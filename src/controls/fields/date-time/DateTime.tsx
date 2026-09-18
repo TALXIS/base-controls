@@ -1,6 +1,6 @@
 import { IDateTime } from "./interfaces";
 import { IDatePicker } from "@fluentui/react";
-import { ThemeProvider, useSurfaceTheme } from "@utils";
+import { useSurfaceTheme } from "@utils";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -113,9 +113,9 @@ export const DateTime = (componentProps: IDateTime) => {
 
     return (
         <DateTimeContext.Provider value={dateTime}>
-            <ThemeProvider theme={theme} surfaceTheme={surfaceTheme} applyTo="none" ref={ref} style={fillsAvailableSpace ? FILL_STYLE : undefined}>
+            <div ref={ref} style={fillsAvailableSpace ? FILL_STYLE : undefined}>
                 <DatePicker {...datePickerProps} />
-            </ThemeProvider>
+            </div>
         </DateTimeContext.Provider>
     );
 };

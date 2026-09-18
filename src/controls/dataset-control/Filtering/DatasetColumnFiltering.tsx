@@ -1,4 +1,4 @@
-import { DefaultButton, DirectionalHint, PrimaryButton } from "@fluentui/react";
+import { DefaultButton, DirectionalHint, PrimaryButton, useTheme } from "@fluentui/react";
 import { ThemeProvider } from "@utils";
 import { useControl, useEventEmitter } from "@hooks"
 import { OptionSet } from "@controls/fields/option-set";
@@ -15,7 +15,8 @@ import { IConditionEvents } from "@talxis/client-libraries";
 
 export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const { labels, theme, onNotifyOutputChanged } = useControl('DatasetFiltering', props, datasetColumnFilteringTranslations);
+    const { labels, onNotifyOutputChanged } = useControl('DatasetFiltering', props, datasetColumnFilteringTranslations);
+    const theme = useTheme();
     const context = props.context;
     const filtering = props.parameters.Filtering;
     const columnFilter = props.parameters.Filtering.getColumnFilter(props.parameters.ColumnName.raw!);

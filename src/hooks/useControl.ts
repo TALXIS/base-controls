@@ -1,10 +1,7 @@
 import { useEffect, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
-import { useTheme } from "@fluentui/react";
-import { useSurfaceTheme } from "@theme";
 import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
-import { ITheme } from "@theme";
 import dayjs from "dayjs";
 import { IDefaultTranslations, ITranslation, useControlLabels } from "./useControlLabels";
 
@@ -12,9 +9,6 @@ export interface IControlController<TTranslations, TOutputs> {
     labels: Required<ITranslation<TTranslations>>,
     sizing: IControlSizing,
     className: string;
-    theme: ITheme;
-    /** What a callout, menu or tooltip the control opens is drawn in. */
-    surfaceTheme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
 }
 /**
@@ -74,8 +68,6 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         className: `talxis__baseControl__${name}`,
         labels,
         sizing,
-        theme: useTheme(),
-        surfaceTheme: useSurfaceTheme(),
         onNotifyOutputChanged
     }
 };

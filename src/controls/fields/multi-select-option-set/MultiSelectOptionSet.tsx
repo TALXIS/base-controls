@@ -2,8 +2,7 @@
 import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption } from '@fluentui/react';
-import { ThemeContext } from '@utils';
+import { IComboBox, IComboBoxOption, useTheme } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import React from 'react';
@@ -12,7 +11,8 @@ import { getIsColorFeatureEnabled, onRenderColorfulOption } from '@controls/fiel
 import { getComboBoxStyles } from './styles';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme, surfaceTheme } = useControl('MultiSelectOptionSet', props);
+    const { sizing, onNotifyOutputChanged } = useControl('MultiSelectOptionSet', props);
+    const theme = useTheme();
     const ref = useRef<HTMLDivElement>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -136,8 +136,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     });
 
     return (
-        <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>
-            <ComboBox {...componentProps} />
-        </ThemeContext>
+        <ComboBox {...componentProps} />
     );
 };

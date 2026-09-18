@@ -3,14 +3,13 @@ import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import { ICommandBarItemProps } from '@fluentui/react';
 import { DataTypes } from "@talxis/client-libraries";
-import { ThemeContext } from "@utils";
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
 
     const getInputType = () => {
         switch (boundValue.type) {
@@ -120,8 +119,6 @@ export const TextField = (props: ITextField) => {
         }
     })
     return (
-        <ThemeContext theme={theme}>
             <TextFieldBase {...componentProps} />
-        </ThemeContext>
     );
 };

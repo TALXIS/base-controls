@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
 import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "@/constants";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { ThemeContext } from "@utils";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
 import { Numeral } from "@talxis/client-libraries";
 
@@ -100,7 +99,7 @@ export const Decimal = (props: IDecimal) => {
         return value;
     };
 
-    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });
@@ -216,8 +215,6 @@ export const Decimal = (props: IDecimal) => {
         onKeyDown: onKeyDown,
     });
     return (
-        <ThemeContext theme={theme}>
             <TextField {...componentProps} />
-        </ThemeContext>
     );
 };

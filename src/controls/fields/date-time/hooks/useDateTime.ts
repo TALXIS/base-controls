@@ -1,3 +1,4 @@
+import { useTheme } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
@@ -150,11 +151,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
-    const { value, labels, theme, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+    const { value, labels, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         valueExtractor: dateExtractor,
         defaultTranslations: getDefaultDateTimeTranslations(dateFormattingInfo)
     });
+    const theme = useTheme();
 
 
     useEffect(() => {

@@ -1,3 +1,4 @@
+import { useTheme } from "@fluentui/react";
 import { useState } from "react";
 import { ITranslation, useControl } from "@hooks";
 import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
@@ -23,7 +24,8 @@ export const useLookup = (props: ILookup): [
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const { labels, theme, onNotifyOutputChanged } = useControl('Lookup', props, lookupTranslations);
+    const { labels, onNotifyOutputChanged } = useControl('Lookup', props, lookupTranslations);
+    const theme = useTheme();
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
 
     const [entities, setEntities] = useState<IEntity[]>(() => {

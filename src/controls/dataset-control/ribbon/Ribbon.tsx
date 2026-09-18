@@ -1,10 +1,11 @@
+import { useSurfaceTheme } from "@theme";
 import { CommandBar, ICommandBarItemProps, useRerender } from "@legacy";
 import { getClassNames } from "@utils";
 import { useControl } from "@hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
-import { getIcon } from "@fluentui/react";
+import { getIcon, useTheme } from "@fluentui/react";
 import { Shimmer } from "@ui";
 import { ThemeProvider } from "@utils";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
@@ -26,7 +27,9 @@ const fluentIconMap: { [key: string]: string } = {
 }
 
 export const Ribbon = (props: IRibbon) => {
-    const { theme, surfaceTheme, className } = useControl('Ribbon', props, {});
+    const { className } = useControl('Ribbon', props, {});
+    const theme = useTheme();
+    const surfaceTheme = useSurfaceTheme();
     const propsRef = useRef<IRibbon>(props);
     propsRef.current = props;
     const model = useMemo(() => new RibbonModel(() => propsRef.current), [])

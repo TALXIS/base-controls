@@ -1,5 +1,4 @@
-import { Toggle } from '@fluentui/react';
-import { ThemeContext } from '@utils';
+import { Toggle, useTheme } from '@fluentui/react';
 import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
@@ -10,7 +9,8 @@ export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const { labels, sizing, onNotifyOutputChanged, theme } = useControl('TwoOptions', props, twoOptionsTranslations);
+    const { labels, sizing, onNotifyOutputChanged } = useControl('TwoOptions', props, twoOptionsTranslations);
+    const theme = useTheme();
     const context = props.context;
     const componentRef = useRef<any>(null);
 
@@ -35,8 +35,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     };
 
     return (
-        <ThemeContext theme={theme}>
-            {isColorFeatureEnabled() ? (
+        isColorFeatureEnabled() ? (
                 <OptionSet
                     context={props.context}
                     parameters={{
@@ -76,7 +75,6 @@ export const TwoOptions = (props: ITwoOptions) => {
                     onText={options.find(option => option.Value === 1)?.Label || labels.yes()}
                     offText={options.find(option => option.Value === 0)?.Label || labels.no()}
                     onChange={(e, value) => handleChange(value)}
-                />)}
-        </ThemeContext>
+                />)
     )
 };
