@@ -1,4 +1,3 @@
-import { useSurfaceTheme } from "@theme";
 import { CommandBar, ICommandBarItemProps, useRerender } from "@legacy";
 import { getClassNames } from "@utils";
 import { useControl } from "@hooks"
@@ -29,7 +28,6 @@ const fluentIconMap: { [key: string]: string } = {
 export const Ribbon = (props: IRibbon) => {
     const { className } = useControl('Ribbon', props, {});
     const theme = useTheme();
-    const surfaceTheme = useSurfaceTheme();
     const propsRef = useRef<IRibbon>(props);
     propsRef.current = props;
     const model = useMemo(() => new RibbonModel(() => propsRef.current), [])
@@ -116,7 +114,6 @@ export const Ribbon = (props: IRibbon) => {
                     return props.onRenderCommandBar({
                         theme: theme,
                         items: getCommandBarItems(),
-                        contextualMenuTheme: surfaceTheme
                     }, (props) => {
                         return <CommandBar {...props} />
                     })

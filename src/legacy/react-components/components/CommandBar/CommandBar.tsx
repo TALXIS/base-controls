@@ -4,7 +4,7 @@ import { useClassNames } from "@legacy/hooks/useClassNames";
 import { useMemo } from "react";
 import { getCommandBarStyles } from "./styles";
 import { ICommandBarItemProps as ICommandBarItemPropsBase } from "@fluentui/react";
-import { ITheme, SurfaceTheme } from '@theme';
+
 
 
 /**  
@@ -18,15 +18,7 @@ export interface ICommandBarItemProps extends ICommandBarItemPropsBase {
     showOnlyOnHover?: boolean;
 }
 
-export interface ICommandBarProps extends ICommandBarPropsBase {
-    /**
-     * What a menu one of the buttons opens is drawn in.
-     *
-     * Defaults to the theme the application draws its surfaces in, so a bar in a cell of its own colours
-     * still opens its menus in the application's.
-     */
-    contextualMenuTheme?: ITheme
-}
+export interface ICommandBarProps extends ICommandBarPropsBase { }
 
 export const CommandBar = (props: ICommandBarProps) => {
     const theme = useTheme();
@@ -50,16 +42,11 @@ export const CommandBar = (props: ICommandBarProps) => {
     //another class was really unfortunate, we need to abandon this practice
     const classNames = useClassNames('Command-Bar', {className: props.className}).replace('__root', '').replace('--underlined', '');
 
-    //the menus are themed by the shared command bar this one draws with, from the surface it is told about
-    const bar = <CommandBarBase
+    //the menus are themed by the shared command bar this one draws with
+    return <CommandBarBase
         {...props}
         className={`${classNames} ${commandBarStyles.root}`}
         items={getInjectedProps(props.items)}
         farItems={getInjectedProps(props.farItems)}
-        overflowItems={props.overflowItems && getInjectedProps(props.overflowItems)} />;
-
-    if (!props.contextualMenuTheme) {
-        return bar;
-    }
-    return <SurfaceTheme theme={props.contextualMenuTheme}>{bar}</SurfaceTheme>;
+        overflowItems={props.overflowItems && getInjectedProps(props.overflowItems)} />
 }
