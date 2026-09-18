@@ -8,3 +8,5 @@ export * from './search';
 export * from './geocoding';
 export * from './editing';
 export * from './cards';
+export * from './user-location';
+export * from './client-api';
