@@ -4,3 +4,4 @@ export * from './clustering';
 export * from './useModuleLabels';
 export * from './legend';
 export * from './filter';
+export * from './search';
