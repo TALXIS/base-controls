@@ -100,6 +100,15 @@ export const createSampleDataset = (options: ISampleDatasetOptions) => {
 export const getSiteRecords = (): IRawRecord[] => SAMPLE_SITES.map((site) => ({ ...site }))
 
 /**
+ * The sample sites with the formatted value Dataverse would send alongside their capacity, which the Adaptive
+ * Card template binds as `${$root.capacity_label}`. Without it the binding has nothing to resolve to.
+ */
+export const getSiteRecordsWithFormattedValues = (): IRawRecord[] => getSiteRecords().map((record) => ({
+    ...record,
+    'capacity@OData.Community.Display.V1.FormattedValue': `${record.capacity} pallets`
+}))
+
+/**
  * Generates many pins around a set of centres, for the story that shows the control handling a large view.
  *
  * Deterministic, so the same story always draws the same map and a screenshot stays comparable.

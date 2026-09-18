@@ -24,6 +24,8 @@ export interface IMapHostShimOptions {
     onExecute?: (executed: IExecutedFunction) => void
     /** Answers `getWebResourceUrl`, for pin icons and legends that name a web resource. */
     getWebResourceUrl?: (webResourceName: string) => string
+    /** FormXml by `systemform` id, which `Xrm.WebApi.retrieveRecord` answers with - for a card that names a form. */
+    forms?: { [formId: string]: string }
 }
 
 export const installMapHostShim = (options: IMapHostShimOptions = {}): IMapHostShim => {
@@ -32,6 +34,16 @@ export const installMapHostShim = (options: IMapHostShimOptions = {}): IMapHostS
 
     ;(window as any).Xrm = {
         ...previous,
+        WebApi: {
+            ...previous?.WebApi,
+            retrieveRecord: async (entityName: string, id: string) => {
+                const formXml = entityName === 'systemform' ? options.forms?.[id] : undefined
+                if (!formXml) {
+                    throw new Error(`The story host has no ${entityName} record ${id}.`)
+                }
+                return { systemformid: id, formxml: formXml }
+            }
+        },
         Utility: {
             ...previous?.Utility,
             getGlobalContext: () => ({
