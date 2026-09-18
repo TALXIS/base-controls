@@ -19,3 +19,14 @@ export type { IMapPinAppearance, IMapPinResolver, IMapPinRule, IMapWebResourceRe
 export type { IMapRuleCondition } from './core/rules';
 export type { IMapViewport, IMapViewportOptions, IMapViewportRequest } from './core/viewport';
 export { DEFAULT_MAP_VIEWPORT_OPTIONS, getSafeFitPadding, isFiniteMapViewport } from './core/viewport';
+
+//the control itself, and the pieces a host or a module composes with
+export * from './Map';
+export * from './core/attributes';
+export * from './core/language';
+export * from './core/pins';
+export * from './core/records';
+export * from './core/webResource';
+export * from './map-overlay';
+export * from './map-pin-swatch';
+export * from './map-status';

@@ -1,5 +1,7 @@
 import { ITheme } from '@legacy';
 import { IMapProviderOption } from '../providers/provider';
+import { MapProviderPicker } from '../map-provider-picker';
+import { MapStatus } from '../map-status';
 
 /** What the status message receives: the one message the control picked, and the theme to draw it in. */
 export interface IMapStatusProps {
@@ -31,3 +33,9 @@ export interface IMapComponents {
     /** The provider picker, top-right. Rendered only while more than one provider is configured. */
     onRenderProviderPicker: (props: IMapProviderPickerProps) => JSX.Element;
 }
+
+/** The defaults for {@link IMapComponents}. */
+export const MapComponents: IMapComponents = {
+    onRenderStatus: (props) => <MapStatus {...props} />,
+    onRenderProviderPicker: (props) => <MapProviderPicker {...props} />
+};
