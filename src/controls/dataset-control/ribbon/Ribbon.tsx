@@ -124,9 +124,3 @@ export const Ribbon = (props: IRibbon) => {
     })
 
 }
-
-<OptionSet parameters={{
-    value: {
-        
-    }
-}} />
