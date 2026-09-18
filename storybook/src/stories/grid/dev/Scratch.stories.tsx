@@ -13,6 +13,15 @@ const meta = {
     },
 } satisfies Meta<typeof ScratchGrid>
 
+/** The chain from the viewport down to the grid, so `height: 100%` on the grid means the page. */
+const FullPage = (props: { children?: React.ReactNode }) => <>
+    <style>{`
+        html, body, #storybook-root { height: 100%; margin: 0; }
+        #storybook-root, #storybook-root > div, #storybook-root > div > div { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    `}</style>
+    {props.children}
+</>
+
 export default meta
 
 type Story = StoryObj<typeof meta>
@@ -43,11 +52,7 @@ export const Playground: Story = {
         grouping: { description: 'Fetches a level at a time on the server-side row model, the whole tree on the client-side one.' },
         selectableRows: { control: 'inline-radio', options: ['none', 'single', 'multiple'] },
     },
-    render: (args: IScratchGridProps) => (
-        <div style={{ padding: 18 }}>
-            <ScratchGrid {...args} />
-        </div>
-    ),
+    render: (args: IScratchGridProps) => <FullPage><ScratchGrid {...args} /></FullPage>,
 }
 
 /**
@@ -66,9 +71,5 @@ export const Stress: Story = {
         aggregation: false,
     },
     argTypes: Playground.argTypes,
-    render: (args: IScratchGridProps) => (
-        <div style={{ padding: 18 }}>
-            <ScratchGrid {...args} />
-        </div>
-    ),
+    render: (args: IScratchGridProps) => <FullPage><ScratchGrid {...args} /></FullPage>,
 }
