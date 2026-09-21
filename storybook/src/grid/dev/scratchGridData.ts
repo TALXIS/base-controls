@@ -85,7 +85,7 @@ export const COLUMNS: IColumn[] = [
     },
     {
         name: 'estimate', dataType: DataTypes.Decimal, displayName: 'Estimate', visualSizeFactor: 110,
-        metadata: { ...gridMetadata(DataTypes.Decimal), SupportedAggregations: SUPPORTED_AGGREGATIONS },
+        metadata: { ...gridMetadata(DataTypes.Decimal, true), SupportedAggregations: SUPPORTED_AGGREGATIONS },
     },
     {
         name: 'due', dataType: DataTypes.DateAndTimeDateOnly, displayName: 'Due', visualSizeFactor: 120,
@@ -120,7 +120,7 @@ export const COLUMNS: IColumn[] = [
     },
     {
         name: 'budget', dataType: DataTypes.Currency, displayName: 'Budget', visualSizeFactor: 120,
-        metadata: { ...gridMetadata(DataTypes.Currency), SupportedAggregations: SUPPORTED_AGGREGATIONS },
+        metadata: { ...gridMetadata(DataTypes.Currency, true), SupportedAggregations: SUPPORTED_AGGREGATIONS },
     },
     {
         name: 'createdon', dataType: DataTypes.DateAndTimeDateAndTime, displayName: 'Created On', visualSizeFactor: 180,
@@ -141,7 +141,7 @@ export const COLUMNS: IColumn[] = [
     {
         name: 'duration', dataType: DataTypes.WholeDuration, displayName: 'Duration', visualSizeFactor: 120,
         metadata: {
-            ...gridMetadata(DataTypes.WholeDuration),
+            ...gridMetadata(DataTypes.WholeDuration, true),
             SupportedAggregations: SUPPORTED_AGGREGATIONS,
         },
     },

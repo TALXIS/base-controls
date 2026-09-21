@@ -97,6 +97,12 @@ export class GridGrouping {
         return !!node.data?.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX);
     }
 
+    /** What a row holds a grouped column's value under: a group row holds it under the group-by's alias. */
+    public getGroupedValueColumnName(record: IRecord, columnName: string): string {
+        const alias = this._provider.getColumnsMap()[columnName]?.grouping?.alias;
+        return alias && record.getDataProvider().getColumnsMap()[alias] ? alias : columnName;
+    }
+
     /** Whether a row's cell in this column carries the chevron that opens it. */
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
         return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === column.name;
@@ -172,8 +178,11 @@ export class GridGrouping {
         const columnsMap = this._provider.getColumnsMap();
         const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
         for (const colDef of columnDefs.filter(isGrouped)) {
+            const columnName = colDef.colId ?? colDef.field!;
             this._strategy.applyGroupedColumnDefinition(colDef);
             colDef.cellRenderer = this._onRenderGroupCell;
+            colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
+            colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
@@ -271,6 +280,15 @@ export class GridGrouping {
         });
     }
 
+
+    /** What a group row holds, which is the value the group stands for rather than the column's own. */
+    private _getGroupedValue(record: IRecord | undefined, columnName: string): any {
+        return record ? record.getValue(this.getGroupedValueColumnName(record, columnName)) : null;
+    }
+
+    private _getGroupedFormattedValue(record: IRecord | undefined, columnName: string): string {
+        return record ? record.getFormattedValue(this.getGroupedValueColumnName(record, columnName)) ?? '' : '';
+    }
 
     //the render methods reached through a field of ours.
     private _onRenderGroupCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderGroupCell(props);
