@@ -2,8 +2,8 @@ import * as React from "react";
 import { IconButton } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useGridService } from "../../../../useGridService";
-import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
-import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
+import { Grid } from "../../../../namespace";
+import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { getGroupExpandCollapseHeaderStyles } from "./styles";
 import { Theming } from "@theme";
@@ -23,8 +23,8 @@ export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
     };
 
     //no container: what that part draws is the button a column's menu opens from, and this column has none
-    return <ColumnHeaderRoot {...props}>
-        <ColumnHeaderTheme>
+    return <Grid.ColumnHeader.Root {...props}>
+        <Grid.ColumnHeader.Theme>
             <div className={styles.root}>
                 <IconButton
                     title={labels.getLocalizedString('expandLevel')}
@@ -39,6 +39,6 @@ export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
                     iconProps={{ iconName: 'Remove', styles: { root: styles.icon } }}
                     onClick={() => onStepLevel(-1)} />
             </div>
-        </ColumnHeaderTheme>
-    </ColumnHeaderRoot>;
+        </Grid.ColumnHeader.Theme>
+    </Grid.ColumnHeader.Root>;
 };

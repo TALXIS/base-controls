@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGroupCellStyles = () => mergeStyleSets({
+export const getGroupedRowCellStyles = () => mergeStyleSets({
     commands: {
         //ahead of the value whatever order the column's alignment gives the two
         order: '0 !important',

@@ -3,8 +3,8 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../../useGridService";
-import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
-import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
+import { Grid } from "../../../../namespace";
+import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { IGridSelectionState } from "../../GridSelection";
 import { getSelectionHeaderStyles } from "./styles";
 
@@ -40,8 +40,8 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
     const checkboxState = getCheckboxState();
 
     //no container: what that part draws is the button a column's menu opens from, and this column has none
-    return <ColumnHeaderRoot {...props}>
-        <ColumnHeaderTheme>
+    return <Grid.ColumnHeader.Root {...props}>
+        <Grid.ColumnHeader.Theme>
             <div className={styles.container}>
                 {isDrawn && <Checkbox
                     checked={checkboxState === 'checked'}
@@ -49,6 +49,6 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
                     styles={{ checkbox: styles.checkbox }}
                     onChange={(event, checked) => onChange(checked)} />}
             </div>
-        </ColumnHeaderTheme>
-    </ColumnHeaderRoot>;
+        </Grid.ColumnHeader.Theme>
+    </Grid.ColumnHeader.Root>;
 };

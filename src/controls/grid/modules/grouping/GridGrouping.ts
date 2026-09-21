@@ -103,6 +103,16 @@ export class GridGrouping {
         return alias && record.getDataProvider().getColumnsMap()[alias] ? alias : columnName;
     }
 
+    /** How many records a group holds, where the column counts them rather than totalling something. */
+    public getGroupedCount(record: IRecord, columnName: string): number | undefined {
+        const aggregation = this._provider.getColumnsMap()[columnName]?.aggregation;
+        if (aggregation?.aggregationFunction !== 'count' || !aggregation.alias) {
+            return undefined;
+        }
+        const count = record.getValue(aggregation.alias);
+        return count == null ? undefined : Number(count);
+    }
+
     /** Whether a row's cell in this column carries the chevron that opens it. */
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
         return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === column.name;
