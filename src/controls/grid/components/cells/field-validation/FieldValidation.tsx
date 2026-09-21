@@ -1,5 +1,4 @@
 import { useGridField } from "../field/context";
-import { useGridService } from "../../../useGridService";
 import { FieldValidationComponents, IGridFieldValidationComponents } from "./components";
 
 export interface IGridFieldValidationProps {
