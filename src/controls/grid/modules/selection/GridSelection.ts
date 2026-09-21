@@ -1,9 +1,10 @@
-import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
+import { _, ColDef, GridApi, ICellRendererParams, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
 import { DataProvider, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridSelectionServiceLocator } from "./services";
 import { IGridSelectionComponents } from "./moduleComponents";
+import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridSelectionState = 'checked' | 'unchecked' | 'indeterminate';
@@ -39,7 +40,7 @@ export class GridSelection {
         if (recordSaveColumnIndex !== -1) {
             columnDefs.splice(recordSaveColumnIndex, 1);
         }
-        columnDefs.unshift(getSelectionColumnDefinition(this.components));
+        columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
         columnDefs.forEach(colDef => this._suppressNavigation(colDef));
     }
 
@@ -78,6 +79,10 @@ export class GridSelection {
         //a group selects every record under it.
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
+
+    //the render methods reached through a field of ours.
+    private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
+    private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
 
     /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridSelectionComponents {
