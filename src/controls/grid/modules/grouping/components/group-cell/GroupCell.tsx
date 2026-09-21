@@ -1,18 +1,44 @@
+import * as React from "react";
+import { ICommandBarItemProps } from "@fluentui/react";
+import { useRerender } from "@legacy";
 import { Grid } from "../../../../namespace";
 import { ICellRendererProps } from "../../../../components/cells/cell-renderer/CellRenderer";
 import { useGridService } from "../../../../useGridService";
-import { GroupedRowCell } from "../grouped-row-cell/GroupedRowCell";
+import { GroupCount } from "../group-count/GroupCount";
+import { getGroupCellStyles } from "./styles";
 
-/** What a column the rows are grouped by draws in its cells. */
+/** What a row standing for a group draws in the column it is grouped by: its value, and what opens it. */
 export const GroupCell = (props: ICellRendererProps) => {
+    const styles = React.useMemo(() => getGroupCellStyles(), []);
     //this cell belongs to a column the grouping module grouped, so the module is there
     const grouping = useGridService('grouping')!;
-    const provider = useGridService('provider');
-    const column = provider.getColumnsMap()[props.colDef!.colId!];
+    const node = props.node;
+    const rerender = useRerender();
 
-    if (!grouping.isGroupRow(props.node)) {
-        return <Grid.Cell.EmptyRenderer {...props} />;
-    }
+    React.useEffect(() => {
+        node.addEventListener('expandedChanged', rerender);
+        return () => node.removeEventListener('expandedChanged', rerender);
+    }, [node]);
 
-    return <GroupedRowCell {...props} />;
+    const getChevronButton = (): ICommandBarItemProps[] => [{
+        key: 'groupExpansion',
+        iconOnly: true,
+        iconProps: { iconName: node.expanded ? 'ChevronDown' : 'ChevronRight' },
+        onClick: () => grouping.toggleGroup(node),
+    }];
+
+    return <Grid.Cell.Field record={props.data} name={grouping.getGroupedValueColumnName(props.data, props.colDef!.colId!)}>
+        <Grid.Cell.Root {...props}>
+            <Grid.Cell.Theme theme={props.theme}>
+                <Grid.Cell.Container>
+                    <Grid.Cell.Loading>
+                        <Grid.Cell.Ui.Commands items={getChevronButton()} className={styles.commands} />
+                        <Grid.Cell.Control />
+                        <GroupCount />
+                        <Grid.Cell.Commands />
+                    </Grid.Cell.Loading>
+                </Grid.Cell.Container>
+            </Grid.Cell.Theme>
+        </Grid.Cell.Root>
+    </Grid.Cell.Field>;
 };

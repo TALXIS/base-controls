@@ -2,7 +2,7 @@ import * as React from "react";
 import { Icon, IIconProps } from "@fluentui/react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { GroupedRowCell, GroupExpandCollapseHeader } from "./components";
+import { GroupCell, GroupExpandCollapseHeader } from "./components";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 
 /** The replaceable parts of grouping. */
@@ -18,6 +18,6 @@ export interface IGridGroupingComponents {
 /** The defaults for {@link IGridGroupingComponents}. */
 export const GridGroupingComponents: IGridGroupingComponents = {
     onRenderGroupingIcon: props => <Icon {...props} />,
-    onRenderGroupCell: props => <GroupedRowCell {...props} />,
+    onRenderGroupCell: props => <GroupCell {...props} />,
     onRenderExpansionHeader: props => <GroupExpandCollapseHeader {...props} />,
 };
