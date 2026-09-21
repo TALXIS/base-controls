@@ -225,6 +225,10 @@ const withPayloadCell = (module: IGridModule): IGridModule => ({
             if (payload) {
                 payload.cellRenderer = PayloadCell
             }
+            const status = columnDefs.find(columnDef => columnDef.colId === 'status')
+            if (status) {
+                status.pinned = 'right'
+            }
             columnDefs.push(SUMMARY_COLUMN_DEFINITION)
         })
     },
@@ -268,7 +272,8 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 EntitySetName: 'mem_tasks',
             },
         })
-        provider.setColumns(COLUMNS)
+        //the alignment is the dataset column's, which is what the header, the cells and what they draw read
+        provider.setColumns(COLUMNS.map(column => column.name === 'status' ? { ...column, alignment: 'right' as const } : column))
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)

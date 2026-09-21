@@ -1,7 +1,8 @@
 import { IOptionSet } from "./interfaces";
 import { ITheme, Theme } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { Theming, useThemeGenerator } from "@theme";
+import { useThemeGenerator } from "@theme";
+import { getOptionTagColors } from "@ui";
 
 export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, ITheme] => {
     const boundValue = props.parameters.value;
@@ -21,8 +22,9 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
             colors.backgroundColor = theme.semanticColors.inputBackground;
             return colors;
         }
-        colors.backgroundColor = selectedOptionColor;
-        colors.textColor = Theming.GetTextColorForBackground(selectedOptionColor);
+        const tag = getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
+        colors.backgroundColor = tag.background;
+        colors.textColor = tag.text;
         return colors;
     }
     const getIsColorFeatureEnabled = () => {
@@ -37,7 +39,12 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
         if (!colorFeatureEnabled || !selectedOptionColor) {
             return {};
         }
+        const tag = getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
         return {
+            semanticColors: {
+                inputBorder: tag.border,
+                inputBorderHovered: tag.border
+            },
             fonts: {
                 medium: {
                     fontWeight: 600

@@ -1,8 +1,8 @@
 import { RefObject, useMemo } from "react"
-import { getRecordSaveErrorCalloutStyles } from "./styles"
-import { Link, Text } from "@fluentui/react";
+import { DefaultButton, Icon, Text, useTheme } from "@fluentui/react";
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Callout } from "@ui";
+import { getRecordSaveErrorCalloutStyles } from "./styles"
 
 interface IRecordSaveCalloutProps {
     /** What the callout points at. */
@@ -13,23 +13,30 @@ interface IRecordSaveCalloutProps {
     onClearSaveResult: () => void;
 }
 
+/** What a row says when the record behind it refused to save, field by field. */
 export const RecordSaveErrorCallout = (props: IRecordSaveCalloutProps) => {
     const { saveResult, record, target, onDismiss, onClearSaveResult } = props;
-    const styles = useMemo(() => getRecordSaveErrorCalloutStyles(), []);
+    const theme = useTheme();
+    const styles = useMemo(() => getRecordSaveErrorCalloutStyles(theme), [theme]);
 
     return <Callout
-        className={styles.errorCallout}
         onDismiss={onDismiss}
-        target={target}>
-        <Text block className={styles.errorCalloutTitle} variant="xLarge">Record could not be saved</Text>
-        <div className={styles.errorCalloutContent}>
-            {saveResult.errors?.map((error, i) => {
-                return <div key={i}>
-                    {error.fieldName && <Text key={i}><strong>{record.getField(error.fieldName).getColumn().displayName}: </strong></Text>}
-                    <Text>{error.message}</Text>
-                </div>
-            })}
+        target={target}
+        styles={{ calloutMain: styles.errorCallout }}>
+        <div className={styles.header}>
+            <Icon iconName='StatusErrorFull' className={styles.icon} />
+            <Text variant='mediumPlus' className={styles.title}>Your changes were not saved</Text>
         </div>
-        <Link className={styles.errorCalloutDismissLink} onClick={onClearSaveResult}>Dismiss</Link>
+        <div className={styles.fields}>
+            {saveResult.errors?.map((error, index) => <div key={index} className={styles.field}>
+                {error.fieldName && <Text variant='medium' className={styles.fieldName}>
+                    {record.getField(error.fieldName).getColumn().displayName}
+                </Text>}
+                <Text variant='medium' className={styles.message}>{error.message}</Text>
+            </div>)}
+        </div>
+        <div className={styles.footer}>
+            <DefaultButton text='Dismiss' onClick={onClearSaveResult} />
+        </div>
     </Callout>
 }
