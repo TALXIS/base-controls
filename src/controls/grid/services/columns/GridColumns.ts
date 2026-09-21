@@ -11,6 +11,8 @@ import { RecordSaveIndicatorCell } from "../../components/record-save-indicator"
 import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
+import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
+import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
 
 
 /** What a column is worth when it does not say. */
@@ -60,9 +62,10 @@ export class GridColumns {
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
         columnDef.headerComponent ??= ColumnHeaderRenderer;
+        columnDef.cellRenderer = CellRenderer;
+        columnDef.cellEditor = CellEditor;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
-        //only a column that brought an editor has one to open
         columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
     }
 

@@ -22,7 +22,4 @@ export const getGroupExpansionColumnDefinition = (onRenderHeader: (props: IColum
     valueGetter: () => null,
     valueFormatter: () => '',
     headerComponent: onRenderHeader,
-    //a cell of the grid's own rather than the dataset's, and one with nothing to draw in it
-    cellRenderer: CellRenderer,
-    cellRendererParams: { components: { control: { onRenderControl: () => null } } },
 });
