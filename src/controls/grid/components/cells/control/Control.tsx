@@ -1,5 +1,5 @@
 import { Fragment, useMemo } from "react";
-import { GridCellRenderer, IGridCellRenderer } from "@controls/grid/cell-renderer";
+import { GridValueRenderer, IGridValueRenderer } from "@controls/grid/value-renderer";
 import { useGridCell } from "../root/context";
 import { useGridField } from "../field";
 import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";
@@ -18,12 +18,12 @@ export const Control = (props: IGridControlProps) => {
     const components = { ...GridControlComponents, ...props.components };
     const controlProps = control.getControlProps();
 
-    const onRenderDefault = (renderProps: IGridCellRenderer) => {
+    const onRenderDefault = (renderProps: IGridValueRenderer) => {
         //a column that named a control of its own
         if (control.isCustomRendererEnabled()) {
             return <LegacyNestedControlRenderer controlProps={renderProps} control={control} />;
         }
-        return <GridCellRenderer {...renderProps} />;
+        return <GridValueRenderer {...renderProps} />;
     };
 
     return <GridControlContext.Provider value={control}>

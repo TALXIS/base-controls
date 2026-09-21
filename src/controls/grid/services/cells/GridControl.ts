@@ -1,6 +1,6 @@
 import { DataTypes, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
-import { IGridCellRenderer, IGridCellRendererParameters } from "@controls/grid/cell-renderer";
+import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";
@@ -53,13 +53,13 @@ export class GridControl {
     }
 
     /** What draws this cell, and what it is given. */
-    public getControlProps(): IGridCellRenderer {
+    public getControlProps(): IGridValueRenderer {
         const control = this.getCustomControl();
         const parameters = this._getCellParameters(control);
         return {
             context: this.getContext(),
             //a custom control merges these into its own parameters and finalizes them there
-            parameters: this._isCustomRenderer(control) ? parameters : this.getFinalControlParameters(parameters) as IGridCellRendererParameters,
+            parameters: this._isCustomRenderer(control) ? parameters : this.getFinalControlParameters(parameters) as IGridValueRendererParameters,
         };
     }
 
@@ -93,12 +93,12 @@ export class GridControl {
 
     private _isCustomRenderer(control: ICustomColumnControl): boolean {
         //a cell taking input is a control whatever the column named: the renderer only ever draws
-        return this._takesInput || control.name !== BaseControls.GridCellRenderer;
+        return this._takesInput || control.name !== BaseControls.GridValueRenderer;
     }
 
     /** What a cell hands whatever draws it, before the hooks have their say. */
-    private _getCellParameters(control: ICustomColumnControl): IGridCellRendererParameters {
-        const parameters: IGridCellRendererParameters = {
+    private _getCellParameters(control: ICustomColumnControl): IGridValueRendererParameters {
+        const parameters: IGridValueRendererParameters = {
             value: undefined,
             ColumnAlignment: { raw: 'left' },
             CellType: { raw: this._takesInput ? 'editor' : 'renderer' },
@@ -128,7 +128,7 @@ export class GridControl {
 
     private _getDefaultControl(): Required<ICustomColumnControl> {
         return {
-            name: this._fieldControl?.getControlName() ?? BaseControls.GridCellRenderer,
+            name: this._fieldControl?.getControlName() ?? BaseControls.GridValueRenderer,
             appliesTo: 'both',
             bindings: {}
         };

@@ -19,7 +19,7 @@ import { useControlLabels } from '@hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
 import { Ribbon } from '@controls/dataset-control/ribbon';
 import { GridInlineRibbon } from '@controls/grid/inline-ribbon';
-import { GridCellRenderer } from '@controls/grid/cell-renderer';
+import { GridValueRenderer } from '@controls/grid/value-renderer';
 
 interface IRef {
     control: NestedControl | null;
@@ -105,8 +105,8 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return Decimal;
             case 'Duration':
                 return Duration;
-            case 'GridCellRenderer':
-                return GridCellRenderer;
+            case 'GridValueRenderer':
+                return GridValueRenderer;
             case 'GridInlineRibbon': {
                 return GridInlineRibbon;
             }
@@ -115,7 +115,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
             }
             //a name nobody recognises gets the plainest control there is rather than nothing at all
             default:
-                return GridCellRenderer;
+                return GridValueRenderer;
         }
     };
 

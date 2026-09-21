@@ -3,9 +3,9 @@ import { mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 import { getJustifyContent, IAlignment } from "@utils";
 
-export const getGridCellRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
+export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
-        gridCellRendererRoot: {
+        gridValueRendererRoot: {
             //fills whatever it is put in, so a wrapper can place it between a chevron and a count, or under
             //a label, and it still behaves as the value
             flex: 1,

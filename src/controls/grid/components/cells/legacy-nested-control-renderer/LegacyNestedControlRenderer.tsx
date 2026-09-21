@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Client } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "@controls/nested-control-renderer";
 import { INestedControlRendererComponentProps } from "@controls/nested-control-renderer/interfaces";
-import { IGridCellRenderer } from "@controls/grid/cell-renderer";
+import { IGridValueRenderer } from "@controls/grid/value-renderer";
 import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
@@ -15,7 +15,7 @@ const client = new Client();
 
 export interface ILegacyNestedControlRendererProps {
     /** What the cell renderer would have been given. */
-    controlProps: IGridCellRenderer;
+    controlProps: IGridValueRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
     control: GridControl;
 }
@@ -26,7 +26,6 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { context, parameters } = controlProps;
     const cell = useGridCell();
     const settings = useGridService('settings');
-    const services = useContext(GridServicesContext);
     const fieldControl = control.getFieldControl();
     const column = fieldControl?.getColumn();
     const customControl = control.getCustomControl();

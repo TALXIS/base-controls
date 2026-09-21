@@ -5,8 +5,8 @@ import { FieldLink, IFieldLinkProps } from "./field-link";
 import { FieldLookup, IFieldLookupProps } from "./field-lookup";
 import { FieldFile, IFieldFileProps } from "./field-file";
 
-/** The replaceable pieces of a field's value. Override any subset through `IGridCellRenderer.components`. */
-export interface IGridCellRendererComponents {
+/** The replaceable pieces of a field's value. Override any subset through `IGridValueRenderer.components`. */
+export interface IGridValueRendererComponents {
     onRenderText: (props: IFieldTextProps) => JSX.Element;
     /** What an empty value shows in place of itself. */
     onRenderPlaceholder: (props: IFieldTextProps) => JSX.Element;
@@ -20,8 +20,8 @@ export interface IGridCellRendererComponents {
     onRenderSuffixIcon: (props: IIconProps) => JSX.Element;
 }
 
-/** The defaults for {@link IGridCellRendererComponents}. */
-export const GridCellRendererComponents: IGridCellRendererComponents = {
+/** The defaults for {@link IGridValueRendererComponents}. */
+export const GridValueRendererComponents: IGridValueRendererComponents = {
     onRenderText: props => <FieldText {...props} />,
     onRenderPlaceholder: props => <FieldText {...props} isPlaceholder />,
     onRenderLink: props => <FieldLink {...props} />,

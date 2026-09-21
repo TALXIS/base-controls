@@ -2,7 +2,7 @@ import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty }
 import { IAlignment } from "@utils";
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import type { GridCell } from "@controls/grid";
-import { IGridCellRendererComponents } from "./components";
+import { IGridValueRendererComponents } from "./components";
 
 /** A file or an image, as a record holds one. */
 export interface IFileValue {
@@ -16,7 +16,7 @@ export interface IFileValue {
     mimeType?: string;
 }
 
-export interface IGridCellRendererParameters extends IParameters {
+export interface IGridValueRendererParameters extends IParameters {
     value: any;
     ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<IAlignment>, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<'renderer' | 'editor'>, 'type'>;
@@ -49,6 +49,6 @@ export interface IGridCellRendererParameters extends IParameters {
     Placeholder?: IStringProperty;
 }
 
-export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, IOutputs, never, never> {
-    components?: Partial<IGridCellRendererComponents>;
+export interface IGridValueRenderer extends IControl<IGridValueRendererParameters, IOutputs, never, never> {
+    components?: Partial<IGridValueRendererComponents>;
 }

@@ -9,7 +9,7 @@ import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 import { IGridCellEditorComponents } from "./components";
 
 export interface IGridCellEditorProps extends ICellRendererParams {
-    /** What the cell's theme is worked out from, where the grid's own - striped by row - is not it. */
+    /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
     theme?: ITheme;
     components?: IGridCellEditorComponents;
 }

@@ -11,7 +11,7 @@ import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 import { IGridCellComponents } from "./components";
 
 export interface IGridCellRendererProps extends ICellRendererParams {
-    /** What the cell's theme is worked out from, where the grid's own - striped by row - is not it. */
+    /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
     theme?: ITheme;
     components?: IGridCellComponents;
 }

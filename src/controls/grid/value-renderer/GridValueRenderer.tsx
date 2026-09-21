@@ -1,10 +1,10 @@
 import { Fragment, useMemo } from "react";
 import { DataTypes, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
-import { GridCellRendererComponents, IGridCellRendererComponents } from "./components";
+import { GridValueRendererComponents, IGridValueRendererComponents } from "./components";
 import { getSelectedOptions } from "./components/option-set-renderer";
-import { IFileValue, IGridCellRenderer } from "./interfaces";
-import { getGridCellRendererStyles } from "./styles";
+import { IFileValue, IGridValueRenderer } from "./interfaces";
+import { getGridValueRendererStyles } from "./styles";
 
 const DEFAULT_PLACEHOLDER = '---';
 
@@ -14,7 +14,7 @@ const DEFAULT_PLACEHOLDER = '---';
  * What it draws follows from the column's data type, and every piece of it can be replaced through
  * `components`. Fills whatever it is put in and paints no background.
  */
-export const GridCellRenderer = (props: IGridCellRenderer) => {
+export const GridValueRenderer = (props: IGridValueRenderer) => {
     const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, Column, Record } = props.parameters;
     const record = Record.raw;
     const column = Column.raw;
@@ -24,8 +24,8 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const value = column ? record.getValue(column.name) : undefined;
     const formattedValue = column ? record.getFormattedValue(column.name) : null;
     const isMultiline = !!column?.autoHeight;
-    const styles = useMemo(() => getGridCellRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
-    const components = { ...GridCellRendererComponents, ...props.components };
+    const styles = useMemo(() => getGridValueRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
+    const components = { ...GridValueRendererComponents, ...props.components };
 
     const openRecord = (reference?: ComponentFramework.EntityReference) => {
         record.getDataProvider().openDatasetItem(reference ?? record.getNamedReference(), { columnName: column?.name });
@@ -86,7 +86,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
     };
 
-    return <div className={styles.gridCellRendererRoot}>
+    return <div className={styles.gridValueRendererRoot}>
         {PrefixIcon?.raw && components.onRenderPrefixIcon({ iconName: PrefixIcon.raw })}
         {renderValue()}
         {SuffixIcon?.raw && components.onRenderSuffixIcon({ iconName: SuffixIcon.raw })}

@@ -1,6 +1,6 @@
 import { DataProvider, DataType, DataTypes, IColumn } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
-import { IGridCellRendererParameters } from "@controls/grid/cell-renderer";
+import { IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";
 
@@ -39,17 +39,17 @@ export class GridFieldControl {
             //file and image have no editor, so they draw whether or not the cell takes input
             case DataTypes.File:
             case DataTypes.Image: {
-                return BaseControls.GridCellRenderer;
+                return BaseControls.GridValueRenderer;
             }
         }
         if (column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
             return BaseControls.GridInlineRibbon;
         }
-        return this._takesInput ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : BaseControls.GridCellRenderer;
+        return this._takesInput ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : BaseControls.GridValueRenderer;
     }
 
     /** What the field adds to the parameters a control is drawn with. */
-    public getParameters(): Partial<IGridCellRendererParameters> {
+    public getParameters(): Partial<IGridValueRendererParameters> {
         const column = this.getColumn();
         return {
             value: this._field.getValue(),

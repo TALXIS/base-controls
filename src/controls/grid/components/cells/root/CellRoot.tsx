@@ -15,7 +15,30 @@ export interface IGridCellRootProps extends ICellRendererParams {
     children?: React.ReactNode;
 }
 
-/** What makes a cell a cell of this grid: everything drawn inside it belongs to one `GridCell`. */
+/**
+ * What makes a cell a cell of this grid: everything drawn inside it belongs to one `GridCell`.
+ *
+ * The order the pieces nest in is the contract, and each one throws where it is put wrong:
+ *
+ * ```tsx
+ * <Grid.Field record={props.data} name={props.colDef.colId}>   //only where the cell is bound to one
+ *     <Grid.CellRoot {...props}>
+ *         <Grid.CellTheme>
+ *             <Grid.RowResizeGrip>                             //outside the container it grows
+ *                 <Grid.CellContainer>
+ *                     <Grid.CellLoading>                       //inside it, around what it stands in for
+ *                         <Grid.FieldValidation>               //needs a field above it
+ *                             <Grid.Control />                 //needs a field above it
+ *                             <Grid.CellCommands />
+ *                         </Grid.FieldValidation>
+ *                     </Grid.CellLoading>
+ *                 </Grid.CellContainer>
+ *             </Grid.RowResizeGrip>
+ *         </Grid.CellTheme>
+ *     </Grid.CellRoot>
+ * </Grid.Field>
+ * ```
+ */
 export const CellRoot = (props: IGridCellRootProps) => {
     const { data: record, children } = props;
     const cells = useGridService('cells');

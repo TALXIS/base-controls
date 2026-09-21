@@ -7,7 +7,7 @@ export type BaseControl =
     | 'DateTime'
     | 'Decimal'
     | 'Duration'
-    | 'GridCellRenderer'
+    | 'GridValueRenderer'
     | 'Lookup'
     | 'TwoOptions'
     | 'Grid'
@@ -41,8 +41,8 @@ export class BaseControls {
         return 'Duration';
     }
 
-    public static get GridCellRenderer(): 'GridCellRenderer' {
-        return 'GridCellRenderer';
+    public static get GridValueRenderer(): 'GridValueRenderer' {
+        return 'GridValueRenderer';
     }
 
     public static get Lookup(): 'Lookup' {
@@ -103,7 +103,7 @@ export class BaseControls {
             BaseControls.TwoOptions,
             BaseControls.Duration,
             BaseControls.TextField,
-            BaseControls.GridCellRenderer,
+            BaseControls.GridValueRenderer,
             BaseControls.Ribbon,
             BaseControls.GridInlineRibbon
         ]

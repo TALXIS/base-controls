@@ -9,7 +9,7 @@ export * from './services/fields';
 export * from './interfaces';
 export * from './labels';
 export * from './modules';
-export * from './cell-renderer';
+export * from './value-renderer';
 export * from './inline-ribbon';
 export * from './services';
 export type { IGridColumnSettings } from './services/columns';

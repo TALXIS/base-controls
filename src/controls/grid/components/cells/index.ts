@@ -15,4 +15,4 @@ export * from './row-resize-grip';
 export * from './legacy-nested-control-renderer';
 export * from './nested-react-root';
 export { CellUi } from './ui';
-export type { ICellUi, IFieldErrorProps, IRowResizeGripProps, ICellContainerProps, ICellControlProps, ICellNotificationsProps } from './ui';
+export type { ICellUi, IFieldErrorProps, IRowResizeGripProps, ICellContainerProps, ICellControlProps, ICellLoadingProps, ICellCommandsProps, ICellNotificationsProps } from './ui';

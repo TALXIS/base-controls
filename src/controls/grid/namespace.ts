@@ -24,7 +24,7 @@ export interface IGridNamespace {
     CellRenderer: typeof CellRenderer;
     /** A cell of a record's column, drawing what that column holds. */
     FieldCellRenderer: typeof FieldCellRenderer;
-    /** The same cell while it is being edited, with nothing in it to share the row with the */
+    /** The same cell while it is being edited, with nothing in it to share the row with the input. */
     CellEditor: typeof CellEditor;
     /** A record's column while it is being edited. */
     FieldCellEditor: typeof FieldCellEditor;
@@ -32,11 +32,11 @@ export interface IGridNamespace {
     CellRoot: typeof CellRoot;
     /** A piece of all four: what a cell and everything drawn in it is drawn in. */
     CellTheme: typeof CellTheme;
-    /** A piece of all four: the element a cell's content is drawn in, on the surface of the */
+    /** A piece of all four: the element a cell's content is drawn in, and the surface it is drawn on. */
     CellContainer: typeof CellContainer;
     /** A piece of {@link CellRenderer}: what a cell offers to do. */
     CellCommands: typeof CellCommands;
-    /** A piece of all four: what is drawn in place of whatever is wrapped in it while the cell */
+    /** A piece of all four: what stands in for the content it wraps while the cell waits. */
     CellLoading: typeof CellLoading;
     /** A piece of all four: what a row is dragged taller by, around the cell that is dragged. */
     RowResizeGrip: typeof RowResizeGrip;
