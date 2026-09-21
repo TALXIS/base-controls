@@ -17,8 +17,5 @@ export const CellLoading = (props: IGridCellLoadingProps) => {
     if (!hasContainerAbove) {
         throw new Error('Grid.CellLoading has to be drawn inside Grid.CellContainer, around the content it stands in for.');
     }
-    if (cell.isLoading()) {
-        return components.onRenderLoading();
-    }
-    return <>{props.children}</>;
+    return components.onRenderLoading({ isLoading: cell.isLoading(), children: props.children });
 };

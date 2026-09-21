@@ -1,12 +1,12 @@
-import { CellUi } from "../ui";
+import { CellUi, ICellLoadingProps } from "../ui";
 
 /** The replaceable pieces of what a cell shows while it waits. */
 export interface IGridCellLoadingComponents {
-    /** What is drawn in place of the content. */
-    onRenderLoading: () => JSX.Element;
+    /** What stands in for the content while the cell waits, and draws it once it no longer does. */
+    onRenderLoading: (props: ICellLoadingProps) => JSX.Element;
 }
 
 /** The defaults for {@link IGridCellLoadingComponents}. */
 export const CellLoadingComponents: IGridCellLoadingComponents = {
-    onRenderLoading: () => <CellUi.Loading />,
+    onRenderLoading: props => <CellUi.Loading {...props} />,
 };
