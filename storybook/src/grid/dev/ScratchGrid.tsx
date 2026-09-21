@@ -9,6 +9,13 @@ import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS }
  *
  * Pale on purpose: this is the background of every cell in the row, and what is drawn on it still reads.
  */
+/**
+ * What the header of the column the checkboxes live in is drawn in, rather than the grid's own.
+ *
+ * The accent is what the checkbox is ticked in, so all three colours of a theme are in play here.
+ */
+const SELECTION_HEADER = { primary: '#4a6fa5', background: '#eef1f5', text: '#2f3a47' }
+
 const STATUS_TINTS: { [status: number]: string } = {
     1: '#fdf3f3',
     2: '#fdf8e7',
@@ -219,6 +226,13 @@ const withPayloadCell = (module: IGridModule): IGridModule => ({
             }
             result.colors.background = background
             result.colors.primary = STATUS_OPTIONS.find(option => option.Value === status)!.Color
+        })
+        //the header of the checkbox column, which the module draws from the header parts
+        services.get('columnHeaders').registerColumnHeaderThemeHook((result, header) => {
+            if (!services.find('selection')?.isSelectionColumn(header.getColDef().colId ?? undefined)) {
+                return
+            }
+            result.colors = { ...SELECTION_HEADER }
         })
         services.get('columns').registerColumnDefinitionsHook(columnDefs => {
             const payload = columnDefs.find(columnDef => columnDef.colId === PAYLOAD_COLUMN)

@@ -1,22 +1,22 @@
 import { Checkbox } from "@fluentui/react";
-import { getGlobalCheckboxStyles } from "./styles";
-import { Theming, useThemeGenerator } from "@theme";
-import { useRerender } from "@legacy";
-import { useGridService } from "@controls/grid/useGridService";
-import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
+import { useRerender } from "@legacy";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useGridService } from "../../../../useGridService";
+import { ColumnHeaderRoot, IGridColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { IGridSelectionState } from "../../GridSelection";
+import { getSelectionHeaderStyles } from "./styles";
 
-
-export const RecordSelectionCheckBox = () => {
+/** The header of the column the checkboxes live in: what selects every record, and clears them. */
+export const SelectionHeader = (props: IGridColumnHeaderParams) => {
     const selection = useGridService('selection')!;
     const provider = useGridService('provider');
-    const styles = getGlobalCheckboxStyles();
+    const styles = getSelectionHeaderStyles();
     const rerender = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 
-
-    const getCheckBoxState = (): IGridSelectionState => {
+    const getCheckboxState = (): IGridSelectionState => {
         const selectedRecordIds = provider.getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
         if (selectedRecordIds.length === 0) {
             return 'unchecked';
@@ -25,34 +25,30 @@ export const RecordSelectionCheckBox = () => {
             return 'checked';
         }
         return 'indeterminate';
-    }
+    };
 
     const onChange = (checked?: boolean) => {
         if (checked) {
             provider.setSelectedRecordIds(provider.getSortedRecordIds());
+            return;
         }
-        else {
-            provider.clearSelectedRecordIds();
-        }
-    }
-    const checkboxState = getCheckBoxState();
+        provider.clearSelectedRecordIds();
+    };
 
-    if (provider.getSortedRecordIds().length === 0 && !provider.isLoading()) {
-        return <></>
-    }
-    else {
-        return (
-            <div className={styles.root}>
-                {selection.getMode() === 'multiple' &&
-                    <Checkbox
-                        checked={checkboxState === 'checked'}
-                        styles={{
-                            checkbox: styles.checkbox
-                        }}
-                        indeterminate={checkboxState === 'indeterminate'}
-                        onChange={(e, checked) => onChange(checked)} />
-                }
+    //one record is selected in the row it is in, and nothing is selected while there is nothing to select
+    const isDrawn = selection.getMode() === 'multiple' && (provider.getSortedRecordIds().length > 0 || provider.isLoading());
+    const checkboxState = getCheckboxState();
+
+    //no container: what that part draws is the button a column's menu opens from, and this column has none
+    return <ColumnHeaderRoot {...props}>
+        <ColumnHeaderTheme>
+            <div className={styles.container}>
+                {isDrawn && <Checkbox
+                    checked={checkboxState === 'checked'}
+                    indeterminate={checkboxState === 'indeterminate'}
+                    styles={{ checkbox: styles.checkbox }}
+                    onChange={(event, checked) => onChange(checked)} />}
             </div>
-        )
-    }
+        </ColumnHeaderTheme>
+    </ColumnHeaderRoot>;
 };

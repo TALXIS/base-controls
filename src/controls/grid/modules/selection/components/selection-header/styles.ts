@@ -1,8 +1,8 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getGlobalCheckboxStyles = () => {
+export const getSelectionHeaderStyles = () => {
     return mergeStyleSets({
-        root: {
+        container: {
             flexGrow: 1,
             display: 'flex',
             justifyContent: 'center',
