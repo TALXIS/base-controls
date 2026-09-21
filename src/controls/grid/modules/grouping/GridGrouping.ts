@@ -1,4 +1,4 @@
-import { ColDef, IRowNode } from "@ag-grid-community/core";
+import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
 import { IContextualMenuItem } from "@fluentui/react";
 import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
@@ -170,10 +170,10 @@ export class GridGrouping {
     /** Moves a grouped column to the front, pins it if asked */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         const columnsMap = this._provider.getColumnsMap();
-        const isGrouped = (colDef: ColDef<IRecord>): boolean =>
-            !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
+        const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
         for (const colDef of columnDefs.filter(isGrouped)) {
             this._strategy.applyGroupedColumnDefinition(colDef);
+            colDef.cellRenderer = this._onRenderGroupCell;
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
@@ -272,7 +272,9 @@ export class GridGrouping {
     }
 
 
-    //the render method reached through a field of ours.
+    //the render methods reached through a field of ours.
+    private _onRenderGroupCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderGroupCell(props);
+
     private _onRenderExpansionHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderExpansionHeader(props);
 
     /** The parts this module renders, merged with whatever the caller replaced. */
