@@ -87,7 +87,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@fluentui/style-utilities": "^8.11.4",
-    "@talxis/client-libraries": "^1.2606.5",
+    "@talxis/client-libraries": "^1.2609.2",
     "@talxis/client-metadata": "^0.0.7",
     "@vis.gl/react-google-maps": "^1.7.1",
     "color": "^4.2.3",
