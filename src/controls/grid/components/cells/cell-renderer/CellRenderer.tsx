@@ -21,9 +21,10 @@ export const CellRenderer = (props: IGridCellRendererProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
-            <FieldValidation components={components.validation} />
-            <Control components={components.control} />
-            <CellCommands components={components.commands} />
+            <FieldValidation components={components.validation}>
+                <Control components={components.control} />
+                <CellCommands components={components.commands} />
+            </FieldValidation>
         </CellLoading>
     </CellContainer>;
 
