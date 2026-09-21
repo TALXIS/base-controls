@@ -8,6 +8,7 @@ import { IColumnHeaderParams } from "../../components/column-header/root/ColumnH
 import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
+import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
 
 /** How many children a group loads before it stops and says so. */
@@ -190,12 +191,14 @@ export class GridGrouping {
         for (const colDef of columnDefs.filter(isGrouped)) {
             const columnName = colDef.colId ?? colDef.field!;
             this._strategy.applyGroupedColumnDefinition(colDef);
-            colDef.cellRenderer = this._onRenderGroupCell;
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
+        }
+        for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
+            this._applyGroupRowRenderer(colDef, columnsMap[colDef.colId ?? colDef.field!]);
         }
         //grouped columns first, so the hierarchy reads left to right
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
@@ -290,6 +293,18 @@ export class GridGrouping {
         });
     }
 
+
+    /** What a row draws in a column while the grid is grouped: the group's value, or nothing. */
+    private _applyGroupRowRenderer(colDef: ColDef<IRecord>, column: IColumn): void {
+        const cellRendererSelector = colDef.cellRendererSelector;
+        colDef.cellRendererSelector = params => {
+            if (!params.data || !this.isGroupRow(params.node)) {
+                //a grouped column holds its value in the group rows above the record rather than in it
+                return this.isColumnGrouped(column) ? { component: CellEmptyRenderer } : cellRendererSelector?.(params);
+            }
+            return this.isColumnExpandable(params.data, column) ? { component: this._onRenderGroupCell } : { component: CellEmptyRenderer };
+        };
+    }
 
     /** What a group row holds, which is the value the group stands for rather than the column's own. */
     private _getGroupedValue(record: IRecord | undefined, columnName: string): any {
