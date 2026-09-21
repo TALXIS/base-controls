@@ -1,1 +1,1 @@
-export * from './Commands';
+export * from './CellUiCommands';

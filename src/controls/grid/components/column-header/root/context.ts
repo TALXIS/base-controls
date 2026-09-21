@@ -8,7 +8,7 @@ GridColumnHeaderContext.displayName = 'GridColumnHeader';
 export const useGridColumnHeader = (): GridColumnHeader => {
     const header = useContext(GridColumnHeaderContext);
     if (!header) {
-        throw new Error('This has to be drawn inside Grid.ColumnHeaderRoot, which is what creates the header it belongs to.');
+        throw new Error('This has to be drawn inside Grid.ColumnHeader.Root, which is what creates the header it belongs to.');
     }
     return header;
 };

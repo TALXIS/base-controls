@@ -81,6 +81,6 @@ export const GroupCell = (props: IProps) => {
                 className={styles.chevronButton}
             />
         }
-        <GridBase.FieldCellRenderer {...props} />
+        <GridBase.Cell.FieldRenderer {...props} />
     </div>
 }

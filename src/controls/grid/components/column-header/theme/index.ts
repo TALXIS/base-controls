@@ -1,2 +1,2 @@
 //`ColumnHeaderTheme` is published through the namespace.
-export type { IGridColumnHeaderThemeProps } from './ColumnHeaderTheme';
+export type { IColumnHeaderThemeProps } from './ColumnHeaderTheme';

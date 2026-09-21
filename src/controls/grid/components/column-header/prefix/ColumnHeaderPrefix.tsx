@@ -1,13 +1,13 @@
 import { renderAdornments } from "../adornments";
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderPrefixComponents, IGridColumnHeaderPrefixComponents } from "./components";
+import { ColumnHeaderPrefixComponents, IColumnHeaderPrefixComponents } from "./components";
 
-export interface IGridColumnHeaderPrefixProps {
-    components?: Partial<IGridColumnHeaderPrefixComponents>;
+export interface IColumnHeaderPrefixProps {
+    components?: Partial<IColumnHeaderPrefixComponents>;
 }
 
 /** What the modules draw before what names the column. */
-export const ColumnHeaderPrefix = (props: IGridColumnHeaderPrefixProps) => {
+export const ColumnHeaderPrefix = (props: IColumnHeaderPrefixProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderPrefixComponents, ...props.components };
 

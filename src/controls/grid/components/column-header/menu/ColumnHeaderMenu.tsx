@@ -3,14 +3,14 @@ import { IContextualMenuItem } from "@fluentui/react";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridColumnHeaderEvents } from "../../../services/column-header";
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderMenuComponents, IGridColumnHeaderMenuComponents } from "./components";
+import { ColumnHeaderMenuComponents, IColumnHeaderMenuComponents } from "./components";
 
-export interface IGridColumnHeaderMenuProps {
-    components?: Partial<IGridColumnHeaderMenuComponents>;
+export interface IColumnHeaderMenuProps {
+    components?: Partial<IColumnHeaderMenuComponents>;
 }
 
 /** What a column header opens over the grid: everything the modules offer for its column. */
-export const ColumnHeaderMenu = (props: IGridColumnHeaderMenuProps) => {
+export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderMenuComponents, ...props.components };
     //what it offers is worked out when it is asked for, rather than for every header the grid draws

@@ -1,12 +1,12 @@
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderLabelComponents, IGridColumnHeaderLabelComponents } from "./components";
+import { ColumnHeaderLabelComponents, IColumnHeaderLabelComponents } from "./components";
 
-export interface IGridColumnHeaderLabelProps {
-    components?: Partial<IGridColumnHeaderLabelComponents>;
+export interface IColumnHeaderLabelProps {
+    components?: Partial<IColumnHeaderLabelComponents>;
 }
 
 /** What the column is called. */
-export const ColumnHeaderLabel = (props: IGridColumnHeaderLabelProps) => {
+export const ColumnHeaderLabel = (props: IColumnHeaderLabelProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderLabelComponents, ...props.components };
 

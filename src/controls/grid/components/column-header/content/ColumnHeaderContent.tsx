@@ -1,13 +1,13 @@
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderContentComponents, IGridColumnHeaderContentComponents } from "./components";
+import { ColumnHeaderContentComponents, IColumnHeaderContentComponents } from "./components";
 
-export interface IGridColumnHeaderContentProps {
+export interface IColumnHeaderContentProps {
     children?: React.ReactNode;
-    components?: Partial<IGridColumnHeaderContentComponents>;
+    components?: Partial<IColumnHeaderContentComponents>;
 }
 
 /** What the header says the column is: wrap it around the label and what stands with it. */
-export const ColumnHeaderContent = (props: IGridColumnHeaderContentProps) => {
+export const ColumnHeaderContent = (props: IColumnHeaderContentProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderContentComponents, ...props.components };
 

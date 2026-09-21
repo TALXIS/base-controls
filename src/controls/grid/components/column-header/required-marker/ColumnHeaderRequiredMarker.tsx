@@ -1,12 +1,12 @@
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderRequiredMarkerComponents, IGridColumnHeaderRequiredMarkerComponents } from "./components";
+import { ColumnHeaderRequiredMarkerComponents, IColumnHeaderRequiredMarkerComponents } from "./components";
 
-export interface IGridColumnHeaderRequiredMarkerProps {
-    components?: Partial<IGridColumnHeaderRequiredMarkerComponents>;
+export interface IColumnHeaderRequiredMarkerProps {
+    components?: Partial<IColumnHeaderRequiredMarkerComponents>;
 }
 
 /** What says the column asks for a value. */
-export const ColumnHeaderRequiredMarker = (props: IGridColumnHeaderRequiredMarkerProps) => {
+export const ColumnHeaderRequiredMarker = (props: IColumnHeaderRequiredMarkerProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderRequiredMarkerComponents, ...props.components };
 

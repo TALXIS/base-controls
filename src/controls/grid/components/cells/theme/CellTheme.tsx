@@ -2,14 +2,14 @@ import { useLayoutEffect } from "react";
 import { ITheme, ThemeContext } from "@utils";
 import { useGridCell } from "../root/context";
 
-export interface IGridCellThemeProps {
+export interface ICellThemeProps {
     /** What the cell's theme is worked out from, where the grid's own — striped by row — is not it. */
     theme?: ITheme;
     children?: React.ReactNode;
 }
 
 /** What a cell and everything drawn in it is drawn in. */
-export const CellTheme = (props: IGridCellThemeProps) => {
+export const CellTheme = (props: ICellThemeProps) => {
     const cell = useGridCell();
     //set before it is asked for, here and anywhere else the cell's theme is read this render
     cell.getTheme().setSeed(props.theme);

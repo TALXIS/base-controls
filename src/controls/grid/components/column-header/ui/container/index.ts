@@ -1,1 +1,1 @@
-export * from './ColumnHeaderContainer';
+export * from './ColumnHeaderUiContainer';

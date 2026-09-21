@@ -1,1 +1,1 @@
-export * from './CellLoading';
+export * from './CellUiLoading';

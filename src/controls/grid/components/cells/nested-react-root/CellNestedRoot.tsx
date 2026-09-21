@@ -9,7 +9,7 @@ import { GridFieldContext } from "../field/context";
 import { GridControlContext } from "../control/context";
 import { getNestedReactRootStyles } from "./styles";
 
-export interface INestedReactRootProps {
+export interface ICellNestedRootProps {
     children?: React.ReactNode;
 }
 
@@ -20,7 +20,7 @@ export interface INestedReactRootProps {
  * was given, so a key the control stops never reaches the cell. Nothing crosses into a root, so everything
  * the grid provides is handed over again inside it.
  */
-export const NestedReactRoot = (props: INestedReactRootProps) => {
+export const CellNestedRoot = (props: ICellNestedRootProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const styles = useMemo(() => getNestedReactRootStyles(), []);
     const services = useContext(GridServicesContext);

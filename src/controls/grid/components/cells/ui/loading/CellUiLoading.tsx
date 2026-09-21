@@ -2,14 +2,14 @@ import { useMemo } from "react";
 import { Shimmer } from "@ui";
 import { getCellLoadingStyles } from "./styles";
 
-export interface ICellLoadingProps {
+export interface ICellUiLoadingProps {
     /** Whether the cell is waiting on something rather than able to draw. */
     isLoading?: boolean;
     children?: React.ReactNode;
 }
 
 /** What a cell shows while its value is still being fetched: wrap it around the content it stands in for. */
-export const CellLoading = (props: ICellLoadingProps) => {
+export const CellUiLoading = (props: ICellUiLoadingProps) => {
     const styles = useMemo(() => getCellLoadingStyles(), []);
 
     if (!props.isLoading) {

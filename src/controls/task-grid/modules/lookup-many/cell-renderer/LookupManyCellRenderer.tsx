@@ -39,7 +39,7 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
     //asked of the column and the record rather than of a cell: this is the column's `cellRenderer`, so
-    //there is no `Grid.CellRoot` above it and no cell to ask
+    //there is no `Grid.Cell.Root` above it and no cell to ask
     const isEditable = !!props.colDef!.settings?.isEditable && record.getColumnInfo(column.name).security.editable;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {

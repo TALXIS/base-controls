@@ -1,6 +1,6 @@
 //the ready-made header first, the parts it is built from below
 export * from './components';
-export type { IGridColumnHeaderOptions, IGridColumnHeaderProps } from './ColumnHeader';
+export type { IColumnHeaderRendererOptions, IColumnHeaderRendererProps } from './ColumnHeaderRenderer';
 export * from './root';
 export * from './theme';
 export * from './container';
@@ -10,10 +10,9 @@ export * from './label';
 export * from './menu';
 export * from './required-marker';
 export * from './suffix';
-//named rather than spread: a part and the component it is drawn by share a name
-export { ColumnHeaderUi } from './ui';
+//the pieces the parts draw with reach a consumer through `Grid.ColumnHeader.Ui`, their props by name
 export type {
-    IColumnHeaderUi, IColumnHeaderContainerProps, IColumnHeaderContentProps, IColumnHeaderLabelProps,
-    IColumnHeaderRequiredMarkerProps, IColumnHeaderPrefixProps, IColumnHeaderSuffixProps,
-    IColumnHeaderSuffixComponents, IColumnHeaderMenuProps
+    IColumnHeaderUi, IColumnHeaderUiContainerProps, IColumnHeaderUiContentProps, IColumnHeaderUiLabelProps,
+    IColumnHeaderUiRequiredMarkerProps, IColumnHeaderUiPrefixProps, IColumnHeaderUiSuffixProps,
+    IColumnHeaderUiSuffixComponents, IColumnHeaderUiMenuProps
 } from './ui';

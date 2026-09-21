@@ -2,11 +2,11 @@ import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderK
 import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
-import { FieldCellEditor } from "../../components/cells/field-cell-editor/FieldCellEditor";
-import { FieldCellRenderer } from "../../components/cells/field-cell-renderer/FieldCellRenderer";
+import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
+import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField } from "../fields";
-import { ColumnHeader } from "../../components/column-header/ColumnHeader";
+import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
 import { IGridColumnSettings } from "./colDef";
@@ -59,7 +59,7 @@ export class GridColumns {
 
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
-        columnDef.headerComponent ??= ColumnHeader;
+        columnDef.headerComponent ??= ColumnHeaderRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
         //only a column that brought an editor has one to open
@@ -143,9 +143,9 @@ export class GridColumns {
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
-            headerComponent: ColumnHeader,
-            cellRenderer: FieldCellRenderer,
-            cellEditor: FieldCellEditor,
+            headerComponent: ColumnHeaderRenderer,
+            cellRenderer: CellFieldRenderer,
+            cellEditor: CellFieldEditor,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),

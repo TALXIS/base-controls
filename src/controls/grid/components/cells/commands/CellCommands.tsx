@@ -4,14 +4,14 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../../services/rows";
 import { useGridService } from "../../../useGridService";
 import { useGridCell } from "../root/context";
-import { CellCommandsComponents, IGridCellCommandsComponents } from "./components";
+import { CellCommandsComponents, ICellCommandsComponents } from "./components";
 
-export interface IGridCellCommandsProps {
-    components?: Partial<IGridCellCommandsComponents>;
+export interface ICellCommandsProps {
+    components?: Partial<ICellCommandsComponents>;
 }
 
 /** A cell's commands, as the command bar wants them. */
-export const CellCommands = (props: IGridCellCommandsProps) => {
+export const CellCommands = (props: ICellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridService('rows');
     const components = { ...CellCommandsComponents, ...props.components };

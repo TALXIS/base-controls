@@ -3,13 +3,13 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../../useGridService";
-import { ColumnHeaderRoot, IGridColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { IGridSelectionState } from "../../GridSelection";
 import { getSelectionHeaderStyles } from "./styles";
 
 /** The header of the column the checkboxes live in: what selects every record, and clears them. */
-export const SelectionHeader = (props: IGridColumnHeaderParams) => {
+export const SelectionHeader = (props: IColumnHeaderParams) => {
     const selection = useGridService('selection')!;
     const provider = useGridService('provider');
     const styles = getSelectionHeaderStyles();

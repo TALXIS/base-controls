@@ -1,13 +1,13 @@
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderContainerComponents, IGridColumnHeaderContainerComponents } from "./components";
+import { ColumnHeaderContainerComponents, IColumnHeaderContainerComponents } from "./components";
 
-export interface IGridColumnHeaderContainerProps {
+export interface IColumnHeaderContainerProps {
     children?: React.ReactNode;
-    components?: Partial<IGridColumnHeaderContainerComponents>;
+    components?: Partial<IColumnHeaderContainerComponents>;
 }
 
 /** What the header is drawn in: wrap it around the name and the adornments. */
-export const ColumnHeaderContainer = (props: IGridColumnHeaderContainerProps) => {
+export const ColumnHeaderContainer = (props: IColumnHeaderContainerProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderContainerComponents, ...props.components };
 

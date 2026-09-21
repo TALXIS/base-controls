@@ -1,3 +1,3 @@
 //`ColumnHeaderContainer` is published through the namespace.
-export type { IGridColumnHeaderContainerProps } from './ColumnHeaderContainer';
+export type { IColumnHeaderContainerProps } from './ColumnHeaderContainer';
 export * from './components';

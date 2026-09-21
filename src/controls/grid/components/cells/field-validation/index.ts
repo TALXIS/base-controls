@@ -1,3 +1,3 @@
-//`FieldValidation` is published through the namespace.
-export type { IGridFieldValidationProps } from './FieldValidation';
+//`CellValidation` is published through the namespace.
+export type { ICellValidationProps } from './CellValidation';
 export * from './components';

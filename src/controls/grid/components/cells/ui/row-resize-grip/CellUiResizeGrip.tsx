@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { getRowResizeGripStyles } from "./styles";
 
-export interface IRowResizeGripProps {
+export interface ICellUiResizeGripProps {
     /** What the row is worth now, which is what a drag starts from. */
     height?: number;
     /** The height the drag has reached, as it reaches it. */
@@ -13,7 +13,7 @@ export interface IRowResizeGripProps {
 const MIN_HEIGHT = 20;
 
 /** What a row is dragged taller by: wrap it around what a cell draws. */
-export const RowResizeGrip = (props: IRowResizeGripProps) => {
+export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
     const { height, onResize, children } = props;
     const rootRef = useRef<HTMLDivElement>(null);
     const styles = useMemo(() => getRowResizeGripStyles(), []);

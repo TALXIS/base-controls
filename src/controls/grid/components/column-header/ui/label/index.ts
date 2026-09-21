@@ -1,1 +1,1 @@
-export * from './ColumnHeaderLabel';
+export * from './ColumnHeaderUiLabel';

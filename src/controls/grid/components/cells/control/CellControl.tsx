@@ -2,26 +2,26 @@ import { Fragment, useMemo } from "react";
 import { GridValueRenderer, IGridValueRenderer } from "@controls/grid/value-renderer";
 import { useGridCell } from "../root/context";
 import { useGridField } from "../field";
-import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";
+import { CellLegacyNestedControl } from "../legacy-nested-control-renderer";
 import { GridControlContext } from "./context";
-import { GridControlComponents, IGridControlComponents } from "./components";
+import { CellControlComponents, ICellControlComponents } from "./components";
 
-export interface IGridControlProps {
-    components?: Partial<IGridControlComponents>;
+export interface ICellControlProps {
+    components?: Partial<ICellControlComponents>;
 }
 
 /** What a cell draws for its value, and what tells it to redraw. */
-export const Control = (props: IGridControlProps) => {
+export const CellControl = (props: ICellControlProps) => {
     const cell = useGridCell();
     const field = useGridField();
     const control = useMemo(() => cell.createControl(field), [cell, field]);
-    const components = { ...GridControlComponents, ...props.components };
+    const components = { ...CellControlComponents, ...props.components };
     const controlProps = control.getControlProps();
 
     const onRenderDefault = (renderProps: IGridValueRenderer) => {
         //a column that named a control of its own
         if (control.isCustomRendererEnabled()) {
-            return <LegacyNestedControlRenderer controlProps={renderProps} control={control} />;
+            return <CellLegacyNestedControl controlProps={renderProps} control={control} />;
         }
         return <GridValueRenderer {...renderProps} />;
     };

@@ -1,3 +1,3 @@
 //`ColumnHeaderLabel` is published through the namespace.
-export type { IGridColumnHeaderLabelProps } from './ColumnHeaderLabel';
+export type { IColumnHeaderLabelProps } from './ColumnHeaderLabel';
 export * from './components';

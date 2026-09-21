@@ -1,19 +1,19 @@
 import { useMemo } from "react";
-import { ColumnHeaderSuffixComponents, IColumnHeaderSuffixComponents } from "./components";
+import { ColumnHeaderUiSuffixComponents, IColumnHeaderUiSuffixComponents } from "./components";
 import { getColumnHeaderSuffixStyles } from "./styles";
 
-export interface IColumnHeaderSuffixProps {
+export interface IColumnHeaderUiSuffixProps {
     /** Whether what the column holds may be changed, which is what the icon says. */
     isEditable?: boolean;
     /** Drawn before the uneditable icon. */
     children?: React.ReactNode;
-    components?: Partial<IColumnHeaderSuffixComponents>;
+    components?: Partial<IColumnHeaderUiSuffixComponents>;
 }
 
 /** What a column header draws after the name. */
-export const ColumnHeaderSuffix = (props: IColumnHeaderSuffixProps) => {
+export const ColumnHeaderUiSuffix = (props: IColumnHeaderUiSuffixProps) => {
     const { isEditable, children } = props;
-    const components = { ...ColumnHeaderSuffixComponents, ...props.components };
+    const components = { ...ColumnHeaderUiSuffixComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderSuffixStyles(), []);
 
     return components.onRenderContainer({

@@ -3,7 +3,7 @@ import { getClassNames, IAlignment } from "@utils";
 import { GridControl } from "../../../../services/cells";
 import { getCellControlStyles } from "./styles";
 
-export interface ICellControlProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ICellUiControlProps extends React.HTMLAttributes<HTMLDivElement> {
     /** What the cell draws. */
     control: GridControl;
     /** Which edge the value reads from. */
@@ -11,7 +11,7 @@ export interface ICellControlProps extends React.HTMLAttributes<HTMLDivElement> 
 }
 
 /** The room a cell's value is drawn in. */
-export const Control = (props: ICellControlProps) => {
+export const CellUiControl = (props: ICellUiControlProps) => {
     const { control, alignment = 'left', className, ...divProps } = props;
     const styles = useMemo(() => getCellControlStyles(alignment), [alignment]);
 

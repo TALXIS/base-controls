@@ -1,3 +1,3 @@
 //`Field` is published through the namespace rather than the flat barrel
-export type { IGridFieldProps } from './Field';
+export type { ICellFieldProps } from './CellField';
 export * from './context';

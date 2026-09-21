@@ -13,7 +13,7 @@ export const useGridCell = (): GridCell => {
     const cell = useContext(GridCellContext);
     useContext(GridCellRevisionContext);
     if (!cell) {
-        throw new Error('This has to be drawn inside Grid.CellRoot, which is what creates the cell it belongs to.');
+        throw new Error('This has to be drawn inside Grid.Cell.Root, which is what creates the cell it belongs to.');
     }
     return cell;
 };

@@ -1,1 +1,1 @@
-export * from './LegacyNestedControlRenderer';
+export * from './CellLegacyNestedControl';

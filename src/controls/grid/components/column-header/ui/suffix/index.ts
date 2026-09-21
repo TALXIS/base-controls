@@ -1,2 +1,2 @@
-export * from './ColumnHeaderSuffix';
+export * from './ColumnHeaderUiSuffix';
 export * from './components';

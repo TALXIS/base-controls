@@ -5,13 +5,13 @@ import { CommandBar } from "@ui";
 import { getClassNames, IAlignment } from "@utils";
 import { getCellCommandsStyles } from "./styles";
 
-export interface ICellCommandsProps extends ICommandBarProps {
+export interface ICellUiCommandsProps extends ICommandBarProps {
     /** Where the buttons sit in the width the bar takes. */
     alignment?: IAlignment;
 }
 
 /** The commands a cell offers, drawn to fit the row it is in. */
-export const Commands = (props: ICellCommandsProps) => {
+export const CellUiCommands = (props: ICellUiCommandsProps) => {
     const { alignment = 'left', className, items, overflowItems, ...commandBarProps } = props;
     const styles = useMemo(() => getCellCommandsStyles(alignment), [alignment]);
     const commandBarRef = useRef<ICommandBar>(null);

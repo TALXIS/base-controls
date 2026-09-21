@@ -1,3 +1,3 @@
 //published through the namespace.
-export type { IGridCellRendererProps } from './CellRenderer';
-export type { IGridCellComponents } from './components';
+export type { ICellRendererProps } from './CellRenderer';
+export type { ICellRendererComponents } from './components';

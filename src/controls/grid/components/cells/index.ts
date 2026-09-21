@@ -14,5 +14,8 @@ export * from './loading';
 export * from './row-resize-grip';
 export * from './legacy-nested-control-renderer';
 export * from './nested-react-root';
-export { CellUi } from './ui';
-export type { ICellUi, IFieldErrorProps, IRowResizeGripProps, ICellContainerProps, ICellControlProps, ICellLoadingProps, ICellCommandsProps, ICellNotificationsProps } from './ui';
+//the pieces the parts draw with reach a consumer through `Grid.Cell.Ui`, their props by name
+export type {
+    ICellUi, ICellUiContainerProps, ICellUiFieldErrorProps, ICellUiResizeGripProps, ICellUiCommandsProps,
+    ICellUiControlProps, ICellUiLoadingProps, ICellUiNotificationsProps
+} from './ui';

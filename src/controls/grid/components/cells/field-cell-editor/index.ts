@@ -1,2 +1,2 @@
 //published through the namespace.
-export type { IGridFieldCellEditorProps } from './FieldCellEditor';
+export type { ICellFieldEditorProps } from './CellFieldEditor';

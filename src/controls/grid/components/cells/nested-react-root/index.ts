@@ -1,2 +1,2 @@
 //published through the namespace.
-export type { INestedReactRootProps } from './NestedReactRoot';
+export type { ICellNestedRootProps } from './CellNestedRoot';

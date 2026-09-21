@@ -1,1 +1,1 @@
-export * from './CellContainer';
+export * from './CellUiContainer';

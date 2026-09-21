@@ -1,12 +1,12 @@
-import { ColumnHeaderUi, IColumnHeaderPrefixProps } from "../ui";
+import { ColumnHeaderUi, IColumnHeaderUiPrefixProps } from "../ui";
 
 /** The replaceable pieces of what a column header draws before the name. */
-export interface IGridColumnHeaderPrefixComponents {
-    /** What the adornments are drawn in. `ColumnHeaderUi.Prefix` draws it by default, and `IColumnHeaderPrefixProps` is what it takes. */
-    onRenderPrefix: (props: IColumnHeaderPrefixProps) => JSX.Element;
+export interface IColumnHeaderPrefixComponents {
+    /** What the adornments are drawn in. `ColumnHeaderUi.Prefix` draws it by default, and `IColumnHeaderUiPrefixProps` is what it takes. */
+    onRenderPrefix: (props: IColumnHeaderUiPrefixProps) => JSX.Element;
 }
 
-/** The defaults for {@link IGridColumnHeaderPrefixComponents}. */
-export const ColumnHeaderPrefixComponents: IGridColumnHeaderPrefixComponents = {
+/** The defaults for {@link IColumnHeaderPrefixComponents}. */
+export const ColumnHeaderPrefixComponents: IColumnHeaderPrefixComponents = {
     onRenderPrefix: props => <ColumnHeaderUi.Prefix {...props} />,
 };

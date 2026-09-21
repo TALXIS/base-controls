@@ -59,7 +59,7 @@ const JsonValue = (props: { value: unknown }) => {
 }
 
 /** A payload drawn as what it holds rather than as the string it arrived in. */
-const PayloadCell = (props: IGridCellParams) => <Grid.FieldCellRenderer {...props} components={{
+const PayloadCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
     control: {
         onRenderControl: controlProps => {
             const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
@@ -201,13 +201,13 @@ const SUMMARY_COLUMN_DEFINITION = {
         if (!props.data) {
             return null
         }
-        return <Grid.CellRoot {...props}>
-            <Grid.CellTheme>
-                <Grid.CellContainer>
+        return <Grid.Cell.Root {...props}>
+            <Grid.Cell.Theme>
+                <Grid.Cell.Container>
                     <RecordSummary record={props.data} />
-                </Grid.CellContainer>
-            </Grid.CellTheme>
-        </Grid.CellRoot>
+                </Grid.Cell.Container>
+            </Grid.Cell.Theme>
+        </Grid.Cell.Root>
     },
 }
 

@@ -1,1 +1,1 @@
-export * from './ColumnHeaderRequiredMarker';
+export * from './ColumnHeaderUiRequiredMarker';

@@ -4,13 +4,13 @@ import { useSurfaceTheme } from "@theme";
 import { ContextualMenu } from "@ui";
 import { getColumnHeaderMenuStyles } from "./styles";
 
-export interface IColumnHeaderMenuProps extends Omit<IContextualMenuProps, 'items'> {
+export interface IColumnHeaderUiMenuProps extends Omit<IContextualMenuProps, 'items'> {
     /** What the menu offers. Nothing to offer is nothing to draw. */
     items?: IContextualMenuItem[];
 }
 
 /** The menu a column header opens, and what keeps it open while the grid scrolls under it. */
-export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
+export const ColumnHeaderUiMenu = (props: IColumnHeaderUiMenuProps) => {
     //the menu is drawn on the surface rather than in the header it was opened from
     const theme = useSurfaceTheme();
     const styles = useMemo(() => getColumnHeaderMenuStyles(theme), [theme]);

@@ -1,1 +1,1 @@
-export * from './RowResizeGrip';
+export * from './CellUiResizeGrip';

@@ -1,3 +1,3 @@
 //`ColumnHeaderRequiredMarker` is published through the namespace.
-export type { IGridColumnHeaderRequiredMarkerProps } from './ColumnHeaderRequiredMarker';
+export type { IColumnHeaderRequiredMarkerProps } from './ColumnHeaderRequiredMarker';
 export * from './components';

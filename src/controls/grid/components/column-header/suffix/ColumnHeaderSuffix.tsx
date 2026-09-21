@@ -1,13 +1,13 @@
 import { renderAdornments } from "../adornments";
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderSuffixComponents, IGridColumnHeaderSuffixComponents } from "./components";
+import { ColumnHeaderSuffixComponents, IColumnHeaderSuffixComponents } from "./components";
 
-export interface IGridColumnHeaderSuffixProps {
-    components?: Partial<IGridColumnHeaderSuffixComponents>;
+export interface IColumnHeaderSuffixProps {
+    components?: Partial<IColumnHeaderSuffixComponents>;
 }
 
 /** What the modules draw after the column's name, and what says the column cannot be changed. */
-export const ColumnHeaderSuffix = (props: IGridColumnHeaderSuffixProps) => {
+export const ColumnHeaderSuffix = (props: IColumnHeaderSuffixProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderSuffixComponents, ...props.components };
 

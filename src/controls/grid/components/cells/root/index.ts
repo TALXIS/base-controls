@@ -1,3 +1,3 @@
 //`CellRoot` is published through the namespace.
-export type { IGridCellRootProps } from './CellRoot';
+export type { ICellRootProps } from './CellRoot';
 export * from './context';

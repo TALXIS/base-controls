@@ -3,20 +3,20 @@ import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";
 import { useIsInsideCellContainer } from "../container/context";
 import { useGridCell } from "../root/context";
-import { RowResizeGripComponents, IGridRowResizeGripComponents } from "./components";
+import { CellResizeGripComponents, ICellResizeGripComponents } from "./components";
 
-export interface IGridRowResizeGripProps {
+export interface ICellResizeGripProps {
     children?: React.ReactNode;
-    components?: Partial<IGridRowResizeGripComponents>;
+    components?: Partial<ICellResizeGripComponents>;
 }
 
 /** What a row is dragged taller by, around the cell that is dragged. */
-export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
+export const CellResizeGrip = (props: ICellResizeGripProps) => {
     const { children } = props;
     const cell = useGridCell();
     const hasContainerAbove = useIsInsideCellContainer();
     const gridApi = useGridService('gridApi');
-    const components = { ...RowResizeGripComponents, ...props.components };
+    const components = { ...CellResizeGripComponents, ...props.components };
     const node = cell.getNode();
     const rerender = useRerender();
 
@@ -35,7 +35,7 @@ export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
 
     //the drag grows this element, so the container has to be inside it
     if (hasContainerAbove) {
-        throw new Error('Grid.RowResizeGrip has to be drawn around Grid.CellContainer rather than inside it.');
+        throw new Error('Grid.Cell.ResizeGrip has to be drawn around Grid.Cell.Container rather than inside it.');
     }
     return components.onRenderRowResizeGrip({
         height: node?.rowHeight ?? undefined,

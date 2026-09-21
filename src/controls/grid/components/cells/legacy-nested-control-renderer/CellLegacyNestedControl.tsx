@@ -8,12 +8,12 @@ import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
 import { GridServicesContext } from "../../../context";
-import { NestedReactRoot } from "../nested-react-root/NestedReactRoot";
+import { CellNestedRoot } from "../nested-react-root/CellNestedRoot";
 import { getBindings } from "./getBindings";
 
 const client = new Client();
 
-export interface ILegacyNestedControlRendererProps {
+export interface ICellLegacyNestedControlProps {
     /** What the cell renderer would have been given. */
     controlProps: IGridValueRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
@@ -21,7 +21,7 @@ export interface ILegacyNestedControlRendererProps {
 }
 
 /** A control the nested-control registry resolves, as a cell needs it. */
-export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererProps) => {
+export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) => {
     const { controlProps, control } = props;
     const { context, parameters } = controlProps;
     const cell = useGridCell();
@@ -31,7 +31,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const customControl = control.getCustomControl();
 
     //a root of its own, so the control's own handlers run before AG Grid's
-    return <NestedReactRoot>
+    return <CellNestedRoot>
         <NestedControlRenderer
             context={context}
             parameters={{
@@ -76,5 +76,5 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                     };
                 }
             })} />
-    </NestedReactRoot>;
+    </CellNestedRoot>;
 };

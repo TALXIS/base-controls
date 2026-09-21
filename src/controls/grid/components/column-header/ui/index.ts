@@ -1,10 +1,10 @@
-import { ColumnHeaderContainer } from './container';
-import { ColumnHeaderContent } from './content';
-import { ColumnHeaderLabel } from './label';
-import { ColumnHeaderMenu } from './menu';
-import { ColumnHeaderPrefix } from './prefix';
-import { ColumnHeaderRequiredMarker } from './required-marker';
-import { ColumnHeaderSuffix } from './suffix';
+import { ColumnHeaderUiContainer } from './container';
+import { ColumnHeaderUiContent } from './content';
+import { ColumnHeaderUiLabel } from './label';
+import { ColumnHeaderUiMenu } from './menu';
+import { ColumnHeaderUiPrefix } from './prefix';
+import { ColumnHeaderUiRequiredMarker } from './required-marker';
+import { ColumnHeaderUiSuffix } from './suffix';
 
 export * from './container';
 export * from './content';
@@ -16,28 +16,21 @@ export * from './suffix';
 
 /** What draws a column header, and nothing that knows which column. */
 export interface IColumnHeaderUi {
-    /** What the header is drawn in. */
-    Container: typeof ColumnHeaderContainer;
-    /** What the header says the column is, drawn in. */
-    Content: typeof ColumnHeaderContent;
-    /** What the column is called. */
-    Label: typeof ColumnHeaderLabel;
-    /** What says the column asks for a value. */
-    RequiredMarker: typeof ColumnHeaderRequiredMarker;
-    /** What is drawn before the content. */
-    Prefix: typeof ColumnHeaderPrefix;
-    /** What is drawn after it, the uneditable icon included. */
-    Suffix: typeof ColumnHeaderSuffix;
-    /** The menu the header opens. */
-    Menu: typeof ColumnHeaderMenu;
+    Container: typeof ColumnHeaderUiContainer;
+    Content: typeof ColumnHeaderUiContent;
+    Label: typeof ColumnHeaderUiLabel;
+    RequiredMarker: typeof ColumnHeaderUiRequiredMarker;
+    Prefix: typeof ColumnHeaderUiPrefix;
+    Suffix: typeof ColumnHeaderUiSuffix;
+    Menu: typeof ColumnHeaderUiMenu;
 }
 
 export const ColumnHeaderUi: IColumnHeaderUi = {
-    Container: ColumnHeaderContainer,
-    Content: ColumnHeaderContent,
-    Label: ColumnHeaderLabel,
-    RequiredMarker: ColumnHeaderRequiredMarker,
-    Prefix: ColumnHeaderPrefix,
-    Suffix: ColumnHeaderSuffix,
-    Menu: ColumnHeaderMenu,
+    Container: ColumnHeaderUiContainer,
+    Content: ColumnHeaderUiContent,
+    Label: ColumnHeaderUiLabel,
+    RequiredMarker: ColumnHeaderUiRequiredMarker,
+    Prefix: ColumnHeaderUiPrefix,
+    Suffix: ColumnHeaderUiSuffix,
+    Menu: ColumnHeaderUiMenu,
 };

@@ -1,12 +1,12 @@
-import { ColumnHeaderUi, IColumnHeaderLabelProps } from "../ui";
+import { ColumnHeaderUi, IColumnHeaderUiLabelProps } from "../ui";
 
 /** The replaceable pieces of what a column is called. */
-export interface IGridColumnHeaderLabelComponents {
-    /** The name itself. `ColumnHeaderUi.Label` draws it by default, and `IColumnHeaderLabelProps` is what it takes. */
-    onRenderLabel: (props: IColumnHeaderLabelProps) => JSX.Element;
+export interface IColumnHeaderLabelComponents {
+    /** The name itself. `ColumnHeaderUi.Label` draws it by default, and `IColumnHeaderUiLabelProps` is what it takes. */
+    onRenderLabel: (props: IColumnHeaderUiLabelProps) => JSX.Element;
 }
 
-/** The defaults for {@link IGridColumnHeaderLabelComponents}. */
-export const ColumnHeaderLabelComponents: IGridColumnHeaderLabelComponents = {
+/** The defaults for {@link IColumnHeaderLabelComponents}. */
+export const ColumnHeaderLabelComponents: IColumnHeaderLabelComponents = {
     onRenderLabel: props => <ColumnHeaderUi.Label {...props} />,
 };

@@ -4,7 +4,7 @@ import { GridField } from "../../../services/fields";
 import { GridFieldContext } from "./context";
 import { GridServicesContext } from "../../../context";
 
-export interface IGridFieldProps {
+export interface ICellFieldProps {
     record: IRecord;
     /** The column to bind to, by name. */
     name: string;
@@ -12,7 +12,7 @@ export interface IGridFieldProps {
 }
 
 /** What binds everything drawn inside it to one record's column. */
-export const Field = (props: IGridFieldProps) => {
+export const CellField = (props: ICellFieldProps) => {
     const { record, name, children } = props;
     const services = useContext(GridServicesContext);
     //the instance, not its id: a reload hands the same row a new record

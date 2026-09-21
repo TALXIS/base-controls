@@ -9,14 +9,14 @@ import { GridColumnHeaderContext } from "./context";
  * AG Grid hands its components a great deal more than this; a header reads the column, for its definition,
  * and the element it is drawn in, for what takes the focus and what a menu is drawn against.
  */
-export interface IGridColumnHeaderParams {
+export interface IColumnHeaderParams {
     /** The column AG Grid is drawing, which is what its definition is read from. */
     column: Column;
     /** The element AG Grid draws the header in. */
     eGridHeader?: HTMLElement;
 }
 
-export interface IGridColumnHeaderRootProps extends IGridColumnHeaderParams {
+export interface IColumnHeaderRootProps extends IColumnHeaderParams {
     children?: React.ReactNode;
 }
 
@@ -26,22 +26,22 @@ export interface IGridColumnHeaderRootProps extends IGridColumnHeaderParams {
  * The pieces nest in this order:
  *
  * ```tsx
- * <Grid.ColumnHeaderRoot {...props}>
- *     <Grid.ColumnHeaderTheme>
- *         <Grid.ColumnHeaderContainer>
- *             <Grid.ColumnHeaderPrefix />
- *             <Grid.ColumnHeaderContent>
- *                 <Grid.ColumnHeaderLabel />
- *                 <Grid.ColumnHeaderRequiredMarker />
- *             </Grid.ColumnHeaderContent>
- *             <Grid.ColumnHeaderSuffix />
- *         </Grid.ColumnHeaderContainer>
- *         <Grid.ColumnHeaderMenu />          //outside the container: what it opens is drawn over the grid
- *     </Grid.ColumnHeaderTheme>
- * </Grid.ColumnHeaderRoot>
+ * <Grid.ColumnHeader.Root {...props}>
+ *     <Grid.ColumnHeader.Theme>
+ *         <Grid.ColumnHeader.Container>
+ *             <Grid.ColumnHeader.Prefix />
+ *             <Grid.ColumnHeader.Content>
+ *                 <Grid.ColumnHeader.Label />
+ *                 <Grid.ColumnHeader.RequiredMarker />
+ *             </Grid.ColumnHeader.Content>
+ *             <Grid.ColumnHeader.Suffix />
+ *         </Grid.ColumnHeader.Container>
+ *         <Grid.ColumnHeader.Menu />          //outside the container: what it opens is drawn over the grid
+ *     </Grid.ColumnHeader.Theme>
+ * </Grid.ColumnHeader.Root>
  * ```
  */
-export const ColumnHeaderRoot = (props: IGridColumnHeaderRootProps) => {
+export const ColumnHeaderRoot = (props: IColumnHeaderRootProps) => {
     const headers = useGridService('columnHeaders');
     const header = useMemo(
         () => headers.createHeader({ column: props.column, element: props.eGridHeader }),

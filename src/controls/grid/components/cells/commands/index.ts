@@ -1,3 +1,3 @@
 //`CellCommands` is published through the namespace.
-export type { IGridCellCommandsProps } from './CellCommands';
+export type { ICellCommandsProps } from './CellCommands';
 export * from './components';

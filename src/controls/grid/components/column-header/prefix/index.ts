@@ -1,3 +1,3 @@
 //`ColumnHeaderPrefix` is published through the namespace.
-export type { IGridColumnHeaderPrefixProps } from './ColumnHeaderPrefix';
+export type { IColumnHeaderPrefixProps } from './ColumnHeaderPrefix';
 export * from './components';

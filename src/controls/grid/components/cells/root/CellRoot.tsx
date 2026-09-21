@@ -9,7 +9,7 @@ import { GridCellContext, GridCellRevisionContext } from "./context";
 //`useEventEmitter` keys its subscription on the array it is given
 const RECORD_EVENTS: (keyof IRecordEvents)[] = ['onFieldValueChanged', 'onAfterSaved'];
 
-export interface IGridCellRootProps extends ICellRendererParams {
+export interface ICellRootProps extends ICellRendererParams {
     /** Whether this is the cell AG Grid opened over the one that was there. */
     isEditor?: boolean;
     children?: React.ReactNode;
@@ -21,25 +21,25 @@ export interface IGridCellRootProps extends ICellRendererParams {
  * The order the pieces nest in is the contract, and each one throws where it is put wrong:
  *
  * ```tsx
- * <Grid.Field record={props.data} name={props.colDef.colId}>   //only where the cell is bound to one
- *     <Grid.CellRoot {...props}>
- *         <Grid.CellTheme>
- *             <Grid.RowResizeGrip>                             //outside the container it grows
- *                 <Grid.CellContainer>
- *                     <Grid.CellLoading>                       //inside it, around what it stands in for
- *                         <Grid.FieldValidation>               //needs a field above it
- *                             <Grid.Control />                 //needs a field above it
- *                             <Grid.CellCommands />
- *                         </Grid.FieldValidation>
- *                     </Grid.CellLoading>
- *                 </Grid.CellContainer>
- *             </Grid.RowResizeGrip>
- *         </Grid.CellTheme>
- *     </Grid.CellRoot>
- * </Grid.Field>
+ * <Grid.Cell.Field record={props.data} name={props.colDef.colId}>   //only where the cell is bound to one
+ *     <Grid.Cell.Root {...props}>
+ *         <Grid.Cell.Theme>
+ *             <Grid.Cell.ResizeGrip>   //outside the container it grows
+ *                 <Grid.Cell.Container>
+ *                     <Grid.Cell.Loading>   //inside it, around what it stands in for
+ *                         <Grid.Cell.Validation>   //needs a field above it
+ *                             <Grid.Cell.Control />   //needs a field above it
+ *                             <Grid.Cell.Commands />
+ *                         </Grid.Cell.Validation>
+ *                     </Grid.Cell.Loading>
+ *                 </Grid.Cell.Container>
+ *             </Grid.Cell.ResizeGrip>
+ *         </Grid.Cell.Theme>
+ *     </Grid.Cell.Root>
+ * </Grid.Cell.Field>
  * ```
  */
-export const CellRoot = (props: IGridCellRootProps) => {
+export const CellRoot = (props: ICellRootProps) => {
     const { data: record, children } = props;
     const cells = useGridService('cells');
     const editing = useGridService('editing');
@@ -76,7 +76,7 @@ export const CellRoot = (props: IGridCellRootProps) => {
 
     //a cell inside a cell is two cells for one column of one record
     if (parentCell) {
-        throw new Error('Grid.CellRoot cannot be drawn inside another one: a cell is not made of cells.');
+        throw new Error('Grid.Cell.Root cannot be drawn inside another one: a cell is not made of cells.');
     }
 
     return <GridCellContext.Provider value={cell}>

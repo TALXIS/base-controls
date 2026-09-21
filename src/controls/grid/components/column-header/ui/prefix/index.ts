@@ -1,1 +1,2 @@
-export * from './ColumnHeaderPrefix';
+
+export * from './ColumnHeaderUiPrefix';
