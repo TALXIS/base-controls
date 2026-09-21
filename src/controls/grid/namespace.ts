@@ -13,7 +13,15 @@ import { CellTheme } from "./components/cells/theme/CellTheme";
 import { RowResizeGrip } from "./components/cells/row-resize-grip/RowResizeGrip";
 import { NestedReactRoot } from "./components/cells/nested-react-root/NestedReactRoot";
 import { ColumnHeader } from "./components/column-header/ColumnHeader";
-import { GridUi } from "./components/ui";
+import { ColumnHeaderRoot } from "./components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderTheme } from "./components/column-header/theme/ColumnHeaderTheme";
+import { ColumnHeaderContainer } from "./components/column-header/container/ColumnHeaderContainer";
+import { ColumnHeaderPrefix } from "./components/column-header/prefix/ColumnHeaderPrefix";
+import { ColumnHeaderContent } from "./components/column-header/content/ColumnHeaderContent";
+import { ColumnHeaderLabel } from "./components/column-header/label/ColumnHeaderLabel";
+import { ColumnHeaderMenu } from "./components/column-header/menu/ColumnHeaderMenu";
+import { ColumnHeaderRequiredMarker } from "./components/column-header/required-marker/ColumnHeaderRequiredMarker";
+import { ColumnHeaderSuffix } from "./components/column-header/suffix/ColumnHeaderSuffix";
 import { GridRoot } from "./Grid";
 
 /** Everything a grid is rendered from. */
@@ -50,8 +58,24 @@ export interface IGridNamespace {
     NestedReactRoot: typeof NestedReactRoot;
     /** A column's header, with what the grid's own parts add to it. */
     ColumnHeader: typeof ColumnHeader;
-    /** What draws the grid's own parts, knowing nothing of the grid. */
-    Ui: typeof GridUi;
+    /** A piece of {@link ColumnHeader}: what makes everything inside it one column's header. */
+    ColumnHeaderRoot: typeof ColumnHeaderRoot;
+    /** A piece of {@link ColumnHeader}: what the header and everything in it is drawn in. */
+    ColumnHeaderTheme: typeof ColumnHeaderTheme;
+    /** A piece of {@link ColumnHeader}: the element the header is drawn in. */
+    ColumnHeaderContainer: typeof ColumnHeaderContainer;
+    /** A piece of {@link ColumnHeader}: what the modules draw before what names the column. */
+    ColumnHeaderPrefix: typeof ColumnHeaderPrefix;
+    /** A piece of {@link ColumnHeader}: what the header says the column is, drawn in. */
+    ColumnHeaderContent: typeof ColumnHeaderContent;
+    /** A piece of {@link ColumnHeader}: what the column is called. */
+    ColumnHeaderLabel: typeof ColumnHeaderLabel;
+    /** A piece of {@link ColumnHeader}: what says the column asks for a value. */
+    ColumnHeaderRequiredMarker: typeof ColumnHeaderRequiredMarker;
+    /** A piece of {@link ColumnHeader}: what is drawn after the name. */
+    ColumnHeaderSuffix: typeof ColumnHeaderSuffix;
+    /** A piece of {@link ColumnHeader}: what it opens over the grid. */
+    ColumnHeaderMenu: typeof ColumnHeaderMenu;
 }
 
 export const Grid: IGridNamespace = {
@@ -71,5 +95,13 @@ export const Grid: IGridNamespace = {
     FieldValidation: FieldValidation,
     NestedReactRoot: NestedReactRoot,
     ColumnHeader: ColumnHeader,
-    Ui: GridUi,
+    ColumnHeaderRoot: ColumnHeaderRoot,
+    ColumnHeaderTheme: ColumnHeaderTheme,
+    ColumnHeaderContainer: ColumnHeaderContainer,
+    ColumnHeaderPrefix: ColumnHeaderPrefix,
+    ColumnHeaderContent: ColumnHeaderContent,
+    ColumnHeaderLabel: ColumnHeaderLabel,
+    ColumnHeaderRequiredMarker: ColumnHeaderRequiredMarker,
+    ColumnHeaderSuffix: ColumnHeaderSuffix,
+    ColumnHeaderMenu: ColumnHeaderMenu,
 };

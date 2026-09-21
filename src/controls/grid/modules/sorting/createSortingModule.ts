@@ -31,7 +31,7 @@ export const createSortingModule = (options?: ISortingModuleOptions): IGridModul
         gridServices.register('sorting', () => sorting);
         //core no longer knows to set these
         gridServices.get('columns').registerColumnDefinitionsHook(columnDefs => sorting.applyColumnDefinitions(columnDefs));
-        gridServices.get('columnHeader').registerColumnMenuSectionHook((sections, params) => sorting.applyMenuSection(sections, params), 0);
-        gridServices.get('columnHeader').registerColumnHeaderAdornmentsHook((adornments, params) => sorting.applyColumnHeaderAdornments(adornments, params), 0);
+        gridServices.get('columnHeaders').registerColumnMenuSectionHook((sections, params) => sorting.applyMenuSection(sections, params), 0);
+        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook((adornments, params) => sorting.applyColumnHeaderAdornments(adornments, params), 0);
     },
 });

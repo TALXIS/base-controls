@@ -1,24 +1,16 @@
-import { IColumn } from "@talxis/client-libraries";
-import * as React from "react";
-import { Icon } from "@fluentui/react";
+import { Icon, IIconProps } from "@fluentui/react";
 import { FilterCalloutHost } from "./FilterCalloutHost";
-
-export interface IFilterCalloutProps {
-    column: IColumn;
-    /** What the callout is anchored to: the header the filter was opened from. */
-    target: React.RefObject<HTMLElement>;
-}
 
 /** The replaceable parts of filtering. */
 export interface IGridFilteringComponents {
-    /** The callout a column's filter is set in. */
-    onRenderFilterCallout: (props: IFilterCalloutProps) => JSX.Element | null;
+    /** The callout a column's filter is set in, drawn over the grid while one is open. */
+    onRenderFilterCallout: () => JSX.Element | null;
     /** What a filtered column shows in its header. */
-    onRenderFilterIcon: () => JSX.Element;
+    onRenderFilterIcon: (props: IIconProps) => JSX.Element;
 }
 
 /** The defaults for {@link IGridFilteringComponents}. */
 export const GridFilteringComponents: IGridFilteringComponents = {
-    onRenderFilterCallout: (props) => <FilterCalloutHost {...props} />,
-    onRenderFilterIcon: () => <Icon iconName='Filter' />,
+    onRenderFilterCallout: () => <FilterCalloutHost />,
+    onRenderFilterIcon: props => <Icon {...props} />,
 };

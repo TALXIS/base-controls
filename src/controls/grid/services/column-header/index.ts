@@ -1,1 +1,3 @@
-export * from './GridColumnHeaderParts';
+export * from './GridColumnHeader';
+export * from './GridColumnHeaderTheme';
+export * from './GridColumnHeaders';

@@ -1,22 +1,9 @@
-import { ColDef } from "@ag-grid-community/core";
-import { IColumn, IRecord } from "@talxis/client-libraries";
+import { Column } from "@ag-grid-community/core";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
+import { ITheme } from "@theme";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
-
-/** The column a header is drawn for, as everything that contributes to one is told about it. */
-export interface IColumnHeaderParams {
-    /** The definition AG Grid was given, which every column has. */
-    colDef: ColDef<IRecord>;
-    /** The column the provider has for it, where it has one. */
-    column?: IColumn;
-}
-
-/** A hook over what a column's menu offers. */
-export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], params: IColumnHeaderParams) => void;
-
-/** A hook over the menu the sections became. */
-export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], params: IColumnHeaderParams) => void;
+import { GridColumnHeader } from "./GridColumnHeader";
 
 /** Something a module draws in a column header beside its name. */
 export interface IColumnHeaderAdornment {
@@ -29,9 +16,6 @@ export interface IColumnHeaderAdornment {
     onRender?: () => JSX.Element;
 }
 
-/** A hook over what a column header draws. */
-export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams) => void;
-
 /** What a module contributes to a column's menu, under a heading of its own. */
 export interface IColumnMenuSection {
     key: string;
@@ -40,25 +24,58 @@ export interface IColumnMenuSection {
     items: IContextualMenuItem[];
 }
 
-export interface IColumnHeaderPartsParameters {
+/** A hook over what a column's menu offers. */
+export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], header: GridColumnHeader) => void;
+
+/** A hook over the menu the sections became. */
+export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], header: GridColumnHeader) => void;
+
+/** The three colours a column header's theme is generated from. */
+export interface IGridColumnHeaderThemeColors {
+    primary: string;
+    background: string;
+    text: string;
+}
+
+/** The theme a column header is drawn in, as the hooks leave it. */
+export interface IGridColumnHeaderThemeResult {
+    /** The colours the header's theme is generated from. */
+    colors: IGridColumnHeaderThemeColors;
+    /** A theme to draw the header in instead of generating one. */
+    theme?: ITheme;
+}
+
+/** A hook over the theme a column header is drawn in. */
+export type GridColumnHeaderThemeHook = (result: IGridColumnHeaderThemeResult, header: GridColumnHeader) => void;
+
+/** A hook over what a column header draws. */
+export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader) => void;
+
+export interface IGridColumnHeadersParameters {
     services: IGridServiceLocator;
 }
 
 /** What a column header offers, and what it draws. */
-export class GridColumnHeaderParts {
+export class GridColumnHeaders {
     private _services: IGridServiceLocator;
     private _menuSectionHooks = new HookRegistry<GridColumnMenuSectionsHook>();
     private _menuItemHooks = new HookRegistry<GridColumnMenuItemsHook>();
     private _adornmentHooks = new HookRegistry<GridColumnHeaderAdornmentsHook>();
+    private _themeHooks = new HookRegistry<GridColumnHeaderThemeHook>();
 
-    constructor(parameters: IColumnHeaderPartsParameters) {
+    constructor(parameters: IGridColumnHeadersParameters) {
         this._services = parameters.services;
     }
 
+    /** The header of one column, as the parts drawing it read it. */
+    public createHeader(parameters: { column: Column; element?: HTMLElement }): GridColumnHeader {
+        return new GridColumnHeader({ services: this._services, ...parameters });
+    }
+
     /**
-     * Registers a hook over what a column's menu offers.
+     * Registers a hook over what a column's menu offers, under a heading of its own.
      *
-     * @param priority Ascending: sorting at `0`,
+     * @param priority Ascending: sorting at `0`, and every module after it in the order it was given.
      */
     public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
         return this._menuSectionHooks.register(hook, priority);
@@ -67,7 +84,9 @@ export class GridColumnHeaderParts {
     /**
      * Registers a hook over the assembled menu, for a contribution a section cannot express.
      *
-     * its own. Prefer {@link registerColumnMenuSectionHook}
+     * Prefer {@link registerColumnMenuSectionHook}: an entry under a heading of its own is what a module
+     * offers.
+     *
      * @param priority Ascending, and applied after all the sections regardless.
      */
     public registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void {
@@ -75,9 +94,9 @@ export class GridColumnHeaderParts {
     }
 
     /** Everything the modules offer for a column, in order. */
-    public getMenuItems(params: IColumnHeaderParams): IContextualMenuItem[] {
+    public getMenuItems(header: GridColumnHeader): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
-        this._menuSectionHooks.apply(sections, params);
+        this._menuSectionHooks.apply(sections, header);
         const items = sections
             .filter(section => section.items.length > 0)
             .flatMap(section => [{
@@ -87,20 +106,37 @@ export class GridColumnHeaderParts {
                 //a heading names the entries under it rather than being one
                 onRenderIcon: () => null,
             }, ...section.items]);
-        this._menuItemHooks.apply(items, params);
+        this._menuItemHooks.apply(items, header);
         return items;
     }
 
-    /** Registers a hook over what a column header draws beside its name. */
+    /**
+     * Registers a hook over what a column header draws beside its name.
+     *
+     * @param priority Ascending: a lower number runs earlier.
+     */
     public registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
         return this._adornmentHooks.register(hook, priority);
     }
 
+    /**
+     * Registers a hook over the theme a column header is drawn in.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void {
+        return this._themeHooks.register(hook, priority);
+    }
+
+    /** Run by the header in question, which is the only caller. */
+    public applyColumnHeaderThemeHooks(result: IGridColumnHeaderThemeResult, header: GridColumnHeader): void {
+        this._themeHooks.apply(result, header);
+    }
+
     /** Everything the modules draw for a column, in order. */
-    public getAdornments(params: IColumnHeaderParams): IColumnHeaderAdornment[] {
+    public getAdornments(header: GridColumnHeader): IColumnHeaderAdornment[] {
         const adornments: IColumnHeaderAdornment[] = [];
-        this._adornmentHooks.apply(adornments, params);
+        this._adornmentHooks.apply(adornments, header);
         return adornments;
     }
 }
-

@@ -4,7 +4,7 @@ import { FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
-import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
+import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 
 /** What changed about the filter a column header has open. */
@@ -26,6 +26,7 @@ export class GridFiltering {
     private _filtering: Filtering;
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();
     private _openColumnName?: string;
+    private _openTarget?: HTMLElement;
 
     constructor(parameters: IGridFilteringParameters) {
         this._services = parameters.services;
@@ -73,13 +74,21 @@ export class GridFiltering {
         return this._openColumnName;
     }
 
-    public openFilter(columnName: string): void {
+    /** What the open filter is drawn against: the header it was opened from. */
+    public getOpenTarget(): HTMLElement | undefined {
+        return this._openTarget;
+    }
+
+    /** @param target What to draw the filter against, where the caller knows. */
+    public openFilter(columnName: string, target?: HTMLElement): void {
         this._openColumnName = columnName;
+        this._openTarget = target;
         this.events.dispatchEvent('onFilterOpened', columnName);
     }
 
     public closeFilter(): void {
         this._openColumnName = undefined;
+        this._openTarget = undefined;
         this.events.dispatchEvent('onFilterClosed');
     }
 
@@ -95,8 +104,8 @@ export class GridFiltering {
     }
 
     /** What a column's menu offers: opening the filter, and clearing it. */
-    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         if (!column || !this.isColumnFilterable(column)) {
             return;
         }
@@ -104,7 +113,8 @@ export class GridFiltering {
             key: 'filter',
             text: this._labels.getLocalizedString('filterMenuFilterBy'),
             iconProps: { iconName: 'Filter' },
-            onClick: () => this.openFilter(column.name),
+            //the header the menu was opened from is what the filter is drawn against
+            onClick: () => this.openFilter(column.name, header.getElement()),
         }];
         if (this.isFiltered(column)) {
             mine.push({
@@ -118,15 +128,15 @@ export class GridFiltering {
     }
 
     /** The funnel, while a filter is applied to the dataset. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         if (!column || !this.isFiltered(column)) {
             return;
         }
         adornments.push({
             key: 'filter',
             placement: 'suffix',
-            onRender: () => this.components.onRenderFilterIcon(),
+            onRender: () => this.components.onRenderFilterIcon({ iconName: 'Filter' }),
         });
     }
 

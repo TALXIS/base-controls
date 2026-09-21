@@ -4,7 +4,7 @@ import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadat
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
-import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
+import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
@@ -186,8 +186,8 @@ export class GridGrouping {
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         if (!column || !this.isColumnGrouped(column)) {
             return;
         }
@@ -195,13 +195,13 @@ export class GridGrouping {
             key: 'grouping',
             placement: 'prefix',
             title: this._labels.getLocalizedString('headerTitle'),
-            onRender: () => this.components.onRenderGroupingIcon(),
+            onRender: () => this.components.onRenderGroupingIcon({ iconName: 'GroupList' }),
         });
     }
 
     /** What a column's menu offers: grouping by it, or ungrouping it. */
-    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         if (!column || !this.canColumnBeGrouped(column)) {
             return;
         }

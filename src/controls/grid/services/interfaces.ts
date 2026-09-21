@@ -11,7 +11,8 @@ import type { GridCells } from "../services/cells";
 import type { GridEditing } from "../services/editing";
 import type { GridKeyboard } from "../services/keyboard";
 import type { GridRows } from "../services/rows";
-import type { GridColumnHeaderParts } from "../services/column-header";
+import type { GridColumnHeaders } from "../services/column-header";
+import type { GridSurfaces } from "../services/surfaces";
 import type { GridColumnLayout } from "../services/column-layout";
 import type { GridOverlays } from "../services/overlays";
 import type { GridSelection } from "../modules/selection/GridSelection";
@@ -47,11 +48,13 @@ export interface IGridServiceMap {
     /** Which cell the user is editing, and what the keyboard does about it. */
     editing: GridEditing;
     /** What a column header offers, assembled from what the modules registered. */
-    columnHeader: GridColumnHeaderParts;
+    columnHeaders: GridColumnHeaders;
     /** The widths and the order the user chose, written back to the provider. */
     columnLayout: GridColumnLayout;
     /** Which overlay the grid is showing: the spinner, the empty state, neither. */
     overlays: GridOverlays;
+    /** What the modules draw over the grid. */
+    surfaces: GridSurfaces;
     /** The totals under the rows. */
     aggregation: GridAggregation;
     /** Grouping the rows by a column. */

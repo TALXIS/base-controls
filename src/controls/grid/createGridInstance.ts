@@ -14,9 +14,10 @@ import { GridColumns } from "./services/columns";
 import { GridCells } from "./services/cells";
 import { GridEditing } from "./services/editing";
 import { GridKeyboard } from "./services/keyboard";
-import { GridColumnHeaderParts } from "./services/column-header";
+import { GridColumnHeaders } from "./services/column-header";
 import { GridColumnLayout } from "./services/column-layout";
 import { GridOverlays } from "./services/overlays";
+import { GridSurfaces } from "./services/surfaces";
 
 export interface ICreateGridInstanceParameters {
     /** The current props, read on demand so the grid follows them. */
@@ -58,7 +59,8 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     const rows = new GridRows({ services });
     const keyboard = new GridKeyboard({ services });
     const editing = new GridEditing({ services });
-    const columnHeader = new GridColumnHeaderParts({ services });
+    const columnHeaders = new GridColumnHeaders({ services });
+    const surfaces = new GridSurfaces({ services });
     //both wait for an api and then talk only to it
     const columnLayout = new GridColumnLayout({ services });
     const overlays = new GridOverlays({ services });
@@ -67,7 +69,8 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     services.register('rows', () => rows);
     services.register('keyboard', () => keyboard);
     services.register('editing', () => editing);
-    services.register('columnHeader', () => columnHeader);
+    services.register('columnHeaders', () => columnHeaders);
+    services.register('surfaces', () => surfaces);
     services.register('columnLayout', () => columnLayout);
     services.register('overlays', () => overlays);
 

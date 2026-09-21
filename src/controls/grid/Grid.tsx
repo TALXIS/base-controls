@@ -12,6 +12,7 @@ import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { GridServicesContext } from "./context";
+import { Surfaces } from "./components/surfaces";
 import { GridComponents } from "./components";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
@@ -94,6 +95,7 @@ export const GridRoot = (props: IGrid) => {
             ref={onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
             {components.onRenderAgGrid(componentProps)}
+            <Surfaces />
         </ThemeProvider>
     </GridServicesContext.Provider>
 }

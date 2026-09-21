@@ -1,7 +1,7 @@
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, TotalRow } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
-import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
+import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 
 /** Which label names a total, per aggregation a column can carry. */
@@ -60,8 +60,8 @@ export class GridAggregation {
     }
 
     /** What the column is totalling, for the header's tooltip. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         const aggregationFunction = column?.aggregation?.aggregationFunction;
         if (!column || !aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
             return;
@@ -75,8 +75,8 @@ export class GridAggregation {
     }
 
     /** The totals a column can show, as a submenu of what it is currently totalling. */
-    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
-        const column = params.column;
+    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+        const column = header.getColumn();
         const supported = column?.metadata?.SupportedAggregations ?? [];
         if (!column || !this.canColumnBeAggregated(column) || !supported.length) {
             return;

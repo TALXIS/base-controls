@@ -3,6 +3,8 @@ export * from './namespace';
 export * from './useGridService';
 export * from './components';
 export * from './services/cells';
+export * from './services/column-header';
+export * from './services/surfaces';
 export * from './services/editing';
 export * from './services/rows';
 export * from './services/fields';

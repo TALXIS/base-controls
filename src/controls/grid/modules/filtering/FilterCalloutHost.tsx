@@ -3,19 +3,21 @@ import { useEventEmitter } from "@hooks";
 import { useGridService } from "../../useGridService";
 import { IGridFilteringEvents } from "./GridFiltering";
 import { FilterCallout } from "./FilterCallout";
-import { IFilterCalloutProps } from "./moduleComponents";
 
-/** Shows the filter callout while this module says the column's filter is open. */
-export const FilterCalloutHost = (props: IFilterCalloutProps) => {
+/** Shows the filter callout for whichever column this module says has one open. */
+export const FilterCalloutHost = () => {
     const filtering = useGridService('filtering')!;
+    const provider = useGridService('provider');
     const [openColumnName, setOpenColumnName] = React.useState(filtering.getOpenColumnName());
 
     //both events, one read: what is open is the module's answer
-    useEventEmitter<IGridFilteringEvents>(filtering.events, ['onFilterOpened', 'onFilterClosed'],
-        (() => setOpenColumnName(filtering.getOpenColumnName())) as IGridFilteringEvents['onFilterOpened']);
+    useEventEmitter<IGridFilteringEvents>(filtering.events, ['onFilterOpened', 'onFilterClosed'], (() => setOpenColumnName(filtering.getOpenColumnName())) as IGridFilteringEvents['onFilterOpened']);
 
-    if (openColumnName !== props.column.name) {
+    const column = openColumnName ? provider.getColumnsMap()[openColumnName] : undefined;
+    if (!column) {
         return null;
     }
-    return <FilterCallout column={props.column} target={props.target} onDismiss={() => filtering.closeFilter()} />;
+    return <FilterCallout 
+        column={column} 
+        target={filtering.getOpenTarget()} onDismiss={() => filtering.closeFilter()} />;
 };
