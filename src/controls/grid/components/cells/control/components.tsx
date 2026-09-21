@@ -3,9 +3,15 @@ import { CellUi, ICellControlProps } from "../ui";
 
 /** The replaceable pieces of a cell's control. */
 export interface IGridControlComponents {
-    /** The inset the control is drawn in. */
+    /** The inset the control is drawn in. `CellUi.Control` is what draws it by default. */
     onRenderControlContainer: (props: ICellControlProps) => JSX.Element;
-    /** What draws the cell's value, handed what the control resolved to. */
+    /**
+     * What draws the cell's value, handed what the control resolved to.
+     *
+     * The only slot handed a `defaultRender`, because its default is a choice rather than a component: a
+     * column that named a control of its own is drawn by `LegacyNestedControlRenderer`, and any other by
+     * `GridValueRenderer`.
+     */
     onRenderControl: (props: IGridValueRenderer, defaultRender: (props: IGridValueRenderer) => JSX.Element | null) => JSX.Element | null;
 }
 

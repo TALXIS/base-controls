@@ -2,7 +2,7 @@ import { CellUi, IRowResizeGripProps } from "../ui";
 
 /** The replaceable pieces of what a row is dragged taller by. */
 export interface IGridRowResizeGripComponents {
-    /** What the drag is done with, around what it grows. */
+    /** What the drag is done with, around what it grows. `CellUi.RowResizeGrip` is the default. */
     onRenderRowResizeGrip: (props: IRowResizeGripProps) => JSX.Element;
 }
 
