@@ -1,11 +1,7 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
-import { CellEditor } from "../cell-editor/CellEditor";
-import { IGridCellEditorComponents } from "../cell-editor/components";
+import { CellEditor, IGridCellEditorProps } from "../cell-editor/CellEditor";
 import { Field } from "../field/Field";
 
-export interface IGridFieldCellEditorProps extends ICellRendererParams {
-    components?: IGridCellEditorComponents;
-}
+export interface IGridFieldCellEditorProps extends IGridCellEditorProps { }
 
 /** The cell of a record's column while it is being edited. */
 export const FieldCellEditor = (props: IGridFieldCellEditorProps) => {

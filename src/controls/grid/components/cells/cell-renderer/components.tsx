@@ -1,6 +1,7 @@
 import { IGridCellCommandsComponents } from "../commands/components";
 import { IGridControlComponents } from "../control/components";
 import { IGridFieldValidationComponents } from "../field-validation/components";
+import { IGridCellContainerComponents } from "../container/components";
 import { IGridCellLoadingComponents } from "../loading/components";
 import { IGridRowResizeGripComponents } from "../row-resize-grip/components";
 
@@ -8,6 +9,8 @@ import { IGridRowResizeGripComponents } from "../row-resize-grip/components";
 export interface IGridCellComponents {
     /** What a row is dragged taller by. */
     rowResizeGrip?: Partial<IGridRowResizeGripComponents>;
+    /** The element the cell's content is drawn in. */
+    container?: Partial<IGridCellContainerComponents>;
     /** What is drawn while the cell waits. */
     loading?: Partial<IGridCellLoadingComponents>;
     /** What the cell says about a value the record refuses. */

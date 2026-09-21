@@ -1,11 +1,7 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
-import { CellRenderer } from "../cell-renderer/CellRenderer";
-import { IGridCellComponents } from "../cell-renderer/components";
+import { CellRenderer, IGridCellRendererProps } from "../cell-renderer/CellRenderer";
 import { Field } from "../field/Field";
 
-export interface IGridFieldCellRendererProps extends ICellRendererParams {
-    components?: IGridCellComponents;
-}
+export interface IGridFieldCellRendererProps extends IGridCellRendererProps { }
 
 /** The cell of a record's column: bound to the field, and drawing what that field holds. */
 export const FieldCellRenderer = (props: IGridFieldCellRendererProps) => {
