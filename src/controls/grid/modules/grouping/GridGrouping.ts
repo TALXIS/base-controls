@@ -4,6 +4,7 @@ import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadat
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
+import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
@@ -272,7 +273,7 @@ export class GridGrouping {
 
 
     //the render method reached through a field of ours.
-    private _onRenderExpansionHeader = (): JSX.Element => this.components.onRenderExpansionHeader();
+    private _onRenderExpansionHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderExpansionHeader(props);
 
     /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridGroupingComponents {
