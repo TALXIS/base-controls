@@ -2,6 +2,7 @@ import { CellCommands } from "./components/cells/commands/CellCommands";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellControl } from "./components/cells/control/CellControl";
 import { CellEditor } from "./components/cells/cell-editor/CellEditor";
+import { CellEmptyRenderer } from "./components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { CellField } from "./components/cells/field/CellField";
 import { CellFieldEditor } from "./components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "./components/cells/field-cell-renderer/CellFieldRenderer";
@@ -38,6 +39,8 @@ export interface IGridCellNamespace {
     Renderer: typeof CellRenderer;
     /** A cell of a record's column, drawing what that column holds. */
     FieldRenderer: typeof CellFieldRenderer;
+    /** A cell with nothing drawn in it, for a column that holds no value. */
+    EmptyRenderer: typeof CellEmptyRenderer;
     /** The same cell while it is being edited: `colDef.cellEditor`. */
     Editor: typeof CellEditor;
     /** A record's column while it is being edited. */
@@ -114,6 +117,7 @@ export const Grid: IGridNamespace = {
     Cell: {
         Renderer: CellRenderer,
         FieldRenderer: CellFieldRenderer,
+        EmptyRenderer: CellEmptyRenderer,
         Editor: CellEditor,
         FieldEditor: CellFieldEditor,
         Root: CellRoot,

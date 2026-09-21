@@ -1,6 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
+import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IColumnHeaderParams } from "@controls/grid/components/column-header/root/ColumnHeaderRoot";
 
 /** The key the expansion column takes. */

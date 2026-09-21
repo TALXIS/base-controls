@@ -13,6 +13,7 @@ import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
 import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
+import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
 
 
 /** What a column is worth when it does not say. */
@@ -62,8 +63,7 @@ export class GridColumns {
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
         columnDef.headerComponent ??= ColumnHeaderRenderer;
-        columnDef.cellRenderer = CellRenderer;
-        columnDef.cellEditor = CellEditor;
+        columnDef.cellRenderer = CellEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
         columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
