@@ -211,10 +211,17 @@ export class GridGrouping {
 
     /** A group row reads as the heading of what it holds, so what it draws is bolder than a record's. */
     public applyCellTheme(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
-        if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
+        //the grid is what it was without grouping until something is grouped
+        if (this._provider.grouping.getGroupBys().length === 0) {
             return;
         }
-        theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+        if (params.record.getDataProvider().getSummarizationType() === 'grouping') {
+            theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
+            theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+            return;
+        }
+        //a record sits on the grid's own surface, so what stands off it is the group above it
+        theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */
@@ -344,6 +351,10 @@ export class GridGrouping {
 
     private get _provider() {
         return this._gridServices.get('provider');
+    }
+
+    private get _gridTheme() {
+        return this._gridServices.get('theme');
     }
 
 

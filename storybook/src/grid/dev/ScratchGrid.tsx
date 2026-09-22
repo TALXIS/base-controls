@@ -2,28 +2,7 @@ import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS } from './scratchGridData'
-
-/**
- * The wash a row takes from the state it is in, by status value.
- *
- * Pale on purpose: this is the background of every cell in the row, and what is drawn on it still reads.
- */
-/**
- * What the header of the column the checkboxes live in is drawn in, rather than the grid's own.
- *
- * The accent is what the checkbox is ticked in, so all three colours of a theme are in play here.
- */
-const SELECTION_HEADER = { primary: '#4a6fa5', background: '#eef1f5', text: '#2f3a47' }
-
-const STATUS_TINTS: { [status: number]: string } = {
-    1: '#fdf3f3',
-    2: '#fdf8e7',
-    3: '#eff8ef',
-    4: '#fdf0f0',
-    5: '#eff6fd',
-    6: '#f4f4f4',
-}
+import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
 const PAYLOAD_COLUMN = 'payload'
 
@@ -216,26 +195,6 @@ const withPayloadCell = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
-        //the state a row is in, washed over every cell of it - the checkboxes included, which is what a
-        //theme hook reaches and the record's own formatting expression cannot
-        services.get('cells').registerCellThemeHook((theme, params) => {
-            const status = Number(params.record.getValue('status') ?? 0)
-            const background = STATUS_TINTS[status]
-            if (!background) {
-                return
-            }
-            theme.colors.background = background
-            theme.colors.primary = STATUS_OPTIONS.find(option => option.Value === status)!.Color
-        })
-        //the header of the checkbox column, which the module draws from the header parts
-        services.get('columnHeaders').registerColumnHeaderThemeHook((theme, header) => {
-            if (!services.find('selection')?.isSelectionColumn(header.getColDef().colId ?? undefined)) {
-                return
-            }
-            theme.colors.primary = SELECTION_HEADER.primary
-            theme.colors.background = SELECTION_HEADER.background
-            theme.colors.text = SELECTION_HEADER.text
-        })
         services.get('columns').registerColumnDefinitionsHook(columnDefs => {
             const payload = columnDefs.find(columnDef => columnDef.colId === PAYLOAD_COLUMN)
             if (payload) {
