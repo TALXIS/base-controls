@@ -72,6 +72,18 @@ export class GridAggregation {
         this._write(() => this._totalRow?.removeAggregation(alias));
     }
 
+    /** What the column's total is called, for the row pinned under the rest. */
+    public getTotalLabel(columnName: string): string | undefined {
+        const aggregationFunction = this._provider.getColumnsMap()[columnName]?.aggregation?.aggregationFunction;
+        return aggregationFunction ? this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]) : undefined;
+    }
+
+    /** What the total row holds a column's aggregate under: the alias the aggregation was asked for by. */
+    public getTotalValueColumnName(record: IRecord, columnName: string): string {
+        const alias = this._provider.getColumnsMap()[columnName]?.aggregation?.alias;
+        return alias && record.getDataProvider().getColumnsMap()[alias] ? alias : columnName;
+    }
+
     /** What every column draws in the row pinned under the rest. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columnsMap = this._provider.getColumnsMap();
