@@ -287,6 +287,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 strategy: props.rowModel === 'clientSide'
                     ? createClientSideGroupingStrategy()
                     : createServerSideGroupingStrategy(),
+                type: 'flat',
             })
             : undefined,
     }), [key])

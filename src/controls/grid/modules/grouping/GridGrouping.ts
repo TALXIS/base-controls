@@ -56,6 +56,8 @@ export class GridGrouping {
         this._settings = parameters.settings;
         this._expandedLevel = parameters.settings.defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
+        //the provider nests by default, so what this module was asked for is the word on it
+        this._provider.setProperty('groupingType', this._settings.type);
         //before the strategy, so a strategy of its own listening for a load is behind this
         this._interceptNestedGrouping();
         this._strategy = parameters.strategy.create({ services: this._services });
@@ -130,8 +132,13 @@ export class GridGrouping {
     }
 
     /** Whether a row's cell in this column carries the chevron that opens it. */
-    public isColumnExpandable(record: IRecord, column: IColumn): boolean {
-        return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === column.name;
+    public isColumnExpandable(record: IRecord, columnName: string): boolean {
+        return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === columnName;
+    }
+
+    /** Whether the row stands for this column too, which a flat grouping's row does for every group-by. */
+    public isRowGroupedBy(record: IRecord, columnName: string): boolean {
+        return record.getDataProvider().grouping.getGroupBys().some(groupBy => groupBy.columnName === columnName);
     }
 
     /** Whether a group row opens itself */
@@ -340,7 +347,7 @@ export class GridGrouping {
                 //a grouped column holds its value in the group rows above the record rather than in it
                 return this.isColumnGrouped(column) ? { component: CellEmptyRenderer } : cellRendererSelector?.(params);
             }
-            return this.isColumnExpandable(params.data, column) ? { component: this._onRenderGroupCell } : { component: CellEmptyRenderer };
+            return this.isRowGroupedBy(params.data, column.name) ? { component: this._onRenderGroupCell } : { component: CellEmptyRenderer };
         };
     }
 

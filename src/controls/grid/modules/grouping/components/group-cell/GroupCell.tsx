@@ -21,24 +21,26 @@ export const GroupCell = (props: ICellRendererParams<IRecord>) => {
         return () => node.removeEventListener('expandedChanged', rerender);
     }, [node]);
 
-    const getChevronButton = (): ICommandBarItemProps[] => [{
+    const getChevronButton = (): ICommandBarItemProps => ({
         key: 'groupExpansion',
         iconOnly: true,
         iconProps: { iconName: node.expanded ? 'ChevronDown' : 'ChevronRight' },
         onClick: () => grouping.toggleGroup(node),
-    }];
+    });
 
     //the selector draws this only for a group row, which is a row with a record of its own
     const record = props.data!;
+    //one column of the row opens it, which is the level's own even where the row stands for several
+    const isExpandable = grouping.isColumnExpandable(record, props.colDef!.colId!);
 
     return <Grid.Cell.Field record={record} name={grouping.getGroupedValueColumnName(record, props.colDef!.colId!)}>
         <Grid.Cell.Root {...props}>
             <Grid.Cell.Theme>
                 <Grid.Cell.Container>
                     <Grid.Cell.Loading>
-                        <Grid.Cell.Ui.Commands items={getChevronButton()} className={styles.commands} />
+                        <Grid.Cell.Ui.Commands items={isExpandable ? [getChevronButton()] : []} className={styles.commands} />
                         <Grid.Cell.Control />
-                        <GroupCount />
+                        {isExpandable && <GroupCount />}
                         <Grid.Cell.Commands />
                     </Grid.Cell.Loading>
                 </Grid.Cell.Container>

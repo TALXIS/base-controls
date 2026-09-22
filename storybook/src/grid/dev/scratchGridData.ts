@@ -8,13 +8,12 @@ export const PRIMARY_ID = 'mem_taskid'
  * The sorting module asks for `IsValidForGrid` and the filtering module for the operators a column
  * supports, so a fixture without them renders a header that offers nothing.
  */
-const gridMetadata = (dataType: DataType, canBeGrouped: boolean = false) => ({
+const gridMetadata = (dataType: DataType) => ({
     IsValidForGrid: true,
     IsValidForUpdate: true,
     SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(dataType).map(operator => operator.Value),
-    //the grouping module offers a column in its menu only if the provider says it can be grouped, so the
-    //ones that would make sense to group by are the ones that say so
-    CanBeGrouped: canBeGrouped,
+    //every column says it can be grouped, so the menu offers grouping wherever it is opened
+    CanBeGrouped: true,
 })
 
 /** What the aggregation module offers in a number column's menu. */
@@ -77,15 +76,15 @@ export const COLUMNS: IColumn[] = [
     },
     {
         name: 'owner', dataType: DataTypes.SingleLineText, displayName: 'Owner', visualSizeFactor: 130,
-        metadata: gridMetadata(DataTypes.SingleLineText, true),
+        metadata: gridMetadata(DataTypes.SingleLineText),
     },
     {
         name: 'status', dataType: DataTypes.OptionSet, displayName: 'Status', visualSizeFactor: 140,
-        metadata: { ...gridMetadata(DataTypes.OptionSet, true), OptionSet: STATUS_OPTIONS },
+        metadata: { ...gridMetadata(DataTypes.OptionSet), OptionSet: STATUS_OPTIONS },
     },
     {
         name: 'estimate', dataType: DataTypes.Decimal, displayName: 'Estimate', visualSizeFactor: 110,
-        metadata: { ...gridMetadata(DataTypes.Decimal, true), SupportedAggregations: SUPPORTED_AGGREGATIONS },
+        metadata: { ...gridMetadata(DataTypes.Decimal), SupportedAggregations: SUPPORTED_AGGREGATIONS },
     },
     {
         name: 'due', dataType: DataTypes.DateAndTimeDateOnly, displayName: 'Due', visualSizeFactor: 120,
@@ -114,13 +113,13 @@ export const COLUMNS: IColumn[] = [
     {
         name: 'priority', dataType: DataTypes.WholeNone, displayName: 'Priority', visualSizeFactor: 100,
         metadata: {
-            ...gridMetadata(DataTypes.WholeNone, true),
+            ...gridMetadata(DataTypes.WholeNone),
             SupportedAggregations: SUPPORTED_AGGREGATIONS,
         },
     },
     {
         name: 'budget', dataType: DataTypes.Currency, displayName: 'Budget', visualSizeFactor: 120,
-        metadata: { ...gridMetadata(DataTypes.Currency, true), SupportedAggregations: SUPPORTED_AGGREGATIONS },
+        metadata: { ...gridMetadata(DataTypes.Currency), SupportedAggregations: SUPPORTED_AGGREGATIONS },
     },
     {
         name: 'createdon', dataType: DataTypes.DateAndTimeDateAndTime, displayName: 'Created On', visualSizeFactor: 180,
@@ -132,16 +131,16 @@ export const COLUMNS: IColumn[] = [
     },
     {
         name: 'billable', dataType: DataTypes.TwoOptions, displayName: 'Billable', visualSizeFactor: 110,
-        metadata: { ...gridMetadata(DataTypes.TwoOptions, true), OptionSet: BILLABLE_OPTIONS },
+        metadata: { ...gridMetadata(DataTypes.TwoOptions), OptionSet: BILLABLE_OPTIONS },
     },
     {
         name: 'approved', dataType: DataTypes.TwoOptions, displayName: 'Approved', visualSizeFactor: 110,
-        metadata: { ...gridMetadata(DataTypes.TwoOptions, true), OptionSet: APPROVED_OPTIONS },
+        metadata: { ...gridMetadata(DataTypes.TwoOptions), OptionSet: APPROVED_OPTIONS },
     },
     {
         name: 'duration', dataType: DataTypes.WholeDuration, displayName: 'Duration', visualSizeFactor: 120,
         metadata: {
-            ...gridMetadata(DataTypes.WholeDuration, true),
+            ...gridMetadata(DataTypes.WholeDuration),
             SupportedAggregations: SUPPORTED_AGGREGATIONS,
         },
     },
