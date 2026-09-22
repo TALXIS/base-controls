@@ -4,6 +4,7 @@ import { LocalizationService, ServiceLocator } from "@utils";
 import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error/FullWidthCellRendererError";
 import { IGridModule } from "../interfaces";
 import { GRID_AGGREGATION_LABELS, IGridAggregationLabels } from "./labels";
+import { GridAggregationComponents, IGridAggregationComponents } from "./moduleComponents";
 import { GridAggregation } from "./GridAggregation";
 import { IGridAggregationServiceMap } from "./services";
 
@@ -12,6 +13,8 @@ export interface IAggregationModuleOptions {
     labels?: Partial<IGridAggregationLabels>;
     /** Whether a column's menu offers the totals. */
     allowUserAggregation?: boolean;
+    /** The parts of this module to render differently. */
+    components?: Partial<IGridAggregationComponents>;
 }
 
 /**
@@ -34,7 +37,9 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         services.register('gridServices', () => gridServices);
         //built once, then registered: a resolver runs on every lookup
         const labels = new LocalizationService<IGridAggregationLabels>({ ...GRID_AGGREGATION_LABELS, ...options?.labels });
+        const components = { ...GridAggregationComponents, ...options?.components };
         services.register('labels', () => labels);
+        services.register('components', () => components);
         const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation ?? true });
         gridServices.register('aggregation', () => aggregation);
     },

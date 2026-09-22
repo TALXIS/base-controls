@@ -1,6 +1,9 @@
-import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, TotalRow } from "@talxis/client-libraries";
+import { ColDef, ICellRendererParams } from "@ag-grid-community/core";
+import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
+import { IGridAggregationComponents } from "./moduleComponents";
+import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 
@@ -38,6 +41,7 @@ export class GridAggregation {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columnHeaders');
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
@@ -67,6 +71,32 @@ export class GridAggregation {
     public removeAggregation(alias: string): void {
         this._write(() => this._totalRow?.removeAggregation(alias));
     }
+
+    /** What every column draws in the row pinned under the rest. */
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
+        const columnsMap = this._provider.getColumnsMap();
+        for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
+            this._applyTotalRowRenderer(colDef, colDef.colId ?? colDef.field!);
+        }
+    };
+
+    /** A column totals something in the pinned row, or holds nothing there. */
+    private _applyTotalRowRenderer(colDef: ColDef<IRecord>, columnName: string): void {
+        const cellRendererSelector = colDef.cellRendererSelector;
+        colDef.cellRendererSelector = params => {
+            if (params.node.rowPinned !== 'bottom') {
+                return cellRendererSelector?.(params);
+            }
+            //read now rather than captured: a menu click totals a column without rebuilding the definitions
+            const column = this._provider.getColumnsMap()[columnName];
+            return column?.aggregation?.aggregationFunction
+                ? { component: this._onRenderTotalCell }
+                : { component: CellEmptyRenderer };
+        };
+    }
+
+    //the render method reached through a field of ours.
+    private _onRenderTotalCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderTotalCell(props);
 
     /** What the column is totalling, for the header's tooltip. */
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void => {
@@ -170,6 +200,10 @@ export class GridAggregation {
         this._totalRow = new TotalRow(this._provider);
         this._syncTotalRow();
         return this._totalRow;
+    }
+
+    private get _components(): IGridAggregationComponents {
+        return this._services.get('components');
     }
 
     private get _labels(): ILocalizationService<IGridAggregationLabels> {
