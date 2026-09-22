@@ -131,12 +131,8 @@ export class GridAggregation {
     private _applyTotalRowValue(colDef: ColDef<IRecord>, columnName: string): void {
         const valueGetter = colDef.valueGetter;
         const valueFormatter = colDef.valueFormatter;
-        colDef.valueGetter = params => params.node?.rowPinned === 'bottom'
-            ? this._getTotalValue(params.data, columnName)
-            : (typeof valueGetter === 'function' ? valueGetter(params) : undefined);
-        colDef.valueFormatter = params => params.node?.rowPinned === 'bottom'
-            ? this._getTotalFormattedValue(params.data, columnName)
-            : (typeof valueFormatter === 'function' ? valueFormatter(params) : '');
+        colDef.valueGetter = params => params.node?.rowPinned === 'bottom' ? this._getTotalValue(params.data, columnName) : (typeof valueGetter === 'function' ? valueGetter(params) : undefined);
+        colDef.valueFormatter = params => params.node?.rowPinned === 'bottom' ? this._getTotalFormattedValue(params.data, columnName) : (typeof valueFormatter === 'function' ? valueFormatter(params) : '');
     }
 
     /** What the total row holds for a column: the aggregate, or nothing where it totals nothing. */
