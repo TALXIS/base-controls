@@ -63,6 +63,19 @@ export class GridGrouping {
         this._gridServices.whenAvailable('gridApi', gridApi => this._strategy.applyGridOptions(gridApi));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', () => this._warnChildLimitReached());
+        this._registerHooks();
+    }
+
+    /** What this module has to say about what the grid draws, in the order the grid asks. */
+    private _registerHooks(): void {
+        const cells = this._gridServices.get('cells');
+        const columnHeaders = this._gridServices.get('columnHeaders');
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        cells.registerCellThemeHook(this._onCellTheme);
+        cells.registerCellEditableHook(this._onCellEditable);
+        //behind sorting and filtering, which a column's menu offers first
+        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 20);
+        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 20);
     }
 
     /** The strings this module renders, for its own components. */
@@ -187,7 +200,7 @@ export class GridGrouping {
     }
 
     /** Moves a grouped column to the front, pins it if asked */
-    public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columnsMap = this._provider.getColumnsMap();
         const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
         for (const colDef of columnDefs.filter(isGrouped)) {
@@ -208,10 +221,10 @@ export class GridGrouping {
         if (columnDefs.some(isGrouped)) {
             columnDefs.push(getGroupExpansionColumnDefinition(this._onRenderExpansionHeader));
         }
-    }
+    };
 
     /** A group row reads as the heading of what it holds, so what it draws is bolder than a record's. */
-    public applyCellTheme(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
+    private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
         //the grid is what it was without grouping until something is grouped
         if (this._provider.grouping.getGroupBys().length === 0) {
             return;
@@ -223,18 +236,18 @@ export class GridGrouping {
         }
         //a record sits on the grid's own surface, so what stands off it is the group above it
         theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
-    }
+    };
 
     /** A group row holds no record's value, so there is nothing in it to change. */
-    public applyCellEditable(result: IGridCellEditable, params: { record: IRecord; columnName: string }): void {
+    private _onCellEditable = (result: IGridCellEditable, params: { record: IRecord; columnName: string }): void => {
         if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
             return;
         }
         result.isEditable = false;
-    }
+    };
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isColumnGrouped(column)) {
             return;
@@ -245,10 +258,10 @@ export class GridGrouping {
             title: this._labels.getLocalizedString('headerTitle'),
             onRender: () => this.components.onRenderGroupingIcon({ iconName: 'GroupList' }),
         });
-    }
+    };
 
     /** What a column's menu offers: grouping by it, or ungrouping it. */
-    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+    private _onMenuSection = (sections: IColumnMenuSection[], header: GridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.canColumnBeGrouped(column)) {
             return;
@@ -264,7 +277,7 @@ export class GridGrouping {
                 onClick: () => this.toggleColumnGroup(column.name),
             }],
         });
-    }
+    };
 
     /** Keeps a nested grouping to one level while a load runs, and puts the rest back after. */
     private _interceptNestedGrouping(): void {
