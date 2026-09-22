@@ -32,6 +32,15 @@ export class GridAggregation {
         this._services = parameters.services;
         this._allowUserAggregation = parameters.allowUserAggregation;
         this._gridServices.whenAvailable('gridApi', () => this._onGridApiAvailable());
+        this._registerHooks();
+    }
+
+    /** What this module has to say about what the grid draws, in the order the grid asks. */
+    private _registerHooks(): void {
+        const columnHeaders = this._gridServices.get('columnHeaders');
+        //behind grouping, which a column's menu offers first
+        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
+        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
     }
 
     /** The total row, but only if the dataset has ever carried an aggregation. */
@@ -60,7 +69,7 @@ export class GridAggregation {
     }
 
     /** What the column is totalling, for the header's tooltip. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void => {
         const column = header.getColumn();
         const aggregationFunction = column?.aggregation?.aggregationFunction;
         if (!column || !aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
@@ -72,10 +81,10 @@ export class GridAggregation {
             placement: 'suffix',
             title: this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]),
         });
-    }
+    };
 
     /** The totals a column can show, as a submenu of what it is currently totalling. */
-    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+    private _onMenuSection = (sections: IColumnMenuSection[], header: GridColumnHeader): void => {
         const column = header.getColumn();
         const supported = column?.metadata?.SupportedAggregations ?? [];
         if (!column || !this.canColumnBeAggregated(column) || !supported.length) {
@@ -101,7 +110,7 @@ export class GridAggregation {
                 })),
             ],
         });
-    }
+    };
 
     /** Applies a change, then asks whoever owns the answer to work it out again. */
     private _write(change: () => void): void {

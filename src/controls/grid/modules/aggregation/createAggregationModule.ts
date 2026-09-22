@@ -37,8 +37,6 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         services.register('labels', () => labels);
         const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation ?? true });
         gridServices.register('aggregation', () => aggregation);
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook((sections, params) => aggregation.applyMenuSection(sections, params), 30);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook((adornments, params) => aggregation.applyColumnHeaderAdornments(adornments, params), 30);
     },
 });
 
