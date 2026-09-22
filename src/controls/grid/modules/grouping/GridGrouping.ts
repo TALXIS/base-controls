@@ -3,6 +3,7 @@ import { FontWeights, IContextualMenuItem } from "@fluentui/react";
 import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
+import { IGridCellEditable } from "../../services/cells";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
@@ -222,6 +223,14 @@ export class GridGrouping {
         }
         //a record sits on the grid's own surface, so what stands off it is the group above it
         theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
+    }
+
+    /** A group row holds no record's value, so there is nothing in it to change. */
+    public applyCellEditable(result: IGridCellEditable, params: { record: IRecord; columnName: string }): void {
+        if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
+            return;
+        }
+        result.isEditable = false;
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */
