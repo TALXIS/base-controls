@@ -5,9 +5,13 @@ import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRe
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
+import { IGridCellLoading } from "../../services/cells";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
+
+/** What the row stands in as until the totals are worked out. */
+const PENDING_RECORD_ID = '__total__pending';
 
 /** Which label names a total, per aggregation a column can carry. */
 const TOTAL_LABELS: Record<string, keyof IGridAggregationLabels> = {
@@ -32,6 +36,7 @@ export class GridAggregation {
     private _allowUserAggregation: boolean;
     private _totalRow?: TotalRow;
     private _totalRecord?: IRecord;
+    private _pendingRecord?: IRecord;
     private _isTotalRowSubscribed = false;
 
     constructor(parameters: IGridAggregationParameters) {
@@ -47,6 +52,7 @@ export class GridAggregation {
         //behind grouping, so what it draws in a group's row is the last word on that cell
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 30);
         this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
+        this._gridServices.get('cells').registerCellLoadingHook(this._onCellLoading);
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
@@ -76,6 +82,14 @@ export class GridAggregation {
     public removeAggregation(alias: string): void {
         this._write(() => this._totalRow?.removeAggregation(alias));
     }
+
+    /** Every cell that will hold a total waits, because one fetch answers all of them. */
+    private _onCellLoading = (result: IGridCellLoading, params: { record: IRecord; columnName: string }): void => {
+        if (!this._isTotalRecord(params.record) || !this._provider.getColumnsMap()[params.columnName]?.aggregation?.aggregationFunction) {
+            return;
+        }
+        result.isLoading = !!this._totalRow?.getDataProvider().isLoading();
+    };
 
     /** The total row reads as what the rows above add up to, the way a group row reads as what it holds. */
     private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
@@ -266,10 +280,37 @@ export class GridAggregation {
         if (!gridApi || gridApi.isDestroyed()) {
             return;
         }
-        const totalRecord = this._totalRow?.getTotalRowRecord() ?? null;
-        //kept: what a cell of this row is recognised by, since a loading or failed one is built per call
-        this._totalRecord = totalRecord ?? undefined;
+        const totalRecord = this._getTotalRecord();
+        if (totalRecord === this._totalRecord) {
+            //a pinned node is not keyed by the record's id, so it is asked for rather than looked up
+            const node = gridApi.getPinnedBottomRow(0);
+            if (node) {
+                gridApi.refreshCells({ rowNodes: [node], force: true });
+            }
+            return;
+        }
+        this._totalRecord = totalRecord;
         gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []);
+    }
+
+    /** The record the row draws: the totals, or what stands in for them while they are worked out. */
+    private _getTotalRecord(): IRecord | undefined {
+        const provider = this._totalRow?.getDataProvider();
+        if (!this._totalRow || !provider) {
+            return undefined;
+        }
+        //while it is working the row keeps what it had, or stands in for what is coming
+        if (provider.isLoading() || provider.isError()) {
+            return this._totalRecord ?? this._getPendingRecord(provider);
+        }
+        return this._totalRow.getTotalRowRecord() ?? undefined;
+    }
+
+    /** A row to wait in until the first totals arrive, which is cheaper than a dataset to hold one. */
+    private _getPendingRecord(provider: IDataProvider): IRecord {
+        //not in the dataset: it stands for a record rather than being one
+        this._pendingRecord ??= (provider as IInternalDataProvider).newRecord({ recordId: PENDING_RECORD_ID, addToDataset: false });
+        return this._pendingRecord;
     }
 
     private _isDatasetAggregated(): boolean {
