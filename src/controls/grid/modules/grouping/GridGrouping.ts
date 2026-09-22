@@ -70,7 +70,7 @@ export class GridGrouping {
     private _registerHooks(): void {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columnHeaders');
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 20);
         cells.registerCellThemeHook(this._onCellTheme);
         cells.registerCellEditableHook(this._onCellEditable);
         //behind sorting and filtering, which a column's menu offers first

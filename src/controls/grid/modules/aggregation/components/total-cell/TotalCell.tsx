@@ -11,7 +11,7 @@ export const TotalCell = (props: ICellRendererParams<IRecord>) => {
     //the selector draws this only for the total row, which is a row with a record of its own
     const record = props.data!;
 
-    return <Grid.Cell.Field record={record} name={aggregation.getTotalValueColumnName(record, props.colDef!.colId!)}>
+    return <Grid.Cell.Field record={record} name={aggregation.getAggregateValueColumnName(record, props.colDef!.colId!)}>
         <Grid.Cell.Root {...props}>
             <Grid.Cell.Theme>
                 <Grid.Cell.Container>

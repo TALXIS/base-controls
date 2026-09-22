@@ -31,6 +31,7 @@ export class GridAggregation {
     private _services: IGridAggregationServiceLocator;
     private _allowUserAggregation: boolean;
     private _totalRow?: TotalRow;
+    private _totalRecord?: IRecord;
     private _isTotalRowSubscribed = false;
 
     constructor(parameters: IGridAggregationParameters) {
@@ -43,7 +44,8 @@ export class GridAggregation {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columnHeaders');
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        //behind grouping, so what it draws in a group's row is the last word on that cell
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 30);
         this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
@@ -85,9 +87,19 @@ export class GridAggregation {
         theme.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
     };
 
-    /** Whether this is the record the total row draws, which is the aggregation provider's own. */
+    /** Whether this is the record the module pinned under the rows, whatever state that record is in. */
     private _isTotalRecord(record: IRecord): boolean {
-        return !!this._totalRow && record.getDataProvider() === this._totalRow.getDataProvider();
+        return record === this._totalRecord;
+    }
+
+    /** Whether the record stands for a group rather than for one of the rows a group holds. */
+    private _isGroupRecord(record: IRecord): boolean {
+        return record.getDataProvider().getSummarizationType() === 'grouping';
+    }
+
+    /** Whether the column totals something of its own: a grouped column counts itself, which is not one. */
+    private _isColumnAggregated(column: IColumn | undefined): boolean {
+        return !!column?.aggregation?.aggregationFunction && !column.grouping?.isGrouped;
     }
 
     /** What the column's total is called, for the row pinned under the rest. */
@@ -96,56 +108,74 @@ export class GridAggregation {
         return aggregationFunction ? this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]) : undefined;
     }
 
-    /** What the total row holds a column's aggregate under: the alias the aggregation was asked for by. */
-    public getTotalValueColumnName(record: IRecord, columnName: string): string {
+    /** What a row holds a column's aggregate under: the alias the aggregation was asked for by. */
+    public getAggregateValueColumnName(record: IRecord, columnName: string): string {
         const alias = this._provider.getColumnsMap()[columnName]?.aggregation?.alias;
         return alias && record.getDataProvider().getColumnsMap()[alias] ? alias : columnName;
     }
 
-    /** What every column draws in the row pinned under the rest. */
+    /** What every column draws where a row is a total of other rows rather than one of them. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columnsMap = this._provider.getColumnsMap();
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
             const columnName = colDef.colId ?? colDef.field!;
-            this._applyTotalRowRenderer(colDef, columnName);
-            this._applyTotalRowValue(colDef, columnName);
+            this._applyAggregateRenderer(colDef, columnName);
+            this._applyAggregateValue(colDef, columnName);
         }
     };
 
-    /** A column totals something in the pinned row, or holds nothing there. */
-    private _applyTotalRowRenderer(colDef: ColDef<IRecord>, columnName: string): void {
+    /** The total row draws what it totals, a group row what the group adds up to, and nothing else. */
+    private _applyAggregateRenderer(colDef: ColDef<IRecord>, columnName: string): void {
         const cellRendererSelector = colDef.cellRendererSelector;
         colDef.cellRendererSelector = params => {
-            if (params.node.rowPinned !== 'bottom') {
-                return cellRendererSelector?.(params);
-            }
             //read now rather than captured: a menu click totals a column without rebuilding the definitions
             const column = this._provider.getColumnsMap()[columnName];
-            return column?.aggregation?.aggregationFunction
-                ? { component: this._onRenderTotalCell }
-                : { component: CellEmptyRenderer };
+            //the row this module pinned, rather than any row something else pinned
+            if (params.data && this._isTotalRecord(params.data)) {
+                return column?.aggregation?.aggregationFunction
+                    ? { component: this._onRenderTotalCell }
+                    : { component: CellEmptyRenderer };
+            }
+            if (params.data && this._isGroupRecord(params.data) && this._isColumnAggregated(column)) {
+                return { component: this._onRenderAggregateCell };
+            }
+            return cellRendererSelector?.(params);
         };
     }
 
-    /** A column's cell in the pinned row answers with the total, and every other cell with its own value. */
-    private _applyTotalRowValue(colDef: ColDef<IRecord>, columnName: string): void {
+    /** A cell that stands for a total answers with it, and every other cell with the record's own value. */
+    private _applyAggregateValue(colDef: ColDef<IRecord>, columnName: string): void {
         const valueGetter = colDef.valueGetter;
         const valueFormatter = colDef.valueFormatter;
-        colDef.valueGetter = params => params.node?.rowPinned === 'bottom' ? this._getTotalValue(params.data, columnName) : (typeof valueGetter === 'function' ? valueGetter(params) : undefined);
-        colDef.valueFormatter = params => params.node?.rowPinned === 'bottom' ? this._getTotalFormattedValue(params.data, columnName) : (typeof valueFormatter === 'function' ? valueFormatter(params) : '');
+        colDef.valueGetter = params => this._isAggregateCell(params.data, columnName)
+            ? this._getAggregateValue(params.data, columnName)
+            : (typeof valueGetter === 'function' ? valueGetter(params) : undefined);
+        colDef.valueFormatter = params => this._isAggregateCell(params.data, columnName)
+            ? this._getAggregateFormattedValue(params.data, columnName)
+            : (typeof valueFormatter === 'function' ? valueFormatter(params) : '');
     }
 
-    /** What the total row holds for a column: the aggregate, or nothing where it totals nothing. */
-    private _getTotalValue(record: IRecord | undefined, columnName: string): any {
-        return record ? record.getValue(this.getTotalValueColumnName(record, columnName)) : null;
+    /** Whether what this column holds in this row is a total rather than a record's own value. */
+    private _isAggregateCell(record: IRecord | undefined, columnName: string): boolean {
+        if (!record) {
+            return false;
+        }
+        return this._isTotalRecord(record) || (this._isGroupRecord(record) && this._isColumnAggregated(this._provider.getColumnsMap()[columnName]));
     }
 
-    private _getTotalFormattedValue(record: IRecord | undefined, columnName: string): string {
-        return record ? record.getFormattedValue(this.getTotalValueColumnName(record, columnName)) ?? '' : '';
+    /** What a row holds for a column: the aggregate, or nothing where it totals nothing. */
+    private _getAggregateValue(record: IRecord | undefined, columnName: string): any {
+        return record ? record.getValue(this.getAggregateValueColumnName(record, columnName)) : null;
     }
 
-    //the render method reached through a field of ours.
+    private _getAggregateFormattedValue(record: IRecord | undefined, columnName: string): string {
+        return record ? record.getFormattedValue(this.getAggregateValueColumnName(record, columnName)) ?? '' : '';
+    }
+
+    //the render methods reached through a field of ours.
     private _onRenderTotalCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderTotalCell(props);
+
+    private _onRenderAggregateCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderAggregateCell(props);
 
     /** What the column is totalling, for the header's tooltip. */
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void => {
@@ -237,6 +267,8 @@ export class GridAggregation {
             return;
         }
         const totalRecord = this._totalRow?.getTotalRowRecord() ?? null;
+        //kept: what a cell of this row is recognised by, since a loading or failed one is built per call
+        this._totalRecord = totalRecord ?? undefined;
         gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []);
     }
 
