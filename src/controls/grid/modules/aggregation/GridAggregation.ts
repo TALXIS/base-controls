@@ -1,4 +1,6 @@
 import { ColDef, ICellRendererParams } from "@ag-grid-community/core";
+import { FontWeights } from "@fluentui/react";
+import { ThemeBuilder } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
@@ -42,6 +44,7 @@ export class GridAggregation {
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columnHeaders');
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
@@ -72,6 +75,21 @@ export class GridAggregation {
         this._write(() => this._totalRow?.removeAggregation(alias));
     }
 
+    /** The total row reads as what the rows above add up to, the way a group row reads as what it holds. */
+    private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
+        if (!this._isTotalRecord(params.record)) {
+            return;
+        }
+        //the faintest step off the surface Fluent has, whatever the grid does about striping
+        theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
+        theme.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+    };
+
+    /** Whether this is the record the total row draws, which is the aggregation provider's own. */
+    private _isTotalRecord(record: IRecord): boolean {
+        return !!this._totalRow && record.getDataProvider() === this._totalRow.getDataProvider();
+    }
+
     /** What the column's total is called, for the row pinned under the rest. */
     public getTotalLabel(columnName: string): string | undefined {
         const aggregationFunction = this._provider.getColumnsMap()[columnName]?.aggregation?.aggregationFunction;
@@ -88,7 +106,9 @@ export class GridAggregation {
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columnsMap = this._provider.getColumnsMap();
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
-            this._applyTotalRowRenderer(colDef, colDef.colId ?? colDef.field!);
+            const columnName = colDef.colId ?? colDef.field!;
+            this._applyTotalRowRenderer(colDef, columnName);
+            this._applyTotalRowValue(colDef, columnName);
         }
     };
 
@@ -105,6 +125,27 @@ export class GridAggregation {
                 ? { component: this._onRenderTotalCell }
                 : { component: CellEmptyRenderer };
         };
+    }
+
+    /** A column's cell in the pinned row answers with the total, and every other cell with its own value. */
+    private _applyTotalRowValue(colDef: ColDef<IRecord>, columnName: string): void {
+        const valueGetter = colDef.valueGetter;
+        const valueFormatter = colDef.valueFormatter;
+        colDef.valueGetter = params => params.node?.rowPinned === 'bottom'
+            ? this._getTotalValue(params.data, columnName)
+            : (typeof valueGetter === 'function' ? valueGetter(params) : undefined);
+        colDef.valueFormatter = params => params.node?.rowPinned === 'bottom'
+            ? this._getTotalFormattedValue(params.data, columnName)
+            : (typeof valueFormatter === 'function' ? valueFormatter(params) : '');
+    }
+
+    /** What the total row holds for a column: the aggregate, or nothing where it totals nothing. */
+    private _getTotalValue(record: IRecord | undefined, columnName: string): any {
+        return record ? record.getValue(this.getTotalValueColumnName(record, columnName)) : null;
+    }
+
+    private _getTotalFormattedValue(record: IRecord | undefined, columnName: string): string {
+        return record ? record.getFormattedValue(this.getTotalValueColumnName(record, columnName)) ?? '' : '';
     }
 
     //the render method reached through a field of ours.
@@ -228,5 +269,9 @@ export class GridAggregation {
 
     private get _provider(): IDataProvider {
         return this._gridServices.get('provider');
+    }
+
+    private get _gridTheme() {
+        return this._gridServices.get('theme');
     }
 }
