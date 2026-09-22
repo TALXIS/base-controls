@@ -1,6 +1,6 @@
 import { Column } from "@ag-grid-community/core";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { ITheme } from "@theme";
+import { ThemeBuilder } from "@theme";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { GridColumnHeader } from "./GridColumnHeader";
@@ -30,23 +30,8 @@ export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], header
 /** A hook over the menu the sections became. */
 export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], header: GridColumnHeader) => void;
 
-/** The three colours a column header's theme is generated from. */
-export interface IGridColumnHeaderThemeColors {
-    primary: string;
-    background: string;
-    text: string;
-}
-
-/** The theme a column header is drawn in, as the hooks leave it. */
-export interface IGridColumnHeaderThemeResult {
-    /** The colours the header's theme is generated from. */
-    colors: IGridColumnHeaderThemeColors;
-    /** A theme to draw the header in instead of generating one. */
-    theme?: ITheme;
-}
-
 /** A hook over the theme a column header is drawn in. */
-export type GridColumnHeaderThemeHook = (result: IGridColumnHeaderThemeResult, header: GridColumnHeader) => void;
+export type GridColumnHeaderThemeHook = (theme: ThemeBuilder, header: GridColumnHeader) => void;
 
 /** A hook over what a column header draws. */
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader) => void;
@@ -129,8 +114,8 @@ export class GridColumnHeaders {
     }
 
     /** Run by the header in question, which is the only caller. */
-    public applyColumnHeaderThemeHooks(result: IGridColumnHeaderThemeResult, header: GridColumnHeader): void {
-        this._themeHooks.apply(result, header);
+    public applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: GridColumnHeader): void {
+        this._themeHooks.apply(theme, header);
     }
 
     /** Everything the modules draw for a column, in order. */

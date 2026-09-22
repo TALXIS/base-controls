@@ -1,6 +1,6 @@
 import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { ITheme } from "@theme";
+import { ThemeBuilder } from "@theme";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
@@ -20,23 +20,8 @@ export type GridControlHook = (result: { control: Required<ICustomColumnControl>
 /** A hook over the parameters the control drawing a cell is handed. */
 export type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
 
-/** The three colours a cell's theme is generated from. */
-export interface IGridCellThemeColors {
-    primary: string;
-    background: string;
-    text: string;
-}
-
-/** The theme a cell is drawn in, as the hooks leave it. */
-export interface IGridCellThemeResult {
-    /** The colours the cell's theme is generated from. */
-    colors: IGridCellThemeColors;
-    /** A theme to draw the cell in instead of generating one. */
-    theme?: ITheme;
-}
-
 /** A hook over the theme a cell is drawn in. */
-export type GridCellThemeHook = (result: IGridCellThemeResult, params: { record: IRecord; columnName: string }) => void;
+export type GridCellThemeHook = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
 
 /** Whether a cell may be edited, as the hooks leave it. */
 export interface IGridCellEditable {
@@ -176,8 +161,8 @@ export class GridCells {
     }
 
     /** Run by the `GridCellTheme` of the cell in question. */
-    public applyCellThemeHooks(result: IGridCellThemeResult, params: { record: IRecord; columnName: string }): void {
-        this._cellThemeHooks.apply(result, params);
+    public applyCellThemeHooks(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
+        this._cellThemeHooks.apply(theme, params);
     }
 
     /** Run by the cell in question, which is the only caller. */

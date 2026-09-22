@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { IContextualMenuProps } from "@fluentui/react";
-import { Theming, useSurfaceTheme } from "@theme";
+import { useSurfaceTheme } from "@theme";
+import { getThemedContextualItems } from "../themed-contextual-items";
 
 /**
  * A menu someone else's button opens, drawn in the application's theme rather than in the button's.
@@ -17,7 +18,7 @@ export const useSurfaceMenuProps = <TMenu extends IContextualMenuProps | undefin
         return {
             ...menuProps,
             theme: theme,
-            items: Theming.GetThemedContextualItems(menuProps.items, theme),
+            items: getThemedContextualItems(menuProps.items, theme),
             calloutProps: { theme: theme, ...menuProps.calloutProps }
         };
     }, [menuProps, theme]);

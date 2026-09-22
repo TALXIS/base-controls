@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useTheme } from "@fluentui/react";
-import { ITheme } from "../Theming";
-import { SurfaceThemeContext } from "../context";
+import { ITheme } from "../interfaces";
+import { SurfaceThemeContext } from "../components/context";
 
 /**
  * The theme a callout, menu, tooltip or panel is drawn in.

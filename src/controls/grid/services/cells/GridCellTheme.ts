@@ -1,13 +1,12 @@
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { ITheme, Theming } from "@theme";
+import { ITheme, ThemeBuilder } from "@theme";
 import { getJustifyContent, IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { GridCell } from "./GridCell";
-import { IGridCellThemeColors, IGridCellThemeResult } from "./GridCells";
 
-//the component overrides depend only on the column alignment
-const componentOverridesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['components']>();
+//the component styles depend only on the column alignment
+const componentStylesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['components']>();
 
 export interface IGridCellThemeParameters {
     services: IGridServiceLocator;
@@ -31,45 +30,28 @@ export class GridCellTheme {
         this._seed = seed;
     }
 
-    public getValue(): ITheme {
-        const result: IGridCellThemeResult = { colors: this._rowColors };
-        this._cells.applyCellThemeHooks(result, { record: this._cell.getRecord(), columnName: this._cell.getColumnName() });
-        if (result.theme) {
-            return result.theme;
+    public get(): ITheme {
+        const builder = ThemeBuilder.from({ theme: this._seed ?? this._gridTheme });
+        //the row this cell is in, where the grid stripes them and no seed said otherwise
+        if (!this._seed) {
+            builder.colors.background = this._rowBackground;
         }
-        const { primary, background, text } = result.colors;
-        //the generator is keyed on the three colours and the override's name
-        return Theming.GenerateThemeV8(primary, background, text, this.getOverrides(background));
+        //before the hooks, so what a hook edits is the last word on it
+        builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
+        this._cells.applyCellThemeHooks(builder, { record: this._cell.getRecord(), columnName: this._cell.getColumnName() });
+        return builder.getTheme();
     }
 
-    /** What a control drawn in this cell looks like, over the colours the cell is drawn in. */
-    public getOverrides(background: string): DeepPartial<ITheme> {
-        return {
-            //a named override is one `Theming.GenerateThemeV8` can cache, and the colours are already its key
-            id: `cell|${this._cell.getAlignment()}`,
-            semanticColors: {
-                inputBorder: 'transparent',
-                inputBorderHovered: 'transparent',
-                inputBackground: background,
-                focusBorder: 'transparent',
-                disabledBorder: 'transparent',
-                inputFocusBorderAlt: 'transparent',
-            },
-            effects: {
-                underlined: false
-            },
-            components: this._getComponentOverrides()
-        };
-    }
-
-    /** The colours this cell starts from: a seed's as they are, or the grid's striped by row. */
-    private get _rowColors(): IGridCellThemeColors {
-        const base = this._seed ?? this._gridTheme;
-        return {
-            primary: base.palette.themePrimary,
-            background: this._seed ? this._seed.semanticColors.bodyBackground : this._rowBackground,
-            text: base.semanticColors.bodyText,
-        };
+    /** How a control reads in a cell: no border of its own, and the column's alignment. */
+    private _applyCellStyling(theme: ITheme): void {
+        theme.semanticColors.inputBackground = theme.semanticColors.bodyBackground;
+        theme.semanticColors.inputBorder = 'transparent';
+        theme.semanticColors.inputBorderHovered = 'transparent';
+        theme.semanticColors.focusBorder = 'transparent';
+        theme.semanticColors.disabledBorder = 'transparent';
+        theme.semanticColors.inputFocusBorderAlt = 'transparent';
+        theme.effects.underlined = false;
+        theme.components = { ...theme.components, ...this._getComponentStyles() };
     }
 
     /** What the row this cell is in is drawn on, where the grid's own theme is what it starts from. */
@@ -87,13 +69,13 @@ export class GridCellTheme {
     }
 
     /** How a control reads in a column of this alignment, which is all the alignment decides. */
-    private _getComponentOverrides(): DeepPartial<ITheme>['components'] {
+    private _getComponentStyles(): DeepPartial<ITheme>['components'] {
         const alignment = this._cell.getAlignment();
-        const cached = componentOverridesByAlignment.get(alignment);
+        const cached = componentStylesByAlignment.get(alignment);
         if (cached) {
             return cached;
         }
-        const overrides = {
+        const styles = {
             'TextField': {
                 styles: {
                     field: {
@@ -127,8 +109,8 @@ export class GridCellTheme {
                 } as IToggleStyles
             }
         } as any;
-        componentOverridesByAlignment.set(alignment, overrides);
-        return overrides;
+        componentStylesByAlignment.set(alignment, styles);
+        return styles;
     }
 
     private get _settings() {

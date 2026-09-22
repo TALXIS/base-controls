@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { CustomizerContext, ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
-import { SurfaceThemeContext } from "../../context";
-import { getThemeCustomizations } from "../../getThemeCustomizations";
+import { SurfaceThemeContext } from "../context";
+import { getThemeCustomizations } from "./getThemeCustomizations";
 
 export interface IThemeContextProps {
     /** Whole, rather than the partial `ThemeProvider` allows: nothing is merged into it. */

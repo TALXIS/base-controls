@@ -13,7 +13,7 @@ export const ColumnHeaderTheme = (props: IColumnHeaderThemeProps) => {
     const header = useGridColumnHeader();
     //set before it is asked for, here and anywhere else the header's theme is read this render
     header.getTheme().setSeed(props.theme);
-    const theme = header.getTheme().getValue();
+    const theme = header.getTheme().get();
     const element = header.getElement();
 
     //the element is AG Grid's, so the colours go on it rather than on anything of the grid's own

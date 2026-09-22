@@ -7,7 +7,7 @@ import { CommandBar, ICommandBarItemProps } from "@legacy/components/CommandBar/
 import { useClassNames } from "@legacy/hooks/useClassNames";
 import { ICopyButton } from "@legacy/interfaces/components";
 import { useThemeGenerator } from "@theme/hooks/useThemeGenerator";
-import { Theming } from "@theme";
+import { getTextColorForBackground } from "@theme";
 
 export interface IInputButtons {
     /**
@@ -25,13 +25,9 @@ export interface IInputButtons {
 export const InputButtons = (props: IInputButtons) => {
     const parentTheme = useTheme();
     const backgroundColor = props.backgroundColor ?? parentTheme.semanticColors.inputBackground;
-    const textColor = useMemo(() => Theming.GetTextColorForBackground(backgroundColor), [backgroundColor]);
+    const textColor = useMemo(() => getTextColorForBackground(backgroundColor), [backgroundColor]);
 
-    const theme = useThemeGenerator(
-        textColor,
-        backgroundColor,
-        textColor
-    )
+    const theme = useThemeGenerator({ primary: textColor, background: backgroundColor, text: textColor })
     //replace due to back comp with old CSS where it often targets the class name directly
     //the decision to add the properties as --propName directly to className instead of creating
     //another class was really unfortunate, we need to abandon this practice

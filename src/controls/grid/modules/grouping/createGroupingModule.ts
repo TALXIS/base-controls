@@ -55,6 +55,7 @@ export const createGroupingModule = (options: IGroupingModuleOptions): IGridModu
         });
         gridServices.register('grouping', () => grouping);
         gridServices.get('columns').registerColumnDefinitionsHook(columnDefs => grouping.applyColumnDefinitions(columnDefs));
+        gridServices.get('cells').registerCellThemeHook((result, params) => grouping.applyCellTheme(result, params));
         gridServices.get('columnHeaders').registerColumnMenuSectionHook((sections, params) => grouping.applyMenuSection(sections, params), 20);
         gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook((adornments, params) => grouping.applyColumnHeaderAdornments(adornments, params), 20);
     },

@@ -1,6 +1,6 @@
 import { IColumn, IControlParameters, ICustomColumnControl, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
-import { Theming } from "@theme";
+import { getTextColorForBackground, ThemeGenerator } from "@theme";
 import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
 import type { IGridServiceLocator } from "../../services";
 
@@ -99,22 +99,20 @@ export class GridField {
     };
 
     /** The colours the column asks a cell of this field to be drawn in. */
-    private _onCellTheme: GridCellThemeHook = (result, params) => {
+    private _onCellTheme: GridCellThemeHook = (theme, params) => {
         if (!this._isDrawnBy(params)) {
             return;
         }
-        const colors = result.colors;
+        const colors = { ...theme.colors };
         //the colours it came in with, not the grid's
-        const formatting = this._getField().ui.getCustomFormatting(Theming.GenerateThemeV8(colors.primary, colors.background, colors.text)) ?? {};
+        const formatting = this._getField().ui.getCustomFormatting(ThemeGenerator.generate(colors)) ?? {};
         const background = formatting.backgroundColor || colors.background;
         const isRecoloured = background !== colors.background;
         //a background of its own is taken as emphasis
-        const contrast = Theming.GetTextColorForBackground(background);
-        result.colors = {
-            primary: formatting.primaryColor || (isRecoloured ? contrast : colors.primary),
-            background: background,
-            text: formatting.textColor || (isRecoloured ? contrast : colors.text),
-        };
+        const contrast = getTextColorForBackground(background);
+        theme.colors.primary = formatting.primaryColor || (isRecoloured ? contrast : colors.primary);
+        theme.colors.background = background;
+        theme.colors.text = formatting.textColor || (isRecoloured ? contrast : colors.text);
     };
 
     /** The control the column named for a cell of this field. */

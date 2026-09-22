@@ -11,3 +11,4 @@ export * from './tooltip-host';
 export * from './panel';
 export * from './dialog';
 export * from './hooks';
+export * from './themed-contextual-items';

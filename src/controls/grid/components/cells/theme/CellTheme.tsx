@@ -13,7 +13,7 @@ export const CellTheme = (props: ICellThemeProps) => {
     const cell = useGridCell();
     //set before it is asked for, here and anywhere else the cell's theme is read this render
     cell.getTheme().setSeed(props.theme);
-    const theme = cell.getTheme().getValue();
+    const theme = cell.getTheme().get();
     const element = cell.getElement();
 
     //the element is AG Grid's, so the colours go on it rather than on anything of the grid's own

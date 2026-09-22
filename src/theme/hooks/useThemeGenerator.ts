@@ -1,13 +1,8 @@
-import { useMemo } from "react"
-import { DeepPartial } from "@legacy/interfaces/components"
-import { ITheme, Theming } from "../Theming";
+import { useMemo } from "react";
+import { ThemeGenerator } from "../generator";
+import { IThemeColors } from "../interfaces";
 
-/**
- * Allows you to create a custom V8 theme based on provided colors.
- *
- */
-export const useThemeGenerator = (primaryColor: string, backgroundColor: string, textColor: string, themeOverride?: DeepPartial<ITheme>) => {
-    return useMemo(() => {
-        return Theming.GenerateThemeV8(primaryColor, backgroundColor, textColor, themeOverride)
-    }, [primaryColor, backgroundColor, textColor])
-}
+/** The theme these colours generate, for as long as they are the colours. */
+export const useThemeGenerator = (colors: IThemeColors) => {
+    return useMemo(() => ThemeGenerator.generate(colors), [colors.primary, colors.background, colors.text]);
+};

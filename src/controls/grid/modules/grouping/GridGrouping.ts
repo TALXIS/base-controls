@@ -1,7 +1,8 @@
 import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
-import { IContextualMenuItem } from "@fluentui/react";
+import { FontWeights, IContextualMenuItem } from "@fluentui/react";
 import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
+import { ThemeBuilder } from "@theme";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
@@ -206,6 +207,14 @@ export class GridGrouping {
         if (columnDefs.some(isGrouped)) {
             columnDefs.push(getGroupExpansionColumnDefinition(this._onRenderExpansionHeader));
         }
+    }
+
+    /** A group row reads as the heading of what it holds, so what it draws is bolder than a record's. */
+    public applyCellTheme(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
+        if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
+            return;
+        }
+        theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */

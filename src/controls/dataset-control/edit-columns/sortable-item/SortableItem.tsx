@@ -17,7 +17,7 @@ export const SortableItem = (props: { column: IColumn }) => {
     const styles = useMemo(() => getSortableItemStyles(theme), []);
     const labels = useModel().getLabels();
     const displayName = column.displayName ?? labels['no-name']();
-    const sortableItemTheme = useThemeGenerator(theme.palette.themePrimary, theme.semanticColors.buttonBackgroundPressed, theme.semanticColors.bodyText);
+    const sortableItemTheme = useThemeGenerator({ primary: theme.palette.themePrimary, background: theme.semanticColors.buttonBackgroundPressed, text: theme.semanticColors.bodyText });
 
     const style = {
         transform: CSS.Transform.toString(transform),

@@ -7,7 +7,6 @@ import { Grid } from "../../../../namespace";
 import { useGridService } from "../../../../useGridService";
 import { GroupCount } from "../group-count/GroupCount";
 import { getGroupCellStyles } from "./styles";
-import { Theming } from "@theme";
 
 /** What a row standing for a group draws in the column it is grouped by: its value, and what opens it. */
 export const GroupCell = (props: ICellRendererParams<IRecord>) => {

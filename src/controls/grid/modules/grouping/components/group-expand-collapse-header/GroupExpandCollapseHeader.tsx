@@ -6,7 +6,6 @@ import { Grid } from "../../../../namespace";
 import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { getGroupExpandCollapseHeaderStyles } from "./styles";
-import { Theming } from "@theme";
 
 /** Opens and closes the groups a level at a time. */
 export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
