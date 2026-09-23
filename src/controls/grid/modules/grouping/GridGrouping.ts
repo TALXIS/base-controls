@@ -124,7 +124,7 @@ export class GridGrouping {
     /** How many records a group holds, where the column counts them rather than totalling something. */
     public getGroupedCount(record: IRecord, columnName: string): number | undefined {
         const aggregation = this._provider.getColumnsMap()[columnName]?.aggregation;
-        if (aggregation?.aggregationFunction !== 'count' || !aggregation.alias) {
+        if ((aggregation?.aggregationFunction !== 'count' && aggregation?.aggregationFunction !== 'countcolumn') || !aggregation.alias) {
             return undefined;
         }
         const count = record.getValue(aggregation.alias);
