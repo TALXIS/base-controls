@@ -266,6 +266,8 @@ export class GridGrouping {
             const columnName = colDef.colId ?? colDef.field!;
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
+            //a group's value is not edited in place
+            colDef.settings = { ...colDef.settings, oneClickEdit: false };
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
