@@ -273,6 +273,10 @@ export class GridGrouping {
         }
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
             this._applyGroupRowRenderer(colDef, columnsMap[colDef.colId ?? colDef.field!]);
+            //AG Grid keeps a pin that a new definition leaves out
+            if (!isGrouped(colDef)) {
+                colDef.pinned ??= null;
+            }
         }
         //grouped columns first, so the hierarchy reads left to right
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
