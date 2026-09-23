@@ -281,7 +281,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         sorting: props.sorting ? createSortingModule() : undefined,
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
-        grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
+        grouping: props.grouping ? createGroupingModule({ type: 'flat' }) : undefined,
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

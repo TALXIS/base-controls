@@ -59,15 +59,14 @@ export const Playground: Story = {
  * The same grid over ten thousand rows, which is what says whether a cell is cheap enough.
  *
  * Everything a cell does per render is in play here - its theme, the hooks, the commands, the validation -
- * so scrolling this is the measure of what the cell costs. Grouping is on, so grouping the whole set is
- * measured too.
+ * so scrolling this is the measure of what the cell costs. Grouping and aggregation are on, so grouping and
+ * totalling the whole set are measured too.
  */
 export const Stress: Story = {
     name: 'Stress',
     args: {
         ...Playground.args,
         rowCount: 10000,
-        aggregation: false,
     },
     argTypes: Playground.argTypes,
     render: (args: IScratchGridProps) => <FullPage><ScratchGrid {...args} /></FullPage>,

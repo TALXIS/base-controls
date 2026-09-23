@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
 import { FontWeights, IContextualMenuItem } from "@fluentui/react";
-import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridCellEditable } from "../../services/cells";
@@ -198,12 +198,21 @@ export class GridGrouping {
 
     /** Whether a row's cell in this column carries the chevron that opens it. */
     public isColumnExpandable(record: IRecord, columnName: string): boolean {
-        return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === columnName;
+        return this._getRowGroupBys(record)[0]?.columnName === columnName;
     }
 
     /** Whether the row stands for this column too, which a flat grouping's row does for every group-by. */
     public isRowGroupedBy(record: IRecord, columnName: string): boolean {
-        return record.getDataProvider().grouping.getGroupBys().some(groupBy => groupBy.columnName === columnName);
+        return this._getRowGroupBys(record).some(groupBy => groupBy.columnName === columnName);
+    }
+
+    //a nested grouping's top-level provider holds every group-by, while its rows stand for the first
+    private _getRowGroupBys(record: IRecord): IGroupByMetadata[] {
+        const provider = record.getDataProvider();
+        const columnsMap = provider.getColumnsMap();
+        const groupBys = provider.grouping.getGroupBys()
+            .sort((left, right) => (columnsMap[left.columnName]?.order ?? 0) - (columnsMap[right.columnName]?.order ?? 0));
+        return this._settings.type === 'flat' ? groupBys : groupBys.slice(0, 1);
     }
 
     /** How many levels of groups are open. */
