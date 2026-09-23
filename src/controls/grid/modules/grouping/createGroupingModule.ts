@@ -38,16 +38,7 @@ export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGri
         const components = { ...GridGroupingComponents, ...options.components };
         services.register('labels', () => labels);
         services.register('components', () => components);
-        const grouping = new GridGrouping({
-            services,
-            settings: {
-                allowUserGrouping: options.allowUserGrouping ?? true,
-                type: options.type ?? 'nested',
-                defaultExpandedLevel: options.defaultExpandedLevel ?? -1,
-                pinGroupedColumns: options.pinGroupedColumns ?? true,
-                maxGroupLoadsPerSelection: options.maxGroupLoadsPerSelection ?? 100,
-            },
-        });
+        const grouping = new GridGrouping({ services, settings: options });
         gridServices.register('grouping', () => grouping);
     },
 });

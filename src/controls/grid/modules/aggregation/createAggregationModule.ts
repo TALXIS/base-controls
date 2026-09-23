@@ -40,7 +40,7 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         const components = { ...GridAggregationComponents, ...options?.components };
         services.register('labels', () => labels);
         services.register('components', () => components);
-        const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation ?? true });
+        const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation });
         gridServices.register('aggregation', () => aggregation);
     },
 });

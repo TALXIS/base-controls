@@ -41,7 +41,8 @@ export interface IGroupingSettings {
 export interface IGridGroupingParameters {
     /** This module's own locator. */
     services: IGridGroupingServiceLocator;
-    settings: IGroupingSettings;
+    /** Anything left out takes its default. */
+    settings?: Partial<IGroupingSettings>;
 }
 
 /** Grouping the rows by a column, on whichever row model the grid runs. */
@@ -59,8 +60,15 @@ export class GridGrouping {
 
     constructor(parameters: IGridGroupingParameters) {
         this._services = parameters.services;
-        this._settings = parameters.settings;
-        this._expandedLevel = parameters.settings.defaultExpandedLevel;
+        const {
+            allowUserGrouping = true,
+            type = 'nested',
+            defaultExpandedLevel = -1,
+            pinGroupedColumns = true,
+            maxGroupLoadsPerSelection = 100,
+        } = parameters.settings ?? {};
+        this._settings = { allowUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
+        this._expandedLevel = defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
         //the provider nests by default, so what this module was asked for is the word on it
         this._provider.setProperty('groupingType', this._settings.type);

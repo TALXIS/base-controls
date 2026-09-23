@@ -27,7 +27,7 @@ export interface IGridAggregationParameters {
     /** This module's own locator. */
     services: IGridAggregationServiceLocator;
     /** Whether a column's menu offers the totals, or the provider's own aggregations are all */
-    allowUserAggregation: boolean;
+    allowUserAggregation?: boolean;
 }
 
 /** The totals a grid shows, in the row pinned under the rest. */
@@ -41,7 +41,7 @@ export class GridAggregation {
 
     constructor(parameters: IGridAggregationParameters) {
         this._services = parameters.services;
-        this._allowUserAggregation = parameters.allowUserAggregation;
+        this._allowUserAggregation = parameters.allowUserAggregation ?? true;
         this._gridServices.whenAvailable('gridApi', () => this._onGridApiAvailable());
         this._registerHooks();
     }
