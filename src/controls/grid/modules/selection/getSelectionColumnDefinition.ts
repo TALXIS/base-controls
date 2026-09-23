@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams } from "@ag-grid-community/core";
 import { DataProvider, IRecord } from "@talxis/client-libraries";
-import { suppressRendererInPinnedRows } from "../../services/columns";
+import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 
 /** The column the checkboxes live in. */
@@ -16,10 +16,10 @@ export const getSelectionColumnDefinition = (
     resizable: false,
     pinned: 'left',
     headerComponent: onRenderHeader,
-    cellRenderer: onRenderCell,
     suppressSizeToFit: true,
     suppressMovable: true,
     valueGetter: () => null,
     valueFormatter: () => '',
-    cellRendererSelector: suppressRendererInPinnedRows,
+    //a pinned row is no record to select
+    cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : onRenderCell }),
 });

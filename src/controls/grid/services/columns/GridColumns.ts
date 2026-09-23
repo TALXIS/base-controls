@@ -8,7 +8,6 @@ import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
-import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
@@ -87,8 +86,8 @@ export class GridColumns {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRenderer: RecordSaveIndicatorCell,
-            cellRendererSelector: suppressRendererInPinnedRows,
+            //a pinned row has no save of its own to report
+            cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : RecordSaveIndicatorCell }),
         };
     }
 
