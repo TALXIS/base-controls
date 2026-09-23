@@ -1,5 +1,5 @@
 import { _, ColDef, GridApi, ICellRendererParams, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
-import { DataProvider, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataProvider, IDataProvider, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridSelectionServiceLocator } from "./services";
@@ -8,6 +8,17 @@ import { IColumnHeaderParams } from "../../components/column-header/root/ColumnH
 
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridSelectionState = 'checked' | 'unchecked' | 'indeterminate';
+
+export interface IGridSelectRecordsParameters {
+    provider: IDataProvider;
+    recordIds: string[];
+}
+
+/** What another module can wrap, deciding whether the default action runs at all. */
+export interface IGridSelectionInterceptors {
+    /** Writes a selection to the provider that owns the records. */
+    onSelectRecords: (parameters: IGridSelectRecordsParameters) => Promise<void>;
+}
 
 export interface IGridSelectionParameters {
     /** This module's own locator. */
@@ -22,11 +33,21 @@ export class GridSelection {
     private _mode: 'single' | 'multiple';
     /** What the host persisted, until the records it names have been loaded and it can be */
     private _pendingRestoreRecordIds: string[] = [];
+    /** The latest selection per provider, which is the one allowed to write. */
+    private _selectionTokens: WeakMap<IDataProvider, number> = new WeakMap();
+    private _interceptors = new Interceptors<IGridSelectionInterceptors>();
 
     constructor(parameters: IGridSelectionParameters) {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').whenAvailable('gridApi', () => this._onGridApiAvailable());
+        this._registerHooks();
+    }
+
+    private _registerHooks(): void {
+        const gridServices = this._services.get('gridServices');
+        //ahead of the default hooks, because it is the first column.
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, -1);
     }
 
     /** How many rows may be selected at once. */
@@ -34,15 +55,37 @@ export class GridSelection {
         return this._mode;
     }
 
+    public setInterceptor<K extends keyof IGridSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridSelectionInterceptors, K>): void {
+        this._interceptors.setInterceptor(event, interceptor);
+    }
+
+    /** Selects the records, through whatever intercepts `onSelectRecords`. */
+    public async selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void> {
+        const token = (this._selectionTokens.get(provider) ?? 0) + 1;
+        this._selectionTokens.set(provider, token);
+        let isApplied = false;
+        await this._interceptors.execute('onSelectRecords', { provider, recordIds }, async parameters => {
+            if (this._selectionTokens.get(provider) !== token) {
+                return;
+            }
+            isApplied = true;
+            parameters.provider.setSelectedRecordIds(parameters.recordIds);
+        });
+        //a refused click has already ticked the checkbox
+        if (!isApplied && this._selectionTokens.get(provider) === token) {
+            this._onProviderSelectionChanged();
+        }
+    }
+
     /** Adds the column the checkboxes live in */
-    public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
         if (recordSaveColumnIndex !== -1) {
             columnDefs.splice(recordSaveColumnIndex, 1);
         }
         columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
         columnDefs.forEach(colDef => this._suppressNavigation(colDef));
-    }
+    };
 
     /** Takes navigation off the checkbox column. */
     private _suppressNavigation(colDef: ColDef<IRecord>): void {
@@ -158,7 +201,7 @@ export class GridSelection {
             recordIds.push(recordId);
             selectedRecordIdsByProvider.set(provider, recordIds);
         }
-        selectedRecordIdsByProvider.forEach((recordIds, provider) => provider.setSelectedRecordIds(recordIds));
+        selectedRecordIdsByProvider.forEach((recordIds, provider) => this.selectRecords(provider, recordIds));
     }
 
     //group ids asked for explicitly: nothing else reports a group marker

@@ -11,6 +11,9 @@ export interface IGridGroupingLabels {
     expandLevel: string;
     /** What closing one level of groups is called. */
     collapseLevel: string;
+    /** What a selection refused for loading too many groups says. */
+    groupSelectionLimitMessage: string;
+    groupSelectionLimitConfirm: string;
 }
 
 /** The English defaults for {@link IGridGroupingLabels}. */
@@ -22,4 +25,6 @@ export const GRID_GROUPING_LABELS: IGridGroupingLabels = {
     menuSection: 'Grouping',
     expandLevel: 'Expand one level',
     collapseLevel: 'Collapse one level',
+    groupSelectionLimitMessage: 'This selection would load the records of more than {{maxGroupLoads}} groups. Select fewer groups, or expand them and select their records.',
+    groupSelectionLimitConfirm: 'OK',
 };

@@ -19,6 +19,8 @@ export interface IGroupingModuleOptions {
     defaultExpandedLevel?: number;
     /** Whether a grouped column is pinned to the left. */
     pinGroupedColumns?: boolean;
+    /** How many groups one selection may load the records of before it is refused. */
+    maxGroupLoadsPerSelection?: number;
 }
 
 /**
@@ -43,6 +45,7 @@ export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGri
                 type: options.type ?? 'nested',
                 defaultExpandedLevel: options.defaultExpandedLevel ?? -1,
                 pinGroupedColumns: options.pinGroupedColumns ?? true,
+                maxGroupLoadsPerSelection: options.maxGroupLoadsPerSelection ?? 100,
             },
         });
         gridServices.register('grouping', () => grouping);

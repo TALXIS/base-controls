@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createClientSideRowModelModule, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -275,6 +275,13 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         rowModel: withPayloadCell(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule()),
+        clipboard: props.clipboard ? createClipboardModule() : undefined,
+        cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
+        selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),
+        sorting: props.sorting ? createSortingModule() : undefined,
+        filtering: props.filtering ? createFilteringModule() : undefined,
+        aggregation: props.aggregation ? createAggregationModule() : undefined,
+        grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

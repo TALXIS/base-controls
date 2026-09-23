@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
 import { FontWeights, IContextualMenuItem } from "@fluentui/react";
-import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridCellEditable } from "../../services/cells";
@@ -12,9 +12,18 @@ import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridRowModelGrouping } from "../row-model/interfaces";
+import { IGridSurface } from "../../services/surfaces";
+import { IGridSelectionInterceptors } from "../selection";
 
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
+
+/** How many groups load their records at the same time while a selection waits for them. */
+const CONCURRENT_GROUP_LOADS = 5;
+
+export interface IGridGroupingEvents {
+    onGroupSelectionLimitDialogChanged: () => void;
+}
 
 export interface IGroupingSettings {
     /** Whether a column's menu offers grouping, or the dataset's own group-bys are all there is. */
@@ -25,6 +34,8 @@ export interface IGroupingSettings {
     defaultExpandedLevel: number;
     /** Whether a grouped column is pinned to the left. */
     pinGroupedColumns: boolean;
+    /** How many groups one selection may load the records of before it is refused. */
+    maxGroupLoadsPerSelection: number;
 }
 
 export interface IGridGroupingParameters {
@@ -43,6 +54,8 @@ export class GridGrouping {
     private _expandedLevel: number;
     private _hasUserExpanded: boolean = false;
     private _childLimitNotificationId?: string;
+    private _isGroupSelectionLimitDialogOpen: boolean = false;
+    public readonly events: IEventEmitter<IGridGroupingEvents> = new EventEmitter<IGridGroupingEvents>();
 
     constructor(parameters: IGridGroupingParameters) {
         this._services = parameters.services;
@@ -72,7 +85,64 @@ export class GridGrouping {
         //behind sorting and filtering, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 20);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 20);
+        this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces);
+        this._gridServices.find('selection')?.setInterceptor('onSelectRecords', this._onSelectRecords);
     }
+
+    public getMaxGroupLoadsPerSelection(): number {
+        return this._settings.maxGroupLoadsPerSelection;
+    }
+
+    public isGroupSelectionLimitDialogOpen(): boolean {
+        return this._isGroupSelectionLimitDialogOpen;
+    }
+
+    public closeGroupSelectionLimitDialog(): void {
+        this._setGroupSelectionLimitDialogOpen(false);
+    }
+
+    /** Loads the groups a selection adds before it is written, and refuses one that would load too many. */
+    private _onSelectRecords: IInterceptor<IGridSelectionInterceptors, 'onSelectRecords'> = async (parameters, defaultAction) => {
+        //the provider selects a loaded group without fetching
+        if (await this._loadNewlySelectedGroups(parameters.provider, parameters.recordIds)) {
+            await defaultAction(parameters);
+            return;
+        }
+        this._setGroupSelectionLimitDialogOpen(true);
+    };
+
+    /** Loads the groups the ids add to the selection, a level at a time, within the limit. */
+    private async _loadNewlySelectedGroups(provider: IDataProvider, recordIds: string[]): Promise<boolean> {
+        const selectedRecordIds = new Set(provider.getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false }));
+        const recordsMap = provider.getRecordsMap();
+        let pendingGroups = recordIds
+            .filter(recordId => !selectedRecordIds.has(recordId))
+            .map(recordId => recordsMap[recordId])
+            .filter(isUnloadedGroup);
+        let remainingLoads = this._settings.maxGroupLoadsPerSelection;
+        while (pendingGroups.length > 0) {
+            if (pendingGroups.length > remainingLoads) {
+                return false;
+            }
+            remainingLoads -= pendingGroups.length;
+            const nextGroups: IRecord[] = [];
+            for (let index = 0; index < pendingGroups.length; index += CONCURRENT_GROUP_LOADS) {
+                const loadedRecords = await Promise.all(pendingGroups.slice(index, index + CONCURRENT_GROUP_LOADS).map(loadGroupRecords));
+                nextGroups.push(...loadedRecords.flat().filter(isUnloadedGroup));
+            }
+            pendingGroups = nextGroups;
+        }
+        return true;
+    }
+
+    private _setGroupSelectionLimitDialogOpen(isOpen: boolean): void {
+        this._isGroupSelectionLimitDialogOpen = isOpen;
+        this.events.dispatchEvent('onGroupSelectionLimitDialogChanged');
+    }
+
+    private _onSurfaces = (surfaces: IGridSurface[]): void => {
+        surfaces.push({ key: 'groupSelectionLimit', onRender: this._onRenderGroupSelectionLimitDialog });
+    };
 
     /** The strings this module renders, for its own components. */
     public getLabels(): ILocalizationService<IGridGroupingLabels> {
@@ -303,6 +373,8 @@ export class GridGrouping {
 
     private _onRenderExpansionHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderExpansionHeader(props);
 
+    private _onRenderGroupSelectionLimitDialog = (): JSX.Element => this.components.onRenderGroupSelectionLimitDialog();
+
     /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridGroupingComponents {
         return this._services.get('components');
@@ -326,3 +398,20 @@ export class GridGrouping {
 
 
 }
+
+/** A group whose own records have not been loaded yet. */
+const isUnloadedGroup = (record: IRecord | undefined): record is IRecord =>
+    !!record
+    && record.getSummarizationType() === 'grouping'
+    && !record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId())?.getRecords().length;
+
+/** Loads a group's own records, or none where the load fails. */
+const loadGroupRecords = async (group: IRecord): Promise<IRecord[]> => {
+    const childProvider = group.getDataProvider().createGroupedRecordDataProvider(group);
+    try {
+        return await childProvider.refresh();
+    }
+    catch {
+        return [];
+    }
+};

@@ -29,7 +29,7 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
 
     const onChange = (checked?: boolean) => {
         if (checked) {
-            provider.setSelectedRecordIds(provider.getSortedRecordIds());
+            selection.selectRecords(provider, provider.getSortedRecordIds());
             return;
         }
         provider.clearSelectedRecordIds();
