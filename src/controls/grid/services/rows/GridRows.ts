@@ -1,11 +1,20 @@
-import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi } from "@ag-grid-community/core";
+import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowHeightParams } from "@ag-grid-community/core";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
+import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
 export interface IGridRowsEvents {
     /** Which rows the user is at changed */
     onActiveRowsChanged: () => void;
 }
+
+export interface IGridRowHeight {
+    /** In pixels, or `undefined` for the grid's own row height. */
+    height?: number;
+}
+
+/** A hook over how tall a row is. */
+export type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; node: IRowNode<IRecord> }) => void;
 
 export interface IGridRowsParameters {
     services: IGridServiceLocator;
@@ -17,6 +26,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
+    private _rowHeightHooks = new HookRegistry<GridRowHeightHook>();
 
     constructor(parameters: IGridRowsParameters) {
         super();
@@ -33,7 +43,26 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
         return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
     }
 
+    /**
+     * Registers a hook over how tall a row is.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void {
+        return this._rowHeightHooks.register(hook, priority);
+    }
+
+    private _getRowHeight = (params: RowHeightParams<IRecord>): number | undefined => {
+        if (!params.data) {
+            return undefined;
+        }
+        const result: IGridRowHeight = {};
+        this._rowHeightHooks.apply(result, { record: params.data, node: params.node });
+        return result.height;
+    };
+
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
+        gridApi.setGridOption('getRowHeight', this._getRowHeight);
         //a selection reaches the cells nowhere else
         this._services.get('provider').addEventListener('onRecordsSelected', () => this._onSelectionChanged());
         gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setActiveRow('hovered', event.data?.getRecordId()));

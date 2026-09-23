@@ -6,12 +6,16 @@ import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
+import { IGridRowHeight } from "../../services/rows";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 
 /** What the row stands in as until the totals are worked out. */
 const PENDING_RECORD_ID = '__total__pending';
+
+/** What the total row's label and value need, drawn one above the other. */
+const MIN_TOTAL_ROW_HEIGHT = 42;
 
 /** Which label names a total, per aggregation a column can carry. */
 const TOTAL_LABELS: Record<string, keyof IGridAggregationLabels> = {
@@ -53,6 +57,7 @@ export class GridAggregation {
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 30);
         this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
         this._gridServices.get('cells').registerCellLoadingHook(this._onCellLoading);
+        this._gridServices.get('rows').registerRowHeightHook(this._onRowHeight);
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
@@ -99,6 +104,13 @@ export class GridAggregation {
         //the faintest step off the surface Fluent has, whatever the grid does about striping
         theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
         theme.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+    };
+
+    private _onRowHeight = (result: IGridRowHeight, params: { record: IRecord }): void => {
+        if (!this._isTotalRecord(params.record)) {
+            return;
+        }
+        result.height = Math.max(result.height ?? this._gridServices.get('settings').getDefaultRowHeight(), MIN_TOTAL_ROW_HEIGHT);
     };
 
     /** Whether this is the record the module pinned under the rows, whatever state that record is in. */

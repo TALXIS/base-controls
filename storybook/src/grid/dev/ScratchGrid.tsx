@@ -214,8 +214,8 @@ export interface IScratchGridProps {
     clipboard: boolean
     cellSelection: boolean
     enableEditing: boolean
-    /** Whether a cell opens its editor on the first click rather than the second. */
-    oneClickEdit?: boolean
+    /** How tall a row is, in pixels. */
+    rowHeight?: number
     enableAutoSave: boolean
     enableNavigation: boolean
     enableZebra: boolean
@@ -250,16 +250,12 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             },
         })
         //the alignment is the dataset column's, which is what the header, the cells and what they draw read
-        provider.setColumns(COLUMNS.map(column => ({
-            ...column,
-            ...(column.name === 'status' ? { alignment: 'right' as const } : {}),
-            oneClickEdit: props.oneClickEdit,
-        })))
+        provider.setColumns(COLUMNS.map(column => column.name === 'status' ? { ...column, alignment: 'right' as const } : column))
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)
         return provider
-    }, [rowCount, props.oneClickEdit])
+    }, [rowCount])
 
     React.useEffect(() => {
         provider.refresh()
@@ -301,6 +297,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             enableNavigation={props.enableNavigation}
             enableZebra={props.enableZebra}
             enableOptionSetColors={props.enableOptionSetColors}
+            rowHeight={props.rowHeight}
             onGridReady={(api) => { (window as any).__scratchGridApi = api }} />
     </div>
 }
