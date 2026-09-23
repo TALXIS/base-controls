@@ -35,7 +35,7 @@ export const useClassNames = (componentName: string, componentProps: IComponentP
         result += ` ${className}`
     })
     if(componentProps.hideErrorMessage) {
-        result += ` ${useMemo(() => getHideErrorMessageStyles(), [])}`
+        result += ` ${useMemo(() => getHideErrorMessageStyles(theme), [theme])}`
     }
     if(componentProps.fillAvailableSpace) {
         result += ` ${useMemo(() => getFillAvailableSpaceStyles(), [])}`
@@ -44,11 +44,29 @@ export const useClassNames = (componentName: string, componentProps: IComponentP
     return result;
 };
 
-const getHideErrorMessageStyles = () => {
+//Fluent marks an error only by drawing the border in `errorText`, so the border takes its own colours back
+const getHideErrorMessageStyles = (theme: ITheme) => {
+    const { inputBorder, inputBorderHovered, inputFocusBorderAlt } = theme.semanticColors;
     return mergeStyles({
         '.ms-TextField-errorMessage, &.ms-ComboBox-container > [id*="-error"], .TALXIS__errorMessage': {
             display: 'none'
-        }
+        },
+        '.ms-TextField-fieldGroup': {
+            borderColor: inputBorder,
+        },
+        '.ms-TextField-fieldGroup:hover': {
+            borderColor: inputBorderHovered,
+        },
+        '.ms-TextField-fieldGroup::after': {
+            borderColor: inputFocusBorderAlt,
+        },
+        //a focused combo box draws its focus border instead
+        '&.ms-ComboBox-container .ms-ComboBox:not(:focus-within)::after': {
+            borderColor: inputBorder,
+        },
+        '&.ms-ComboBox-container .ms-ComboBox:not(:focus-within):hover::after': {
+            borderColor: inputBorderHovered,
+        },
     });
 }
 

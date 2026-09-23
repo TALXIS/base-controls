@@ -1,6 +1,6 @@
 import { IOptionSet } from "./interfaces";
 import { FontWeights, ITheme } from "@fluentui/react";
-import { IThemeColors, useThemeBuilder } from "@theme";
+import { useThemeBuilder } from "@theme";
 import { getOptionTagColors } from "@ui";
 
 export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, ITheme] => {
@@ -8,24 +8,6 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
     const { Options } = boundValue.attributes;
     const selectedOptionColor = boundValue.attributes.Options.find(x => x.Value === boundValue.raw)?.Color;
 
-    const getColors = (colorFeatureEnabled: boolean): IThemeColors => {
-        const colors = {
-            background: theme.semanticColors.bodyBackground,
-            text: theme.semanticColors.bodyText,
-            primary: theme.palette.themePrimary
-        }
-        if (!colorFeatureEnabled) {
-            return colors;
-        }
-        if (!selectedOptionColor) {
-            colors.background = theme.semanticColors.inputBackground;
-            return colors;
-        }
-        const tag = getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
-        colors.background = tag.background;
-        colors.text = tag.text;
-        return colors;
-    }
     const getIsColorFeatureEnabled = () => {
         if (props.parameters.EnableOptionSetColors?.raw && Options.find(x => x.Color)) {
             return true;
@@ -34,16 +16,18 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
     }
 
     const isColorFeatureEnabled = getIsColorFeatureEnabled();
-    const colors = getColors(isColorFeatureEnabled);
-    const border = isColorFeatureEnabled && selectedOptionColor ? getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText).border : undefined;
+    const tag = isColorFeatureEnabled && selectedOptionColor
+        ? getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText)
+        : undefined;
 
-    //an option drawn in a colour of its own reads as a tag rather than as text
+    //a tag edits the surrounding theme
     const currentTheme = useThemeBuilder({
-        colors: colors,
-        key: border ? `optionSet|${border}` : undefined,
-        edit: border ? result => {
-            result.semanticColors.inputBorder = border;
-            result.semanticColors.inputBorderHovered = border;
+        theme: theme,
+        key: tag ? `optionSet|${tag.background}|${tag.text}|${tag.border}` : undefined,
+        edit: tag ? result => {
+            result.semanticColors.inputBackground = tag.background;
+            result.semanticColors.inputText = tag.text;
+            result.semanticColors.inputTextHovered = tag.text;
             result.fonts.medium.fontWeight = FontWeights.semibold;
         } : undefined
     });
