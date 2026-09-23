@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IRecord } from "@talxis/client-libraries";
-import { AgGridReact, createAggregationModule, createGroupingModule, createServerSideGroupingStrategy, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
+import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
 import { useTheme } from "@fluentui/react";
 import { getClassNames } from "@utils";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
@@ -38,7 +38,6 @@ export const Grid = (props: ICheckListGridProps) => {
         filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
         aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,
         grouping: parameters.EnableGrouping?.raw === true ? createGroupingModule({
-            strategy: createServerSideGroupingStrategy(),
             type: parameters.GroupingType?.raw ?? 'nested',
             defaultExpandedLevel: parameters.DefaultExpandedGroupLevel?.raw ?? -1,
             pinGroupedColumns: parameters.EnableGroupedColumnsPinning?.raw !== false,

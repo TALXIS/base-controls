@@ -1,39 +1,68 @@
-import { GridApi } from "@ag-grid-community/core";
+import { GridApi, IRowNode } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridGroupingServiceLocator } from "../services";
-import { IGroupingStrategy, IGroupingStrategyParameters } from "./interfaces";
+import { IGridServiceLocator } from "../../../services";
+import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../interfaces";
+
+export interface IClientSideRowModelGroupingParameters extends IGridRowModelGroupingParameters {
+    services: IGridServiceLocator;
+    /** Hands the rows to the grid again, once every level has arrived. */
+    onRowsLoaded: (gridApi: GridApi<IRecord>) => void;
+}
 
 /** Grouping where every level is in the grid at once, as a tree. */
-export class ClientSideGroupingStrategy implements IGroupingStrategy {
-    private _services: IGridGroupingServiceLocator;
+export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
+    private _services: IGridServiceLocator;
+    private _onRowsLoaded: (gridApi: GridApi<IRecord>) => void;
     /** Which load the walk in flight belongs to */
     private _loadToken: number = 0;
+    public isGroupOpenByDefault: (node: IRowNode<IRecord>) => boolean;
 
-    constructor(parameters: IGroupingStrategyParameters) {
+    constructor(parameters: IClientSideRowModelGroupingParameters) {
         this._services = parameters.services;
+        this._onRowsLoaded = parameters.onRowsLoaded;
+        this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
         //ahead of the push the grid makes on the same event
-        this._provider.addEventListener('onNewDataLoaded', () => {
-            this._applyTreeData();
-            this._loadEveryLevel();
-        });
+        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
     }
 
-    /**
-     * Neither option is `@initial`, so grouping can turn the hierarchy on and off.
-     */
-    public applyGridOptions(gridApi: GridApi<IRecord>): void {
+    /** Neither option is `@initial`, so grouping can turn the hierarchy on and off. */
+    public onApplyGridOptions(gridApi: GridApi<IRecord>): void {
         this._applyTreeData(gridApi);
+        gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed);
     }
 
     /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */
-    public applyGroupedColumnDefinition(): void { }
+    public onApplyGroupedColumnDefinition(): void { }
 
+    /** Written onto the nodes and drawn in one pass. */
+    public onApplyExpandedLevel(gridApi: GridApi<IRecord>): void {
+        gridApi.forEachNode(node => {
+            if (node.allChildrenCount) {
+                node.expanded = this.isGroupOpenByDefault(node);
+            }
+        });
+        gridApi.onGroupExpandedOrCollapsed();
+    }
+
+    public onExpansionChanged(): void { }
+
+    /** Every record the tree holds, as far as the child providers have been fetched. */
     public getRows(): IRecord[] {
         return flattenGroupedRecords(this._provider.getRecords());
     }
 
+    //the provider outlives the grid
+    private _onGridPreDestroyed = (): void => {
+        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
+    };
+
+    private _onNewDataLoaded = (): void => {
+        this._applyTreeData();
+        this._loadEveryLevel();
+    };
+
     /** A tree only while there is something to nest. */
-    private _applyTreeData(gridApi = this._services.get('gridServices').find('gridApi')): void {
+    private _applyTreeData(gridApi = this._services.find('gridApi')): void {
         if (!gridApi) {
             return;
         }
@@ -53,15 +82,15 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
         }
         const loadToken = ++this._loadToken;
         await loadGroupedRecords(this._provider.getRecords());
-        const gridApi = this._services.get('gridServices').find('gridApi');
+        const gridApi = this._services.find('gridApi');
         if (loadToken !== this._loadToken || !gridApi) {
             return;
         }
-        this._services.get('gridServices').get('rowModel').refresh(gridApi);
+        this._onRowsLoaded(gridApi);
     }
 
     private get _provider(): IDataProvider {
-        return this._services.get('gridServices').get('provider');
+        return this._services.get('provider');
     }
 }
 

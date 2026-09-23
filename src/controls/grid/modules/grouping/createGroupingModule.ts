@@ -5,11 +5,8 @@ import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
 import { GridGroupingComponents, IGridGroupingComponents } from "./moduleComponents";
 import { GridGrouping } from "./GridGrouping";
 import { IGridGroupingServiceMap } from "./services";
-import { IGroupingStrategyModule } from "./strategies";
 
 export interface IGroupingModuleOptions {
-    /** Where a group's children come from. */
-    strategy: IGroupingStrategyModule;
     /** Localized strings this module renders. */
     labels?: Partial<IGridGroupingLabels>;
     /** The parts of this module to render differently. */
@@ -29,11 +26,9 @@ export interface IGroupingModuleOptions {
  *
  * @example
  */
-export const createGroupingModule = (options: IGroupingModuleOptions): IGridModule => ({
+export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGridModule => ({
     agGridModules: [RowGroupingModule],
     getInitialComponentProps: () => ({ groupDisplayType: 'custom' }),
-    //the strategy names the row model it groups on
-    requiresRowModel: options.strategy.rowModel,
     onRegister: gridServices => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         services.register('gridServices', () => gridServices);
@@ -43,7 +38,6 @@ export const createGroupingModule = (options: IGroupingModuleOptions): IGridModu
         services.register('components', () => components);
         const grouping = new GridGrouping({
             services,
-            strategy: options.strategy,
             settings: {
                 allowUserGrouping: options.allowUserGrouping ?? true,
                 type: options.type ?? 'nested',

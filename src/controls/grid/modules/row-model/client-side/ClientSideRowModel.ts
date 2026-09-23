@@ -2,7 +2,8 @@ import { GridApi } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel } from "../interfaces";
+import { IGridRowModel, IGridRowModelGroupingParameters } from "../interfaces";
+import { ClientSideRowModelGrouping } from "./ClientSideRowModelGrouping";
 
 export interface IClientSideRowModelParameters {
     services: IGridServiceLocator;
@@ -11,6 +12,7 @@ export interface IClientSideRowModelParameters {
 /** Every row at once, handed over as data. */
 export class ClientSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
+    private _grouping?: ClientSideRowModelGrouping;
 
     constructor(parameters: IClientSideRowModelParameters) {
         this._services = parameters.services;
@@ -21,20 +23,20 @@ export class ClientSideRowModel implements IGridRowModel {
     }
 
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
-        //asked of the grouping module, because a group row is one of its
-        gridApi.setGridOption('isGroupOpenByDefault', params =>
-            this._services.find('grouping')?.isGroupOpenByDefault(params.rowNode) ?? false);
+        gridApi.setGridOption('isGroupOpenByDefault', params => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false);
     }
 
-    /** Asked of the grouping module where there is one. */
     public refresh(gridApi: GridApi<IRecord>): void {
-        //the same records are handed over again
-        gridApi.setGridOption('rowData',
-            this._services.find('grouping')?.getRows() ?? this._services.get('provider').getRecords());
+        gridApi.setGridOption('rowData', this._grouping?.getRows() ?? this._services.get('provider').getRecords());
     }
 
-    public applyExpansionChange(gridApi: GridApi<IRecord>): void {
-        gridApi.onGroupExpandedOrCollapsed();
+    public createGrouping(parameters: IGridRowModelGroupingParameters): ClientSideRowModelGrouping {
+        this._grouping = new ClientSideRowModelGrouping({
+            ...parameters,
+            services: this._services,
+            onRowsLoaded: gridApi => this.refresh(gridApi),
+        });
+        return this._grouping;
     }
 
     public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {

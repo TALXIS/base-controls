@@ -283,6 +283,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     //the raw record for a task, for `onGetRawRecords` alone — the one hook that has to answer in raw data. Reads the
     //provider's own map, which holds the very objects it was handed.
     private _getTask(taskId: string): IRawRecord | undefined {
-        return this._provider.getRawDataMap()[taskId];
+        return this._provider.getRawRecord(taskId);
     }
 }

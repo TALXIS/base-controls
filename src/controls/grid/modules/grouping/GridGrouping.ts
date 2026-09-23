@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
 import { FontWeights, IContextualMenuItem } from "@fluentui/react";
-import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridCellEditable } from "../../services/cells";
@@ -11,7 +11,7 @@ import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "..
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
-import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
+import { IGridRowModelGrouping } from "../row-model/interfaces";
 
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
@@ -30,24 +30,17 @@ export interface IGroupingSettings {
 export interface IGridGroupingParameters {
     /** This module's own locator. */
     services: IGridGroupingServiceLocator;
-    /** Where a group's children come from. */
-    strategy: IGroupingStrategyModule;
     settings: IGroupingSettings;
 }
 
-/**
- * Grouping the rows by a column.
- *
- * children come from is the row model's, which {@link IGroupingStrategy}
- */
+/** Grouping the rows by a column, on whichever row model the grid runs. */
 export class GridGrouping {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;
-    private _strategy: IGroupingStrategy;
+    private _rowModelGrouping: IGridRowModelGrouping;
     /** How many levels of groups are open. */
     private _expandedLevel: number;
-    private _expandedRowGroupIds: Set<string> = new Set();
     private _hasUserExpanded: boolean = false;
     private _childLimitNotificationId?: string;
 
@@ -58,13 +51,14 @@ export class GridGrouping {
         this._grouping = new Grouping(this._provider);
         //the provider nests by default, so what this module was asked for is the word on it
         this._provider.setProperty('groupingType', this._settings.type);
-        //before the strategy, so a strategy of its own listening for a load is behind this
-        this._interceptNestedGrouping();
-        this._strategy = parameters.strategy.create({ services: this._services });
+        this._rowModelGrouping = this._gridServices.get('rowModel').createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault });
         //ahead of `AgGridModel`, which registers its own listener only once there is an api
-        this._gridServices.whenAvailable('gridApi', gridApi => this._strategy.applyGridOptions(gridApi));
+        this._gridServices.whenAvailable('gridApi', gridApi => {
+            this._rowModelGrouping.onApplyGridOptions(gridApi);
+            gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed);
+        });
         //only a grouped provider has children to run out of
-        this._provider.addEventListener('onNestedProviderPagingLimitReached', () => this._warnChildLimitReached());
+        this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._registerHooks();
     }
 
@@ -83,13 +77,6 @@ export class GridGrouping {
     /** The strings this module renders, for its own components. */
     public getLabels(): ILocalizationService<IGridGroupingLabels> {
         return this._labels;
-    }
-
-    /**
-     * The rows the grid is given, where the row model takes data rather than a level at a time.
-     */
-    public getRows(): IRecord[] | undefined {
-        return this._strategy.getRows();
     }
 
     public getGrouping(): Grouping {
@@ -141,17 +128,6 @@ export class GridGrouping {
         return record.getDataProvider().grouping.getGroupBys().some(groupBy => groupBy.columnName === columnName);
     }
 
-    /** Whether a group row opens itself */
-    public isGroupOpenByDefault(node: IRowNode<IRecord>): boolean {
-        if (node.id && this._expandedRowGroupIds.has(node.id)) {
-            return true;
-        }
-        if (this._hasUserExpanded) {
-            return false;
-        }
-        return node.level <= this._expandedLevel;
-    }
-
     /** How many levels of groups are open. */
     public getExpandedLevel(): number {
         return this._expandedLevel;
@@ -159,36 +135,25 @@ export class GridGrouping {
 
     /** The deepest level there is to open, which is the innermost group-by. */
     public getDeepestLevel(): number {
-        return this._provider.grouping.getGroupBys().length - 1;
+        const groupByCount = this._provider.grouping.getGroupBys().length;
+        return this._settings.type === 'flat' ? Math.min(groupByCount, 1) - 1 : groupByCount - 1;
     }
 
     /** Opens the groups down to a level and closes the rest. */
     public setExpandedLevel(level: number): void {
         this._expandedLevel = Math.min(Math.max(level, -1), this.getDeepestLevel());
-        //the level is the authority from here
-        this._expandedRowGroupIds.clear();
+        this._rowModelGrouping.onExpansionChanged();
         this._hasUserExpanded = false;
         const gridApi = this._gridServices.find('gridApi');
         if (!gridApi) {
             return;
         }
-        gridApi.forEachNode(node => {
-            if (this.isGroupRow(node)) {
-                node.setExpanded(node.level <= this._expandedLevel);
-            }
-        });
-        this._gridServices.get('rowModel').applyExpansionChange(gridApi);
-    }
-
-    /** What was open before a purge, so the levels the user had opened come back. */
-    public captureExpandedRowGroupIds(expandedRowGroupIds: string[]): void {
-        this._expandedRowGroupIds = new Set(expandedRowGroupIds);
+        this._rowModelGrouping.onApplyExpandedLevel(gridApi);
     }
 
     public toggleGroup(node: IRowNode<IRecord>): void {
         node.setExpanded(!node.expanded);
-        //cleared so it does not force the next group open again
-        this._expandedRowGroupIds.clear();
+        this._rowModelGrouping.onExpansionChanged();
         this._hasUserExpanded = true;
     }
 
@@ -212,7 +177,7 @@ export class GridGrouping {
         const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
         for (const colDef of columnDefs.filter(isGrouped)) {
             const columnName = colDef.colId ?? colDef.field!;
-            this._strategy.applyGroupedColumnDefinition(colDef);
+            this._rowModelGrouping.onApplyGroupedColumnDefinition(colDef);
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             if (this._settings.pinGroupedColumns) {
@@ -286,46 +251,17 @@ export class GridGrouping {
         });
     };
 
-    /** Keeps a nested grouping to one level while a load runs, and puts the rest back after. */
-    private _interceptNestedGrouping(): void {
-        if (this._settings.type === 'flat') {
-            return;
-        }
-        const provider = this._provider;
-        let originalGrouping: IGroupByMetadata[] = [];
-        let originalAggregation: IGroupByMetadata[] = [];
-        provider.addEventListener('onBeforeNewDataLoaded', () => {
-            originalGrouping = provider.grouping.getGroupBys().sort((left, right) => {
-                const columnsMap = provider.getColumnsMap();
-                return columnsMap[left.columnName]!.order! - columnsMap[right.columnName]!.order!;
-            });
-            originalAggregation = provider.aggregation.getAggregations();
-            if (originalGrouping.length <= 1) {
-                return;
-            }
-            provider.grouping.clear();
-            provider.grouping.addGroupBy(originalGrouping[0]);
-            for (const groupBy of originalGrouping.slice(1)) {
-                const column = provider.getColumnsMap()[groupBy.columnName];
-                provider.aggregation.removeAggregation(column?.aggregation?.alias!);
-            }
-        });
-        provider.addEventListener('onNewDataLoaded', () => {
-            originalGrouping.forEach(groupBy => provider.grouping.addGroupBy(groupBy));
-            originalAggregation.forEach(aggregation => provider.aggregation.addAggregation(aggregation as any));
-        });
-    }
-
-    /** Clears the notification it may have raised, so it does not outlive the grid. */
-    public destroy(): void {
+    //the provider outlives the grid
+    private _onGridPreDestroyed = (): void => {
+        this._provider.removeEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         if (this._childLimitNotificationId) {
             window.Xrm.App.clearGlobalNotification(this._childLimitNotificationId);
         }
-    }
+    };
 
     /** Says once that a group had more children than were loaded. */
     //TODO: use control notification instead
-    private async _warnChildLimitReached(): Promise<void> {
+    private _onNestedProviderPagingLimitReached = async (): Promise<void> => {
         if (this._childLimitNotificationId) {
             return;
         }
@@ -336,7 +272,7 @@ export class GridGrouping {
             }),
             type: 2,
         });
-    }
+    };
 
 
     /** What a row draws in a column while the grid is grouped: the group's value, or nothing. */
@@ -359,6 +295,8 @@ export class GridGrouping {
     private _getGroupedFormattedValue(record: IRecord | undefined, columnName: string): string {
         return record ? record.getFormattedValue(this.getGroupedValueColumnName(record, columnName)) ?? '' : '';
     }
+
+    private _isGroupOpenByDefault = (node: IRowNode<IRecord>): boolean => !this._hasUserExpanded && node.level <= this._expandedLevel;
 
     //the render methods reached through a field of ours.
     private _onRenderGroupCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderGroupCell(props);

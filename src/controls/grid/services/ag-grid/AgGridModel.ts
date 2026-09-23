@@ -1,13 +1,7 @@
-import { GridApi, ModuleRegistry } from "@ag-grid-community/core";
+import { GridApi } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
-import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
-import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
-import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
 import { IGridServiceLocator } from "@controls/grid/services";
-//both row models are registered because a grid picks one per instance
-ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClientSideRowModelModule, ClipboardModule,]);
 
 export interface IAgGridModelParameters {
     services: IGridServiceLocator;
@@ -36,9 +30,18 @@ export class AgGridModel {
     }
 
     private _registerEventListeners(): void {
-        this._provider.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
-        this._provider.addEventListener('onRenderRequested', () => this._gridApi.refreshCells());
+        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        this._provider.addEventListener('onRenderRequested', this._onRenderRequested);
+        this._gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed);
     }
+
+    //the provider outlives the grid
+    private _onGridPreDestroyed = (): void => {
+        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
+    };
+
+    private _onRenderRequested = (): void => this._gridApi.refreshCells();
 
     private _setGridOptions(): void {
         this._gridApi.setGridOption('loadingCellRenderer', FullRowLoading);
@@ -49,11 +52,11 @@ export class AgGridModel {
         this._gridApi.setGridOption('enterNavigatesVerticallyAfterEdit', true);
     }
 
-    private _onNewDataLoaded(): void {
+    private _onNewDataLoaded = (): void => {
         this._services.get('rowModel').refresh(this._gridApi);
         this._setCurrentColumns();
         this._scrollToTop();
-    }
+    };
 
     private _setCurrentColumns(): void {
         this._gridApi.setGridOption('columnDefs', this._services.get('columns').getColumnDefinitions());

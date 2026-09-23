@@ -75,7 +75,6 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     services.register('overlays', () => overlays);
 
     const modules = onGetProps().modules;
-    assertModulesFitRowModel(modules);
     for (const module of orderModules(modules)) {
         module.onRegister?.(services);
     }
@@ -114,13 +113,3 @@ const orderModules = (modules: IGridModules): IGridModule[] => [
 
 const getAgGridModules = (modules: IGridModules): Module[] =>
     orderModules(modules).flatMap(module => module.agGridModules ?? []);
-
-/** Refuses a combination where a module cannot work. */
-const assertModulesFitRowModel = (modules: IGridModules): void => {
-    const rowModelType = modules.rowModel.getInitialComponentProps?.()?.rowModelType;
-    for (const module of orderModules(modules)) {
-        if (module.requiresRowModel && module.requiresRowModel !== rowModelType) {
-            throw new Error(`This grid was given a module that needs the ${module.requiresRowModel} row model, but its row model is ${rowModelType}.`);
-        }
-    }
-};

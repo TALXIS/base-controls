@@ -2,13 +2,10 @@ import type { Module } from "@ag-grid-community/core";
 import type { AgGridReactProps } from "@ag-grid-community/react";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGridServiceLocator } from "../services";
-import type { IGridRowModelType } from "./row-model/interfaces";
 
 /** One thing a grid can be given rather than born with. */
 export interface IGridModule {
     agGridModules?: Module[];
-    /** The row model this one only works on, if it is particular. */
-    requiresRowModel?: IGridRowModelType;
     /** Options the grid must be created with. */
     getInitialComponentProps?: () => Partial<AgGridReactProps<IRecord>>;
     /** Registers what the module contributes, if anything outlives construction. */

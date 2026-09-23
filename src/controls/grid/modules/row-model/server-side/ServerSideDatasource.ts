@@ -16,8 +16,8 @@ export class ServerSideDatasource implements IServerSideDatasource {
             const groupDataProvider = provider.createGroupedRecordDataProvider(params.parentNode.data);
             let records: IRecord[] = groupDataProvider.getRecords();
             try {
-                //clear selected records means the main dataset has been refreshed
-                if (records.length === 0 || provider.getSelectedRecordIds().length === 0) {
+                //a load of the main dataset drops the groups' providers
+                if (records.length === 0) {
                     records = await groupDataProvider.refresh();
                 }
             }

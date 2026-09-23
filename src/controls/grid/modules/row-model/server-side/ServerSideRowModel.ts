@@ -2,8 +2,9 @@ import { GridApi } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel } from "../interfaces";
+import { IGridRowModel, IGridRowModelGroupingParameters } from "../interfaces";
 import { ServerSideDatasource } from "./ServerSideDatasource";
+import { ServerSideRowModelGrouping } from "./ServerSideRowModelGrouping";
 
 export interface IServerSideRowModelParameters {
     services: IGridServiceLocator;
@@ -13,6 +14,7 @@ export interface IServerSideRowModelParameters {
 export class ServerSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
     private _datasource: ServerSideDatasource;
+    private _grouping?: ServerSideRowModelGrouping;
 
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
@@ -25,22 +27,19 @@ export class ServerSideRowModel implements IGridRowModel {
 
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
         gridApi.setGridOption('serverSideDatasource', this._datasource);
-        //asked of the grouping module, because a group row is one of its
-        gridApi.setGridOption('isServerSideGroupOpenByDefault', params =>
-            this._services.find('grouping')?.isGroupOpenByDefault(params.rowNode) ?? false);
+        gridApi.setGridOption('isServerSideGroupOpenByDefault', params => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false);
     }
 
     public refresh(gridApi: GridApi<IRecord>): void {
         //purged rather than reloaded in place
-        this._services.find('grouping')?.captureExpandedRowGroupIds(
-            gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
+        this._grouping?.captureExpandedIds(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
         gridApi.refreshServerSide({ purge: true });
     }
 
-    /**
-     * Nothing to do: an expanded node asks the datasource for its children.
-     */
-    public applyExpansionChange(): void { }
+    public createGrouping(parameters: IGridRowModelGroupingParameters): ServerSideRowModelGrouping {
+        this._grouping = new ServerSideRowModelGrouping(parameters);
+        return this._grouping;
+    }
 
     /** Read off the selection state rather than the nodes. */
     public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {

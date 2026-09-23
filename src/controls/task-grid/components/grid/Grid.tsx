@@ -1,6 +1,7 @@
 import * as React from "react"
 import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
 import { IRecord } from "@talxis/client-libraries";
+import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
 import { useAgGridLicenseKey, useServices, useTaskDataProvider } from "@controls/task-grid/context";
 import { GridCustomizer } from "./grid-customizer/GridCustomizer";
@@ -17,16 +18,20 @@ export const Grid = (props: IControlProps) => {
     //at a time. A level fetched on demand renders as a placeholder row until it arrives, and the chart -
     //which has every task - then shows a different task on that line
     const selectionMode = parameters.SelectableRows?.raw ?? 'multiple';
-    const modules = React.useMemo<IGridModules>(() => ({
-        license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
-        rowModel: createClientSideRowModelModule(),
-        //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
-        selection: selectionMode === 'none' ? undefined : createSelectionModule({ mode: selectionMode }),
-        sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
-        filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
-        aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,
-        //no grouping: this grid supplies a tree of its own below, and the module would supply a second
-    }), []);
+    const modules = React.useMemo<IGridModules>(() => {
+        const rowModel = createClientSideRowModelModule();
+        return {
+            license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
+            //`treeData` below is AG Grid's row grouping
+            rowModel: { ...rowModel, agGridModules: [...(rowModel.agGridModules ?? []), RowGroupingModule] },
+            //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
+            selection: selectionMode === 'none' ? undefined : createSelectionModule({ mode: selectionMode }),
+            sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
+            filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
+            aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,
+            //no grouping: this grid supplies a tree of its own below, and the module would supply a second
+        };
+    }, []);
 
     return <GridBase.Root
         provider={parameters.Grid.getDataProvider()}
