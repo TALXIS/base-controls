@@ -14,8 +14,9 @@ export class ServerSideRowModelGrouping implements IGridRowModelGrouping {
 
     public onApplyGridOptions(): void { }
 
-    public onApplyGroupedColumnDefinition(colDef: ColDef<IRecord>): void {
-        colDef.rowGroup = true;
+    //AG Grid keeps a `rowGroup` that a new definition leaves out
+    public onApplyColumnDefinition(colDef: ColDef<IRecord>, isGrouped: boolean): void {
+        colDef.rowGroup = isGrouped;
     }
 
     //purged: `setExpanded` refreshes the whole store once per node

@@ -30,8 +30,8 @@ export interface IGridRowModelGroupingParameters {
 export interface IGridRowModelGrouping {
     /** Options only this row model needs while the rows can be grouped. */
     onApplyGridOptions: (gridApi: GridApi<IRecord>) => void;
-    /** What a grouped column needs beyond being moved to the front and pinned. */
-    onApplyGroupedColumnDefinition: (colDef: ColDef<IRecord>) => void;
+    /** What a data column needs for this row model, grouped or not. */
+    onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
     /** Opens and closes the groups to what `isGroupOpenByDefault` now says. */
     onApplyExpandedLevel: (gridApi: GridApi<IRecord>) => void;
     /** The user or a level decided what is open, which outranks what a reload restored. */

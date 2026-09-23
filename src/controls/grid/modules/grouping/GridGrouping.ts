@@ -264,7 +264,6 @@ export class GridGrouping {
         const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
         for (const colDef of columnDefs.filter(isGrouped)) {
             const columnName = colDef.colId ?? colDef.field!;
-            this._rowModelGrouping.onApplyGroupedColumnDefinition(colDef);
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             if (this._settings.pinGroupedColumns) {
@@ -273,6 +272,7 @@ export class GridGrouping {
         }
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
             this._applyGroupRowRenderer(colDef, columnsMap[colDef.colId ?? colDef.field!]);
+            this._rowModelGrouping.onApplyColumnDefinition(colDef, isGrouped(colDef));
             //AG Grid keeps a pin that a new definition leaves out
             if (!isGrouped(colDef)) {
                 colDef.pinned ??= null;

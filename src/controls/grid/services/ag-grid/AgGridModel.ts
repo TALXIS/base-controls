@@ -53,8 +53,9 @@ export class AgGridModel {
     }
 
     private _onNewDataLoaded = (): void => {
-        this._services.get('rowModel').refresh(this._gridApi);
+        //columns first: the server-side model reads what is grouped off them while it reloads
         this._setCurrentColumns();
+        this._services.get('rowModel').refresh(this._gridApi);
         this._scrollToTop();
     };
 

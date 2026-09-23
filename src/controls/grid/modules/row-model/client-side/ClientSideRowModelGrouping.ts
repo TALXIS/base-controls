@@ -32,7 +32,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     }
 
     /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */
-    public onApplyGroupedColumnDefinition(): void { }
+    public onApplyColumnDefinition(): void { }
 
     /** Written onto the nodes and drawn in one pass. */
     public onApplyExpandedLevel(gridApi: GridApi<IRecord>): void {
