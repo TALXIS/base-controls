@@ -32,6 +32,7 @@ export interface IGridServiceMap {
     gridRoot: HTMLElement;
     /** Every string the grid renders, resolved. */
     labels: ILocalizationService<IGridLabels>;
+    /** AG Grid's own api, a last resort for what the grid's hooks cannot express. */
     gridApi: GridApi<IRecord>;
     /** The theme the control was given. */
     theme: ITheme;
