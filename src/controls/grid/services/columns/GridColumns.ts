@@ -6,7 +6,7 @@ import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFi
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField, IGridField } from "../fields";
-import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
+import { ColumnHeaderOverridableRenderer } from "../../components/column-header/overridable-renderer/ColumnHeaderOverridableRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
@@ -38,7 +38,7 @@ export interface IGridColumns {
     /** What a column header offers, assembled from what the modules registered. */
     readonly headers: IGridColumnHeaders;
     /**
-     * Registers a column definitions hook; a renderer it sets skips the grid's `onRenderCell…`.
+     * Registers a column definitions hook; what it renders itself skips the grid's `onRender…`.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -79,7 +79,7 @@ export class GridColumns implements IGridColumns {
 
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
-        columnDef.headerComponent ??= ColumnHeaderRenderer;
+        columnDef.headerComponent ??= ColumnHeaderOverridableRenderer;
         columnDef.cellRenderer ??= CellOverridableEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
@@ -164,7 +164,7 @@ export class GridColumns implements IGridColumns {
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
-            headerComponent: ColumnHeaderRenderer,
+            headerComponent: ColumnHeaderOverridableRenderer,
             cellRenderer: CellFieldRenderer,
             cellEditor: CellFieldEditor,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),

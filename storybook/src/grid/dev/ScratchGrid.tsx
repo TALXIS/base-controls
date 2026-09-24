@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridComponents, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridComponents, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -184,6 +184,57 @@ const SummaryCell = (props: IGridCellParams) => {
     </Grid.Cell.Root>
 }
 
+const payloadHeaderStyles = mergeStyleSets({
+    container: {
+        background: 'linear-gradient(90deg, #0050c80f, #8764b80f)',
+        borderBottom: '2px solid #0050c8',
+    },
+    braces: {
+        fontFamily: 'Consolas, monospace',
+        fontWeight: 600,
+        color: '#0050c8',
+        flexShrink: 0,
+    },
+    badge: {
+        padding: '0 6px',
+        borderRadius: 8,
+        fontSize: 10,
+        lineHeight: '16px',
+        color: '#fff',
+        background: '#0050c8',
+        flexShrink: 0,
+    },
+})
+
+/** The payload column's header, laid out its own way from the grid's parts, so its icons and menu still work. */
+const PayloadHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Root {...props}>
+    <Grid.ColumnHeader.Theme>
+        <Grid.ColumnHeader.Container components={{
+            onRenderContainer: containerProps => <Grid.ColumnHeader.Ui.Container {...containerProps} className={payloadHeaderStyles.container} />,
+        }}>
+            <Grid.ColumnHeader.Prefix />
+            <span className={payloadHeaderStyles.braces}>{'{ }'}</span>
+            <Grid.ColumnHeader.Content>
+                <Grid.ColumnHeader.Label />
+                <Grid.ColumnHeader.RequiredMarker />
+            </Grid.ColumnHeader.Content>
+            <span className={payloadHeaderStyles.badge}>JSON</span>
+            <Grid.ColumnHeader.Suffix />
+        </Grid.ColumnHeader.Container>
+        <Grid.ColumnHeader.Menu />
+    </Grid.ColumnHeader.Theme>
+</Grid.ColumnHeader.Root>
+
+/** The summary column's header: its name, marked as what a model writes. */
+const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
+    label: {
+        onRenderLabel: labelProps => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+            <Icon iconName='Sparkle' style={{ color: '#8764b8' }} />
+            <Grid.ColumnHeader.Ui.Label {...labelProps} />
+        </span>,
+    },
+}} />
+
 //no renderer: the grid draws it through `onRenderEmptyCellRenderer`
 const SUMMARY_COLUMN_DEFINITION = {
     colId: SUMMARY_COLUMN,
@@ -195,6 +246,13 @@ const SUMMARY_COLUMN_DEFINITION = {
 
 /** The story's own cells, drawn through the grid's components. */
 const SCRATCH_GRID_COMPONENTS: Partial<IGridComponents> = {
+    onRenderColumnHeader: props => {
+        switch (props.column.getColId()) {
+            case PAYLOAD_COLUMN: return <PayloadHeader {...props} />
+            case SUMMARY_COLUMN: return <SummaryHeader {...props} />
+            default: return <Grid.ColumnHeader.Renderer {...props} />
+        }
+    },
     onRenderCellRenderer: props => props.colDef?.colId === PAYLOAD_COLUMN
         ? <PayloadCell {...props} />
         : <Grid.Cell.Renderer {...props} />,

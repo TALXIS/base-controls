@@ -1,6 +1,7 @@
 //the ready-made header first, the parts it is built from below
 export * from './components';
 export type { IColumnHeaderRendererOptions, IColumnHeaderRendererProps } from './ColumnHeaderRenderer';
+export * from './overridable-renderer';
 export * from './root';
 export * from './theme';
 export * from './container';

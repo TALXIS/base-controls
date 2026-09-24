@@ -24,6 +24,7 @@ import { ColumnHeaderLabel } from "./components/column-header/label/ColumnHeader
 import { ColumnHeaderMenu } from "./components/column-header/menu/ColumnHeaderMenu";
 import { ColumnHeaderPrefix } from "./components/column-header/prefix/ColumnHeaderPrefix";
 import { ColumnHeaderRenderer } from "./components/column-header/ColumnHeaderRenderer";
+import { ColumnHeaderOverridableRenderer } from "./components/column-header/overridable-renderer/ColumnHeaderOverridableRenderer";
 import { ColumnHeaderRequiredMarker } from "./components/column-header/required-marker/ColumnHeaderRequiredMarker";
 import { ColumnHeaderRoot } from "./components/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderSuffix } from "./components/column-header/suffix/ColumnHeaderSuffix";
@@ -89,6 +90,8 @@ export interface IGridCellNamespace {
 export interface IGridColumnHeaderNamespace {
     /** A column's header, with what the grid's own parts add to it: `colDef.headerComponent`. */
     Renderer: typeof ColumnHeaderRenderer;
+    /** `Renderer`, drawn through the grid's `onRenderColumnHeader`. */
+    OverridableRenderer: typeof ColumnHeaderOverridableRenderer;
     /** What makes everything inside it one column's header. */
     Root: typeof ColumnHeaderRoot;
     /** What the header and everything in it is drawn in. */
@@ -147,6 +150,7 @@ export const Grid: IGridNamespace = {
     },
     ColumnHeader: {
         Renderer: ColumnHeaderRenderer,
+        OverridableRenderer: ColumnHeaderOverridableRenderer,
         Root: ColumnHeaderRoot,
         Theme: ColumnHeaderTheme,
         Container: ColumnHeaderContainer,

@@ -4,6 +4,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { CellRenderer, ICellRendererProps } from "./cells/cell-renderer/CellRenderer";
 import { CellEditor, ICellEditorProps } from "./cells/cell-editor/CellEditor";
 import { CellEmptyRenderer, ICellEmptyRendererProps } from "./cells/empty-cell-renderer/CellEmptyRenderer";
+import { ColumnHeaderRenderer, IColumnHeaderRendererProps } from "./column-header/ColumnHeaderRenderer";
 
 /** The replaceable parts of the grid. */
 export interface IGridComponents {
@@ -15,6 +16,8 @@ export interface IGridComponents {
     onRenderCellEditor: (props: ICellEditorProps) => JSX.Element;
     /** Renders a cell of a column a hook added; `Grid.Cell.EmptyRenderer` is the grid's own. */
     onRenderEmptyCellRenderer: (props: ICellEmptyRendererProps) => JSX.Element;
+    /** Renders a column's header; `Grid.ColumnHeader.Renderer` is the grid's own, to fall back to. */
+    onRenderColumnHeader: (props: IColumnHeaderRendererProps) => JSX.Element;
 }
 
 /** The defaults for {@link IGridComponents}. */
@@ -23,4 +26,5 @@ export const GridComponents: IGridComponents = {
     onRenderCellRenderer: (props) => <CellRenderer {...props} />,
     onRenderCellEditor: (props) => <CellEditor {...props} />,
     onRenderEmptyCellRenderer: (props) => <CellEmptyRenderer {...props} />,
+    onRenderColumnHeader: (props) => <ColumnHeaderRenderer {...props} />,
 };
