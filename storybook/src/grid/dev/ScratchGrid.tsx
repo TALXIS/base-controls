@@ -366,6 +366,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             enableZebra={props.enableZebra}
             enableOptionSetColors={props.enableOptionSetColors}
             rowHeight={props.rowHeight}
-            onGridReady={(api) => { (window as any).__scratchGridApi = api }} />
+            onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi') }} />
     </div>
 }

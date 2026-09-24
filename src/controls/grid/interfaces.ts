@@ -1,8 +1,9 @@
-import { GridApi, GridState } from "@ag-grid-community/core";
-import { IDataProvider, IRecord } from "@talxis/client-libraries";
+import { GridState } from "@ag-grid-community/core";
+import { IDataProvider } from "@talxis/client-libraries";
 import { IGridComponents } from "./components";
 import { IGridModules } from "./modules";
 import { IGridLabels } from "./labels";
+import type { IGridRuntime } from "./services/runtime";
 
 export interface IGrid {
     /** Where the records, the columns and the paging come from. */
@@ -37,12 +38,8 @@ export interface IGrid {
     components?: Partial<IGridComponents>;
     /** The AG Grid state to restore column order, widths and sorting from. */
     state?: GridState;
-    /** Fired once the api exists, before the grid configures itself with it. */
-    onGridReady?: (api: GridApi<IRecord>) => void;
-    /**
-     * Fired before the grid tears down, while its api still answers.
-     *
-     * `mode.setControlState` and gives it back through {@link IGrid.state}.
-     */
-    onDestroy?: (api: GridApi<IRecord>) => void;
+    /** Fired once AG Grid is ready, with its api among the runtime's services. */
+    onGridReady?: (runtime: IGridRuntime) => void;
+    /** Fired before the grid tears down, while the api among the runtime's services still answers. */
+    onDestroy?: (runtime: IGridRuntime) => void;
 }

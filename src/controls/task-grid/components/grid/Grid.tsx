@@ -46,7 +46,6 @@ export const Grid = (props: IControlProps) => {
         height={parameters.Height?.raw ?? undefined}
         inlineRibbonButtonIds={parameters.InlineRibbonButtonIds?.raw ?? undefined}
         state={props.state?.AgGridState}
-        onGridReady={(api) => services.register('gridApi', () => api)}
         components={{
             onRenderAgGrid: (agGridProps) => <AgGridReact
                 {...agGridProps}
@@ -55,6 +54,11 @@ export const Grid = (props: IControlProps) => {
                 getDataPath={(record: IRecord) => taskDataProvider.getRecordTree().structure.getAncestorIds(record.getRecordId())}
                 suppressGroupRowsSticky
                 processUnpinnedColumns={() => []}
+                onGridReady={(event) => {
+                    //ahead of the grid's own, so the first columns meet the customizer's patch
+                    services.register('gridApi', () => event.api);
+                    agGridProps.onGridReady?.(event);
+                }}
             />
         }}
     />

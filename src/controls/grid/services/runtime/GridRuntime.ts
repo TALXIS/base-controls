@@ -1,4 +1,4 @@
-import { ColDef, GetRowIdParams, GridPreDestroyedEvent, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
+import { ColDef, GetRowIdParams, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
@@ -243,12 +243,12 @@ export class GridRuntime implements IGridRuntime {
     private _getRowId = (params: GetRowIdParams<IRecord>): string => `${params.data.getRecordId()}`;
 
     private _onGridReady = (event: GridReadyEvent<IRecord>): void => {
-        this._onGetProps().onGridReady?.(event.api);
         this._services.register('gridApi', () => event.api);
+        this._onGetProps().onGridReady?.(this);
     };
 
-    private _onGridPreDestroyed = (event: GridPreDestroyedEvent<IRecord>): void => {
-        this._onGetProps().onDestroy?.(event.api);
+    private _onGridPreDestroyed = (): void => {
+        this._onGetProps().onDestroy?.(this);
     };
 
     private get _provider(): IDataProvider {
