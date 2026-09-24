@@ -25,5 +25,4 @@ export const createSelectionModule = (options: ISelectionModuleOptions): IGridMo
         const selection = new GridSelection({ services, mode: options.mode });
         gridServices.register('selection', () => selection);
     },
-    onDestroy: gridServices => gridServices.get('selection').destroy(),
 });

@@ -6,8 +6,6 @@ export interface IGridModule {
     agGridModules?: Module[];
     /** Registers what the module contributes, if anything outlives construction. */
     onRegister?: (services: IGridServiceLocator) => void;
-    /** Releases what the module holds — a listener on the provider outlives the grid otherwise. */
-    onDestroy?: (services: IGridServiceLocator) => void;
 }
 
 /** How the grid gets its rows. */

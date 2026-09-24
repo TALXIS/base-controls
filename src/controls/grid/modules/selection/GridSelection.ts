@@ -42,8 +42,6 @@ export interface IGridSelection {
     isRecordSelectionDisabled(record: IRecord): boolean;
     /** The parts this module renders, merged with whatever the caller replaced. */
     readonly components: IGridSelectionComponents;
-    /** Releases the listeners this holds, which outlive the grid otherwise. */
-    destroy(): void;
 }
 
 export class GridSelection implements IGridSelection {
@@ -59,6 +57,7 @@ export class GridSelection implements IGridSelection {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').whenAvailable('gridApi', () => this._onGridApiAvailable());
+        this._services.get('gridServices').get('grid').events.addEventListener('onDestroy', this._onDestroy);
         this._registerHooks();
     }
 
@@ -145,10 +144,10 @@ export class GridSelection implements IGridSelection {
         return this._services.get('components');
     }
 
-    public destroy(): void {
+    private _onDestroy = (): void => {
         this._provider.removeEventListener('onRecordsSelected', this._onProviderSelectionChanged);
         this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);
-    }
+    };
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onRecordsSelected', this._onProviderSelectionChanged);

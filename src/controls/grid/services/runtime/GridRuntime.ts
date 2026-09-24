@@ -1,6 +1,6 @@
 import { GetRowIdParams, GridApi, GridPreDestroyedEvent, GridReadyEvent, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
-import { IDataProvider, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { HookRegistry, ILocalizationService, LocalizationService, ServiceLocator } from "@utils";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
@@ -30,6 +30,11 @@ export interface IGridAgGridProps {
     props: Partial<AgGridReactProps<IRecord>>;
 }
 
+export interface IGridRuntimeEvents {
+    /** The grid is being torn down: release whatever outlives it. */
+    onDestroy: () => void;
+}
+
 /** A hook over the props AG Grid is created with. */
 export type GridAgGridPropsHook = (result: IGridAgGridProps) => void;
 
@@ -44,6 +49,7 @@ export interface IGridRuntimeParameters {
 
 /** The running grid: its services, and the props AG Grid is created with. */
 export interface IGridRuntime {
+    readonly events: IEventEmitter<IGridRuntimeEvents>;
     readonly services: IGridServiceLocator;
     readonly settings: IGridSettings;
     readonly labels: ILocalizationService<IGridLabels>;
@@ -77,9 +83,9 @@ export interface IGridRuntime {
 export class GridRuntime implements IGridRuntime {
     private _services = new ServiceLocator<IGridServiceMap>();
     private _onGetProps: () => IGrid;
-    private _modules: IGridModule[];
     private _agGridPropsHooks = new HookRegistry<GridAgGridPropsHook>();
     private _agGridProps?: Partial<AgGridReactProps<IRecord>>;
+    public readonly events: IEventEmitter<IGridRuntimeEvents> = new EventEmitter<IGridRuntimeEvents>();
 
     constructor({ onGetProps, pcfContext, theme }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
@@ -111,12 +117,12 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('columnHeaders', () => columnHeaders);
         this._services.register('surfaces', () => surfaces);
 
-        this._modules = orderModules(onGetProps().modules);
-        for (const module of this._modules) {
+        const modules = orderModules(onGetProps().modules);
+        for (const module of modules) {
             module.onRegister?.(this._services);
         }
         //after the modules have had their say, and before AG Grid is constructed on this same render
-        ModuleRegistry.registerModules(this._modules.flatMap(module => module.agGridModules ?? []));
+        ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));
 
         //after the modules, whose own api listeners run first
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
@@ -230,10 +236,9 @@ export class GridRuntime implements IGridRuntime {
         }
     };
 
-    /** Releases what the modules and the grid's own parts hold. */
     public destroy(): void {
-        this._modules.forEach(module => module.onDestroy?.(this._services));
-        this.keyboard.destroy();
+        this.events.dispatchEvent('onDestroy');
+        this.events.clearEventListeners();
         this._services.destroy();
     }
 

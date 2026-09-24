@@ -16,8 +16,6 @@ export interface IGridKeyboard {
      * @returns What takes the handler off again.
      */
     onKeyDown(handler: GridKeyDownHandler): () => void;
-    /** The grid is gone: what it put on the document goes with it. */
-    destroy(): void;
 }
 
 export class GridKeyboard implements IGridKeyboard {
@@ -29,6 +27,7 @@ export class GridKeyboard implements IGridKeyboard {
     constructor(parameters: IGridKeyboardParameters) {
         this._services = parameters.services;
         this._services.whenAvailable('gridRoot', gridRoot => this._listen(gridRoot));
+        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
     public getKeyBeingPressed(): KeyboardEvent | undefined {
@@ -42,11 +41,11 @@ export class GridKeyboard implements IGridKeyboard {
         };
     }
 
-    public destroy(): void {
+    private _onDestroy = (): void => {
         this._document?.removeEventListener('keydown', this._onKeyDown, true);
         this._document?.removeEventListener('keyup', this._onKeyUp, true);
         this._document?.removeEventListener('pointerdown', this._onKeyUp, true);
-    }
+    };
 
     /** The document rather than the grid's own element. */
     private _listen(gridRoot: HTMLElement): void {
