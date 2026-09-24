@@ -5,7 +5,8 @@ import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
-import { GridCell, IGridCellParameters } from "./GridCell";
+import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
+import { GridEditing } from "../editing";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -59,41 +60,48 @@ export interface IGridCellsParameters {
 /** Every cell the grid has on screen. */
 export class GridCells {
     private _services: IGridServiceLocator;
-    private _renderedCells = new Map<string, GridCell>();
+    private _renderedCells = new Map<string, IGridCell>();
     private _controlHooks = new HookRegistry<GridControlHook>();
     private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
     private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
     private _cellEditableHooks = new HookRegistry<GridCellEditableHook>();
+    private _editing: GridEditing;
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
+        this._editing = new GridEditing({ services: parameters.services });
+    }
+
+    /** Which cell the user is editing, and what the keyboard does about it. */
+    public get editing(): GridEditing {
+        return this._editing;
     }
 
     /** A cell of this grid. */
-    public createCell(parameters: Omit<IGridCellParameters, 'services'>): GridCell {
+    public createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell {
         return new GridCell({ ...parameters, services: this._services });
     }
 
     /** Registers a cell as rendered. */
-    public addCell(cell: GridCell): void {
+    public addCell(cell: IGridCell): void {
         this._renderedCells.set(cell.getId(), cell);
     }
 
     /** The cell is gone: out of the registry, and destroyed. */
-    public removeCell(cell: GridCell): void {
+    public removeCell(cell: IGridCell): void {
         this._renderedCells.delete(cell.getId());
         cell.destroy();
     }
 
     /** Every cell on screen. */
-    public getCells(): GridCell[] {
+    public getCells(): IGridCell[] {
         return [...this._renderedCells.values()];
     }
 
     /** The cell drawing this field, where one is rendered. */
-    public getCell(record: IRecord, columnName: string): GridCell | undefined {
+    public getCell(record: IRecord, columnName: string): IGridCell | undefined {
         return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
     }
 

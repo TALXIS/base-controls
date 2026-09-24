@@ -1,4 +1,4 @@
-import type { GridCell } from "@controls/grid";
+import type { IGridCell } from "@controls/grid";
 import { IProperty, ITwoOptionsProperty } from "./property";
 
 export interface IParameters {
@@ -42,5 +42,5 @@ export interface IBaseParameters extends IParameters {
      * `undefined` outside a grid, and while a cell is drawn for the first time: the grid is told about a
      * cell once it is on screen.
      */
-    Cell?: { raw: GridCell | undefined };
+    Cell?: { raw: IGridCell | undefined };
 }

@@ -3,7 +3,7 @@ import { DeepPartial } from "@talxis/client-libraries";
 import { ITheme, ThemeBuilder } from "@theme";
 import { getJustifyContent, IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
-import { GridCell } from "./GridCell";
+import type { IGridCell } from "./GridCell";
 
 //the component styles depend only on the column alignment
 const componentStylesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['components']>();
@@ -11,13 +11,13 @@ const componentStylesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['comp
 export interface IGridCellThemeParameters {
     services: IGridServiceLocator;
     /** The cell this is the theme of. */
-    cell: GridCell;
+    cell: IGridCell;
 }
 
 /** The theme a cell and everything drawn in it takes. */
 export class GridCellTheme {
     private _services: IGridServiceLocator;
-    private _cell: GridCell;
+    private _cell: IGridCell;
     private _seed?: ITheme;
 
     constructor(parameters: IGridCellThemeParameters) {

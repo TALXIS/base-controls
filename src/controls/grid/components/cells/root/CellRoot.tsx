@@ -42,7 +42,7 @@ export interface ICellRootProps extends ICellRendererParams {
 export const CellRoot = (props: ICellRootProps) => {
     const { data: record, children } = props;
     const cells = useGridService('cells');
-    const editing = useGridService('editing');
+    const editing = cells.editing;
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
     //an editor takes input whatever the column is, and a one-click column takes it without one
@@ -63,7 +63,7 @@ export const CellRoot = (props: ICellRootProps) => {
     });
 
     //`AutoFocus` is whether this cell is the one being edited, so both sides of the change redraw
-    useEventEmitter<IGridEditingEvents>(editing, 'onEditedCellChanged', (previous, next) => {
+    useEventEmitter<IGridEditingEvents>(editing.events, 'onEditedCellChanged', (previous, next) => {
         if (isThisCell(previous) || isThisCell(next)) {
             redraw();
         }

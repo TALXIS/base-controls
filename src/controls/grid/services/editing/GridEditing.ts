@@ -1,7 +1,7 @@
 import { CellFocusedEvent, GridApi } from "@ag-grid-community/core";
-import { EventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
-import { GridCell } from "../cells";
+import type { IGridCell } from "../cells";
 
 export interface IGridEditedCell {
     recordId: string;
@@ -25,13 +25,13 @@ const isEditStartKey = (event: KeyboardEvent): boolean => {
 };
 
 /** Which cell the user is editing, and the keys that start and end it. */
-export class GridEditing extends EventEmitter<IGridEditingEvents> {
+export class GridEditing {
     private _services: IGridServiceLocator;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;
+    public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
 
     constructor(parameters: IGridEditingParameters) {
-        super();
         this._services = parameters.services;
         this._services.whenAvailable('keyboard', keyboard => keyboard.onKeyDown(event => this._onKeyDown(event)));
         this._services.whenAvailable('gridApi', gridApi => {
@@ -45,14 +45,14 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
     }
 
     /** The user stepped into what this cell draws. */
-    public start(cell: GridCell): void {
+    public start(cell: IGridCell): void {
         this._setEditedCell({ recordId: cell.getRecord().getRecordId(), columnName: cell.getColumnName() });
     }
 
     /**
      * The edit is over: what was opened over the cell closes and the highlight comes back.
      */
-    public finish(cell: GridCell): void {
+    public finish(cell: IGridCell): void {
         const gridApi = this._services.find('gridApi');
         if (!gridApi) {
             return;
@@ -103,15 +103,15 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
     private _setEditedCell(editedCell: IGridEditedCell | undefined): void {
         const previous = this._editedCell;
         this._editedCell = editedCell;
-        this.dispatchEvent('onEditedCellChanged', previous, editedCell);
+        this.events.dispatchEvent('onEditedCellChanged', previous, editedCell);
     }
 
-    private _getEditedCell(): GridCell | undefined {
+    private _getEditedCell(): IGridCell | undefined {
         return this._cells.getCells().find(cell => this._editedCell?.recordId === cell.getRecord().getRecordId()
             && this._editedCell?.columnName === cell.getColumnName());
     }
 
-    private _getFocusedCell(): GridCell | undefined {
+    private _getFocusedCell(): IGridCell | undefined {
         const gridApi = this._services.find('gridApi');
         const focusedCell = gridApi?.getFocusedCell();
         if (!gridApi || !focusedCell) {
@@ -121,13 +121,13 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
         return record ? this._cells.getCell(record, focusedCell.column.getColId()) : undefined;
     }
 
-    private _isEditorOpen(gridApi: GridApi<IRecord>, cell: GridCell): boolean {
+    private _isEditorOpen(gridApi: GridApi<IRecord>, cell: IGridCell): boolean {
         return gridApi.getEditingCells().some(editing => editing.rowIndex === cell.getNode()?.rowIndex
             && editing.column.getColId() === cell.getColumnName());
     }
 
     //deferred: focus set while an editor is still being torn down goes back to the document with
-    private _returnFocus(gridApi: GridApi<IRecord>, cell: GridCell): void {
+    private _returnFocus(gridApi: GridApi<IRecord>, cell: IGridCell): void {
         const rowIndex = cell.getNode()?.rowIndex;
         if (rowIndex === null || rowIndex === undefined) {
             return;

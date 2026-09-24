@@ -1,7 +1,7 @@
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
 import { IAlignment } from "@utils";
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
-import type { GridCell } from "@controls/grid";
+import type { IGridCell } from "@controls/grid";
 import { IGridValueRendererComponents } from "./components";
 
 /** A file or an image, as a record holds one. */
@@ -31,7 +31,7 @@ export interface IGridValueRendererParameters extends IParameters {
      * cell once it is on screen.
      */
     Cell: {
-        raw: GridCell | undefined;
+        raw: IGridCell | undefined;
     }
     /**
      * This dataset instance is always the main dataset, even if the current cell is being rendered via a child data provider.

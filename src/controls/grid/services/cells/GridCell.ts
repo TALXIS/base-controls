@@ -25,7 +25,50 @@ export interface IGridCellParameters {
 let instanceCount = 0;
 
 /** One cell of the grid, for as long as it is on screen. */
-export class GridCell {
+export interface IGridCell {
+    /** What tells this cell apart from every other one, this render of it included. */
+    getId(): string;
+    getRecord(): IRecord;
+    /** The column this cell is in, as AG Grid was given it. */
+    getColDef(): ColDef<IRecord>;
+    getColumnName(): string;
+    /** The element AG Grid draws this cell in, where it is drawn in one. */
+    getElement(): HTMLElement | undefined;
+    /** The row AG Grid is drawing this cell in. */
+    getNode(): IRowNode<IRecord> | undefined;
+    /** What this cell is drawn in. */
+    getTheme(): GridCellTheme;
+    /** Whether this cell is waiting on something. */
+    isLoading(): boolean;
+    /** Whether this cell draws a control the user can type in. */
+    takesInput(): boolean;
+    /** Whether that control is drawn in the cell itself, with no editor to open. */
+    hasOneClickEdit(): boolean;
+    /** What the column this cell is in says its cells are. */
+    getSettings(): IGridColumnSettings;
+    /** Which edge this cell reads from. */
+    getAlignment(): IAlignment;
+    /** Whether the user is editing this cell. */
+    isBeingEdited(): boolean;
+    /** The user stepped into the control this cell draws. */
+    startEditing(): void;
+    /** The edit is over. */
+    finishEditing(): void;
+    /** What draws this cell's value, once {@link IGridCell.createControl} has made one. */
+    getControl(): GridControl | undefined;
+    /** Makes what draws this cell's value. */
+    createControl(field?: GridField): GridControl;
+    /** Whether what this cell holds may be changed. */
+    isEditable(): boolean;
+    /** What this cell offers to do, as buttons and as what the overflow menu holds. */
+    getCommands(): IGridCellCommands;
+    /** Whether this cell has left the screen, after. */
+    isDestroyed(): boolean;
+    /** The cell has left the screen: whatever it was holding goes with it. */
+    destroy(): void;
+}
+
+export class GridCell implements IGridCell {
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _colDef: ColDef<IRecord>;
@@ -48,7 +91,6 @@ export class GridCell {
         this._theme = new GridCellTheme({ services: parameters.services, cell: this });
     }
 
-    /** What tells this cell apart from every other one, this render of it included. */
     public getId(): string {
         return this._id;
     }
@@ -57,7 +99,6 @@ export class GridCell {
         return this._record;
     }
 
-    /** The column this cell is in, as AG Grid was given it. */
     public getColDef(): ColDef<IRecord> {
         return this._colDef;
     }
@@ -66,49 +107,40 @@ export class GridCell {
         return this._colDef.colId!;
     }
 
-    /** The element AG Grid draws this cell in, where it is drawn in one. */
     public getElement(): HTMLElement | undefined {
         return this._element;
     }
 
-    /** The row AG Grid is drawing this cell in. */
     public getNode(): IRowNode<IRecord> | undefined {
         return this._node;
     }
 
-    /** What this cell is drawn in. */
     public getTheme(): GridCellTheme {
         return this._theme;
     }
 
-    /** Whether this cell is waiting on something. */
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.isLoading;
     }
 
-    /** Whether this cell draws a control the user can type in. */
     public takesInput(): boolean {
         return this._takesInput;
     }
 
-    /** Whether that control is drawn in the cell itself, with no editor to open. */
     public hasOneClickEdit(): boolean {
         return !!this.getSettings().oneClickEdit;
     }
 
-    /** What the column this cell is in says its cells are. */
     public getSettings(): IGridColumnSettings {
         return this._colDef.settings ?? {};
     }
 
-    /** Which edge this cell reads from. */
     public getAlignment(): IAlignment {
         return this.getSettings().alignment ?? 'left';
     }
 
-    /** Whether the user is editing this cell. */
     public isBeingEdited(): boolean {
         //an editor was opened because the user asked to type here
         if (this._takesInput && !this.hasOneClickEdit()) {
@@ -117,30 +149,23 @@ export class GridCell {
         return this._editing.isEditing(this._record, this.getColumnName());
     }
 
-    /** The user stepped into the control this cell draws. */
     public startEditing(): void {
         this._editing.start(this);
     }
 
-    /** The edit is over: the control has nothing more to take, or the user pressed the key that */
     public finishEditing(): void {
         this._editing.finish(this);
     }
 
-    /** What draws this cell's value, once {@link createControl} has made one. */
     public getControl(): GridControl | undefined {
         return this._control;
     }
 
-    /** Makes what draws this cell's value. */
     public createControl(field?: GridField): GridControl {
         this._control = new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
         return this._control;
     }
 
-    /**
-     * Whether what this cell holds may be changed.
-     */
     public isEditable(): boolean {
         //the column's word is the last one, and it is not `editable`
         if (this.getSettings().isEditable === false) {
@@ -151,21 +176,16 @@ export class GridCell {
         return result.isEditable;
     }
 
-    /**
-     * What this cell offers to do, as buttons and as what the overflow menu holds.
-     */
     public getCommands(): IGridCellCommands {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result;
     }
 
-    /** Whether this cell has left the screen, after. */
     public isDestroyed(): boolean {
         return this._isDestroyed;
     }
 
-    /** The cell has left the screen: whatever it was holding goes with it. */
     public destroy(): void {
         this._isDestroyed = true;
     }
@@ -175,6 +195,6 @@ export class GridCell {
     }
 
     private get _editing() {
-        return this._services.get('editing');
+        return this._cells.editing;
     }
 }

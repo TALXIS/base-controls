@@ -4,13 +4,13 @@ import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";
-import { GridCell } from "./GridCell";
+import type { IGridCell } from "./GridCell";
 import { GridFieldControl } from "./GridFieldControl";
 
 export interface IGridControlParameters {
     services: IGridServiceLocator;
     /** The cell this draws, which is the one that made it. */
-    cell: GridCell;
+    cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
     field?: GridField;
     takesInput?: boolean;
@@ -22,7 +22,7 @@ export class GridControl {
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;
-    private _cell: GridCell;
+    private _cell: IGridCell;
     private _fieldControl?: GridFieldControl;
     private _context?: { isDisabled: boolean; value: ComponentFramework.Context<any, any> };
 

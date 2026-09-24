@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import { GridCell } from "../../../services/cells";
+import { IGridCell } from "../../../services/cells";
 
-export const GridCellContext = createContext<GridCell | undefined>(undefined);
+export const GridCellContext = createContext<IGridCell | undefined>(undefined);
 GridCellContext.displayName = 'GridCell';
 
 /** A new symbol each time `CellRoot` hears the record change, and nothing more. */
@@ -9,7 +9,7 @@ export const GridCellRevisionContext = createContext<symbol>(Symbol('cellRevisio
 GridCellRevisionContext.displayName = 'GridCellRevision';
 
 /** The cell this component is drawing. */
-export const useGridCell = (): GridCell => {
+export const useGridCell = (): IGridCell => {
     const cell = useContext(GridCellContext);
     useContext(GridCellRevisionContext);
     if (!cell) {

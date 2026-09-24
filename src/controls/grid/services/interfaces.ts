@@ -8,7 +8,6 @@ import type { AgGridModel } from "../services/ag-grid/AgGridModel";
 import type { IGridRowModel } from "../modules/row-model/interfaces";
 import type { GridColumns } from "../services/columns";
 import type { GridCells } from "../services/cells";
-import type { GridEditing } from "../services/editing";
 import type { GridKeyboard } from "../services/keyboard";
 import type { GridRows } from "../services/rows";
 import type { GridColumnHeaders } from "../services/column-header";
@@ -43,8 +42,6 @@ export interface IGridServiceMap {
     cells: GridCells;
     /** What the user is pressing while the grid is doing something about it. */
     keyboard: GridKeyboard;
-    /** Which cell the user is editing, and what the keyboard does about it. */
-    editing: GridEditing;
     /** What a column header offers, assembled from what the modules registered. */
     columnHeaders: GridColumnHeaders;
     /** What the modules draw over the grid. */
