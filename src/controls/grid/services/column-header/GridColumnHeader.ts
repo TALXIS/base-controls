@@ -1,10 +1,10 @@
 import { ColDef, Column } from "@ag-grid-community/core";
-import { EventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
 import { IContextualMenuItem } from "@fluentui/react";
 import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { IGridColumnSettings } from "../columns";
-import { GridColumnHeaderTheme } from "./GridColumnHeaderTheme";
+import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
 import { IColumnHeaderAdornment } from "./GridColumnHeaders";
 
 export interface IGridColumnHeaderEvents {
@@ -21,11 +21,40 @@ export interface IGridColumnHeaderParameters {
 }
 
 /** The column a header is drawn for: what it says about itself, and what the modules add to it. */
-export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> {
+export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents> {
+    /** What this header is drawn in. */
+    getTheme(): IGridColumnHeaderTheme;
+    /** Asks for the menu, which is what draws it. */
+    openMenu(): void;
+    /** Asks for it to go away again. */
+    closeMenu(): void;
+    getColDef(): ColDef<IRecord>;
+    /** The column the provider has for this one, where it has one: a column of the grid's own has none. */
+    getColumn(): IColumn | undefined;
+    /** What the column says its cells and its header are. */
+    getSettings(): IGridColumnSettings;
+    /** Which edge the column reads from. */
+    getAlignment(): IAlignment;
+    /** Whether the column asks for a value. */
+    isRequired(): boolean;
+    /** Whether what the column holds may be changed. */
+    isEditable(): boolean;
+    getName(): string;
+    /** What the header's tooltip says: the name, and what the adornments add to it in parentheses. */
+    getTitle(): string;
+    /** What the modules draw beside the name, all of them or those of one placement. */
+    getAdornments(placement?: IColumnHeaderAdornment['placement']): IColumnHeaderAdornment[];
+    /** Everything the modules offer for this column. */
+    getMenuItems(): IContextualMenuItem[];
+    /** The element AG Grid draws the header in, which is what takes the focus and hears the keys. */
+    getElement(): HTMLElement | undefined;
+}
+
+export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> implements IGridColumnHeader {
     private _services: IGridServiceLocator;
     private _column: Column;
     private _element?: HTMLElement;
-    private _theme: GridColumnHeaderTheme;
+    private _theme: IGridColumnHeaderTheme;
 
     constructor(parameters: IGridColumnHeaderParameters) {
         super();
@@ -35,17 +64,14 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> {
         this._theme = new GridColumnHeaderTheme({ services: parameters.services, header: this });
     }
 
-    /** What this header is drawn in. */
-    public getTheme(): GridColumnHeaderTheme {
+    public getTheme(): IGridColumnHeaderTheme {
         return this._theme;
     }
 
-    /** Asks for the menu, which is what draws it. */
     public openMenu(): void {
         this.dispatchEvent('onMenuVisibilityChanged', true);
     }
 
-    /** Asks for it to go away again. */
     public closeMenu(): void {
         this.dispatchEvent('onMenuVisibilityChanged', false);
     }
@@ -54,27 +80,22 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> {
         return this._column.getColDef();
     }
 
-    /** The column the provider has for this one, where it has one: a column of the grid's own has none. */
     public getColumn(): IColumn | undefined {
         return this._services.get('provider').getColumnsMap()[this.getColDef().colId!];
     }
 
-    /** What the column says its cells and its header are. */
     public getSettings(): IGridColumnSettings {
         return this.getColDef().settings ?? {};
     }
 
-    /** Which edge the column reads from. */
     public getAlignment(): IAlignment {
         return this.getSettings().alignment ?? 'left';
     }
 
-    /** Whether the column asks for a value. */
     public isRequired(): boolean {
         return !!this.getSettings().isRequired;
     }
 
-    /** Whether what the column holds may be changed. */
     public isEditable(): boolean {
         return this.getSettings().isEditable !== false;
     }
@@ -83,24 +104,20 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> {
         return this.getColDef().headerName ?? '';
     }
 
-    /** What the header's tooltip says: the name, and what the adornments add to it in parentheses. */
     public getTitle(): string {
         const titles = this.getAdornments().map(adornment => adornment.title).filter(Boolean);
         return titles.length ? `${this.getName()} (${titles.join(', ')})` : this.getName();
     }
 
-    /** What the modules draw beside the name, all of them or those of one placement. */
     public getAdornments(placement?: IColumnHeaderAdornment['placement']): IColumnHeaderAdornment[] {
         const adornments = this._headers.getAdornments(this);
         return placement ? adornments.filter(adornment => adornment.placement === placement) : adornments;
     }
 
-    /** Everything the modules offer for this column. */
     public getMenuItems(): IContextualMenuItem[] {
         return this._headers.getMenuItems(this);
     }
 
-    /** The element AG Grid draws the header in, which is what takes the focus and hears the keys. */
     public getElement(): HTMLElement | undefined {
         return this._element;
     }

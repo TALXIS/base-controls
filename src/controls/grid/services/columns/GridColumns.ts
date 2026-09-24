@@ -5,7 +5,7 @@ import { HookRegistry } from "@utils";
 import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { GridField } from "../fields";
+import { GridField, IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { IGridColumnSettings } from "./colDef";
@@ -29,7 +29,18 @@ export interface IGridColumnsParameters {
 }
 
 /** The columns the grid gives AG Grid. */
-export class GridColumns {
+export interface IGridColumns {
+    /**
+     * Registers a hook over the column definitions.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    /** The definitions the grid is to be given, after every module has had its say. */
+    getColumnDefinitions(): ColDef<IRecord>[];
+}
+
+export class GridColumns implements IGridColumns {
     private _services: IGridServiceLocator;
     private _hooks = new HookRegistry<GridColumnDefinitionsHook>();
 
@@ -37,16 +48,10 @@ export class GridColumns {
         this._services = parameters.services;
     }
 
-    /**
-     * Registers a hook over the column definitions.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void {
         return this._hooks.register(hook, priority);
     }
 
-    /** The definitions the grid is to be given, after every module has had its say. */
     public getColumnDefinitions(): ColDef<IRecord>[] {
         const columnDefs = this._provider.getColumns().filter(column => !column.isHidden).map(column => this._getColumnDefinition(column));
         const recordSaveColumn = this._getRecordSaveColumnDefinition();
@@ -238,7 +243,7 @@ export class GridColumns {
     }
 
     /** The field AG Grid is asking about, as something to ask. */
-    private _getField(record: IRecord, columnName: string): GridField {
+    private _getField(record: IRecord, columnName: string): IGridField {
         return new GridField({ record: record, columnName: columnName });
     }
 

@@ -3,27 +3,44 @@ import { BaseControls } from "@utils";
 import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
-import { GridField } from "../fields";
+import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
-import { GridFieldControl } from "./GridFieldControl";
+import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 
 export interface IGridControlParameters {
     services: IGridServiceLocator;
     /** The cell this draws, which is the one that made it. */
     cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
-    field?: GridField;
+    field?: IGridField;
     takesInput?: boolean;
 }
 
 /** What one cell shows, and what it shows it with. */
-export class GridControl {
+export interface IGridControl {
+    /** What the field behind this control draws with, where anything bound one. */
+    getFieldControl(): IGridFieldControl | undefined;
+    /** Whether a field is behind this control, rather than a column the record has no value for. */
+    isBound(): boolean;
+    /** Whether something other than the cell renderer draws this cell. */
+    isCustomRendererEnabled(): boolean;
+    /** What draws this cell, and what it is given. */
+    getControlProps(): IGridValueRenderer;
+    /** What the host gave the grid, with what a control may do in this cell. */
+    getContext(): ComponentFramework.Context<any, any>;
+    /** Which control draws this cell: the grid's renderer, unless a hook named another. */
+    getCustomControl(): Required<ICustomColumnControl>;
+    /** The parameters a control is actually handed. */
+    getFinalControlParameters(parameters: IParameters): IParameters;
+}
+
+export class GridControl implements IGridControl {
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;
     private _cell: IGridCell;
-    private _fieldControl?: GridFieldControl;
+    private _fieldControl?: IGridFieldControl;
     private _context?: { isDisabled: boolean; value: ComponentFramework.Context<any, any> };
 
     constructor(parameters: IGridControlParameters) {
@@ -37,22 +54,18 @@ export class GridControl {
             : undefined;
     }
 
-    /** What the field behind this control draws with, where anything bound one. */
-    public getFieldControl(): GridFieldControl | undefined {
+    public getFieldControl(): IGridFieldControl | undefined {
         return this._fieldControl;
     }
 
-    /** Whether a field is behind this control, rather than a column the record has no value for. */
     public isBound(): boolean {
         return !!this._fieldControl;
     }
 
-    /** Whether something other than the cell renderer draws this cell. */
     public isCustomRendererEnabled(): boolean {
         return this._isCustomRenderer(this.getCustomControl());
     }
 
-    /** What draws this cell, and what it is given. */
     public getControlProps(): IGridValueRenderer {
         const control = this.getCustomControl();
         const parameters = this._getCellParameters(control);
@@ -63,7 +76,6 @@ export class GridControl {
         };
     }
 
-    /** What the host gave the grid, with what a control may do in this cell. */
     public getContext(): ComponentFramework.Context<any, any> {
         const isDisabled = !this._cell.isEditable();
         if (this._context?.isDisabled === isDisabled) {
@@ -78,14 +90,12 @@ export class GridControl {
         return value;
     }
 
-    /** Which control draws this cell: the grid's renderer, unless a hook named another. */
     public getCustomControl(): Required<ICustomColumnControl> {
         const result = { control: this._getDefaultControl() };
         this._cells.applyControlHooks(result, this._hookParams);
         return result.control;
     }
 
-    /** The parameters a control is actually handed. */
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
         return parameters;

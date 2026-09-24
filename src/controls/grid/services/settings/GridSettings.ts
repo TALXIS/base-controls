@@ -9,49 +9,60 @@ export interface IGridSettingsParameters {
 }
 
 /** What the caller asked the grid to be. */
-export class GridSettings {
+export interface IGridSettings {
+    /** Whether a cell may be edited in place. */
+    isEditingEnabled(): boolean;
+    /** Whether a double click on a row opens the record it stands for. */
+    isNavigationEnabled(): boolean;
+    /** Whether every other row takes a background of its own. */
+    isZebraEnabled(): boolean;
+    /** Whether an edit saves itself, rather than waiting to be saved. */
+    isAutoSaveEnabled(): boolean;
+    /** Whether an option set's own colour is used for its cells. */
+    areOptionSetColorsEnabled(): boolean;
+    /** Which ribbon buttons a row offers inline, or `null` where it offers none. */
+    getInlineRibbonButtonIds(): string | null;
+    /** How tall a row is, in pixels. */
+    getDefaultRowHeight(): number;
+    /** How many rows the grid grows to fit before it scrolls instead. */
+    getMaxVisibleRows(): number;
+}
+
+export class GridSettings implements IGridSettings {
     private _getProps: () => IGrid;
 
     constructor(parameters: IGridSettingsParameters) {
         this._getProps = parameters.onGetProps;
     }
 
-    /** Whether a cell may be edited in place. */
     public isEditingEnabled(): boolean {
         return this._getProps().enableEditing === true;
     }
 
-    /** Whether a double click on a row opens the record it stands for. */
     public isNavigationEnabled(): boolean {
         return this._getProps().enableNavigation !== false;
     }
 
-    /** Whether every other row takes a background of its own. */
     public isZebraEnabled(): boolean {
         return this._getProps().enableZebra !== false;
     }
 
-    /** Whether an edit saves itself, rather than waiting to be saved. */
     public isAutoSaveEnabled(): boolean {
         return this._getProps().enableAutoSave === true;
     }
 
-    /** Whether an option set's own colour is used for its cells. */
     public areOptionSetColorsEnabled(): boolean {
         return this._getProps().enableOptionSetColors === true;
     }
 
-    /** Which ribbon buttons a row offers inline, or `null` where it offers none. */
     public getInlineRibbonButtonIds(): string | null {
         return this._getProps().inlineRibbonButtonIds ?? null;
     }
 
-    /** How tall a row is, in pixels. */
     public getDefaultRowHeight(): number {
         return this._getProps().rowHeight ?? DEFAULT_ROW_HEIGHT;
     }
 
-    /** How many rows the grid grows to fit before it scrolls instead. */
     public getMaxVisibleRows(): number {
         return this._getProps().maxVisibleRows ?? DEFAULT_MAX_VISIBLE_ROWS;
     }

@@ -4,7 +4,7 @@ import { NestedControlRenderer } from "@controls/nested-control-renderer";
 import { INestedControlRendererComponentProps } from "@controls/nested-control-renderer/interfaces";
 import { IGridValueRenderer } from "@controls/grid/value-renderer";
 import { IControl } from "@interfaces";
-import { GridControl } from "../../../services/cells";
+import { IGridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
 import { GridServicesContext } from "../../../context";
@@ -17,7 +17,7 @@ export interface ICellLegacyNestedControlProps {
     /** What the cell renderer would have been given. */
     controlProps: IGridValueRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
-    control: GridControl;
+    control: IGridControl;
 }
 
 /** A control the nested-control registry resolves, as a cell needs it. */

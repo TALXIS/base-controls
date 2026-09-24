@@ -2,19 +2,29 @@ import { DataProvider, DataType, DataTypes, IColumn } from "@talxis/client-libra
 import { BaseControls } from "@utils";
 import { IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IGridServiceLocator } from "../../services";
-import { GridField } from "../fields";
+import { IGridField } from "../fields";
 
 export interface IGridFieldControlParameters {
     services: IGridServiceLocator;
     /** The field this draws. */
-    field: GridField;
+    field: IGridField;
     takesInput?: boolean;
 }
 
 /** What a cell bound to a record's column draws with. */
-export class GridFieldControl {
+export interface IGridFieldControl {
+    getField(): IGridField;
+    /** The column as this record's own provider has it. */
+    getColumn(): IColumn;
+    /** The control this column's data type asks for. */
+    getControlName(): string;
+    /** What the field adds to the parameters a control is drawn with. */
+    getParameters(): Partial<IGridValueRendererParameters>;
+}
+
+export class GridFieldControl implements IGridFieldControl {
     private _services: IGridServiceLocator;
-    private _field: GridField;
+    private _field: IGridField;
     private _takesInput: boolean;
 
     constructor(parameters: IGridFieldControlParameters) {
@@ -23,16 +33,14 @@ export class GridFieldControl {
         this._takesInput = !!parameters.takesInput;
     }
 
-    public getField(): GridField {
+    public getField(): IGridField {
         return this._field;
     }
 
-    /** The column as this record's own provider has it. */
     public getColumn(): IColumn {
         return this._field.getColumn();
     }
 
-    /** The control this column's data type asks for. */
     public getControlName(): string {
         const column = this.getColumn();
         switch (column.dataType) {
@@ -48,7 +56,6 @@ export class GridFieldControl {
         return this._takesInput ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : BaseControls.GridValueRenderer;
     }
 
-    /** What the field adds to the parameters a control is drawn with. */
     public getParameters(): Partial<IGridValueRendererParameters> {
         const column = this.getColumn();
         return {

@@ -1,10 +1,10 @@
 import { ColDef } from "@ag-grid-community/core";
 import { Icon, IContextualMenuItem } from "@fluentui/react";
-import { FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { ColumnFilter, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
-import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 
 /** What changed about the filter a column header has open. */
@@ -21,7 +21,33 @@ export interface IGridFilteringParameters {
 }
 
 /** Filtering the grid by a column. */
-export class GridFiltering {
+export interface IGridFiltering {
+    readonly events: IEventEmitter<IGridFilteringEvents>;
+    /** The strings this module renders, for its own components. */
+    getLabels(): ILocalizationService<IGridFilteringLabels>;
+    getFiltering(): Filtering;
+    isColumnFilterable(column: IColumn): boolean;
+    isFiltered(column: IColumn): boolean;
+    getColumnFilter(columnName: string): ColumnFilter;
+    removeColumnFilter(columnName: string, saveToDataset?: boolean): void;
+    /** Which column's filter callout is open, if any. */
+    getOpenColumnName(): string | undefined;
+    /** What the open filter is drawn against: the header it was opened from. */
+    getOpenTarget(): HTMLElement | undefined;
+    /** @param target What to draw the filter against, where the caller knows. */
+    openFilter(columnName: string, target?: HTMLElement): void;
+    closeFilter(): void;
+    /** Puts `filter` on the definitions. */
+    applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void;
+    /** What a column's menu offers: opening the filter, and clearing it. */
+    applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void;
+    /** The funnel, while a filter is applied to the dataset. */
+    applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void;
+    /** The parts this module renders, merged with whatever the caller replaced. */
+    readonly components: IGridFilteringComponents;
+}
+
+export class GridFiltering implements IGridFiltering {
     private _services: IGridFilteringServiceLocator;
     private _filtering: Filtering;
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();
@@ -33,7 +59,6 @@ export class GridFiltering {
         this._filtering = new Filtering(this._provider, FieldValue);
     }
 
-    /** The strings this module renders, for its own components. */
     public getLabels(): ILocalizationService<IGridFilteringLabels> {
         return this._labels;
     }
@@ -69,17 +94,14 @@ export class GridFiltering {
         });
     }
 
-    /** Which column's filter callout is open, if any. */
     public getOpenColumnName(): string | undefined {
         return this._openColumnName;
     }
 
-    /** What the open filter is drawn against: the header it was opened from. */
     public getOpenTarget(): HTMLElement | undefined {
         return this._openTarget;
     }
 
-    /** @param target What to draw the filter against, where the caller knows. */
     public openFilter(columnName: string, target?: HTMLElement): void {
         this._openColumnName = columnName;
         this._openTarget = target;
@@ -92,7 +114,6 @@ export class GridFiltering {
         this.events.dispatchEvent('onFilterClosed');
     }
 
-    /** Puts `filter` on the definitions. */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;
@@ -103,8 +124,7 @@ export class GridFiltering {
         }
     }
 
-    /** What a column's menu offers: opening the filter, and clearing it. */
-    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+    public applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void {
         const column = header.getColumn();
         if (!column || !this.isColumnFilterable(column)) {
             return;
@@ -127,8 +147,7 @@ export class GridFiltering {
         sections.push({ key: 'filtering', title: this._labels.getLocalizedString('menuSection'), items: mine});
     }
 
-    /** The funnel, while a filter is applied to the dataset. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void {
         const column = header.getColumn();
         if (!column || !this.isFiltered(column)) {
             return;
@@ -149,7 +168,6 @@ export class GridFiltering {
         return this._services.get('gridServices').get('provider');
     }
 
-    /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridFilteringComponents {
         return this._services.get('components');
     }

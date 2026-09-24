@@ -2,29 +2,29 @@ import type { GridApi } from "@ag-grid-community/core";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator } from "@utils";
-import type { GridSettings } from "../services/settings";
+import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
 import type { AgGridModel } from "../services/ag-grid/AgGridModel";
 import type { IGridRowModel } from "../modules/row-model/interfaces";
-import type { GridColumns } from "../services/columns";
-import type { GridCells } from "../services/cells";
-import type { GridKeyboard } from "../services/keyboard";
-import type { GridRows } from "../services/rows";
-import type { GridColumnHeaders } from "../services/column-header";
-import type { GridSurfaces } from "../services/surfaces";
-import type { GridSelection } from "../modules/selection/GridSelection";
-import type { GridSorting } from "../modules/sorting/GridSorting";
-import type { GridFiltering } from "../modules/filtering/GridFiltering";
-import type { GridAggregation } from "../modules/aggregation/GridAggregation";
-import type { GridGrouping } from "../modules/grouping/GridGrouping";
+import type { IGridColumns } from "../services/columns";
+import type { IGridCells } from "../services/cells";
+import type { IGridKeyboard } from "../services/keyboard";
+import type { IGridRows } from "../services/rows";
+import type { IGridColumnHeaders } from "../services/column-header";
+import type { IGridSurfaces } from "../services/surfaces";
+import type { IGridSelection } from "../modules/selection/GridSelection";
+import type { IGridSorting } from "../modules/sorting/GridSorting";
+import type { IGridFiltering } from "../modules/filtering/GridFiltering";
+import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
+import type { IGridGrouping } from "../modules/grouping/GridGrouping";
 
 /** Everything the grid is made of, and when each of it turns up. */
 export interface IGridServiceMap {
     /** What the caller asked the grid to be, with its defaults applied. */
-    settings: GridSettings;
+    settings: IGridSettings;
     /** What a cell draws: its value, and whatever a module made of it. */
     /** What is true of a row rather than of one of its cells. */
-    rows: GridRows;
+    rows: IGridRows;
     /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
     /** The host context. */
@@ -37,25 +37,25 @@ export interface IGridServiceMap {
     /** The theme the control was given. */
     theme: ITheme;
     /** The column definitions, and the hooks a module puts its own on them through. */
-    columns: GridColumns;
+    columns: IGridColumns;
     /** What a cell shows, and the hooks a module adds to it through. */
-    cells: GridCells;
+    cells: IGridCells;
     /** What the user is pressing while the grid is doing something about it. */
-    keyboard: GridKeyboard;
+    keyboard: IGridKeyboard;
     /** What a column header offers, assembled from what the modules registered. */
-    columnHeaders: GridColumnHeaders;
+    columnHeaders: IGridColumnHeaders;
     /** What the modules draw over the grid. */
-    surfaces: GridSurfaces;
+    surfaces: IGridSurfaces;
     /** The totals under the rows. */
-    aggregation: GridAggregation;
+    aggregation: IGridAggregation;
     /** Grouping the rows by a column. */
-    grouping: GridGrouping;
+    grouping: IGridGrouping;
     /** Filtering the grid by a column. */
-    filtering: GridFiltering;
+    filtering: IGridFiltering;
     /** Sorting the grid by a column. */
-    sorting: GridSorting;
+    sorting: IGridSorting;
     /** Which records are selected. */
-    selection: GridSelection;
+    selection: IGridSelection;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
     /** The wiring between the grid and AG Grid. */

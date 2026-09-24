@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { getClassNames, IAlignment } from "@utils";
-import { GridControl } from "../../../../services/cells";
+import { IGridControl } from "../../../../services/cells";
 import { getCellControlStyles } from "./styles";
 
 export interface ICellUiControlProps extends React.HTMLAttributes<HTMLDivElement> {
     /** What the cell draws. */
-    control: GridControl;
+    control: IGridControl;
     /** Which edge the value reads from. */
     alignment?: IAlignment;
 }

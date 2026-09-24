@@ -1,10 +1,10 @@
 import { DataTypes, IColumn, ICustomColumnControl, Sanitizer } from "@talxis/client-libraries";
-import { GridField } from "../../../services/fields";
+import { IGridField } from "../../../services/fields";
 import { IBinding } from "@controls/nested-control-renderer/interfaces";
 
 export interface IBindingsParameters {
     /** The field the cell draws, where the cell is bound to one. */
-    field: GridField | undefined;
+    field: IGridField | undefined;
     /** The column the cell is in, where the provider has one for it. */
     column: IColumn | undefined;
     /** The control the bindings are for: whatever it declared itself is bound as static. */

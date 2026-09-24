@@ -1,5 +1,5 @@
 import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowHeightParams } from "@ag-grid-community/core";
-import { EventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
@@ -21,7 +21,18 @@ export interface IGridRowsParameters {
 }
 
 /** What is true of a row rather than of one of its cells. */
-export class GridRows extends EventEmitter<IGridRowsEvents> {
+export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
+    isActive(record: IRecord): boolean;
+    getIndex(record: IRecord): number | undefined;
+    /**
+     * Registers a hook over how tall a row is.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
+}
+
+export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows {
     private _services: IGridServiceLocator;
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
@@ -43,11 +54,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
         return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
     }
 
-    /**
-     * Registers a hook over how tall a row is.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void {
         return this._rowHeightHooks.register(hook, priority);
     }

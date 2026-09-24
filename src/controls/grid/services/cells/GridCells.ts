@@ -6,7 +6,7 @@ import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
-import { GridEditing } from "../editing";
+import { GridEditing, IGridEditing } from "../editing";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -58,7 +58,83 @@ export interface IGridCellsParameters {
 }
 
 /** Every cell the grid has on screen. */
-export class GridCells {
+export interface IGridCells {
+    /** Which cell the user is editing, and what the keyboard does about it. */
+    readonly editing: IGridEditing;
+    /** A cell of this grid. */
+    createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
+    /** Registers a cell as rendered. */
+    addCell(cell: IGridCell): void;
+    /** The cell is gone: out of the registry, and destroyed. */
+    removeCell(cell: IGridCell): void;
+    /** Every cell on screen. */
+    getCells(): IGridCell[];
+    /** The cell drawing this field, where one is rendered. */
+    getCell(record: IRecord, columnName: string): IGridCell | undefined;
+    /**
+     * Registers a hook over what draws a cell.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerControlHook(hook: GridControlHook, priority?: number): () => void;
+    /**
+     * Registers a hook over the parameters the control drawing a cell is handed.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
+    /**
+     * Registers a hook over the theme a cell is drawn in.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
+    /**
+     * Registers a hook over whether a cell is waiting.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
+    /**
+     * Registers a hook over the commands a cell offers.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
+    /**
+     * Registers a hook over whether a cell may be edited.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void;
+    /** Run by the `GridControl` of the cell in question. */
+    applyControlHooks(result: {
+        control: Required<ICustomColumnControl>;
+    }, params: IGridCellHookParameters): void;
+    applyControlParametersHooks(result: IParameters, params: IGridCellHookParameters): void;
+    /** Run by the `GridCellTheme` of the cell in question. */
+    applyCellThemeHooks(theme: ThemeBuilder, params: {
+        record: IRecord;
+        columnName: string;
+    }): void;
+    /** Run by the cell in question, which is the only caller. */
+    applyCellLoadingHooks(result: IGridCellLoading, params: {
+        record: IRecord;
+        columnName: string;
+    }): void;
+    /** Run by the cell in question, which is the only caller. */
+    applyCellEditableHooks(result: IGridCellEditable, params: {
+        record: IRecord;
+        columnName: string;
+    }): void;
+    /** Run by the cell in question, which is the only caller. */
+    applyCellCommandsHooks(result: IGridCellCommands, params: {
+        record: IRecord;
+        columnName: string;
+    }): void;
+}
+
+export class GridCells implements IGridCells {
     private _services: IGridServiceLocator;
     private _renderedCells = new Map<string, IGridCell>();
     private _controlHooks = new HookRegistry<GridControlHook>();
@@ -67,99 +143,62 @@ export class GridCells {
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
     private _cellEditableHooks = new HookRegistry<GridCellEditableHook>();
-    private _editing: GridEditing;
+    private _editing: IGridEditing;
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
         this._editing = new GridEditing({ services: parameters.services });
     }
 
-    /** Which cell the user is editing, and what the keyboard does about it. */
-    public get editing(): GridEditing {
+    public get editing(): IGridEditing {
         return this._editing;
     }
 
-    /** A cell of this grid. */
     public createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell {
         return new GridCell({ ...parameters, services: this._services });
     }
 
-    /** Registers a cell as rendered. */
     public addCell(cell: IGridCell): void {
         this._renderedCells.set(cell.getId(), cell);
     }
 
-    /** The cell is gone: out of the registry, and destroyed. */
     public removeCell(cell: IGridCell): void {
         this._renderedCells.delete(cell.getId());
         cell.destroy();
     }
 
-    /** Every cell on screen. */
     public getCells(): IGridCell[] {
         return [...this._renderedCells.values()];
     }
 
-    /** The cell drawing this field, where one is rendered. */
     public getCell(record: IRecord, columnName: string): IGridCell | undefined {
         return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
     }
 
-    /**
-     * Registers a hook over what draws a cell.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerControlHook(hook: GridControlHook, priority?: number): () => void {
         return this._controlHooks.register(hook, priority);
     }
 
-    /**
-     * Registers a hook over the parameters the control drawing a cell is handed.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void {
         return this._controlParametersHooks.register(hook, priority);
     }
 
-    /**
-     * Registers a hook over the theme a cell is drawn in.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void {
         return this._cellThemeHooks.register(hook, priority);
     }
 
-    /**
-     * Registers a hook over whether a cell is waiting.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void {
         return this._cellLoadingHooks.register(hook, priority);
     }
 
-    /**
-     * Registers a hook over the commands a cell offers.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void {
         return this._cellCommandsHooks.register(hook, priority);
     }
 
-    /**
-     * Registers a hook over whether a cell may be edited.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
     public registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void {
         return this._cellEditableHooks.register(hook, priority);
     }
 
-    /** Run by the `GridControl` of the cell in question. */
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }
@@ -168,22 +207,18 @@ export class GridCells {
         this._controlParametersHooks.apply(result, params);
     }
 
-    /** Run by the `GridCellTheme` of the cell in question. */
     public applyCellThemeHooks(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
         this._cellThemeHooks.apply(theme, params);
     }
 
-    /** Run by the cell in question, which is the only caller. */
     public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {
         this._cellLoadingHooks.apply(result, params);
     }
 
-    /** Run by the cell in question, which is the only caller. */
     public applyCellEditableHooks(result: IGridCellEditable, params: { record: IRecord; columnName: string }): void {
         this._cellEditableHooks.apply(result, params);
     }
 
-    /** Run by the cell in question, which is the only caller. */
     public applyCellCommandsHooks(result: IGridCellCommands, params: { record: IRecord; columnName: string }): void {
         this._cellCommandsHooks.apply(result, params);
     }

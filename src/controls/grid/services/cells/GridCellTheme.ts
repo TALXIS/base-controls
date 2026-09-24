@@ -15,7 +15,13 @@ export interface IGridCellThemeParameters {
 }
 
 /** The theme a cell and everything drawn in it takes. */
-export class GridCellTheme {
+export interface IGridCellTheme {
+    /** What the cell's theme is worked out from, where the grid's own is not what it should be. */
+    setSeed(seed: ITheme | undefined): void;
+    get(): ITheme;
+}
+
+export class GridCellTheme implements IGridCellTheme {
     private _services: IGridServiceLocator;
     private _cell: IGridCell;
     private _seed?: ITheme;
@@ -25,7 +31,6 @@ export class GridCellTheme {
         this._cell = parameters.cell;
     }
 
-    /** What the cell's theme is worked out from, where the grid's own is not what it should be. */
     public setSeed(seed: ITheme | undefined): void {
         this._seed = seed;
     }

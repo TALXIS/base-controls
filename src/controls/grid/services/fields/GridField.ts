@@ -15,7 +15,22 @@ export interface IGridFieldParameters {
 }
 
 /** One column of one record, and everything that follows from a component being bound to it. */
-export class GridField {
+export interface IGridField {
+    getRecord(): IRecord;
+    getColumnName(): string;
+    /** The column as this record's own provider has it. */
+    getColumn(): IColumn;
+    getValue(): any;
+    /** The value the field is given: the record takes it, and saves it. */
+    setValue(newValue: any): void;
+    getFormattedValue(): string | null;
+    /** Whether the value is one the record will accept. */
+    isValid(): IFieldValidationResult;
+    /** The field is gone: what it registered goes with it. */
+    destroy(): void;
+}
+
+export class GridField implements IGridField {
     private _record: IRecord;
     private _columnName: string;
     private _services?: IGridServiceLocator;
@@ -45,7 +60,6 @@ export class GridField {
         return this._columnName;
     }
 
-    /** The column as this record's own provider has it. */
     public getColumn(): IColumn {
         return this._record.getDataProvider().getColumnsMap()[this._columnName];
     }
@@ -54,7 +68,6 @@ export class GridField {
         return this._getField().getValue();
     }
 
-    /** The value the field is given: the record takes it, and saves it. */
     public setValue(newValue: any): void {
         this._record.setValue(this._columnName, newValue);
         if (this._services?.get('settings').isAutoSaveEnabled()) {
@@ -72,7 +85,6 @@ export class GridField {
         return this._getField().isValid();
     }
 
-    /** The field is gone: what it registered goes with it. */
     public destroy(): void {
         this._unregisterCellEditableHook?.();
         this._unregisterCellLoadingHook?.();

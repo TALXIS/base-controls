@@ -1,17 +1,23 @@
 import { ITheme, ThemeBuilder } from "@theme";
 import { IGridServiceLocator } from "../../services";
-import { GridColumnHeader } from "./GridColumnHeader";
+import { IGridColumnHeader } from "./GridColumnHeader";
 
 export interface IGridColumnHeaderThemeParameters {
     services: IGridServiceLocator;
     /** The header this is the theme of. */
-    header: GridColumnHeader;
+    header: IGridColumnHeader;
 }
 
 /** The theme a column header and everything drawn in it takes. */
-export class GridColumnHeaderTheme {
+export interface IGridColumnHeaderTheme {
+    /** What the header's theme is worked out from, where the grid's own is not what it should be. */
+    setSeed(seed: ITheme | undefined): void;
+    get(): ITheme;
+}
+
+export class GridColumnHeaderTheme implements IGridColumnHeaderTheme {
     private _services: IGridServiceLocator;
-    private _header: GridColumnHeader;
+    private _header: IGridColumnHeader;
     private _seed?: ITheme;
 
     constructor(parameters: IGridColumnHeaderThemeParameters) {
@@ -19,7 +25,6 @@ export class GridColumnHeaderTheme {
         this._header = parameters.header;
     }
 
-    /** What the header's theme is worked out from, where the grid's own is not what it should be. */
     public setSeed(seed: ITheme | undefined): void {
         this._seed = seed;
     }

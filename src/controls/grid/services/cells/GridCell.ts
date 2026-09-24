@@ -4,9 +4,9 @@ import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { IGridColumnSettings } from "../columns/colDef";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
-import { GridCellTheme } from "./GridCellTheme";
-import { GridField } from "../fields";
-import { GridControl } from "./GridControl";
+import { GridCellTheme, IGridCellTheme } from "./GridCellTheme";
+import { IGridField } from "../fields";
+import { GridControl, IGridControl } from "./GridControl";
 
 export interface IGridCellParameters {
     services: IGridServiceLocator;
@@ -37,7 +37,7 @@ export interface IGridCell {
     /** The row AG Grid is drawing this cell in. */
     getNode(): IRowNode<IRecord> | undefined;
     /** What this cell is drawn in. */
-    getTheme(): GridCellTheme;
+    getTheme(): IGridCellTheme;
     /** Whether this cell is waiting on something. */
     isLoading(): boolean;
     /** Whether this cell draws a control the user can type in. */
@@ -55,9 +55,9 @@ export interface IGridCell {
     /** The edit is over. */
     finishEditing(): void;
     /** What draws this cell's value, once {@link IGridCell.createControl} has made one. */
-    getControl(): GridControl | undefined;
+    getControl(): IGridControl | undefined;
     /** Makes what draws this cell's value. */
-    createControl(field?: GridField): GridControl;
+    createControl(field?: IGridField): IGridControl;
     /** Whether what this cell holds may be changed. */
     isEditable(): boolean;
     /** What this cell offers to do, as buttons and as what the overflow menu holds. */
@@ -74,8 +74,8 @@ export class GridCell implements IGridCell {
     private _colDef: ColDef<IRecord>;
     private _node?: IRowNode<IRecord>;
     private _id: string;
-    private _theme: GridCellTheme;
-    private _control?: GridControl;
+    private _theme: IGridCellTheme;
+    private _control?: IGridControl;
     private _takesInput: boolean;
     private _element?: HTMLElement;
     private _isDestroyed: boolean = false;
@@ -115,7 +115,7 @@ export class GridCell implements IGridCell {
         return this._node;
     }
 
-    public getTheme(): GridCellTheme {
+    public getTheme(): IGridCellTheme {
         return this._theme;
     }
 
@@ -157,11 +157,11 @@ export class GridCell implements IGridCell {
         this._editing.finish(this);
     }
 
-    public getControl(): GridControl | undefined {
+    public getControl(): IGridControl | undefined {
         return this._control;
     }
 
-    public createControl(field?: GridField): GridControl {
+    public createControl(field?: IGridField): IGridControl {
         this._control = new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
         return this._control;
     }

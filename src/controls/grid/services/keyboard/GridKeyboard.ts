@@ -7,7 +7,20 @@ export interface IGridKeyboardParameters {
 export type GridKeyDownHandler = (event: KeyboardEvent) => void;
 
 /** What the user is pressing while the grid is doing something about it, and who hears it. */
-export class GridKeyboard {
+export interface IGridKeyboard {
+    /** The keypress the user is holding down. */
+    getKeyBeingPressed(): KeyboardEvent | undefined;
+    /**
+     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would
+     *
+     * @returns What takes the handler off again.
+     */
+    onKeyDown(handler: GridKeyDownHandler): () => void;
+    /** The grid is gone: what it put on the document goes with it. */
+    destroy(): void;
+}
+
+export class GridKeyboard implements IGridKeyboard {
     private _services: IGridServiceLocator;
     private _keyBeingPressed?: KeyboardEvent;
     private _keyDownHandlers: GridKeyDownHandler[] = [];
@@ -18,16 +31,10 @@ export class GridKeyboard {
         this._services.whenAvailable('gridRoot', gridRoot => this._listen(gridRoot));
     }
 
-    /** The keypress the user is holding down. */
     public getKeyBeingPressed(): KeyboardEvent | undefined {
         return this._keyBeingPressed;
     }
 
-    /**
-     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would
-     *
-     * @returns What takes the handler off again.
-     */
     public onKeyDown(handler: GridKeyDownHandler): () => void {
         this._keyDownHandlers.push(handler);
         return () => {
@@ -35,7 +42,6 @@ export class GridKeyboard {
         };
     }
 
-    /** The grid is gone: what it put on the document goes with it. */
     public destroy(): void {
         this._document?.removeEventListener('keydown', this._onKeyDown, true);
         this._document?.removeEventListener('keyup', this._onKeyUp, true);

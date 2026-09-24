@@ -8,7 +8,7 @@ import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
 import { IGridRowHeight } from "../../services/rows";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
-import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 
 /** What the row stands in as until the totals are worked out. */
@@ -35,7 +35,19 @@ export interface IGridAggregationParameters {
 }
 
 /** The totals a grid shows, in the row pinned under the rest. */
-export class GridAggregation {
+export interface IGridAggregation {
+    /** The total row, but only if the dataset has ever carried an aggregation. */
+    getTotalRow(): TotalRow | undefined;
+    canColumnBeAggregated(column: IColumn): boolean;
+    addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
+    removeAggregation(alias: string): void;
+    /** What the column's total is called, for the row pinned under the rest. */
+    getTotalLabel(columnName: string): string | undefined;
+    /** What a row holds a column's aggregate under: the alias the aggregation was asked for by. */
+    getAggregateValueColumnName(record: IRecord, columnName: string): string;
+}
+
+export class GridAggregation implements IGridAggregation {
     private _services: IGridAggregationServiceLocator;
     private _allowUserAggregation: boolean;
     private _totalRow?: TotalRow;
@@ -63,7 +75,6 @@ export class GridAggregation {
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
     }
 
-    /** The total row, but only if the dataset has ever carried an aggregation. */
     public getTotalRow(): TotalRow | undefined {
         return this._totalRow;
     }
@@ -128,13 +139,11 @@ export class GridAggregation {
         return !!column?.aggregation?.aggregationFunction && !column.grouping?.isGrouped;
     }
 
-    /** What the column's total is called, for the row pinned under the rest. */
     public getTotalLabel(columnName: string): string | undefined {
         const aggregationFunction = this._provider.getColumnsMap()[columnName]?.aggregation?.aggregationFunction;
         return aggregationFunction ? this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]) : undefined;
     }
 
-    /** What a row holds a column's aggregate under: the alias the aggregation was asked for by. */
     public getAggregateValueColumnName(record: IRecord, columnName: string): string {
         const alias = this._provider.getColumnsMap()[columnName]?.aggregation?.alias;
         return alias && record.getDataProvider().getColumnsMap()[alias] ? alias : columnName;
@@ -204,7 +213,7 @@ export class GridAggregation {
     private _onRenderAggregateCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderAggregateCell(props);
 
     /** What the column is totalling, for the header's tooltip. */
-    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void => {
+    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         const aggregationFunction = column?.aggregation?.aggregationFunction;
         if (!column || !aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
@@ -219,7 +228,7 @@ export class GridAggregation {
     };
 
     /** The totals a column can show, as a submenu of what it is currently totalling. */
-    private _onMenuSection = (sections: IColumnMenuSection[], header: GridColumnHeader): void => {
+    private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         const supported = column?.metadata?.SupportedAggregations ?? [];
         if (!column || !this.canColumnBeAggregated(column) || !supported.length) {

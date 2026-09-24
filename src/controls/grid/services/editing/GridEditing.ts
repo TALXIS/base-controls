@@ -25,7 +25,19 @@ const isEditStartKey = (event: KeyboardEvent): boolean => {
 };
 
 /** Which cell the user is editing, and the keys that start and end it. */
-export class GridEditing {
+export interface IGridEditing {
+    readonly events: IEventEmitter<IGridEditingEvents>;
+    /** Whether the user stepped into the control a cell draws in place. */
+    isEditing(record: IRecord, columnName: string): boolean;
+    /** The user stepped into what this cell draws. */
+    start(cell: IGridCell): void;
+    /**
+     * The edit is over: what was opened over the cell closes and the highlight comes back.
+     */
+    finish(cell: IGridCell): void;
+}
+
+export class GridEditing implements IGridEditing {
     private _services: IGridServiceLocator;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;
@@ -39,19 +51,14 @@ export class GridEditing {
         });
     }
 
-    /** Whether the user stepped into the control a cell draws in place. */
     public isEditing(record: IRecord, columnName: string): boolean {
         return this._editedCell?.recordId === record.getRecordId() && this._editedCell?.columnName === columnName;
     }
 
-    /** The user stepped into what this cell draws. */
     public start(cell: IGridCell): void {
         this._setEditedCell({ recordId: cell.getRecord().getRecordId(), columnName: cell.getColumnName() });
     }
 
-    /**
-     * The edit is over: what was opened over the cell closes and the highlight comes back.
-     */
     public finish(cell: IGridCell): void {
         const gridApi = this._services.find('gridApi');
         if (!gridApi) {

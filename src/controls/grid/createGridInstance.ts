@@ -8,7 +8,7 @@ import { IGrid } from "./interfaces";
 import { GRID_LABELS, IGridLabels } from "./labels";
 import { IGridServiceLocator, IGridServiceMap } from "./services";
 import { AgGridModel } from "./services/ag-grid/AgGridModel";
-import { GridSettings } from "./services/settings";
+import { GridSettings, IGridSettings } from "./services/settings";
 import { GridRows } from "./services/rows";
 import { GridColumns } from "./services/columns";
 import { GridCells } from "./services/cells";
@@ -30,7 +30,7 @@ export interface ICreateGridInstanceParameters {
 /** A grid, assembled. */
 export interface IGridInstance {
     /** What the caller asked the grid to be, with its defaults applied. */
-    settings: GridSettings;
+    settings: IGridSettings;
     /** Where the grid's parts and its modules find each other. */
     services: IGridServiceLocator;
     /** What the modules say the grid has to be created with, merged. */

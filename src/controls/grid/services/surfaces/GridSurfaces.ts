@@ -16,7 +16,18 @@ export interface IGridSurfacesParameters {
 }
 
 /** What the modules draw over the grid, assembled from what they registered. */
-export class GridSurfaces {
+export interface IGridSurfaces {
+    /**
+     * Registers a hook over what the modules draw over the grid.
+     *
+     * @param priority Ascending: a lower number is drawn first.
+     */
+    registerSurfaceHook(hook: GridSurfacesHook, priority?: number): () => void;
+    /** Everything the modules draw over the grid, in order. */
+    getSurfaces(): IGridSurface[];
+}
+
+export class GridSurfaces implements IGridSurfaces {
     private _services: IGridServiceLocator;
     private _surfaceHooks = new HookRegistry<GridSurfacesHook>();
 
@@ -24,16 +35,10 @@ export class GridSurfaces {
         this._services = parameters.services;
     }
 
-    /**
-     * Registers a hook over what the modules draw over the grid.
-     *
-     * @param priority Ascending: a lower number is drawn first.
-     */
     public registerSurfaceHook(hook: GridSurfacesHook, priority?: number): () => void {
         return this._surfaceHooks.register(hook, priority);
     }
 
-    /** Everything the modules draw over the grid, in order. */
     public getSurfaces(): IGridSurface[] {
         const surfaces: IGridSurface[] = [];
         this._surfaceHooks.apply(surfaces);

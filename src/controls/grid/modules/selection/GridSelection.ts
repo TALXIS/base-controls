@@ -28,7 +28,25 @@ export interface IGridSelectionParameters {
 }
 
 /** Which records are selected, in both directions.  meet */
-export class GridSelection {
+export interface IGridSelection {
+    /** How many rows may be selected at once. */
+    getMode(): 'single' | 'multiple';
+    setInterceptor<K extends keyof IGridSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridSelectionInterceptors, K>): void;
+    /** Selects the records, through whatever intercepts `onSelectRecords`. */
+    selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
+    /** Whether the column carrying the checkboxes is this one. */
+    isSelectionColumn(columnName: string | undefined): boolean;
+    /** How a row's checkbox should read. */
+    getRecordSelectionState(node: IRowNode<IRecord>): IGridSelectionState;
+    /** Whether a record refuses selection at all. */
+    isRecordSelectionDisabled(record: IRecord): boolean;
+    /** The parts this module renders, merged with whatever the caller replaced. */
+    readonly components: IGridSelectionComponents;
+    /** Releases the listeners this holds, which outlive the grid otherwise. */
+    destroy(): void;
+}
+
+export class GridSelection implements IGridSelection {
     private _services: IGridSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
     /** What the host persisted, until the records it names have been loaded and it can be */
@@ -50,7 +68,6 @@ export class GridSelection {
         gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, -1);
     }
 
-    /** How many rows may be selected at once. */
     public getMode(): 'single' | 'multiple' {
         return this._mode;
     }
@@ -59,7 +76,6 @@ export class GridSelection {
         this._interceptors.setInterceptor(event, interceptor);
     }
 
-    /** Selects the records, through whatever intercepts `onSelectRecords`. */
     public async selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void> {
         const token = (this._selectionTokens.get(provider) ?? 0) + 1;
         this._selectionTokens.set(provider, token);
@@ -98,12 +114,10 @@ export class GridSelection {
         };
     }
 
-    /** Whether the column carrying the checkboxes is this one. */
     public isSelectionColumn(columnName: string | undefined): boolean {
         return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;
     }
 
-    /** How a row's checkbox should read. */
     public getRecordSelectionState(node: IRowNode<IRecord>): IGridSelectionState {
         const record = node.data!;
         const childDataProvider = record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId());
@@ -116,7 +130,6 @@ export class GridSelection {
         return childDataProvider.getSelectedRecordIds().length === 0 ? 'unchecked' : 'indeterminate';
     }
 
-    /** Whether a record refuses selection at all. */
     public isRecordSelectionDisabled(record: IRecord): boolean {
         const provider = record.getDataProvider();
         //a group selects every record under it.
@@ -127,12 +140,10 @@ export class GridSelection {
     private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
     private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
 
-    /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridSelectionComponents {
         return this._services.get('components');
     }
 
-    /** Releases the listeners this holds, which outlive the grid otherwise. */
     public destroy(): void {
         this._provider.removeEventListener('onRecordsSelected', this._onProviderSelectionChanged);
         this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);

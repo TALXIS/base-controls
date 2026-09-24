@@ -4,7 +4,7 @@ import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@ta
 import { ILocalizationService } from "@utils";
 import { IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
-import { GridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
 
 export interface IGridSortingParameters {
@@ -13,7 +13,27 @@ export interface IGridSortingParameters {
 }
 
 /** Sorting the grid by a column. */
-export class GridSorting {
+export interface IGridSorting {
+    getSorting(): Sorting;
+    isColumnSortable(column: IColumn): boolean;
+    isSorted(column: IColumn): boolean;
+    isSortedDescending(column: IColumn): boolean;
+    /** @param appendToExisting Adds to the sorting already applied rather than replacing it. */
+    sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void;
+    clearColumnSorting(columnName: string): void;
+    /** Puts `sortable` on the definitions. */
+    applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void;
+    /** What a column's menu offers: the two directions, and clearing them. */
+    applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void;
+    /** The sort direction, as the header shows it. */
+    applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void;
+    /** What sorting a column reads as, which depends on what it holds. */
+    getSortingLabel(columnName: string, descending?: boolean): string;
+    /** The parts this module renders, merged with whatever the caller replaced. */
+    readonly components: IGridSortingComponents;
+}
+
+export class GridSorting implements IGridSorting {
     private _services: IGridSortingServiceLocator;
     private _sorting: Sorting;
 
@@ -38,7 +58,6 @@ export class GridSorting {
         return this._provider.getSorting().find(sorted => sorted.name === column.name)?.sortDirection === 1;
     }
 
-    /** @param appendToExisting Adds to the sorting already applied rather than replacing it. */
     public sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void {
         this._withUnsavedChangesBlocker(() => {
             this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0, appendToExisting ?? false);
@@ -53,7 +72,6 @@ export class GridSorting {
         });
     }
 
-    /** Puts `sortable` on the definitions. */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;
@@ -64,8 +82,7 @@ export class GridSorting {
         }
     }
 
-    /** What a column's menu offers: the two directions, and clearing them. */
-    public applyMenuSection(sections: IColumnMenuSection[], header: GridColumnHeader): void {
+    public applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void {
         const column = header.getColumn();
         if (!column || !this.isColumnSortable(column)) {
             return;
@@ -94,8 +111,7 @@ export class GridSorting {
         sections.push({ key: 'sorting', title: this._labels.getLocalizedString('menuSection'), items: mine });
     }
 
-    /** The sort direction, as the header shows it. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: GridColumnHeader): void {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void {
         const column = header.getColumn();
         if (!column || !this.isSorted(column)) {
             return;
@@ -108,7 +124,6 @@ export class GridSorting {
     }
 
 
-    /** What sorting a column reads as, which depends on what it holds. */
     public getSortingLabel(columnName: string, descending?: boolean): string {
         const column = this._services.get('gridServices').get('provider').getColumnsMap()[columnName]!;
         switch (column.dataType) {
@@ -153,7 +168,6 @@ export class GridSorting {
         return this._services.get('gridServices').get('provider');
     }
 
-    /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridSortingComponents {
         return this._services.get('components');
     }
