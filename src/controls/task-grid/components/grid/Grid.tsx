@@ -51,6 +51,7 @@ export const Grid = (props: IControlProps) => {
             onRenderAgGrid: (agGridProps) => <AgGridReact
                 {...agGridProps}
                 treeData
+                groupDisplayType='custom'
                 getDataPath={(record: IRecord) => taskDataProvider.getRecordTree().structure.getAncestorIds(record.getRecordId())}
                 suppressGroupRowsSticky
                 processUnpinnedColumns={() => []}

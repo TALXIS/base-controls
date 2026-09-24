@@ -4,7 +4,7 @@ import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
-import type { AgGridModel } from "../services/ag-grid/AgGridModel";
+import type { IGridRuntime } from "../services/runtime";
 import type { IGridRowModel } from "../modules/row-model/interfaces";
 import type { IGridColumns } from "../services/columns";
 import type { IGridCells } from "../services/cells";
@@ -58,8 +58,8 @@ export interface IGridServiceMap {
     selection: IGridSelection;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
-    /** The wiring between the grid and AG Grid. */
-    agGrid: AgGridModel;
+    /** The running grid, and the hooks over the props AG Grid is created with. */
+    grid: IGridRuntime;
 }
 
 /** The services that are only there when whatever registers them is. */

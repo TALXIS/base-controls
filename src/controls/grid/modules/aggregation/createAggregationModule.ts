@@ -1,7 +1,4 @@
-import { IRowNode, IsFullWidthRowParams } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
 import { LocalizationService, ServiceLocator } from "@utils";
-import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error/FullWidthCellRendererError";
 import { IGridModule } from "../interfaces";
 import { GRID_AGGREGATION_LABELS, IGridAggregationLabels } from "./labels";
 import { GridAggregationComponents, IGridAggregationComponents } from "./moduleComponents";
@@ -23,14 +20,6 @@ export interface IAggregationModuleOptions {
  * @example
  */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
-    //stated here rather than read off the instance below
-    onGetInitialComponentProps: () => ({
-        isFullWidthRow: params => isAggregationErrorRow(params.rowNode),
-        fullWidthCellRenderer: FullWidthCellRendererError,
-        fullWidthCellRendererParams: (params: IsFullWidthRowParams<IRecord>) => ({
-            errorMessage: params.rowNode.data?.getDataProvider().getErrorMessage(),
-        }),
-    }),
     onRegister: gridServices => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
@@ -44,8 +33,3 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         gridServices.register('aggregation', () => aggregation);
     },
 });
-
-const isAggregationErrorRow = (rowNode: IRowNode<IRecord>): boolean => {
-    const provider = rowNode.data?.getDataProvider();
-    return provider?.getSummarizationType() === 'aggregation' && provider.isError();
-};

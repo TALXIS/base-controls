@@ -17,7 +17,6 @@ export interface ISelectionModuleOptions {
  * @example
  */
 export const createSelectionModule = (options: ISelectionModuleOptions): IGridModule => ({
-    onGetInitialComponentProps: () => ({ rowSelection: options.mode }),
     onRegister: gridServices => {
         const services = new ServiceLocator<IGridSelectionServiceMap>();
         const components = { ...GridSelectionComponents, ...options.components };

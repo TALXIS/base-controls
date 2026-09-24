@@ -27,7 +27,7 @@ export type TaskGridStateCaptureHook = (metadata: Partial<ISavedQueryMetadata>) 
 export interface ITaskGridState {
     /** The view to open on. Ours, through {@link ITaskGridStateProvider}. */
     savedQuery?: Partial<ISavedQuery> & { id: string; linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[] };
-    /** The grid layer's slice: what ag-grid restores as its `initialState`. `AgGridModel` owns its shape. */
+    /** The grid layer's slice: what ag-grid restores as its `initialState`. `GridRuntime` owns its shape. */
     AgGridState?: unknown;
     /** The generic dataset control's slice. Written on the PCF entry path, never here. */
     DatasetControlState?: unknown;

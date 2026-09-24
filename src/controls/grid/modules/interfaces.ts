@@ -1,13 +1,9 @@
 import type { Module } from "@ag-grid-community/core";
-import type { AgGridReactProps } from "@ag-grid-community/react";
-import type { IRecord } from "@talxis/client-libraries";
 import type { IGridServiceLocator } from "../services";
 
 /** One thing a grid can be given rather than born with. */
 export interface IGridModule {
     agGridModules?: Module[];
-    /** Options the grid must be created with. */
-    onGetInitialComponentProps?: () => Partial<AgGridReactProps<IRecord>>;
     /** Registers what the module contributes, if anything outlives construction. */
     onRegister?: (services: IGridServiceLocator) => void;
     /** Releases what the module holds — a listener on the provider outlives the grid otherwise. */

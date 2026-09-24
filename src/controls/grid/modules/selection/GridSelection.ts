@@ -66,6 +66,7 @@ export class GridSelection implements IGridSelection {
         const gridServices = this._services.get('gridServices');
         //ahead of the default hooks, because it is the first column.
         gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, -1);
+        gridServices.get('grid').registerAgGridProps(result => result.props.rowSelection = this._mode);
     }
 
     public getMode(): 'single' | 'multiple' {

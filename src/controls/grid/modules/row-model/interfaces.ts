@@ -1,5 +1,4 @@
 import type { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
-import type { AgGridReactProps } from "@ag-grid-community/react";
 import type { IRecord } from "@talxis/client-libraries";
 
 /** Which of AG Grid's row models a grid runs on. */
@@ -7,8 +6,6 @@ export type IGridRowModelType = 'clientSide' | 'serverSide';
 
 /** How a grid gets its rows, and everything that follows from that choice. */
 export interface IGridRowModel {
-    /** The options the grid has to be created with. */
-    getInitialComponentProps: () => Partial<AgGridReactProps<IRecord>>;
     /** The options that can only be handed to a grid that exists. */
     applyGridOptions: (gridApi: GridApi<IRecord>) => void;
     /** New data landed: hand the rows over, or ask for them again. */

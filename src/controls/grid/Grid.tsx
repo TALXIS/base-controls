@@ -1,13 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { GetRowIdParams } from "@ag-grid-community/core";
-import { AgGridReactProps } from "@ag-grid-community/react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTheme } from "@fluentui/react";
-import { IRecord } from "@talxis/client-libraries";
-import { LoadingOverlay } from "./components/overlays/loading/LoadingOverlay";
-import { EmptyRecords } from "./components/overlays/empty-records/EmptyRecordsOverlay";
 import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
-import { createGridInstance } from "./createGridInstance";
+import { GridRuntime } from "./services/runtime";
 import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
@@ -24,13 +19,13 @@ export const GridRoot = (props: IGrid) => {
     const propsRef = useRef<IGrid>(props);
     propsRef.current = props;
 
-    const { services, initialComponentProps, destroy } = useMemo(() => createGridInstance({
+    const runtime = useMemo(() => new GridRuntime({
         onGetProps: () => propsRef.current,
         pcfContext: pcfContext,
         theme: theme,
     }), []);
 
-    const settings = services.get('settings');
+    const settings = runtime.settings;
     const rowHeight = settings.getDefaultRowHeight();
     const styles = useMemo(
         () => getGridStyles(theme, props.height, rowHeight, settings.getMaxVisibleRows()),
@@ -41,50 +36,18 @@ export const GridRoot = (props: IGrid) => {
     const components = { ...GridComponents, ...props.components };
 
     //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
-    useEffect(() => {
-        return () => {
-            destroy();
-            services.destroy();
-        }
-    }, []);
-
-    const componentProps: AgGridReactProps<IRecord> = {
-        //the modules first: the grid has the last word on anything it also sets
-        ...initialComponentProps,
-        getRowId: (params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`,
-        //needs to be set here, crashes if set via API
-        rowHeight: rowHeight,
-        loadingOverlayComponent: LoadingOverlay,
-        noRowsOverlayComponent: EmptyRecords,
-        enableGroupEdit: true,
-        reactiveCustomComponents: true,
-        initialState: props.state,
-        //the api last: registering it builds the parts that push columns
-        onGridReady: (event) => {
-            propsRef.current.onGridReady?.(event.api);
-            services.register('gridApi', () => event.api);
-        },
-        //before AG Grid tears down, so `getState()` still answers for whoever wants to persist it
-        onGridPreDestroyed: (event) => propsRef.current.onDestroy?.(event.api),
-    }
-
-    //a part listening ahead of AG Grid needs this element, and it exists only once mounted
-    const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
-        if (gridRoot) {
-            services.register('gridRoot', () => gridRoot);
-        }
-    }, []);
+    useEffect(() => () => runtime.destroy(), []);
 
     //one context: everything a component needs is in the locator, `grid` included.
-    return <GridServicesContext.Provider value={services}>
+    return <GridServicesContext.Provider value={runtime.services}>
         <ThemeProvider
             theme={theme}
             //a cell may be drawn in colours of its own, but what it opens is drawn over the grid
             surfaceTheme={theme}
             applyTo='none'
-            ref={onGridRootRef}
+            ref={runtime.onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
-            {components.onRenderAgGrid(componentProps)}
+            {components.onRenderAgGrid(runtime.getAgGridProps())}
             <Surfaces />
         </ThemeProvider>
     </GridServicesContext.Provider>

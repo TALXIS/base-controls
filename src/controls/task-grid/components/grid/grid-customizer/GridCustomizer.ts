@@ -322,7 +322,7 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     //one renderer serves both columns, bound to its direction here rather than through
-    //`colDef.cellRendererParams` - that is a function AgGridModel owns, and it is what injects the
+    //`colDef.cellRendererParams` - that is a function GridRuntime owns, and it is what injects the
     //record, the column and the value every cell needs. Stable fields, so a column definition pass does
     //not hand ag-grid a new component identity each time
     private _predecessorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>

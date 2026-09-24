@@ -1,4 +1,4 @@
-import { ColDef, ICellRendererParams } from "@ag-grid-community/core";
+import { ColDef, ICellRendererParams, IRowNode, IsFullWidthRowParams } from "@ag-grid-community/core";
 import { FontWeights } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
@@ -7,6 +7,8 @@ import { IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
 import { IGridRowHeight } from "../../services/rows";
+import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error/FullWidthCellRendererError";
+import { IGridAgGridProps } from "../../services/runtime";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
@@ -65,6 +67,7 @@ export class GridAggregation implements IGridAggregation {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columnHeaders');
+        this._gridServices.get('grid').registerAgGridProps(this._onAgGridProps);
         //behind grouping, so what it draws in a group's row is the last word on that cell
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 30);
         this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
@@ -73,6 +76,19 @@ export class GridAggregation implements IGridAggregation {
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
+    }
+
+    private _onAgGridProps = (result: IGridAgGridProps): void => {
+        result.props.isFullWidthRow = params => this._isErrorRow(params.rowNode);
+        result.props.fullWidthCellRenderer = FullWidthCellRendererError;
+        result.props.fullWidthCellRendererParams = (params: IsFullWidthRowParams<IRecord>) => ({
+            errorMessage: params.rowNode.data?.getDataProvider().getErrorMessage(),
+        });
+    };
+
+    private _isErrorRow(rowNode: IRowNode<IRecord>): boolean {
+        const provider = rowNode.data?.getDataProvider();
+        return provider?.getSummarizationType() === 'aggregation' && provider.isError();
     }
 
     public getTotalRow(): TotalRow | undefined {

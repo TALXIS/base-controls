@@ -7,6 +7,7 @@ export * from './services/column-header';
 export * from './services/surfaces';
 export * from './services/editing';
 export * from './services/rows';
+export * from './services/runtime';
 export * from './services/fields';
 export * from './interfaces';
 export * from './labels';

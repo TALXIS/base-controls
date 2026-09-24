@@ -106,7 +106,7 @@ export class GridGrouping implements IGridGrouping {
         //the provider nests by default, so what this module was asked for is the word on it
         this._provider.setProperty('groupingType', this._settings.type);
         this._rowModelGrouping = this._gridServices.get('rowModel').createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault });
-        //ahead of `AgGridModel`, which registers its own listener only once there is an api
+        //ahead of `GridRuntime`, which registers its own listener only once there is an api
         this._gridServices.whenAvailable('gridApi', gridApi => {
             this._rowModelGrouping.onApplyGridOptions(gridApi);
             gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed);
@@ -120,6 +120,7 @@ export class GridGrouping implements IGridGrouping {
     private _registerHooks(): void {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columnHeaders');
+        this._gridServices.get('grid').registerAgGridProps(result => result.props.groupDisplayType = 'custom');
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 20);
         cells.registerCellThemeHook(this._onCellTheme);
         cells.registerCellEditableHook(this._onCellEditable);

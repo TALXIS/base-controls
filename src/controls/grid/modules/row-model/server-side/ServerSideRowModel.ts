@@ -1,5 +1,4 @@
 import { GridApi } from "@ag-grid-community/core";
-import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 import { IGridRowModel, IGridRowModelGroupingParameters } from "../interfaces";
@@ -18,11 +17,8 @@ export class ServerSideRowModel implements IGridRowModel {
 
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
+        this._services.get('grid').registerAgGridProps(result => result.props.rowModelType = 'serverSide');
         this._datasource = new ServerSideDatasource(this._services);
-    }
-
-    public getInitialComponentProps(): Partial<AgGridReactProps<IRecord>> {
-        return { rowModelType: 'serverSide' };
     }
 
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
