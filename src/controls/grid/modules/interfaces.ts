@@ -7,7 +7,7 @@ import type { IGridServiceLocator } from "../services";
 export interface IGridModule {
     agGridModules?: Module[];
     /** Options the grid must be created with. */
-    getInitialComponentProps?: () => Partial<AgGridReactProps<IRecord>>;
+    onGetInitialComponentProps?: () => Partial<AgGridReactProps<IRecord>>;
     /** Registers what the module contributes, if anything outlives construction. */
     onRegister?: (services: IGridServiceLocator) => void;
     /** Releases what the module holds — a listener on the provider outlives the grid otherwise. */

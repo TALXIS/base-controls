@@ -24,7 +24,7 @@ export interface IAggregationModuleOptions {
  */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
     //stated here rather than read off the instance below
-    getInitialComponentProps: () => ({
+    onGetInitialComponentProps: () => ({
         isFullWidthRow: params => isAggregationErrorRow(params.rowNode),
         fullWidthCellRenderer: FullWidthCellRendererError,
         fullWidthCellRendererParams: (params: IsFullWidthRowParams<IRecord>) => ({

@@ -24,12 +24,13 @@ export const GridRoot = (props: IGrid) => {
     const propsRef = useRef<IGrid>(props);
     propsRef.current = props;
 
-    const { settings, services, initialComponentProps, destroy } = useMemo(() => createGridInstance({
+    const { services, initialComponentProps, destroy } = useMemo(() => createGridInstance({
         onGetProps: () => propsRef.current,
         pcfContext: pcfContext,
         theme: theme,
     }), []);
 
+    const settings = services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const styles = useMemo(
         () => getGridStyles(theme, props.height, rowHeight, settings.getMaxVisibleRows()),

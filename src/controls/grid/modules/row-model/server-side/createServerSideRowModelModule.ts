@@ -9,7 +9,7 @@ import { ServerSideRowModel } from "./ServerSideRowModel";
  */
 export const createServerSideRowModelModule = (): IGridRowModelModule => ({
     agGridModules: [AgServerSideRowModelModule],
-    getInitialComponentProps: () => ({ rowModelType: 'serverSide' }),
+    onGetInitialComponentProps: () => ({ rowModelType: 'serverSide' }),
     onRegister: services => {
         const rowModel = new ServerSideRowModel({ services });
         services.register('rowModel', () => rowModel);

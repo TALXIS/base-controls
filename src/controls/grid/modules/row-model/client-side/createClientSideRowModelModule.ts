@@ -11,7 +11,7 @@ import { ClientSideRowModel } from "./ClientSideRowModel";
 export const createClientSideRowModelModule = (): IGridRowModelModule => ({
     agGridModules: [AgClientSideRowModelModule],
     //stated here rather than read off the instance below
-    getInitialComponentProps: () => ({ rowModelType: 'clientSide' }),
+    onGetInitialComponentProps: () => ({ rowModelType: 'clientSide' }),
     onRegister: services => {
         const rowModel = new ClientSideRowModel({ services });
         services.register('rowModel', () => rowModel);
