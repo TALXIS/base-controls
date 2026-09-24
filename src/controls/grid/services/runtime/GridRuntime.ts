@@ -1,13 +1,13 @@
-import { ColDef, GetRowIdParams, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
+import { CellEditingStartedEvent, ColDef, GetRowIdParams, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
-import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, IEventEmitter, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "@controls/grid/components/overlays/empty-records/EmptyRecordsOverlay";
 import { IGridModule } from "../../modules";
-import { IGrid } from "../../interfaces";
+import { IGrid, IGridEventHandlers } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { GridComponents } from "../../components/components";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
@@ -32,7 +32,7 @@ export interface IGridAgGridOptions {
     options: ManagedGridOptions<IRecord>;
 }
 
-export interface IGridRuntimeEvents {
+export interface IGridRuntimeEvents extends IGridEventHandlers {
     /** The grid is being torn down: release whatever outlives it. */
     onDestroy: () => void;
 }
@@ -116,6 +116,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('surfaces', () => surfaces);
         //registers its hooks once for every cell, so nothing needs to look it up
         new GridLegacyClientApiCompatibility({ services: this._services });
+        this._dispatchConsumerEvents();
 
         const modules = Object.values(onGetProps().modules).filter((module): module is IGridModule => !!module);
         for (const module of modules) {
@@ -174,6 +175,12 @@ export class GridRuntime implements IGridRuntime {
     public destroy(): void {
         //the provider outlives the grid
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        this._provider.removeEventListener('onLoading', this._onLoading);
+        this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
+        this._provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        this._provider.removeEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
+        this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._provider.removeEventListener('onError', this._onProviderError);
         this.events.dispatchEvent('onDestroy');
         this.events.clearEventListeners();
         this._services.destroy();
@@ -215,6 +222,14 @@ export class GridRuntime implements IGridRuntime {
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        //an editor AG Grid opens, where the editing service hears only a control stepped into in place
+        const gridApi = this._services.get('gridApi');
+        gridApi.addEventListener('cellEditingStarted', (event: CellEditingStartedEvent<IRecord>) => {
+            if (event.data) {
+                this.events.dispatchEvent('onEditedCellChanged', { recordId: event.data.getRecordId(), columnName: event.column.getColId() });
+            }
+        });
+        gridApi.addEventListener('cellEditingStopped', () => this.events.dispatchEvent('onEditedCellChanged', undefined));
         if (!this._provider.isLoading()) {
             this._onNewDataLoaded();
             return;
@@ -229,7 +244,44 @@ export class GridRuntime implements IGridRuntime {
         this.refreshAgGridOptions();
         this._services.get('rowModel').refresh();
         this._scrollToTop();
+        this.events.dispatchEvent('onDataLoaded');
     };
+
+    /** What the grid tells a consumer, from where it happens. */
+    private _dispatchConsumerEvents(): void {
+        this._provider.addEventListener('onLoading', this._onLoading);
+        this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
+        this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        this._provider.addEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
+        this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._provider.addEventListener('onError', this._onProviderError);
+        this._services.get('cells').editing.events.addEventListener('onEditedCellChanged', (_previous, next) => this.events.dispatchEvent('onEditedCellChanged', next));
+    }
+
+    private _onLoading = (isLoading: boolean): void => {
+        this.events.dispatchEvent('onLoadingChanged', isLoading);
+    };
+
+    private _onRecordsSelected = (selectedRecordIds: string[]): void => {
+        this.events.dispatchEvent('onSelectionChanged', selectedRecordIds);
+    };
+
+    private _onRecordColumnValueChanged = (record: IRecord, columnName: string, newValue: any): void => {
+        this.events.dispatchEvent('onRecordValueChanged', record, columnName, newValue);
+    };
+
+    private _onBeforeRecordSaved = (record: IRecord): void => {
+        this.events.dispatchEvent('onBeforeRecordSave', record);
+    };
+
+    private _onAfterRecordSaved = (result: IRecordSaveOperationResult): void => {
+        this.events.dispatchEvent('onAfterRecordSave', result);
+    };
+
+    private _onProviderError = (message: string, details?: any): void => {
+        this.events.dispatchEvent('onError', message, details);
+    };
+
 
     /** Back to the first row, because a load is a different list */
     private _scrollToTop(): void {

@@ -3,6 +3,7 @@ import { useTheme } from "@fluentui/react";
 import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
+import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
@@ -32,6 +33,8 @@ export const GridRoot = (props: IGrid) => {
     );
 
     const components = runtime.services.get('components');
+
+    useGridEventHandlers(runtime, props);
 
     //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
     useEffect(() => () => runtime.destroy(), []);

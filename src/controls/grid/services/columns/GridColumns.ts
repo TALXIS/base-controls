@@ -242,6 +242,7 @@ export class GridColumns implements IGridColumns {
             return;
         }
         const columnName = event.colDef.colId!;
+        this._services.get('grid').events.dispatchEvent('onCellDoubleClicked', record, columnName);
         //the click landed on a rendered cell, so one is registered
         const cell = this._cells.getCell(record, columnName)!;
         switch (true) {
