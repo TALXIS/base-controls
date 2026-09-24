@@ -2,17 +2,19 @@ import { GridApi, IRowNode } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../interfaces";
+import { IGridAgGridOptions } from "../../../services/runtime";
 
 export interface IClientSideRowModelGroupingParameters extends IGridRowModelGroupingParameters {
     services: IGridServiceLocator;
     /** Hands the rows to the grid again, once every level has arrived. */
-    onRowsLoaded: (gridApi: GridApi<IRecord>) => void;
+    onRowsLoaded: () => void;
 }
 
 /** Grouping where every level is in the grid at once, as a tree. */
 export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     private _services: IGridServiceLocator;
-    private _onRowsLoaded: (gridApi: GridApi<IRecord>) => void;
+    private _onRowsLoaded: () => void;
+    private _isTree: boolean;
     /** Which load the walk in flight belongs to */
     private _loadToken: number = 0;
     public isGroupOpenByDefault: (node: IRowNode<IRecord>) => boolean;
@@ -21,14 +23,16 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         this._services = parameters.services;
         this._onRowsLoaded = parameters.onRowsLoaded;
         this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
-        //ahead of the push the grid makes on the same event
+        this._isTree = this._getIsTree();
+        //ahead of the grid's refresh on the same event
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
     /** Neither option is `@initial`, so grouping can turn the hierarchy on and off. */
-    public onApplyGridOptions(gridApi: GridApi<IRecord>): void {
-        this._applyTreeData(gridApi);
-        gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed);
+    public onAgGridOptions(result: IGridAgGridOptions): void {
+        result.options.treeData = this._isTree;
+        result.options.getDataPath = this._isTree ? getRecordPath : undefined;
     }
 
     /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */
@@ -52,27 +56,18 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     }
 
     //the provider outlives the grid
-    private _onGridPreDestroyed = (): void => {
+    private _onDestroy = (): void => {
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     };
 
     private _onNewDataLoaded = (): void => {
-        this._applyTreeData();
+        this._isTree = this._getIsTree();
         this._loadEveryLevel();
     };
 
     /** A tree only while there is something to nest. */
-    private _applyTreeData(gridApi = this._services.find('gridApi')): void {
-        if (!gridApi) {
-            return;
-        }
-        const isTree = this._provider.grouping.getGroupBys().length > 0;
-        //only on a change: `treeData` is a managed property
-        if (!!gridApi.getGridOption('treeData') === isTree) {
-            return;
-        }
-        gridApi.setGridOption('getDataPath', isTree ? getRecordPath : undefined);
-        gridApi.setGridOption('treeData', isTree);
+    private _getIsTree(): boolean {
+        return this._provider.grouping.getGroupBys().length > 0;
     }
 
     /** Fetches every group's children, depth first, and hands the rows over again. */
@@ -82,11 +77,10 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         }
         const loadToken = ++this._loadToken;
         await loadGroupedRecords(this._provider.getRecords());
-        const gridApi = this._services.find('gridApi');
-        if (loadToken !== this._loadToken || !gridApi) {
+        if (loadToken !== this._loadToken || !this._services.find('gridApi')) {
             return;
         }
-        this._onRowsLoaded(gridApi);
+        this._onRowsLoaded();
     }
 
     private get _provider(): IDataProvider {

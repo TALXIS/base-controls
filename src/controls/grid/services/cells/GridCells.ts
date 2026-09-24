@@ -148,6 +148,8 @@ export class GridCells implements IGridCells {
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
         this._editing = new GridEditing({ services: parameters.services });
+        this._services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
+        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
     public get editing(): IGridEditing {
@@ -221,5 +223,16 @@ export class GridCells implements IGridCells {
 
     public applyCellCommandsHooks(result: IGridCellCommands, params: { record: IRecord; columnName: string }): void {
         this._cellCommandsHooks.apply(result, params);
+    }
+
+    private _onRenderRequested = (): void => this._services.get('gridApi').refreshCells();
+
+    //the provider outlives the grid
+    private _onDestroy = (): void => {
+        this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
+    };
+
+    private get _provider() {
+        return this._services.get('provider');
     }
 }

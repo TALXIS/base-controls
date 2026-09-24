@@ -1,9 +1,10 @@
-import { GridApi } from "@ag-grid-community/core";
+import { GridApi, IsServerSideGroupOpenByDefaultParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel, IGridRowModelGroupingParameters } from "../interfaces";
+import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../interfaces";
 import { ServerSideDatasource } from "./ServerSideDatasource";
 import { ServerSideRowModelGrouping } from "./ServerSideRowModelGrouping";
+import { IGridAgGridOptions } from "../../../services/runtime";
 
 export interface IServerSideRowModelParameters {
     services: IGridServiceLocator;
@@ -14,19 +15,16 @@ export class ServerSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
     private _datasource: ServerSideDatasource;
     private _grouping?: ServerSideRowModelGrouping;
+    public readonly type: IGridRowModelType = 'serverSide';
 
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
-        this._services.get('grid').registerAgGridProps(result => result.props.rowModelType = 'serverSide');
         this._datasource = new ServerSideDatasource(this._services);
+        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions);
     }
 
-    public applyGridOptions(gridApi: GridApi<IRecord>): void {
-        gridApi.setGridOption('serverSideDatasource', this._datasource);
-        gridApi.setGridOption('isServerSideGroupOpenByDefault', params => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false);
-    }
-
-    public refresh(gridApi: GridApi<IRecord>): void {
+    public refresh(): void {
+        const gridApi = this._services.get('gridApi');
         //purged rather than reloaded in place
         this._grouping?.captureExpandedIds(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
         gridApi.refreshServerSide({ purge: true });
@@ -52,4 +50,12 @@ export class ServerSideRowModel implements IGridRowModel {
             toggledNodes: recordIds,
         });
     }
+
+    private _onAgGridOptions = (result: IGridAgGridOptions): void => {
+        result.options.serverSideDatasource = this._datasource;
+        result.options.isServerSideGroupOpenByDefault = this._isGroupOpenByDefault;
+        this._grouping?.onAgGridOptions();
+    };
+
+    private _isGroupOpenByDefault = (params: IsServerSideGroupOpenByDefaultParams): boolean => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false;
 }

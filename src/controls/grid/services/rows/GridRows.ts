@@ -43,6 +43,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         super();
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
+        this._services.get('grid').registerAgGridOptions(result => result.options.getRowHeight = this._getRowHeight);
     }
 
     public isActive(record: IRecord): boolean {
@@ -68,7 +69,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     };
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
-        gridApi.setGridOption('getRowHeight', this._getRowHeight);
         //a selection reaches the cells nowhere else
         this._services.get('provider').addEventListener('onRecordsSelected', () => this._onSelectionChanged());
         gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setActiveRow('hovered', event.data?.getRecordId()));

@@ -1,4 +1,4 @@
-import { GetRowIdParams, GridApi, GridPreDestroyedEvent, GridReadyEvent, ModuleRegistry } from "@ag-grid-community/core";
+import { ColDef, GetRowIdParams, GridApi, GridPreDestroyedEvent, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
@@ -26,8 +26,14 @@ import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces, IGridSurfaces } from "../surfaces";
 
-export interface IGridAgGridProps {
-    props: Partial<AgGridReactProps<IRecord>>;
+/** What AG Grid reads once, when it is created. */
+export interface IGridAgGridInitialOptions {
+    options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey>;
+}
+
+/** What AG Grid can be handed at any time. */
+export interface IGridAgGridOptions {
+    options: ManagedGridOptions<IRecord>;
 }
 
 export interface IGridRuntimeEvents {
@@ -35,8 +41,11 @@ export interface IGridRuntimeEvents {
     onDestroy: () => void;
 }
 
-/** A hook over the props AG Grid is created with. */
-export type GridAgGridPropsHook = (result: IGridAgGridProps) => void;
+/** A hook over the options AG Grid reads only once, when it is created. */
+export type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
+
+/** A hook over the options AG Grid can be handed at any time. */
+export type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
 
 export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
@@ -47,7 +56,7 @@ export interface IGridRuntimeParameters {
     theme: ITheme;
 }
 
-/** The running grid: its services, and the props AG Grid is created with. */
+/** The running grid: its services, and what AG Grid is created with and handed afterwards. */
 export interface IGridRuntime {
     readonly events: IEventEmitter<IGridRuntimeEvents>;
     readonly services: IGridServiceLocator;
@@ -73,23 +82,37 @@ export interface IGridRuntime {
     /** Only once the grid is mounted. */
     readonly gridRoot: HTMLElement | undefined;
     /**
-     * Registers a hook over the props AG Grid is created with.
+     * Registers a hook over the options AG Grid reads only once, when it is created.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    registerAgGridProps(hook: GridAgGridPropsHook, priority?: number): () => void;
+    registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
+    /**
+     * Registers a hook over the grid's options; a value is re-applied only when its reference changes.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    /** Runs the option hooks again and hands AG Grid the ones that changed. */
+    refreshAgGridOptions(): void;
 }
 
 export class GridRuntime implements IGridRuntime {
     private _services = new ServiceLocator<IGridServiceMap>();
     private _onGetProps: () => IGrid;
-    private _agGridPropsHooks = new HookRegistry<GridAgGridPropsHook>();
-    private _agGridProps?: Partial<AgGridReactProps<IRecord>>;
+    private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
+    private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
+    private _agGridProps?: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey>;
+    /** What AG Grid was last handed, which a refresh is compared against. */
+    private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
+    private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridRuntimeEvents> = new EventEmitter<IGridRuntimeEvents>();
 
     constructor({ onGetProps, pcfContext, theme }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
+        //ahead of every other api listener, so they find the options applied
+        this._services.whenAvailable('gridApi', () => this.refreshAgGridOptions());
 
         //first: everything below reads the props and the provider through these
         const labels = new LocalizationService<IGridLabels>({ ...GRID_LABELS, ...onGetProps().labels });
@@ -123,8 +146,7 @@ export class GridRuntime implements IGridRuntime {
         }
         //after the modules have had their say, and before AG Grid is constructed on this same render
         ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));
-
-        //after the modules, whose own api listeners run first
+        //after the modules, whose own provider listeners run ahead of this one
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 
@@ -208,14 +230,36 @@ export class GridRuntime implements IGridRuntime {
         return this._services.find('gridRoot');
     }
 
-    public registerAgGridProps(hook: GridAgGridPropsHook, priority?: number): () => void {
-        return this._agGridPropsHooks.register(hook, priority);
+    public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
+        return this._agGridInitialOptionsHooks.register(hook, priority);
+    }
+
+    public registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void {
+        return this._agGridOptionsHooks.register(hook, priority);
+    }
+
+    public refreshAgGridOptions(): void {
+        const gridApi = this.gridApi;
+        if (!gridApi) {
+            return;
+        }
+        const next = this._evaluateAgGridOptions();
+        const previous = this._appliedAgGridOptions;
+        //in the order the hooks wrote them, so an owner decides what lands first
+        const keys = new Set([...Object.keys(next), ...Object.keys(previous)] as ManagedGridOptionKey[]);
+        for (const key of keys) {
+            if (next[key] !== previous[key]) {
+                //one key at a time: a customizer patches `setGridOption` to rewrite what it owns
+                gridApi.setGridOption(key, next[key]);
+            }
+        }
+        this._appliedAgGridOptions = next;
     }
 
     /** The props AG Grid is created with: the grid's defaults, what the hooks made of them, then what the grid cannot work without. */
     public getAgGridProps(): AgGridReactProps<IRecord> {
-        //once: a new callback per render is a new grid option to AG Grid
-        this._agGridProps ??= this._createAgGridProps();
+        //once: the options reach AG Grid through `refreshAgGridOptions`
+        this._agGridProps ??= this._evaluateAgGridInitialOptions();
         return {
             ...this._agGridProps,
             getRowId: this._getRowId,
@@ -237,27 +281,67 @@ export class GridRuntime implements IGridRuntime {
     };
 
     public destroy(): void {
+        //the provider outlives the grid
+        this.provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this.events.dispatchEvent('onDestroy');
         this.events.clearEventListeners();
         this._services.destroy();
     }
 
-    private _createAgGridProps(): Partial<AgGridReactProps<IRecord>> {
-        const result: IGridAgGridProps = {
-            props: {
+    private _evaluateAgGridInitialOptions(): Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> {
+        const result: IGridAgGridInitialOptions = {
+            options: {
+                rowModelType: this.rowModel.type,
                 loadingOverlayComponent: LoadingOverlay,
                 noRowsOverlayComponent: EmptyRecords,
-                loadingCellRenderer: FullRowLoading,
                 enableGroupEdit: true,
                 reactiveCustomComponents: true,
+            },
+        };
+        this._agGridInitialOptionsHooks.apply(result);
+        return result.options;
+    }
+
+    private _evaluateAgGridOptions(): ManagedGridOptions<IRecord> {
+        const result: IGridAgGridOptions = {
+            options: {
+                loadingCellRenderer: FullRowLoading,
                 suppressDragLeaveHidesColumns: true,
                 animateRows: false,
                 enterNavigatesVertically: true,
                 enterNavigatesVerticallyAfterEdit: true,
+                columnDefs: this._columnDefs,
             },
         };
-        this._agGridPropsHooks.apply(result);
-        return result.props;
+        this._agGridOptionsHooks.apply(result);
+        return result.options;
+    }
+
+    private _onGridApiAvailable(): void {
+        this.provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        if (!this.provider.isLoading()) {
+            this._onNewDataLoaded();
+            return;
+        }
+        this._columnDefs = this.columns.getColumnDefinitions();
+        this.refreshAgGridOptions();
+    }
+
+    private _onNewDataLoaded = (): void => {
+        //columns first: the server-side model reads what is grouped off them while it reloads
+        this._columnDefs = this.columns.getColumnDefinitions();
+        this.refreshAgGridOptions();
+        this.rowModel.refresh();
+        this._scrollToTop();
+    };
+
+    /** Back to the first row, because a load is a different list */
+    private _scrollToTop(): void {
+        const gridApi = this.gridApi;
+        if (!gridApi || this.provider.isLoading() || this.provider.getSortedRecordIds().length === 0) {
+            return;
+        }
+        gridApi.ensureIndexVisible(0, 'top');
     }
 
     private _getRowId = (params: GetRowIdParams<IRecord>): string => `${params.data.getRecordId()}`;
@@ -268,48 +352,8 @@ export class GridRuntime implements IGridRuntime {
     };
 
     private _onGridPreDestroyed = (event: GridPreDestroyedEvent<IRecord>): void => {
-        //the provider outlives the grid
-        this.provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this.provider.removeEventListener('onRenderRequested', this._onRenderRequested);
         this._onGetProps().onDestroy?.(event.api);
     };
-
-    /** Everything that needs a grid to talk to, in the order it needs doing. */
-    private _onGridApiAvailable(): void {
-        this.provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this.provider.addEventListener('onRenderRequested', this._onRenderRequested);
-        this.rowModel.applyGridOptions(this._gridApi);
-        this._setCurrentColumns();
-        if (!this.provider.isLoading()) {
-            this._onNewDataLoaded();
-        }
-    }
-
-    private _onRenderRequested = (): void => this._gridApi.refreshCells();
-
-    private _onNewDataLoaded = (): void => {
-        //columns first: the server-side model reads what is grouped off them while it reloads
-        this._setCurrentColumns();
-        this.rowModel.refresh(this._gridApi);
-        this._scrollToTop();
-    };
-
-    private _setCurrentColumns(): void {
-        this._gridApi.setGridOption('columnDefs', this.columns.getColumnDefinitions());
-    }
-
-    /** Back to the first row, because a load is a different list */
-    private _scrollToTop(): void {
-        if (this.provider.isLoading() || this.provider.getSortedRecordIds().length === 0) {
-            return;
-        }
-        this._gridApi.ensureIndexVisible(0, 'top');
-    }
-
-    /** `get`, and not optional: only read once the api is registered. */
-    private get _gridApi(): GridApi<IRecord> {
-        return this._services.get('gridApi');
-    }
 }
 
 /** The one order modules are read in, so two grids configured the same behave the same. */

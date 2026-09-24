@@ -12,7 +12,7 @@ export class ServerSideRowModelGrouping implements IGridRowModelGrouping {
         this._isGroupOpenByDefault = parameters.isGroupOpenByDefault;
     }
 
-    public onApplyGridOptions(): void { }
+    public onAgGridOptions(): void { }
 
     //AG Grid keeps a `rowGroup` that a new definition leaves out
     public onApplyColumnDefinition(colDef: ColDef<IRecord>, isGrouped: boolean): void {

@@ -30,7 +30,7 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
 export const createClipboardModule = (options?: IGridClipboardOptions): IGridClipboardModule => ({
     agGridModules: [ClipboardModule],
     //a copy is one cell or one highlighted block, never the row selection.
-    onRegister: services => services.get('grid').registerAgGridProps(result => {
-        result.props = { ...result.props, suppressCopyRowsToClipboard: true, ...options };
+    onRegister: services => services.get('grid').registerAgGridOptions(result => {
+        result.options = { ...result.options, suppressCopyRowsToClipboard: true, ...options };
     }),
 });

@@ -1,15 +1,15 @@
 import type { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import type { IRecord } from "@talxis/client-libraries";
+import type { IGridAgGridOptions } from "../../services/runtime";
 
 /** Which of AG Grid's row models a grid runs on. */
 export type IGridRowModelType = 'clientSide' | 'serverSide';
 
 /** How a grid gets its rows, and everything that follows from that choice. */
 export interface IGridRowModel {
-    /** The options that can only be handed to a grid that exists. */
-    applyGridOptions: (gridApi: GridApi<IRecord>) => void;
-    /** New data landed: hand the rows over, or ask for them again. */
-    refresh: (gridApi: GridApi<IRecord>) => void;
+    readonly type: IGridRowModelType;
+    /** New data landed and its columns are applied: hand the rows over, or ask for them again. */
+    refresh: () => void;
     /** The part of grouping that depends on how the rows arrive. */
     createGrouping: (parameters: IGridRowModelGroupingParameters) => IGridRowModelGrouping;
     /** Puts a set of selected records onto the rows. */
@@ -26,7 +26,7 @@ export interface IGridRowModelGroupingParameters {
 /** What grouping asks of the row model it runs on. */
 export interface IGridRowModelGrouping {
     /** Options only this row model needs while the rows can be grouped. */
-    onApplyGridOptions: (gridApi: GridApi<IRecord>) => void;
+    onAgGridOptions: (result: IGridAgGridOptions) => void;
     /** What a data column needs for this row model, grouped or not. */
     onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
     /** Opens and closes the groups to what `isGroupOpenByDefault` now says. */

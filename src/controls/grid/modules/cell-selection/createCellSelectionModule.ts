@@ -19,7 +19,7 @@ export type IGridCellSelectionOptions = Pick<AgGridReactProps<IRecord>,
  */
 export const createCellSelectionModule = (options?: IGridCellSelectionOptions): IGridModule => ({
     agGridModules: [RangeSelectionModule],
-    onRegister: services => services.get('grid').registerAgGridProps(result => {
-        result.props = { ...result.props, enableRangeSelection: true, ...options };
+    onRegister: services => services.get('grid').registerAgGridOptions(result => {
+        result.options = { ...result.options, enableRangeSelection: true, ...options };
     }),
 });

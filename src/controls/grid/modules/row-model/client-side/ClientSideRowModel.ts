@@ -1,8 +1,9 @@
-import { GridApi } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
+import { GridApi, IsGroupOpenByDefaultParams } from "@ag-grid-community/core";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel, IGridRowModelGroupingParameters } from "../interfaces";
+import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../interfaces";
 import { ClientSideRowModelGrouping } from "./ClientSideRowModelGrouping";
+import { IGridAgGridOptions } from "../../../services/runtime";
 
 export interface IClientSideRowModelParameters {
     services: IGridServiceLocator;
@@ -12,25 +13,24 @@ export interface IClientSideRowModelParameters {
 export class ClientSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
     private _grouping?: ClientSideRowModelGrouping;
+    private _rows?: IRecord[];
+    public readonly type: IGridRowModelType = 'clientSide';
 
     constructor(parameters: IClientSideRowModelParameters) {
         this._services = parameters.services;
-        this._services.get('grid').registerAgGridProps(result => result.props.rowModelType = 'clientSide');
+        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions);
     }
 
-    public applyGridOptions(gridApi: GridApi<IRecord>): void {
-        gridApi.setGridOption('isGroupOpenByDefault', params => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false);
-    }
-
-    public refresh(gridApi: GridApi<IRecord>): void {
-        gridApi.setGridOption('rowData', this._grouping?.getRows() ?? this._services.get('provider').getRecords());
+    public refresh(): void {
+        this._rows = this._grouping?.getRows() ?? this._provider.getRecords();
+        this._services.get('grid').refreshAgGridOptions();
     }
 
     public createGrouping(parameters: IGridRowModelGroupingParameters): ClientSideRowModelGrouping {
         this._grouping = new ClientSideRowModelGrouping({
             ...parameters,
             services: this._services,
-            onRowsLoaded: gridApi => this.refresh(gridApi),
+            onRowsLoaded: () => this.refresh(),
         });
         return this._grouping;
     }
@@ -59,5 +59,18 @@ export class ClientSideRowModel implements IGridRowModel {
         if (toDeselect.length) {
             gridApi.setNodesSelected({ nodes: toDeselect, newValue: false, source: 'api' });
         }
+    }
+
+    private _onAgGridOptions = (result: IGridAgGridOptions): void => {
+        result.options.isGroupOpenByDefault = this._isGroupOpenByDefault;
+        //ahead of the rows, which `treeData` decides how to read
+        this._grouping?.onAgGridOptions(result);
+        result.options.rowData = this._rows;
+    };
+
+    private _isGroupOpenByDefault = (params: IsGroupOpenByDefaultParams<IRecord>): boolean => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false;
+
+    private get _provider(): IDataProvider {
+        return this._services.get('provider');
     }
 }
