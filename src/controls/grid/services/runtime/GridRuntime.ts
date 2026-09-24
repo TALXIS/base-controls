@@ -1,30 +1,24 @@
-import { ColDef, GetRowIdParams, GridApi, GridPreDestroyedEvent, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
+import { ColDef, GetRowIdParams, GridPreDestroyedEvent, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, ILocalizationService, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "@controls/grid/components/overlays/empty-records/EmptyRecordsOverlay";
 import { IGridModule, IGridModules } from "../../modules";
-import { IGridRowModel } from "../../modules/row-model/interfaces";
-import { IGridAggregation } from "../../modules/aggregation/GridAggregation";
-import { IGridFiltering } from "../../modules/filtering/GridFiltering";
-import { IGridGrouping } from "../../modules/grouping/GridGrouping";
-import { IGridSelection } from "../../modules/selection/GridSelection";
-import { IGridSorting } from "../../modules/sorting/GridSorting";
 import { IGrid } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
-import { GridSettings, IGridSettings } from "../settings";
-import { GridRows, IGridRows } from "../rows";
-import { GridColumns, IGridColumns } from "../columns";
-import { GridCells, IGridCells } from "../cells";
-import { GridKeyboard, IGridKeyboard } from "../keyboard";
-import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
+import { GridSettings } from "../settings";
+import { GridRows } from "../rows";
+import { GridColumns } from "../columns";
+import { GridCells } from "../cells";
+import { GridKeyboard } from "../keyboard";
+import { GridColumnHeaders } from "../column-header";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
-import { GridSurfaces, IGridSurfaces } from "../surfaces";
+import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
@@ -60,27 +54,6 @@ export interface IGridRuntimeParameters {
 export interface IGridRuntime {
     readonly events: IEventEmitter<IGridRuntimeEvents>;
     readonly services: IGridServiceLocator;
-    readonly settings: IGridSettings;
-    readonly labels: ILocalizationService<IGridLabels>;
-    readonly provider: IDataProvider;
-    readonly pcfContext: ComponentFramework.Context<any, any>;
-    readonly theme: ITheme;
-    readonly columns: IGridColumns;
-    readonly cells: IGridCells;
-    readonly rows: IGridRows;
-    readonly keyboard: IGridKeyboard;
-    readonly columnHeaders: IGridColumnHeaders;
-    readonly surfaces: IGridSurfaces;
-    readonly rowModel: IGridRowModel;
-    readonly selection: IGridSelection | undefined;
-    readonly sorting: IGridSorting | undefined;
-    readonly filtering: IGridFiltering | undefined;
-    readonly grouping: IGridGrouping | undefined;
-    readonly aggregation: IGridAggregation | undefined;
-    /** Only once AG Grid is ready. */
-    readonly gridApi: GridApi<IRecord> | undefined;
-    /** Only once the grid is mounted. */
-    readonly gridRoot: HTMLElement | undefined;
     /**
      * Registers a hook over the options AG Grid reads only once, when it is created.
      *
@@ -154,82 +127,6 @@ export class GridRuntime implements IGridRuntime {
         return this._services;
     }
 
-    public get settings(): IGridSettings {
-        return this._services.get('settings');
-    }
-
-    public get labels(): ILocalizationService<IGridLabels> {
-        return this._services.get('labels');
-    }
-
-    public get provider(): IDataProvider {
-        return this._services.get('provider');
-    }
-
-    public get pcfContext(): ComponentFramework.Context<any, any> {
-        return this._services.get('pcfContext');
-    }
-
-    public get theme(): ITheme {
-        return this._services.get('theme');
-    }
-
-    public get columns(): IGridColumns {
-        return this._services.get('columns');
-    }
-
-    public get cells(): IGridCells {
-        return this._services.get('cells');
-    }
-
-    public get rows(): IGridRows {
-        return this._services.get('rows');
-    }
-
-    public get keyboard(): IGridKeyboard {
-        return this._services.get('keyboard');
-    }
-
-    public get columnHeaders(): IGridColumnHeaders {
-        return this._services.get('columnHeaders');
-    }
-
-    public get surfaces(): IGridSurfaces {
-        return this._services.get('surfaces');
-    }
-
-    public get rowModel(): IGridRowModel {
-        return this._services.get('rowModel');
-    }
-
-    public get selection(): IGridSelection | undefined {
-        return this._services.find('selection');
-    }
-
-    public get sorting(): IGridSorting | undefined {
-        return this._services.find('sorting');
-    }
-
-    public get filtering(): IGridFiltering | undefined {
-        return this._services.find('filtering');
-    }
-
-    public get grouping(): IGridGrouping | undefined {
-        return this._services.find('grouping');
-    }
-
-    public get aggregation(): IGridAggregation | undefined {
-        return this._services.find('aggregation');
-    }
-
-    public get gridApi(): GridApi<IRecord> | undefined {
-        return this._services.find('gridApi');
-    }
-
-    public get gridRoot(): HTMLElement | undefined {
-        return this._services.find('gridRoot');
-    }
-
     public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
         return this._agGridInitialOptionsHooks.register(hook, priority);
     }
@@ -239,7 +136,7 @@ export class GridRuntime implements IGridRuntime {
     }
 
     public refreshAgGridOptions(): void {
-        const gridApi = this.gridApi;
+        const gridApi = this._services.find('gridApi');
         if (!gridApi) {
             return;
         }
@@ -263,12 +160,9 @@ export class GridRuntime implements IGridRuntime {
         return {
             ...this._agGridProps,
             getRowId: this._getRowId,
-            //needs to be set here, crashes if set via API
-            rowHeight: this.settings.getDefaultRowHeight(),
+            rowHeight: this._services.get('settings').getDefaultRowHeight(),
             initialState: this._onGetProps().state,
-            //the api last: registering it builds the parts that push columns
             onGridReady: this._onGridReady,
-            //before AG Grid tears down, so `getState()` still answers for whoever wants to persist it
             onGridPreDestroyed: this._onGridPreDestroyed,
         };
     }
@@ -282,7 +176,7 @@ export class GridRuntime implements IGridRuntime {
 
     public destroy(): void {
         //the provider outlives the grid
-        this.provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this.events.dispatchEvent('onDestroy');
         this.events.clearEventListeners();
         this._services.destroy();
@@ -291,7 +185,7 @@ export class GridRuntime implements IGridRuntime {
     private _evaluateAgGridInitialOptions(): Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> {
         const result: IGridAgGridInitialOptions = {
             options: {
-                rowModelType: this.rowModel.type,
+                rowModelType: this._services.get('rowModel').type,
                 loadingOverlayComponent: LoadingOverlay,
                 noRowsOverlayComponent: EmptyRecords,
                 enableGroupEdit: true,
@@ -318,27 +212,27 @@ export class GridRuntime implements IGridRuntime {
     }
 
     private _onGridApiAvailable(): void {
-        this.provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        if (!this.provider.isLoading()) {
+        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        if (!this._provider.isLoading()) {
             this._onNewDataLoaded();
             return;
         }
-        this._columnDefs = this.columns.getColumnDefinitions();
+        this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
     }
 
     private _onNewDataLoaded = (): void => {
         //columns first: the server-side model reads what is grouped off them while it reloads
-        this._columnDefs = this.columns.getColumnDefinitions();
+        this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
-        this.rowModel.refresh();
+        this._services.get('rowModel').refresh();
         this._scrollToTop();
     };
 
     /** Back to the first row, because a load is a different list */
     private _scrollToTop(): void {
-        const gridApi = this.gridApi;
-        if (!gridApi || this.provider.isLoading() || this.provider.getSortedRecordIds().length === 0) {
+        const gridApi = this._services.find('gridApi');
+        if (!gridApi || this._provider.isLoading() || this._provider.getSortedRecordIds().length === 0) {
             return;
         }
         gridApi.ensureIndexVisible(0, 'top');
@@ -354,6 +248,10 @@ export class GridRuntime implements IGridRuntime {
     private _onGridPreDestroyed = (event: GridPreDestroyedEvent<IRecord>): void => {
         this._onGetProps().onDestroy?.(event.api);
     };
+
+    private get _provider(): IDataProvider {
+        return this._services.get('provider');
+    }
 }
 
 /** The one order modules are read in, so two grids configured the same behave the same. */

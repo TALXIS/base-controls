@@ -25,7 +25,7 @@ export const GridRoot = (props: IGrid) => {
         theme: theme,
     }), []);
 
-    const settings = runtime.settings;
+    const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const styles = useMemo(
         () => getGridStyles(theme, props.height, rowHeight, settings.getMaxVisibleRows()),
