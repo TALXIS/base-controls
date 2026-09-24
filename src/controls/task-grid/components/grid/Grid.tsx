@@ -1,5 +1,5 @@
 import * as React from "react"
-import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
+import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createRowSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
 import { IRecord } from "@talxis/client-libraries";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
@@ -25,7 +25,7 @@ export const Grid = (props: IControlProps) => {
             //`treeData` below is AG Grid's row grouping
             rowModel: { ...rowModel, agGridModules: [...(rowModel.agGridModules ?? []), RowGroupingModule] },
             //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
-            selection: selectionMode === 'none' ? undefined : createSelectionModule({ mode: selectionMode }),
+            rowSelection: selectionMode === 'none' ? undefined : createRowSelectionModule({ mode: selectionMode }),
             sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
             filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
             aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,

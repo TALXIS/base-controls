@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IRecord } from "@talxis/client-libraries";
-import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
+import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createRowSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
 import { useTheme } from "@fluentui/react";
 import { getClassNames } from "@utils";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
@@ -33,7 +33,7 @@ export const Grid = (props: ICheckListGridProps) => {
         license: parameters.LicenseKey?.raw ? createLicenseModule({ key: parameters.LicenseKey.raw }) : undefined,
         rowModel: createServerSideRowModelModule(),
         //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
-        selection: selectionMode === 'none' ? undefined : createSelectionModule({ mode: selectionMode }),
+        rowSelection: selectionMode === 'none' ? undefined : createRowSelectionModule({ mode: selectionMode }),
         sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
         filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
         aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,

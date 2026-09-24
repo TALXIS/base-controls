@@ -2,13 +2,13 @@ import { _, ColDef, GridApi, ICellRendererParams, IRowNode, SelectionChangedEven
 import { DataProvider, IDataProvider, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
-import { IGridSelectionServiceLocator } from "./services";
-import { IGridSelectionComponents } from "./moduleComponents";
+import { IGridRowSelectionServiceLocator } from "./services";
+import { IGridRowSelectionComponents } from "./moduleComponents";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** How a row's checkbox reads: its own state, or its children's. */
-export type IGridSelectionState = 'checked' | 'unchecked' | 'indeterminate';
+export type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 
 export interface IGridSelectRecordsParameters {
     provider: IDataProvider;
@@ -16,45 +16,45 @@ export interface IGridSelectRecordsParameters {
 }
 
 /** What another module can wrap, deciding whether the default action runs at all. */
-export interface IGridSelectionInterceptors {
+export interface IGridRowSelectionInterceptors {
     /** Writes a selection to the provider that owns the records. */
     onSelectRecords: (parameters: IGridSelectRecordsParameters) => Promise<void>;
 }
 
-export interface IGridSelectionParameters {
+export interface IGridRowSelectionParameters {
     /** This module's own locator. */
-    services: IGridSelectionServiceLocator;
+    services: IGridRowSelectionServiceLocator;
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
 }
 
 /** Which records are selected, in both directions.  meet */
-export interface IGridSelection {
+export interface IGridRowSelection {
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
-    setInterceptor<K extends keyof IGridSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridSelectionInterceptors, K>): void;
+    setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
     /** Selects the records, through whatever intercepts `onSelectRecords`. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
     /** How a row's checkbox should read. */
-    getRecordSelectionState(node: IRowNode<IRecord>): IGridSelectionState;
+    getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     /** Whether a record refuses selection at all. */
     isRecordSelectionDisabled(record: IRecord): boolean;
     /** The parts this module renders, merged with whatever the caller replaced. */
-    readonly components: IGridSelectionComponents;
+    readonly components: IGridRowSelectionComponents;
 }
 
-export class GridSelection implements IGridSelection {
-    private _services: IGridSelectionServiceLocator;
+export class GridRowSelection implements IGridRowSelection {
+    private _services: IGridRowSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
     /** What the host persisted, until the records it names have been loaded and it can be */
     private _pendingRestoreRecordIds: string[] = [];
     /** The latest selection per provider, which is the one allowed to write. */
     private _selectionTokens: WeakMap<IDataProvider, number> = new WeakMap();
-    private _interceptors = new Interceptors<IGridSelectionInterceptors>();
+    private _interceptors = new Interceptors<IGridRowSelectionInterceptors>();
 
-    constructor(parameters: IGridSelectionParameters) {
+    constructor(parameters: IGridRowSelectionParameters) {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').whenAvailable('gridApi', () => this._onGridApiAvailable());
@@ -64,15 +64,15 @@ export class GridSelection implements IGridSelection {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.selection);
-        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.selection);
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
     }
 
     public getMode(): 'single' | 'multiple' {
         return this._mode;
     }
 
-    public setInterceptor<K extends keyof IGridSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridSelectionInterceptors, K>): void {
+    public setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void {
         this._interceptors.setInterceptor(event, interceptor);
     }
 
@@ -118,7 +118,7 @@ export class GridSelection implements IGridSelection {
         return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;
     }
 
-    public getRecordSelectionState(node: IRowNode<IRecord>): IGridSelectionState {
+    public getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState {
         const record = node.data!;
         const childDataProvider = record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId());
         if (!childDataProvider) {
@@ -140,7 +140,7 @@ export class GridSelection implements IGridSelection {
     private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
     private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
 
-    public get components(): IGridSelectionComponents {
+    public get components(): IGridRowSelectionComponents {
         return this._services.get('components');
     }
 

@@ -6,15 +6,15 @@ import { IColumnHeaderParams } from "../../components/column-header/root/ColumnH
 import { SelectionHeader } from "./components/selection-header/SelectionHeader";
 
 /** The replaceable parts of selection. */
-export interface IGridSelectionComponents {
+export interface IGridRowSelectionComponents {
     /** The checkbox in a row. */
     onRenderCell: (props: ICellRendererParams<IRecord>) => JSX.Element;
     /** The select-all checkbox in the header. */
     onRenderHeader: (props: IColumnHeaderParams) => JSX.Element;
 }
 
-/** The defaults for {@link IGridSelectionComponents}. */
-export const GridSelectionComponents: IGridSelectionComponents = {
+/** The defaults for {@link IGridRowSelectionComponents}. */
+export const GridRowSelectionComponents: IGridRowSelectionComponents = {
     onRenderCell: (props) => <SelectionCell {...props as any} />,
     onRenderHeader: (props) => <SelectionHeader {...props} />,
 };

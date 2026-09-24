@@ -12,7 +12,7 @@ import type { IGridCells } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
 import type { IGridRows } from "../services/rows";
 import type { IGridSurfaces } from "../services/surfaces";
-import type { IGridSelection } from "../modules/selection/GridSelection";
+import type { IGridRowSelection } from "../modules/row-selection/GridRowSelection";
 import type { IGridSorting } from "../modules/sorting/GridSorting";
 import type { IGridFiltering } from "../modules/filtering/GridFiltering";
 import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
@@ -56,7 +56,7 @@ export interface IGridServiceMap {
     /** Sorting the grid by a column. */
     sorting: IGridSorting;
     /** Which records are selected. */
-    selection: IGridSelection;
+    rowSelection: IGridRowSelection;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
     /** The running grid, and the hooks over the props AG Grid is created with. */
@@ -64,7 +64,7 @@ export interface IGridServiceMap {
 }
 
 /** The services that are only there when whatever registers them is. */
-export type IOptionalGridService = 'gridApi' | 'gridRoot' | 'selection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
+export type IOptionalGridService = 'gridApi' | 'gridRoot' | 'rowSelection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
 
 /** Where the grid's parts find each other. */
 export type IGridServiceLocator = IServiceLocator<IGridServiceMap>;

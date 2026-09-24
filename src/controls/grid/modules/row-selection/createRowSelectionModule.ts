@@ -1,14 +1,14 @@
 import { ServiceLocator } from "@utils";
 import { IGridModule } from "../interfaces";
-import { GridSelection } from "./GridSelection";
-import { IGridSelectionServiceMap } from "./services";
-import { GridSelectionComponents, IGridSelectionComponents } from "./moduleComponents";
+import { GridRowSelection } from "./GridRowSelection";
+import { IGridRowSelectionServiceMap } from "./services";
+import { GridRowSelectionComponents, IGridRowSelectionComponents } from "./moduleComponents";
 
-export interface ISelectionModuleOptions {
+export interface IRowSelectionModuleOptions {
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
     /** Overrides for the checkbox in a row, or the one in the header. */
-    components?: Partial<IGridSelectionComponents>;
+    components?: Partial<IGridRowSelectionComponents>;
 }
 
 /**
@@ -16,13 +16,13 @@ export interface ISelectionModuleOptions {
  *
  * @example
  */
-export const createSelectionModule = (options: ISelectionModuleOptions): IGridModule => ({
+export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IGridModule => ({
     onRegister: gridServices => {
-        const services = new ServiceLocator<IGridSelectionServiceMap>();
-        const components = { ...GridSelectionComponents, ...options.components };
+        const services = new ServiceLocator<IGridRowSelectionServiceMap>();
+        const components = { ...GridRowSelectionComponents, ...options.components };
         services.register('gridServices', () => gridServices);
         services.register('components', () => components);
-        const selection = new GridSelection({ services, mode: options.mode });
-        gridServices.register('selection', () => selection);
+        const selection = new GridRowSelection({ services, mode: options.mode });
+        gridServices.register('rowSelection', () => selection);
     },
 });

@@ -22,8 +22,8 @@ export interface IGridModules {
     rowModel: IGridRowModelModule;
     /** The AG Grid enterprise licence: {@link createLicenseModule}. */
     license?: IGridLicenseModule;
-    /** Selecting rows: {@link createSelectionModule}. */
-    selection?: IGridModule;
+    /** Selecting rows: {@link createRowSelectionModule}. */
+    rowSelection?: IGridModule;
     /** Highlighting cells by dragging across them: {@link createCellSelectionModule}. */
     cellSelection?: IGridModule;
     /** Sorting by a column: {@link createSortingModule}. */

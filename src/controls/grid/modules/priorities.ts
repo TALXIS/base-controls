@@ -2,7 +2,7 @@
 export const GRID_MODULE_PRIORITY = {
     rowModel: 10,
     //its checkbox column is the first column
-    selection: 20,
+    rowSelection: 20,
     cellSelection: 30,
     sorting: 40,
     filtering: 50,

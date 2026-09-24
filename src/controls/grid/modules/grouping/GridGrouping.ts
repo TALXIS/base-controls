@@ -13,7 +13,7 @@ import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefi
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridRowModelGrouping } from "../row-model/interfaces";
 import { IGridSurface } from "../../services/surfaces";
-import { IGridSelectionInterceptors } from "../selection";
+import { IGridRowSelectionInterceptors } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** The chevron and the count a group row draws beside the value. */
@@ -129,7 +129,7 @@ export class GridGrouping implements IGridGrouping {
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.whenAvailable('selection', selection => selection.setInterceptor('onSelectRecords', this._onSelectRecords));
+        this._gridServices.whenAvailable('rowSelection', selection => selection.setInterceptor('onSelectRecords', this._onSelectRecords));
     }
 
     public getMaxGroupLoadsPerSelection(): number {
@@ -145,7 +145,7 @@ export class GridGrouping implements IGridGrouping {
     }
 
     /** Loads the groups a selection adds before it is written, and refuses one that would load too many. */
-    private _onSelectRecords: IInterceptor<IGridSelectionInterceptors, 'onSelectRecords'> = async (parameters, defaultAction) => {
+    private _onSelectRecords: IInterceptor<IGridRowSelectionInterceptors, 'onSelectRecords'> = async (parameters, defaultAction) => {
         //the provider selects a loaded group without fetching
         if (await this._loadNewlySelectedGroups(parameters.provider, parameters.recordIds)) {
             await defaultAction(parameters);

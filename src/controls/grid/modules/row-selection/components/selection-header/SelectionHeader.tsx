@@ -5,18 +5,18 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../../useGridService";
 import { Grid } from "../../../../namespace";
 import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
-import { IGridSelectionState } from "../../GridSelection";
+import { IGridRowSelectionState } from "../../GridRowSelection";
 import { getSelectionHeaderStyles } from "./styles";
 
 /** The header of the column the checkboxes live in: what selects every record, and clears them. */
 export const SelectionHeader = (props: IColumnHeaderParams) => {
-    const selection = useGridService('selection')!;
+    const selection = useGridService('rowSelection')!;
     const provider = useGridService('provider');
     const styles = getSelectionHeaderStyles();
     const rerender = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 
-    const getCheckboxState = (): IGridSelectionState => {
+    const getCheckboxState = (): IGridRowSelectionState => {
         const selectedRecordIds = provider.getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
         if (selectedRecordIds.length === 0) {
             return 'unchecked';

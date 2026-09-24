@@ -11,7 +11,7 @@ import { getSelectionCellStyles } from "./styles";
 export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
     //pinned rows have no record, and `cellRendererSelector` renders nothing there
     const record = props.data!;
-    const selection = useGridService('selection')!;
+    const selection = useGridService('rowSelection')!;
     const saveStatus = useRecordSaveStatus(record);
     const recordSelectionState = selection.getRecordSelectionState(props.node);
     const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
