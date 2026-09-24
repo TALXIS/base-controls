@@ -5,6 +5,7 @@ import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } fro
 import { ServerSideDatasource } from "./ServerSideDatasource";
 import { ServerSideRowModelGrouping } from "./ServerSideRowModelGrouping";
 import { IGridAgGridOptions } from "../../../services/runtime";
+import { GRID_MODULE_PRIORITY } from "../../priorities";
 
 export interface IServerSideRowModelParameters {
     services: IGridServiceLocator;
@@ -20,7 +21,7 @@ export class ServerSideRowModel implements IGridRowModel {
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
         this._datasource = new ServerSideDatasource(this._services);
-        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions);
+        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
     public refresh(): void {

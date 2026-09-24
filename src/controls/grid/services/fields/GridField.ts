@@ -4,8 +4,8 @@ import { getTextColorForBackground, ThemeGenerator } from "@theme";
 import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
 import type { IGridServiceLocator } from "../../services";
 
-/** Where the field's own hooks sit: ahead of everything registered for the grid. */
-const FIELD_HOOK_PRIORITY = -100;
+/** Where the field's own hooks sit: ahead of every module. */
+const FIELD_HOOK_PRIORITY = 0;
 
 export interface IGridFieldParameters {
     record: IRecord;

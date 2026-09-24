@@ -12,6 +12,7 @@ import { IGridAgGridOptions } from "../../services/runtime";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
+import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** What the row stands in as until the totals are worked out. */
 const PENDING_RECORD_ID = '__total__pending';
@@ -68,15 +69,15 @@ export class GridAggregation implements IGridAggregation {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columnHeaders');
-        this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions);
+        this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
         //behind grouping, so what it draws in a group's row is the last word on that cell
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 30);
-        this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme);
-        this._gridServices.get('cells').registerCellLoadingHook(this._onCellLoading);
-        this._gridServices.get('rows').registerRowHeightHook(this._onRowHeight);
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').registerCellLoadingHook(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('rows').registerRowHeightHook(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
         //behind grouping, which a column's menu offers first
-        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 30);
-        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 30);
+        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
     }
 
     public getTotalRow(): TotalRow | undefined {

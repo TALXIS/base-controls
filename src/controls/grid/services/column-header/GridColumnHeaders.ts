@@ -50,7 +50,7 @@ export interface IGridColumnHeaders {
     /**
      * Registers a hook over what a column's menu offers, under a heading of its own.
      *
-     * @param priority Ascending: sorting at `0`, and every module after it in the order it was given.
+     * @param priority Ascending: the modules sit at {@link GRID_MODULE_PRIORITY}.
      */
     registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /**

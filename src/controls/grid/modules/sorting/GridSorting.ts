@@ -6,6 +6,7 @@ import { IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
+import { GRID_MODULE_PRIORITY } from "../priorities";
 
 export interface IGridSortingParameters {
     /** This module's own locator. */
@@ -39,9 +40,9 @@ export class GridSorting implements IGridSorting {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, 0);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 0);
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.sorting);
+        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.sorting);
+        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.sorting);
     }
 
     public getSorting(): Sorting {

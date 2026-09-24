@@ -6,7 +6,7 @@ import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row/FullRowLoading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "@controls/grid/components/overlays/empty-records/EmptyRecordsOverlay";
-import { IGridModule, IGridModules } from "../../modules";
+import { IGridModule } from "../../modules";
 import { IGrid } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
@@ -22,7 +22,8 @@ import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
-    options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey>;
+    //managed keys too, where AG Grid needs them before it hands over an api
+    options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> & Pick<AgGridReactProps<IRecord>, 'rowHeight' | 'onGridReady' | 'onGridPreDestroyed'>;
 }
 
 /** What AG Grid can be handed at any time. */
@@ -75,7 +76,7 @@ export class GridRuntime implements IGridRuntime {
     private _onGetProps: () => IGrid;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
-    private _agGridProps?: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey>;
+    private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed, which a refresh is compared against. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
     private _columnDefs?: ColDef<IRecord>[];
@@ -113,7 +114,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('columnHeaders', () => columnHeaders);
         this._services.register('surfaces', () => surfaces);
 
-        const modules = orderModules(onGetProps().modules);
+        const modules = Object.values(onGetProps().modules).filter((module): module is IGridModule => !!module);
         for (const module of modules) {
             module.onRegister?.(this._services);
         }
@@ -153,18 +154,11 @@ export class GridRuntime implements IGridRuntime {
         this._appliedAgGridOptions = next;
     }
 
-    /** The props AG Grid is created with: the grid's defaults, what the hooks made of them, then what the grid cannot work without. */
+    /** The props AG Grid is created with: the grid's defaults, and what the hooks made of them. */
     public getAgGridProps(): AgGridReactProps<IRecord> {
         //once: the options reach AG Grid through `refreshAgGridOptions`
         this._agGridProps ??= this._evaluateAgGridInitialOptions();
-        return {
-            ...this._agGridProps,
-            getRowId: this._getRowId,
-            rowHeight: this._services.get('settings').getDefaultRowHeight(),
-            initialState: this._onGetProps().state,
-            onGridReady: this._onGridReady,
-            onGridPreDestroyed: this._onGridPreDestroyed,
-        };
+        return this._agGridProps;
     }
 
     public onGridRootRef = (gridRoot: HTMLDivElement | null): void => {
@@ -182,14 +176,19 @@ export class GridRuntime implements IGridRuntime {
         this._services.destroy();
     }
 
-    private _evaluateAgGridInitialOptions(): Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> {
+    private _evaluateAgGridInitialOptions(): IGridAgGridInitialOptions['options'] {
         const result: IGridAgGridInitialOptions = {
             options: {
                 rowModelType: this._services.get('rowModel').type,
-                loadingOverlayComponent: LoadingOverlay,
-                noRowsOverlayComponent: EmptyRecords,
+                rowHeight: this._services.get('settings').getDefaultRowHeight(),
+                initialState: this._onGetProps().state,
                 enableGroupEdit: true,
                 reactiveCustomComponents: true,
+                getRowId: this._getRowId,
+                onGridReady: this._onGridReady,
+                onGridPreDestroyed: this._onGridPreDestroyed,
+                loadingOverlayComponent: LoadingOverlay,
+                noRowsOverlayComponent: EmptyRecords,
             },
         };
         this._agGridInitialOptionsHooks.apply(result);
@@ -253,16 +252,3 @@ export class GridRuntime implements IGridRuntime {
         return this._services.get('provider');
     }
 }
-
-/** The one order modules are read in, so two grids configured the same behave the same. */
-const orderModules = (modules: IGridModules): IGridModule[] => [
-    modules.license,
-    modules.rowModel,
-    modules.selection,
-    modules.cellSelection,
-    modules.sorting,
-    modules.filtering,
-    modules.grouping,
-    modules.aggregation,
-    modules.clipboard,
-].filter((module): module is IGridModule => !!module);

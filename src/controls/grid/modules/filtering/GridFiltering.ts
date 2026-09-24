@@ -7,6 +7,7 @@ import { IGridFilteringComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 import { IGridSurface } from "../../services/surfaces";
+import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** What changed about the filter a column header has open. */
 export interface IGridFilteringEvents {
@@ -57,11 +58,11 @@ export class GridFiltering implements IGridFiltering {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.filtering);
         //the callout is drawn over the grid rather than in the header it was opened from
-        gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, 10);
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, 10);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 10);
+        gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {

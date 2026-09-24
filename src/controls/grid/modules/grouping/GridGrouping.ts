@@ -14,6 +14,7 @@ import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/Ce
 import { IGridRowModelGrouping } from "../row-model/interfaces";
 import { IGridSurface } from "../../services/surfaces";
 import { IGridSelectionInterceptors } from "../selection";
+import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
@@ -83,7 +84,7 @@ export class GridGrouping implements IGridGrouping {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;
-    private _rowModelGrouping: IGridRowModelGrouping;
+    private _rowModelGrouping?: IGridRowModelGrouping;
     /** How many levels of groups are open. */
     private _expandedLevel: number;
     private _hasUserExpanded: boolean = false;
@@ -100,12 +101,13 @@ export class GridGrouping implements IGridGrouping {
             pinGroupedColumns = true,
             maxGroupLoadsPerSelection = 100,
         } = parameters.settings ?? {};
+        
         this._settings = { allowUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
         this._expandedLevel = defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
         //the provider nests by default, so what this module was asked for is the word on it
         this._provider.setProperty('groupingType', this._settings.type);
-        this._rowModelGrouping = this._gridServices.get('rowModel').createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault });
+        this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
         this._gridServices.whenAvailable('gridApi', gridApi => gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
@@ -116,15 +118,15 @@ export class GridGrouping implements IGridGrouping {
     private _registerHooks(): void {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columnHeaders');
-        this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom');
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, 20);
-        cells.registerCellThemeHook(this._onCellTheme);
-        cells.registerCellEditableHook(this._onCellEditable);
+        this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
+        cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
+        cells.registerCellEditableHook(this._onCellEditable, GRID_MODULE_PRIORITY.grouping);
         //behind sorting and filtering, which a column's menu offers first
-        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, 20);
-        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 20);
-        this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces);
-        this._gridServices.find('selection')?.setInterceptor('onSelectRecords', this._onSelectRecords);
+        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.whenAvailable('selection', selection => selection.setInterceptor('onSelectRecords', this._onSelectRecords));
     }
 
     public getMaxGroupLoadsPerSelection(): number {
@@ -250,18 +252,18 @@ export class GridGrouping implements IGridGrouping {
 
     public setExpandedLevel(level: number): void {
         this._expandedLevel = Math.min(Math.max(level, -1), this.getDeepestLevel());
-        this._rowModelGrouping.onExpansionChanged();
+        this._rowModelGrouping?.onExpansionChanged();
         this._hasUserExpanded = false;
         const gridApi = this._gridServices.find('gridApi');
         if (!gridApi) {
             return;
         }
-        this._rowModelGrouping.onApplyExpandedLevel(gridApi);
+        this._rowModelGrouping?.onApplyExpandedLevel(gridApi);
     }
 
     public toggleGroup(node: IRowNode<IRecord>): void {
         node.setExpanded(!node.expanded);
-        this._rowModelGrouping.onExpansionChanged();
+        this._rowModelGrouping?.onExpansionChanged();
         this._hasUserExpanded = true;
     }
 
@@ -295,7 +297,7 @@ export class GridGrouping implements IGridGrouping {
         }
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
             this._applyGroupRowRenderer(colDef, columnsMap[colDef.colId ?? colDef.field!]);
-            this._rowModelGrouping.onApplyColumnDefinition(colDef, isGrouped(colDef));
+            this._rowModelGrouping?.onApplyColumnDefinition(colDef, isGrouped(colDef));
             //AG Grid keeps a pin that a new definition leaves out
             if (!isGrouped(colDef)) {
                 colDef.pinned ??= null;

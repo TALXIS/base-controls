@@ -5,6 +5,7 @@ import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridSelectionServiceLocator } from "./services";
 import { IGridSelectionComponents } from "./moduleComponents";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
+import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridSelectionState = 'checked' | 'unchecked' | 'indeterminate';
@@ -63,9 +64,8 @@ export class GridSelection implements IGridSelection {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        //ahead of the default hooks, because it is the first column.
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, -1);
-        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode);
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.selection);
+        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.selection);
     }
 
     public getMode(): 'single' | 'multiple' {
