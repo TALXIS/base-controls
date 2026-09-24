@@ -40,6 +40,6 @@ export class GridColumnHeaderTheme implements IGridColumnHeaderTheme {
     }
 
     private get _headers() {
-        return this._services.get('columnHeaders');
+        return this._services.get('columns').headers;
     }
 }

@@ -117,7 +117,7 @@ export class GridGrouping implements IGridGrouping {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const cells = this._gridServices.get('cells');
-        const columnHeaders = this._gridServices.get('columnHeaders');
+        const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);

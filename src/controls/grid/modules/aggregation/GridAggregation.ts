@@ -68,7 +68,7 @@ export class GridAggregation implements IGridAggregation {
 
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
-        const columnHeaders = this._gridServices.get('columnHeaders');
+        const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
         //behind grouping, so what it draws in a group's row is the last word on that cell
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);

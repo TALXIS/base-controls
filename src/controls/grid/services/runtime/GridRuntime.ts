@@ -15,7 +15,6 @@ import { GridRows } from "../rows";
 import { GridColumns } from "../columns";
 import { GridCells } from "../cells";
 import { GridKeyboard } from "../keyboard";
-import { GridColumnHeaders } from "../column-header";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces } from "../surfaces";
@@ -102,7 +101,6 @@ export class GridRuntime implements IGridRuntime {
         const cells = new GridCells({ services: this._services });
         const rows = new GridRows({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
-        const columnHeaders = new GridColumnHeaders({ services: this._services });
         const surfaces = new GridSurfaces({ services: this._services });
         //both wait for an api and then talk only to it
         new GridColumnLayout({ services: this._services });
@@ -111,7 +109,6 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('cells', () => cells);
         this._services.register('rows', () => rows);
         this._services.register('keyboard', () => keyboard);
-        this._services.register('columnHeaders', () => columnHeaders);
         this._services.register('surfaces', () => surfaces);
 
         const modules = Object.values(onGetProps().modules).filter((module): module is IGridModule => !!module);

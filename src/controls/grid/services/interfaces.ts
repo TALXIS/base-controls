@@ -10,7 +10,6 @@ import type { IGridColumns } from "../services/columns";
 import type { IGridCells } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
 import type { IGridRows } from "../services/rows";
-import type { IGridColumnHeaders } from "../services/column-header";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridSelection } from "../modules/selection/GridSelection";
 import type { IGridSorting } from "../modules/sorting/GridSorting";
@@ -42,8 +41,6 @@ export interface IGridServiceMap {
     cells: IGridCells;
     /** What the user is pressing while the grid is doing something about it. */
     keyboard: IGridKeyboard;
-    /** What a column header offers, assembled from what the modules registered. */
-    columnHeaders: IGridColumnHeaders;
     /** What the modules draw over the grid. */
     surfaces: IGridSurfaces;
     /** The totals under the rows. */

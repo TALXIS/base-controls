@@ -61,8 +61,8 @@ export class GridFiltering implements IGridFiltering {
         gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.filtering);
         //the callout is drawn over the grid rather than in the header it was opened from
         gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {

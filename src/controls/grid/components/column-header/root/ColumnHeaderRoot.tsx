@@ -42,7 +42,7 @@ export interface IColumnHeaderRootProps extends IColumnHeaderParams {
  * ```
  */
 export const ColumnHeaderRoot = (props: IColumnHeaderRootProps) => {
-    const headers = useGridService('columnHeaders');
+    const headers = useGridService('columns').headers;
     const header = useMemo(
         () => headers.createHeader({ column: props.column, element: props.eGridHeader }),
         [headers, props.column, props.eGridHeader]);

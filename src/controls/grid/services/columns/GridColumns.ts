@@ -10,6 +10,7 @@ import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeade
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
+import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
 import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
 import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
@@ -30,6 +31,8 @@ export interface IGridColumnsParameters {
 
 /** The columns the grid gives AG Grid. */
 export interface IGridColumns {
+    /** What a column header offers, assembled from what the modules registered. */
+    readonly headers: IGridColumnHeaders;
     /**
      * Registers a hook over the column definitions.
      *
@@ -43,9 +46,15 @@ export interface IGridColumns {
 export class GridColumns implements IGridColumns {
     private _services: IGridServiceLocator;
     private _hooks = new HookRegistry<GridColumnDefinitionsHook>();
+    private _headers: IGridColumnHeaders;
 
     constructor(parameters: IGridColumnsParameters) {
         this._services = parameters.services;
+        this._headers = new GridColumnHeaders({ services: parameters.services });
+    }
+
+    public get headers(): IGridColumnHeaders {
+        return this._headers;
     }
 
     public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void {
