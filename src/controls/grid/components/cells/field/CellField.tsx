@@ -1,4 +1,4 @@
-import { useContext, useLayoutEffect, useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { IRecord } from "@talxis/client-libraries";
 import { GridField } from "../../../services/fields";
 import { GridFieldContext } from "./context";
@@ -17,8 +17,6 @@ export const CellField = (props: ICellFieldProps) => {
     const services = useContext(GridServicesContext);
     //the instance, not its id: a reload hands the same row a new record
     const field = useMemo(() => new GridField({ record: record, columnName: name, services: services }), [record, name, services]);
-
-    useLayoutEffect(() => () => field.destroy(), [field]);
 
     return <GridFieldContext.Provider value={field}>{children}</GridFieldContext.Provider>;
 };

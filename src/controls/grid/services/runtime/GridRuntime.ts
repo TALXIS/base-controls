@@ -17,6 +17,7 @@ import { GridCells } from "../cells";
 import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
+import { GridLegacyClientApiCompatibility } from "../legacy-client-api-compatibility/GridLegacyClientApiCompatibility";
 import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
@@ -110,6 +111,8 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('rows', () => rows);
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
+        //registers its hooks once for every cell, so nothing needs to look it up
+        new GridLegacyClientApiCompatibility({ services: this._services });
 
         const modules = Object.values(onGetProps().modules).filter((module): module is IGridModule => !!module);
         for (const module of modules) {
