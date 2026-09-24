@@ -21,10 +21,10 @@ export const createSortingModule = (options?: ISortingModuleOptions): IGridModul
     onRegister: gridServices => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridSortingServiceMap>();
-        services.register('gridServices', () => gridServices);
         //built once, then registered: a resolver runs on every lookup
         const labels = new LocalizationService<IGridSortingLabels>({ ...GRID_SORTING_LABELS, ...options?.labels });
         const components = { ...GridSortingComponents, ...options?.components };
+        services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => components);
         const sorting = new GridSorting({ services });

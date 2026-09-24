@@ -20,9 +20,9 @@ export interface IFilteringModuleOptions {
 export const createFilteringModule = (options?: IFilteringModuleOptions): IGridModule => ({
     onRegister: gridServices => {
         const services = new ServiceLocator<IGridFilteringServiceMap>();
-        services.register('gridServices', () => gridServices);
         const labels = new LocalizationService<IGridFilteringLabels>({ ...GRID_FILTERING_LABELS, ...options?.labels });
         const components = { ...GridFilteringComponents, ...options?.components };
+        services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => components);
         const filtering = new GridFiltering({ services });

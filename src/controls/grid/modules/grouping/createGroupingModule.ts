@@ -33,9 +33,9 @@ export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGri
     onGetInitialComponentProps: () => ({ groupDisplayType: 'custom' }),
     onRegister: gridServices => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
-        services.register('gridServices', () => gridServices);
         const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
         const components = { ...GridGroupingComponents, ...options.components };
+        services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => components);
         const grouping = new GridGrouping({ services, settings: options });

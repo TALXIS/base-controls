@@ -34,10 +34,10 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
     onRegister: gridServices => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
-        services.register('gridServices', () => gridServices);
         //built once, then registered: a resolver runs on every lookup
         const labels = new LocalizationService<IGridAggregationLabels>({ ...GRID_AGGREGATION_LABELS, ...options?.labels });
         const components = { ...GridAggregationComponents, ...options?.components };
+        services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => components);
         const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation });
