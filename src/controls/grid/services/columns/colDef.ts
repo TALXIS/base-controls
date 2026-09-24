@@ -10,6 +10,8 @@ export interface IGridColumnSettings {
     isEditable?: boolean;
     /** Whether a value is demanded before the record may be saved. */
     isRequired?: boolean;
+    /** Width a module added for what it draws, which a resize does not save. */
+    widthOffset?: number;
 }
 
 declare module "@ag-grid-community/core" {

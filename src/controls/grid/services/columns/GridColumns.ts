@@ -17,7 +17,10 @@ import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-re
 
 
 /** What a column is worth when it does not say. */
-const DEFAULT_COLUMN_WIDTH = 200;
+export const DEFAULT_COLUMN_WIDTH = 200;
+
+/** How narrow the user may drag a column. */
+const MIN_COLUMN_WIDTH = 40;
 
 /** The key the save column takes. */
 export const RECORD_SAVE_COLUMN_KEY = 'recordSaveStatus';
@@ -146,8 +149,9 @@ export class GridColumns implements IGridColumns {
             field: column.name as any,
             headerName: column.displayName,
             //TODO: grid specific setting
-            initialFlex: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
-            minWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
+            //the width and the flex are the column layout's
+            initialWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
+            minWidth: MIN_COLUMN_WIDTH,
             lockPinned: true,
             autoHeaderHeight: true,
             //TODO: grid specific setting

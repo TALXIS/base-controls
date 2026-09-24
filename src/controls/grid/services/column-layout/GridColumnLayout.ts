@@ -1,14 +1,17 @@
-import { ColumnMovedEvent, ColumnResizedEvent, GridApi } from "@ag-grid-community/core";
+import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
+import { DEFAULT_COLUMN_WIDTH } from "../columns/GridColumns";
 
 export interface IGridColumnLayoutParameters {
     services: IGridServiceLocator;
 }
 
-/** What the user did to the columns, written back to the provider. */
+/** How wide the columns are, and what the user did to them, written back to the provider. */
 export class GridColumnLayout {
     private _services: IGridServiceLocator;
+    /** What the widths were last laid out for, so a user's drag outlives a reload. */
+    private _layoutKey?: string;
 
     constructor(parameters: IGridColumnLayoutParameters) {
         this._services = parameters.services;
@@ -18,6 +21,46 @@ export class GridColumnLayout {
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         gridApi.addEventListener('columnResized', this._onColumnResized);
         gridApi.addEventListener('columnMoved', this._onColumnMoved);
+        gridApi.addEventListener('gridSizeChanged', () => this._applyLayout(gridApi));
+        gridApi.addEventListener('displayedColumnsChanged', () => this._applyLayout(gridApi));
+        this._applyLayout(gridApi);
+    }
+
+    /** The columns flex by their widths while they fit, and scroll at those widths once they do not. */
+    private _applyLayout(gridApi: GridApi<IRecord>): void {
+        const layout = this._getLayout(gridApi);
+        if (!layout || layout.key === this._layoutKey) {
+            return;
+        }
+        this._layoutKey = layout.key;
+        gridApi.applyColumnState({ state: layout.state });
+    }
+
+    private _getLayout(gridApi: GridApi<IRecord>): { key: string; state: ColumnState[] } | undefined {
+        //measured: AG Grid reports its first size before it hands over an api
+        const gridWidth = this._services.find('gridRoot')?.clientWidth;
+        if (!gridWidth) {
+            return undefined;
+        }
+        const columnsMap = this._provider.getColumnsMap();
+        const columns = gridApi.getAllDisplayedColumns();
+        const dataColumns = columns.filter(column => !!columnsMap[column.getColId()]);
+        const widths = new Map(dataColumns.map(column => [column, this._getBaseWidth(column, columnsMap[column.getColId()])]));
+        const totalWidth = columns.reduce((total, column) => total + (widths.get(column) ?? column.getActualWidth()), 0);
+        const isFilling = totalWidth <= gridWidth;
+        return {
+            key: `${isFilling}|${dataColumns.map(column => `${column.getColId()}:${widths.get(column)}`).join(',')}`,
+            state: dataColumns.map(column => ({
+                colId: column.getColId(),
+                width: widths.get(column),
+                //AG Grid flexes only what scrolls
+                flex: isFilling && !column.getPinned() ? widths.get(column) : null,
+            })),
+        };
+    }
+
+    private _getBaseWidth(column: Column, providerColumn: IColumn): number {
+        return (providerColumn.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH) + (column.getColDef().settings?.widthOffset ?? 0);
     }
 
     private _onColumnResized = (event: ColumnResizedEvent<IRecord>): void => {
@@ -26,10 +69,12 @@ export class GridColumnLayout {
             return;
         }
         const resizedColumnName = event.column.getColId();
-        const width = event.column.getActualWidth();
+        const width = event.column.getActualWidth() - (event.column.getColDef().settings?.widthOffset ?? 0);
         this._writeColumns(column => column.name === resizedColumnName
             ? { ...column, visualSizeFactor: width }
             : column);
+        //what the user dragged is the layout now
+        this._layoutKey = this._getLayout(event.api)?.key;
     };
 
     private _onColumnMoved = (event: ColumnMovedEvent<IRecord>): void => {

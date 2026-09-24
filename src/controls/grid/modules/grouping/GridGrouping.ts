@@ -16,6 +16,9 @@ import { IGridSurface } from "../../services/surfaces";
 import { IGridSelectionInterceptors } from "../selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
+/** The chevron and the count a group row draws beside the value. */
+const GROUPED_COLUMN_WIDTH_OFFSET = 80;
+
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
 
@@ -290,7 +293,7 @@ export class GridGrouping implements IGridGrouping {
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             //a group's value is not edited in place
-            colDef.settings = { ...colDef.settings, oneClickEdit: false };
+            colDef.settings = { ...colDef.settings, oneClickEdit: false, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
