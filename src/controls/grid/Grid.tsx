@@ -58,17 +58,6 @@ export const GridRoot = (props: IGrid) => {
         enableGroupEdit: true,
         reactiveCustomComponents: true,
         initialState: props.state,
-/*         gridOptions: {
-            getRowStyle: (params) => {
-                const record = params.data;
-                if (!record) {
-                    return undefined;
-                }
-                return {
-                    backgroundColor: services.get('theme').semanticColors.bodyBackground,
-                }
-            },
-        }, */
         //the api last: registering it builds the parts that push columns
         onGridReady: (event) => {
             propsRef.current.onGridReady?.(event.api);
