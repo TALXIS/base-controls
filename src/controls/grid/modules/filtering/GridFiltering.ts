@@ -6,6 +6,7 @@ import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
+import { IGridSurface } from "../../services/surfaces";
 
 /** What changed about the filter a column header has open. */
 export interface IGridFilteringEvents {
@@ -37,12 +38,6 @@ export interface IGridFiltering {
     /** @param target What to draw the filter against, where the caller knows. */
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
-    /** Puts `filter` on the definitions. */
-    applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void;
-    /** What a column's menu offers: opening the filter, and clearing it. */
-    applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void;
-    /** The funnel, while a filter is applied to the dataset. */
-    applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void;
     /** The parts this module renders, merged with whatever the caller replaced. */
     readonly components: IGridFilteringComponents;
 }
@@ -57,7 +52,23 @@ export class GridFiltering implements IGridFiltering {
     constructor(parameters: IGridFilteringParameters) {
         this._services = parameters.services;
         this._filtering = new Filtering(this._provider, FieldValue);
+        this._registerHooks();
     }
+
+    private _registerHooks(): void {
+        const gridServices = this._services.get('gridServices');
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        //the callout is drawn over the grid rather than in the header it was opened from
+        gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, 10);
+        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, 10);
+        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 10);
+    }
+
+    private _onSurfaces = (surfaces: IGridSurface[]): void => {
+        surfaces.push({ key: 'filterCallout', onRender: this._onRenderFilterCallout });
+    };
+
+    private _onRenderFilterCallout = (): JSX.Element | null => this.components.onRenderFilterCallout();
 
     public getLabels(): ILocalizationService<IGridFilteringLabels> {
         return this._labels;
@@ -114,7 +125,8 @@ export class GridFiltering implements IGridFiltering {
         this.events.dispatchEvent('onFilterClosed');
     }
 
-    public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+    /** Puts `filter` on the definitions. */
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;
             const column = columnName ? this._provider.getColumnsMap()[columnName] : undefined;
@@ -122,9 +134,10 @@ export class GridFiltering implements IGridFiltering {
                 colDef.filter = this.isColumnFilterable(column);
             }
         }
-    }
+    };
 
-    public applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void {
+    /** What a column's menu offers: opening the filter, and clearing it. */
+    private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isColumnFilterable(column)) {
             return;
@@ -145,9 +158,10 @@ export class GridFiltering implements IGridFiltering {
             });
         }
         sections.push({ key: 'filtering', title: this._labels.getLocalizedString('menuSection'), items: mine});
-    }
+    };
 
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void {
+    /** The funnel, while a filter is applied to the dataset. */
+    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isFiltered(column)) {
             return;
@@ -157,7 +171,7 @@ export class GridFiltering implements IGridFiltering {
             placement: 'suffix',
             onRender: () => this.components.onRenderFilterIcon({ iconName: 'Filter' }),
         });
-    }
+    };
 
 
     private _withUnsavedChangesBlocker(write: () => void): void {

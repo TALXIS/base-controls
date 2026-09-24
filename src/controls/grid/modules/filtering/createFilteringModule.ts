@@ -27,13 +27,5 @@ export const createFilteringModule = (options?: IFilteringModuleOptions): IGridM
         services.register('components', () => components);
         const filtering = new GridFiltering({ services });
         gridServices.register('filtering', () => filtering);
-        gridServices.get('columns').registerColumnDefinitionsHook(columnDefs => filtering.applyColumnDefinitions(columnDefs));
-        //the callout is drawn over the grid rather than in the header it was opened from
-        gridServices.get('surfaces').registerSurfaceHook(surfaces => surfaces.push({
-            key: 'filterCallout',
-            onRender: () => filtering.components.onRenderFilterCallout(),
-        }), 10);
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook((sections, params) => filtering.applyMenuSection(sections, params), 10);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook((adornments, params) => filtering.applyColumnHeaderAdornments(adornments, params), 10);
     },
 });

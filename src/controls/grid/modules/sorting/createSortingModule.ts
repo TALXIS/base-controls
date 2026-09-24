@@ -29,9 +29,5 @@ export const createSortingModule = (options?: ISortingModuleOptions): IGridModul
         services.register('components', () => components);
         const sorting = new GridSorting({ services });
         gridServices.register('sorting', () => sorting);
-        //core no longer knows to set these
-        gridServices.get('columns').registerColumnDefinitionsHook(columnDefs => sorting.applyColumnDefinitions(columnDefs));
-        gridServices.get('columnHeaders').registerColumnMenuSectionHook((sections, params) => sorting.applyMenuSection(sections, params), 0);
-        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook((adornments, params) => sorting.applyColumnHeaderAdornments(adornments, params), 0);
     },
 });

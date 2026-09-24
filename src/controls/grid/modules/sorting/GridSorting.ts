@@ -21,12 +21,6 @@ export interface IGridSorting {
     /** @param appendToExisting Adds to the sorting already applied rather than replacing it. */
     sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void;
     clearColumnSorting(columnName: string): void;
-    /** Puts `sortable` on the definitions. */
-    applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void;
-    /** What a column's menu offers: the two directions, and clearing them. */
-    applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void;
-    /** The sort direction, as the header shows it. */
-    applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void;
     /** What sorting a column reads as, which depends on what it holds. */
     getSortingLabel(columnName: string, descending?: boolean): string;
     /** The parts this module renders, merged with whatever the caller replaced. */
@@ -40,6 +34,14 @@ export class GridSorting implements IGridSorting {
     constructor(parameters: IGridSortingParameters) {
         this._services = parameters.services;
         this._sorting = new Sorting(this._provider);
+        this._registerHooks();
+    }
+
+    private _registerHooks(): void {
+        const gridServices = this._services.get('gridServices');
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions);
+        gridServices.get('columnHeaders').registerColumnMenuSectionHook(this._onMenuSection, 0);
+        gridServices.get('columnHeaders').registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, 0);
     }
 
     public getSorting(): Sorting {
@@ -72,7 +74,8 @@ export class GridSorting implements IGridSorting {
         });
     }
 
-    public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+    /** Puts `sortable` on the definitions. */
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;
             const column = columnName ? this._provider.getColumnsMap()[columnName] : undefined;
@@ -80,9 +83,10 @@ export class GridSorting implements IGridSorting {
                 colDef.sortable = this.isColumnSortable(column);
             }
         }
-    }
+    };
 
-    public applyMenuSection(sections: IColumnMenuSection[], header: IGridColumnHeader): void {
+    /** What a column's menu offers: the two directions, and clearing them. */
+    private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isColumnSortable(column)) {
             return;
@@ -109,9 +113,10 @@ export class GridSorting implements IGridSorting {
             });
         }
         sections.push({ key: 'sorting', title: this._labels.getLocalizedString('menuSection'), items: mine });
-    }
+    };
 
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void {
+    /** The sort direction, as the header shows it. */
+    private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isSorted(column)) {
             return;
@@ -121,7 +126,7 @@ export class GridSorting implements IGridSorting {
             placement: 'suffix',
             onRender: () => this.components.onRenderSortIcon({ descending: this.isSortedDescending(column) }),
         });
-    }
+    };
 
 
     public getSortingLabel(columnName: string, descending?: boolean): string {
