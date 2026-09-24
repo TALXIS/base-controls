@@ -63,7 +63,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     const surfaces = new GridSurfaces({ services });
     //both wait for an api and then talk only to it
     new GridColumnLayout({ services });
-    const overlays = new GridOverlays({ services });
+    new GridOverlays({ services });
     services.register('columns', () => columns);
     services.register('cells', () => cells);
     services.register('rows', () => rows);
@@ -71,7 +71,6 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     services.register('editing', () => editing);
     services.register('columnHeaders', () => columnHeaders);
     services.register('surfaces', () => surfaces);
-    services.register('overlays', () => overlays);
 
     const modules = onGetProps().modules;
     for (const module of orderModules(modules)) {
