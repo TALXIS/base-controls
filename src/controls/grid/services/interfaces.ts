@@ -13,7 +13,6 @@ import type { GridKeyboard } from "../services/keyboard";
 import type { GridRows } from "../services/rows";
 import type { GridColumnHeaders } from "../services/column-header";
 import type { GridSurfaces } from "../services/surfaces";
-import type { GridColumnLayout } from "../services/column-layout";
 import type { GridOverlays } from "../services/overlays";
 import type { GridSelection } from "../modules/selection/GridSelection";
 import type { GridSorting } from "../modules/sorting/GridSorting";
@@ -49,8 +48,6 @@ export interface IGridServiceMap {
     editing: GridEditing;
     /** What a column header offers, assembled from what the modules registered. */
     columnHeaders: GridColumnHeaders;
-    /** The widths and the order the user chose, written back to the provider. */
-    columnLayout: GridColumnLayout;
     /** Which overlay the grid is showing: the spinner, the empty state, neither. */
     overlays: GridOverlays;
     /** What the modules draw over the grid. */
