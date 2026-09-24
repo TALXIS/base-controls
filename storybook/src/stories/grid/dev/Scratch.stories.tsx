@@ -37,7 +37,7 @@ export const Playground: Story = {
         clipboard: true,
         cellSelection: true,
         enableEditing: true,
-        rowHeight: 26,
+        rowHeight: 42,
         enableAutoSave: true,
         enableNavigation: true,
         enableZebra: true,

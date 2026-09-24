@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { ICommandBarItemProps } from "@fluentui/react";
+import { ICommandBarItemProps, useTheme } from "@fluentui/react";
 import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { Grid } from "../../../../namespace";
@@ -10,7 +10,8 @@ import { getGroupCellStyles } from "./styles";
 
 /** What a row standing for a group draws in the column it is grouped by: its value, and what opens it. */
 export const GroupCell = (props: ICellRendererParams<IRecord>) => {
-    const styles = React.useMemo(() => getGroupCellStyles(), []);
+    const theme = useTheme();
+    const styles = React.useMemo(() => getGroupCellStyles(theme), [theme]);
     //this cell belongs to a column the grouping module grouped, so the module is there
     const grouping = useGridService('grouping')!;
     const node = props.node;
@@ -25,6 +26,7 @@ export const GroupCell = (props: ICellRendererParams<IRecord>) => {
         key: 'groupExpansion',
         iconOnly: true,
         iconProps: { iconName: node.expanded ? 'ChevronDown' : 'ChevronRight' },
+        buttonStyles: styles.chevronStyles,
         onClick: () => grouping.toggleGroup(node),
     });
 
@@ -38,7 +40,7 @@ export const GroupCell = (props: ICellRendererParams<IRecord>) => {
             <Grid.Cell.Theme>
                 <Grid.Cell.Container>
                     <Grid.Cell.Loading>
-                        <Grid.Cell.Ui.Commands items={isExpandable ? [getChevronButton()] : []} className={styles.commands} />
+                        <Grid.Cell.Ui.Commands alignment="right" items={isExpandable ? [getChevronButton()] : []} className={styles.commands} />
                         <Grid.Cell.Control />
                         {isExpandable && <GroupCount />}
                         <Grid.Cell.Commands />
