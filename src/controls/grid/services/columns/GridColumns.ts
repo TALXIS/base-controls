@@ -14,6 +14,7 @@ import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
 import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
 import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
+import { CellOverridableEmptyRenderer } from "@controls/grid/components/cells/overridable-empty-cell-renderer/CellOverridableEmptyRenderer";
 
 
 /** What a column is worth when it does not say. */
@@ -37,7 +38,7 @@ export interface IGridColumns {
     /** What a column header offers, assembled from what the modules registered. */
     readonly headers: IGridColumnHeaders;
     /**
-     * Registers a hook over the column definitions.
+     * Registers a column definitions hook; a renderer it sets skips the grid's `onRenderCell…`.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -79,7 +80,7 @@ export class GridColumns implements IGridColumns {
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
         columnDef.headerComponent ??= ColumnHeaderRenderer;
-        columnDef.cellRenderer ??= CellEmptyRenderer;
+        columnDef.cellRenderer ??= CellOverridableEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
         columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));

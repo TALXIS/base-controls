@@ -8,7 +8,6 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { GridServicesContext } from "./context";
 import { Surfaces } from "./components/surfaces";
-import { GridComponents } from "./components";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
@@ -32,8 +31,7 @@ export const GridRoot = (props: IGrid) => {
         [theme, props.height, rowHeight]
     );
 
-    //not memoized: a slot closes over the caller's own state
-    const components = { ...GridComponents, ...props.components };
+    const components = runtime.services.get('components');
 
     //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
     useEffect(() => () => runtime.destroy(), []);

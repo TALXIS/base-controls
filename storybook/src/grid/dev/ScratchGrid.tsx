@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridComponents, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -38,7 +38,7 @@ const JsonValue = (props: { value: unknown }) => {
 }
 
 /** A payload drawn as what it holds rather than as the string it arrived in. */
-const PayloadCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
+const PayloadCell = (props: IGridCellParams) => <Grid.Cell.Renderer {...props} components={{
     control: {
         onRenderControl: controlProps => {
             const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
@@ -169,37 +169,46 @@ const RecordSummary = (props: { record: IRecord }) => {
     </div>
 }
 
+/** A record's summary, drawn in the column the story adds. */
+const SummaryCell = (props: IGridCellParams) => {
+    //a pinned row stands for no record, and a summary is a record's
+    if (!props.data) {
+        return <Grid.Cell.EmptyRenderer {...props} />
+    }
+    return <Grid.Cell.Root {...props}>
+        <Grid.Cell.Theme>
+            <Grid.Cell.Container>
+                <RecordSummary record={props.data} />
+            </Grid.Cell.Container>
+        </Grid.Cell.Theme>
+    </Grid.Cell.Root>
+}
+
+//no renderer: the grid draws it through `onRenderEmptyCellRenderer`
 const SUMMARY_COLUMN_DEFINITION = {
     colId: SUMMARY_COLUMN,
     headerName: 'Summary',
     width: 160,
     valueGetter: () => null,
     valueFormatter: () => '',
-    cellRenderer: (props: IGridCellParams) => {
-        //a pinned row stands for no record, and a summary is a record's
-        if (!props.data) {
-            return null
-        }
-        return <Grid.Cell.Root {...props}>
-            <Grid.Cell.Theme>
-                <Grid.Cell.Container>
-                    <RecordSummary record={props.data} />
-                </Grid.Cell.Container>
-            </Grid.Cell.Theme>
-        </Grid.Cell.Root>
-    },
 }
 
-/** What the story adds through the services, wired onto whichever module it is given. */
-const withPayloadCell = (module: IGridModule): IGridModule => ({
+/** The story's own cells, drawn through the grid's components. */
+const SCRATCH_GRID_COMPONENTS: Partial<IGridComponents> = {
+    onRenderCellRenderer: props => props.colDef?.colId === PAYLOAD_COLUMN
+        ? <PayloadCell {...props} />
+        : <Grid.Cell.Renderer {...props} />,
+    onRenderEmptyCellRenderer: props => props.colDef?.colId === SUMMARY_COLUMN
+        ? <SummaryCell {...props} />
+        : <Grid.Cell.EmptyRenderer {...props} />,
+}
+
+/** The columns the story adds or moves, wired onto whichever module it is given. */
+const withStoryColumns = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
         services.get('columns').registerColumnDefinitionsHook(columnDefs => {
-            const payload = columnDefs.find(columnDef => columnDef.colId === PAYLOAD_COLUMN)
-            if (payload) {
-                payload.cellRenderer = PayloadCell
-            }
             const status = columnDefs.find(columnDef => columnDef.colId === 'status')
             if (status) {
                 status.pinned = 'right'
@@ -274,7 +283,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: withPayloadCell(props.rowModel === 'clientSide'
+        rowModel: withStoryColumns(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule()),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
@@ -291,6 +300,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             key={key}
             provider={provider}
             modules={modules}
+            components={SCRATCH_GRID_COMPONENTS}
             height='100%'
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}

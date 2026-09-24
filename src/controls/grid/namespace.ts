@@ -3,6 +3,9 @@ import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellControl } from "./components/cells/control/CellControl";
 import { CellEditor } from "./components/cells/cell-editor/CellEditor";
 import { CellEmptyRenderer } from "./components/cells/empty-cell-renderer/CellEmptyRenderer";
+import { CellOverridableRenderer } from "./components/cells/overridable-cell-renderer/CellOverridableRenderer";
+import { CellOverridableEditor } from "./components/cells/overridable-cell-editor/CellOverridableEditor";
+import { CellOverridableEmptyRenderer } from "./components/cells/overridable-empty-cell-renderer/CellOverridableEmptyRenderer";
 import { CellField } from "./components/cells/field/CellField";
 import { CellFieldEditor } from "./components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "./components/cells/field-cell-renderer/CellFieldRenderer";
@@ -41,10 +44,16 @@ export interface IGridCellNamespace {
     FieldRenderer: typeof CellFieldRenderer;
     /** A cell with nothing drawn in it, for a column that holds no value. */
     EmptyRenderer: typeof CellEmptyRenderer;
+    /** `Renderer`, drawn through the grid's `onRenderCellRenderer`. */
+    OverridableRenderer: typeof CellOverridableRenderer;
+    /** `EmptyRenderer`, drawn through the grid's `onRenderEmptyCellRenderer`. */
+    OverridableEmptyRenderer: typeof CellOverridableEmptyRenderer;
     /** The same cell while it is being edited: `colDef.cellEditor`. */
     Editor: typeof CellEditor;
     /** A record's column while it is being edited. */
     FieldEditor: typeof CellFieldEditor;
+    /** `Editor`, drawn through the grid's `onRenderCellEditor`. */
+    OverridableEditor: typeof CellOverridableEditor;
     /** What makes everything inside it one cell. */
     Root: typeof CellRoot;
     /** What a cell and everything drawn in it is drawn in. */
@@ -118,8 +127,11 @@ export const Grid: IGridNamespace = {
         Renderer: CellRenderer,
         FieldRenderer: CellFieldRenderer,
         EmptyRenderer: CellEmptyRenderer,
+        OverridableRenderer: CellOverridableRenderer,
+        OverridableEmptyRenderer: CellOverridableEmptyRenderer,
         Editor: CellEditor,
         FieldEditor: CellFieldEditor,
+        OverridableEditor: CellOverridableEditor,
         Root: CellRoot,
         Theme: CellTheme,
         Container: CellContainer,

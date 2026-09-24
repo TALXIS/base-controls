@@ -9,6 +9,7 @@ import { EmptyRecords } from "@controls/grid/components/overlays/empty-records/E
 import { IGridModule } from "../../modules";
 import { IGrid } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
+import { GridComponents } from "../../components/components";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
@@ -97,6 +98,8 @@ export class GridRuntime implements IGridRuntime {
         //the one service whose resolver is the point
         this._services.register('provider', () => onGetProps().provider);
         this._services.register('theme', () => theme);
+        //a resolver as well: a slot closes over the caller's own state
+        this._services.register('components', () => ({ ...GridComponents, ...onGetProps().components }));
         //constructed, then registered: a resolver runs on every lookup
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });

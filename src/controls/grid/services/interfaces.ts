@@ -4,6 +4,7 @@ import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
+import type { IGridComponents } from "../components/components";
 import type { IGridRuntime } from "../services/runtime";
 import type { IGridRowModel } from "../modules/row-model/interfaces";
 import type { IGridColumns } from "../services/columns";
@@ -34,6 +35,8 @@ export interface IGridServiceMap {
     labels: ILocalizationService<IGridLabels>;
     /** AG Grid's own api, a last resort for what the grid's hooks cannot express. */
     gridApi: GridApi<IRecord>;
+    /** The grid's replaceable parts, with what the caller replaced. */
+    components: IGridComponents;
     /** The theme the control was given. */
     theme: ITheme;
     /** The column definitions, and the hooks a module puts its own on them through. */
