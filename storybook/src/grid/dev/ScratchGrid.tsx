@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridComponents, IGridModule, IGridModules } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -38,7 +38,7 @@ const JsonValue = (props: { value: unknown }) => {
 }
 
 /** A payload drawn as what it holds rather than as the string it arrived in. */
-const PayloadCell = (props: IGridCellParams) => <Grid.Cell.Renderer {...props} components={{
+const PayloadCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
     control: {
         onRenderControl: controlProps => {
             const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
@@ -235,44 +235,19 @@ const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
     },
 }} />
 
-//no renderer: the grid draws it through `onRenderEmptyCellRenderer`
 const SUMMARY_COLUMN_DEFINITION = {
     colId: SUMMARY_COLUMN,
     headerName: 'Summary',
-    width: 160,
+    initialWidth: 160,
     valueGetter: () => null,
     valueFormatter: () => '',
 }
-
-/** The story's own cells, drawn through the grid's components. */
-const SCRATCH_GRID_COMPONENTS: Partial<IGridComponents> = {
-    onRenderColumnHeader: props => {
-        switch (props.column.getColId()) {
-            case PAYLOAD_COLUMN: return <PayloadHeader {...props} />
-            case SUMMARY_COLUMN: return <SummaryHeader {...props} />
-            default: return <Grid.ColumnHeader.Renderer {...props} />
-        }
-    },
-    onRenderCellRenderer: props => props.colDef?.colId === PAYLOAD_COLUMN
-        ? <PayloadCell {...props} />
-        : <Grid.Cell.Renderer {...props} />,
-    onRenderEmptyCellRenderer: props => props.colDef?.colId === SUMMARY_COLUMN
-        ? <SummaryCell {...props} />
-        : <Grid.Cell.EmptyRenderer {...props} />,
-}
-
-/** The columns the story adds or moves, as a module of its own. */
-const STORY_COLUMNS_MODULE: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('columns').registerColumnDefinitionsHook(columnDefs => {
-            const status = columnDefs.find(columnDef => columnDef.colId === 'status')
-            if (status) {
-                status.pinned = 'right'
-            }
-            columnDefs.push(SUMMARY_COLUMN_DEFINITION)
-        })
-    },
-}
+/** The columns the story adds or changes, beyond what the provider holds. */
+const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = [
+    { colId: 'status', pinned: 'right' },
+    { colId: PAYLOAD_COLUMN, cellRenderer: PayloadCell, headerComponent: PayloadHeader },
+    { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
+]
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -349,7 +324,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
         grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
-        custom: [STORY_COLUMNS_MODULE],
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -357,7 +331,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             key={key}
             provider={provider}
             modules={modules}
-            components={SCRATCH_GRID_COMPONENTS}
+            colDefs={SCRATCH_COL_DEFS}
             height='100%'
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}

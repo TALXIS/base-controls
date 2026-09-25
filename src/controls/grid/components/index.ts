@@ -1,4 +1,3 @@
-export * from './components';
 export * from './cells';
 export * from './column-header';
 export * from './surfaces';

@@ -6,7 +6,7 @@ import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFi
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField, IGridField } from "../fields";
-import { ColumnHeaderOverridableRenderer } from "../../components/column-header/overridable-renderer/ColumnHeaderOverridableRenderer";
+import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
@@ -14,7 +14,6 @@ import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
 import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
 import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
-import { CellOverridableEmptyRenderer } from "@controls/grid/components/cells/overridable-empty-cell-renderer/CellOverridableEmptyRenderer";
 
 
 /** What a column is worth when it does not say. */
@@ -38,7 +37,7 @@ export interface IGridColumns {
     /** What a column header offers, assembled from what the modules registered. */
     readonly headers: IGridColumnHeaders;
     /**
-     * Registers a column definitions hook; what it renders itself skips the grid's `onRender…`.
+     * Registers a hook over the column definitions.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -72,15 +71,30 @@ export class GridColumns implements IGridColumns {
             columnDefs.unshift(recordSaveColumn);
         }
         const own = new Set(columnDefs);
+        this._applyColDefs(columnDefs);
         this._hooks.apply(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
     }
 
+    /** The caller's `colDefs`: merged over the column with the same id, else added. */
+    private _applyColDefs(columnDefs: ColDef<IRecord>[]): void {
+        for (const colDef of this._settings.getColDefs()) {
+            const index = columnDefs.findIndex(columnDef => columnDef.colId === colDef.colId);
+            if (index === -1) {
+                columnDefs.push({ ...colDef });
+                continue;
+            }
+            const base = columnDefs[index];
+            //settings merged rather than replaced, so an entry can change one of them
+            columnDefs[index] = { ...base, ...colDef, settings: { ...base.settings, ...colDef.settings } };
+        }
+    }
+
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
-        columnDef.headerComponent ??= ColumnHeaderOverridableRenderer;
-        columnDef.cellRenderer ??= CellOverridableEmptyRenderer;
+        columnDef.headerComponent ??= ColumnHeaderRenderer;
+        columnDef.cellRenderer ??= CellEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
         columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
@@ -164,7 +178,7 @@ export class GridColumns implements IGridColumns {
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
-            headerComponent: ColumnHeaderOverridableRenderer,
+            headerComponent: ColumnHeaderRenderer,
             cellRenderer: CellFieldRenderer,
             cellEditor: CellFieldEditor,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),

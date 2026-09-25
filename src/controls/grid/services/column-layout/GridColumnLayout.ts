@@ -26,7 +26,7 @@ export class GridColumnLayout {
         this._applyLayout(gridApi);
     }
 
-    /** The columns flex by their widths while they fit, and scroll at those widths once they do not. */
+    /** Columns flex by their widths while they fit, and scroll at those widths once they don't. */
     private _applyLayout(gridApi: GridApi<IRecord>): void {
         const layout = this._getLayout(gridApi);
         if (!layout || layout.key === this._layoutKey) {
@@ -60,7 +60,9 @@ export class GridColumnLayout {
     }
 
     private _getBaseWidth(column: Column, providerColumn: IColumn): number {
-        return (providerColumn.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH) + (column.getColDef().settings?.widthOffset ?? 0);
+        const colDef = column.getColDef();
+        //what the user dragged to, else what the definition starts at
+        return (providerColumn.visualSizeFactor ?? colDef.initialWidth ?? DEFAULT_COLUMN_WIDTH) + (colDef.settings?.widthOffset ?? 0);
     }
 
     private _onColumnResized = (event: ColumnResizedEvent<IRecord>): void => {

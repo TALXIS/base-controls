@@ -1,6 +1,5 @@
-import { GridState } from "@ag-grid-community/core";
+import { ColDef, GridState } from "@ag-grid-community/core";
 import { IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { IGridComponents } from "./components";
 import { IGridModules } from "./modules";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
@@ -55,12 +54,12 @@ export interface IGrid extends Partial<IGridEventHandlers> {
 
     /** Overrides for the strings the grid renders. */
     labels?: Partial<IGridLabels>;
-    /** Overrides for the parts of the grid a caller may replace. */
-    components?: Partial<IGridComponents>;
+    /** Merged over the provider's column with the same `colId`, or added where there is none. */
+    colDefs?: (ColDef<IRecord> & { colId: string })[];
     /** The AG Grid state to restore column order, widths and sorting from. */
     state?: GridState;
     /** Fired once AG Grid is ready, with its api among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;
-    /** Fired before the grid tears down, while the api among the runtime's services still answers. */
+    /** Fired before the grid tears down, while its api still answers. */
     onDestroy?: (runtime: IGridRuntime) => void;
 }

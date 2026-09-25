@@ -24,6 +24,7 @@ export interface IGridSettings {
     getDefaultRowHeight(): number;
     /** How many rows the grid grows to fit before it scrolls instead. */
     getMaxVisibleRows(): number;
+    getColDefs(): NonNullable<IGrid['colDefs']>;
 }
 
 export class GridSettings implements IGridSettings {
@@ -59,5 +60,9 @@ export class GridSettings implements IGridSettings {
 
     public getMaxVisibleRows(): number {
         return this._getProps().maxVisibleRows ?? DEFAULT_MAX_VISIBLE_ROWS;
+    }
+
+    public getColDefs(): NonNullable<IGrid['colDefs']> {
+        return this._getProps().colDefs ?? [];
     }
 }
