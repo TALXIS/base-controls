@@ -1,3 +1,4 @@
+import { elementContains } from "@fluentui/react";
 import { IGridServiceLocator } from "../../services";
 
 export interface IGridKeyboardParameters {
@@ -11,7 +12,7 @@ export interface IGridKeyboard {
     /** The keypress the user is holding down. */
     getKeyBeingPressed(): KeyboardEvent | undefined;
     /**
-     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would
+     * Runs the handler for every key pressed inside this grid, ahead of what it lands in.
      *
      * @returns What takes the handler off again.
      */
@@ -23,6 +24,7 @@ export class GridKeyboard implements IGridKeyboard {
     private _keyBeingPressed?: KeyboardEvent;
     private _keyDownHandlers: GridKeyDownHandler[] = [];
     private _document?: Document;
+    private _gridRoot?: HTMLElement;
 
     constructor(parameters: IGridKeyboardParameters) {
         this._services = parameters.services;
@@ -49,6 +51,7 @@ export class GridKeyboard implements IGridKeyboard {
 
     /** The document rather than the grid's own element. */
     private _listen(gridRoot: HTMLElement): void {
+        this._gridRoot = gridRoot;
         this._document = gridRoot.ownerDocument;
         this._document.addEventListener('keydown', this._onKeyDown, true);
         this._document.addEventListener('keyup', this._onKeyUp, true);
@@ -58,6 +61,10 @@ export class GridKeyboard implements IGridKeyboard {
 
     private _onKeyDown = (event: KeyboardEvent): void => {
         this._keyBeingPressed = event;
+        //covers Fluent layers only; layers hosted in the grid's root would let `contains` do this
+        if (!this._gridRoot || !elementContains(this._gridRoot, event.target as HTMLElement)) {
+            return;
+        }
         this._keyDownHandlers.forEach(handler => handler(event));
     };
 
