@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { createClientSideRowModelModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -251,8 +251,6 @@ const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = [
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
-    clipboard: boolean
-    cellSelection: boolean
     enableEditing: boolean
     /** How tall a row is, in pixels. */
     rowHeight?: number
@@ -260,11 +258,6 @@ export interface IScratchGridProps {
     enableNavigation: boolean
     enableZebra: boolean
     enableOptionSetColors: boolean
-    sorting: boolean
-    filtering: boolean
-    grouping: boolean
-    aggregation: boolean
-    selectableRows: 'none' | 'single' | 'multiple'
     /** How many rows the in-memory provider holds. */
     rowCount?: number
 }
@@ -273,9 +266,7 @@ export interface IScratchGridProps {
  * The scratch harness for the shared `Grid`: an in-memory provider, and the grid rendered directly rather
  * than through a dataset control. Edit this file to try things against the grid.
  *
- * Every module is a toggle, which is the point: what a grid can do is what it was given, so turning one
- * off is how you see what the grid is without it. `owner` and `status` are the columns that say they can
- * be grouped, and `estimate` the one that says what it can total.
+ * It is given only the row model it cannot do without; add a module to `modules` below to try it.
  */
 export const ScratchGrid = (props: IScratchGridProps) => {
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT
@@ -312,18 +303,11 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     }, [provider])
 
     //remounted on every change: modules are read once, which is the contract this story holds to
-    const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
+    const key = props.rowModel
     const modules = React.useMemo<IGridModules>(() => ({
         rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
-        clipboard: props.clipboard ? createClipboardModule() : undefined,
-        cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
-        rowSelection: props.selectableRows === 'none' ? undefined : createRowSelectionModule({ mode: props.selectableRows }),
-        sorting: props.sorting ? createSortingModule() : undefined,
-        filtering: props.filtering ? createFilteringModule() : undefined,
-        aggregation: props.aggregation ? createAggregationModule() : undefined,
-        grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

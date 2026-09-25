@@ -75,6 +75,10 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             '.ag-cell.ag-cell-inline-editing': {
                 borderWidth: '0 !important',
             },
+            //AG Grid borders the focused cell itself while no range claims it, over the cell's own outline
+            '.ag-cell.ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-context-menu-open .ag-cell.ag-cell-focus:not(.ag-cell-range-selected)': {
+                borderWidth: 0,
+            },
             //AG Grid gives every child of a cell's wrapper the height of a row.
             '.ag-cell.ag-cell-inline-editing .ag-cell-wrapper > *': {
                 height: '100%',
