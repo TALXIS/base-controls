@@ -31,8 +31,9 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
 
     /** Neither option is `@initial`, so grouping can turn the hierarchy on and off. */
     public onAgGridOptions(result: IGridAgGridOptions): void {
-        result.options.treeData = this._isTree;
+        //the path first: AG Grid reads it the moment tree data is switched on
         result.options.getDataPath = this._isTree ? getRecordPath : undefined;
+        result.options.treeData = this._isTree;
     }
 
     /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */

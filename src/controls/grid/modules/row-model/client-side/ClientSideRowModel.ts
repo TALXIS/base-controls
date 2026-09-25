@@ -14,7 +14,8 @@ export interface IClientSideRowModelParameters {
 export class ClientSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
     private _grouping?: ClientSideRowModelGrouping;
-    private _rows?: IRecord[];
+    //never unset: tree data switched on before any rows leaves AG Grid's tree without a root
+    private _rows: IRecord[] = [];
     public readonly type: IGridRowModelType = 'clientSide';
 
     constructor(parameters: IClientSideRowModelParameters) {

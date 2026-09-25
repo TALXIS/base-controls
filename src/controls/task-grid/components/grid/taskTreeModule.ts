@@ -20,9 +20,10 @@ export const createTaskTreeModule = (taskDataProvider: ITaskDataProvider, taskGr
                 result.options.processUnpinnedColumns = processUnpinnedColumns;
             }, GRID_MODULE_PRIORITY.grouping);
             grid.registerAgGridOptions(result => {
+                //the path first: AG Grid reads it the moment tree data is switched on
+                result.options.getDataPath = getDataPath;
                 result.options.treeData = true;
                 result.options.groupDisplayType = 'custom';
-                result.options.getDataPath = getDataPath;
             }, GRID_MODULE_PRIORITY.grouping);
         },
     };
