@@ -261,11 +261,9 @@ const SCRATCH_GRID_COMPONENTS: Partial<IGridComponents> = {
         : <Grid.Cell.EmptyRenderer {...props} />,
 }
 
-/** The columns the story adds or moves, wired onto whichever module it is given. */
-const withStoryColumns = (module: IGridModule): IGridModule => ({
-    ...module,
+/** The columns the story adds or moves, as a module of its own. */
+const STORY_COLUMNS_MODULE: IGridModule = {
     onRegister: (services: IGridServiceLocator) => {
-        module.onRegister?.(services)
         services.get('columns').registerColumnDefinitionsHook(columnDefs => {
             const status = columnDefs.find(columnDef => columnDef.colId === 'status')
             if (status) {
@@ -274,7 +272,7 @@ const withStoryColumns = (module: IGridModule): IGridModule => ({
             columnDefs.push(SUMMARY_COLUMN_DEFINITION)
         })
     },
-})
+}
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -341,9 +339,9 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: withStoryColumns(props.rowModel === 'clientSide'
+        rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
-            : createServerSideRowModelModule()),
+            : createServerSideRowModelModule(),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         rowSelection: props.selectableRows === 'none' ? undefined : createRowSelectionModule({ mode: props.selectableRows }),
@@ -351,6 +349,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
         grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
+        custom: [STORY_COLUMNS_MODULE],
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

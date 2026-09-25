@@ -36,4 +36,6 @@ export interface IGridModules {
     aggregation?: IGridModule;
     /** Copying rows: {@link createClipboardModule}. */
     clipboard?: IGridClipboardModule;
+    /** The caller's own modules, whose hooks place themselves against {@link GRID_MODULE_PRIORITY}. */
+    custom?: IGridModule[];
 }

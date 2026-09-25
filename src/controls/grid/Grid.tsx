@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { AgGridReact } from "@ag-grid-community/react";
+import { IRecord } from "@talxis/client-libraries";
 import { useTheme } from "@fluentui/react";
 import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
@@ -32,8 +34,6 @@ export const GridRoot = (props: IGrid) => {
         [theme, props.height, rowHeight]
     );
 
-    const components = runtime.services.get('components');
-
     useGridEventHandlers(runtime, props);
 
     //a part listening ahead of AG Grid needs this element, and it exists only once mounted
@@ -55,7 +55,7 @@ export const GridRoot = (props: IGrid) => {
             applyTo='none'
             ref={onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
-            {components.onRenderAgGrid(runtime.getAgGridProps())}
+            <AgGridReact<IRecord> {...runtime.getAgGridProps()} />
             <Surfaces />
         </ThemeProvider>
     </GridServicesContext.Provider>

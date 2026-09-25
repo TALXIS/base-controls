@@ -118,13 +118,14 @@ export class GridRuntime implements IGridRuntime {
         new GridLegacyClientApiCompatibility({ services: this._services });
         this._dispatchConsumerEvents();
 
-        const modules = Object.values(onGetProps().modules).filter((module): module is IGridModule => !!module);
+        const { custom = [], ...builtIns } = onGetProps().modules;
+        const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);
         for (const module of modules) {
             module.onRegister?.(this._services);
         }
         //after the modules have had their say, and before AG Grid is constructed on this same render
         ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));
-        //after the modules, whose own provider listeners run ahead of this one
+        //after the modules, whose own api and provider listeners run ahead of this one
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 

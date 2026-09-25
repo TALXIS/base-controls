@@ -1,11 +1,10 @@
 import * as React from "react";
-import { IRecord } from "@talxis/client-libraries";
-import { AgGridReact, createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createRowSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
+import { createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createRowSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
 import { useTheme } from "@fluentui/react";
-import { getClassNames } from "@utils";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
 import { ICheckListDatasetControl } from "../../CheckListDatasetControl";
 import { CheckListGridCustomizer } from "./grid-customizer";
+import { createCheckListGridModule } from "./checkListGridModule";
 import { getCheckListGridStyles } from "./styles";
 
 type IControlProps = Parameters<IDatasetControlProps['onGetControlComponent']>[0];
@@ -24,7 +23,6 @@ export interface ICheckListGridProps extends IControlProps {
  */
 export const Grid = (props: ICheckListGridProps) => {
     const { datasetControl, parameters } = props;
-    const customizerRef = React.useRef<CheckListGridCustomizer>();
     const theme = useTheme();
     const styles = React.useMemo(() => getCheckListGridStyles(theme), [theme]);
 
@@ -42,6 +40,7 @@ export const Grid = (props: ICheckListGridProps) => {
             defaultExpandedLevel: parameters.DefaultExpandedGroupLevel?.raw ?? -1,
             pinGroupedColumns: parameters.EnableGroupedColumnsPinning?.raw !== false,
         }) : undefined,
+        custom: [createCheckListGridModule(datasetControl, styles.checkListGridRoot)],
     }), []);
 
     return <GridBase.Root
@@ -56,28 +55,5 @@ export const Grid = (props: ICheckListGridProps) => {
         maxVisibleRows={parameters.MaxVisibleRows?.raw ?? undefined}
         height={parameters.Height?.raw ?? undefined}
         state={props.state?.AgGridState}
-        components={{
-            onRenderAgGrid: (agGridProps) => <AgGridReact
-                {...agGridProps}
-                //the grid's own root is not where the row transition can live: this one lands on the
-                //ag-root-wrapper, above the animated rows
-                className={getClassNames([agGridProps.className, styles.checkListGridRoot])}
-                //`rowDragText` is an initial-only option, so it cannot be set from the customizer. Without
-                //it the drag ghost reads "1 row"; the item's own label is more use.
-                rowDragText={(params) => {
-                    const record = params.rowNode?.data as IRecord | undefined;
-                    return record?.getFormattedValue(datasetControl.getFieldMapping().name) ?? '';
-                }}
-                onGridReady={(event) => {
-                    //before the grid's own handler: that runs its init, which pushes the first columns,
-                    //and those need to arrive through the customizer's patched setter
-                    customizerRef.current = new CheckListGridCustomizer({
-                        gridApi: event.api,
-                        datasetControl: datasetControl
-                    });
-                    agGridProps.onGridReady?.(event);
-                }}
-            />
-        }}
     />
 }

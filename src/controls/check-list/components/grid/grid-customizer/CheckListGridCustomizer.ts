@@ -25,7 +25,7 @@ export interface ICheckListGridCustomizerParameters {
  * Where the checklist configures its own AG Grid instance. Internal: there is no strategy, no module and
  * no prop behind this — it is not a seam for consumers, it is how the checklist implements itself.
  *
- * Built in the grid's `onGridReady`, before the grid pushes its first columns.
+ * Built as soon as the grid's api exists, before the grid pushes its first columns.
  *
  * The grid options and the patched `gridApi` die with the AG Grid instance, and the provider clears its
  * own listeners when it is destroyed, so nothing here needs taking down by hand.

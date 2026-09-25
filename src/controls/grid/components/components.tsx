@@ -1,6 +1,4 @@
 import * as React from "react";
-import { AgGridReact, AgGridReactProps } from "@ag-grid-community/react";
-import { IRecord } from "@talxis/client-libraries";
 import { CellRenderer, ICellRendererProps } from "./cells/cell-renderer/CellRenderer";
 import { CellEditor, ICellEditorProps } from "./cells/cell-editor/CellEditor";
 import { CellEmptyRenderer, ICellEmptyRendererProps } from "./cells/empty-cell-renderer/CellEmptyRenderer";
@@ -8,8 +6,6 @@ import { ColumnHeaderRenderer, IColumnHeaderRendererProps } from "./column-heade
 
 /** The replaceable parts of the grid. */
 export interface IGridComponents {
-    /** Renders the AG Grid instance. */
-    onRenderAgGrid: (props: AgGridReactProps<IRecord>) => JSX.Element;
     /** Renders a record's cell; `Grid.Cell.Renderer` is the grid's own, to fall back to. */
     onRenderCellRenderer: (props: ICellRendererProps) => JSX.Element;
     /** Renders a record's cell while it is edited; `Grid.Cell.Editor` is the grid's own. */
@@ -22,7 +18,6 @@ export interface IGridComponents {
 
 /** The defaults for {@link IGridComponents}. */
 export const GridComponents: IGridComponents = {
-    onRenderAgGrid: (props) => <AgGridReact<IRecord> {...props} />,
     onRenderCellRenderer: (props) => <CellRenderer {...props} />,
     onRenderCellEditor: (props) => <CellEditor {...props} />,
     onRenderEmptyCellRenderer: (props) => <CellEmptyRenderer {...props} />,
