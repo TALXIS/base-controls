@@ -317,8 +317,9 @@ export class GridAggregation implements IGridAggregation {
         return provider?.getSummarizationType() === 'aggregation' && provider.isError();
     };
 
-    private _getFullWidthCellRendererParams = (params: IsFullWidthRowParams<IRecord>) => ({
-        errorMessage: params.rowNode.data?.getDataProvider().getErrorMessage(),
+    //handed the renderer's own params, not the ones `isFullWidthRow` is asked with
+    private _getFullWidthCellRendererParams = (params: ICellRendererParams<IRecord>) => ({
+        errorMessage: params.data?.getDataProvider().getErrorMessage(),
     });
 
     /** Puts the dataset's total under the rows, and keeps it there. */
