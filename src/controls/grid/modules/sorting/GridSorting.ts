@@ -150,11 +150,15 @@ export class GridSorting implements IGridSorting {
                 return this._labels.getLocalizedString('sortDateDescending')
             }
             case DataTypes.TwoOptions: {
-                const options = column.metadata?.OptionSet ?? [];
-                if (!descending) {
-                    return `${options[0].Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${options[1].Label}`
+                const [first, second] = column.metadata?.OptionSet ?? [];
+                //metadata without both options reads like text
+                if (!first || !second) {
+                    return this._labels.getLocalizedString(descending ? 'sortTextDescending' : 'sortTextAscending');
                 }
-                return `${options[1].Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${options[0].Label}`
+                if (!descending) {
+                    return `${first.Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${second.Label}`
+                }
+                return `${second.Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${first.Label}`
             }
             default: {
                 if (!descending) {

@@ -28,22 +28,21 @@ export interface IGridEventHandlers {
 }
 
 export interface IGrid extends Partial<IGridEventHandlers> {
-    /** Where the records, the columns and the paging come from. */
+    /** Where the records, the columns and the paging come from; read once, at mount. */
     provider: IDataProvider;
-    /** What this grid is made of. */
+    /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
-
-    /** Whether a cell may be edited in place. */
+    /** Whether cells may be edited; read at mount, narrowed later by `registerCellEditableHook`. */
     enableEditing?: boolean;
-    /** Whether a double click on a row opens the record it stands for. */
+    /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;
-    /** Whether an option set's own colour is used for its cells. */
+    /** Whether option sets show their colours; read at mount, then control parameter hooks. */
     enableOptionSetColors?: boolean;
-    /** Whether every other row takes a background of its own. */
+    /** Whether every other row is shaded; read at mount, then through `registerCellThemeHook`. */
     enableZebra?: boolean;
     /** Whether an edit saves itself, rather than waiting to be saved. */
     enableAutoSave?: boolean;
-    /** How tall a row is, in pixels. */
+    /** How tall a row is, in pixels; read at mount, then through `registerRowHeightHook`. */
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */
     maxVisibleRows?: number;
@@ -52,11 +51,11 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     /** Put on the grid's own element, alongside its own classes. */
     className?: string;
 
-    /** Overrides for the strings the grid renders. */
+    /** Overrides for the strings the grid renders; read once, at mount. */
     labels?: Partial<IGridLabels>;
-    /** Merged over the provider's column with the same `colId`, or added where there is none. */
+    /** Merged over provider columns by `colId`, or added; read at mount, then column hooks. */
     colDefs?: (ColDef<IRecord> & { colId: string })[];
-    /** The AG Grid state to restore column order, widths and sorting from. */
+    /** AG Grid state for column order, widths and sorting; read at mount, then `gridApi`. */
     state?: GridState;
     /** Fired once AG Grid is ready, with its api among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;

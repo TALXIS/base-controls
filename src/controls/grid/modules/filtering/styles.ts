@@ -12,7 +12,7 @@ export const filterCalloutStyles = mergeStyleSets({
             gap: 10
         },
         '.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"]': {
-            padding: `0x !important`
+            padding: '0px !important'
         }
     },
     title: {

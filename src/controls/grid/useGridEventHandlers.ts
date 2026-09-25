@@ -7,7 +7,7 @@ import { IGridColumnsEvents } from "./services/columns";
 
 /** Hands what the grid's parts dispatch to the event props of the same name. */
 export const useGridEventHandlers = (runtime: IGridRuntime, props: IGrid) => {
-    const { provider } = props;
+    const provider = runtime.services.get('provider');
     const columns = runtime.services.get('columns');
     useEventEmitter<IGridRuntimeEvents>(runtime.events, 'onDataLoaded', () => props.onDataLoaded?.());
     useEventEmitter<IDataProviderEventListeners>(provider, 'onLoading', (isLoading: boolean) => props.onLoadingChanged?.(isLoading));

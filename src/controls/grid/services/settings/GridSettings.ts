@@ -4,7 +4,7 @@ const DEFAULT_ROW_HEIGHT = 42;
 const DEFAULT_MAX_VISIBLE_ROWS = 15;
 
 export interface IGridSettingsParameters {
-    /** The current props, read on demand so the grid follows them. */
+    /** The current props: the mount-only ones are read once, the rest on demand. */
     onGetProps: () => IGrid;
 }
 
@@ -29,21 +29,24 @@ export interface IGridSettings {
 
 export class GridSettings implements IGridSettings {
     private _getProps: () => IGrid;
+    private _mountProps: IGrid;
 
     constructor(parameters: IGridSettingsParameters) {
         this._getProps = parameters.onGetProps;
+        //taken once: a later value is ignored, rather than reaching some cells and not others
+        this._mountProps = { ...parameters.onGetProps() };
     }
 
     public isEditingEnabled(): boolean {
-        return this._getProps().enableEditing === true;
+        return this._mountProps.enableEditing === true;
     }
 
     public isNavigationEnabled(): boolean {
-        return this._getProps().enableNavigation !== false;
+        return this._mountProps.enableNavigation !== false;
     }
 
     public isZebraEnabled(): boolean {
-        return this._getProps().enableZebra !== false;
+        return this._mountProps.enableZebra !== false;
     }
 
     public isAutoSaveEnabled(): boolean {
@@ -51,11 +54,11 @@ export class GridSettings implements IGridSettings {
     }
 
     public areOptionSetColorsEnabled(): boolean {
-        return this._getProps().enableOptionSetColors === true;
+        return this._mountProps.enableOptionSetColors === true;
     }
 
     public getDefaultRowHeight(): number {
-        return this._getProps().rowHeight ?? DEFAULT_ROW_HEIGHT;
+        return this._mountProps.rowHeight ?? DEFAULT_ROW_HEIGHT;
     }
 
     public getMaxVisibleRows(): number {
@@ -63,6 +66,6 @@ export class GridSettings implements IGridSettings {
     }
 
     public getColDefs(): NonNullable<IGrid['colDefs']> {
-        return this._getProps().colDefs ?? [];
+        return this._mountProps.colDefs ?? [];
     }
 }

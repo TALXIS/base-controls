@@ -94,8 +94,8 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('labels', () => labels);
         this._services.register('settings', () => settings);
         this._services.register('pcfContext', () => pcfContext);
-        //the one service whose resolver is the point
-        this._services.register('provider', () => onGetProps().provider);
+        const provider = onGetProps().provider;
+        this._services.register('provider', () => provider);
         this._services.register('theme', () => theme);
         //constructed, then registered: a resolver runs on every lookup
         const columns = new GridColumns({ services: this._services });
