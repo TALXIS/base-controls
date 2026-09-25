@@ -44,7 +44,6 @@ export const Grid = (props: IControlProps) => {
         rowHeight={parameters.RowHeight?.raw ?? undefined}
         maxVisibleRows={parameters.MaxVisibleRows?.raw ?? undefined}
         height={parameters.Height?.raw ?? undefined}
-        inlineRibbonButtonIds={parameters.InlineRibbonButtonIds?.raw ?? undefined}
         state={props.state?.AgGridState}
         components={{
             onRenderAgGrid: (agGridProps) => <AgGridReact

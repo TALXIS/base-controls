@@ -52,8 +52,6 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     height?: string;
     /** Put on the grid's own element, alongside its own classes. */
     className?: string;
-    /** Which ribbon buttons a row offers inline, as a comma-separated list of their ids. */
-    inlineRibbonButtonIds?: string;
 
     /** Overrides for the strings the grid renders. */
     labels?: Partial<IGridLabels>;

@@ -126,7 +126,6 @@ export class GridControl implements IGridControl {
             IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
             EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
             EnableOptionSetColors: { raw: this._settings.areOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
-            CommandButtonIds: { raw: this._settings.getInlineRibbonButtonIds(), type: DataTypes.SingleLineText },
         };
         Object.assign(parameters, this._fieldControl?.getParameters());
         //what the column's bindings ask for wins

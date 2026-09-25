@@ -20,8 +20,6 @@ export interface IGridSettings {
     isAutoSaveEnabled(): boolean;
     /** Whether an option set's own colour is used for its cells. */
     areOptionSetColorsEnabled(): boolean;
-    /** Which ribbon buttons a row offers inline, or `null` where it offers none. */
-    getInlineRibbonButtonIds(): string | null;
     /** How tall a row is, in pixels. */
     getDefaultRowHeight(): number;
     /** How many rows the grid grows to fit before it scrolls instead. */
@@ -53,10 +51,6 @@ export class GridSettings implements IGridSettings {
 
     public areOptionSetColorsEnabled(): boolean {
         return this._getProps().enableOptionSetColors === true;
-    }
-
-    public getInlineRibbonButtonIds(): string | null {
-        return this._getProps().inlineRibbonButtonIds ?? null;
     }
 
     public getDefaultRowHeight(): number {
