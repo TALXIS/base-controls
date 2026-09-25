@@ -1,5 +1,5 @@
 import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
-import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
@@ -32,8 +32,14 @@ export interface IGridColumnsParameters {
     services: IGridServiceLocator;
 }
 
+export interface IGridColumnsEvents {
+    /** A record's cell was double-clicked, whether or not the record then opens. */
+    onCellDoubleClicked: (record: IRecord, columnName: string) => void;
+}
+
 /** The columns the grid gives AG Grid. */
 export interface IGridColumns {
+    readonly events: IEventEmitter<IGridColumnsEvents>;
     /** What a column header offers, assembled from what the modules registered. */
     readonly headers: IGridColumnHeaders;
     /**
@@ -50,6 +56,7 @@ export class GridColumns implements IGridColumns {
     private _services: IGridServiceLocator;
     private _hooks = new HookRegistry<GridColumnDefinitionsHook>();
     private _headers: IGridColumnHeaders;
+    public readonly events: IEventEmitter<IGridColumnsEvents> = new EventEmitter<IGridColumnsEvents>();
 
     constructor(parameters: IGridColumnsParameters) {
         this._services = parameters.services;
@@ -256,7 +263,7 @@ export class GridColumns implements IGridColumns {
             return;
         }
         const columnName = event.colDef.colId!;
-        this._services.get('grid').events.dispatchEvent('onCellDoubleClicked', record, columnName);
+        this.events.dispatchEvent('onCellDoubleClicked', record, columnName);
         //the click landed on a rendered cell, so one is registered
         const cell = this._cells.getCell(record, columnName)!;
         switch (true) {

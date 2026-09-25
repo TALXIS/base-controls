@@ -1,4 +1,4 @@
-import { CellFocusedEvent, GridApi } from "@ag-grid-community/core";
+import { CellEditingStartedEvent, CellFocusedEvent, GridApi } from "@ag-grid-community/core";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import type { IGridCell } from "../cells";
@@ -27,7 +27,7 @@ const isEditStartKey = (event: KeyboardEvent): boolean => {
 /** Which cell the user is editing, and the keys that start and end it. */
 export interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
-    /** Whether the user stepped into the control a cell draws in place. */
+    /** Whether the user is editing this cell, in place or in the editor AG Grid opened. */
     isEditing(record: IRecord, columnName: string): boolean;
     /** The user stepped into what this cell draws. */
     start(cell: IGridCell): void;
@@ -48,6 +48,9 @@ export class GridEditing implements IGridEditing {
         this._services.whenAvailable('keyboard', keyboard => keyboard.onKeyDown(event => this._onKeyDown(event)));
         this._services.whenAvailable('gridApi', gridApi => {
             gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
+            //an editor AG Grid opens is an edit too
+            gridApi.addEventListener('cellEditingStarted', this._onCellEditingStarted);
+            gridApi.addEventListener('cellEditingStopped', () => this._setEditedCell(undefined));
         });
     }
 
@@ -107,8 +110,17 @@ export class GridEditing implements IGridEditing {
         this._setEditedCell(undefined);
     }
 
+    private _onCellEditingStarted = (event: CellEditingStartedEvent<IRecord>): void => {
+        if (event.data) {
+            this._setEditedCell({ recordId: event.data.getRecordId(), columnName: event.column.getColId() });
+        }
+    };
+
     private _setEditedCell(editedCell: IGridEditedCell | undefined): void {
         const previous = this._editedCell;
+        if (editedCell?.recordId === previous?.recordId && editedCell?.columnName === previous?.columnName) {
+            return;
+        }
         this._editedCell = editedCell;
         this.events.dispatchEvent('onEditedCellChanged', previous, editedCell);
     }
