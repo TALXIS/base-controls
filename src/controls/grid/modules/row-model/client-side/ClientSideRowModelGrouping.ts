@@ -27,6 +27,10 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         //ahead of the grid's refresh on the same event
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        //a provider that loaded before the grid mounted sends no event for it
+        if (!this._provider.isLoading()) {
+            this._loadEveryLevel();
+        }
     }
 
     /** Neither option is `@initial`, so grouping can turn the hierarchy on and off. */
