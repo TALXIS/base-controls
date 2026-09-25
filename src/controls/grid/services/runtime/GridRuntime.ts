@@ -165,13 +165,6 @@ export class GridRuntime implements IGridRuntime {
         return this._agGridProps;
     }
 
-    public onGridRootRef = (gridRoot: HTMLDivElement | null): void => {
-        //a part listening ahead of AG Grid needs this element, and it exists only once mounted
-        if (gridRoot) {
-            this._services.register('gridRoot', () => gridRoot);
-        }
-    };
-
     public destroy(): void {
         //the provider outlives the grid
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);

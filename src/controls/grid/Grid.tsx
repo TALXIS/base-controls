@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "@fluentui/react";
 import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
@@ -36,6 +36,13 @@ export const GridRoot = (props: IGrid) => {
 
     useGridEventHandlers(runtime, props);
 
+    //a part listening ahead of AG Grid needs this element, and it exists only once mounted
+    const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
+        if (gridRoot) {
+            runtime.services.register('gridRoot', () => gridRoot);
+        }
+    }, [runtime]);
+
     //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
     useEffect(() => () => runtime.destroy(), []);
 
@@ -46,7 +53,7 @@ export const GridRoot = (props: IGrid) => {
             //a cell may be drawn in colours of its own, but what it opens is drawn over the grid
             surfaceTheme={theme}
             applyTo='none'
-            ref={runtime.onGridRootRef}
+            ref={onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
             {components.onRenderAgGrid(runtime.getAgGridProps())}
             <Surfaces />
