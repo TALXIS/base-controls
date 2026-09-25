@@ -34,15 +34,24 @@ export const Playground: Story = {
     name: 'Playground',
     args: {
         rowModel: 'serverSide',
+        clipboard: true,
+        cellSelection: true,
         enableEditing: true,
         rowHeight: 42,
         enableAutoSave: true,
         enableNavigation: true,
         enableZebra: true,
         enableOptionSetColors: true,
+        sorting: true,
+        filtering: true,
+        grouping: true,
+        aggregation: true,
+        selectableRows: 'multiple',
     },
     argTypes: {
         rowModel: { control: 'inline-radio', options: ['serverSide', 'clientSide'] },
+        grouping: { description: 'Fetches a level at a time on the server-side row model, the whole tree on the client-side one.' },
+        selectableRows: { control: 'inline-radio', options: ['none', 'single', 'multiple'] },
     },
     render: (args: IScratchGridProps) => <FullPage><ScratchGrid {...args} /></FullPage>,
 }
@@ -51,7 +60,8 @@ export const Playground: Story = {
  * The same grid over ten thousand rows, which is what says whether a cell is cheap enough.
  *
  * Everything a cell does per render is in play here - its theme, the hooks, the commands, the validation -
- * so scrolling this is the measure of what the cell costs.
+ * so scrolling this is the measure of what the cell costs. Grouping and aggregation are on, so grouping and
+ * totalling the whole set are measured too.
  */
 export const Stress: Story = {
     name: 'Stress',
