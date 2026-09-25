@@ -91,7 +91,7 @@ export class GridGrouping implements IGridGrouping {
     /** How many levels of groups are open. */
     private _expandedLevel: number;
     private _hasUserExpanded: boolean = false;
-    private _childLimitNotificationId?: string;
+    private _hasReportedChildLimit = false;
     private _isGroupSelectionLimitDialogOpen: boolean = false;
     public readonly events: IEventEmitter<IGridGroupingEvents> = new EventEmitter<IGridGroupingEvents>();
 
@@ -111,9 +111,10 @@ export class GridGrouping implements IGridGrouping {
         //the provider nests by default, so what this module was asked for is the word on it
         this._provider.setProperty('groupingType', this._settings.type);
         this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
-        this._gridServices.whenAvailable('gridApi', gridApi => gridApi.addEventListener('gridPreDestroyed', this._onGridPreDestroyed));
+        this._gridServices.get('grid').events.addEventListener('onDestroy', this._onDestroy);
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
+        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._registerHooks();
     }
 
@@ -371,25 +372,26 @@ export class GridGrouping implements IGridGrouping {
     };
 
     //the provider outlives the grid
-    private _onGridPreDestroyed = (): void => {
+    private _onDestroy = (): void => {
         this._provider.removeEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
-        if (this._childLimitNotificationId) {
-            window.Xrm.App.clearGlobalNotification(this._childLimitNotificationId);
-        }
+        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     };
 
-    /** Says once that a group had more children than were loaded. */
-    //TODO: use control notification instead
-    private _onNestedProviderPagingLimitReached = async (): Promise<void> => {
-        if (this._childLimitNotificationId) {
+    //a new load can run out of children again, and is told so again
+    private _onNewDataLoaded = (): void => {
+        this._hasReportedChildLimit = false;
+    };
+
+    /** Says once per load that a group had more children than were loaded. */
+    private _onNestedProviderPagingLimitReached = (): void => {
+        if (this._hasReportedChildLimit) {
             return;
         }
-        this._childLimitNotificationId = await window.Xrm.App.addGlobalNotification({
-            level: 4,
+        this._hasReportedChildLimit = true;
+        this._gridServices.get('pcfContext').navigation.openErrorDialog({
             message: this._labels.getLocalizedString('maximumGroupChildrenLimitReached', {
                 maxGroupChildren: Formatting.Get().formatInteger(CHILD_LIMIT),
             }),
-            type: 2,
         });
     };
 

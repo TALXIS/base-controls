@@ -44,6 +44,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
         this._services.get('grid').registerAgGridOptions(result => result.options.getRowHeight = this._getRowHeight);
+        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
     public isActive(record: IRecord): boolean {
@@ -70,7 +71,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         //a selection reaches the cells nowhere else
-        this._services.get('provider').addEventListener('onRecordsSelected', () => this._onSelectionChanged());
+        this._services.get('provider').addEventListener('onRecordsSelected', this._onSelectionChanged);
         gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setActiveRow('hovered', event.data?.getRecordId()));
         //AG Grid reports the cell the pointer left
         gridApi.addEventListener('cellMouseOut', (event: CellMouseOutEvent<IRecord>) => {
@@ -83,10 +84,15 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         });
     }
 
-    private _onSelectionChanged(): void {
+    //the provider outlives the grid
+    private _onDestroy = (): void => {
+        this._services.get('provider').removeEventListener('onRecordsSelected', this._onSelectionChanged);
+    };
+
+    private _onSelectionChanged = (): void => {
         this._selectedRecordIds = new Set(this._services.get('provider').getSelectedRecordIds({ includeGroupRecordIds: true }));
         this.dispatchEvent('onActiveRowsChanged');
-    }
+    };
 
     private _setActiveRow(by: 'hovered' | 'focused', recordId: string | undefined): void {
         if (by === 'hovered') {

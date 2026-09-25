@@ -63,6 +63,7 @@ export class GridAggregation implements IGridAggregation {
         this._services = parameters.services;
         this._allowUserAggregation = parameters.allowUserAggregation ?? true;
         this._gridServices.whenAvailable('gridApi', () => this._onGridApiAvailable());
+        this._gridServices.get('grid').events.addEventListener('onDestroy', this._onDestroy);
         this._registerHooks();
     }
 
@@ -277,17 +278,32 @@ export class GridAggregation implements IGridAggregation {
 
     private _onGridApiAvailable(): void {
         //a view change can bring in an aggregated column
-        this._provider.addEventListener('onFirstDataLoaded', () => this._syncTotalRow());
-        this._provider.addEventListener('onNewDataLoaded', () => this._syncTotalRow());
+        this._provider.addEventListener('onFirstDataLoaded', this._syncTotalRow);
+        this._provider.addEventListener('onNewDataLoaded', this._syncTotalRow);
         //a save changes what the totals are over.
-        this._provider.addEventListener('onAfterSaved', () => this._totalRow?.refresh());
-        this._provider.addEventListener('onAfterRecordSaved', () => {
-            if (this._gridServices.get('settings').isAutoSaveEnabled()) {
-                this._totalRow?.refresh();
-            }
-        });
+        this._provider.addEventListener('onAfterSaved', this._onAfterSaved);
+        this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
         this._syncTotalRow();
     }
+
+    private _onAfterSaved = (): void => {
+        this._totalRow?.refresh();
+    };
+
+    private _onAfterRecordSaved = (): void => {
+        if (this._gridServices.get('settings').isAutoSaveEnabled()) {
+            this._totalRow?.refresh();
+        }
+    };
+
+    //the provider outlives the grid, and the total row follows it until told otherwise
+    private _onDestroy = (): void => {
+        this._provider.removeEventListener('onFirstDataLoaded', this._syncTotalRow);
+        this._provider.removeEventListener('onNewDataLoaded', this._syncTotalRow);
+        this._provider.removeEventListener('onAfterSaved', this._onAfterSaved);
+        this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._totalRow?.destroy();
+    };
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.isFullWidthRow = this._isFullWidthRow;
@@ -306,7 +322,7 @@ export class GridAggregation implements IGridAggregation {
     });
 
     /** Puts the dataset's total under the rows, and keeps it there. */
-    private _syncTotalRow(): void {
+    private _syncTotalRow = (): void => {
         const totalRow = this._ensureTotalRow();
         if (totalRow && !this._isTotalRowSubscribed) {
             this._isTotalRowSubscribed = true;
@@ -314,7 +330,7 @@ export class GridAggregation implements IGridAggregation {
             totalRow.getDataProvider().addEventListener('onError', () => this._setPinnedRowData());
         }
         this._setPinnedRowData();
-    }
+    };
 
     //a menu click can create the total row before there is a grid
     private _setPinnedRowData(): void {
