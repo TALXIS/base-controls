@@ -12,15 +12,15 @@ export const createCheckListGridModule = (datasetControl: ICheckListDatasetContr
         return record?.getFormattedValue(datasetControl.getFieldMapping().name) ?? '';
     };
     return {
-        onRegister: services => {
-            services.get('grid').registerAgGridInitialOptions(result => {
+        onRegister: runtime => {
+            runtime.registerAgGridInitialOptions(result => {
                 result.options.rowDragText = rowDragText;
                 //the grid's own root is not where the row transition can live: this one lands on the
                 //ag-root-wrapper, above the animated rows
                 result.options.className = className;
             });
             //ahead of the grid's first column push, so those columns arrive through the patched setter
-            services.whenAvailable('gridApi', gridApi => new CheckListGridCustomizer({ gridApi, datasetControl }));
+            runtime.services.whenAvailable('gridApi', gridApi => new CheckListGridCustomizer({ gridApi, datasetControl }));
         },
     };
 };

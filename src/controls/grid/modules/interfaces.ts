@@ -1,11 +1,11 @@
 import type { Module } from "@ag-grid-community/core";
-import type { IGridServiceLocator } from "../services";
+import type { IGridRuntime } from "../services/runtime";
 
 /** One thing a grid can be given rather than born with. */
 export interface IGridModule {
     agGridModules?: Module[];
     /** Registers what the module contributes, if anything outlives construction. */
-    onRegister?: (services: IGridServiceLocator) => void;
+    onRegister?: (runtime: IGridRuntime) => void;
 }
 
 /** How the grid gets its rows. */

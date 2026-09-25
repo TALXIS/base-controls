@@ -20,7 +20,7 @@ export interface IAggregationModuleOptions {
  * @example
  */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
-    onRegister: gridServices => {
+    onRegister: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
         //built once, then registered: a resolver runs on every lookup

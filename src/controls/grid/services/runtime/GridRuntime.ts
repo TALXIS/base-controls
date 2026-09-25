@@ -121,7 +121,7 @@ export class GridRuntime implements IGridRuntime {
         const { custom = [], ...builtIns } = onGetProps().modules;
         const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);
         for (const module of modules) {
-            module.onRegister?.(this._services);
+            module.onRegister?.(this);
         }
         //after the modules have had their say, and before AG Grid is constructed on this same render
         ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));

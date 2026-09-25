@@ -11,15 +11,14 @@ export const createTaskTreeModule = (taskDataProvider: ITaskDataProvider, taskGr
     const getDataPath = (record: IRecord) => taskDataProvider.getRecordTree().structure.getAncestorIds(record.getRecordId());
     return {
         agGridModules: [RowGroupingModule],
-        onRegister: services => {
+        onRegister: runtime => {
             //ahead of the grid's first column push, so those columns meet the customizer's patch
-            services.whenAvailable('gridApi', gridApi => taskGridServices.register('gridApi', () => gridApi));
-            const grid = services.get('grid');
-            grid.registerAgGridInitialOptions(result => {
+            runtime.services.whenAvailable('gridApi', gridApi => taskGridServices.register('gridApi', () => gridApi));
+            runtime.registerAgGridInitialOptions(result => {
                 result.options.suppressGroupRowsSticky = true;
                 result.options.processUnpinnedColumns = processUnpinnedColumns;
             }, GRID_MODULE_PRIORITY.grouping);
-            grid.registerAgGridOptions(result => {
+            runtime.registerAgGridOptions(result => {
                 //the path first: AG Grid reads it the moment tree data is switched on
                 result.options.getDataPath = getDataPath;
                 result.options.treeData = true;

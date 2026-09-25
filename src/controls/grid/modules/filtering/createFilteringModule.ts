@@ -18,7 +18,7 @@ export interface IFilteringModuleOptions {
 }
 
 export const createFilteringModule = (options?: IFilteringModuleOptions): IGridModule => ({
-    onRegister: gridServices => {
+    onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridFilteringServiceMap>();
         const labels = new LocalizationService<IGridFilteringLabels>({ ...GRID_FILTERING_LABELS, ...options?.labels });
         const components = { ...GridFilteringComponents, ...options?.components };

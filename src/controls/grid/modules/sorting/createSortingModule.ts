@@ -18,7 +18,7 @@ export interface ISortingModuleOptions {
 }
 
 export const createSortingModule = (options?: ISortingModuleOptions): IGridModule => ({
-    onRegister: gridServices => {
+    onRegister: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridSortingServiceMap>();
         //built once, then registered: a resolver runs on every lookup

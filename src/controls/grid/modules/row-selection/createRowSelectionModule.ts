@@ -17,7 +17,7 @@ export interface IRowSelectionModuleOptions {
  * @example
  */
 export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IGridModule => ({
-    onRegister: gridServices => {
+    onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridRowSelectionServiceMap>();
         const components = { ...GridRowSelectionComponents, ...options.components };
         services.register('gridServices', () => gridServices);

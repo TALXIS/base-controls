@@ -30,7 +30,7 @@ export interface IGroupingModuleOptions {
  */
 export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGridModule => ({
     agGridModules: [RowGroupingModule],
-    onRegister: gridServices => {
+    onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
         const components = { ...GridGroupingComponents, ...options.components };

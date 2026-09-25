@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridComponents, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridComponents, IGridModule, IGridModules } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -263,8 +263,8 @@ const SCRATCH_GRID_COMPONENTS: Partial<IGridComponents> = {
 
 /** The columns the story adds or moves, as a module of its own. */
 const STORY_COLUMNS_MODULE: IGridModule = {
-    onRegister: (services: IGridServiceLocator) => {
-        services.get('columns').registerColumnDefinitionsHook(columnDefs => {
+    onRegister: runtime => {
+        runtime.services.get('columns').registerColumnDefinitionsHook(columnDefs => {
             const status = columnDefs.find(columnDef => columnDef.colId === 'status')
             if (status) {
                 status.pinned = 'right'
