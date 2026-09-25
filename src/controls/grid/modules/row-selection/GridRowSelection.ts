@@ -35,6 +35,8 @@ export interface IGridRowSelection {
     setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
     /** Selects the records, through whatever intercepts `onSelectRecords`. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
+    /** Selects the record, or deselects it, through whatever intercepts `onSelectRecords`. */
+    toggleRecord(record: IRecord): Promise<void>;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
     /** How a row's checkbox should read. */
@@ -74,6 +76,18 @@ export class GridRowSelection implements IGridRowSelection {
 
     public setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void {
         this._interceptors.setInterceptor(event, interceptor);
+    }
+
+    public toggleRecord(record: IRecord): Promise<void> {
+        const provider = record.getDataProvider();
+        const recordId = record.getRecordId();
+        //the provider's own selection, group rows included
+        const selectedRecordIds = provider.getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
+        const isSelected = selectedRecordIds.includes(recordId);
+        if (this._mode === 'single') {
+            return this.selectRecords(provider, isSelected ? [] : [recordId]);
+        }
+        return this.selectRecords(provider, isSelected ? selectedRecordIds.filter(id => id !== recordId) : [...selectedRecordIds, recordId]);
     }
 
     public async selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void> {

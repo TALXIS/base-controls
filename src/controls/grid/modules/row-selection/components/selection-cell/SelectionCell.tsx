@@ -21,7 +21,7 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
     const onCheckBoxClick = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!isRecordSelectionDisabled) {
-            record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: selection.getMode() === 'single' });
+            selection.toggleRecord(record);
         }
     };
 
