@@ -3,12 +3,8 @@ import { IControl, IOutputs } from "../interfaces/context";
 import { IControlController, useControl } from "./useControl";
 import { IInputParameters } from "../interfaces/parameters";
 import { IDefaultTranslations } from "./useControlLabels";
+import deepEqual from 'fast-deep-equal/es6';
 
-/**
- * Description
- * @param {any} value:any
- * @returns {any}
- */
 interface IControlOptions {
     defaultTranslations?: IDefaultTranslations;
     /**
@@ -31,6 +27,7 @@ interface IControlOptions {
  * 
  * The last prop is a method that will notify the framework that you wish to write changes.  
  * The method will notify the framework only if the provided output differs from the current inputs.
+ * Unmounting notifies the current value unless it is the one notified last.
  */
 
 interface IInputBasedControlController<TValue, TTranslations, TOutputs> extends IControlController<TTranslations, TOutputs> {
@@ -43,12 +40,17 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const { labels, sizing, theme, className, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
+    const lastNotifiedRef = useRef<{ value: any }>();
+    const { labels, sizing, theme, className, onNotifyOutputChanged: notifyControl } = useControl(name, props, options?.defaultTranslations);
+
+    const onNotifyOutputChanged = (outputs: TOutputs) => {
+        lastNotifiedRef.current = { value: outputs.value };
+        notifyControl(outputs);
+    };
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
         setValue(formattedValue ?? rawValue);
-        //console.log(`Updating component ${name} with new value: ${formattedValue ?? rawValue}`);
     }, [rawValue]);
 
     useEffect(() => {
@@ -57,9 +59,13 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
 
     useEffect(() => {
         return () => {
-            onNotifyOutputChanged({
-                value: valueExtractor?.(valueRef.current) ?? valueRef.current
-            } as any);
+            const value = valueExtractor?.(valueRef.current) ?? valueRef.current;
+            //a grid editor unmounts right after its blur, before a re-render refreshes the inputs
+            //useControl compares against, so without this the blurred value is written twice
+            if (lastNotifiedRef.current && deepEqual(lastNotifiedRef.current.value, value)) {
+                return;
+            }
+            notifyControl({ value } as any);
         };
     }, []);
     return {
