@@ -246,7 +246,8 @@ export class GridGrouping implements IGridGrouping {
     }
 
     public getExpandedLevel(): number {
-        return this._expandedLevel;
+        //a level deeper than the grouping now has reads as the deepest there is
+        return Math.min(this._expandedLevel, this.getDeepestLevel());
     }
 
     public getDeepestLevel(): number {

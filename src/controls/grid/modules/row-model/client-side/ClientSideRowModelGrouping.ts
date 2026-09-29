@@ -45,12 +45,17 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
 
     /** Written onto the nodes and drawn in one pass. */
     public onApplyExpandedLevel(gridApi: GridApi<IRecord>): void {
+        const changedNodes: IRowNode<IRecord>[] = [];
         gridApi.forEachNode(node => {
-            if (node.allChildrenCount) {
-                node.expanded = this.isGroupOpenByDefault(node);
+            const expanded = this.isGroupOpenByDefault(node);
+            if (node.allChildrenCount && node.expanded !== expanded) {
+                node.expanded = expanded;
+                changedNodes.push(node);
             }
         });
         gridApi.onGroupExpandedOrCollapsed();
+        //written without `expandedChanged`, which is what a group row's chevron redraws on
+        gridApi.refreshCells({ rowNodes: changedNodes, force: true });
     }
 
     public onExpansionChanged(): void { }

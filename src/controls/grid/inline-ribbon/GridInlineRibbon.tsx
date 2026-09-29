@@ -9,15 +9,19 @@ import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "./styles";
 import { DataProvider } from "@talxis/client-libraries";
 
+const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'];
+
 export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const propsRef = useRef(props);
     propsRef.current = props;
     const context = props.context;
+    const record = props.parameters.Record.raw;
+    //one model per record: a reload can hand the same row a new one
     const model = useMemo(() => new GridInlineRibbonModel({
         onGetDataset: () => propsRef.current.parameters.Dataset.raw,
-        onGetRecord: () => propsRef.current.parameters.Record.raw,
+        onGetRecord: () => record,
         onGetCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
-    }), []);
+    }), [record]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const componentProps = onOverrideComponentProps({
         onRender: (props, defaultRender) => defaultRender(props)
@@ -26,27 +30,27 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const rerender = useRerender();
     const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.Record.raw.getDataProvider().getColumnsMap()[DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME].alignment ?? 'left', context.mode.allocatedHeight), [context.mode.allocatedHeight]);
-    useEventEmitter<IGridInlineRibbonModelEvents>(model, ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'], () => rerender());
+    useEventEmitter<IGridInlineRibbonModelEvents>(model, MODEL_EVENTS, () => rerender());
 
     const observe = useResizeObserver(() => {
         commandBarRef.current?.remeasure();
     })
 
-    const getRibbonColumn = () => {
-        return props.parameters.Record.raw.getField(DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME);
-    }
-
     useEffect(() => {
-        getRibbonColumn().setCustomProperty('isRibbonUiMounted', true);
+        const ribbonField = record.getField(DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME);
+        ribbonField.setCustomProperty('isRibbonUiMounted', true);
         model.refreshCommands();
-        if (containerRef.current) {
-            observe(containerRef.current);
-        }
         return () => {
-            if (!props.parameters.Record.raw.getDataProvider().isDestroyed()) {
-                getRibbonColumn().setCustomProperty('isRibbonUiMounted', false);
+            if (!record.getDataProvider().isDestroyed()) {
+                ribbonField.setCustomProperty('isRibbonUiMounted', false);
             }
             model.destroy();
+        }
+    }, [model]);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            observe(containerRef.current);
         }
     }, []);
 

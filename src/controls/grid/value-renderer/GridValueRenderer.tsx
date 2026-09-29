@@ -52,8 +52,8 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
                 if (!enableNavigation) {
                     break;
                 }
-                //every record it names: a lookup's value is an array, and each entry stands for a record
-                const references: ComponentFramework.EntityReference[] = Array.isArray(value) ? value : [];
+                //every record it names: an array, or the one reference a host hands over on its own
+                const references: ComponentFramework.EntityReference[] = Array.isArray(value) ? value : value ? [value] : [];
                 return components.onRenderLookup({
                     children: references.map((reference, index) => <Fragment key={reference.id?.guid ?? `${reference.name}-${index}`}>
                         {components.onRenderLink({ text: reference.name, onClick: () => openRecord(reference), isMultiline: isMultiline })}
