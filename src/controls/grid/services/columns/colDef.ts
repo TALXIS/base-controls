@@ -1,4 +1,6 @@
+import type { IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
+import type { IGridCellCommands } from "../cells";
 
 /** What the grid's own column is, whatever its cells are bound to. */
 export interface IGridColumnSettings {
@@ -12,6 +14,8 @@ export interface IGridColumnSettings {
     isRequired?: boolean;
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
+    /** The commands this column's cells offer for a record, before `registerCellCommandsHook`. */
+    onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
 }
 
 declare module "@ag-grid-community/core" {

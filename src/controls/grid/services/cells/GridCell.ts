@@ -158,7 +158,8 @@ export class GridCell implements IGridCell {
     }
 
     public getCommands(): IGridCellCommands {
-        const result: IGridCellCommands = { items: [], overflowItems: [] };
+        const commands = this.getSettings().onGetCommands?.(this._record);
+        const result: IGridCellCommands = { items: commands?.items ?? [], overflowItems: commands?.overflowItems ?? [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result;
     }
