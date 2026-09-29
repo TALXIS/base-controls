@@ -3,7 +3,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { IGridColumnSettings } from "../columns/colDef";
-import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
+import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme, IGridCellTheme } from "./GridCellTheme";
 import { IGridField } from "../fields";
 import { GridControl, IGridControl } from "./GridControl";
@@ -149,14 +149,7 @@ export class GridCell implements IGridCell {
     }
 
     public isEditable(): boolean {
-        //no hook can override a column that is set as uneditable
-        if (this.getSettings().isEditable === false) {
-            return false;
-        }
-        const result: IGridCellEditable = { isEditable: true };
-        this._cells.applyCellEditableHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getSettings().cell?.onGetEditable?.(result, { record: this._record });
-        return result.isEditable;
+        return this._services.get('editability').get({ record: this._record, columnName: this.getColumnName() }).isEditable;
     }
 
     public getCommands(): IGridCellCommands {

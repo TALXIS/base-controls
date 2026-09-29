@@ -3,7 +3,6 @@ import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
-import { IGridCellEditable } from "../../services/cells";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
 import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
@@ -15,6 +14,7 @@ import { IGridRowModelGrouping } from "../row-model/interfaces";
 import { IGridSurface } from "../../services/surfaces";
 import { IGridRowSelectionInterceptors } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
+import { GridEditableHook } from "../../services/editability";
 
 /** The chevron and the count a group row draws beside the value. */
 const GROUPED_COLUMN_WIDTH_OFFSET = 80;
@@ -123,7 +123,7 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
-        cells.registerCellEditableHook(this._onCellEditable, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('editability').registerEditableHook(this._onEditable, GRID_MODULE_PRIORITY.grouping);
         //listed in the column menu after sorting and filtering
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
@@ -322,8 +322,9 @@ export class GridGrouping implements IGridGrouping {
     };
 
     /** A group row holds no record's value to edit. */
-    private _onCellEditable = (result: IGridCellEditable, params: { record: IRecord; columnName: string }): void => {
-        if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
+    //per cell: locking the group record would draw its row muted
+    private _onEditable: GridEditableHook = (result, { record, columnName }) => {
+        if (!record || !columnName || !record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
             return;
         }
         result.isEditable = false;

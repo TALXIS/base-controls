@@ -9,13 +9,12 @@ export interface ICellUneditableIconProps {
 /** What says a cell of an editable column is locked for its record. */
 export const CellUneditableIcon = (props: ICellUneditableIconProps) => {
     const cell = useGridCell();
-    const settings = useGridService('settings');
+    const editability = useGridService('editability');
     const labels = useGridService('labels');
     const components = { ...CellUneditableIconComponents, ...props.components };
 
-    //a read-only column is marked once, in its header
-    const isLockedForRecord = settings.isEditingEnabled() && cell.getSettings().isEditable !== false && !cell.isEditable();
-    if (!isLockedForRecord) {
+    //a locked column is marked in its header, a locked record by its muted row
+    if (editability.get({ record: cell.getRecord(), columnName: cell.getColumnName() }).lockedBy !== 'cell') {
         return null;
     }
     return components.onRenderUneditableIcon({ message: labels.getLocalizedString('valueNotEditable'), alignment: cell.getAlignment() });

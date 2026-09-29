@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
-import { ConditionalFormattingExample, EditablePerRecordExample, RowHeightExample, ColumnMenuItemsExample, HeaderAdornmentsExample, CellCommandsExample, ColumnDefinitionsExample } from '../../../grid/examples/hooksExamples'
+import { ConditionalFormattingExample, EditablePerRecordExample, InactiveRecordsExample, RowHeightExample, ColumnMenuItemsExample, HeaderAdornmentsExample, CellCommandsExample, ColumnDefinitionsExample } from '../../../grid/examples/hooksExamples'
 
 const DESCRIPTION = `
 Each example below registers one hook from a small module. The list of hooks and their services is on [**Extending**](?path=/story/grid-extending--overview).
@@ -43,7 +43,19 @@ export const EditablePerRecord: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellEditableHook\` locks deals that are won. The rest of the grid stays editable.`,
+                story: `\`registerEditableHook\`, asked about a cell (both \`record\` and \`columnName\`), locks the cells of won deals. Each shows the not-editable icon.`,
+            },
+        },
+    },
+}
+
+export const InactiveRecords: Story = {
+    name: 'Inactive records',
+    render: () => renderStory(<InactiveRecordsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `\`registerEditableHook\`, asked about a record (\`record\` without \`columnName\`), locks won deals as a whole. It starts from the provider's \`record.isActive()\`. Their rows are drawn muted and can't be edited.`,
             },
         },
     },

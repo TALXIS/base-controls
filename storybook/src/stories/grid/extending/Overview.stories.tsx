@@ -23,6 +23,7 @@ const myModule: IGridModule = {
 | \`columns\` | The column definitions, and \`columns.headers\` for the headers. |
 | \`cells\` | What every cell draws. |
 | \`rows\` | What is true of a row as a whole. |
+| \`editability\` | Whether the grid, a column, a record's row or a cell can be edited: \`get({ record, columnName })\` returns \`{ isEditable, lockedBy }\`, with the level that locked it. |
 | \`surfaces\` | What modules draw around the grid. |
 | \`grid\` | The runtime itself. |
 | \`gridApi\` | AG Grid's own api, once the grid is ready. See [**AG Grid**](?path=/story/grid-extending-ag-grid--overview). |
@@ -37,12 +38,12 @@ A hook is a function the grid calls with a result to change. Register it on its 
 | Hook | Service | What it changes |
 |---|---|---|
 | \`registerCellThemeHook\` | \`cells\` | A cell's colours |
-| \`registerCellEditableHook\` | \`cells\` | Whether a cell can be edited |
 | \`registerCellLoadingHook\` | \`cells\` | Whether a cell shows it is loading |
 | \`registerCellCommandsHook\` | \`cells\` | The commands a cell offers |
 | \`registerControlHook\` | \`cells\` | Which control draws a cell |
 | \`registerControlParametersHook\` | \`cells\` | The parameters that control is given |
 | \`registerRowHeightHook\` | \`rows\` | A row's height |
+| \`registerEditableHook\` | \`editability\` | Whether a column, a record's row or a cell can be edited. The hook is handed \`{ record, columnName }\` for the level it is asked about: \`columnName\` alone for a column, \`record\` alone for a row, both for a cell. A locked row is drawn muted, a locked cell shows the not-editable icon. |
 | \`registerColumnDefinitionsHook\` | \`columns\` | The column definitions AG Grid gets |
 | \`registerColumnMenuSectionHook\` | \`columns.headers\` | The sections of a column's menu |
 | \`registerColumnMenuItemsHook\` | \`columns.headers\` | The items of a column's menu |
@@ -58,7 +59,7 @@ Every hook takes a \`priority\`. Hooks run in ascending order, so a higher numbe
 | Where | Events |
 |---|---|
 | \`runtime.events\` | \`onDataLoaded\`, \`onDestroyed\` |
-| \`rows\` | \`onRowClicked\`, \`onActiveRowsChanged\` |
+| \`rows\` | \`onRowClicked\`, \`onHighlightedRowsChanged\` |
 | \`cells.events\` | \`onFocusedCellChanged\` |
 | \`columns.events\` | \`onCellDoubleClicked\`, \`onColumnsChanged\` |
 | \`rowSelection.events\` | \`onSelectionChanged\` |

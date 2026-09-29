@@ -16,18 +16,18 @@ export const CellCommands = (props: ICellCommandsProps) => {
     const rows = useGridService('rows');
     const components = { ...CellCommandsComponents, ...props.components };
     const rerender = useRerender();
-    const isActive = rows.isActive(cell.getRecord());
+    const isHighlighted = rows.isHighlighted(cell.getRecord());
     //what this cell last drew from.
-    const wasActive = useRef(isActive);
-    wasActive.current = isActive;
+    const wasHighlighted = useRef(isHighlighted);
+    wasHighlighted.current = isHighlighted;
 
-    useEventEmitter<IGridRowsEvents>(rows, 'onActiveRowsChanged', () => {
-        if (rows.isActive(cell.getRecord()) !== wasActive.current) {
+    useEventEmitter<IGridRowsEvents>(rows, 'onHighlightedRowsChanged', () => {
+        if (rows.isHighlighted(cell.getRecord()) !== wasHighlighted.current) {
             rerender();
         }
     });
 
-    if (!isActive) {
+    if (!isHighlighted) {
         return null;
     }
 

@@ -2,7 +2,8 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
 import type { ThemeBuilder } from "@theme";
 import type { IContextualMenuItem } from "@fluentui/react";
-import type { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "../cells";
+import type { IGridCellCommands, IGridCellLoading } from "../cells";
+import type { IGridEditable } from "../editability";
 import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-header";
 
 /** What a column decides for each of its cells, after the cell hooks. */
@@ -13,8 +14,8 @@ export interface IGridColumnCellSettings {
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
     /** Changes a cell's theme, after `registerCellThemeHook`. */
     onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Decides whether a cell can be edited, after `registerCellEditableHook`. */
-    onGetEditable?: (result: IGridCellEditable, params: { record: IRecord }) => void;
+    /** Decides whether a cell can be edited, after the cell-level `registerEditableHook` hooks. */
+    onGetEditable?: (result: IGridEditable, params: { record: IRecord }) => void;
     /** Decides whether a cell shows it is loading, after `registerCellLoadingHook`. */
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
 }

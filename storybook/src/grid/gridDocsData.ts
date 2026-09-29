@@ -48,7 +48,8 @@ export const DOCS_ROWS: IRawRecord[] = Array.from({ length: 30 }, (_, index) => 
     owner: OWNERS[index % OWNERS.length],
     stage: (index % STAGE_OPTIONS.length) + 1,
     value: 4000 + ((index * 7) % 12) * 2500,
-    probability: PROBABILITIES[index % PROBABILITIES.length],
+    //a few open deals are lost
+    probability: index % 9 === 4 ? 0 : PROBABILITIES[index % PROBABILITIES.length],
     closedate: index % 6 === 0 ? null : new Date(2026, index % 12, (index % 27) + 1).toISOString(),
     timespent: TIME_SPENT[index % TIME_SPENT.length],
     recurring: index % 3 !== 0,

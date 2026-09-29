@@ -1,7 +1,8 @@
 import { IControlParameters, ICustomColumnControl, IField, IRecord } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { getTextColorForBackground, ThemeGenerator } from "@theme";
-import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
+import type { GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
+import type { GridEditableHook } from "../editability";
 import type { IGridServiceLocator } from "../../services";
 
 /** Ahead of every module. */
@@ -15,15 +16,15 @@ export interface IGridLegacyClientApiCompatibilityParameters {
 export class GridLegacyClientApiCompatibility {
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
         const cells = parameters.services.get('cells');
-        cells.registerCellEditableHook(this._onCellEditable, COMPATIBILITY_HOOK_PRIORITY);
+        parameters.services.get('editability').registerEditableHook(this._onEditable, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlHook(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlParametersHook(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
     }
 
-    private _onCellEditable: GridCellEditableHook = (result, params) => {
-        const field = this._getField(params);
+    private _onEditable: GridEditableHook = (result, { record, columnName }) => {
+        const field = record && columnName ? this._getField({ record, columnName }) : undefined;
         if (!field) {
             return;
         }

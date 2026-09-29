@@ -24,12 +24,6 @@ export type GridControlParametersHook = (result: IParameters, params: IGridCellH
 /** A hook over the theme a cell is drawn in. */
 export type GridCellThemeHook = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
 
-/** Whether a cell may be edited, as the hooks leave it. */
-export interface IGridCellEditable {
-    /** Whether what the cell holds may be changed. */
-    isEditable: boolean;
-}
-
 /** What a cell is waiting on, as the hooks leave it. */
 export interface IGridCellLoading {
     /** Whether the cell is waiting on something. */
@@ -49,9 +43,6 @@ export type GridCellCommandsHook = (result: IGridCellCommands, params: { record:
 
 /** A hook over whether a cell is waiting. */
 export type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
-
-/** A hook over whether a cell may be edited. */
-export type GridCellEditableHook = (result: IGridCellEditable, params: { record: IRecord; columnName: string }) => void;
 
 export interface IGridCellsEvents {
     /** Fired when the focus moves to another cell, or out of the rows. */
@@ -107,12 +98,6 @@ export interface IGridCells {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
-    /**
-     * Registers a hook over whether a cell may be edited.
-     *
-     * @param priority Ascending: a higher number gets the later word.
-     */
-    registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void;
     /** Run by the `GridControl` of the cell in question. */
     applyControlHooks(result: {
         control: Required<ICustomColumnControl>;
@@ -125,11 +110,6 @@ export interface IGridCells {
     }): void;
     /** Run by the cell in question. */
     applyCellLoadingHooks(result: IGridCellLoading, params: {
-        record: IRecord;
-        columnName: string;
-    }): void;
-    /** Run by the cell in question. */
-    applyCellEditableHooks(result: IGridCellEditable, params: {
         record: IRecord;
         columnName: string;
     }): void;
@@ -148,7 +128,6 @@ export class GridCells implements IGridCells {
     private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
-    private _cellEditableHooks = new HookRegistry<GridCellEditableHook>();
     public readonly events: IEventEmitter<IGridCellsEvents> = new EventEmitter<IGridCellsEvents>();
     private _editing: IGridEditing;
 
@@ -206,10 +185,6 @@ export class GridCells implements IGridCells {
         return this._cellCommandsHooks.register(hook, priority);
     }
 
-    public registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void {
-        return this._cellEditableHooks.register(hook, priority);
-    }
-
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }
@@ -224,10 +199,6 @@ export class GridCells implements IGridCells {
 
     public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {
         this._cellLoadingHooks.apply(result, params);
-    }
-
-    public applyCellEditableHooks(result: IGridCellEditable, params: { record: IRecord; columnName: string }): void {
-        this._cellEditableHooks.apply(result, params);
     }
 
     public applyCellCommandsHooks(result: IGridCellCommands, params: { record: IRecord; columnName: string }): void {

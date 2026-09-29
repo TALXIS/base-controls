@@ -131,7 +131,7 @@ export class GridColumns implements IGridColumns {
 
     /** Whether the values in this column may be changed at all. */
     private _isColumnEditable(column: IColumn): boolean {
-        return this._settings.isEditingEnabled() && !!column.metadata?.IsValidForUpdate;
+        return !!column.metadata?.IsValidForUpdate;
     }
 
     /** Whether a value is demanded before the record may be saved. */
@@ -199,7 +199,7 @@ export class GridColumns implements IGridColumns {
 
     /** Whether an editor may be opened over this cell. */
     private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
-        return !!record && this._cells.createCell({ record: record, colDef: colDef }).isEditable();
+        return !!record && this._services.get('editability').get({ record: record, columnName: colDef.colId }).isEditable;
     }
 
     //merged a level deep so an entry can change one setting, or one callback, and keep the rest
@@ -279,9 +279,6 @@ export class GridColumns implements IGridColumns {
         return new GridField({ record: record, columnName: columnName });
     }
 
-    private get _cells() {
-        return this._services.get('cells');
-    }
 
     private get _settings() {
         return this._services.get('settings');

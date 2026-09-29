@@ -264,7 +264,7 @@ interface IEventEmitter<TEvents> {
 }
 
 interface IGridRowsEvents {
-    onActiveRowsChanged: () => void;
+    onHighlightedRowsChanged: () => void;
     onRowClicked: (record: IRecord) => void;
 }
 
@@ -296,13 +296,27 @@ interface IGridColumns {
 interface IGridCells {
     readonly events: IEventEmitter<IGridCellsEvents>;
     registerCellThemeHook(hook: (theme: IThemeBuilder, params: IGridCellHookParams) => void, priority?: number): () => void;
-    registerCellEditableHook(hook: (result: { isEditable: boolean }, params: IGridCellHookParams) => void, priority?: number): () => void;
     registerCellLoadingHook(hook: (result: { isLoading: boolean }, params: IGridCellHookParams) => void, priority?: number): () => void;
     registerCellCommandsHook(hook: (result: IGridCellCommands, params: IGridCellHookParams) => void, priority?: number): () => void;
 }
 
 interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     registerRowHeightHook(hook: (result: { height?: number }, params: { record: IRecord }) => void, priority?: number): () => void;
+    /** Whether the row is hovered, focused or selected. */
+    isHighlighted(record: IRecord): boolean;
+}
+
+/** What is asked about: nothing for the grid, a column, a record's row, or both for a cell. */
+interface IGridEditabilityContext {
+    record?: IRecord;
+    columnName?: string;
+}
+
+interface IGridEditability {
+    /** Whether what the context names can be edited, and which level locked it if not. */
+    get(context?: IGridEditabilityContext): { isEditable: boolean; lockedBy?: 'grid' | 'column' | 'record' | 'cell' };
+    /** A hook over any level; a record locked with no columnName is drawn as a muted row. */
+    registerEditableHook(hook: (result: { isEditable: boolean }, context: IGridEditabilityContext) => void, priority?: number): () => void;
 }
 
 interface IGridSurfaces {
@@ -330,6 +344,7 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     columns: IGridColumns;
     cells: IGridCells;
     rows: IGridRows;
+    editability: IGridEditability;
     surfaces: IGridSurfaces;
     grid: IGridRuntime;
 }

@@ -23,8 +23,9 @@ const GridExample = () => <Grid.Root
 
 export const EDITABLE_PER_RECORD_CODE = `const lockWonDealsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerCellEditableHook((result, { record }) => {
-            if (Number(record.getValue('stage')) === 4) {
+        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
+            //a cell: both are given
+            if (record && columnName && Number(record.getValue('stage')) === 4) {
                 result.isEditable = false
             }
         })
@@ -34,6 +35,24 @@ export const EDITABLE_PER_RECORD_CODE = `const lockWonDealsModule: IGridModule =
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule(), custom: [lockWonDealsModule] }}
+    enableEditing
+    height='440px' />
+`
+
+export const INACTIVE_RECORDS_CODE = `const inactiveWonDealsModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
+            //a record's row: no column is given
+            if (record && !columnName && Number(record.getValue('stage')) === 4) {
+                result.isEditable = false
+            }
+        })
+    },
+}
+
+const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{ rowModel: createClientSideRowModelModule(), custom: [inactiveWonDealsModule] }}
     enableEditing
     height='440px' />
 `
@@ -146,6 +165,7 @@ const GridExample = () => <Grid.Root
 
 export const ConditionalFormattingExample = () => <GridExampleRunner seedCode={CONDITIONAL_FORMATTING_CODE} />
 export const EditablePerRecordExample = () => <GridExampleRunner seedCode={EDITABLE_PER_RECORD_CODE} />
+export const InactiveRecordsExample = () => <GridExampleRunner seedCode={INACTIVE_RECORDS_CODE} />
 export const RowHeightExample = () => <GridExampleRunner seedCode={ROW_HEIGHT_CODE} />
 export const ColumnMenuItemsExample = () => <GridExampleRunner seedCode={COLUMN_MENU_ITEMS_CODE} />
 export const HeaderAdornmentsExample = () => <GridExampleRunner seedCode={HEADER_ADORNMENTS_CODE} />

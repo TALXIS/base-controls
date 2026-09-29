@@ -12,6 +12,7 @@ import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
+import { GridEditability } from "../editability";
 import { GridColumns } from "../columns";
 import { GridCells } from "../cells";
 import { GridKeyboard } from "../keyboard";
@@ -101,6 +102,7 @@ export class GridRuntime implements IGridRuntime {
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });
         const rows = new GridRows({ services: this._services });
+        const editability = new GridEditability({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
         const surfaces = new GridSurfaces();
         //both wire themselves to the api and the provider
@@ -109,6 +111,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('columns', () => columns);
         this._services.register('cells', () => cells);
         this._services.register('rows', () => rows);
+        this._services.register('editability', () => editability);
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
         //built once and never looked up

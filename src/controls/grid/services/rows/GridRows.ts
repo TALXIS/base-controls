@@ -5,7 +5,7 @@ import { IGridServiceLocator } from "../../services";
 
 export interface IGridRowsEvents {
     /** Fired when the rows the user is at change. */
-    onActiveRowsChanged: () => void;
+    onHighlightedRowsChanged: () => void;
     /** Fired when a row with a record is clicked. */
     onRowClicked: (record: IRecord) => void;
 }
@@ -24,7 +24,8 @@ export interface IGridRowsParameters {
 
 /** What is true of a row as a whole. */
 export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
-    isActive(record: IRecord): boolean;
+    /** Whether the row is hovered, focused or selected. */
+    isHighlighted(record: IRecord): boolean;
     /**
      * Registers a hook over how tall a row is.
      *
@@ -48,7 +49,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
-    public isActive(record: IRecord): boolean {
+    public isHighlighted(record: IRecord): boolean {
         const recordId = record.getRecordId();
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
     }
@@ -69,11 +70,11 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         //a selection reaches the cells nowhere else
         this._services.get('provider').addEventListener('onRecordsSelected', this._onSelectionChanged);
-        gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setActiveRow('hovered', event.data?.getRecordId()));
+        gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setHighlightedRow('hovered', event.data?.getRecordId()));
         //AG Grid reports the cell the pointer left
         gridApi.addEventListener('cellMouseOut', (event: CellMouseOutEvent<IRecord>) => {
             if (this._hoveredRecordId === event.data?.getRecordId()) {
-                this._setActiveRow('hovered', undefined);
+                this._setHighlightedRow('hovered', undefined);
             }
         });
         gridApi.addEventListener('cellFocused', this._onCellFocused);
@@ -82,7 +83,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
         const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
-        this._setActiveRow('focused', record?.getRecordId());
+        this._setHighlightedRow('focused', record?.getRecordId());
     };
 
     private _onRowClicked = (event: RowClickedEvent<IRecord>): void => {
@@ -98,10 +99,10 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
 
     private _onSelectionChanged = (): void => {
         this._selectedRecordIds = new Set(this._services.get('provider').getSelectedRecordIds({ includeGroupRecordIds: true }));
-        this.dispatchEvent('onActiveRowsChanged');
+        this.dispatchEvent('onHighlightedRowsChanged');
     };
 
-    private _setActiveRow(by: 'hovered' | 'focused', recordId: string | undefined): void {
+    private _setHighlightedRow(by: 'hovered' | 'focused', recordId: string | undefined): void {
         if (by === 'hovered') {
             if (this._hoveredRecordId === recordId) {
                 return;
@@ -114,6 +115,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
             }
             this._focusedRecordId = recordId;
         }
-        this.dispatchEvent('onActiveRowsChanged');
+        this.dispatchEvent('onHighlightedRowsChanged');
     }
 }

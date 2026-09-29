@@ -41,6 +41,18 @@ const validateWonValue = (record: IRecord) => {
     record.expressions.setValidationExpression('name', () => ({ error: isWonBelowMinimum(record), errorMessage: 'This deal was won below the $10,000 minimum.' }))
 }
 
+//a deal nobody expects to win any more is inactive
+const lostDealsModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
+            //locked as a whole record, so its row is drawn muted
+            if (record && !columnName && Number(record.getValue('probability') ?? 0) === 0) {
+                result.isEditable = false
+            }
+        })
+    },
+}
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -64,6 +76,7 @@ const GridExample = () => {
                 filtering: createFilteringModule(),
                 grouping: createGroupingModule(),
                 aggregation: createAggregationModule(),
+                custom: [lostDealsModule],
             }}
             colDefs={[
                 ...LOCKED_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetEditable: lockWonDeals, onGetCommands: copyValue(colId) } } })),

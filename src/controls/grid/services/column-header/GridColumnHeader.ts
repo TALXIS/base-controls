@@ -97,7 +97,7 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> impl
     }
 
     public isEditable(): boolean {
-        return this.getSettings().isEditable !== false;
+        return this._services.get('editability').get({ columnName: this.getColDef().colId! }).isEditable;
     }
 
     public getName(): string {
