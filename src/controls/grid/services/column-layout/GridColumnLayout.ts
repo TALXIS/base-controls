@@ -96,6 +96,7 @@ export class GridColumnLayout {
 
     private _writeColumns(update: (column: IColumn) => IColumn): void {
         this._provider.setColumns(this._provider.getColumns().map(update));
+        this._services.get('columns').events.dispatchEvent('onColumnsChanged', this._provider.getColumns());
     }
 
     private get _provider(): IDataProvider {

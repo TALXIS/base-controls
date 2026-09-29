@@ -16,6 +16,7 @@ import { CHECKLIST_COLUMN_NAME } from "@controls/task-grid/modules/checklist/Che
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@controls/task-grid/components/components";
 import type { IDependenciesCellRendererProps } from "@controls/task-grid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
+import type { GridColumnDefinitionsHook } from "@controls/grid/services/columns";
 
 /** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
@@ -28,15 +29,7 @@ export type GridApi = GridApiBase<IRecord>;
 /** AG Grid's `RowClassRules`, bound to the grid's record type. */
 export type RowClassRules = RowClassRulesBase<IRecord>;
 
-
-/**
- * Applied to the column definitions once they are built and the strategy has had its say — so a hook sees
- * the finished definitions and gets the last word on any of them.
- *
- * Mutates rather than returning: these are the definitions the grid is about to be given, and a hook that
- * adds or removes one writes to the array itself.
- */
-export type GridColumnDefinitionsHook = (columnDefs: ColDef[]) => void;
+export type { GridColumnDefinitionsHook };
 
 /**
  * Strategy interface for deep customization of the AG Grid instance inside TaskGrid.

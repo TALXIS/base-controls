@@ -33,6 +33,8 @@ export interface IGridColumnsParameters {
 export interface IGridColumnsEvents {
     /** A record's cell was double-clicked, whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
+    /** The user resized or moved a column, and the provider holds the result. */
+    onColumnsChanged: (columns: IColumn[]) => void;
 }
 
 /** The columns the grid gives AG Grid. */

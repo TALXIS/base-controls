@@ -1,5 +1,5 @@
 import { ColDef, GridState } from "@ag-grid-community/core";
-import { IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IGridModules } from "./modules";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
@@ -25,6 +25,12 @@ export interface IGridEventHandlers {
     onEditedCellChanged: (cell: IGridEditedCell | undefined) => void;
     /** Fired when a record's cell is double-clicked, whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
+    /** Fired when a row with a record is clicked. */
+    onRowClicked: (record: IRecord) => void;
+    /** Fired when the focus moves to another cell, or out of the rows. */
+    onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
+    /** Fired when the user resizes or moves a column, with the provider's columns after it. */
+    onColumnsChanged: (columns: IColumn[]) => void;
 }
 
 export interface IGrid extends Partial<IGridEventHandlers> {

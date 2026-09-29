@@ -15,4 +15,4 @@ export * from './modules';
 export * from './value-renderer';
 export * from './inline-ribbon';
 export * from './services';
-export type { IGridColumnSettings } from './services/columns';
+export * from './services/columns';

@@ -1,6 +1,7 @@
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
-import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
+import { CellFocusedEvent } from "@ag-grid-community/core";
+import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
@@ -52,12 +53,18 @@ export type GridCellLoadingHook = (result: IGridCellLoading, params: { record: I
 /** A hook over whether a cell may be edited. */
 export type GridCellEditableHook = (result: IGridCellEditable, params: { record: IRecord; columnName: string }) => void;
 
+export interface IGridCellsEvents {
+    /** Fired when the focus moves to another cell, or out of the rows. */
+    onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
+}
+
 export interface IGridCellsParameters {
     services: IGridServiceLocator;
 }
 
 /** Every cell the grid has on screen. */
 export interface IGridCells {
+    readonly events: IEventEmitter<IGridCellsEvents>;
     /** Which cell the user is editing. */
     readonly editing: IGridEditing;
     /** A cell of this grid. */
@@ -142,12 +149,16 @@ export class GridCells implements IGridCells {
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
     private _cellEditableHooks = new HookRegistry<GridCellEditableHook>();
+    public readonly events: IEventEmitter<IGridCellsEvents> = new EventEmitter<IGridCellsEvents>();
     private _editing: IGridEditing;
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
         this._editing = new GridEditing({ services: parameters.services });
-        this._services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
+        this._services.whenAvailable('gridApi', gridApi => {
+            this._provider.addEventListener('onRenderRequested', this._onRenderRequested);
+            gridApi.addEventListener('cellFocused', this._onCellFocused);
+        });
         this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
@@ -224,6 +235,12 @@ export class GridCells implements IGridCells {
     }
 
     private _onRenderRequested = (): void => this._services.get('gridApi').refreshCells();
+
+    private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
+        const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
+        const columnName = typeof event.column === 'string' ? event.column : event.column?.getColId();
+        this.events.dispatchEvent('onFocusedCellChanged', record, record ? columnName : undefined);
+    };
 
     //the provider outlives the grid
     private _onDestroy = (): void => {

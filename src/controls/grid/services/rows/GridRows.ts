@@ -1,4 +1,4 @@
-import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowHeightParams } from "@ag-grid-community/core";
+import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClickedEvent, RowHeightParams } from "@ag-grid-community/core";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
@@ -6,6 +6,8 @@ import { IGridServiceLocator } from "../../services";
 export interface IGridRowsEvents {
     /** Fired when the rows the user is at change. */
     onActiveRowsChanged: () => void;
+    /** Fired when a row with a record is clicked. */
+    onRowClicked: (record: IRecord) => void;
 }
 
 export interface IGridRowHeight {
@@ -74,10 +76,20 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
                 this._setActiveRow('hovered', undefined);
             }
         });
-        gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => {
-            this._setActiveRow('focused', event.rowIndex != null ? gridApi.getDisplayedRowAtIndex(event.rowIndex)?.data?.getRecordId() : undefined);
-        });
+        gridApi.addEventListener('cellFocused', this._onCellFocused);
+        gridApi.addEventListener('rowClicked', this._onRowClicked);
     }
+
+    private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
+        const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
+        this._setActiveRow('focused', record?.getRecordId());
+    };
+
+    private _onRowClicked = (event: RowClickedEvent<IRecord>): void => {
+        if (event.data) {
+            this.dispatchEvent('onRowClicked', event.data);
+        }
+    };
 
     //the provider outlives the grid
     private _onDestroy = (): void => {
