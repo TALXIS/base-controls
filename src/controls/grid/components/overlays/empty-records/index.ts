@@ -1,1 +1,1 @@
-export * from './EmptyRecords';
+export * from './EmptyRecordsOverlay';

@@ -1,17 +1,10 @@
-import { useMemo } from 'react';
-import { Icon, Text } from '@fluentui/react';
-import { useGridService } from '@controls/grid/useGridService';
-import { getEmptyRecordsStyles } from './styles';
+import { useGridService } from "@controls/grid/useGridService";
+import { useGridComponents } from "@controls/grid/context";
 
 /** What the grid shows while it has no rows. */
-export const EmptyRecords = () => {
+export const EmptyRecordsOverlay = () => {
     const labels = useGridService('labels');
-    const styles = useMemo(() => getEmptyRecordsStyles(), []);
+    const components = useGridComponents();
 
-    return (
-        <div className={styles.emptyRecordsRoot}>
-            <Icon className={styles.icon} iconName='SearchAndApps' />
-            <Text>{labels.getLocalizedString('noRecordsFound')}</Text>
-        </div>
-    )
-}
+    return components.onRenderEmptyRecordsOverlay({ message: labels.getLocalizedString('noRecordsFound') });
+};

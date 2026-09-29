@@ -1,15 +1,15 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getEmptyRecordsStyles = () => mergeStyleSets({
-    emptyRecordsRoot: {
+export const getOverlayUiEmptyRecordsStyles = () => mergeStyleSets({
+    root: {
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
         alignItems: 'center',
         position: 'relative',
-        top: 18
+        top: 18,
     },
     icon: {
-        fontSize: 46
+        fontSize: 46,
     },
-})
+});

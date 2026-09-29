@@ -4,6 +4,7 @@ import { IGridModules } from "./modules";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
 import type { IGridEditedCell } from "./services/editing";
+import type { IGridComponents } from "./components/components";
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
 export interface IGridEventHandlers {
@@ -56,6 +57,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     height?: string;
     /** Put on the grid's own element, alongside its own classes. */
     className?: string;
+    /** Overrides for any of the grid's replaceable pieces. */
+    components?: Partial<IGridComponents>;
 
     /** Overrides for the strings the grid renders; read once, at mount. */
     labels?: Partial<IGridLabels>;

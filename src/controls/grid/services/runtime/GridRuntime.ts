@@ -5,7 +5,7 @@ import { ITheme } from "@theme";
 import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
 import { FullRowLoading } from "@controls/grid/components/loading/full-row";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
-import { EmptyRecords } from "@controls/grid/components/overlays/empty-records";
+import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
 import { IGridModule } from "../../modules";
 import { IGrid, IGridEventHandlers } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
@@ -182,7 +182,7 @@ export class GridRuntime implements IGridRuntime {
                 onGridReady: this._onGridReady,
                 onGridPreDestroyed: this._onGridPreDestroyed,
                 loadingOverlayComponent: LoadingOverlay,
-                noRowsOverlayComponent: EmptyRecords,
+                noRowsOverlayComponent: EmptyRecordsOverlay,
             },
         };
         this._agGridInitialOptionsHooks.apply(result);

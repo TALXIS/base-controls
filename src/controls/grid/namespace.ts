@@ -26,6 +26,9 @@ import { ColumnHeaderRoot } from "./components/column-header/root/ColumnHeaderRo
 import { ColumnHeaderSuffix } from "./components/column-header/suffix/ColumnHeaderSuffix";
 import { ColumnHeaderTheme } from "./components/column-header/theme/ColumnHeaderTheme";
 import { ColumnHeaderUi, IColumnHeaderUi } from "./components/column-header/ui";
+import { LoadingOverlay } from "./components/overlays/loading";
+import { EmptyRecordsOverlay } from "./components/overlays/empty-records";
+import { IOverlayUi, OverlayUi } from "./components/overlays/ui";
 import { GridRoot } from "./Grid";
 
 /** Everything a cell is drawn from. */
@@ -92,6 +95,16 @@ export interface IGridColumnHeaderNamespace {
     Ui: IColumnHeaderUi;
 }
 
+/** What the grid draws over its rows. */
+export interface IGridOverlayNamespace {
+    /** What the grid shows while it loads, drawn through `onRenderLoadingOverlay`. */
+    Loading: typeof LoadingOverlay;
+    /** What the grid shows while it has no rows, drawn through `onRenderEmptyRecordsOverlay`. */
+    EmptyRecords: typeof EmptyRecordsOverlay;
+    /** What draws an overlay without knowing why it is shown. */
+    Ui: IOverlayUi;
+}
+
 /** Everything a grid is rendered from. */
 export interface IGridNamespace {
     /** The grid itself. */
@@ -100,6 +113,8 @@ export interface IGridNamespace {
     Cell: IGridCellNamespace;
     /** Everything a column header is drawn from. */
     ColumnHeader: IGridColumnHeaderNamespace;
+    /** What the grid draws over its rows. */
+    Overlay: IGridOverlayNamespace;
 }
 
 export const Grid: IGridNamespace = {
@@ -135,5 +150,10 @@ export const Grid: IGridNamespace = {
         Suffix: ColumnHeaderSuffix,
         Menu: ColumnHeaderMenu,
         Ui: ColumnHeaderUi,
+    },
+    Overlay: {
+        Loading: LoadingOverlay,
+        EmptyRecords: EmptyRecordsOverlay,
+        Ui: OverlayUi,
     },
 };

@@ -9,7 +9,8 @@ import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
-import { GridServicesContext } from "./context";
+import { GridComponentsContext, GridServicesContext } from "./context";
+import { GridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
@@ -33,6 +34,8 @@ export const GridRoot = (props: IGrid) => {
     const styles = useMemo(() => getGridStyles(theme, props.height, rowHeight, maxVisibleRows), [theme, props.height, rowHeight, maxVisibleRows]
     );
 
+    const components = useMemo(() => ({ ...GridComponents, ...props.components }), [props.components]);
+
     useGridEventHandlers(runtime, props);
 
     //parts listening ahead of AG Grid need this element once it is mounted
@@ -47,15 +50,17 @@ export const GridRoot = (props: IGrid) => {
 
     //the locator holds everything a component needs
     return <GridServicesContext.Provider value={runtime.services}>
-        <ThemeProvider
-            theme={theme}
-            //what a cell opens is drawn over the grid
-            surfaceTheme={theme}
-            applyTo='none'
-            ref={onGridRootRef}
-            className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
-            <AgGridReact<IRecord> {...runtime.getAgGridProps()} />
-            <Surfaces />
-        </ThemeProvider>
+        <GridComponentsContext.Provider value={components}>
+            <ThemeProvider
+                theme={theme}
+                //what a cell opens is drawn over the grid
+                surfaceTheme={theme}
+                applyTo='none'
+                ref={onGridRootRef}
+                className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
+                <AgGridReact<IRecord> {...runtime.getAgGridProps()} />
+                <Surfaces />
+            </ThemeProvider>
+        </GridComponentsContext.Provider>
     </GridServicesContext.Provider>
 }
