@@ -168,10 +168,9 @@ export class GridRowSelection implements IGridRowSelection {
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
         this._services.get('gridServices').whenAvailable('gridRoot',
             gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
-        //what the host persisted, taken and cleared in one go
+        //what the host persisted, handed to the providers that own it once its rows are in
         this._pendingRestoreRecordIds = this._provider.getSelectedRecordIds();
         if (this._pendingRestoreRecordIds.length) {
-            this._provider.clearSelectedRecordIds();
             this._gridApi.addEventListener('modelUpdated', this._onModelUpdated);
         }
     }
@@ -243,15 +242,28 @@ export class GridRowSelection implements IGridRowSelection {
         if (!nodes.length) {
             return;
         }
-        const pendingRecordIds = new Set(this._pendingRestoreRecordIds);
+        const recordIdsByProvider = this._getRecordIdsByOwner(this._pendingRestoreRecordIds);
         this._pendingRestoreRecordIds = [];
         this._gridApi.removeEventListener('modelUpdated', this._onModelUpdated);
-        //per provider, because a selection spanning groups is held by the provider each row came
-        const providers = new Set(nodes.map(node => node.data!.getDataProvider()));
-        for (const provider of providers) {
-            provider.setSelectedRecordIds(Object.keys(provider.getRecordsMap()).filter(recordId => pendingRecordIds.has(recordId)));
-        }
+        //the top level first, so a group its children mark on it stays marked
+        this._provider.setSelectedRecordIds(recordIdsByProvider.get(this._provider) ?? []);
+        recordIdsByProvider.forEach((recordIds, provider) => {
+            if (provider !== this._provider) {
+                provider.setSelectedRecordIds(recordIds);
+            }
+        });
         this._scrollToSelection(nodes);
+    }
+
+    /** Each id under the loaded child provider that holds it, the rest under the top level. */
+    private _getRecordIdsByOwner(recordIds: string[]): Map<IDataProvider, string[]> {
+        const childProviders = this._provider.getGroupedRecordDataProviders(true);
+        const result = new Map<IDataProvider, string[]>();
+        for (const recordId of recordIds) {
+            const owner = childProviders.find(provider => !!provider.getRecordsMap()[recordId]) ?? this._provider;
+            result.set(owner, [...(result.get(owner) ?? []), recordId]);
+        }
+        return result;
     }
 
     //the middle one rather than the first

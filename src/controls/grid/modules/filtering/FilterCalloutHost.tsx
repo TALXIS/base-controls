@@ -17,7 +17,9 @@ export const FilterCalloutHost = () => {
     if (!column) {
         return null;
     }
-    return <FilterCallout 
-        column={column} 
+    //one callout per column, so switching columns drops the previous column's draft with it
+    return <FilterCallout
+        key={column.name}
+        column={column}
         target={filtering.getOpenTarget()} onDismiss={() => filtering.closeFilter()} />;
 };

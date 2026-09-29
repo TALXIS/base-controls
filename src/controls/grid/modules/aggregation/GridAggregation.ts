@@ -250,7 +250,12 @@ export class GridAggregation implements IGridAggregation {
                     key: 'none',
                     checked: !column.aggregation,
                     text: this._labels.getLocalizedString('totalNone'),
-                    onClick: () => this.removeAggregation(column.aggregation?.alias!),
+                    onClick: () => {
+                        //already none: nothing to remove, and nothing to refresh
+                        if (column.aggregation?.alias) {
+                            this.removeAggregation(column.aggregation.alias);
+                        }
+                    },
                 }]),
                 ...supported.map(aggregationFunction => ({
                     key: aggregationFunction,
