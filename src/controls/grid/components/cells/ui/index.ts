@@ -4,6 +4,7 @@ import { CellUiResizeGrip } from './row-resize-grip';
 import { CellUiCommands } from './commands';
 import { CellUiControl } from './control';
 import { CellUiLoading } from './loading';
+import { CellUiUneditableIcon } from './uneditable-icon';
 
 export * from './cell-container';
 export * from './field-error';
@@ -11,6 +12,7 @@ export * from './row-resize-grip';
 export * from './commands';
 export * from './control';
 export * from './loading';
+export * from './uneditable-icon';
 
 /** What draws a cell, and nothing that knows why. */
 export interface ICellUi {
@@ -20,6 +22,7 @@ export interface ICellUi {
     Commands: typeof CellUiCommands;
     Control: typeof CellUiControl;
     Loading: typeof CellUiLoading;
+    UneditableIcon: typeof CellUiUneditableIcon;
 }
 
 export const CellUi: ICellUi = {
@@ -29,4 +32,5 @@ export const CellUi: ICellUi = {
     Commands: CellUiCommands,
     Control: CellUiControl,
     Loading: CellUiLoading,
+    UneditableIcon: CellUiUneditableIcon,
 };

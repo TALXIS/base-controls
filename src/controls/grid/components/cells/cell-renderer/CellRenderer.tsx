@@ -8,6 +8,7 @@ import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../row-resize-grip/CellResizeGrip";
+import { CellUneditableIcon } from "../uneditable-icon/CellUneditableIcon";
 import { ICellRendererComponents } from "./components";
 import { DatasetControl } from "@controls/dataset-control";
 
@@ -23,6 +24,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
             <CellValidation components={components.validation}>
+                <CellUneditableIcon components={components.uneditableIcon} />
                 <CellControl components={components.control} />
                 <CellCommands components={components.commands} />
             </CellValidation>

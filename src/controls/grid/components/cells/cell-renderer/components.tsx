@@ -4,6 +4,7 @@ import { ICellValidationComponents } from "../field-validation/components";
 import { ICellContainerComponents } from "../container/components";
 import { ICellLoadingComponents } from "../loading/components";
 import { ICellResizeGripComponents } from "../row-resize-grip/components";
+import { ICellUneditableIconComponents } from "../uneditable-icon/components";
 
 /** The pieces every cell is built from, drawn whether it is being edited or not. */
 export interface ICellComponents {
@@ -23,4 +24,6 @@ export interface ICellRendererComponents extends ICellComponents {
     validation?: Partial<ICellValidationComponents>;
     /** What the cell offers to do. */
     commands?: Partial<ICellCommandsComponents>;
+    /** What says the cell is locked for its record. */
+    uneditableIcon?: Partial<ICellUneditableIconComponents>;
 }

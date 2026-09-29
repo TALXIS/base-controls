@@ -58,6 +58,8 @@ interface IColumn {
     isHidden?: boolean;
     alignment?: IAlignment;
     metadata?: IColumnMetadata;
+    /** Set while the column is grouped by. */
+    grouping?: { isGrouped: boolean; alias?: string };
     [key: string]: any;
 }
 
@@ -85,6 +87,9 @@ interface IRecordSaveOperationResult {
 
 interface IDataProvider {
     getColumns(): IColumn[];
+    getColumnsMap(): { [columnName: string]: IColumn };
+    /** 'grouping' for the provider of a group row's record. */
+    getSummarizationType(): string;
     setColumns(columns: IColumn[]): void;
     getRecords(): IRecord[];
     getRecordsMap(): { [recordId: string]: IRecord };
@@ -105,6 +110,8 @@ interface IDataProvider {
 }
 
 declare class MemoryDataProvider implements IDataProvider {
+    getColumnsMap(): { [columnName: string]: IColumn };
+    getSummarizationType(): string;
     constructor(parameters: {
         dataSource: IRawRecord[];
         metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string; LogicalName: string; EntitySetName: string };
@@ -529,6 +536,16 @@ interface ICellControlProps {
 }
 
 interface ICellRendererComponents {
+    uneditableIcon?: {
+        onRenderUneditableIcon?: (props: {
+            message?: string;
+            alignment?: IAlignment;
+            components?: {
+                onRenderTooltip?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element;
+                onRenderIcon?: (props: IIconProps) => JSX.Element;
+            };
+        }) => JSX.Element;
+    };
     control?: {
         onRenderControl?: (props: ICellControlProps, defaultRender: (props: ICellControlProps) => JSX.Element | null) => JSX.Element | null;
     };

@@ -1,4 +1,5 @@
 import { CellCommands } from "./components/cells/commands/CellCommands";
+import { CellUneditableIcon } from "./components/cells/uneditable-icon/CellUneditableIcon";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellControl } from "./components/cells/control/CellControl";
 import { CellEditor } from "./components/cells/cell-editor/CellEditor";
@@ -60,6 +61,8 @@ export interface IGridCellNamespace {
     Control: typeof CellControl;
     /** What the cell offers to do. */
     Commands: typeof CellCommands;
+    /** What says the cell is locked for its record. */
+    UneditableIcon: typeof CellUneditableIcon;
     /** What a row is dragged taller by, around the cell that is dragged. */
     ResizeGrip: typeof CellResizeGrip;
     /** What binds everything drawn inside it to one record's column. */
@@ -147,6 +150,7 @@ export const Grid: IGridNamespace = {
         Validation: CellValidation,
         Control: CellControl,
         Commands: CellCommands,
+        UneditableIcon: CellUneditableIcon,
         ResizeGrip: CellResizeGrip,
         Field: CellField,
         NestedRoot: CellNestedRoot,
