@@ -104,7 +104,7 @@ export class GridControl implements IGridControl {
     private _getCellParameters(control: ICustomColumnControl): IGridValueRendererParameters {
         const parameters: IGridValueRendererParameters = {
             value: undefined,
-            ColumnAlignment: { raw: 'left' },
+            ColumnAlignment: { raw: this._cell.getAlignment() },
             CellType: { raw: this._takesInput ? 'editor' : 'renderer' },
             EnableNavigation: { raw: false, type: DataTypes.TwoOptions },
             Column: { raw: undefined },

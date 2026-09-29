@@ -5,6 +5,18 @@ import { IGridServiceLocator } from "../../services";
 /** How long a load may take before it is worth telling anyone about. */
 const LOADING_OVERLAY_DELAY = 150;
 
+/** How long to wait before asking AG Grid again for an overlay it dropped. */
+const OVERLAY_RETRY_DELAY = 50;
+
+/** How many times an overlay AG Grid dropped is asked for again. */
+const OVERLAY_RETRY_LIMIT = 20;
+
+/** The class AG Grid puts on its overlay wrapper while each overlay is up. */
+const OVERLAY_WRAPPER_CLASSES: { [overlay in Exclude<GridOverlay, 'none'>]: string } = {
+    loading: 'ag-overlay-loading-wrapper',
+    noRows: 'ag-overlay-no-rows-wrapper',
+};
+
 /** Which overlay the grid is showing, if any. */
 type GridOverlay = 'none' | 'loading' | 'noRows';
 
@@ -18,6 +30,7 @@ export class GridOverlays {
     private _visibleOverlay: GridOverlay = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
+    private _overlayRetryTimeout: NodeJS.Timeout | undefined;
 
     constructor(parameters: IGridOverlaysParameters) {
         this._services = parameters.services;
@@ -29,7 +42,7 @@ export class GridOverlays {
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         this._provider.addEventListener('onLoading', this._onLoading);
         gridApi.addEventListener('modelUpdated', () => this._reconcile());
-        gridApi.addEventListener('gridPreDestroyed', () => this._clearPendingLoading());
+        gridApi.addEventListener('gridPreDestroyed', () => this._clearTimeouts());
     }
 
     private _onLoading = (): void => this._reconcile();
@@ -37,7 +50,7 @@ export class GridOverlays {
     //the provider outlives the grid
     private _onDestroyed = (): void => {
         this._provider.removeEventListener('onLoading', this._onLoading);
-        this._clearPendingLoading();
+        this._clearTimeouts();
     };
 
     /** Shows whichever overlay the current state calls for. */
@@ -68,12 +81,25 @@ export class GridOverlays {
         this._loadingOverlayTimeout = undefined;
     }
 
+    private _clearTimeouts(): void {
+        this._clearPendingLoading();
+        clearTimeout(this._overlayRetryTimeout);
+        this._overlayRetryTimeout = undefined;
+    }
+
     /** The single way any overlay is shown or hidden. */
     private _setOverlay(overlay: GridOverlay): void {
         if (this._visibleOverlay === overlay) {
             return;
         }
         this._visibleOverlay = overlay;
+        this._applyOverlay(0);
+    }
+
+    private _applyOverlay(attempt: number): void {
+        clearTimeout(this._overlayRetryTimeout);
+        this._overlayRetryTimeout = undefined;
+        const overlay = this._visibleOverlay;
         switch (overlay) {
             case 'loading': {
                 this._gridApi.showLoadingOverlay();
@@ -85,8 +111,18 @@ export class GridOverlays {
             }
             default: {
                 this._gridApi.hideOverlay();
+                return;
             }
         }
+        //AG Grid drops a request that arrives while it is still creating the previous overlay
+        if (!this._isOverlayShown(overlay) && attempt < OVERLAY_RETRY_LIMIT) {
+            this._overlayRetryTimeout = setTimeout(() => this._applyOverlay(attempt + 1), OVERLAY_RETRY_DELAY);
+        }
+    }
+
+    private _isOverlayShown(overlay: Exclude<GridOverlay, 'none'>): boolean {
+        const wrapper = this._services.find('gridRoot')?.querySelector('.ag-overlay-wrapper');
+        return !!wrapper?.classList.contains(OVERLAY_WRAPPER_CLASSES[overlay]);
     }
 
     private get _gridApi(): GridApi<IRecord> {

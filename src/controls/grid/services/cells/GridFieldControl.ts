@@ -61,7 +61,6 @@ export class GridFieldControl implements IGridFieldControl {
         return {
             value: this._field.getValue(),
             Column: { raw: column },
-            ColumnAlignment: { raw: column.alignment ?? 'left' },
             IsPrimaryColumn: { raw: !!column.isPrimary, type: DataTypes.TwoOptions },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
         };
