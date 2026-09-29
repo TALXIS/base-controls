@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node",
+      "vitest/globals",
+      "google.maps",
+      "powerapps-component-framework",
+      "xrm"
+    ]
+  },
+  "include": [
+    "src",
+    "vitest.setup.ts"
+  ],
+  // the base excludes tests from the build; this config exists to check them
+  "exclude": []
+}
