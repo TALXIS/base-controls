@@ -40,19 +40,19 @@ What the grid's cells and headers read about a column:
 
 ## \`settings.cell\`
 
-The callbacks run before the hook of the same kind on [**Hooks**](?path=/story/grid-extending-hooks--overview), so a module still has the last word.
+The callbacks run after the hook of the same kind on [**Hooks**](?path=/story/grid-extending-hooks--overview), so the column has the last word. Each is handed the hooks' result and the record, and changes the result.
 
 | Setting | What it decides |
 |---|---|
 | \`oneClickEdit\` | The cell takes input where it stands, without opening an editor. |
-| \`onGetCommands\` | The commands a cell offers for its record: \`{ items, overflowItems }\`, drawn while the row is hovered or focused. |
-| \`onGetTheme\` | Changes a cell's theme: \`(theme, { record })\`, as \`registerCellThemeHook\` on [**Hooks**](?path=/story/grid-extending-hooks--overview) without the column. Set \`theme.colors\` and the cell's palette is generated from them. |
+| \`onGetCommands\` | The commands a cell offers: push to \`result.items\` or \`result.overflowItems\`. They are drawn while the row is hovered or focused. |
+| \`onGetTheme\` | A cell's theme: set \`theme.colors\` and the cell's palette is generated from them. |
 | \`onGetEditable\` | Decides per record whether a cell can be edited: set \`result.isEditable\`. \`isEditable: false\` still locks the whole column. |
 | \`onGetLoading\` | Decides per record whether a cell shows a loading placeholder: set \`result.isLoading\`. |
 
 ## \`settings.header\`
 
-Each runs before the header hook of the same kind on [**Extending**](?path=/story/grid-extending--overview), and changes what it is handed.
+Each runs after the header hook of the same kind on [**Extending**](?path=/story/grid-extending--overview), and changes what it is handed.
 
 | Callback | What it changes |
 |---|---|

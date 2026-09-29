@@ -57,15 +57,15 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
                 valueGetter: () => null,
                 settings: {
                     cell: {
-                        onGetCommands: record => ({
-                            items: [
+                        onGetCommands: (result, { record }) => {
+                            result.items.push(
                                 { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
                                 { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
-                            ],
-                            overflowItems: [
+                            )
+                            result.overflowItems.push(
                                 { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                            ],
-                        }),
+                            )
+                        },
                     },
                 },
             }]}

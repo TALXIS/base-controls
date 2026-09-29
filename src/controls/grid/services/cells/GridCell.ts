@@ -111,8 +111,8 @@ export class GridCell implements IGridCell {
 
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
-        this.getSettings().cell?.onGetLoading?.(result, { record: this._record });
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
+        this.getSettings().cell?.onGetLoading?.(result, { record: this._record });
         return result.isLoading;
     }
 
@@ -154,15 +154,15 @@ export class GridCell implements IGridCell {
             return false;
         }
         const result: IGridCellEditable = { isEditable: true };
-        this.getSettings().cell?.onGetEditable?.(result, { record: this._record });
         this._cells.applyCellEditableHooks(result, { record: this._record, columnName: this.getColumnName() });
+        this.getSettings().cell?.onGetEditable?.(result, { record: this._record });
         return result.isEditable;
     }
 
     public getCommands(): IGridCellCommands {
-        const commands = this.getSettings().cell?.onGetCommands?.(this._record);
-        const result: IGridCellCommands = { items: commands?.items ?? [], overflowItems: commands?.overflowItems ?? [] };
+        const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
+        this.getSettings().cell?.onGetCommands?.(result, { record: this._record });
         return result;
     }
 

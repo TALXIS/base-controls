@@ -104,8 +104,8 @@ export class GridColumnHeaders implements IGridColumnHeaders {
 
     public getMenuItems(header: IGridColumnHeader): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
-        header.getSettings().header?.onGetMenuSections?.(sections);
         this._menuSectionHooks.apply(sections, header);
+        header.getSettings().header?.onGetMenuSections?.(sections);
         const items = sections
             .filter(section => section.items.length > 0)
             .flatMap(section => [{
@@ -115,8 +115,8 @@ export class GridColumnHeaders implements IGridColumnHeaders {
                 //a heading names the entries under it
                 onRenderIcon: () => null,
             }, ...section.items]);
-        header.getSettings().header?.onGetMenuItems?.(items);
         this._menuItemHooks.apply(items, header);
+        header.getSettings().header?.onGetMenuItems?.(items);
         return items;
     }
 
@@ -129,14 +129,14 @@ export class GridColumnHeaders implements IGridColumnHeaders {
     }
 
     public applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void {
-        header.getSettings().header?.onGetTheme?.(theme);
         this._themeHooks.apply(theme, header);
+        header.getSettings().header?.onGetTheme?.(theme);
     }
 
     public getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[] {
         const adornments: IColumnHeaderAdornment[] = [];
-        header.getSettings().header?.onGetAdornments?.(adornments);
         this._adornmentHooks.apply(adornments, header);
+        header.getSettings().header?.onGetAdornments?.(adornments);
         return adornments;
     }
 }

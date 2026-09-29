@@ -179,7 +179,8 @@ interface IGridColumnSettings {
     /** How each of the column's cells behaves. */
     cell?: {
         oneClickEdit?: boolean;
-        onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
+        /** Changes the commands a cell offers: push to result.items or result.overflowItems. */
+        onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
         /** Changes the theme of this column's cells, as a cell theme hook does. */
         onGetTheme?: (theme: IThemeBuilder, params: { record: IRecord }) => void;
         /** Decides whether this column's cells can be edited. */

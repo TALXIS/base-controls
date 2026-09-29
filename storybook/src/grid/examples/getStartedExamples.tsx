@@ -56,12 +56,12 @@ const GridExample = () => {
                     colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
                     settings: {
                         cell: {
-                            onGetCommands: record => ({
-                                items: [
+                            onGetCommands: (result, { record }) => {
+                                result.items.push(
                                     { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
                                     { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                                ],
-                            }),
+                                )
+                            },
                         },
                     },
                 },
