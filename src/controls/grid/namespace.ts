@@ -29,6 +29,9 @@ import { ColumnHeaderUi, IColumnHeaderUi } from "./components/column-header/ui";
 import { LoadingOverlay } from "./components/overlays/loading";
 import { EmptyRecordsOverlay } from "./components/overlays/empty-records";
 import { IOverlayUi, OverlayUi } from "./components/overlays/ui";
+import { RowLoading } from "./components/rows/loading";
+import { RowError } from "./components/rows/error";
+import { IRowUi, RowUi } from "./components/rows/ui";
 import { GridRoot } from "./Grid";
 
 /** Everything a cell is drawn from. */
@@ -105,6 +108,16 @@ export interface IGridOverlayNamespace {
     Ui: IOverlayUi;
 }
 
+/** What the grid draws across a whole row. */
+export interface IGridRowNamespace {
+    /** What a row shows while its records load, drawn through `onRenderRowLoading`. */
+    Loading: typeof RowLoading;
+    /** A row standing in for records that failed, drawn through `onRenderRowError`. */
+    Error: typeof RowError;
+    /** What draws a full-width row without knowing which row. */
+    Ui: IRowUi;
+}
+
 /** Everything a grid is rendered from. */
 export interface IGridNamespace {
     /** The grid itself. */
@@ -115,6 +128,8 @@ export interface IGridNamespace {
     ColumnHeader: IGridColumnHeaderNamespace;
     /** What the grid draws over its rows. */
     Overlay: IGridOverlayNamespace;
+    /** What the grid draws across a whole row. */
+    Row: IGridRowNamespace;
 }
 
 export const Grid: IGridNamespace = {
@@ -155,5 +170,10 @@ export const Grid: IGridNamespace = {
         Loading: LoadingOverlay,
         EmptyRecords: EmptyRecordsOverlay,
         Ui: OverlayUi,
+    },
+    Row: {
+        Loading: RowLoading,
+        Error: RowError,
+        Ui: RowUi,
     },
 };

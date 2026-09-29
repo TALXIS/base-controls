@@ -1,0 +1,15 @@
+import { ICellRendererParams } from "@ag-grid-community/core";
+import { IRecord } from "@talxis/client-libraries";
+import { useGridComponents } from "@controls/grid/context";
+
+export interface IRowErrorProps extends ICellRendererParams<IRecord> {
+    /** What went wrong. */
+    errorMessage: string;
+}
+
+/** A row standing in for records that failed: `fullWidthCellRenderer`. */
+export const RowError = (props: IRowErrorProps) => {
+    const components = useGridComponents();
+
+    return components.onRenderRowError({ message: props.errorMessage });
+};

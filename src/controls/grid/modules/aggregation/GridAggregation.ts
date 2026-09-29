@@ -7,7 +7,7 @@ import { IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
 import { IGridRowHeight } from "../../services/rows";
-import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error";
+import { RowError } from "@controls/grid/components/rows/error";
 import { IGridAgGridOptions } from "../../services/runtime";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
@@ -305,7 +305,7 @@ export class GridAggregation implements IGridAggregation {
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.isFullWidthRow = this._isFullWidthRow;
-        result.options.fullWidthCellRenderer = FullWidthCellRendererError;
+        result.options.fullWidthCellRenderer = RowError;
         result.options.fullWidthCellRendererParams = this._getFullWidthCellRendererParams;
         result.options.pinnedBottomRowData = this._pinnedBottomRowData;
     };

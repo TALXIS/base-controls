@@ -3,7 +3,7 @@ import { AgGridReactProps } from "@ag-grid-community/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
-import { FullRowLoading } from "@controls/grid/components/loading/full-row";
+import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
 import { IGridModule } from "../../modules";
@@ -192,7 +192,7 @@ export class GridRuntime implements IGridRuntime {
     private _evaluateAgGridOptions(): ManagedGridOptions<IRecord> {
         const result: IGridAgGridOptions = {
             options: {
-                loadingCellRenderer: FullRowLoading,
+                loadingCellRenderer: RowLoading,
                 suppressDragLeaveHidesColumns: true,
                 animateRows: false,
                 enterNavigatesVertically: true,
