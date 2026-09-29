@@ -31,7 +31,7 @@ export const ConditionalFormatting: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellThemeHook\` recolours overdue **Due** cells. Set \`theme.colors\` and the cell's palette is generated from them.`,
+                story: `\`registerCellThemeHook\` recolours the **Close date** of open deals that are past it. Set \`theme.colors\` and the cell's palette is generated from them.`,
             },
         },
     },
@@ -43,7 +43,7 @@ export const EditablePerRecord: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellEditableHook\` locks tasks that are done. The rest of the grid stays editable.`,
+                story: `\`registerCellEditableHook\` locks deals that are won. The rest of the grid stays editable.`,
             },
         },
     },
@@ -55,7 +55,7 @@ export const RowHeightPerRecord: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerRowHeightHook\` draws tasks that are done in shorter rows.`,
+                story: `\`registerRowHeightHook\` draws won deals in shorter rows.`,
             },
         },
     },
@@ -79,7 +79,7 @@ export const HeaderAdornments: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerColumnHeaderAdornmentsHook\` draws an icon after the **Budget** header's name. \`title\` is added to the header's tooltip.`,
+                story: `\`registerColumnHeaderAdornmentsHook\` draws an icon after the **Value** header's name. \`title\` is added to the header's tooltip.`,
             },
         },
     },
@@ -91,7 +91,7 @@ export const CellCommandsFromAModule: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellCommandsHook\` offers **Done** in the **Task** cell of every task that is not done yet. Hover a row to see it. For commands one column declares itself, use \`onGetCommands\` on {COLUMNS}.`,
+                story: `\`registerCellCommandsHook\` offers **Won** in the **Deal** cell of every deal that is still open. Hover a row to see it. For commands one column declares itself, use \`onGetCommands\` on {COLUMNS}.`,
             },
         },
     },
@@ -103,7 +103,7 @@ export const ChangingColumnDefinitions: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerColumnDefinitionsHook\` is handed every column definition before AG Grid gets them: this one drops **Billable** and pins **Task**.`,
+                story: `\`registerColumnDefinitionsHook\` is handed every column definition before AG Grid gets them: this one drops **Recurring** and pins **Deal**.`,
             },
         },
     },

@@ -2,15 +2,17 @@ import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 import { createDocsProvider } from '../gridDocsData'
 
-export const CUSTOM_CELL_CODE = `const StatusCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
+export const CUSTOM_CELL_CODE = `const StageCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
     control: {
         onRenderControl: (controlProps, defaultRender) => {
-            if (Number(controlProps.parameters.Record.raw.getValue('status')) !== 4) {
+            if (Number(controlProps.parameters.Record.raw.getValue('stage')) !== 4) {
                 return defaultRender(controlProps)
             }
-            return <span style={{ margin: '0 9px', padding: '2px 10px', borderRadius: 10, background: '#dff6dd', color: '#107c10', fontWeight: 600 }}>
-                ✓ Done
-            </span>
+            return <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 9px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: '#107c10', color: '#ffffff', fontSize: 12, fontWeight: 600, lineHeight: '16px' }}>
+                    <Icon iconName='CheckMark' style={{ fontSize: 10 }} /> Won
+                </span>
+            </div>
         },
     },
 }} />
@@ -18,11 +20,11 @@ export const CUSTOM_CELL_CODE = `const StatusCell = (props: IGridCellParams) => 
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={[{ colId: 'status', cellRenderer: StatusCell }]}
+    colDefs={[{ colId: 'stage', cellRenderer: StageCell }]}
     height='440px' />
 `
 
-export const CUSTOM_HEADER_CODE = `const BudgetHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
+export const CUSTOM_HEADER_CODE = `const ValueHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
     label: {
         onRenderLabel: labelProps => <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Icon iconName='Money' style={{ color: '#107c10' }} />
@@ -34,7 +36,7 @@ export const CUSTOM_HEADER_CODE = `const BudgetHeader = (props: IColumnHeaderRen
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-    colDefs={[{ colId: 'budget', headerComponent: BudgetHeader }]}
+    colDefs={[{ colId: 'value', headerComponent: ValueHeader }]}
     height='440px' />
 `
 
@@ -42,7 +44,7 @@ export const EMPTY_STATE_CODE = `const GridExample = () => {
     const emptyProvider = React.useMemo(() => {
         const emptyProvider = new MemoryDataProvider({
             dataSource: [],
-            metadata: { PrimaryIdAttribute: 'docs_taskid', PrimaryNameAttribute: 'name', LogicalName: 'docs_task', EntitySetName: 'docs_tasks' },
+            metadata: { PrimaryIdAttribute: 'docs_dealid', PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
         })
         emptyProvider.setColumns(provider.getColumns())
         emptyProvider.refresh()
@@ -55,9 +57,9 @@ export const EMPTY_STATE_CODE = `const GridExample = () => {
         components={{
             onRenderEmptyRecordsOverlay: props => <Grid.Overlay.Ui.EmptyRecords
                 {...props}
-                message='No tasks yet. Create one to get started.'
+                message='No deals in the pipeline yet.'
                 components={{
-                    onRenderIcon: iconProps => <Icon {...iconProps} iconName='TaskManager' style={{ color: '#5B5FC7' }} />,
+                    onRenderIcon: iconProps => <Icon {...iconProps} iconName='Money' style={{ color: '#5B5FC7' }} />,
                 }} />,
         }}
         height='320px' />
@@ -91,7 +93,7 @@ const GridExample = () => <Grid.Root
     components={{
         onRenderRowLoading: props => <Grid.Row.Ui.Loading {...props} components={{
             onRenderShimmer: () => <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: '100%', padding: '0 12px', color: '#605e5c' }}>
-                <Icon iconName='Sync' /> Loading tasks...
+                <Icon iconName='Sync' /> Loading deals...
             </div>,
         }} />,
     }}
@@ -119,7 +121,7 @@ export const MODULE_UI_CODE = `const GridExample = () => <Grid.Root
 const createLoadingProvider = () => {
     const provider = createDocsProvider()
     provider.isLoading = () => true
-    provider.getLoadingMessage = () => 'Fetching your tasks...'
+    provider.getLoadingMessage = () => 'Fetching your pipeline...'
     return provider
 }
 

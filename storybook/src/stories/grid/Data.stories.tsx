@@ -31,23 +31,23 @@ A column without these keys still shows its values. It just offers nothing in it
 
 \`\`\`ts
 {
-    name: 'estimate',
-    displayName: 'Estimate',
-    dataType: DataTypes.Decimal,
-    visualSizeFactor: 140,
+    name: 'value',
+    displayName: 'Value',
+    dataType: DataTypes.Currency,
+    visualSizeFactor: 130,
     metadata: {
         IsValidForGrid: true,
         IsValidForUpdate: true,
         CanBeGrouped: true,
         SupportedAggregations: ['sum', 'avg'],
-        SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.Decimal).map(operator => operator.Value),
+        SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.Currency).map(operator => operator.Value),
     },
 }
 \`\`\`
 
 ## The examples' data
 
-Every example on these pages gets a \`provider\` over the same 30 project tasks: \`name\`, \`owner\`, \`status\` (an option set where \`4\` is *Done*), \`estimate\`, \`progress\`, \`due\`, \`budget\` and \`billable\`. Every column carries all the keys above. The examples on this page build providers of their own.
+Every example on these pages gets a \`provider\` over the same sales pipeline of 30 deals: \`name\`, \`owner\` (the account manager), \`stage\` (an option set where \`4\` is *Won*), \`value\` (currency), \`probability\` (a percentage), \`closedate\`, \`timespent\` (a duration, in minutes) and \`recurring\` (two options). Every column carries all the keys above. The examples on this page build providers of their own.
 `
 
 const meta = {
@@ -84,7 +84,7 @@ export const RequiredAndReadOnly: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`RequiredLevel: 2\` marks **Task** as required: clear one and the cell says so. \`IsValidForUpdate: false\` leaves **Budget** read-only while the rest of the grid is editable.`,
+                story: `\`RequiredLevel: 2\` marks **Deal** as required: clear one and the cell says so. \`IsValidForUpdate: false\` leaves **Value** read-only while the rest of the grid is editable.`,
             },
         },
     },

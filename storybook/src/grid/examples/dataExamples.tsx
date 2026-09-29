@@ -42,24 +42,24 @@ const GridExample = () => {
 `
 
 export const REQUIRED_AND_READ_ONLY_CODE = `const GridExample = () => {
-    const taskProvider = React.useMemo(() => {
-        const taskProvider = createDocsProvider()
-        taskProvider.setColumns(taskProvider.getColumns().map(column => {
+    const dealProvider = React.useMemo(() => {
+        const dealProvider = createDocsProvider()
+        dealProvider.setColumns(dealProvider.getColumns().map(column => {
             switch (column.name) {
                 case 'name':
                     return { ...column, metadata: { ...column.metadata, RequiredLevel: 2 } }
-                case 'budget':
+                case 'value':
                     return { ...column, metadata: { ...column.metadata, IsValidForUpdate: false } }
                 default:
                     return column
             }
         }))
-        taskProvider.refresh()
-        return taskProvider
+        dealProvider.refresh()
+        return dealProvider
     }, [])
 
     return <Grid.Root
-        provider={taskProvider}
+        provider={dealProvider}
         modules={{ rowModel: createClientSideRowModelModule() }}
         enableEditing
         height='440px' />

@@ -41,7 +41,7 @@ export const CustomCell: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onRenderControl\` is handed the default as \`defaultRender\`: done tasks draw a badge, the rest draw as before.`,
+                story: `\`onRenderControl\` is handed the default as \`defaultRender\`: won deals draw a badge, the rest draw as before.`,
             },
         },
     },
@@ -53,7 +53,7 @@ export const CustomHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The **Budget** header draws an icon before its name. Sorting still works: only the label was replaced.`,
+                story: `The **Value** header draws an icon before its name. Sorting still works: only the label was replaced.`,
             },
         },
     },

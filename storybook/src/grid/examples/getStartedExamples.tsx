@@ -1,21 +1,70 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
+import { createDocsProvider } from '../gridDocsData'
 
-export const OVERVIEW_CODE = `const GridExample = () => {
-    const [clicked, setClicked] = React.useState('nothing yet')
+export const OVERVIEW_CODE = `const WON = 4
+
+const pipelineModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
+            const closeDate = record.getValue('closedate')
+            if (columnName !== 'closedate' || !closeDate || Number(record.getValue('stage')) === WON || new Date(closeDate) >= new Date()) {
+                return
+            }
+            theme.colors.background = '#fde7e9'
+            theme.colors.text = '#a4262c'
+        })
+    },
+}
+
+const GridExample = () => {
+    const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+    const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <span>Last clicked: <b>{clicked}</b></span>
+        <MessageBar>{selectedIds.length ? selectedIds.length + ' deal(s) selected. ' : ''}{status}</MessageBar>
         <Grid.Root
             provider={provider}
             modules={{
-                rowModel: createClientSideRowModelModule(),
+                rowModel: createServerSideRowModelModule(),
+                rowSelection: createRowSelectionModule({ mode: 'multiple' }),
+                cellSelection: createCellSelectionModule(),
+                clipboard: createClipboardModule(),
                 sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+                grouping: createGroupingModule(),
+                aggregation: createAggregationModule(),
+                custom: [pipelineModule],
             }}
-            onRowClicked={record => setClicked(record.getFormattedValue('name') ?? '')}
-            height='440px' />
+            colDefs={[
+                { colId: 'stage', pinned: 'right' },
+                {
+                    colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
+                    settings: {
+                        onGetCommands: record => ({
+                            items: [
+                                { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
+                                { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                            ],
+                        }),
+                    },
+                },
+            ]}
+            enableEditing
+            enableAutoSave
+            onSelectionChanged={setSelectedIds}
+            onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
+            height='520px' />
     </Stack>
 }
 `
 
-export const OverviewExample = () => <GridExampleRunner seedCode={OVERVIEW_CODE} />
+const createOverviewProvider = () => {
+    const provider = createDocsProvider()
+    provider.aggregation.addAggregation({ alias: 'value', columnName: 'value', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'timespent', columnName: 'timespent', aggregationFunction: 'sum' })
+    provider.refresh()
+    return provider
+}
+
+export const OverviewExample = () => <GridExampleRunner seedCode={OVERVIEW_CODE} onCreateProvider={createOverviewProvider} />

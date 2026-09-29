@@ -21,18 +21,18 @@ export const FEATURE_PROPS_CODE = `const GridExample = () => {
 }
 `
 
-export const EDITABLE_GRID_CODE = `const validateEstimate = (record: IRecord) => record.expressions.setValidationExpression('estimate', () => {
-    const estimate = Number(record.getValue('estimate') ?? 0)
-    return { error: estimate > 10, errorMessage: 'Split a task estimated at more than 10 days.' }
+export const EDITABLE_GRID_CODE = `const validateProbability = (record: IRecord) => record.expressions.setValidationExpression('probability', () => {
+    const probability = Number(record.getValue('probability') ?? 0)
+    return { error: probability < 0 || probability > 100, errorMessage: 'A probability is between 0 and 100 %.' }
 })
 
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change a value, then leave the cell.')
 
     React.useEffect(() => {
-        provider.getRecords().forEach(validateEstimate)
-        provider.addEventListener('onRecordLoaded', validateEstimate)
-        return () => provider.removeEventListener('onRecordLoaded', validateEstimate)
+        provider.getRecords().forEach(validateProbability)
+        provider.addEventListener('onRecordLoaded', validateProbability)
+        return () => provider.removeEventListener('onRecordLoaded', validateProbability)
     }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>

@@ -132,6 +132,7 @@ declare const DataTypes: {
     OptionSet: string;
     TwoOptions: string;
     WholeNone: string;
+    WholeDuration: string;
     Decimal: string;
     Currency: string;
     DateAndTimeDateOnly: string;

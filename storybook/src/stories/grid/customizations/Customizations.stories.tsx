@@ -71,7 +71,7 @@ export const EditableGrid: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Editing with autosave. A validation expression refuses estimates above 10 days, and the save events report each save.`,
+                story: `Editing with autosave. A validation expression refuses a probability outside 0 to 100 %, and the save events report each save.`,
             },
         },
     },

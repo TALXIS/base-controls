@@ -6,21 +6,21 @@ export const PIN_AND_ALIGN_CODE = `const GridExample = () => <Grid.Root
     modules={{ rowModel: createClientSideRowModelModule() }}
     colDefs={[
         { colId: 'name', pinned: 'left' },
-        { colId: 'status', pinned: 'right' },
+        { colId: 'stage', pinned: 'right' },
         { colId: 'owner', settings: { alignment: 'center' } },
     ]}
     height='440px' />
 `
 
-export const COMPUTED_COLUMN_CODE = `const RemainingCell = (props: IGridCellParams) => {
-    const estimate = Number(props.data.getValue('estimate') ?? 0)
-    const progress = Number(props.data.getValue('progress') ?? 0)
-    const remaining = estimate * (100 - progress) / 100
+export const COMPUTED_COLUMN_CODE = `const WeightedValueCell = (props: IGridCellParams) => {
+    const value = Number(props.data.getValue('value') ?? 0)
+    const probability = Number(props.data.getValue('probability') ?? 0)
+    const weightedValue = Math.round(value * probability / 100)
 
     return <Grid.Cell.Root {...props}>
         <Grid.Cell.Theme>
             <Grid.Cell.Container>
-                <span style={{ padding: '0 9px' }}>{remaining.toFixed(1)} days</span>
+                <span style={{ padding: '0 9px', marginLeft: 'auto' }}>\${weightedValue.toLocaleString('en-US')}</span>
             </Grid.Cell.Container>
         </Grid.Cell.Theme>
     </Grid.Cell.Root>
@@ -30,12 +30,12 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
     colDefs={[{
-        colId: 'remaining',
-        headerName: 'Remaining',
-        initialWidth: 130,
+        colId: 'weighted',
+        headerName: 'Weighted value',
+        initialWidth: 140,
         sortable: false,
         valueGetter: () => null,
-        cellRenderer: RemainingCell,
+        cellRenderer: WeightedValueCell,
     }]}
     height='440px' />
 `
@@ -52,17 +52,17 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
                 colId: 'actions',
                 headerName: '',
                 pinned: 'right',
-                initialWidth: 96,
+                initialWidth: 130,
                 sortable: false,
                 valueGetter: () => null,
                 settings: {
                     onGetCommands: record => ({
                         items: [
                             { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
-                            { key: 'done', title: 'Mark as done', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('status', 4) },
+                            { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
                         ],
                         overflowItems: [
-                            { key: 'reset', text: 'Reset progress', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('progress', 0) },
+                            { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
                         ],
                     }),
                 },
@@ -75,14 +75,14 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
 export const REMEMBER_WIDTHS_CODE = `const GridExample = () => {
     const [savedWidths, setSavedWidths] = React.useState<{ [columnName: string]: number }>({})
     const [openCount, setOpenCount] = React.useState(0)
-    const taskProvider = React.useMemo(() => {
-        const taskProvider = createDocsProvider()
-        taskProvider.setColumns(taskProvider.getColumns().map(column => ({
+    const dealProvider = React.useMemo(() => {
+        const dealProvider = createDocsProvider()
+        dealProvider.setColumns(dealProvider.getColumns().map(column => ({
             ...column,
             visualSizeFactor: savedWidths[column.name] ?? column.visualSizeFactor,
         })))
-        taskProvider.refresh()
-        return taskProvider
+        dealProvider.refresh()
+        return dealProvider
     }, [openCount])
 
     return <Stack tokens={{ childrenGap: 8 }}>
@@ -92,7 +92,7 @@ export const REMEMBER_WIDTHS_CODE = `const GridExample = () => {
         </Stack>
         <Grid.Root
             key={openCount}
-            provider={taskProvider}
+            provider={dealProvider}
             modules={{ rowModel: createClientSideRowModelModule() }}
             onColumnsChanged={columns => setSavedWidths(Object.fromEntries(columns.map(column => [column.name, column.visualSizeFactor ?? 0])))}
             height='400px' />

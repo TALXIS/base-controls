@@ -23,7 +23,7 @@ export const SELECTING_ROWS_CODE = `const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <MessageBar>{selectedIds.length} task(s) selected</MessageBar>
+        <MessageBar>{selectedIds.length} deal(s) selected</MessageBar>
         <Grid.Root
             provider={provider}
             modules={{
@@ -101,8 +101,8 @@ const createGroupedProvider = () => {
 
 const createTotalledProvider = () => {
     const provider = createDocsProvider()
-    provider.aggregation.addAggregation({ alias: 'estimate', columnName: 'estimate', aggregationFunction: 'sum' })
-    provider.aggregation.addAggregation({ alias: 'budget', columnName: 'budget', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'value', columnName: 'value', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'timespent', columnName: 'timespent', aggregationFunction: 'sum' })
     provider.refresh()
     return provider
 }

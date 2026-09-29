@@ -4,9 +4,9 @@ import { GridExampleRunner } from '../GridExampleRunner'
 export const CONDITIONAL_FORMATTING_CODE = `const overdueModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
-            const due = record.getValue('due')
-            const isDone = Number(record.getValue('status')) === 4
-            if (columnName !== 'due' || !due || isDone || new Date(due) >= new Date()) {
+            const closeDate = record.getValue('closedate')
+            const isWon = Number(record.getValue('stage')) === 4
+            if (columnName !== 'closedate' || !closeDate || isWon || new Date(closeDate) >= new Date()) {
                 return
             }
             theme.colors.background = '#fde7e9'
@@ -21,10 +21,10 @@ const GridExample = () => <Grid.Root
     height='440px' />
 `
 
-export const EDITABLE_PER_RECORD_CODE = `const lockDoneTasksModule: IGridModule = {
+export const EDITABLE_PER_RECORD_CODE = `const lockWonDealsModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellEditableHook((result, { record }) => {
-            if (Number(record.getValue('status')) === 4) {
+            if (Number(record.getValue('stage')) === 4) {
                 result.isEditable = false
             }
         })
@@ -33,15 +33,15 @@ export const EDITABLE_PER_RECORD_CODE = `const lockDoneTasksModule: IGridModule 
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [lockDoneTasksModule] }}
+    modules={{ rowModel: createClientSideRowModelModule(), custom: [lockWonDealsModule] }}
     enableEditing
     height='440px' />
 `
 
-export const ROW_HEIGHT_CODE = `const compactDoneRowsModule: IGridModule = {
+export const ROW_HEIGHT_CODE = `const compactWonRowsModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('rows').registerRowHeightHook((result, { record }) => {
-            if (Number(record.getValue('status')) === 4) {
+            if (Number(record.getValue('stage')) === 4) {
                 result.height = 30
             }
         })
@@ -50,7 +50,7 @@ export const ROW_HEIGHT_CODE = `const compactDoneRowsModule: IGridModule = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [compactDoneRowsModule] }}
+    modules={{ rowModel: createClientSideRowModelModule(), custom: [compactWonRowsModule] }}
     height='440px' />
 `
 
@@ -82,7 +82,7 @@ export const COLUMN_MENU_ITEMS_CODE = `const GridExample = () => {
 export const HEADER_ADORNMENTS_CODE = `const currencyModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('columns').headers.registerColumnHeaderAdornmentsHook((adornments, header) => {
-            if (header.getColumn()?.name !== 'budget') {
+            if (header.getColumn()?.name !== 'value') {
                 return
             }
             adornments.push({
@@ -101,17 +101,17 @@ const GridExample = () => <Grid.Root
     height='440px' />
 `
 
-export const CELL_COMMANDS_CODE = `const markDoneModule: IGridModule = {
+export const CELL_COMMANDS_CODE = `const markWonModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
-            if (columnName !== 'name' || Number(record.getValue('status')) === 4) {
+            if (columnName !== 'name' || Number(record.getValue('stage')) === 4) {
                 return
             }
             result.items.push({
-                key: 'done',
-                text: 'Done',
+                key: 'won',
+                text: 'Won',
                 iconProps: { iconName: 'CheckMark' },
-                onClick: () => record.setValue('status', 4),
+                onClick: () => record.setValue('stage', 4),
             })
         })
     },
@@ -119,16 +119,16 @@ export const CELL_COMMANDS_CODE = `const markDoneModule: IGridModule = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [markDoneModule] }}
+    modules={{ rowModel: createClientSideRowModelModule(), custom: [markWonModule] }}
     height='440px' />
 `
 
 export const COLUMN_DEFINITIONS_CODE = `const layoutModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('columns').registerColumnDefinitionsHook(columnDefs => {
-            const billableIndex = columnDefs.findIndex(columnDef => columnDef.colId === 'billable')
-            if (billableIndex !== -1) {
-                columnDefs.splice(billableIndex, 1)
+            const recurringIndex = columnDefs.findIndex(columnDef => columnDef.colId === 'recurring')
+            if (recurringIndex !== -1) {
+                columnDefs.splice(recurringIndex, 1)
             }
             const nameColumn = columnDefs.find(columnDef => columnDef.colId === 'name')
             if (nameColumn) {

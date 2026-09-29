@@ -136,7 +136,7 @@ export const Grouping: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Grouped by **Owner** to start with. Group by more columns from their menus: \`'nested'\` gives each its own level, \`'flat'\` puts them on one. \`defaultExpandedLevel\` opens the groups down to that level; \`-1\`, the default, keeps them closed.`,
+                story: `Grouped by **Account manager** to start with. Group by more columns from their menus: \`'nested'\` gives each its own level, \`'flat'\` puts them on one. \`defaultExpandedLevel\` opens the groups down to that level; \`-1\`, the default, keeps them closed.`,
             },
         },
     },
@@ -148,7 +148,7 @@ export const Totals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `**Estimate** and **Budget** are summed to start with. With \`allowUserAggregation\`, a number column's menu lets the user pick its total.`,
+                story: `**Value** and **Time spent** are summed to start with. With \`allowUserAggregation\`, a number column's menu lets the user pick its total.`,
             },
         },
     },
