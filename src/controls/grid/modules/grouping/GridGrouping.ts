@@ -109,7 +109,7 @@ export class GridGrouping implements IGridGrouping {
         //overrides the provider's nested default
         this._provider.setProperty('groupingType', this._settings.type);
         this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
-        this._gridServices.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._gridServices.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
@@ -363,7 +363,7 @@ export class GridGrouping implements IGridGrouping {
     };
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     };

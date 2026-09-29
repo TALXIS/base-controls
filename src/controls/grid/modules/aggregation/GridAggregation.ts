@@ -61,7 +61,7 @@ export class GridAggregation implements IGridAggregation {
         this._services = parameters.services;
         this._allowUserAggregation = parameters.allowUserAggregation ?? true;
         this._gridServices.whenAvailable('gridApi', () => this._onGridApiAvailable());
-        this._gridServices.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._gridServices.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         this._registerHooks();
     }
 
@@ -295,7 +295,7 @@ export class GridAggregation implements IGridAggregation {
     };
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onFirstDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onNewDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onAfterSaved', this._onAfterSaved);

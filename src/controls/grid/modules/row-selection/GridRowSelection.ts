@@ -60,7 +60,7 @@ export class GridRowSelection implements IGridRowSelection {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').whenAvailable('gridApi', () => this._onGridApiAvailable());
-        this._services.get('gridServices').get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('gridServices').get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         this._registerHooks();
     }
 
@@ -145,7 +145,7 @@ export class GridRowSelection implements IGridRowSelection {
         return this._services.get('components');
     }
 
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onRecordsSelected', this._onProviderSelectionChanged);
         this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);
     };

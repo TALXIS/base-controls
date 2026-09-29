@@ -26,7 +26,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         this._isTree = this._getIsTree();
         //ahead of the grid's refresh on the same event
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         //a provider that loaded before the grid mounted sends no event for it
         if (!this._provider.isLoading()) {
             this._loadEveryLevel();
@@ -66,7 +66,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     }
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     };
 

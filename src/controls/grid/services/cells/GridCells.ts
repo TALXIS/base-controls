@@ -159,7 +159,7 @@ export class GridCells implements IGridCells {
             this._provider.addEventListener('onRenderRequested', this._onRenderRequested);
             gridApi.addEventListener('cellFocused', this._onCellFocused);
         });
-        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public get editing(): IGridEditing {
@@ -243,7 +243,7 @@ export class GridCells implements IGridCells {
     };
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
     };
 

@@ -45,7 +45,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
         this._services.get('grid').registerAgGridOptions(result => result.options.getRowHeight = this._getRowHeight);
-        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public isActive(record: IRecord): boolean {
@@ -92,7 +92,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     };
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._services.get('provider').removeEventListener('onRecordsSelected', this._onSelectionChanged);
     };
 

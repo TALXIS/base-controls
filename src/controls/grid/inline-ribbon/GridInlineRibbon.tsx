@@ -9,7 +9,7 @@ import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "./styles";
 import { DataProvider } from "@talxis/client-libraries";
 
-const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'];
+const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefreshed', 'onAfterCommandsRefreshed'];
 
 export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const propsRef = useRef(props);

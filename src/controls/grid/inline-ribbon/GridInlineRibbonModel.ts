@@ -1,8 +1,8 @@
 import { EventEmitter, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
 
 export interface IGridInlineRibbonModelEvents {
-    onBeforeCommandsRefresh: () => void;
-    onAfterCommandsRefresh: () => void;
+    onBeforeCommandsRefreshed: () => void;
+    onAfterCommandsRefreshed: () => void;
 }
 
 interface IDeps {
@@ -32,7 +32,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     }
     public refreshCommands = async () => {
         this._loading = true;
-        this.dispatchEvent('onBeforeCommandsRefresh');
+        this.dispatchEvent('onBeforeCommandsRefreshed');
         this._commands = await this._getDataset().getDataProvider().retrieveRecordCommand({
             recordIds: [this._getRecord().getRecordId()],
             refreshAllRules: true,
@@ -40,7 +40,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
             isGrouped: this._getRecord().getSummarizationType() === 'grouping'
         })
         this._loading = false;
-        this.dispatchEvent('onAfterCommandsRefresh');
+        this.dispatchEvent('onAfterCommandsRefreshed');
     }
 
     private _registerEventListeners() {

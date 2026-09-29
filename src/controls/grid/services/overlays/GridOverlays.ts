@@ -22,7 +22,7 @@ export class GridOverlays {
     constructor(parameters: IGridOverlaysParameters) {
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     /** Listens to the two things an overlay is decided from. */
@@ -35,7 +35,7 @@ export class GridOverlays {
     private _onLoading = (): void => this._reconcile();
 
     //the provider outlives the grid
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._provider.removeEventListener('onLoading', this._onLoading);
         this._clearPendingLoading();
     };

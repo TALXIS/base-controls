@@ -42,7 +42,7 @@ export const GridRoot = (props: IGrid) => {
         }
     }, [runtime]);
 
-    //AG Grid's teardown and its `onDestroy` run before this cleanup
+    //AG Grid's teardown and its `onDestroyed` run before this cleanup
     useEffect(() => () => runtime.destroy(), []);
 
     //the locator holds everything a component needs

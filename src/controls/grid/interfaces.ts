@@ -16,9 +16,9 @@ export interface IGridEventHandlers {
     /** Fired when a value in a record changes. */
     onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
     /** Fired when a record starts saving. */
-    onBeforeRecordSave: (record: IRecord) => void;
+    onBeforeRecordSaved: (record: IRecord) => void;
     /** Fired when a record has finished saving, with how it went. */
-    onAfterRecordSave: (result: IRecordSaveOperationResult) => void;
+    onAfterRecordSaved: (result: IRecordSaveOperationResult) => void;
     /** Fired when the provider reports an error. */
     onError: (message: string, details?: any) => void;
     /** Fired when an editor opens or closes, with the cell now edited if any. */
@@ -66,5 +66,5 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     /** Fired once AG Grid is ready, with its api among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;
     /** Fired before the grid tears down, while its api still answers. */
-    onDestroy?: (runtime: IGridRuntime) => void;
+    onDestroyed?: (runtime: IGridRuntime) => void;
 }

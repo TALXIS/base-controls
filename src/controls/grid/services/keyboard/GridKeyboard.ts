@@ -29,7 +29,7 @@ export class GridKeyboard implements IGridKeyboard {
     constructor(parameters: IGridKeyboardParameters) {
         this._services = parameters.services;
         this._services.whenAvailable('gridRoot', gridRoot => this._listen(gridRoot));
-        this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
+        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public getKeyBeingPressed(): KeyboardEvent | undefined {
@@ -43,7 +43,7 @@ export class GridKeyboard implements IGridKeyboard {
         };
     }
 
-    private _onDestroy = (): void => {
+    private _onDestroyed = (): void => {
         this._document?.removeEventListener('keydown', this._onKeyDown, true);
         this._document?.removeEventListener('keyup', this._onKeyUp, true);
         this._document?.removeEventListener('pointerdown', this._onKeyUp, true);

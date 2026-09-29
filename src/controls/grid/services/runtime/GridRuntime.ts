@@ -33,7 +33,7 @@ export interface IGridAgGridOptions {
 
 export interface IGridRuntimeEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
     /** Fired when the grid is torn down. */
-    onDestroy: () => void;
+    onDestroyed: () => void;
 }
 
 /** A hook over the options AG Grid reads only once, when it is created. */
@@ -165,7 +165,7 @@ export class GridRuntime implements IGridRuntime {
     public destroy(): void {
         //the provider outlives the grid
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this.events.dispatchEvent('onDestroy');
+        this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
         this._services.destroy();
     }
@@ -241,7 +241,7 @@ export class GridRuntime implements IGridRuntime {
     };
 
     private _onGridPreDestroyed = (): void => {
-        this._onGetProps().onDestroy?.(this);
+        this._onGetProps().onDestroyed?.(this);
     };
 
     private get _provider(): IDataProvider {
