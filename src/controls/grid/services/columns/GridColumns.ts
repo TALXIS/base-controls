@@ -93,8 +93,7 @@ export class GridColumns implements IGridColumns {
                 continue;
             }
             const base = columnDefs[index];
-            //settings are merged so an entry can change one of them
-            columnDefs[index] = { ...base, ...colDef, settings: { ...base.settings, ...colDef.settings } };
+            columnDefs[index] = { ...base, ...colDef, settings: this._mergeSettings(base.settings, colDef.settings) };
         }
     }
 
@@ -203,13 +202,23 @@ export class GridColumns implements IGridColumns {
         return !!record && this._cells.createCell({ record: record, colDef: colDef }).isEditable();
     }
 
+    //merged a level deep so an entry can change one setting, or one callback, and keep the rest
+    private _mergeSettings(base: IGridColumnSettings = {}, override: IGridColumnSettings = {}): IGridColumnSettings {
+        return {
+            ...base,
+            ...override,
+            cell: { ...base.cell, ...override.cell },
+            header: { ...base.header, ...override.header },
+        };
+    }
+
     /** What the grid's cells and header read about this column. */
     private _getColumnSettings(column: IColumn): IGridColumnSettings {
         return {
             alignment: column.alignment,
-            oneClickEdit: !!column.oneClickEdit,
             isEditable: this._isColumnEditable(column),
             isRequired: this._isColumnRequired(column),
+            cell: { oneClickEdit: !!column.oneClickEdit },
         };
     }
 

@@ -30,24 +30,36 @@ What the grid's cells and headers read about a column:
 | Setting | What it changes |
 |---|---|
 | \`alignment\` | Which edge the value sits against: \`'left'\`, \`'center'\` or \`'right'\`. |
-| \`oneClickEdit\` | The cell takes input where it stands, without opening an editor. |
 | \`isEditable\` | Whether the column's values can be changed at all. |
 | \`isRequired\` | Whether a value is required. |
 | \`widthOffset\` | Extra width, in pixels, on top of the column's own. |
-| \`cell\` | Callbacks run for each of the column's cells, with its record. See *\`settings.cell\`* below. |
+| \`cell\` | How each of the column's cells behaves. See *\`settings.cell\`* below. |
+| \`header\` | Callbacks for the column's header. See *\`settings.header\`* below. |
 
-\`settings\` is merged with what the grid set for a provider column, so an entry can change one setting and keep the rest.
+\`settings\` is merged with what the grid set for a provider column, \`cell\` and \`header\` included, so an entry can change one setting and keep the rest.
 
 ## \`settings.cell\`
 
-Each runs before the hook of the same kind on [**Hooks**](?path=/story/grid-extending-hooks--overview), so a module still has the last word.
+The callbacks run before the hook of the same kind on [**Hooks**](?path=/story/grid-extending-hooks--overview), so a module still has the last word.
 
-| Callback | What it decides |
+| Setting | What it decides |
 |---|---|
+| \`oneClickEdit\` | The cell takes input where it stands, without opening an editor. |
 | \`onGetCommands\` | The commands a cell offers for its record: \`{ items, overflowItems }\`, drawn while the row is hovered or focused. |
 | \`onGetTheme\` | Changes a cell's theme: \`(theme, { record })\`, as \`registerCellThemeHook\` on [**Hooks**](?path=/story/grid-extending-hooks--overview) without the column. Set \`theme.colors\` and the cell's palette is generated from them. |
 | \`onGetEditable\` | Decides per record whether a cell can be edited: set \`result.isEditable\`. \`isEditable: false\` still locks the whole column. |
 | \`onGetLoading\` | Decides per record whether a cell shows a loading placeholder: set \`result.isLoading\`. |
+
+## \`settings.header\`
+
+Each runs before the header hook of the same kind on [**Extending**](?path=/story/grid-extending--overview), and changes what it is handed.
+
+| Callback | What it changes |
+|---|---|
+| \`onGetTheme\` | The header's theme: set \`theme.colors\`. |
+| \`onGetAdornments\` | What the header draws beside its name: push \`{ key, placement, title, onRender }\`, with \`placement\` \`'prefix'\` or \`'suffix'\`. |
+| \`onGetMenuSections\` | The sections of the column's menu: push \`{ key, title, items }\`. |
+| \`onGetMenuItems\` | The items of the column's menu, after the sections are laid out: add, remove or reorder them. |
 `
 
 const meta = {

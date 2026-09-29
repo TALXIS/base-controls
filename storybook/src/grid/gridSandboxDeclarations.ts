@@ -173,12 +173,12 @@ interface IGridCellCommands {
 
 interface IGridColumnSettings {
     alignment?: IAlignment;
-    oneClickEdit?: boolean;
     isEditable?: boolean;
     isRequired?: boolean;
     widthOffset?: number;
-    /** Per-record callbacks for each of the column's cells. */
+    /** How each of the column's cells behaves. */
     cell?: {
+        oneClickEdit?: boolean;
         onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
         /** Changes the theme of this column's cells, as a cell theme hook does. */
         onGetTheme?: (theme: IThemeBuilder, params: { record: IRecord }) => void;
@@ -186,6 +186,13 @@ interface IGridColumnSettings {
         onGetEditable?: (result: { isEditable: boolean }, params: { record: IRecord }) => void;
         /** Decides whether this column's cells show they are loading. */
         onGetLoading?: (result: { isLoading: boolean }, params: { record: IRecord }) => void;
+    };
+    /** Callbacks for the column's header. */
+    header?: {
+        onGetTheme?: (theme: IThemeBuilder) => void;
+        onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
+        onGetMenuSections?: (sections: { key: string; title: string; items: IContextualMenuItem[] }[]) => void;
+        onGetMenuItems?: (items: IContextualMenuItem[]) => void;
     };
 }
 

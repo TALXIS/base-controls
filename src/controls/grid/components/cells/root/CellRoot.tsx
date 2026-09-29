@@ -23,7 +23,7 @@ export const CellRoot = (props: ICellRootProps) => {
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
     //editors and one-click columns take input
-    const takesInput = !!props.isEditor || !!colDef.settings?.oneClickEdit;
+    const takesInput = !!props.isEditor || !!colDef.settings?.cell?.oneClickEdit;
     const cell = useMemo(
         () => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell }),
         [cells, record, colDef, props.node, takesInput, props.eGridCell]);

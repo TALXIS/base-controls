@@ -117,7 +117,7 @@ export class GridCell implements IGridCell {
     }
 
     public hasOneClickEdit(): boolean {
-        return !!this.getSettings().oneClickEdit;
+        return !!this.getSettings().cell?.oneClickEdit;
     }
 
     public getSettings(): IGridColumnSettings {

@@ -285,7 +285,7 @@ export class GridGrouping implements IGridGrouping {
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             //a group's value is not edited in place
-            colDef.settings = { ...colDef.settings, oneClickEdit: false, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
+            colDef.settings = { ...colDef.settings, cell: { ...colDef.settings?.cell, oneClickEdit: false }, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }

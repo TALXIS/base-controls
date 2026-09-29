@@ -9,6 +9,14 @@ const isOverdue = (record: IRecord) => {
     return !!closeDate && Number(record.getValue('stage')) !== WON && new Date(closeDate) < new Date()
 }
 
+const lockWonDeals = (result: { isEditable: boolean }, { record }: { record: IRecord }) => {
+    if (Number(record.getValue('stage')) === WON) {
+        result.isEditable = false
+    }
+}
+
+const LOCKED_WHEN_WON = ['name', 'owner', 'value', 'probability', 'timespent', 'recurring']
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -28,11 +36,13 @@ const GridExample = () => {
                 aggregation: createAggregationModule(),
             }}
             colDefs={[
-                { colId: 'stage', pinned: 'right' },
+                ...LOCKED_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetEditable: lockWonDeals } } })),
+                { colId: 'stage', pinned: 'right', settings: { cell: { onGetEditable: lockWonDeals } } },
                 {
                     colId: 'closedate',
                     settings: {
                         cell: {
+                            onGetEditable: lockWonDeals,
                             onGetTheme: (theme, { record }) => {
                                 if (isOverdue(record)) {
                                     theme.colors.background = '#fde7e9'
