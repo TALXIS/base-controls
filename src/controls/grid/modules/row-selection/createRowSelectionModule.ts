@@ -9,6 +9,8 @@ export interface IRowSelectionModuleOptions {
     mode: 'single' | 'multiple';
     /** Overrides for the checkbox in a row, or the one in the header. */
     components?: Partial<IGridRowSelectionComponents>;
+    /** Called when the selected records change, with the ids now selected. */
+    onSelectionChanged?: (selectedRecordIds: string[]) => void;
 }
 
 /** Builds the module that lets rows be selected. */
@@ -18,7 +20,7 @@ export const createRowSelectionModule = (options: IRowSelectionModuleOptions): I
         const components = { ...GridRowSelectionComponents, ...options.components };
         services.register('gridServices', () => gridServices);
         services.register('components', () => components);
-        const selection = new GridRowSelection({ services, mode: options.mode });
+        const selection = new GridRowSelection({ services, mode: options.mode, onSelectionChanged: options.onSelectionChanged });
         gridServices.register('rowSelection', () => selection);
     },
 });

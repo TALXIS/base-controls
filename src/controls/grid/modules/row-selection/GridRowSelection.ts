@@ -1,5 +1,5 @@
 import { _, ColDef, GridApi, ICellRendererParams, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
-import { DataProvider, IDataProvider, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
+import { DataProvider, EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridRowSelectionServiceLocator } from "./services";
@@ -21,15 +21,22 @@ export interface IGridRowSelectionInterceptors {
     onSelectRecords: (parameters: IGridSelectRecordsParameters) => Promise<void>;
 }
 
+export interface IGridRowSelectionEvents {
+    /** Fired when the selected records change, with the ids now selected. */
+    onSelectionChanged: (selectedRecordIds: string[]) => void;
+}
+
 export interface IGridRowSelectionParameters {
     /** This module's own locator. */
     services: IGridRowSelectionServiceLocator;
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
+    onSelectionChanged?: IGridRowSelectionEvents['onSelectionChanged'];
 }
 
 /** Keeps the grid's and the providers' selection in sync. */
 export interface IGridRowSelection {
+    readonly events: IEventEmitter<IGridRowSelectionEvents>;
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
     setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
@@ -55,19 +62,14 @@ export class GridRowSelection implements IGridRowSelection {
     /** Tokens that let only the latest selection per provider write. */
     private _selectionTokens: WeakMap<IDataProvider, number> = new WeakMap();
     private _interceptors = new Interceptors<IGridRowSelectionInterceptors>();
+    public readonly events: IEventEmitter<IGridRowSelectionEvents> = new EventEmitter<IGridRowSelectionEvents>();
 
     constructor(parameters: IGridRowSelectionParameters) {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').whenAvailable('gridApi', () => this._onGridApiAvailable());
-        this._services.get('gridServices').get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        this._registerEvents(parameters);
         this._registerHooks();
-    }
-
-    private _registerHooks(): void {
-        const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
-        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
     }
 
     public getMode(): 'single' | 'multiple' {
@@ -107,15 +109,6 @@ export class GridRowSelection implements IGridRowSelection {
         }
     }
 
-    /** Adds the column the checkboxes live in. */
-    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
-        if (recordSaveColumnIndex !== -1) {
-            columnDefs.splice(recordSaveColumnIndex, 1);
-        }
-        columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
-    };
-
     public isSelectionColumn(columnName: string | undefined): boolean {
         return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;
     }
@@ -138,20 +131,42 @@ export class GridRowSelection implements IGridRowSelection {
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
 
-    private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
-    private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
-
     public get components(): IGridRowSelectionComponents {
         return this._services.get('components');
     }
 
+    private _registerEvents(parameters: IGridRowSelectionParameters): void {
+        this._services.get('gridServices').get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        if (parameters.onSelectionChanged) {
+            this.events.addEventListener('onSelectionChanged', parameters.onSelectionChanged);
+        }
+    }
+
+    private _registerHooks(): void {
+        const gridServices = this._services.get('gridServices');
+        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
+    }
+
+    /** Adds the column the checkboxes live in. */
+    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
+        const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
+        if (recordSaveColumnIndex !== -1) {
+            columnDefs.splice(recordSaveColumnIndex, 1);
+        }
+        columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
+    };
+
+    private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
+    private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
+
     private _onDestroyed = (): void => {
-        this._provider.removeEventListener('onRecordsSelected', this._onProviderSelectionChanged);
+        this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
         this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);
     };
 
     private _onGridApiAvailable(): void {
-        this._provider.addEventListener('onRecordsSelected', this._onProviderSelectionChanged);
+        this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
         this._services.get('gridServices').whenAvailable('gridRoot',
             gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
@@ -182,6 +197,11 @@ export class GridRowSelection implements IGridRowSelection {
             return;
         }
         this._writeToProviders();
+    };
+
+    private _onRecordsSelected = (selectedRecordIds: string[]): void => {
+        this._onProviderSelectionChanged();
+        this.events.dispatchEvent('onSelectionChanged', selectedRecordIds);
     };
 
     private _onProviderSelectionChanged = (): void => {

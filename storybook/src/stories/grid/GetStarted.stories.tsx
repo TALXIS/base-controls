@@ -61,13 +61,12 @@ A prop read at mount keeps the value it had when the grid first rendered. To cha
 
 ## Reacting to the grid
 
-Every event is a prop on \`<Grid.Root />\`.
+These events are props on \`<Grid.Root />\`. A module's own events are options of that module, such as \`onSelectionChanged\` of row selection on [**Modules**](?path=/story/grid-modules--overview).
 
 | Prop | Called with | When |
 |---|---|---|
 | \`onDataLoaded\` | | New data is in the grid. |
 | \`onLoadingChanged\` | \`isLoading\` | The grid starts or stops loading. |
-| \`onSelectionChanged\` | \`selectedRecordIds\` | The selected records change. |
 | \`onRowClicked\` | \`record\` | A row is clicked. |
 | \`onCellDoubleClicked\` | \`record\`, \`columnName\` | A cell is double-clicked. |
 | \`onFocusedCellChanged\` | \`record\`, \`columnName\` | The focus moves to another cell; both are \`undefined\` when it leaves the rows. |

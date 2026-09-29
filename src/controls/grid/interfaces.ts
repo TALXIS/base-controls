@@ -12,8 +12,6 @@ export interface IGridEventHandlers {
     onDataLoaded: () => void;
     /** Fired when the grid starts or stops loading. */
     onLoadingChanged: (isLoading: boolean) => void;
-    /** Fired when the selected records change. */
-    onSelectionChanged: (selectedRecordIds: string[]) => void;
     /** Fired when a value in a record changes. */
     onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
     /** Fired when a record starts saving. */

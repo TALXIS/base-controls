@@ -9,7 +9,7 @@ A grid's features are **modules**. You pass the ones you want in \`modules\`; on
 | Module | What it adds | Options |
 |---|---|---|
 | \`rowModel\` | How rows are loaded. **Required.** \`createClientSideRowModelModule()\` takes every record the provider holds at once. \`createServerSideRowModelModule()\` loads a group's records as it is opened. | |
-| \`rowSelection\` | A checkbox column, and selecting rows with it | \`mode\`: \`'single'\` or \`'multiple'\`; \`components\` |
+| \`rowSelection\` | A checkbox column, and selecting rows with it | \`mode\`: \`'single'\` or \`'multiple'\`; \`onSelectionChanged\`, called with the selected ids; \`components\` |
 | \`cellSelection\` | Highlighting blocks of cells by dragging across them | AG Grid's range options, such as \`enableFillHandle\` |
 | \`clipboard\` | Copying cells and pasting into them | AG Grid's clipboard options, such as \`copyHeadersToClipboard\` |
 | \`sorting\` | Sorting from a column's menu | \`labels\`, \`components\` |
@@ -88,7 +88,7 @@ export const SelectingRows: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onSelectionChanged\` is called with the selected ids. Change \`'multiple'\` to \`'single'\` and only one row stays selected.`,
+                story: `The module's \`onSelectionChanged\` is called with the selected ids. Change \`'multiple'\` to \`'single'\` and only one row stays selected.`,
             },
         },
     },

@@ -28,9 +28,8 @@ export const SELECTING_ROWS_CODE = `const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createClientSideRowModelModule(),
-                rowSelection: createRowSelectionModule({ mode: 'multiple' }),
+                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
             }}
-            onSelectionChanged={setSelectedIds}
             height='440px' />
     </Stack>
 }

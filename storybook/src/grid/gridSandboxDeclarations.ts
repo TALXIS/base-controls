@@ -368,6 +368,8 @@ declare function createClientSideRowModelModule(): IGridModule;
 declare function createServerSideRowModelModule(): IGridModule;
 declare function createRowSelectionModule(options: {
     mode: 'single' | 'multiple';
+    /** Called when the selected records change, with the ids now selected. */
+    onSelectionChanged?: (selectedRecordIds: string[]) => void;
     components?: {
         onRenderCell?: (props: IGridCellParams) => JSX.Element;
         onRenderHeader?: (props: IColumnHeaderParams) => JSX.Element;
@@ -493,7 +495,6 @@ interface IGridProps {
     onDestroyed?: (runtime: IGridRuntime) => void;
     onDataLoaded?: () => void;
     onLoadingChanged?: (isLoading: boolean) => void;
-    onSelectionChanged?: (selectedRecordIds: string[]) => void;
     onRecordValueChanged?: (record: IRecord, columnName: string, newValue: any) => void;
     onBeforeRecordSaved?: (record: IRecord) => void;
     onAfterRecordSaved?: (result: IRecordSaveOperationResult) => void;

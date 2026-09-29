@@ -27,7 +27,7 @@ const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createServerSideRowModelModule(),
-                rowSelection: createRowSelectionModule({ mode: 'multiple' }),
+                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
                 cellSelection: createCellSelectionModule(),
                 clipboard: createClipboardModule(),
                 sorting: createSortingModule(),
@@ -52,7 +52,6 @@ const GridExample = () => {
             ]}
             enableEditing
             enableAutoSave
-            onSelectionChanged={setSelectedIds}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
             height='520px' />
     </Stack>

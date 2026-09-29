@@ -61,8 +61,9 @@ Every hook takes a \`priority\`. Hooks run in ascending order, so a higher numbe
 | \`rows\` | \`onRowClicked\`, \`onActiveRowsChanged\` |
 | \`cells.events\` | \`onFocusedCellChanged\` |
 | \`columns.events\` | \`onCellDoubleClicked\`, \`onColumnsChanged\` |
+| \`rowSelection.events\` | \`onSelectionChanged\` |
 
-Subscribe with \`addEventListener\`. The same events reach \`<Grid.Root />\` as props, listed on [**Get started**](?path=/story/grid-get-started--overview).
+Subscribe with \`addEventListener\`. The grid's own events also reach \`<Grid.Root />\` as props, listed on [**Get started**](?path=/story/grid-get-started--overview).
 
 ## Where to go next
 

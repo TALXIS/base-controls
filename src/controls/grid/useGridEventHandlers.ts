@@ -14,7 +14,6 @@ export const useGridEventHandlers = (runtime: IGridRuntime, props: IGrid) => {
     const rows = runtime.services.get('rows');
     useEventEmitter<IGridRuntimeEvents>(runtime.events, 'onDataLoaded', () => props.onDataLoaded?.());
     useEventEmitter<IDataProviderEventListeners>(provider, 'onLoading', (isLoading: boolean) => props.onLoadingChanged?.(isLoading));
-    useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', (selectedRecordIds: string[]) => props.onSelectionChanged?.(selectedRecordIds));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordColumnValueChanged', (record: IRecord, columnName: string, newValue: any) => props.onRecordValueChanged?.(record, columnName, newValue));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onAfterRecordSaved?.(result));
