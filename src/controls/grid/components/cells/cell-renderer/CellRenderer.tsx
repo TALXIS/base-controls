@@ -9,6 +9,7 @@ import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../row-resize-grip/CellResizeGrip";
 import { ICellRendererComponents } from "./components";
+import { DatasetControl } from "@controls/dataset-control";
 
 export interface ICellRendererProps extends ICellRendererParams {
     /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
