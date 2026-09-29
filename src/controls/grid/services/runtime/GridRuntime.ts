@@ -102,7 +102,7 @@ export class GridRuntime implements IGridRuntime {
         const cells = new GridCells({ services: this._services });
         const rows = new GridRows({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
-        const surfaces = new GridSurfaces({ services: this._services });
+        const surfaces = new GridSurfaces();
         //both wait for an api and then talk only to it
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });

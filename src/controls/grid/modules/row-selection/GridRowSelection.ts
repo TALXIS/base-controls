@@ -114,19 +114,7 @@ export class GridRowSelection implements IGridRowSelection {
             columnDefs.splice(recordSaveColumnIndex, 1);
         }
         columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
-        columnDefs.forEach(colDef => this._suppressNavigation(colDef));
     };
-
-    /** Takes navigation off the checkbox column. */
-    private _suppressNavigation(colDef: ColDef<IRecord>): void {
-        const onCellDoubleClicked = colDef.onCellDoubleClicked;
-        colDef.onCellDoubleClicked = event => {
-            if (this.isSelectionColumn(event.colDef.colId ?? undefined)) {
-                return;
-            }
-            onCellDoubleClicked?.(event);
-        };
-    }
 
     public isSelectionColumn(columnName: string | undefined): boolean {
         return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;

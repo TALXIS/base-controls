@@ -1,7 +1,7 @@
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridClipboardModule } from "../interfaces";
+import { IGridModule } from "../interfaces";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** The clipboard options AG Grid takes, as a caller may set them. */
@@ -28,7 +28,7 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
  * {@link createCellSelectionModule} is registered; else the
  * @example
  */
-export const createClipboardModule = (options?: IGridClipboardOptions): IGridClipboardModule => ({
+export const createClipboardModule = (options?: IGridClipboardOptions): IGridModule => ({
     agGridModules: [ClipboardModule],
     //a copy is one cell or one highlighted block, never the row selection.
     onRegister: runtime => runtime.registerAgGridOptions(result => {

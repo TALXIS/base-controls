@@ -1,5 +1,4 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { IColumn } from "@talxis/client-libraries";
+import { mergeStyleSets } from "@fluentui/react";
 
 export const filterCalloutStyles = mergeStyleSets({
     root: {

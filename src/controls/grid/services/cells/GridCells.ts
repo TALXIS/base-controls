@@ -1,4 +1,3 @@
-import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
@@ -65,7 +64,7 @@ export interface IGridCells {
     createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
     /** Registers a cell as rendered. */
     addCell(cell: IGridCell): void;
-    /** The cell is gone: out of the registry, and destroyed. */
+    /** The cell is gone, so it leaves the registry. */
     removeCell(cell: IGridCell): void;
     /** Every cell on screen. */
     getCells(): IGridCell[];
@@ -166,7 +165,6 @@ export class GridCells implements IGridCells {
 
     public removeCell(cell: IGridCell): void {
         this._renderedCells.delete(cell.getId());
-        cell.destroy();
     }
 
     public getCells(): IGridCell[] {

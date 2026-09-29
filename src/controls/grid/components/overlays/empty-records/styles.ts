@@ -12,9 +12,4 @@ export const emptyRecordStyles = mergeStyleSets({
     icon: {
         fontSize: 46
     },
-    image: {
-        'img': {
-            width: '100px'
-        }
-    }
 })

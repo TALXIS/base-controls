@@ -8,20 +8,11 @@ export interface IGridModule {
     onRegister?: (runtime: IGridRuntime) => void;
 }
 
-/** How the grid gets its rows. */
-export interface IGridRowModelModule extends IGridModule { }
-
-/** The AG Grid enterprise licence. */
-export interface IGridLicenseModule extends IGridModule { }
-
-/** Copying rows to the clipboard. */
-export interface IGridClipboardModule extends IGridModule { }
-
 /** The modules a grid was given. */
 export interface IGridModules {
-    rowModel: IGridRowModelModule;
+    rowModel: IGridModule;
     /** The AG Grid enterprise licence: {@link createLicenseModule}. */
-    license?: IGridLicenseModule;
+    license?: IGridModule;
     /** Selecting rows: {@link createRowSelectionModule}. */
     rowSelection?: IGridModule;
     /** Highlighting cells by dragging across them: {@link createCellSelectionModule}. */
@@ -35,7 +26,7 @@ export interface IGridModules {
     /** Totals under the rows: {@link createAggregationModule}. */
     aggregation?: IGridModule;
     /** Copying rows: {@link createClipboardModule}. */
-    clipboard?: IGridClipboardModule;
+    clipboard?: IGridModule;
     /** The caller's own modules, whose hooks place themselves against {@link GRID_MODULE_PRIORITY}. */
     custom?: IGridModule[];
 }

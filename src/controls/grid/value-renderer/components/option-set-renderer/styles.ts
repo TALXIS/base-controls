@@ -1,6 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { getJustifyContent, IAlignment } from "@utils";
-import { IOptionSetRendererProps } from "./OptionSetRenderer";
 
 export const getOptionSetRendererStyles = (alignment: IAlignment) => {
     return mergeStyleSets({

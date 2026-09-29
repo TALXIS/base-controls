@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { GridColumnHeader, IGridColumnHeader } from "../../../services/column-header";
+import { IGridColumnHeader } from "../../../services/column-header";
 
 export const GridColumnHeaderContext = createContext<IGridColumnHeader | undefined>(undefined);
 GridColumnHeaderContext.displayName = 'GridColumnHeader';

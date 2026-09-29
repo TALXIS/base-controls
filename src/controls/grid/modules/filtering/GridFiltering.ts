@@ -1,5 +1,5 @@
 import { ColDef } from "@ag-grid-community/core";
-import { Icon, IContextualMenuItem } from "@fluentui/react";
+import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { SelectionCell } from "./components/selection-cell/SelectionCell";

@@ -1,4 +1,4 @@
-import { GridValueRenderer, IGridValueRenderer } from "@controls/grid/value-renderer";
+import { IGridValueRenderer } from "@controls/grid/value-renderer";
 import { CellUi, ICellUiControlProps } from "../ui";
 
 /** The replaceable pieces of a cell's control. */

@@ -1,6 +1,5 @@
 import { CSSProperties } from "react";
 import { mergeStyleSets } from "@fluentui/react";
-import { IColumn } from "@talxis/client-libraries";
 import { getJustifyContent, IAlignment } from "@utils";
 
 export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {

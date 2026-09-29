@@ -1,5 +1,5 @@
 import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
-import { FontWeights, IContextualMenuItem } from "@fluentui/react";
+import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
@@ -57,8 +57,6 @@ export interface IGridGrouping {
     closeGroupSelectionLimitDialog(): void;
     /** The strings this module renders, for its own components. */
     getLabels(): ILocalizationService<IGridGroupingLabels>;
-    getGrouping(): Grouping;
-    getType(): 'nested' | 'flat';
     isColumnGrouped(column: IColumn): boolean;
     canColumnBeGrouped(column: IColumn): boolean;
     /** Whether the row stands for a group rather than for a record. */
@@ -190,14 +188,6 @@ export class GridGrouping implements IGridGrouping {
 
     public getLabels(): ILocalizationService<IGridGroupingLabels> {
         return this._labels;
-    }
-
-    public getGrouping(): Grouping {
-        return this._grouping;
-    }
-
-    public getType(): 'nested' | 'flat' {
-        return this._settings.type;
     }
 
     public isColumnGrouped(column: IColumn): boolean {

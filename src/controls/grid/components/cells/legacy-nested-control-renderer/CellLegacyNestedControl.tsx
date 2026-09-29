@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { Client } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "@controls/nested-control-renderer";
 import { INestedControlRendererComponentProps } from "@controls/nested-control-renderer/interfaces";
@@ -7,7 +6,6 @@ import { IControl } from "@interfaces";
 import { IGridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
-import { GridServicesContext } from "../../../context";
 import { CellNestedRoot } from "../nested-react-root/CellNestedRoot";
 import { getBindings } from "./getBindings";
 

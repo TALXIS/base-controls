@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { GridField, IGridField } from "../../../services/fields";
+import { IGridField } from "../../../services/fields";
 import { GridCellRevisionContext } from "../root/context";
 
 export const GridFieldContext = createContext<IGridField | undefined>(undefined);

@@ -1,5 +1,4 @@
 import { HookRegistry } from "@utils";
-import { IGridServiceLocator } from "../../services";
 
 /** Something a module draws over the grid rather than in it. */
 export interface IGridSurface {
@@ -10,10 +9,6 @@ export interface IGridSurface {
 
 /** A hook over what the modules draw over the grid. */
 export type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
-
-export interface IGridSurfacesParameters {
-    services: IGridServiceLocator;
-}
 
 /** What the modules draw over the grid, assembled from what they registered. */
 export interface IGridSurfaces {
@@ -28,12 +23,7 @@ export interface IGridSurfaces {
 }
 
 export class GridSurfaces implements IGridSurfaces {
-    private _services: IGridServiceLocator;
     private _surfaceHooks = new HookRegistry<GridSurfacesHook>();
-
-    constructor(parameters: IGridSurfacesParameters) {
-        this._services = parameters.services;
-    }
 
     public registerSurfaceHook(hook: GridSurfacesHook, priority?: number): () => void {
         return this._surfaceHooks.register(hook, priority);

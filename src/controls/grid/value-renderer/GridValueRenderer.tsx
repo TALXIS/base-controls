@@ -1,7 +1,6 @@
 import { Fragment, useMemo } from "react";
-import { DataTypes, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
-import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
-import { GridValueRendererComponents, IGridValueRendererComponents } from "./components";
+import { DataTypes } from "@talxis/client-libraries";
+import { GridValueRendererComponents } from "./components";
 import { getSelectedOptions } from "./components/option-set-renderer";
 import { IFileValue, IGridValueRenderer } from "./interfaces";
 import { getGridValueRendererStyles } from "./styles";

@@ -23,7 +23,6 @@ export interface IGridRowsParameters {
 /** What is true of a row rather than of one of its cells. */
 export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     isActive(record: IRecord): boolean;
-    getIndex(record: IRecord): number | undefined;
     /**
      * Registers a hook over how tall a row is.
      *
@@ -50,10 +49,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     public isActive(record: IRecord): boolean {
         const recordId = record.getRecordId();
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
-    }
-
-    public getIndex(record: IRecord): number | undefined {
-        return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
     }
 
     public registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void {

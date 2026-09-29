@@ -39,8 +39,6 @@ export interface IGridAggregationParameters {
 
 /** The totals a grid shows, in the row pinned under the rest. */
 export interface IGridAggregation {
-    /** The total row, but only if the dataset has ever carried an aggregation. */
-    getTotalRow(): TotalRow | undefined;
     canColumnBeAggregated(column: IColumn): boolean;
     addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
     removeAggregation(alias: string): void;
@@ -79,10 +77,6 @@ export class GridAggregation implements IGridAggregation {
         //behind grouping, which a column's menu offers first
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
-    }
-
-    public getTotalRow(): TotalRow | undefined {
-        return this._totalRow;
     }
 
     /** The total row, created if the dataset now carries an aggregation. */

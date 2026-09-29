@@ -20,8 +20,6 @@ export interface IGridControlParameters {
 export interface IGridControl {
     /** What the field behind this control draws with, where anything bound one. */
     getFieldControl(): IGridFieldControl | undefined;
-    /** Whether a field is behind this control, rather than a column the record has no value for. */
-    isBound(): boolean;
     /** Whether something other than the cell renderer draws this cell. */
     isCustomRendererEnabled(): boolean;
     /** What draws this cell, and what it is given. */
@@ -56,10 +54,6 @@ export class GridControl implements IGridControl {
 
     public getFieldControl(): IGridFieldControl | undefined {
         return this._fieldControl;
-    }
-
-    public isBound(): boolean {
-        return !!this._fieldControl;
     }
 
     public isCustomRendererEnabled(): boolean {

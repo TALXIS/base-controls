@@ -11,8 +11,6 @@ import { RecordSaveIndicatorCell } from "../../components/record-save-indicator"
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
-import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
-import { CellEditor } from "@controls/grid/components/cells/cell-editor/CellEditor";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
 
 
@@ -264,17 +262,8 @@ export class GridColumns implements IGridColumns {
         }
         const columnName = event.colDef.colId!;
         this.events.dispatchEvent('onCellDoubleClicked', record, columnName);
-        //the click landed on a rendered cell, so one is registered
-        const cell = this._cells.getCell(record, columnName)!;
-        switch (true) {
-            case !this._settings.isNavigationEnabled():
-            case this._settings.isEditingEnabled():
-            case cell.isEditable(): {
-                break;
-            }
-            default: {
-                record.getDataProvider().openDatasetItem(record.getNamedReference());
-            }
+        if (this._settings.isNavigationEnabled() && !this._settings.isEditingEnabled()) {
+            record.getDataProvider().openDatasetItem(record.getNamedReference());
         }
     }
 

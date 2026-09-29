@@ -40,9 +40,7 @@ export interface IGridCell {
     getTheme(): IGridCellTheme;
     /** Whether this cell is waiting on something. */
     isLoading(): boolean;
-    /** Whether this cell draws a control the user can type in. */
-    takesInput(): boolean;
-    /** Whether that control is drawn in the cell itself, with no editor to open. */
+    /** Whether the cell's control is drawn in the cell itself, with no editor to open. */
     hasOneClickEdit(): boolean;
     /** What the column this cell is in says its cells are. */
     getSettings(): IGridColumnSettings;
@@ -54,18 +52,12 @@ export interface IGridCell {
     startEditing(): void;
     /** The edit is over. */
     finishEditing(): void;
-    /** What draws this cell's value, once {@link IGridCell.createControl} has made one. */
-    getControl(): IGridControl | undefined;
     /** Makes what draws this cell's value. */
     createControl(field?: IGridField): IGridControl;
     /** Whether what this cell holds may be changed. */
     isEditable(): boolean;
     /** What this cell offers to do, as buttons and as what the overflow menu holds. */
     getCommands(): IGridCellCommands;
-    /** Whether this cell has left the screen, after. */
-    isDestroyed(): boolean;
-    /** The cell has left the screen: whatever it was holding goes with it. */
-    destroy(): void;
 }
 
 export class GridCell implements IGridCell {
@@ -75,10 +67,8 @@ export class GridCell implements IGridCell {
     private _node?: IRowNode<IRecord>;
     private _id: string;
     private _theme: IGridCellTheme;
-    private _control?: IGridControl;
     private _takesInput: boolean;
     private _element?: HTMLElement;
-    private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
         this._services = parameters.services;
@@ -125,10 +115,6 @@ export class GridCell implements IGridCell {
         return result.isLoading;
     }
 
-    public takesInput(): boolean {
-        return this._takesInput;
-    }
-
     public hasOneClickEdit(): boolean {
         return !!this.getSettings().oneClickEdit;
     }
@@ -157,13 +143,8 @@ export class GridCell implements IGridCell {
         this._editing.finish(this);
     }
 
-    public getControl(): IGridControl | undefined {
-        return this._control;
-    }
-
     public createControl(field?: IGridField): IGridControl {
-        this._control = new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
-        return this._control;
+        return new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
     }
 
     public isEditable(): boolean {
@@ -180,14 +161,6 @@ export class GridCell implements IGridCell {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result;
-    }
-
-    public isDestroyed(): boolean {
-        return this._isDestroyed;
-    }
-
-    public destroy(): void {
-        this._isDestroyed = true;
     }
 
     private get _cells() {

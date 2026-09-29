@@ -1,5 +1,5 @@
 import { ClientSideRowModelModule as AgClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
-import { IGridRowModelModule } from "../../interfaces";
+import { IGridModule } from "../../interfaces";
 import { ClientSideRowModel } from "./ClientSideRowModel";
 
 /**
@@ -7,7 +7,7 @@ import { ClientSideRowModel } from "./ClientSideRowModel";
  *
  * @example
  */
-export const createClientSideRowModelModule = (): IGridRowModelModule => ({
+export const createClientSideRowModelModule = (): IGridModule => ({
     agGridModules: [AgClientSideRowModelModule],
     onRegister: ({ services }) => {
         const rowModel = new ClientSideRowModel({ services });
