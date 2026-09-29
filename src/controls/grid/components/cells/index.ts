@@ -19,5 +19,5 @@ export * from './nested-react-root';
 //the pieces the parts draw with reach a consumer through `Grid.Cell.Ui`
 export type {
     ICellUi, ICellUiContainerProps, ICellUiFieldErrorProps, ICellUiResizeGripProps, ICellUiCommandsProps,
-    ICellUiControlProps, ICellUiLoadingProps, ICellUiUneditableIconProps, ICellUiUneditableIconComponents
+    ICellUiControlProps, ICellUiLoadingProps, ICellUiUneditableIconProps, ICellUiUneditableIconComponents, ICellUiFieldErrorComponents
 } from './ui';

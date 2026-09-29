@@ -23,11 +23,10 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
-            <CellValidation components={components.validation}>
-                <CellUneditableIcon components={components.uneditableIcon} />
-                <CellControl components={components.control} />
-                <CellCommands components={components.commands} />
-            </CellValidation>
+            <CellUneditableIcon components={components.uneditableIcon} />
+            <CellControl components={components.control} />
+            <CellCommands components={components.commands} />
+            <CellValidation components={components.validation} />
         </CellLoading>
     </CellContainer>;
 

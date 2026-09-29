@@ -8,7 +8,7 @@ export const getCellUneditableIconStyles = (theme: ITheme, alignment: IAlignment
         paddingLeft: 5,
         paddingRight: 5,
         //the far edge from the value, past the commands
-        order: alignment === 'right' ? 0 : 3,
+        order: alignment === 'right' ? -1 : 4,
     },
     icon: {
         fontSize: theme.fonts.small.fontSize,

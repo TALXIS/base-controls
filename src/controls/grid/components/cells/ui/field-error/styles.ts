@@ -1,6 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IAlignment } from "@utils";
 
-export const getFieldErrorStyles = (theme: ITheme) => mergeStyleSets({
+export const getFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
     outline: {
         position: 'absolute',
         inset: 0,
@@ -13,8 +14,8 @@ export const getFieldErrorStyles = (theme: ITheme) => mergeStyleSets({
         alignItems: 'center',
         paddingLeft: 5,
         paddingRight: 5,
-        //first, whichever edge the column reads from
-        order: 0,
+        //the far edge from the value, past the commands
+        order: alignment === 'right' ? 0 : 3,
     },
     icon: {
         color: theme.semanticColors.errorText,
