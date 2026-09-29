@@ -17,7 +17,14 @@
       "@talxis/base-controls/*": [
         "../src/*"
       ]
-    }
+    },
+    "types": [
+      "vite/client",
+      "node",
+      "google.maps",
+      "powerapps-component-framework",
+      "xrm"
+    ]
   },
   "include": [
     "src",
