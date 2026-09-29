@@ -17,32 +17,12 @@ import type { IGridFiltering } from "../modules/filtering/GridFiltering";
 import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
 import type { IGridGrouping } from "../modules/grouping/GridGrouping";
 
-/** Everything the grid is made of. */
-export interface IGridServiceMap {
-    /** What the caller asked the grid to be, with its defaults applied. */
-    settings: IGridSettings;
-    /** What is true of a row as a whole. */
-    rows: IGridRows;
-    /** Where the records, the columns and the paging come from. */
-    provider: IDataProvider;
-    /** The host context. */
-    pcfContext: ComponentFramework.Context<any, any>;
+/** The services only there once whatever registers them is; a custom module declares its own here. */
+export interface IGridOptionalServiceMap {
     /** The grid's own element. */
     gridRoot: HTMLElement;
-    /** Every string the grid renders, resolved. */
-    labels: ILocalizationService<IGridLabels>;
     /** AG Grid's own api, a last resort for what the grid's hooks cannot express. */
     gridApi: GridApi<IRecord>;
-    /** The theme the control was given. */
-    theme: ITheme;
-    /** The column definitions and the hooks modules add to them through. */
-    columns: IGridColumns;
-    /** What a cell shows and the hooks modules add to it through. */
-    cells: IGridCells;
-    /** What the user is pressing while the grid is doing something about it. */
-    keyboard: IGridKeyboard;
-    /** What the modules draw over the grid. */
-    surfaces: IGridSurfaces;
     /** The totals under the rows. */
     aggregation: IGridAggregation;
     /** Grouping the rows by a column. */
@@ -53,6 +33,30 @@ export interface IGridServiceMap {
     sorting: IGridSorting;
     /** Which records are selected. */
     rowSelection: IGridRowSelection;
+}
+
+/** Everything the grid is made of. */
+export interface IGridServiceMap extends IGridOptionalServiceMap {
+    /** What the caller asked the grid to be, with its defaults applied. */
+    settings: IGridSettings;
+    /** What is true of a row as a whole. */
+    rows: IGridRows;
+    /** Where the records, the columns and the paging come from. */
+    provider: IDataProvider;
+    /** The host context. */
+    pcfContext: ComponentFramework.Context<any, any>;
+    /** Every string the grid renders, resolved. */
+    labels: ILocalizationService<IGridLabels>;
+    /** The theme the control was given. */
+    theme: ITheme;
+    /** The column definitions and the hooks modules add to them through. */
+    columns: IGridColumns;
+    /** What a cell shows and the hooks modules add to it through. */
+    cells: IGridCells;
+    /** What the user is pressing while the grid is doing something about it. */
+    keyboard: IGridKeyboard;
+    /** What the modules draw over the grid. */
+    surfaces: IGridSurfaces;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
     /** The running grid and the hooks over AG Grid's props. */
@@ -60,7 +64,7 @@ export interface IGridServiceMap {
 }
 
 /** The services that are only there when whatever registers them is. */
-export type IOptionalGridService = 'gridApi' | 'gridRoot' | 'rowSelection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
+export type IOptionalGridService = keyof IGridOptionalServiceMap;
 
 /** Where the grid's parts find each other. */
 export type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
