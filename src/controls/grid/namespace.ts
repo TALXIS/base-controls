@@ -28,12 +28,7 @@ import { ColumnHeaderTheme } from "./components/column-header/theme/ColumnHeader
 import { ColumnHeaderUi, IColumnHeaderUi } from "./components/column-header/ui";
 import { GridRoot } from "./Grid";
 
-/**
- * Everything a cell is drawn from.
- *
- * `Renderer` and `Editor` are what a column definition is given; the rest are the parts they are built
- * from, and `Ui` the pieces those parts draw with.
- */
+/** Everything a cell is drawn from. */
 export interface IGridCellNamespace {
     /** A cell holding something other than a record's value: `colDef.cellRenderer`. */
     Renderer: typeof CellRenderer;
@@ -49,7 +44,7 @@ export interface IGridCellNamespace {
     Root: typeof CellRoot;
     /** What a cell and everything drawn in it is drawn in. */
     Theme: typeof CellTheme;
-    /** The element a cell's content is drawn in, and the surface it is drawn on. */
+    /** The element and surface a cell's content is drawn on. */
     Container: typeof CellContainer;
     /** What stands in for the content it wraps while the cell waits. */
     Loading: typeof CellLoading;
@@ -63,20 +58,15 @@ export interface IGridCellNamespace {
     ResizeGrip: typeof CellResizeGrip;
     /** What binds everything drawn inside it to one record's column. */
     Field: typeof CellField;
-    /** A root of its own, so its handlers answer a key before the grid does. */
+    /** A root of its own so its handlers answer a key before the grid does. */
     NestedRoot: typeof CellNestedRoot;
     /** What draws a column that named a control of its own. */
     LegacyNestedControl: typeof CellLegacyNestedControl;
-    /** What draws a cell, and nothing that knows why. */
+    /** What draws a cell without knowing why. */
     Ui: ICellUi;
 }
 
-/**
- * Everything a column header is drawn from.
- *
- * `Renderer` is what a column definition is given; the rest are the parts it is built from, and `Ui` the
- * pieces those parts draw with.
- */
+/** Everything a column header is drawn from. */
 export interface IGridColumnHeaderNamespace {
     /** A column's header, with what the grid's own parts add to it: `colDef.headerComponent`. */
     Renderer: typeof ColumnHeaderRenderer;
@@ -98,7 +88,7 @@ export interface IGridColumnHeaderNamespace {
     Suffix: typeof ColumnHeaderSuffix;
     /** What the header opens over the grid. */
     Menu: typeof ColumnHeaderMenu;
-    /** What draws a column header, and nothing that knows which column. */
+    /** What draws a column header without knowing which column. */
     Ui: IColumnHeaderUi;
 }
 

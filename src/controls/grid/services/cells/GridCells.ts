@@ -31,7 +31,7 @@ export interface IGridCellEditable {
 
 /** What a cell is waiting on, as the hooks leave it. */
 export interface IGridCellLoading {
-    /** Whether the cell is waiting on something rather than able to draw. */
+    /** Whether the cell is waiting on something. */
     isLoading: boolean;
 }
 
@@ -58,13 +58,13 @@ export interface IGridCellsParameters {
 
 /** Every cell the grid has on screen. */
 export interface IGridCells {
-    /** Which cell the user is editing, and what the keyboard does about it. */
+    /** Which cell the user is editing. */
     readonly editing: IGridEditing;
     /** A cell of this grid. */
     createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
     /** Registers a cell as rendered. */
     addCell(cell: IGridCell): void;
-    /** The cell is gone, so it leaves the registry. */
+    /** Removes a cell from the registry once it is gone. */
     removeCell(cell: IGridCell): void;
     /** Every cell on screen. */
     getCells(): IGridCell[];
@@ -73,37 +73,37 @@ export interface IGridCells {
     /**
      * Registers a hook over what draws a cell.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerControlHook(hook: GridControlHook, priority?: number): () => void;
     /**
      * Registers a hook over the parameters the control drawing a cell is handed.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
     /**
      * Registers a hook over the theme a cell is drawn in.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
     /**
      * Registers a hook over whether a cell is waiting.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
     /**
      * Registers a hook over the commands a cell offers.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
     /**
      * Registers a hook over whether a cell may be edited.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void;
     /** Run by the `GridControl` of the cell in question. */
@@ -116,17 +116,17 @@ export interface IGridCells {
         record: IRecord;
         columnName: string;
     }): void;
-    /** Run by the cell in question, which is the only caller. */
+    /** Run by the cell in question. */
     applyCellLoadingHooks(result: IGridCellLoading, params: {
         record: IRecord;
         columnName: string;
     }): void;
-    /** Run by the cell in question, which is the only caller. */
+    /** Run by the cell in question. */
     applyCellEditableHooks(result: IGridCellEditable, params: {
         record: IRecord;
         columnName: string;
     }): void;
-    /** Run by the cell in question, which is the only caller. */
+    /** Run by the cell in question. */
     applyCellCommandsHooks(result: IGridCellCommands, params: {
         record: IRecord;
         columnName: string;

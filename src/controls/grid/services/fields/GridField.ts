@@ -8,14 +8,14 @@ export interface IGridFieldParameters {
     services?: IGridServiceLocator;
 }
 
-/** One column of one record, and everything that follows from a component being bound to it. */
+/** One column of one record. */
 export interface IGridField {
     getRecord(): IRecord;
     getColumnName(): string;
     /** The column as this record's own provider has it. */
     getColumn(): IColumn;
     getValue(): any;
-    /** The value the field is given: the record takes it, and saves it. */
+    /** Hands the value to the record to take and save. */
     setValue(newValue: any): void;
     getFormattedValue(): string | null;
     /** Whether the value is one the record will accept. */
@@ -61,7 +61,6 @@ export class GridField implements IGridField {
     }
 
     /** Whether the value is one the record will accept. */
-    //TODO: FOR CODE REViEW - THIS SHOULD RETURN NO ERROR IF EDITING IS DISABLED
     public isValid(): IFieldValidationResult {
         return this._getField().isValid();
     }

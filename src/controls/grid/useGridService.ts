@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { IGridServiceMap, IOptionalGridService } from "./services";
 import { GridServicesContext } from "./context";
 
-/** What a grid is made of, by name — the one way a component reaches any of it. */
+/** Reads one of the grid's services by name. */
 export const useGridService = <TKey extends keyof IGridServiceMap>(key: TKey):
     TKey extends IOptionalGridService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey] => {
     const services = useContext(GridServicesContext);
@@ -24,6 +24,6 @@ export const useGridService = <TKey extends keyof IGridServiceMap>(key: TKey):
         };
     }, []);
 
-    //the conditional return type is the caller's contract; inside here the value is just
+    //the conditional return type is the caller's contract
     return service as any;
 };

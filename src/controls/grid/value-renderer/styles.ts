@@ -5,10 +5,9 @@ import { getJustifyContent, IAlignment } from "@utils";
 export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
         gridValueRendererRoot: {
-            //fills whatever it is put in, so a wrapper can place it between a chevron and a count, or under
-            //a label, and it still behaves as the value
+            //fills whatever it is put in
             flex: 1,
-            //8 off the edge, and the pixel the border of a control drawn in the cell's place takes
+            //8 off the edge plus the pixel an editor control's border takes
             paddingLeft: 9,
             paddingRight: 9,
             display: 'flex',
@@ -21,7 +20,7 @@ export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultil
     });
 };
 
-/** How a value that runs past one line is drawn: wrapped, and clamped rather than growing without end. */
+/** How a value that runs past one line is drawn: wrapped and clamped. */
 export const getMultilineStyles = (): CSSProperties => {
     return {
         whiteSpace: 'normal',

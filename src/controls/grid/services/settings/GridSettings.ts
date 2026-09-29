@@ -16,7 +16,7 @@ export interface IGridSettings {
     isNavigationEnabled(): boolean;
     /** Whether every other row takes a background of its own. */
     isZebraEnabled(): boolean;
-    /** Whether an edit saves itself, rather than waiting to be saved. */
+    /** Whether an edit saves itself. */
     isAutoSaveEnabled(): boolean;
     /** Whether an option set's own colour is used for its cells. */
     areOptionSetColorsEnabled(): boolean;
@@ -33,7 +33,7 @@ export class GridSettings implements IGridSettings {
 
     constructor(parameters: IGridSettingsParameters) {
         this._getProps = parameters.onGetProps;
-        //taken once: a later value is ignored, rather than reaching some cells and not others
+        //taken once so a later value cannot reach only some cells
         this._mountProps = { ...parameters.onGetProps() };
     }
 

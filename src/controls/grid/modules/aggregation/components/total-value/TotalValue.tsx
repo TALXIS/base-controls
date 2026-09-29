@@ -9,7 +9,7 @@ import { getTotalValueStyles } from "./styles";
 export const TotalValue = () => {
     const cell = useGridCell();
     const field = useGridField();
-    //this cell is drawn in the row the aggregation module pinned, so the module is there
+    //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
     const theme = useTheme();
     const styles = React.useMemo(() => getTotalValueStyles(theme), [theme]);

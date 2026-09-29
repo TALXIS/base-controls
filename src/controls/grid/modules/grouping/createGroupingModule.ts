@@ -23,11 +23,7 @@ export interface IGroupingModuleOptions {
     maxGroupLoadsPerSelection?: number;
 }
 
-/**
- * Builds the module that groups the rows by a column.
- *
- * @example
- */
+/** Builds the module that groups the rows by a column. */
 export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGridModule => ({
     agGridModules: [RowGroupingModule],
     onRegister: ({ services: gridServices }) => {

@@ -6,7 +6,7 @@ export const getColumnHeaderPrefixStyles = (alignment: IAlignment) => mergeStyle
         display: 'flex',
         alignItems: 'center',
         gap: 5,
-        //it stays against what names the column, which a right-aligned column draws last
+        //it stays against what names the column
         order: alignment === 'right' ? 2 : undefined,
     },
 });

@@ -1,4 +1,4 @@
-/** Where each module's hooks run, and what a custom module places its own against. */
+/** Where each module's hooks run. */
 export const GRID_MODULE_PRIORITY = {
     rowModel: 10,
     //its checkbox column is the first column

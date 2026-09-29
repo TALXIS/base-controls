@@ -14,7 +14,7 @@ const client = new Client();
 export interface ICellLegacyNestedControlProps {
     /** What the cell renderer would have been given. */
     controlProps: IGridValueRenderer;
-    /** The cell this is drawing, which knows whether it takes input. */
+    /** The cell this is drawing. */
     control: IGridControl;
 }
 
@@ -28,7 +28,7 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
     const column = fieldControl?.getColumn();
     const customControl = control.getCustomControl();
 
-    //a root of its own, so the control's own handlers run before AG Grid's
+    //a root of its own runs the control's handlers before AG Grid's
     return <CellNestedRoot>
         <NestedControlRenderer
             context={context}

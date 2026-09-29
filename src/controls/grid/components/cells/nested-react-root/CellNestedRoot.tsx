@@ -13,13 +13,7 @@ export interface ICellNestedRootProps {
     children?: React.ReactNode;
 }
 
-/**
- * Draws its children in a React root of their own, in an element of this one's.
- *
- * A root of its own is what puts the control's handlers ahead of AG Grid's: React listens on the root it
- * was given, so a key the control stops never reaches the cell. Nothing crosses into a root, so everything
- * the grid provides is handed over again inside it.
- */
+/** Draws its children in their own React root so their handlers run ahead of AG Grid's. */
 export const CellNestedRoot = (props: ICellNestedRootProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const styles = useMemo(() => getNestedReactRootStyles(), []);
@@ -32,7 +26,7 @@ export const CellNestedRoot = (props: ICellNestedRootProps) => {
     const theme = useTheme();
     const surfaceTheme = useSurfaceTheme();
 
-    //every render, so the children the root holds are the ones this component was last given
+    //every render: the root holds the children this component was last given
     useLayoutEffect(() => {
         ReactDOM.render(
             <GridServicesContext.Provider value={services}>
@@ -51,7 +45,7 @@ export const CellNestedRoot = (props: ICellNestedRootProps) => {
             containerRef.current!);
     });
 
-    //a layout cleanup, because it runs while this element is still in the document
+    //a layout cleanup runs while this element is still in the document
     useLayoutEffect(() => {
         return () => {
             ReactDOM.unmountComponentAtNode(containerRef.current!);

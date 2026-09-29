@@ -6,11 +6,7 @@ export interface ILicenseModuleOptions {
     key: string;
 }
 
-/**
- * Builds the module that licenses AG Grid.
- *
- * @example
- */
+/** Builds the module that licenses AG Grid. */
 export const createLicenseModule = ({ key }: ILicenseModuleOptions): IGridModule => ({
     onRegister: () => LicenseManager.setLicenseKey(key),
 });

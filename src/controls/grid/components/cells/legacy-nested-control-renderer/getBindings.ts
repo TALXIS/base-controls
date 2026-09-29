@@ -12,7 +12,7 @@ export interface IBindingsParameters {
     enableNavigation: boolean;
 }
 
-/** What a nested control is bound to */
+/** What a nested control is bound to. */
 export const getBindings = (parameters: IBindingsParameters): { [name: string]: IBinding } => {
     const { field, column, control, enableNavigation } = parameters;
     const value = field?.getValue();

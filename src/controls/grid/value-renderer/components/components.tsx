@@ -5,7 +5,7 @@ import { FieldLink, IFieldLinkProps } from "./field-link";
 import { FieldLookup, IFieldLookupProps } from "./field-lookup";
 import { FieldFile, IFieldFileProps } from "./field-file";
 
-/** The replaceable pieces of a field's value. Override any subset through `IGridValueRenderer.components`. */
+/** The replaceable pieces of a field's value, set through `IGridValueRenderer.components`. */
 export interface IGridValueRendererComponents {
     onRenderText: (props: IFieldTextProps) => JSX.Element;
     /** What an empty value shows in place of itself. */

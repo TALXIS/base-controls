@@ -14,11 +14,7 @@ export interface IAggregationModuleOptions {
     components?: Partial<IGridAggregationComponents>;
 }
 
-/**
- * Builds the module that shows totals in a row pinned under the rest.
- *
- * @example
- */
+/** Builds the module that shows totals in a row pinned under the rest. */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
     onRegister: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over

@@ -7,9 +7,9 @@ import { useGridService } from "@controls/grid/useGridService";
 import { RecordSaveIndicator, useRecordSaveStatus } from "@controls/grid/components/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
 
-/** The checkbox a row is selected by, or what the row has to report about its last save. */
+/** The row's checkbox, or the status of its last save. */
 export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
-    //pinned rows have no record, and `cellRendererSelector` renders nothing there
+    //`cellRendererSelector` draws this only for rows with a record
     const record = props.data!;
     const selection = useGridService('rowSelection')!;
     const saveStatus = useRecordSaveStatus(record);

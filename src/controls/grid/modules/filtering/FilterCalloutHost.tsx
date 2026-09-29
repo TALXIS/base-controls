@@ -10,14 +10,14 @@ export const FilterCalloutHost = () => {
     const provider = useGridService('provider');
     const [openColumnName, setOpenColumnName] = React.useState(filtering.getOpenColumnName());
 
-    //both events, one read: what is open is the module's answer
+    //both events re-read what the module says is open
     useEventEmitter<IGridFilteringEvents>(filtering.events, ['onFilterOpened', 'onFilterClosed'], (() => setOpenColumnName(filtering.getOpenColumnName())) as IGridFilteringEvents['onFilterOpened']);
 
     const column = openColumnName ? provider.getColumnsMap()[openColumnName] : undefined;
     if (!column) {
         return null;
     }
-    //one callout per column, so switching columns drops the previous column's draft with it
+    //keyed by column so switching columns drops the previous draft
     return <FilterCallout
         key={column.name}
         column={column}

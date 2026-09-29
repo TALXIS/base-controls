@@ -5,11 +5,6 @@ import { GridSortingComponents, IGridSortingComponents } from "./moduleComponent
 import { GridSorting } from "./GridSorting";
 import { IGridSortingServiceMap } from "./services";
 
-/**
- * Builds the module that lets the grid be sorted.
- *
- * @example
- */
 export interface ISortingModuleOptions {
     /** Localized strings this module renders. */
     labels?: Partial<IGridSortingLabels>;
@@ -17,6 +12,7 @@ export interface ISortingModuleOptions {
     components?: Partial<IGridSortingComponents>;
 }
 
+/** Builds the module that lets the grid be sorted. */
 export const createSortingModule = (options?: ISortingModuleOptions): IGridModule => ({
     onRegister: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over

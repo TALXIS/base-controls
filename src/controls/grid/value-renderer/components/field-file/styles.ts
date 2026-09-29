@@ -9,7 +9,7 @@ export const getFieldFileStyles = () => mergeStyleSets({
         overflow: 'hidden',
     },
     icon: {
-        //never squashed by a long name, and never grown by a short one
+        //never squashed or grown by the name
         flex: '0 0 auto',
         fontSize: 16,
     },

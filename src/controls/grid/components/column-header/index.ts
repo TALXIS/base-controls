@@ -10,7 +10,7 @@ export * from './label';
 export * from './menu';
 export * from './required-marker';
 export * from './suffix';
-//the pieces the parts draw with reach a consumer through `Grid.ColumnHeader.Ui`, their props by name
+//the pieces the parts draw with reach a consumer through `Grid.ColumnHeader.Ui`
 export type {
     IColumnHeaderUi, IColumnHeaderUiContainerProps, IColumnHeaderUiContentProps, IColumnHeaderUiLabelProps,
     IColumnHeaderUiRequiredMarkerProps, IColumnHeaderUiPrefixProps, IColumnHeaderUiSuffixProps,

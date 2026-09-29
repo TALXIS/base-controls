@@ -27,7 +27,7 @@ export const FieldLink = (props: IFieldLinkProps) => {
     return <Link
         className={styles.link}
         href={props.href}
-        //an address opens where the host put the grid, which is rarely where the grid is
+        //the frame the host put the grid in is rarely where an address belongs
         target={props.href ? '_blank' : undefined}
         title={props.text ?? undefined}
         onClick={onClick}>

@@ -16,7 +16,7 @@ export interface IGridEditingParameters {
     services: IGridServiceLocator;
 }
 
-//Enter navigates rather than opening an editor here, and space selects the row
+//Enter and space are left to navigation and row selection
 const isEditStartKey = (event: KeyboardEvent): boolean => {
     if (event.key === 'F2') {
         return true;
@@ -24,16 +24,14 @@ const isEditStartKey = (event: KeyboardEvent): boolean => {
     return event.key.length === 1 && event.key !== ' ' && !event.ctrlKey && !event.metaKey && !event.altKey;
 };
 
-/** Which cell the user is editing, and the keys that start and end it. */
+/** Which cell the user is editing and the keys that start and end it. */
 export interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
     /** Whether the user is editing this cell, in place or in the editor AG Grid opened. */
     isEditing(record: IRecord, columnName: string): boolean;
     /** The user stepped into what this cell draws. */
     start(cell: IGridCell): void;
-    /**
-     * The edit is over: what was opened over the cell closes and the highlight comes back.
-     */
+    /** Ends the edit and brings the highlight back. */
     finish(cell: IGridCell): void;
 }
 
@@ -145,7 +143,7 @@ export class GridEditing implements IGridEditing {
             && editing.column.getColId() === cell.getColumnName());
     }
 
-    //deferred: focus set while an editor is still being torn down goes back to the document with
+    //deferred: focus set during an editor's teardown is lost to the document
     private _returnFocus(gridApi: GridApi<IRecord>, cell: IGridCell): void {
         const rowIndex = cell.getNode()?.rowIndex;
         if (rowIndex === null || rowIndex === undefined) {
@@ -155,7 +153,7 @@ export class GridEditing implements IGridEditing {
         setTimeout(() => {
             gridApi.ensureIndexVisible(targetIndex);
             gridApi.setFocusedCell(targetIndex, cell.getColumnName());
-            //a range does not follow the focus, and the one left behind reads as a second highlight
+            //a range does not follow the focus
             if (gridApi.getGridOption('enableRangeSelection')) {
                 gridApi.clearRangeSelection();
                 gridApi.addCellRange({ rowStartIndex: targetIndex, rowEndIndex: targetIndex, columns: [cell.getColumnName()] });

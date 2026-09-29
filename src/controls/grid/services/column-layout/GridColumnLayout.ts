@@ -7,10 +7,10 @@ export interface IGridColumnLayoutParameters {
     services: IGridServiceLocator;
 }
 
-/** How wide the columns are, and what the user did to them, written back to the provider. */
+/** Lays out column widths and writes the user's resizes back to the provider. */
 export class GridColumnLayout {
     private _services: IGridServiceLocator;
-    /** What the widths were last laid out for, so a user's drag outlives a reload. */
+    /** What the widths were last laid out for so a user's drag outlives a reload. */
     private _layoutKey?: string;
 
     constructor(parameters: IGridColumnLayoutParameters) {
@@ -26,7 +26,7 @@ export class GridColumnLayout {
         this._applyLayout(gridApi);
     }
 
-    /** Columns flex by their widths while they fit, and scroll at those widths once they don't. */
+    /** Columns flex by their widths while they fit and scroll once they don't. */
     private _applyLayout(gridApi: GridApi<IRecord>): void {
         const layout = this._getLayout(gridApi);
         if (!layout || layout.key === this._layoutKey) {
@@ -66,7 +66,7 @@ export class GridColumnLayout {
     }
 
     private _onColumnResized = (event: ColumnResizedEvent<IRecord>): void => {
-        //`finished` is the last event of a drag: without it this writes once per pointer move
+        //`finished` marks the last event of a drag
         if (!event.finished || event.source !== 'uiColumnResized' || !event.column) {
             return;
         }

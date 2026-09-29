@@ -2,7 +2,7 @@ import React, { useMemo, useRef } from "react";
 import { getRowResizeGripStyles } from "./styles";
 
 export interface ICellUiResizeGripProps {
-    /** What the row is worth now, which is what a drag starts from. */
+    /** The row's height a drag starts from. */
     height?: number;
     /** The height the drag has reached, as it reaches it. */
     onResize: (height: number) => void;
@@ -34,7 +34,7 @@ export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
             grip.removeEventListener('pointerup', onPointerUp);
             grip.removeEventListener('pointercancel', onPointerUp);
         };
-        //captured, so a drag that leaves the cell
+        //captured so a drag that leaves the cell keeps resizing
         grip.setPointerCapture(event.pointerId);
         grip.addEventListener('pointermove', onPointerMove);
         grip.addEventListener('pointerup', onPointerUp);

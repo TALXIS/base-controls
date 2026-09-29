@@ -8,7 +8,7 @@ export const getTotalValueStyles = (theme: ITheme) => mergeStyleSets({
         //a total reads from the right whatever the column it totals does
         alignItems: 'flex-end',
         width: '100%',
-        //the inset is the width's, not on top of it: the cell clips whatever is drawn past its edge
+        //inset within the width: the cell clips whatever is drawn past its edge
         boxSizing: 'border-box',
         minWidth: 0,
         overflow: 'hidden',
@@ -19,7 +19,7 @@ export const getTotalValueStyles = (theme: ITheme) => mergeStyleSets({
     label: {
         color: theme.semanticColors.bodySubtext,
         fontSize: theme.fonts.small.fontSize,
-        //taller than the font's own box, which `overflow` cuts into as soon as a line box rounds down
+        //taller than the font's box: `overflow` cuts into it when a line box rounds down
         lineHeight: '18px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',

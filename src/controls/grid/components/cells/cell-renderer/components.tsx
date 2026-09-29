@@ -5,16 +5,7 @@ import { ICellContainerComponents } from "../container/components";
 import { ICellLoadingComponents } from "../loading/components";
 import { ICellResizeGripComponents } from "../row-resize-grip/components";
 
-/**
- * The pieces every cell is built from, drawn whether it is being edited or not.
- *
- * Each slot names the piece it is drawn by, so changing one is taking that piece and spreading what the
- * slot was handed:
- *
- * ```tsx
- * components={{ container: { onRenderContainer: props => <Grid.Cell.Ui.Container {...props} className='mine' /> } }}
- * ```
- */
+/** The pieces every cell is built from, drawn whether it is being edited or not. */
 export interface ICellComponents {
     /** What a row is dragged taller by. */
     rowResizeGrip?: Partial<ICellResizeGripComponents>;

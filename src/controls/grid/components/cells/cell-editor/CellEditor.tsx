@@ -14,7 +14,7 @@ export interface ICellEditorProps extends ICellRendererParams {
     components?: ICellEditorComponents;
 }
 
-/** A cell of the grid while it is being edited, with nothing in it to share the row with the input. */
+/** A cell of the grid while it is being edited, holding only the input. */
 export const CellEditor = (props: ICellEditorProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>

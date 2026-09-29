@@ -2,7 +2,7 @@ import { CellUi, ICellUiCommandsProps } from "../ui";
 
 /** The replaceable pieces of a cell's commands. */
 export interface ICellCommandsComponents {
-    /** What draws the commands. `CellUi.Commands` is what draws them by default. */
+    /** What draws the commands, `CellUi.Commands` by default. */
     onRenderCommands: (props: ICellUiCommandsProps) => JSX.Element;
 }
 

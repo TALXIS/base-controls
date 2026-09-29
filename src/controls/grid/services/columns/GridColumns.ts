@@ -43,7 +43,7 @@ export interface IGridColumns {
     /**
      * Registers a hook over the column definitions.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
     /** The definitions the grid is to be given, after every module has had its say. */
@@ -91,7 +91,7 @@ export class GridColumns implements IGridColumns {
                 continue;
             }
             const base = columnDefs[index];
-            //settings merged rather than replaced, so an entry can change one of them
+            //settings are merged so an entry can change one of them
             columnDefs[index] = { ...base, ...colDef, settings: { ...base.settings, ...colDef.settings } };
         }
     }
@@ -152,7 +152,6 @@ export class GridColumns implements IGridColumns {
     private _hasEditor(column: IColumn): boolean {
         switch (true) {
             case !this._settings.isEditingEnabled():
-            //TODO: this should be grid specific setting
             case !!column.oneClickEdit:
             case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
             case column.dataType === DataTypes.File:
@@ -168,15 +167,12 @@ export class GridColumns implements IGridColumns {
             colId: column.name,
             field: column.name as any,
             headerName: column.displayName,
-            //TODO: grid specific setting
             //the width and the flex are the column layout's
             initialWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
             minWidth: MIN_COLUMN_WIDTH,
             lockPinned: true,
             autoHeaderHeight: true,
-            //TODO: grid specific setting
             autoHeight: !!column.autoHeight,
-            //TODO: grid specific setting
             suppressMovable: column.isDraggable === false,
             settings: this._getColumnSettings(column),
             editable: this._getEditorAvailability(column),
@@ -215,9 +211,9 @@ export class GridColumns implements IGridColumns {
         };
     }
 
-    /** Whether a key press on a header belongs to the header rather than to AG Grid. */
+    /** Whether a key press on a header belongs to the header. */
     private _isKeyTheHeadersOwn(params: SuppressHeaderKeyboardEventParams<IRecord>): boolean {
-        //AG Grid sorts on Enter, where the header answers it the way it answers a click
+        //the header answers Enter the way it answers a click
         return params.event.key === 'Enter';
     }
 
@@ -225,11 +221,11 @@ export class GridColumns implements IGridColumns {
     private _isKeyTheControlsOwn(params: SuppressKeyboardEventParams<IRecord>): boolean {
         const target = params.event.target as HTMLElement | null;
         const key = params.event.key;
-        //what a button answers with: the browser makes a click of it
+        //the browser turns these keys on a button into a click
         if (target?.matches('button, [role="switch"], [role="checkbox"], [role="radio"]')) {
             return key === 'Enter' || key === ' ';
         }
-        //an input with an editor around it is a case AG Grid already knows to keep out of
+        //AG Grid already leaves keys in an open editor alone
         if (params.editing) {
             return false;
         }
@@ -239,7 +235,7 @@ export class GridColumns implements IGridColumns {
         if (params.event.ctrlKey || params.event.metaKey) {
             return ['a', 'c', 'v', 'x'].includes(key.toLowerCase());
         }
-        //space included: it selects the row everywhere else
+        //space selects the row everywhere else
         return [' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Backspace', 'Delete'].includes(key);
     }
 

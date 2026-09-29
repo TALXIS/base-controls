@@ -16,7 +16,7 @@ export interface IGridCellThemeParameters {
 
 /** The theme a cell and everything drawn in it takes. */
 export interface IGridCellTheme {
-    /** What the cell's theme is worked out from, where the grid's own is not what it should be. */
+    /** Sets the theme the cell's theme is worked out from in place of the grid's. */
     setSeed(seed: ITheme | undefined): void;
     get(): ITheme;
 }
@@ -37,17 +37,17 @@ export class GridCellTheme implements IGridCellTheme {
 
     public get(): ITheme {
         const builder = ThemeBuilder.from({ theme: this._seed ?? this._gridTheme });
-        //the row this cell is in, where the grid stripes them and no seed said otherwise
+        //an unseeded cell takes its row's background
         if (!this._seed) {
             builder.colors.background = this._rowBackground;
         }
-        //before the hooks, so what a hook edits is the last word on it
+        //before the hooks so a hook gets the last word
         builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
         this._cells.applyCellThemeHooks(builder, { record: this._cell.getRecord(), columnName: this._cell.getColumnName() });
         return builder.getTheme();
     }
 
-    /** How a control reads in a cell: no border of its own, and the column's alignment. */
+    /** Drops the control's own border and applies the column's alignment. */
     private _applyCellStyling(theme: ITheme): void {
         theme.semanticColors.inputBackground = theme.semanticColors.bodyBackground;
         theme.semanticColors.inputBorder = 'transparent';
@@ -59,7 +59,7 @@ export class GridCellTheme implements IGridCellTheme {
         theme.components = { ...theme.components, ...this._getComponentStyles() };
     }
 
-    /** What the row this cell is in is drawn on, where the grid's own theme is what it starts from. */
+    /** The background of the row this cell is in. */
     private get _rowBackground(): string {
         const gridTheme = this._gridTheme;
         if (!this._settings.isZebraEnabled() || this._isEvenRow) {
@@ -73,7 +73,7 @@ export class GridCellTheme implements IGridCellTheme {
         return (this._cell.getNode()?.rowIndex ?? 0) % 2 === 0;
     }
 
-    /** How a control reads in a column of this alignment, which is all the alignment decides. */
+    /** How a control reads in a column of this alignment. */
     private _getComponentStyles(): DeepPartial<ITheme>['components'] {
         const alignment = this._cell.getAlignment();
         const cached = componentStylesByAlignment.get(alignment);

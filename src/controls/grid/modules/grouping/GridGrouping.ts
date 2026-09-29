@@ -30,9 +30,9 @@ export interface IGridGroupingEvents {
 }
 
 export interface IGroupingSettings {
-    /** Whether a column's menu offers grouping, or the dataset's own group-bys are all there is. */
+    /** Whether a column's menu offers grouping. */
     allowUserGrouping: boolean;
-    /** How deep the groups nest */
+    /** How the groups nest. */
     type: 'nested' | 'flat';
     /** How many levels open themselves. */
     defaultExpandedLevel: number;
@@ -61,17 +61,17 @@ export interface IGridGrouping {
     canColumnBeGrouped(column: IColumn): boolean;
     /** Whether the row stands for a group rather than for a record. */
     isGroupRow(node: IRowNode<IRecord>): boolean;
-    /** What a row holds a grouped column's value under: a group row holds it under the group-by's alias. */
+    /** The name a row holds a grouped column's value under. */
     getGroupedValueColumnName(record: IRecord, columnName: string): string;
-    /** How many records a group holds, where the column counts them rather than totalling something. */
+    /** How many records a group holds when the column's aggregation is a count. */
     getGroupedCount(record: IRecord, columnName: string): number | undefined;
     /** Whether a row's cell in this column carries the chevron that opens it. */
     isColumnExpandable(record: IRecord, columnName: string): boolean;
-    /** Whether the row stands for this column too, which a flat grouping's row does for every group-by. */
+    /** Whether the row stands for a group of this column. */
     isRowGroupedBy(record: IRecord, columnName: string): boolean;
     /** How many levels of groups are open. */
     getExpandedLevel(): number;
-    /** The deepest level there is to open, which is the innermost group-by. */
+    /** The deepest level there is to open. */
     getDeepestLevel(): number;
     /** Opens the groups down to a level and closes the rest. */
     setExpandedLevel(level: number): void;
@@ -106,7 +106,7 @@ export class GridGrouping implements IGridGrouping {
         this._settings = { allowUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
         this._expandedLevel = defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
-        //the provider nests by default, so what this module was asked for is the word on it
+        //overrides the provider's nested default
         this._provider.setProperty('groupingType', this._settings.type);
         this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
         this._gridServices.get('grid').events.addEventListener('onDestroy', this._onDestroy);
@@ -124,7 +124,7 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellEditableHook(this._onCellEditable, GRID_MODULE_PRIORITY.grouping);
-        //behind sorting and filtering, which a column's menu offers first
+        //listed in the column menu after sorting and filtering
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
@@ -143,7 +143,7 @@ export class GridGrouping implements IGridGrouping {
         this._setGroupSelectionLimitDialogOpen(false);
     }
 
-    /** Loads the groups a selection adds before it is written, and refuses one that would load too many. */
+    /** Loads the groups a selection adds before it is written, within the limit. */
     private _onSelectRecords: IInterceptor<IGridRowSelectionInterceptors, 'onSelectRecords'> = async (parameters, defaultAction) => {
         //the provider selects a loaded group without fetching
         if (await this._loadNewlySelectedGroups(parameters.provider, parameters.recordIds)) {
@@ -226,7 +226,7 @@ export class GridGrouping implements IGridGrouping {
         return this._getRowGroupBys(record).some(groupBy => groupBy.columnName === columnName);
     }
 
-    //a nested grouping's top-level provider holds every group-by, while its rows stand for the first
+    //a nested grouping's rows stand for its first group-by only
     private _getRowGroupBys(record: IRecord): IGroupByMetadata[] {
         const provider = record.getDataProvider();
         const columnsMap = provider.getColumnsMap();
@@ -276,7 +276,7 @@ export class GridGrouping implements IGridGrouping {
         });
     }
 
-    /** Moves a grouped column to the front, pins it if asked */
+    /** Moves grouped columns to the front and pins them if asked. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columnsMap = this._provider.getColumnsMap();
         const isGrouped = (colDef: ColDef<IRecord>): boolean => !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
@@ -298,17 +298,17 @@ export class GridGrouping implements IGridGrouping {
                 colDef.pinned ??= null;
             }
         }
-        //grouped columns first, so the hierarchy reads left to right
+        //grouped columns first so the hierarchy reads left to right
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
-        //nothing to open while nothing is grouped, and a column of empty cells is worse than none
+        //nothing to open while nothing is grouped
         if (columnDefs.some(isGrouped)) {
             columnDefs.push(getGroupExpansionColumnDefinition(this._onRenderExpansionHeader));
         }
     };
 
-    /** A group row reads as the heading of what it holds, so what it draws is bolder than a record's. */
+    /** Styles a group row as the heading of what it holds. */
     private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
-        //the grid is what it was without grouping until something is grouped
+        //unstyled until something is grouped
         if (this._provider.grouping.getGroupBys().length === 0) {
             return;
         }
@@ -317,11 +317,11 @@ export class GridGrouping implements IGridGrouping {
             theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
             return;
         }
-        //a record sits on the grid's own surface, so what stands off it is the group above it
+        //a record sits on the grid's own surface
         theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
     };
 
-    /** A group row holds no record's value, so there is nothing in it to change. */
+    /** A group row holds no record's value to edit. */
     private _onCellEditable = (result: IGridCellEditable, params: { record: IRecord; columnName: string }): void => {
         if (!params.record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
             return;
@@ -329,7 +329,7 @@ export class GridGrouping implements IGridGrouping {
         result.isEditable = false;
     };
 
-    /** The grouping icon and what it stands for, while the column is what the rows are grouped */
+    /** The grouping icon on a column the rows are grouped by. */
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         if (!column || !this.isColumnGrouped(column)) {
@@ -368,7 +368,7 @@ export class GridGrouping implements IGridGrouping {
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     };
 
-    //a new load can run out of children again, and is told so again
+    //each new load reports the child limit again
     private _onNewDataLoaded = (): void => {
         this._hasReportedChildLimit = false;
     };
@@ -392,14 +392,14 @@ export class GridGrouping implements IGridGrouping {
         const cellRendererSelector = colDef.cellRendererSelector;
         colDef.cellRendererSelector = params => {
             if (!params.data || !this.isGroupRow(params.node)) {
-                //a grouped column holds its value in the group rows above the record rather than in it
+                //a grouped column's value lives in the group rows above the record
                 return this.isColumnGrouped(column) ? { component: CellEmptyRenderer } : cellRendererSelector?.(params);
             }
             return this.isRowGroupedBy(params.data, column.name) ? { component: this._onRenderGroupCell } : { component: CellEmptyRenderer };
         };
     }
 
-    /** What a group row holds, which is the value the group stands for rather than the column's own. */
+    /** The value a row holds for a grouped column. */
     private _getGroupedValue(record: IRecord | undefined, columnName: string): any {
         return record ? record.getValue(this.getGroupedValueColumnName(record, columnName)) : null;
     }
@@ -410,7 +410,6 @@ export class GridGrouping implements IGridGrouping {
 
     private _isGroupOpenByDefault = (node: IRowNode<IRecord>): boolean => !this._hasUserExpanded && node.level <= this._expandedLevel;
 
-    //the render methods reached through a field of ours.
     private _onRenderGroupCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderGroupCell(props);
 
     private _onRenderExpansionHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderExpansionHeader(props);

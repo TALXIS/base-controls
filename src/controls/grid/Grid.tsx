@@ -35,21 +35,21 @@ export const GridRoot = (props: IGrid) => {
 
     useGridEventHandlers(runtime, props);
 
-    //a part listening ahead of AG Grid needs this element, and it exists only once mounted
+    //parts listening ahead of AG Grid need this element once it is mounted
     const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
         if (gridRoot) {
             runtime.services.register('gridRoot', () => gridRoot);
         }
     }, [runtime]);
 
-    //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
+    //AG Grid's teardown and its `onDestroy` run before this cleanup
     useEffect(() => () => runtime.destroy(), []);
 
-    //one context: everything a component needs is in the locator, `grid` included.
+    //the locator holds everything a component needs
     return <GridServicesContext.Provider value={runtime.services}>
         <ThemeProvider
             theme={theme}
-            //a cell may be drawn in colours of its own, but what it opens is drawn over the grid
+            //what a cell opens is drawn over the grid
             surfaceTheme={theme}
             applyTo='none'
             ref={onGridRootRef}

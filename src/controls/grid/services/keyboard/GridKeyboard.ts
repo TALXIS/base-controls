@@ -7,7 +7,7 @@ export interface IGridKeyboardParameters {
 
 export type GridKeyDownHandler = (event: KeyboardEvent) => void;
 
-/** What the user is pressing while the grid is doing something about it, and who hears it. */
+/** What the user is pressing while the grid is doing something about it. */
 export interface IGridKeyboard {
     /** The keypress the user is holding down. */
     getKeyBeingPressed(): KeyboardEvent | undefined;
@@ -49,7 +49,7 @@ export class GridKeyboard implements IGridKeyboard {
         this._document?.removeEventListener('pointerdown', this._onKeyUp, true);
     };
 
-    /** The document rather than the grid's own element. */
+    /** Listens on the grid's document. */
     private _listen(gridRoot: HTMLElement): void {
         this._gridRoot = gridRoot;
         this._document = gridRoot.ownerDocument;

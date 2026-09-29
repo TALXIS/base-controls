@@ -7,13 +7,13 @@ const EMPTY_ROWS_AREA_HEIGHT = 135;
 /** Sizes the grid to its rows, up to `maxVisibleRows`, without anything having to measure it. */
 const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
     return {
-        //as tall as what is in it, which is the whole of the auto height
+        //as tall as what is in it
         height: 'auto',
         //ag-grid gives this a height of 0 and has it grow into its parent
         '.ag-root-wrapper-body.ag-layout-normal': {
             height: 'auto'
         },
-        //capped on both: the viewport is what scrolls.
+        //the viewport is what scrolls
         '.ag-body, .ag-body-viewport': {
             maxHeight: rowHeight * maxVisibleRows
         },
@@ -39,7 +39,7 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--ag-header-background-color': theme.semanticColors.bodyBackground,
                 '--ag-border-color': theme.semanticColors.menuDivider,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
-                //the states are drawn as overlays below rather than as backgrounds
+                //the states are drawn as overlays below
                 '--ag-selected-row-background-color': 'transparent',
                 '--ag-row-hover-color': 'transparent',
                 '--ag-range-selection-background-color': 'transparent',
@@ -47,8 +47,7 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--ag-range-selection-highlight-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
                 '--ag-input-focus-border-color': theme.semanticColors.inputFocusBorderAlt,
                 '--ag-cell-horizontal-padding': 0,
-                //no separator between cells, no box around the grid
-                //critical.
+                //no separator between cells and no box around the grid
                 '--ag-cell-horizontal-border': 'none',
                 '--ag-borders': 'none',
                 '--ag-borders-critical': 'none',
@@ -70,12 +69,11 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 overflow: 'hidden',
                 borderWidth: 0,
             },
-            //the cell draws its own outline, and the border would inset what the editor holds by a pixel
-            //`!important`: AG Grid's focus border is a more specific selector than any class chain here
+            //`!important` beats AG Grid's more specific focus border selector
             '.ag-cell.ag-cell-inline-editing': {
                 borderWidth: '0 !important',
             },
-            //AG Grid borders the focused cell itself while no range claims it, over the cell's own outline
+            //AG Grid borders the focused cell itself while no range claims it
             '.ag-cell.ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-context-menu-open .ag-cell.ag-cell-focus:not(.ag-cell-range-selected)': {
                 borderWidth: 0,
             },
@@ -113,14 +111,14 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             [`.ag-row-hover .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: 'color-mix(in srgb, currentColor, transparent 92%)',
             },
-            //the grid's accent rather than the cell's
+            //in the grid's accent
             [`.ag-row-selected .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 80%)`,
             },
             [`.ag-cell-range-selected:not(.ag-cell-focus) .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell-range-single-cell .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
             },
-            //the focused cell is outlined the whole way round, in the colour an input takes when
+            //the focused cell is outlined in the colour of a focused input
             [`.ag-cell-focus .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: 'transparent',
                 '--talxis-cell-outline-color': theme.semanticColors.inputFocusBorderAlt,
@@ -129,7 +127,7 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--talxis-cell-outline-bottom': '1px',
                 '--talxis-cell-outline-left': '1px',
             },
-            //the flash after a copy, and the one after a value changed.
+            //the flash after a copy or a value change
             [`.ag-cell.ag-cell-highlight .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell.ag-cell-data-changed .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 55%)`,
             },

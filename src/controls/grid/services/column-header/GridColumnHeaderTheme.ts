@@ -10,7 +10,7 @@ export interface IGridColumnHeaderThemeParameters {
 
 /** The theme a column header and everything drawn in it takes. */
 export interface IGridColumnHeaderTheme {
-    /** What the header's theme is worked out from, where the grid's own is not what it should be. */
+    /** Sets the theme the header's theme is worked out from in place of the grid's. */
     setSeed(seed: ITheme | undefined): void;
     get(): ITheme;
 }

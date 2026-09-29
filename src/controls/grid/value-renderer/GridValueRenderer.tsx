@@ -7,12 +7,7 @@ import { getGridValueRendererStyles } from "./styles";
 
 const DEFAULT_PLACEHOLDER = '---';
 
-/**
- * A value, drawn.
- *
- * What it draws follows from the column's data type, and every piece of it can be replaced through
- * `components`. Fills whatever it is put in and paints no background.
- */
+/** A value, drawn by its column's data type, with every piece replaceable through `components`. */
 export const GridValueRenderer = (props: IGridValueRenderer) => {
     const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, Column, Record } = props.parameters;
     const record = Record.raw;
@@ -51,7 +46,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
                 if (!enableNavigation) {
                     break;
                 }
-                //every record it names: an array, or the one reference a host hands over on its own
+                //every record it names: an array, or one reference on its own
                 const references: ComponentFramework.EntityReference[] = Array.isArray(value) ? value : value ? [value] : [];
                 return components.onRenderLookup({
                     children: references.map((reference, index) => <Fragment key={reference.id?.guid ?? `${reference.name}-${index}`}>
@@ -72,7 +67,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
             case DataTypes.TwoOptions: {
                 //a formatted value the cell has is a column's, whatever the props say
                 const selected = getSelectedOptions(value, column!);
-                //a colour is what makes an option worth a shape of its own; without one it is just text
+                //a colour is what makes an option worth a shape of its own
                 if (selected.some(option => option.color)) {
                     return components.onRenderOptions({ options: selected, alignment: alignment });
                 }

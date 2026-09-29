@@ -28,7 +28,7 @@ export interface IGridRowSelectionParameters {
     mode: 'single' | 'multiple';
 }
 
-/** Which records are selected, in both directions.  meet */
+/** Keeps the grid's and the providers' selection in sync. */
 export interface IGridRowSelection {
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
@@ -50,9 +50,9 @@ export interface IGridRowSelection {
 export class GridRowSelection implements IGridRowSelection {
     private _services: IGridRowSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
-    /** What the host persisted, until the records it names have been loaded and it can be */
+    /** The persisted selection waiting for its records to load. */
     private _pendingRestoreRecordIds: string[] = [];
-    /** The latest selection per provider, which is the one allowed to write. */
+    /** Tokens that let only the latest selection per provider write. */
     private _selectionTokens: WeakMap<IDataProvider, number> = new WeakMap();
     private _interceptors = new Interceptors<IGridRowSelectionInterceptors>();
 
@@ -107,7 +107,7 @@ export class GridRowSelection implements IGridRowSelection {
         }
     }
 
-    /** Adds the column the checkboxes live in */
+    /** Adds the column the checkboxes live in. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
         if (recordSaveColumnIndex !== -1) {
@@ -134,11 +134,10 @@ export class GridRowSelection implements IGridRowSelection {
 
     public isRecordSelectionDisabled(record: IRecord): boolean {
         const provider = record.getDataProvider();
-        //a group selects every record under it.
+        //a group selects every record under it
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
 
-    //the render methods reached through a field of ours.
     private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
     private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
 
@@ -156,7 +155,7 @@ export class GridRowSelection implements IGridRowSelection {
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
         this._services.get('gridServices').whenAvailable('gridRoot',
             gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
-        //what the host persisted, handed to the providers that own it once its rows are in
+        //the host's persisted selection, restored once its rows are in
         this._pendingRestoreRecordIds = this._provider.getSelectedRecordIds();
         if (this._pendingRestoreRecordIds.length) {
             this._gridApi.addEventListener('modelUpdated', this._onModelUpdated);
@@ -169,7 +168,7 @@ export class GridRowSelection implements IGridRowSelection {
         const rowId = target.closest?.('[row-id]')?.getAttribute('row-id');
         const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
         const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
-        //the checkbox owns its own click, and a group row gives up selecting on a plain one.
+        //the checkbox and a plain click on a group row bypass AG Grid's selection
         const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
         const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
         if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
@@ -207,7 +206,7 @@ export class GridRowSelection implements IGridRowSelection {
             selectedRecordIdsByProvider.set(provider, []);
         }
         for (const recordId of this._rowModel.getSelectedRecordIds(this._gridApi)) {
-            //the row's own record, which is the one that was clicked.
+            //the provider owning the clicked row's record
             const provider = this._gridApi.getRowNode(recordId)?.data?.getDataProvider() ?? this._provider;
             const recordIds = selectedRecordIdsByProvider.get(provider) ?? [];
             recordIds.push(recordId);
@@ -233,7 +232,7 @@ export class GridRowSelection implements IGridRowSelection {
         const recordIdsByProvider = this._getRecordIdsByOwner(this._pendingRestoreRecordIds);
         this._pendingRestoreRecordIds = [];
         this._gridApi.removeEventListener('modelUpdated', this._onModelUpdated);
-        //the top level first, so a group its children mark on it stays marked
+        //the top level first so a group its children mark stays marked
         this._provider.setSelectedRecordIds(recordIdsByProvider.get(this._provider) ?? []);
         recordIdsByProvider.forEach((recordIds, provider) => {
             if (provider !== this._provider) {
@@ -243,7 +242,7 @@ export class GridRowSelection implements IGridRowSelection {
         this._scrollToSelection(nodes);
     }
 
-    /** Each id under the loaded child provider that holds it, the rest under the top level. */
+    /** Groups each id under the loaded provider that holds it. */
     private _getRecordIdsByOwner(recordIds: string[]): Map<IDataProvider, string[]> {
         const childProviders = this._provider.getGroupedRecordDataProviders(true);
         const result = new Map<IDataProvider, string[]>();
@@ -254,7 +253,6 @@ export class GridRowSelection implements IGridRowSelection {
         return result;
     }
 
-    //the middle one rather than the first
     private _scrollToSelection(nodes: IRowNode<IRecord>[]): void {
         this._gridApi.ensureNodeVisible(nodes[Math.floor(nodes.length / 2)], 'middle');
     }

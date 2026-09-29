@@ -5,11 +5,6 @@ import { GridFiltering } from "./GridFiltering";
 import { IGridFilteringServiceMap } from "./services";
 import { GridFilteringComponents, IGridFilteringComponents } from "./moduleComponents";
 
-/**
- * Builds the module that lets the grid be filtered.
- *
- * @example
- */
 export interface IFilteringModuleOptions {
     /** Localized strings this module renders. */
     labels?: Partial<IGridFilteringLabels>;
@@ -17,6 +12,7 @@ export interface IFilteringModuleOptions {
     components?: Partial<IGridFilteringComponents>;
 }
 
+/** Builds the module that lets the grid be filtered. */
 export const createFilteringModule = (options?: IFilteringModuleOptions): IGridModule => ({
     onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridFilteringServiceMap>();

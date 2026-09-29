@@ -9,7 +9,7 @@ export const getCellCommandsStyles = (alignment: IAlignment) => {
         commandsRoot: {
             //after the value, or before it where the column reads from the right
             order: alignment === 'right' ? 1 : 2,
-            //what the value leaves, near enough all of it.
+            //near enough all the width the value leaves
             flex: '1000 1 0',
             minWidth: OVERFLOW_BUTTON_WIDTH,
         },

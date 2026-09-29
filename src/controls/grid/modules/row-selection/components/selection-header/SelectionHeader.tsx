@@ -35,11 +35,11 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
         provider.clearSelectedRecordIds();
     };
 
-    //one record is selected in the row it is in, and nothing is selected while there is nothing to select
+    //drawn only in multiple mode and while there is something to select
     const isDrawn = selection.getMode() === 'multiple' && (provider.getSortedRecordIds().length > 0 || provider.isLoading());
     const checkboxState = getCheckboxState();
 
-    //no container: what that part draws is the button a column's menu opens from, and this column has none
+    //no container: it draws the menu button this column lacks
     return <Grid.ColumnHeader.Root {...props}>
         <Grid.ColumnHeader.Theme>
             <div className={styles.container}>

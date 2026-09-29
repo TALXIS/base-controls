@@ -1,7 +1,7 @@
 import { IOptionProps } from "../OptionSetRenderer";
 import { Option } from "./option";
 
-/** The replaceable pieces of an option set. Override through `IOptionSetRendererProps.components`. */
+/** The replaceable pieces of an option set. */
 export interface IOptionSetRendererComponents {
     /** One option. */
     onRenderOption: (props: IOptionProps) => JSX.Element;

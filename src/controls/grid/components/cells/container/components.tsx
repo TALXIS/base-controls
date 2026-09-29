@@ -2,7 +2,7 @@ import { CellUi, ICellUiContainerProps } from "../ui";
 
 /** The replaceable pieces of the element a cell's content is drawn in. */
 export interface ICellContainerComponents {
-    /** The element itself, handed what the cell draws. `CellUi.Container` is what draws it by default. */
+    /** The element itself, `CellUi.Container` by default. */
     onRenderContainer: (props: ICellUiContainerProps) => JSX.Element;
 }
 

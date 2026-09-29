@@ -16,7 +16,7 @@ export const ColumnHeaderTheme = (props: IColumnHeaderThemeProps) => {
     const theme = header.getTheme().get();
     const element = header.getElement();
 
-    //the element is AG Grid's, so the colours go on it rather than on anything of the grid's own
+    //the colours go on AG Grid's own element
     useLayoutEffect(() => {
         if (!element) {
             return;

@@ -13,10 +13,7 @@ export interface IRibbonParameters {
     Record: {
         raw: IRecord;
     },
-    /**
-     * A comma-separated list of command button IDs to display in the ribbon. If specified, only these buttons will be shown.
-     * The button still might not be visible if it's Enable Rules evaluate to false
-     */
+    /** Comma-separated IDs of the only command buttons to show, subject to their Enable Rules. */
     CommandButtonIds?: IStringProperty;
 }
 

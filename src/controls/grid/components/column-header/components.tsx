@@ -6,16 +6,7 @@ import { IColumnHeaderRequiredMarkerComponents } from "./required-marker/compone
 import { IColumnHeaderPrefixComponents } from "./prefix/components";
 import { IColumnHeaderSuffixComponents } from "./suffix/components";
 
-/**
- * The replaceable pieces of a column header, by the part they belong to.
- *
- * Each slot names the piece it is drawn by, whose props are `IColumnHeaderUi*Props` where a part's own
- * are `IColumnHeader*Props`, so changing one is taking that piece and spreading what the slot was handed:
- *
- * ```tsx
- * components={{ label: { onRenderLabel: props => <Grid.ColumnHeader.Ui.Label {...props} name={props.name?.toUpperCase()} /> } }}
- * ```
- */
+/** The replaceable pieces of a column header, by the part they belong to. */
 export interface IColumnHeaderRendererComponents {
     /** What the header is drawn in. */
     container?: Partial<IColumnHeaderContainerComponents>;

@@ -11,7 +11,7 @@ export interface IColumnHeaderUiMenuProps extends Omit<IContextualMenuProps, 'it
 
 /** The menu a column header opens, and what keeps it open while the grid scrolls under it. */
 export const ColumnHeaderUiMenu = (props: IColumnHeaderUiMenuProps) => {
-    //the menu is drawn on the surface rather than in the header it was opened from
+    //the menu is drawn on the surface, not in the header
     const theme = useSurfaceTheme();
     const styles = useMemo(() => getColumnHeaderMenuStyles(theme), [theme]);
 

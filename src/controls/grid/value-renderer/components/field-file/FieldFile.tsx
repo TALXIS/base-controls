@@ -6,7 +6,7 @@ import { getFieldFileStyles } from "./styles";
 
 export interface IFieldFileProps {
     file: IFileValue;
-    /** Whether it is drawn as a picture of itself rather than as an icon. */
+    /** Whether it is drawn as a picture of itself. */
     isImage: boolean;
 }
 
@@ -14,7 +14,7 @@ export interface IFieldFileProps {
 export const FieldFile = (props: IFieldFileProps) => {
     const { file, isImage } = props;
     const styles = useMemo(() => getFieldFileStyles(), []);
-    //an image whose url the browser could not load falls back to the icon rather than to a broken frame
+    //an image whose url fails to load falls back to the icon
     const [hasThumbnailFailed, setHasThumbnailFailed] = useState<boolean>(false);
     const thumbnailUrl = file.thumbnailUrl ?? file.fileUrl;
 

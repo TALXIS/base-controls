@@ -11,7 +11,7 @@ import { GridControl, IGridControl } from "./GridControl";
 export interface IGridCellParameters {
     services: IGridServiceLocator;
     record: IRecord;
-    /** The column AG Grid is drawing, which is what a cell is the cell of. */
+    /** The column AG Grid is drawing. */
     colDef: ColDef<IRecord>;
     /** The row AG Grid is drawing. */
     node?: IRowNode<IRecord>;
@@ -148,7 +148,7 @@ export class GridCell implements IGridCell {
     }
 
     public isEditable(): boolean {
-        //the column's word is the last one, and it is not `editable`
+        //no hook can override a column that is set as uneditable
         if (this.getSettings().isEditable === false) {
             return false;
         }

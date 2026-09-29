@@ -26,12 +26,7 @@ export interface IOptionSetRendererOption {
     color?: string;
 }
 
-/**
- * A set of options, drawn.
- *
- * Takes options rather than a value: working out which options a value selected needs the data type, and
- * that belongs to whoever knows the column.
- */
+/** A set of options, drawn. */
 export const OptionSetRenderer = (props: IOptionSetRendererProps) => {
     const styles = useMemo(() => getOptionSetRendererStyles(props.alignment ?? 'left'), [props.alignment]);
     const components = { ...OptionSetRendererComponents, ...props.components };

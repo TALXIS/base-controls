@@ -10,9 +10,9 @@ export interface IColumnHeaderAdornment {
     key: string;
     /** Before the name, or after it. */
     placement: 'prefix' | 'suffix';
-    /** Named in the header's tooltip, in parentheses, when the adornment is worth naming there. */
+    /** Named in parentheses in the header's tooltip. */
     title?: string;
-    /** What it draws, where it draws anything: an adornment may only name the column. */
+    /** What it draws, if anything. */
     onRender?: () => JSX.Element;
 }
 
@@ -40,7 +40,7 @@ export interface IGridColumnHeadersParameters {
     services: IGridServiceLocator;
 }
 
-/** What a column header offers, and what it draws. */
+/** What a column header offers and what it draws. */
 export interface IGridColumnHeaders {
     /** The header of one column, as the parts drawing it read it. */
     createHeader(parameters: {
@@ -54,12 +54,9 @@ export interface IGridColumnHeaders {
      */
     registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /**
-     * Registers a hook over the assembled menu, for a contribution a section cannot express.
+     * Registers a hook over the assembled menu, for what a section cannot express.
      *
-     * Prefer {@link registerColumnMenuSectionHook}: an entry under a heading of its own is what a module
-     * offers.
-     *
-     * @param priority Ascending, and applied after all the sections regardless.
+     * @param priority Ascending among hooks that all run after the sections.
      */
     registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
     /** Everything the modules offer for a column, in order. */
@@ -73,10 +70,10 @@ export interface IGridColumnHeaders {
     /**
      * Registers a hook over the theme a column header is drawn in.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
-    /** Run by the header in question, which is the only caller. */
+    /** Run by the header in question. */
     applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void;
     /** Everything the modules draw for a column, in order. */
     getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[];
@@ -114,7 +111,7 @@ export class GridColumnHeaders implements IGridColumnHeaders {
                 key: `${section.key}Header`,
                 itemType: ContextualMenuItemType.Header,
                 text: section.title,
-                //a heading names the entries under it rather than being one
+                //a heading names the entries under it
                 onRenderIcon: () => null,
             }, ...section.items]);
         this._menuItemHooks.apply(items, header);

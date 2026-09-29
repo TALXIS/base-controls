@@ -8,7 +8,7 @@ export type IGridRowModelType = 'clientSide' | 'serverSide';
 /** How a grid gets its rows, and everything that follows from that choice. */
 export interface IGridRowModel {
     readonly type: IGridRowModelType;
-    /** New data landed and its columns are applied: hand the rows over, or ask for them again. */
+    /** Reloads the rows once new data lands and its columns are applied. */
     refresh: () => void;
     /** The part of grouping that depends on how the rows arrive. */
     createGrouping: (parameters: IGridRowModelGroupingParameters) => IGridRowModelGrouping;
@@ -31,6 +31,6 @@ export interface IGridRowModelGrouping {
     onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
     /** Opens and closes the groups to what `isGroupOpenByDefault` now says. */
     onApplyExpandedLevel: (gridApi: GridApi<IRecord>) => void;
-    /** The user or a level decided what is open, which outranks what a reload restored. */
+    /** Lets what the user or a level opened outrank what a reload restored. */
     onExpansionChanged: () => void;
 }

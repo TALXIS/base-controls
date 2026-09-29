@@ -26,7 +26,7 @@ export class ServerSideRowModel implements IGridRowModel {
 
     public refresh(): void {
         const gridApi = this._services.get('gridApi');
-        //purged rather than reloaded in place
+        //captured first because the purge drops what is open
         this._grouping?.captureExpandedIds(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
         gridApi.refreshServerSide({ purge: true });
     }
@@ -36,7 +36,7 @@ export class ServerSideRowModel implements IGridRowModel {
         return this._grouping;
     }
 
-    /** Read off the selection state rather than the nodes. */
+    /** Read off the server-side selection state. */
     public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {
         const toggledNodes: unknown = gridApi.getServerSideSelectionState()?.toggledNodes;
         if (!Array.isArray(toggledNodes)) {

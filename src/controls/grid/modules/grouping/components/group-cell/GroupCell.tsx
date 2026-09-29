@@ -8,11 +8,11 @@ import { useGridService } from "../../../../useGridService";
 import { GroupCount } from "../group-count/GroupCount";
 import { getGroupCellStyles } from "./styles";
 
-/** What a row standing for a group draws in the column it is grouped by: its value, and what opens it. */
+/** What a group row draws in its grouped column: its value and its chevron. */
 export const GroupCell = (props: ICellRendererParams<IRecord>) => {
     const theme = useTheme();
     const styles = React.useMemo(() => getGroupCellStyles(theme), [theme]);
-    //this cell belongs to a column the grouping module grouped, so the module is there
+    //the grouping module is registered wherever this cell draws
     const grouping = useGridService('grouping')!;
     const node = props.node;
     const rerender = useRerender();
@@ -30,9 +30,9 @@ export const GroupCell = (props: ICellRendererParams<IRecord>) => {
         onClick: () => grouping.toggleGroup(node),
     });
 
-    //the selector draws this only for a group row, which is a row with a record of its own
+    //the selector draws this only for a group row, so the record is there
     const record = props.data!;
-    //one column of the row opens it, which is the level's own even where the row stands for several
+    //only the level's own column opens the row
     const isExpandable = grouping.isColumnExpandable(record, props.colDef!.colId!);
 
     return <Grid.Cell.Field record={record} name={grouping.getGroupedValueColumnName(record, props.colDef!.colId!)}>

@@ -9,7 +9,7 @@ export interface ICellContainerProps {
 
 /** The element a cell's content is drawn in, and the surface it is drawn on. */
 export const CellContainer = (props: ICellContainerProps) => {
-    //asked for rather than used: it throws outside a cell root
+    //called only to throw outside a cell root
     useGridCell();
     const components = { ...CellContainerComponents, ...props.components };
 

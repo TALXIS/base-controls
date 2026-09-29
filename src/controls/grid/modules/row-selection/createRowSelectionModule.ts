@@ -11,11 +11,7 @@ export interface IRowSelectionModuleOptions {
     components?: Partial<IGridRowSelectionComponents>;
 }
 
-/**
- * Builds the module that lets rows be selected.
- *
- * @example
- */
+/** Builds the module that lets rows be selected. */
 export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IGridModule => ({
     onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridRowSelectionServiceMap>();

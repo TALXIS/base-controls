@@ -45,7 +45,7 @@ export class GridLegacyClientApiCompatibility {
             return;
         }
         const colors = { ...theme.colors };
-        //the colours it came in with, not the grid's
+        //the colours the cell came in with
         const formatting = field.ui.getCustomFormatting(ThemeGenerator.generate(colors)) ?? {};
         const background = formatting.backgroundColor || colors.background;
         const isRecoloured = background !== colors.background;
@@ -68,7 +68,6 @@ export class GridLegacyClientApiCompatibility {
         if (!customControl) {
             return;
         }
-        //merged rather than taken
         result.control = merge(result.control, customControl) as Required<ICustomColumnControl>;
     };
 
@@ -77,11 +76,10 @@ export class GridLegacyClientApiCompatibility {
         if (!field) {
             return;
         }
-        //written back into what it was handed
         Object.assign(result, field.ui.getControlParameters({ ...result } as IControlParameters));
     };
 
-    /** Only a column the record's provider has: the selection, expansion and save columns are not. */
+    /** Only for a column the record's provider has. */
     private _getField(params: { record: IRecord; columnName: string }): IField | undefined {
         if (!params.record.getDataProvider().getColumnsMap()[params.columnName]) {
             return undefined;

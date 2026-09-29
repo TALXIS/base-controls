@@ -9,24 +9,24 @@ import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 
 export interface IGridControlParameters {
     services: IGridServiceLocator;
-    /** The cell this draws, which is the one that made it. */
+    /** The cell this draws. */
     cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
     field?: IGridField;
     takesInput?: boolean;
 }
 
-/** What one cell shows, and what it shows it with. */
+/** What one cell shows and what it shows it with. */
 export interface IGridControl {
-    /** What the field behind this control draws with, where anything bound one. */
+    /** What the field behind this control draws with. */
     getFieldControl(): IGridFieldControl | undefined;
     /** Whether something other than the cell renderer draws this cell. */
     isCustomRendererEnabled(): boolean;
-    /** What draws this cell, and what it is given. */
+    /** What draws this cell and what it is given. */
     getControlProps(): IGridValueRenderer;
     /** What the host gave the grid, with what a control may do in this cell. */
     getContext(): ComponentFramework.Context<any, any>;
-    /** Which control draws this cell: the grid's renderer, unless a hook named another. */
+    /** The control a hook named for this cell, or the grid's renderer. */
     getCustomControl(): Required<ICustomColumnControl>;
     /** The parameters a control is actually handed. */
     getFinalControlParameters(parameters: IParameters): IParameters;
@@ -96,7 +96,7 @@ export class GridControl implements IGridControl {
     }
 
     private _isCustomRenderer(control: ICustomColumnControl): boolean {
-        //a cell taking input is a control whatever the column named: the renderer only ever draws
+        //a cell taking input needs a control since the renderer only draws
         return this._takesInput || control.name !== BaseControls.GridValueRenderer;
     }
 

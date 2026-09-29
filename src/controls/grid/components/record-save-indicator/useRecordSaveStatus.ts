@@ -31,7 +31,7 @@ export const useRecordSaveStatus = (record: IRecord): IRecordSaveStatus => {
         }
     };
 
-    //`isSaving` is read off the record, so a save starting renders nothing by itself
+    //a save starting renders nothing by itself
     useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
     useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
 

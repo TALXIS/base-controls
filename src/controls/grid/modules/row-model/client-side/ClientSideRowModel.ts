@@ -45,7 +45,7 @@ export class ClientSideRowModel implements IGridRowModel {
         const selectedIds = new Set(recordIds);
         const toSelect: any[] = [];
         const toDeselect: any[] = [];
-        //one walk of the rows and two calls, rather than a write per row
+        //batched into one walk of the rows and two calls
         gridApi.forEachNode(node => {
             if (!node.id) {
                 return;

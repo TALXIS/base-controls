@@ -4,7 +4,7 @@ import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
 export interface IGridRowsEvents {
-    /** Which rows the user is at changed */
+    /** Fired when the rows the user is at change. */
     onActiveRowsChanged: () => void;
 }
 
@@ -20,13 +20,13 @@ export interface IGridRowsParameters {
     services: IGridServiceLocator;
 }
 
-/** What is true of a row rather than of one of its cells. */
+/** What is true of a row as a whole. */
 export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     isActive(record: IRecord): boolean;
     /**
      * Registers a hook over how tall a row is.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
 }

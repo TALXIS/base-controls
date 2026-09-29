@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { useGridService } from "../../useGridService";
 
-/** What the modules draw over the grid, each of them saying for itself whether it draws anything. */
+/** What the modules draw over the grid, each deciding for itself whether to draw. */
 export const Surfaces = () => {
     const surfaces = useGridService('surfaces');
 

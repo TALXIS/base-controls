@@ -24,19 +24,11 @@ export interface IGridValueRendererParameters extends IParameters {
     Column: {
         raw: IColumn | undefined;
     }
-    /**
-     * The cell this is drawn in, which is what it may do there and what it offers.
-     *
-     * `raw` is `undefined` while the cell is being drawn for the first time, since the grid is told about a
-     * cell once it is on screen.
-     */
+    /** The cell this is drawn in: what it may do there and what it offers. */
     Cell: {
         raw: IGridCell | undefined;
     }
-    /**
-     * This dataset instance is always the main dataset, even if the current cell is being rendered via a child data provider.
-     * You can access the child DataProvider via the `getDataProvider()` method on the record instance.
-     */
+    /** Always the main dataset, even when the cell is drawn by a child data provider. */
     Dataset: {
         raw: IDataset;
     }

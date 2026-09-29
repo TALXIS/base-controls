@@ -2,11 +2,7 @@ import { ServerSideRowModelModule as AgServerSideRowModelModule } from "@ag-grid
 import { IGridModule } from "../../interfaces";
 import { ServerSideRowModel } from "./ServerSideRowModel";
 
-/**
- * Builds the row-model module that reads a level at a time through a datasource.
- *
- * @example
- */
+/** Builds the row-model module that reads a level at a time through a datasource. */
 export const createServerSideRowModelModule = (): IGridModule => ({
     agGridModules: [AgServerSideRowModelModule],
     onRegister: ({ services }) => {

@@ -13,18 +13,18 @@ export interface IColumnHeaderMenuProps {
 export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
     const header = useGridColumnHeader();
     const components = { ...ColumnHeaderMenuComponents, ...props.components };
-    //what it offers is worked out when it is asked for, rather than for every header the grid draws
+    //worked out when the menu opens, not for every header the grid draws
     const [items, setItems] = useState<IContextualMenuItem[]>();
 
     useEventEmitter<IGridColumnHeaderEvents>(header, 'onMenuVisibilityChanged', isOpen => {
         setItems(isOpen ? header.getMenuItems() : undefined);
     });
 
-    //AG Grid keeps the focus on the element it draws the header in rather than on what the header draws
+    //AG Grid keeps the focus on the element it draws the header in
     useEffect(() => {
         const element = header.getElement();
         const onKeyDown = (event: KeyboardEvent) => {
-            //that element is an ancestor of everything here: a key pressed in the button is the button's
+            //keys pressed in descendants such as the button bubble up to that element
             if (event.key !== 'Enter' || event.target !== element) {
                 return;
             }
@@ -35,6 +35,6 @@ export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
         return () => element?.removeEventListener('keydown', onKeyDown);
     }, [header]);
 
-    //the element AG Grid draws the header in, which is the whole of what the menu belongs to
+    //the menu belongs to the whole element AG Grid draws the header in
     return components.onRenderMenu({ items: items, target: header.getElement(), onDismiss: () => header.closeMenu() });
 };

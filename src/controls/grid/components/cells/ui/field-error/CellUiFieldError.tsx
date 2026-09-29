@@ -4,7 +4,7 @@ import { TooltipHost } from "@ui";
 import { getFieldErrorStyles } from "./styles";
 
 export interface ICellUiFieldErrorProps {
-    /** What is wrong with the value, in the words the record put it. Nothing means the record takes it. */
+    /** What is wrong with the value, in the record's words. */
     message?: string;
     children?: React.ReactNode;
 }
@@ -21,8 +21,7 @@ export const CellUiFieldError = (props: ICellUiFieldErrorProps) => {
     return <>
         {children}
         <div className={styles.outline} aria-hidden />
-        {/* `hostClassName`, not `className`: what a `TooltipHost` is styled by is the former, and the
-            latter reaches nothing */}
+        {/* `TooltipHost` is styled by `hostClassName`, not `className` */}
         <TooltipHost content={message} hostClassName={styles.fieldErrorRoot}>
             <Icon iconName='StatusErrorFull' className={styles.icon} aria-label={message} />
         </TooltipHost>

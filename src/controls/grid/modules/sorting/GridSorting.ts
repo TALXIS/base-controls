@@ -19,10 +19,10 @@ export interface IGridSorting {
     isColumnSortable(column: IColumn): boolean;
     isSorted(column: IColumn): boolean;
     isSortedDescending(column: IColumn): boolean;
-    /** @param appendToExisting Adds to the sorting already applied rather than replacing it. */
+    /** @param appendToExisting Adds to the sorting already applied. */
     sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void;
     clearColumnSorting(columnName: string): void;
-    /** What sorting a column reads as, which depends on what it holds. */
+    /** What sorting a column reads as, by the type it holds. */
     getSortingLabel(columnName: string, descending?: boolean): string;
     /** The parts this module renders, merged with whatever the caller replaced. */
     readonly components: IGridSortingComponents;

@@ -1,10 +1,10 @@
 import type { Module } from "@ag-grid-community/core";
 import type { IGridRuntime } from "../services/runtime";
 
-/** One thing a grid can be given rather than born with. */
+/** An optional feature a grid can be given. */
 export interface IGridModule {
     agGridModules?: Module[];
-    /** Registers what the module contributes, if anything outlives construction. */
+    /** Registers what the module contributes to the grid. */
     onRegister?: (runtime: IGridRuntime) => void;
 }
 
@@ -27,6 +27,6 @@ export interface IGridModules {
     aggregation?: IGridModule;
     /** Copying rows: {@link createClipboardModule}. */
     clipboard?: IGridModule;
-    /** The caller's own modules, whose hooks place themselves against {@link GRID_MODULE_PRIORITY}. */
+    /** The caller's own modules, ordered against {@link GRID_MODULE_PRIORITY}. */
     custom?: IGridModule[];
 }

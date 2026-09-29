@@ -22,7 +22,7 @@ import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
-    //managed keys too, where AG Grid needs them before it hands over an api
+    //plus the managed keys AG Grid needs before it hands over an api
     options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> & Pick<AgGridReactProps<IRecord>, 'rowHeight' | 'onGridReady' | 'onGridPreDestroyed'>;
 }
 
@@ -32,7 +32,7 @@ export interface IGridAgGridOptions {
 }
 
 export interface IGridRuntimeEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
-    /** The grid is being torn down: release whatever outlives it. */
+    /** Fired when the grid is torn down. */
     onDestroy: () => void;
 }
 
@@ -51,20 +51,20 @@ export interface IGridRuntimeParameters {
     theme: ITheme;
 }
 
-/** The running grid: its services, and what AG Grid is created with and handed afterwards. */
+/** The running grid with its services and AG Grid options. */
 export interface IGridRuntime {
     readonly events: IEventEmitter<IGridRuntimeEvents>;
     readonly services: IGridServiceLocator;
     /**
      * Registers a hook over the options AG Grid reads only once, when it is created.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
     /**
-     * Registers a hook over the grid's options; a value is re-applied only when its reference changes.
+     * Registers a hook over options re-applied whenever a value's reference changes.
      *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * @param priority Ascending: a higher number gets the later word.
      */
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
@@ -77,7 +77,7 @@ export class GridRuntime implements IGridRuntime {
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
     private _agGridProps?: IGridAgGridInitialOptions['options'];
-    /** What AG Grid was last handed, which a refresh is compared against. */
+    /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridRuntimeEvents> = new EventEmitter<IGridRuntimeEvents>();
@@ -85,10 +85,10 @@ export class GridRuntime implements IGridRuntime {
     constructor({ onGetProps, pcfContext, theme }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
-        //ahead of every other api listener, so they find the options applied
+        //first api listener so the others find the options applied
         this._services.whenAvailable('gridApi', () => this.refreshAgGridOptions());
 
-        //first: everything below reads the props and the provider through these
+        //everything below reads the props and the provider through these
         const labels = new LocalizationService<IGridLabels>({ ...GRID_LABELS, ...onGetProps().labels });
         const settings = new GridSettings({ onGetProps });
         this._services.register('labels', () => labels);
@@ -97,13 +97,13 @@ export class GridRuntime implements IGridRuntime {
         const provider = onGetProps().provider;
         this._services.register('provider', () => provider);
         this._services.register('theme', () => theme);
-        //constructed, then registered: a resolver runs on every lookup
+        //constructed once since a resolver runs on every lookup
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });
         const rows = new GridRows({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
         const surfaces = new GridSurfaces();
-        //both wait for an api and then talk only to it
+        //both wire themselves to the api and the provider
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });
         this._services.register('columns', () => columns);
@@ -111,7 +111,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('rows', () => rows);
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
-        //registers its hooks once for every cell, so nothing needs to look it up
+        //built once and never looked up
         new GridLegacyClientApiCompatibility({ services: this._services });
 
         const { custom = [], ...builtIns } = onGetProps().modules;
@@ -119,9 +119,9 @@ export class GridRuntime implements IGridRuntime {
         for (const module of modules) {
             module.onRegister?.(this);
         }
-        //after the modules have had their say, and before AG Grid is constructed on this same render
+        //before AG Grid is constructed on this same render
         ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));
-        //after the modules, whose own api and provider listeners run ahead of this one
+        //after the modules so their api and provider listeners run first
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 
@@ -144,20 +144,20 @@ export class GridRuntime implements IGridRuntime {
         }
         const next = this._evaluateAgGridOptions();
         const previous = this._appliedAgGridOptions;
-        //in the order the hooks wrote them, so an owner decides what lands first
+        //in the order the hooks wrote them
         const keys = new Set([...Object.keys(next), ...Object.keys(previous)] as ManagedGridOptionKey[]);
         for (const key of keys) {
             if (next[key] !== previous[key]) {
-                //one key at a time: a customizer patches `setGridOption` to rewrite what it owns
+                //a customizer patches `setGridOption` to rewrite the keys it owns
                 gridApi.setGridOption(key, next[key]);
             }
         }
         this._appliedAgGridOptions = next;
     }
 
-    /** The props AG Grid is created with: the grid's defaults, and what the hooks made of them. */
+    /** The props AG Grid is created with, after the hooks. */
     public getAgGridProps(): AgGridReactProps<IRecord> {
-        //once: the options reach AG Grid through `refreshAgGridOptions`
+        //later options reach AG Grid through `refreshAgGridOptions`
         this._agGridProps ??= this._evaluateAgGridInitialOptions();
         return this._agGridProps;
     }
@@ -215,7 +215,7 @@ export class GridRuntime implements IGridRuntime {
     }
 
     private _onNewDataLoaded = (): void => {
-        //columns first: the server-side model reads what is grouped off them while it reloads
+        //the server-side model reads grouping off the columns while it reloads
         this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
         this._services.get('rowModel').refresh();
@@ -224,7 +224,7 @@ export class GridRuntime implements IGridRuntime {
     };
 
 
-    /** Back to the first row, because a load is a different list */
+    /** Back to the first row after a load. */
     private _scrollToTop(): void {
         const gridApi = this._services.find('gridApi');
         if (!gridApi || this._provider.isLoading() || this._provider.getSortedRecordIds().length === 0) {

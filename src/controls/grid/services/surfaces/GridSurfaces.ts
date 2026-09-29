@@ -1,9 +1,9 @@
 import { HookRegistry } from "@utils";
 
-/** Something a module draws over the grid rather than in it. */
+/** Something a module draws over the grid. */
 export interface IGridSurface {
     key: string;
-    /** What it draws, which is nothing until the module has something to show. */
+    /** What it draws, or `null` while the module has nothing to show. */
     onRender: () => JSX.Element | null;
 }
 

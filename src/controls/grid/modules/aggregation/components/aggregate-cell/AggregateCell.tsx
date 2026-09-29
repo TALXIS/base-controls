@@ -9,9 +9,9 @@ const RIGHT_ALIGNED = { raw: 'right' as IAlignment };
 
 /** What a column that totals something draws in a group's row: what that group adds up to. */
 export const AggregateCell = (props: ICellRendererParams<IRecord>) => {
-    //this cell is drawn for a column the aggregation module totals, so the module is there
+    //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
-    //the selector draws this only for a group row, which is a row with a record of its own
+    //the selector draws this only for a group row, so the record is there
     const record = props.data!;
 
     return <Grid.Cell.Field record={record} name={aggregation.getAggregateValueColumnName(record, props.colDef!.colId!)}>

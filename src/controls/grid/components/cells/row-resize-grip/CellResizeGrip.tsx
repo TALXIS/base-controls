@@ -20,7 +20,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
     const node = cell.getNode();
     const rerender = useRerender();
 
-    //what a drag starts from is the row's height, and the row is what another cell's drag changed
+    //another cell's drag changes the row height a drag starts from
     useEffect(() => {
         const onHeightChanged = () => rerender();
         node?.addEventListener('heightChanged', onHeightChanged);
@@ -33,7 +33,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
         gridApi?.onRowHeightChanged();
     };
 
-    //the drag grows this element, so the container has to be inside it
+    //the container sits inside the element the drag grows
     if (hasContainerAbove) {
         throw new Error('Grid.Cell.ResizeGrip has to be drawn around Grid.Cell.Container rather than inside it.');
     }

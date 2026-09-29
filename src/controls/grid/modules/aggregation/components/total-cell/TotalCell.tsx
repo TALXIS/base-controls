@@ -6,9 +6,9 @@ import { TotalValue } from "../total-value";
 
 /** What a column that totals something draws in the row pinned under the rest. */
 export const TotalCell = (props: ICellRendererParams<IRecord>) => {
-    //this cell is drawn in the row the aggregation module pinned, so the module is there
+    //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
-    //the selector draws this only for the total row, which is a row with a record of its own
+    //the selector draws this only for the total row, so the record is there
     const record = props.data!;
 
     return <Grid.Cell.Field record={record} name={aggregation.getAggregateValueColumnName(record, props.colDef!.colId!)}>

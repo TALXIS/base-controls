@@ -15,37 +15,14 @@ export interface ICellRootProps extends ICellRendererParams {
     children?: React.ReactNode;
 }
 
-/**
- * What makes a cell a cell of this grid: everything drawn inside it belongs to one `GridCell`.
- *
- * The order the pieces nest in is the contract, and each one throws where it is put wrong:
- *
- * ```tsx
- * <Grid.Cell.Field record={props.data} name={props.colDef.colId}>   //only where the cell is bound to one
- *     <Grid.Cell.Root {...props}>
- *         <Grid.Cell.Theme>
- *             <Grid.Cell.ResizeGrip>   //outside the container it grows
- *                 <Grid.Cell.Container>
- *                     <Grid.Cell.Loading>   //inside it, around what it stands in for
- *                         <Grid.Cell.Validation>   //needs a field above it
- *                             <Grid.Cell.Control />   //needs a field above it
- *                             <Grid.Cell.Commands />
- *                         </Grid.Cell.Validation>
- *                     </Grid.Cell.Loading>
- *                 </Grid.Cell.Container>
- *             </Grid.Cell.ResizeGrip>
- *         </Grid.Cell.Theme>
- *     </Grid.Cell.Root>
- * </Grid.Cell.Field>
- * ```
- */
+/** What makes a cell a cell of this grid: everything inside it belongs to one `GridCell`. */
 export const CellRoot = (props: ICellRootProps) => {
     const { data: record, children } = props;
     const cells = useGridService('cells');
     const editing = cells.editing;
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
-    //an editor takes input whatever the column is, and a one-click column takes it without one
+    //editors and one-click columns take input
     const takesInput = !!props.isEditor || !!colDef.settings?.oneClickEdit;
     const cell = useMemo(
         () => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell }),
@@ -62,7 +39,7 @@ export const CellRoot = (props: ICellRootProps) => {
         redraw();
     });
 
-    //`AutoFocus` is whether this cell is the one being edited, so both sides of the change redraw
+    //both sides of the change redraw: `AutoFocus` is whether this cell is edited
     useEventEmitter<IGridEditingEvents>(editing.events, 'onEditedCellChanged', (previous, next) => {
         if (isThisCell(previous) || isThisCell(next)) {
             redraw();

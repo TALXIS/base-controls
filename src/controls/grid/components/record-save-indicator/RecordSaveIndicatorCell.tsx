@@ -4,9 +4,9 @@ import { CellRenderer } from "../cells/cell-renderer/CellRenderer";
 import { RecordSaveIndicator } from "./RecordSaveIndicator";
 import { useRecordSaveStatus } from "./useRecordSaveStatus";
 
-/** The cell of the column a row reports its save in, on a grid with no checkbox column to */
+/** The cell a row reports its save in, on a grid with no checkbox column. */
 export const RecordSaveIndicatorCell = (props: ICellRendererParams<IRecord>) => {
-    //pinned rows have no record, and `cellRendererSelector` renders nothing there
+    //`cellRendererSelector` skips pinned rows: they have no save to report
     const record = props.data!;
     const status = useRecordSaveStatus(record);
 

@@ -17,12 +17,11 @@ import type { IGridFiltering } from "../modules/filtering/GridFiltering";
 import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
 import type { IGridGrouping } from "../modules/grouping/GridGrouping";
 
-/** Everything the grid is made of, and when each of it turns up. */
+/** Everything the grid is made of. */
 export interface IGridServiceMap {
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
-    /** What a cell draws: its value, and whatever a module made of it. */
-    /** What is true of a row rather than of one of its cells. */
+    /** What is true of a row as a whole. */
     rows: IGridRows;
     /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
@@ -36,9 +35,9 @@ export interface IGridServiceMap {
     gridApi: GridApi<IRecord>;
     /** The theme the control was given. */
     theme: ITheme;
-    /** The column definitions, and the hooks a module puts its own on them through. */
+    /** The column definitions and the hooks modules add to them through. */
     columns: IGridColumns;
-    /** What a cell shows, and the hooks a module adds to it through. */
+    /** What a cell shows and the hooks modules add to it through. */
     cells: IGridCells;
     /** What the user is pressing while the grid is doing something about it. */
     keyboard: IGridKeyboard;
@@ -56,7 +55,7 @@ export interface IGridServiceMap {
     rowSelection: IGridRowSelection;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
-    /** The running grid, and the hooks over the props AG Grid is created with. */
+    /** The running grid and the hooks over AG Grid's props. */
     grid: IGridRuntime;
 }
 

@@ -14,22 +14,22 @@ export interface IGridColumnHeaderEvents {
 
 export interface IGridColumnHeaderParameters {
     services: IGridServiceLocator;
-    /** The column AG Grid is drawing, which is what its definition is read from. */
+    /** The column AG Grid is drawing. */
     column: Column;
     /** The element AG Grid draws the header in. */
     element?: HTMLElement;
 }
 
-/** The column a header is drawn for: what it says about itself, and what the modules add to it. */
+/** The column a header is drawn for, with what the modules add to it. */
 export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents> {
     /** What this header is drawn in. */
     getTheme(): IGridColumnHeaderTheme;
-    /** Asks for the menu, which is what draws it. */
+    /** Asks for the menu to open. */
     openMenu(): void;
     /** Asks for it to go away again. */
     closeMenu(): void;
     getColDef(): ColDef<IRecord>;
-    /** The column the provider has for this one, where it has one: a column of the grid's own has none. */
+    /** The provider's column for this one, if it has one. */
     getColumn(): IColumn | undefined;
     /** What the column says its cells and its header are. */
     getSettings(): IGridColumnSettings;
@@ -40,13 +40,13 @@ export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents
     /** Whether what the column holds may be changed. */
     isEditable(): boolean;
     getName(): string;
-    /** What the header's tooltip says: the name, and what the adornments add to it in parentheses. */
+    /** The header's tooltip: the name plus the adornments' titles in parentheses. */
     getTitle(): string;
     /** What the modules draw beside the name, all of them or those of one placement. */
     getAdornments(placement?: IColumnHeaderAdornment['placement']): IColumnHeaderAdornment[];
     /** Everything the modules offer for this column. */
     getMenuItems(): IContextualMenuItem[];
-    /** The element AG Grid draws the header in, which is what takes the focus and hears the keys. */
+    /** The element AG Grid draws the header in. */
     getElement(): HTMLElement | undefined;
 }
 

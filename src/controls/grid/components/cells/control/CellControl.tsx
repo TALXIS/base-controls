@@ -30,7 +30,7 @@ export const CellControl = (props: ICellControlProps) => {
         {components.onRenderControlContainer({
             control: control,
             alignment: cell.getAlignment(),
-            //keyed: `AutoFocus` decides a control's first render, so stepping in has to be one
+            //keyed: `AutoFocus` only affects a control's first render
             children: <Fragment key={`${cell.isBeingEdited()}`}>{components.onRenderControl(controlProps, onRenderDefault)}</Fragment>,
         })}
     </GridControlContext.Provider>;

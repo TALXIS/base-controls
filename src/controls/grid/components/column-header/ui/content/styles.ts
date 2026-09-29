@@ -9,7 +9,7 @@ export const getColumnHeaderContentStyles = (alignment: IAlignment) => mergeStyl
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: getJustifyContent(alignment),
-        //a right-aligned column reads outwards from its edge, so what names it comes last
+        //a right-aligned column reads outwards from its edge
         order: alignment === 'right' ? 2 : undefined,
     },
 });

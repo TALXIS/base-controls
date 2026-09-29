@@ -3,7 +3,7 @@ import { ColumnHeaderUiSuffixComponents, IColumnHeaderUiSuffixComponents } from 
 import { getColumnHeaderSuffixStyles } from "./styles";
 
 export interface IColumnHeaderUiSuffixProps {
-    /** Whether what the column holds may be changed, which is what the icon says. */
+    /** Whether what the column holds may be changed. */
     isEditable?: boolean;
     /** Drawn before the uneditable icon. */
     children?: React.ReactNode;

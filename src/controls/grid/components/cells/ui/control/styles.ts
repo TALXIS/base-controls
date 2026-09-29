@@ -10,7 +10,7 @@ export const getCellControlStyles = (alignment: IAlignment) => mergeStyleSets({
         minWidth: 0,
         overflow: 'hidden',
         height: '100%',
-        //a grid rather than a row: what it holds fills it and shrinks with it, whatever its content is
+        //a grid: what it holds fills it and shrinks with it
         display: 'grid',
         gridAutoFlow: 'column',
         gridAutoColumns: 'minmax(0, 1fr)',

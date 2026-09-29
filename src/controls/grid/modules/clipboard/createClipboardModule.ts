@@ -22,15 +22,10 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
     | 'processDataFromClipboard'
     | 'sendToClipboard'>;
 
-/**
- * Builds the module that lets what is in the grid be copied out of it.
- *
- * {@link createCellSelectionModule} is registered; else the
- * @example
- */
+/** Builds the module that lets what is in the grid be copied out of it. */
 export const createClipboardModule = (options?: IGridClipboardOptions): IGridModule => ({
     agGridModules: [ClipboardModule],
-    //a copy is one cell or one highlighted block, never the row selection.
+    //by default a copy is one cell or one highlighted block, not the row selection
     onRegister: runtime => runtime.registerAgGridOptions(result => {
         result.options = { ...result.options, suppressCopyRowsToClipboard: true, ...options };
     }, GRID_MODULE_PRIORITY.clipboard),

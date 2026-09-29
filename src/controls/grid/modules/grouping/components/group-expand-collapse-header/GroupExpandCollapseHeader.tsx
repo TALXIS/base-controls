@@ -10,7 +10,7 @@ import { getGroupExpandCollapseHeaderStyles } from "./styles";
 /** Opens and closes the groups a level at a time. */
 export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
     const styles = React.useMemo(() => getGroupExpandCollapseHeaderStyles(), []);
-    //this header is a column of the grouping module's own, so the module is there
+    //the grouping module is registered wherever this header draws
     const grouping = useGridService('grouping')!;
     const labels = useGridGroupingLabels();
     const rerender = useRerender();
@@ -21,7 +21,7 @@ export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
         rerender();
     };
 
-    //no container: what that part draws is the button a column's menu opens from, and this column has none
+    //no container: it draws the menu button this column lacks
     return <Grid.ColumnHeader.Root {...props}>
         <Grid.ColumnHeader.Theme>
             <div className={styles.root}>

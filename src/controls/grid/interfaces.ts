@@ -32,7 +32,7 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     provider: IDataProvider;
     /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
-    /** Whether cells may be edited; read at mount, narrowed later by `registerCellEditableHook`. */
+    /** Whether cells may be edited; read at mount, then `registerCellEditableHook`. */
     enableEditing?: boolean;
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;
@@ -40,7 +40,7 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     enableOptionSetColors?: boolean;
     /** Whether every other row is shaded; read at mount, then through `registerCellThemeHook`. */
     enableZebra?: boolean;
-    /** Whether an edit saves itself, rather than waiting to be saved. */
+    /** Whether an edit saves itself. */
     enableAutoSave?: boolean;
     /** How tall a row is, in pixels; read at mount, then through `registerRowHeightHook`. */
     rowHeight?: number;

@@ -12,12 +12,7 @@ export type IGridCellSelectionOptions = Pick<AgGridReactProps<IRecord>,
     | 'fillHandleDirection'
     | 'suppressClearOnFillReduction'>;
 
-/**
- * Builds the module that lets cells be highlighted by dragging across them.
- *
- * what {@link createClipboardModule} copies, in preference to anything else.
- * @example
- */
+/** Builds the module that lets cells be highlighted by dragging across them. */
 export const createCellSelectionModule = (options?: IGridCellSelectionOptions): IGridModule => ({
     agGridModules: [RangeSelectionModule],
     onRegister: runtime => runtime.registerAgGridOptions(result => {

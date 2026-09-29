@@ -15,7 +15,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     private _services: IGridServiceLocator;
     private _onRowsLoaded: () => void;
     private _isTree: boolean;
-    /** Which load the walk in flight belongs to */
+    /** Which load the walk in flight belongs to. */
     private _loadToken: number = 0;
     public isGroupOpenByDefault: (node: IRowNode<IRecord>) => boolean;
 
@@ -40,7 +40,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         result.options.treeData = this._isTree;
     }
 
-    /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */
+    /** Nothing: `rowGroup` would have AG Grid regroup the tree it was handed. */
     public onApplyColumnDefinition(): void { }
 
     /** Written onto the nodes and drawn in one pass. */
@@ -54,7 +54,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
             }
         });
         gridApi.onGroupExpandedOrCollapsed();
-        //written without `expandedChanged`, which is what a group row's chevron redraws on
+        //a direct write skips the `expandedChanged` a chevron redraws on
         gridApi.refreshCells({ rowNodes: changedNodes, force: true });
     }
 
@@ -98,7 +98,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     }
 }
 
-/** A record's ancestry, which is what `treeData` builds the hierarchy from. */
+/** The ancestry `treeData` builds a record's place in the hierarchy from. */
 const getRecordPath = (record: IRecord): string[] => {
     const path: string[] = [];
     let provider: IDataProvider | null = record.getDataProvider();

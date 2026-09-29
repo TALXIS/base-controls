@@ -44,7 +44,7 @@ export class GridFieldControl implements IGridFieldControl {
     public getControlName(): string {
         const column = this.getColumn();
         switch (column.dataType) {
-            //file and image have no editor, so they draw whether or not the cell takes input
+            //file and image draw whether or not the cell takes input
             case DataTypes.File:
             case DataTypes.Image: {
                 return BaseControls.GridValueRenderer;

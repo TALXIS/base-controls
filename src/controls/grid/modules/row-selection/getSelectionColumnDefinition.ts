@@ -11,7 +11,7 @@ export const getSelectionColumnDefinition = (
     headerName: '',
     width: 40,
     lockPinned: true,
-    //locked, not just pinned: a module reordering the definitions
+    //locked so a module reordering the definitions cannot move it
     lockPosition: 'left',
     resizable: false,
     pinned: 'left',

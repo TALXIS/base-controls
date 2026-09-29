@@ -25,7 +25,7 @@ export class GridOverlays {
         this._services.get('grid').events.addEventListener('onDestroy', this._onDestroy);
     }
 
-    /** The two things an overlay is decided from, and nothing else. */
+    /** Listens to the two things an overlay is decided from. */
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         this._provider.addEventListener('onLoading', this._onLoading);
         gridApi.addEventListener('modelUpdated', () => this._reconcile());
@@ -46,9 +46,9 @@ export class GridOverlays {
             this._showLoadingAfterDelay();
             return;
         }
-        //a load that finished before the delay was up is one nobody was ever told about
+        //a load that finished within the delay never shows
         this._clearPendingLoading();
-        //asked of the grid rather than the provider, so a server side transaction counts too.
+        //the grid's row count includes server side transactions
         this._setOverlay(this._gridApi.getDisplayedRowCount() === 0 ? 'noRows' : 'none');
     }
 
