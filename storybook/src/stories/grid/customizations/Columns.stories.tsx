@@ -66,7 +66,7 @@ export const AddAComputedColumn: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A column no provider has. Its \`cellRenderer\` works out the value from the record, and draws it in the grid's own cell parts.`,
+                story: `A column no provider has, added after the provider's columns: scroll right to **Remaining**. Its \`cellRenderer\` works out the value from the record, and draws it in the grid's own cell parts.`,
             },
         },
     },

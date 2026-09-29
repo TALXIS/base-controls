@@ -5,7 +5,7 @@ export const CONDITIONAL_FORMATTING_CODE = `const overdueModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
             const due = record.getValue('due')
-            const isDone = record.getValue('status') === 4
+            const isDone = Number(record.getValue('status')) === 4
             if (columnName !== 'due' || !due || isDone || new Date(due) >= new Date()) {
                 return
             }
@@ -24,7 +24,7 @@ const GridExample = () => <Grid.Root
 export const EDITABLE_PER_RECORD_CODE = `const lockDoneTasksModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellEditableHook((result, { record }) => {
-            if (record.getValue('status') === 4) {
+            if (Number(record.getValue('status')) === 4) {
                 result.isEditable = false
             }
         })
@@ -41,7 +41,7 @@ const GridExample = () => <Grid.Root
 export const ROW_HEIGHT_CODE = `const compactDoneRowsModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('rows').registerRowHeightHook((result, { record }) => {
-            if (record.getValue('status') === 4) {
+            if (Number(record.getValue('status')) === 4) {
                 result.height = 30
             }
         })
@@ -63,7 +63,7 @@ export const COLUMN_MENU_ITEMS_CODE = `const GridExample = () => {
                     key: 'describe',
                     text: 'Describe this column',
                     iconProps: { iconName: 'Info' },
-                    onClick: () => setMessage(header.getTitle() + ' holds ' + header.getColumn()?.dataType + ' values.'),
+                    onClick: () => setMessage(header.getName() + ' holds ' + header.getColumn()?.dataType + ' values.'),
                 })
             })
         },
@@ -82,7 +82,7 @@ export const COLUMN_MENU_ITEMS_CODE = `const GridExample = () => {
 export const HEADER_ADORNMENTS_CODE = `const currencyModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('columns').headers.registerColumnHeaderAdornmentsHook((adornments, header) => {
-            if (header.getName() !== 'budget') {
+            if (header.getColumn()?.name !== 'budget') {
                 return
             }
             adornments.push({
@@ -104,7 +104,7 @@ const GridExample = () => <Grid.Root
 export const CELL_COMMANDS_CODE = `const markDoneModule: IGridModule = {
     onRegister: runtime => {
         runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
-            if (columnName !== 'name' || record.getValue('status') === 4) {
+            if (columnName !== 'name' || Number(record.getValue('status')) === 4) {
                 return
             }
             result.items.push({

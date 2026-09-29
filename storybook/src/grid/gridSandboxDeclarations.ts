@@ -212,8 +212,11 @@ interface IGridColDef {
 }
 
 interface IGridColumnHeader {
+    /** What the column is called. */
     getName(): string;
+    /** The header's tooltip: the name, and the adornments' titles. */
     getTitle(): string;
+    /** The provider column, where the header has one. */
     getColumn(): IColumn | undefined;
 }
 

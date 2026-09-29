@@ -5,7 +5,7 @@ import { createDocsProvider } from '../gridDocsData'
 export const CUSTOM_CELL_CODE = `const StatusCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
     control: {
         onRenderControl: (controlProps, defaultRender) => {
-            if (controlProps.parameters.Record.raw.getValue('status') !== 4) {
+            if (Number(controlProps.parameters.Record.raw.getValue('status')) !== 4) {
                 return defaultRender(controlProps)
             }
             return <span style={{ margin: '0 9px', padding: '2px 10px', borderRadius: 10, background: '#dff6dd', color: '#107c10', fontWeight: 600 }}>
@@ -79,9 +79,6 @@ export const LOADING_OVERLAY_CODE = `const GridExample = () => <Grid.Root
 export const LOADING_ROWS_CODE = `//a datasource that never answers keeps the rows loading
 const neverLoadModule: IGridModule = {
     onRegister: runtime => {
-        runtime.registerAgGridInitialOptions(result => {
-            result.options.serverSideInitialRowCount = 5
-        })
         runtime.registerAgGridOptions(result => {
             result.options.serverSideDatasource = { getRows: () => { } }
         }, 1000)
