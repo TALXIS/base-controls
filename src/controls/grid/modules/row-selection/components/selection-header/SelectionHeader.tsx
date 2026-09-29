@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Checkbox } from "@fluentui/react";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
@@ -12,7 +13,7 @@ import { getSelectionHeaderStyles } from "./styles";
 export const SelectionHeader = (props: IColumnHeaderParams) => {
     const selection = useGridService('rowSelection')!;
     const provider = useGridService('provider');
-    const styles = getSelectionHeaderStyles();
+    const styles = useMemo(() => getSelectionHeaderStyles(), []);
     const rerender = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 

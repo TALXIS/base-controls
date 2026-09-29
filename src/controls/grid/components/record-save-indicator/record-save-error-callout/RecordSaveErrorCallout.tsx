@@ -5,7 +5,7 @@ import { Callout } from "@ui";
 import { useGridService } from "../../../useGridService";
 import { getRecordSaveErrorCalloutStyles } from "./styles"
 
-interface IRecordSaveCalloutProps {
+export interface IRecordSaveErrorCalloutProps {
     /** What the callout points at. */
     target: RefObject<HTMLDivElement>;
     saveResult: IRecordSaveOperationResult;
@@ -15,7 +15,7 @@ interface IRecordSaveCalloutProps {
 }
 
 /** What a row says when the record behind it refused to save, field by field. */
-export const RecordSaveErrorCallout = (props: IRecordSaveCalloutProps) => {
+export const RecordSaveErrorCallout = (props: IRecordSaveErrorCalloutProps) => {
     const { saveResult, record, target, onDismiss, onClearSaveResult } = props;
     const theme = useTheme();
     const labels = useGridService('labels');

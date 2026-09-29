@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CommandBarButton, IButtonProps } from "@fluentui/react";
+import { CommandBarButton, concatStyleSets, IButtonProps } from "@fluentui/react";
 import { getColumnHeaderContainerStyles } from "./styles";
 
 export interface IColumnHeaderUiContainerProps extends IButtonProps { }
@@ -10,5 +10,5 @@ export const ColumnHeaderUiContainer = (props: IColumnHeaderUiContainerProps) =>
 
     return <CommandBarButton
         {...props}
-        styles={{ root: styles.containerRoot, flexContainer: styles.containerFlexContainer, ...props.styles }} />;
+        styles={concatStyleSets({ root: styles.containerRoot, flexContainer: styles.containerFlexContainer }, props.styles)} />;
 };

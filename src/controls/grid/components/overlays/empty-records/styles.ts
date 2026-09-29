@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const emptyRecordStyles = mergeStyleSets({
+export const getEmptyRecordsStyles = () => mergeStyleSets({
     emptyRecordsRoot: {
         display: 'flex',
         flexDirection: 'column',

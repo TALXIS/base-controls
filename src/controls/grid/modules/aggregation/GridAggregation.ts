@@ -7,7 +7,7 @@ import { IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
 import { IGridRowHeight } from "../../services/rows";
-import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error/FullWidthCellRendererError";
+import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error";
 import { IGridAgGridOptions } from "../../services/runtime";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";

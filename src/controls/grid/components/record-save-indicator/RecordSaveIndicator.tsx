@@ -4,7 +4,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { Spinner } from "@legacy";
 import { useGridService } from "@controls/grid/useGridService";
 import { IRecordSaveStatus } from "./useRecordSaveStatus";
-import { RecordSaveErrorCallout } from "./record-save-error-callout/RecordSaveErrorCallout";
+import { RecordSaveErrorCallout } from "./record-save-error-callout";
 import { getRecordSaveIndicatorStyles } from "./styles";
 
 export interface IRecordSaveIndicatorProps {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ITextProps, Text } from "@fluentui/react";
+import { concatStyleSets, ITextProps, Text } from "@fluentui/react";
 import { getColumnHeaderLabelStyles } from "./styles";
 
 export interface IColumnHeaderUiLabelProps extends ITextProps {
@@ -12,5 +12,5 @@ export const ColumnHeaderUiLabel = (props: IColumnHeaderUiLabelProps) => {
     const { name, styles: textStyles, ...textProps } = props;
     const styles = useMemo(() => getColumnHeaderLabelStyles(), []);
 
-    return <Text {...textProps} styles={{ root: styles.label, ...textStyles }}>{name}</Text>;
+    return <Text {...textProps} styles={concatStyleSets({ root: styles.label }, textStyles)}>{name}</Text>;
 };

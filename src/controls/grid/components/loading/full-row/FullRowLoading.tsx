@@ -1,11 +1,12 @@
-import { Shimmer } from "@ui"
-import { useMemo } from "react"
-import { getFullRowLoadingStyles } from "./styles"
-import { ILoadingCellRendererParams } from "@ag-grid-community/core"
-import { IRecord } from "@talxis/client-libraries"
-import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error/FullWidthCellRendererError"
+import { Shimmer } from "@ui";
+import { useMemo } from "react";
+import { getFullRowLoadingStyles } from "./styles";
+import { ILoadingCellRendererParams } from "@ag-grid-community/core";
+import { IRecord } from "@talxis/client-libraries";
+import { FullWidthCellRendererError } from "@controls/grid/components/errors/full-width-cell-renderer-error";
 import { useGridService } from "@controls/grid/useGridService";
 
+/** What a row shows while its records load, or the error they failed with. */
 export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const styles = useMemo(() => getFullRowLoadingStyles(), []);
     const provider = useGridService('provider');
@@ -14,7 +15,7 @@ export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const getDataProvider = () => {
         const parentRecord: IRecord | undefined = node.parent?.data;
         if(parentRecord) {
-            return parentRecord.getDataProvider().getGroupedRecordDataProvider(parentRecord.getRecordId())!
+            return parentRecord.getDataProvider().getGroupedRecordDataProvider(parentRecord.getRecordId())!;
         }
         else {
             return provider;
@@ -28,6 +29,6 @@ export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     }
     else {
         return <FullWidthCellRendererError 
-            errorMessage={getDataProvider().getErrorMessage()} />
+            errorMessage={getDataProvider().getErrorMessage()} />;
     }
-}
+};
