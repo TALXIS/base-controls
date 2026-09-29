@@ -41,9 +41,11 @@ export class GridCellTheme implements IGridCellTheme {
         if (!this._seed) {
             builder.colors.background = this._rowBackground;
         }
+        const record = this._cell.getRecord();
+        this._cell.getSettings().onGetTheme?.(builder, { record });
         //before the hooks so a hook gets the last word
         builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
-        this._cells.applyCellThemeHooks(builder, { record: this._cell.getRecord(), columnName: this._cell.getColumnName() });
+        this._cells.applyCellThemeHooks(builder, { record, columnName: this._cell.getColumnName() });
         return builder.getTheme();
     }
 

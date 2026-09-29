@@ -35,6 +35,7 @@ What the grid's cells and headers read about a column:
 | \`isRequired\` | Whether a value is required. |
 | \`widthOffset\` | Extra width, in pixels, on top of the column's own. |
 | \`onGetCommands\` | The commands a cell offers for its record: \`{ items, overflowItems }\`, drawn while the row is hovered or focused. |
+| \`onGetTheme\` | Changes a cell's theme: \`(theme, { record })\`, as \`registerCellThemeHook\` on [**Hooks**](?path=/story/grid-extending-hooks--overview) without the column. Set \`theme.colors\` and the cell's palette is generated from them. |
 
 \`settings\` is merged with what the grid set for a provider column, so an entry can change one setting and keep the rest.
 `

@@ -4,17 +4,9 @@ import { createDocsProvider } from '../gridDocsData'
 
 export const OVERVIEW_CODE = `const WON = 4
 
-const pipelineModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
-            const closeDate = record.getValue('closedate')
-            if (columnName !== 'closedate' || !closeDate || Number(record.getValue('stage')) === WON || new Date(closeDate) >= new Date()) {
-                return
-            }
-            theme.colors.background = '#fde7e9'
-            theme.colors.text = '#a4262c'
-        })
-    },
+const isOverdue = (record: IRecord) => {
+    const closeDate = record.getValue('closedate')
+    return !!closeDate && Number(record.getValue('stage')) !== WON && new Date(closeDate) < new Date()
 }
 
 const GridExample = () => {
@@ -34,10 +26,20 @@ const GridExample = () => {
                 filtering: createFilteringModule(),
                 grouping: createGroupingModule(),
                 aggregation: createAggregationModule(),
-                custom: [pipelineModule],
             }}
             colDefs={[
                 { colId: 'stage', pinned: 'right' },
+                {
+                    colId: 'closedate',
+                    settings: {
+                        onGetTheme: (theme, { record }) => {
+                            if (isOverdue(record)) {
+                                theme.colors.background = '#fde7e9'
+                                theme.colors.text = '#a4262c'
+                            }
+                        },
+                    },
+                },
                 {
                     colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
                     settings: {

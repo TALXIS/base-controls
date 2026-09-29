@@ -1,5 +1,6 @@
 import type { IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
+import type { ThemeBuilder } from "@theme";
 import type { IGridCellCommands } from "../cells";
 
 /** What the grid's own column is, whatever its cells are bound to. */
@@ -16,6 +17,8 @@ export interface IGridColumnSettings {
     widthOffset?: number;
     /** The commands this column's cells offer for a record, before `registerCellCommandsHook`. */
     onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
+    /** Changes the theme of this column's cells, before `registerCellThemeHook`. */
+    onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
 }
 
 declare module "@ag-grid-community/core" {
