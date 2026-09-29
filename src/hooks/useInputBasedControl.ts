@@ -49,6 +49,7 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     };
 
     useEffect(() => {
+        lastNotifiedRef.current = undefined;
         const formattedValue = formatter?.(rawValue);
         setValue(formattedValue ?? rawValue);
     }, [rawValue]);
