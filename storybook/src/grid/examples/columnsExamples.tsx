@@ -56,15 +56,17 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
                 sortable: false,
                 valueGetter: () => null,
                 settings: {
-                    onGetCommands: record => ({
-                        items: [
-                            { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
-                            { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
-                        ],
-                        overflowItems: [
-                            { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                        ],
-                    }),
+                    cell: {
+                        onGetCommands: record => ({
+                            items: [
+                                { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
+                                { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
+                            ],
+                            overflowItems: [
+                                { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                            ],
+                        }),
+                    },
                 },
             }]}
             height='440px' />

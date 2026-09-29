@@ -32,23 +32,27 @@ const GridExample = () => {
                 {
                     colId: 'closedate',
                     settings: {
-                        onGetTheme: (theme, { record }) => {
-                            if (isOverdue(record)) {
-                                theme.colors.background = '#fde7e9'
-                                theme.colors.text = '#a4262c'
-                            }
+                        cell: {
+                            onGetTheme: (theme, { record }) => {
+                                if (isOverdue(record)) {
+                                    theme.colors.background = '#fde7e9'
+                                    theme.colors.text = '#a4262c'
+                                }
+                            },
                         },
                     },
                 },
                 {
                     colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
                     settings: {
-                        onGetCommands: record => ({
-                            items: [
-                                { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
-                                { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                            ],
-                        }),
+                        cell: {
+                            onGetCommands: record => ({
+                                items: [
+                                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
+                                    { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                                ],
+                            }),
+                        },
                     },
                 },
             ]}

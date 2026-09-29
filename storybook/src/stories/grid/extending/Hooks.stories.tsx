@@ -91,7 +91,7 @@ export const CellCommandsFromAModule: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellCommandsHook\` offers **Won** in the **Deal** cell of every deal that is still open. Hover a row to see it. For commands one column declares itself, use \`onGetCommands\` on {COLUMNS}.`,
+                story: `\`registerCellCommandsHook\` offers **Won** in the **Deal** cell of every deal that is still open. Hover a row to see it. For commands one column declares itself, use \`settings.cell.onGetCommands\` on {COLUMNS}.`,
             },
         },
     },

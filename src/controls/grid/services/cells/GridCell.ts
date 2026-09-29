@@ -111,6 +111,7 @@ export class GridCell implements IGridCell {
 
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
+        this.getSettings().cell?.onGetLoading?.(result, { record: this._record });
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.isLoading;
     }
@@ -153,12 +154,13 @@ export class GridCell implements IGridCell {
             return false;
         }
         const result: IGridCellEditable = { isEditable: true };
+        this.getSettings().cell?.onGetEditable?.(result, { record: this._record });
         this._cells.applyCellEditableHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.isEditable;
     }
 
     public getCommands(): IGridCellCommands {
-        const commands = this.getSettings().onGetCommands?.(this._record);
+        const commands = this.getSettings().cell?.onGetCommands?.(this._record);
         const result: IGridCellCommands = { items: commands?.items ?? [], overflowItems: commands?.overflowItems ?? [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result;

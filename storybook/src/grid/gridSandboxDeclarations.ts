@@ -177,9 +177,16 @@ interface IGridColumnSettings {
     isEditable?: boolean;
     isRequired?: boolean;
     widthOffset?: number;
-    onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
-    /** Changes the theme of this column's cells, as a cell theme hook does. */
-    onGetTheme?: (theme: IThemeBuilder, params: { record: IRecord }) => void;
+    /** Per-record callbacks for each of the column's cells. */
+    cell?: {
+        onGetCommands?: (record: IRecord) => Partial<IGridCellCommands>;
+        /** Changes the theme of this column's cells, as a cell theme hook does. */
+        onGetTheme?: (theme: IThemeBuilder, params: { record: IRecord }) => void;
+        /** Decides whether this column's cells can be edited. */
+        onGetEditable?: (result: { isEditable: boolean }, params: { record: IRecord }) => void;
+        /** Decides whether this column's cells show they are loading. */
+        onGetLoading?: (result: { isLoading: boolean }, params: { record: IRecord }) => void;
+    };
 }
 
 interface IGridCellParams {

@@ -15,7 +15,7 @@ const DESCRIPTION = `
     modules={modules}
     colDefs={[
         { colId: 'status', pinned: 'right' },
-        { colId: 'actions', headerName: '', pinned: 'right', initialWidth: 130, settings: { onGetCommands: getRowCommands } },
+        { colId: 'actions', headerName: '', pinned: 'right', initialWidth: 130, settings: { cell: { onGetCommands: getRowCommands } } },
     ]} />
 \`\`\`
 
@@ -34,10 +34,20 @@ What the grid's cells and headers read about a column:
 | \`isEditable\` | Whether the column's values can be changed at all. |
 | \`isRequired\` | Whether a value is required. |
 | \`widthOffset\` | Extra width, in pixels, on top of the column's own. |
-| \`onGetCommands\` | The commands a cell offers for its record: \`{ items, overflowItems }\`, drawn while the row is hovered or focused. |
-| \`onGetTheme\` | Changes a cell's theme: \`(theme, { record })\`, as \`registerCellThemeHook\` on [**Hooks**](?path=/story/grid-extending-hooks--overview) without the column. Set \`theme.colors\` and the cell's palette is generated from them. |
+| \`cell\` | Callbacks run for each of the column's cells, with its record. See *\`settings.cell\`* below. |
 
 \`settings\` is merged with what the grid set for a provider column, so an entry can change one setting and keep the rest.
+
+## \`settings.cell\`
+
+Each runs before the hook of the same kind on [**Hooks**](?path=/story/grid-extending-hooks--overview), so a module still has the last word.
+
+| Callback | What it decides |
+|---|---|
+| \`onGetCommands\` | The commands a cell offers for its record: \`{ items, overflowItems }\`, drawn while the row is hovered or focused. |
+| \`onGetTheme\` | Changes a cell's theme: \`(theme, { record })\`, as \`registerCellThemeHook\` on [**Hooks**](?path=/story/grid-extending-hooks--overview) without the column. Set \`theme.colors\` and the cell's palette is generated from them. |
+| \`onGetEditable\` | Decides per record whether a cell can be edited: set \`result.isEditable\`. \`isEditable: false\` still locks the whole column. |
+| \`onGetLoading\` | Decides per record whether a cell shows a loading placeholder: set \`result.isLoading\`. |
 `
 
 const meta = {
