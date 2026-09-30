@@ -1,9 +1,9 @@
-import { ICellRendererComponents } from "../cells/cell-renderer/components";
-import { LockIcon } from "./lock-icon";
+import { ICellContainerComponents } from "../cells/container/components";
+import { ICellUiLockIconComponents } from "../cells/ui";
 
-/** The defaults the lock cell draws with, merged under what the caller passes. */
-export const RecordLockIndicatorCellComponents: ICellRendererComponents = {
-    control: {
-        onRenderControl: () => <LockIcon />,
-    },
-};
+/** The replaceable pieces of the lock cell, by the part they belong to. */
+export interface IRecordLockIndicatorCellComponents {
+    /** The element the lock is drawn in. */
+    container?: Partial<ICellContainerComponents>;
+    lockIcon?: Partial<ICellUiLockIconComponents>;
+}
