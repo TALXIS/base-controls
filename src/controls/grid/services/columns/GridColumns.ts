@@ -78,8 +78,9 @@ export class GridColumns implements IGridColumns {
             columnDefs.unshift(recordSaveColumn);
         }
         const own = new Set(columnDefs);
-        this._applyColDefs(columnDefs);
         this._hooks.apply(columnDefs);
+        //last, so the caller's definitions win over the hooks'
+        this._applyColDefs(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
     }

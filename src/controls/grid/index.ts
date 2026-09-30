@@ -17,3 +17,4 @@ export * from './value-renderer';
 export * from './inline-ribbon';
 export * from './services';
 export * from './services/columns';
+export * from './services/locked-records';

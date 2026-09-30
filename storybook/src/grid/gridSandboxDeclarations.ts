@@ -392,6 +392,17 @@ interface IGridModules {
     custom?: IGridModule[];
 }
 
+/** The parts the lock column's cell is drawn with, handed through its cell renderer params. */
+interface IRecordLockIndicatorCellComponents {
+    container?: { onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element };
+    lockIcon?: {
+        /** What carries the message and holds the icon. */
+        onRenderTooltip?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element;
+        onRenderIcon?: (props: IIconProps) => JSX.Element;
+    };
+}
+/** The id of the column a record locked as a whole shows its lock in. */
+declare const RECORD_LOCK_COLUMN_KEY: 'recordLock';
 declare const GRID_MODULE_PRIORITY: {
     rowModel: 10;
     rowSelection: 20;

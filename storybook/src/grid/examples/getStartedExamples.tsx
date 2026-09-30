@@ -52,6 +52,11 @@ const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolea
     disabled={props.disabled}
     ref={input => { if (input) input.indeterminate = !!props.indeterminate }} />
 
+//a closed deal's lock, drawn as a check in the stage's colour
+const LOCK_CELL_COMPONENTS: IRecordLockIndicatorCellComponents = {
+    lockIcon: { onRenderIcon: iconProps => <Icon {...iconProps} iconName='CompletedSolid' style={{ color: '#107c10' }} /> },
+}
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -106,6 +111,7 @@ const GridExample = () => {
             colDefs={[
                 ...COPYABLE_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetCommands: copyValue(colId) } } })),
                 { colId: 'stage', pinned: 'right' },
+                { colId: RECORD_LOCK_COLUMN_KEY, cellRendererParams: { components: LOCK_CELL_COMPONENTS } },
                 {
                     colId: 'closedate',
                     settings: {

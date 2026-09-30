@@ -2,7 +2,7 @@ import React from 'react'
 import { DefaultButton, FontWeights, Icon, IconButton, mergeStyleSets, MessageBar, MessageBarType, PrimaryButton, Stack, Toggle, TooltipHost } from '@fluentui/react'
 import {
     createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createFilteringModule,
-    createGroupingModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule, Grid, GRID_MODULE_PRIORITY, GroupExpandCollapseHeader, SelectionCell, useGridService,
+    createGroupingModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule, Grid, GRID_MODULE_PRIORITY, GroupExpandCollapseHeader, RECORD_LOCK_COLUMN_KEY, SelectionCell, useGridService,
 } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider, Operators } from '@talxis/client-libraries'
 import { createDocsProvider } from './gridDocsData'
@@ -13,6 +13,7 @@ export const GRID_SANDBOX_SCOPE = {
     Grid,
     useGridService,
     GRID_MODULE_PRIORITY,
+    RECORD_LOCK_COLUMN_KEY,
     createClientSideRowModelModule,
     createServerSideRowModelModule,
     createRowSelectionModule,

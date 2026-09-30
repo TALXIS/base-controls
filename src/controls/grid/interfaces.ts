@@ -61,7 +61,7 @@ export interface IGrid extends Partial<IGridEventHandlers> {
 
     /** Overrides for the strings the grid renders; read once, at mount. */
     labels?: Partial<IGridLabels>;
-    /** Merged over provider columns by `colId`, or added; read at mount, then column hooks. */
+    /** Merged by `colId` over every column, the ones modules add included, or added; read at mount. */
     colDefs?: (ColDef<IRecord> & { colId: string })[];
     /** Callbacks the grid runs for each row, read whenever it asks. */
     rowSettings?: IGridRowSettings;
