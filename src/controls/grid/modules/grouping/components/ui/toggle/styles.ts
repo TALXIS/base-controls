@@ -1,6 +1,6 @@
 import { IButtonStyles, ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getGroupCellStyles = (theme: ITheme) => {
+export const getGroupingUiToggleStyles = (theme: ITheme) => {
     const classNames = mergeStyleSets({
         commands: {
             //ahead of the value whatever order the column's alignment gives the two
