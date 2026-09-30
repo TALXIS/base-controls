@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getRecordSaveIndicatorStyles = (theme: ITheme) => {
+export const getRecordSaveUiIndicatorStyles = (theme: ITheme) => {
     return mergeStyleSets({
         root: {
             height: '100%',

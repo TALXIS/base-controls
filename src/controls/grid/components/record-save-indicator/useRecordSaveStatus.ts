@@ -11,8 +11,6 @@ export interface IRecordSaveStatus {
     isSaving: boolean;
     /** `null` once there is nothing left to report. */
     saveResult: IRecordSaveOperationResult | null;
-    /** What a cell decides on before it gives up its space. */
-    hasAnythingToReport: boolean;
     clearSaveResult: () => void;
 }
 
@@ -41,7 +39,6 @@ export const useRecordSaveStatus = (record: IRecord): IRecordSaveStatus => {
     return {
         isSaving: isSaving,
         saveResult: saveResult,
-        hasAnythingToReport: isSaving || !!saveResult,
         clearSaveResult: () => setSaveResult(null),
     };
 };

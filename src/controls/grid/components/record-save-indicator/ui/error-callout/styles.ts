@@ -4,7 +4,7 @@ import { ITheme } from "@theme"
 /** How far the list of fields grows before it scrolls. */
 const MAX_LIST_HEIGHT = 220;
 
-export const getRecordSaveErrorCalloutStyles = (theme: ITheme) => {
+export const getRecordSaveUiErrorCalloutStyles = (theme: ITheme) => {
     return mergeStyleSets({
         errorCallout: {
             boxSizing: 'border-box',

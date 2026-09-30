@@ -1,18 +1,24 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
-import { CellRenderer } from "../cells/cell-renderer/CellRenderer";
+import { ITheme } from "@theme";
+import { CellRoot } from "../cells/root/CellRoot";
+import { CellTheme } from "../cells/theme/CellTheme";
+import { CellContainer } from "../cells/container/CellContainer";
 import { RecordSaveIndicator } from "./RecordSaveIndicator";
-import { useRecordSaveStatus } from "./useRecordSaveStatus";
+import { IRecordSaveUiComponents } from "./ui";
+
+export interface IRecordSaveIndicatorCellProps extends ICellRendererParams {
+    /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
+    theme?: ITheme;
+    components?: IRecordSaveUiComponents;
+}
 
 /** The cell a row reports its save in, on a grid with no checkbox column. */
-export const RecordSaveIndicatorCell = (props: ICellRendererParams<IRecord>) => {
-    //`cellRendererSelector` skips pinned rows: they have no save to report
-    const record = props.data!;
-    const status = useRecordSaveStatus(record);
-
-    return <CellRenderer {...props} components={{
-        control: {
-            onRenderControl: () => status.hasAnythingToReport ? <RecordSaveIndicator record={record} status={status} /> : null
-        }
-    }} />;
+export const RecordSaveIndicatorCell = (props: IRecordSaveIndicatorCellProps) => {
+    return <CellRoot {...props}>
+        <CellTheme theme={props.theme}>
+            <CellContainer components={props.components?.container}>
+                <RecordSaveIndicator components={props.components} />
+            </CellContainer>
+        </CellTheme>
+    </CellRoot>;
 };

@@ -1,50 +1,40 @@
-import { useMemo, useRef, useState } from "react";
-import { IconButton, SpinnerSize } from "@fluentui/react";
-import { IRecord } from "@talxis/client-libraries";
-import { Spinner } from "@legacy";
 import { useGridService } from "@controls/grid/useGridService";
-import { IRecordSaveStatus } from "./useRecordSaveStatus";
-import { RecordSaveErrorCallout } from "./record-save-error-callout";
-import { getRecordSaveIndicatorStyles } from "./styles";
+import { useGridCell } from "../cells/root/context";
+import { useRecordSaveStatus } from "./useRecordSaveStatus";
+import { IRecordSaveUiComponents, RecordSaveUi } from "./ui";
 
 export interface IRecordSaveIndicatorProps {
-    record: IRecord;
-    status: IRecordSaveStatus;
+    /** What is drawn while there is no save to report. */
+    children?: React.ReactNode;
+    components?: IRecordSaveUiComponents;
 }
 
-/** What happened to a record the grid saved. */
+/** What happened to the cell's record the last time the grid saved it. */
 export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
-    const { record, status } = props;
-    const rootRef = useRef<HTMLDivElement>(null);
-    const theme = useGridService('theme');
-    const styles = useMemo(() => getRecordSaveIndicatorStyles(theme), [theme]);
-    const [isErrorCalloutVisible, setIsErrorCalloutVisible] = useState<boolean>(false);
+    const record = useGridCell().getRecord();
+    const status = useRecordSaveStatus(record);
+    const labels = useGridService('labels');
+    const components = props.components ?? {};
     const saveResult = status.saveResult;
 
     if (status.isSaving) {
-        return <div className={styles.root}>
-            <Spinner size={SpinnerSize.xSmall} />
-        </div>;
+        return <RecordSaveUi.Indicator state='saving' components={components.indicator} />;
     }
     if (!saveResult) {
-        return <></>;
+        return <>{props.children}</>;
     }
-    return <div ref={rootRef} className={styles.root}>
-        <IconButton
-            //only a failure has anything more to say
-            onClick={() => setIsErrorCalloutVisible(!saveResult.success)}
-            iconProps={{
-                iconName: saveResult.success ? 'SkypeCircleCheck' : 'StatusErrorFull',
-                className: saveResult.success ? styles.saveSuccessBtn : styles.saveErrorBtn,
-            }}
-        />
-        {isErrorCalloutVisible &&
-            <RecordSaveErrorCallout
-                record={record}
-                saveResult={saveResult}
-                target={rootRef}
-                onDismiss={() => setIsErrorCalloutVisible(false)}
-                onClearSaveResult={status.clearSaveResult} />
-        }
-    </div>
+    const columnsMap = record.getDataProvider().getColumnsMap();
+    return <RecordSaveUi.Indicator
+        state={saveResult.success ? 'succeeded' : 'failed'}
+        components={components.indicator}
+        errorCallout={{
+            title: labels.getLocalizedString('recordSaveErrorTitle'),
+            dismissText: labels.getLocalizedString('recordSaveErrorDismiss'),
+            errors: (saveResult.errors ?? []).map(error => ({
+                fieldName: error.fieldName ? columnsMap[error.fieldName]?.displayName ?? error.fieldName : undefined,
+                message: error.message,
+            })),
+            onClear: status.clearSaveResult,
+            components: components.errorCallout,
+        }} />;
 };
