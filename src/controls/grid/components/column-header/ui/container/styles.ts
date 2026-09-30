@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getColumnHeaderContainerStyles = () => mergeStyleSets({
+export const getColumnHeaderUiContainerStyles = () => mergeStyleSets({
     containerRoot: {
         width: '100%',
         height: 42,

@@ -13,7 +13,7 @@ export interface IColumnHeaderAdornment {
     /** Named in parentheses in the header's tooltip. */
     title?: string;
     /** What it draws, if anything. */
-    onRender?: () => JSX.Element;
+    onRender?: () => JSX.Element | null;
 }
 
 /** What a module contributes to a column's menu, under a heading of its own. */

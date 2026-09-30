@@ -1,10 +1,11 @@
-import { useGridService } from "@controls/grid/useGridService";
-import { useGridComponents } from "@controls/grid/context";
+import { useGridService } from "../../../useGridService";
+import { useGridComponents } from "../../../context";
+import { OverlayUi } from "../ui";
 
 /** What the grid shows while it has no rows. */
 export const EmptyRecordsOverlay = () => {
     const labels = useGridService('labels');
     const components = useGridComponents();
 
-    return components.onRenderEmptyRecordsOverlay({ message: labels.getLocalizedString('noRecordsFound') });
+    return <OverlayUi.EmptyRecords message={labels.getLocalizedString('noRecordsFound')} components={components.emptyRecordsOverlay} />;
 };

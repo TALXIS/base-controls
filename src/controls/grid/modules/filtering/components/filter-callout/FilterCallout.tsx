@@ -1,24 +1,27 @@
-import { IconButton, ICalloutProps } from '@fluentui/react';
-import { Callout } from '@ui';
-import { Text } from '@fluentui/react';
-import { DatasetColumnFiltering } from '@controls/dataset-control/filtering/DatasetColumnFiltering';
-import { getClassNames, usePcfContext } from '@utils';
-import { useEffect } from 'react';
-import { IColumn } from '@talxis/client-libraries';
-import { useGridService } from '@controls/grid/useGridService';
-import { useGridFilteringLabels } from './useGridFilteringLabels';
-import { filterCalloutStyles } from './styles';
-import { ILookup } from '@controls/fields/lookup';
-import { INestedControlRenderer } from '@controls/nested-control-renderer/interfaces';
-import { IInternalDataProvider } from '@talxis/client-libraries';
+import { useEffect, useMemo } from "react";
+import { Target } from "@fluentui/react";
+import { IColumn, IInternalDataProvider } from "@talxis/client-libraries";
+import { getClassNames, usePcfContext } from "@utils";
+import { DatasetColumnFiltering } from "@controls/dataset-control/filtering/DatasetColumnFiltering";
+import { ILookup } from "@controls/fields/lookup";
+import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
+import { useGridService } from "../../../../useGridService";
+import { useGridFilteringLabels } from "../../useGridFilteringLabels";
+import { FilteringUi, IFilteringUiCalloutComponents } from "../ui";
+import { getFilterCalloutStyles } from "./styles";
 
-export interface IFilterCallout extends ICalloutProps {
+export interface IFilterCalloutProps {
     column: IColumn;
+    /** What the callout points at. */
+    target?: Target;
     onDismiss: () => void;
+    components?: Partial<IFilteringUiCalloutComponents>;
 }
 
-export const FilterCallout = (props: IFilterCallout) => {
-    const { column, onDismiss } = { ...props };
+/** The callout a column's filter is set in, wired to the provider it filters. */
+export const FilterCallout = (props: IFilterCalloutProps) => {
+    const { column, onDismiss } = props;
+    const filterCalloutStyles = useMemo(() => getFilterCalloutStyles(), []);
     const filtering = useGridService('filtering')!;
     const provider = useGridService('provider');
     const dataProvider = provider as IInternalDataProvider;
@@ -83,16 +86,11 @@ export const FilterCallout = (props: IFilterCallout) => {
     }, []);
 
     return (
-        <Callout
-            {...props}
-            calloutWidth={230}
-            className={filterCalloutStyles.root}>
-            <div className={filterCalloutStyles.header}>
-                <Text className={filterCalloutStyles.title} variant="mediumPlus">{labels.getLocalizedString('filterMenuFilterBy')}</Text>
-                <IconButton onClick={() => onDismiss()} iconProps={{
-                    iconName: 'ChromeClose',
-                }} />
-            </div>
+        <FilteringUi.Callout
+            target={props.target}
+            title={labels.getLocalizedString('filterMenuFilterBy')}
+            onDismiss={onDismiss}
+            components={props.components}>
             <DatasetColumnFiltering
                 parameters={{
                     ColumnName: {
@@ -129,6 +127,6 @@ export const FilterCallout = (props: IFilterCallout) => {
                     }
                 }}
                 context={context} />
-        </Callout>
+        </FilteringUi.Callout>
     );
 };

@@ -10,6 +10,8 @@ import { IGridRowHeight } from "../../services/rows";
 import { RowError } from "@controls/grid/components/rows/error";
 import { IGridAgGridOptions } from "../../services/runtime";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
+import { TotalCell } from "./components/total-cell/TotalCell";
+import { AggregateCell } from "./components/aggregate-cell/AggregateCell";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -39,6 +41,8 @@ export interface IGridAggregationParameters {
 
 /** The totals a grid shows, in the row pinned under the rest. */
 export interface IGridAggregation {
+    /** The parts of what this module draws, as the caller replaced them. */
+    readonly components: IGridAggregationComponents;
     canColumnBeAggregated(column: IColumn): boolean;
     addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
     removeAggregation(alias: string): void;
@@ -168,11 +172,11 @@ export class GridAggregation implements IGridAggregation {
             //only the row this module pinned
             if (params.data && this._isTotalRecord(params.data)) {
                 return column?.aggregation?.aggregationFunction
-                    ? { component: this._onRenderTotalCell }
+                    ? { component: TotalCell }
                     : { component: CellEmptyRenderer };
             }
             if (params.data && this._isGroupRecord(params.data) && this._isColumnAggregated(column)) {
-                return { component: this._onRenderAggregateCell };
+                return { component: AggregateCell };
             }
             return cellRendererSelector?.(params);
         };
@@ -207,9 +211,7 @@ export class GridAggregation implements IGridAggregation {
         return record ? record.getFormattedValue(this.getAggregateValueColumnName(record, columnName)) ?? '' : '';
     }
 
-    private _onRenderTotalCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderTotalCell(props);
 
-    private _onRenderAggregateCell = (props: ICellRendererParams<IRecord>): JSX.Element => this._components.onRenderAggregateCell(props);
 
     /** What the column is totalling, for the header's tooltip. */
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
@@ -382,7 +384,7 @@ export class GridAggregation implements IGridAggregation {
         return this._totalRow;
     }
 
-    private get _components(): IGridAggregationComponents {
+    public get components(): IGridAggregationComponents {
         return this._services.get('components');
     }
 

@@ -1,12 +1,12 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { IColumnHeaderParams } from "@controls/grid/components/column-header/root/ColumnHeaderRoot";
+import { GroupExpansionHeader } from "./components/group-expansion-header/GroupExpansionHeader";
 
 /** The key the expansion column takes. */
 export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';
 
 /** The column whose header opens and closes the groups a level at a time. */
-export const getGroupExpansionColumnDefinition = (onRenderHeader: (props: IColumnHeaderParams) => JSX.Element): ColDef<IRecord> => ({
+export const getGroupExpansionColumnDefinition = (): ColDef<IRecord> => ({
     colId: GROUP_EXPANSION_COLUMN_KEY,
     headerName: '',
     width: 60,
@@ -20,5 +20,5 @@ export const getGroupExpansionColumnDefinition = (onRenderHeader: (props: IColum
     suppressMovable: true,
     valueGetter: () => null,
     valueFormatter: () => '',
-    headerComponent: onRenderHeader,
+    headerComponent: GroupExpansionHeader,
 });

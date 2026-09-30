@@ -9,7 +9,7 @@ export interface IGridSortingServiceMap {
     gridServices: IGridServiceLocator;
     /** The strings this module renders. */
     labels: ILocalizationService<IGridSortingLabels>;
-    /** The parts this module renders. */
+    /** The parts of what this module draws, as the caller replaced them. */
     components: IGridSortingComponents;
 }
 

@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getCellLoadingStyles = () => mergeStyleSets({
+export const getCellUiLoadingStyles = () => mergeStyleSets({
     shimmerRoot: {
         width: '100%',
         paddingLeft: 10,

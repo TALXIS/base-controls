@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getLockIconStyles = () => mergeStyleSets({
+export const getRecordLockIconStyles = () => mergeStyleSets({
     icon: {
         margin: '0 auto',
     },

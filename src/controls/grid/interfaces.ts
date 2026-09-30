@@ -56,8 +56,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     height?: string;
     /** Put on the grid's own element, alongside its own classes. */
     className?: string;
-    /** Overrides for any of the grid's replaceable pieces. */
-    components?: Partial<IGridComponents>;
+    /** Overrides for the parts of what the grid draws itself, by piece. */
+    components?: IGridComponents;
 
     /** Overrides for the strings the grid renders; read once, at mount. */
     labels?: Partial<IGridLabels>;

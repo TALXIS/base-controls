@@ -2,18 +2,18 @@ import { useMemo } from "react";
 import { useGridService } from "../../../useGridService";
 import { useGridCell } from "../../cells/root/context";
 import { CellUi, ICellUiLockIconComponents } from "../../cells/ui";
-import { getLockIconStyles } from "./styles";
+import { getRecordLockIconStyles } from "./styles";
 
-export interface ILockIconProps {
+export interface IRecordLockIconProps {
     components?: Partial<ICellUiLockIconComponents>;
 }
 
 /** The lock drawn for a record locked as a whole, or nothing. */
-export const LockIcon = (props: ILockIconProps) => {
+export const RecordLockIcon = (props: IRecordLockIconProps) => {
     const cell = useGridCell();
     const editability = useGridService('editability');
     const labels = useGridService('labels');
-    const styles = useMemo(() => getLockIconStyles(), []);
+    const styles = useMemo(() => getRecordLockIconStyles(), []);
 
     if (editability.get({ record: cell.getRecord() }).lockedBy !== 'record') {
         return null;

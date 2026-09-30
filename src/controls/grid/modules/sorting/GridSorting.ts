@@ -3,7 +3,7 @@ import { IContextualMenuItem } from "@fluentui/react";
 import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridSortingLabels } from "./labels";
-import { IGridSortingComponents } from "./moduleComponents";
+import { GridSortingIconComponents, IGridSortingComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -24,7 +24,7 @@ export interface IGridSorting {
     clearColumnSorting(columnName: string): void;
     /** What sorting a column reads as, by the type it holds. */
     getSortingLabel(columnName: string, descending?: boolean): string;
-    /** The parts this module renders, merged with whatever the caller replaced. */
+    /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridSortingComponents;
 }
 
@@ -125,7 +125,10 @@ export class GridSorting implements IGridSorting {
         adornments.push({
             key: 'sort',
             placement: 'suffix',
-            onRender: () => this.components.onRenderSortIcon({ descending: this.isSortedDescending(column) }),
+            onRender: () => {
+                const descending = this.isSortedDescending(column);
+                return ({ ...GridSortingIconComponents, ...this.components.sortIcon }).onRenderIcon({ descending: descending, iconName: descending ? 'SortDown' : 'SortUp' });
+            },
         });
     };
 

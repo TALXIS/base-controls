@@ -1,25 +1,22 @@
-import { IColumnHeaderContainerComponents } from "./container/components";
-import { IColumnHeaderContentComponents } from "./content/components";
-import { IColumnHeaderLabelComponents } from "./label/components";
-import { IColumnHeaderMenuComponents } from "./menu/components";
-import { IColumnHeaderRequiredMarkerComponents } from "./required-marker/components";
-import { IColumnHeaderPrefixComponents } from "./prefix/components";
-import { IColumnHeaderSuffixComponents } from "./suffix/components";
+import {
+    IColumnHeaderUiContainerComponents, IColumnHeaderUiContentComponents, IColumnHeaderUiLabelComponents, IColumnHeaderUiMenuComponents,
+    IColumnHeaderUiPrefixComponents, IColumnHeaderUiRequiredMarkerComponents, IColumnHeaderUiSuffixComponents,
+} from "./ui";
 
 /** The replaceable pieces of a column header, by the part they belong to. */
 export interface IColumnHeaderRendererComponents {
     /** What the header is drawn in. */
-    container?: Partial<IColumnHeaderContainerComponents>;
+    container?: Partial<IColumnHeaderUiContainerComponents>;
     /** What the modules draw before the name. */
-    prefix?: Partial<IColumnHeaderPrefixComponents>;
+    prefix?: Partial<IColumnHeaderUiPrefixComponents>;
     /** What the header says the column is, drawn in. */
-    content?: Partial<IColumnHeaderContentComponents>;
+    content?: Partial<IColumnHeaderUiContentComponents>;
     /** What the column is called. */
-    label?: Partial<IColumnHeaderLabelComponents>;
+    label?: Partial<IColumnHeaderUiLabelComponents>;
     /** What says the column asks for a value. */
-    requiredMarker?: Partial<IColumnHeaderRequiredMarkerComponents>;
+    requiredMarker?: Partial<IColumnHeaderUiRequiredMarkerComponents>;
     /** What is drawn after the name, the lock icon included. */
-    suffix?: Partial<IColumnHeaderSuffixComponents>;
+    suffix?: Partial<IColumnHeaderUiSuffixComponents>;
     /** The menu the header opens. */
-    menu?: Partial<IColumnHeaderMenuComponents>;
+    menu?: Partial<IColumnHeaderUiMenuComponents>;
 }

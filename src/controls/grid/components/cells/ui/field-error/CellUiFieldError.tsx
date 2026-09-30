@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { IAlignment } from "@utils";
 import { CellUiFieldErrorComponents, ICellUiFieldErrorComponents } from "./components";
-import { getFieldErrorStyles } from "./styles";
+import { getCellUiFieldErrorStyles } from "./styles";
 
 export interface ICellUiFieldErrorProps {
     /** What is wrong with the value, in the record's words. */
@@ -16,7 +16,7 @@ export interface ICellUiFieldErrorProps {
 export const CellUiFieldError = (props: ICellUiFieldErrorProps) => {
     const { message, alignment = 'left' } = props;
     const theme = useTheme();
-    const styles = useMemo(() => getFieldErrorStyles(theme, alignment), [theme, alignment]);
+    const styles = useMemo(() => getCellUiFieldErrorStyles(theme, alignment), [theme, alignment]);
     const components = { ...CellUiFieldErrorComponents, ...props.components };
 
     if (!message) {

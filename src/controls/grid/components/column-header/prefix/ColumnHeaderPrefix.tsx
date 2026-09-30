@@ -1,18 +1,16 @@
 import { renderAdornments } from "../adornments";
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderPrefixComponents, IColumnHeaderPrefixComponents } from "./components";
+import { ColumnHeaderUi, IColumnHeaderUiPrefixComponents } from "../ui";
 
 export interface IColumnHeaderPrefixProps {
-    components?: Partial<IColumnHeaderPrefixComponents>;
+    components?: Partial<IColumnHeaderUiPrefixComponents>;
 }
 
 /** What the modules draw before what names the column. */
 export const ColumnHeaderPrefix = (props: IColumnHeaderPrefixProps) => {
     const header = useGridColumnHeader();
-    const components = { ...ColumnHeaderPrefixComponents, ...props.components };
 
-    return components.onRenderPrefix({
-        alignment: header.getAlignment(),
-        children: renderAdornments(header.getAdornments('prefix')),
-    });
+    return <ColumnHeaderUi.Prefix alignment={header.getAlignment()} components={props.components}>
+        {renderAdornments(header.getAdornments('prefix'))}
+    </ColumnHeaderUi.Prefix>;
 };

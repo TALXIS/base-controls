@@ -1,10 +1,9 @@
-import { _, ColDef, GridApi, ICellRendererParams, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
+import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
 import { DataProvider, EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { IGridRowSelectionComponents } from "./moduleComponents";
-import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 /** How a row's checkbox reads: its own state, or its children's. */
@@ -50,7 +49,7 @@ export interface IGridRowSelection {
     getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     /** Whether a record refuses selection at all. */
     isRecordSelectionDisabled(record: IRecord): boolean;
-    /** The parts this module renders, merged with whatever the caller replaced. */
+    /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridRowSelectionComponents;
 }
 
@@ -154,11 +153,8 @@ export class GridRowSelection implements IGridRowSelection {
         if (recordSaveColumnIndex !== -1) {
             columnDefs.splice(recordSaveColumnIndex, 1);
         }
-        columnDefs.unshift(getSelectionColumnDefinition(this._onRenderHeader, this._onRenderCell));
+        columnDefs.unshift(getSelectionColumnDefinition());
     };
-
-    private _onRenderHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderHeader(props);
-    private _onRenderCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderCell(props);
 
     private _onDestroyed = (): void => {
         this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);

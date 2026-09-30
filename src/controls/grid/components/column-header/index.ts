@@ -13,6 +13,7 @@ export * from './suffix';
 //the pieces the parts draw with reach a consumer through `Grid.ColumnHeader.Ui`
 export type {
     IColumnHeaderUi, IColumnHeaderUiContainerProps, IColumnHeaderUiContentProps, IColumnHeaderUiLabelProps,
-    IColumnHeaderUiRequiredMarkerProps, IColumnHeaderUiPrefixProps, IColumnHeaderUiSuffixProps,
-    IColumnHeaderUiSuffixComponents, IColumnHeaderUiMenuProps
+    IColumnHeaderUiRequiredMarkerProps, IColumnHeaderUiPrefixProps, IColumnHeaderUiSuffixProps, IColumnHeaderUiMenuProps,
+    IColumnHeaderUiContainerComponents, IColumnHeaderUiContentComponents, IColumnHeaderUiLabelComponents, IColumnHeaderUiMenuComponents,
+    IColumnHeaderUiPrefixComponents, IColumnHeaderUiRequiredMarkerComponents, IColumnHeaderUiSuffixComponents,
 } from './ui';

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
+import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
@@ -210,7 +210,7 @@ const payloadHeaderStyles = mergeStyleSets({
 const PayloadHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Root {...props}>
     <Grid.ColumnHeader.Theme>
         <Grid.ColumnHeader.Container components={{
-            onRenderContainer: containerProps => <Grid.ColumnHeader.Ui.Container {...containerProps} className={payloadHeaderStyles.container} />,
+            onRenderButton: buttonProps => <CommandBarButton {...buttonProps} className={payloadHeaderStyles.container} />,
         }}>
             <Grid.ColumnHeader.Prefix />
             <span className={payloadHeaderStyles.braces}>{'{ }'}</span>
@@ -228,9 +228,9 @@ const PayloadHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
 /** The summary column's header: its name, marked as what a model writes. */
 const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
     label: {
-        onRenderLabel: labelProps => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        onRenderText: textProps => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
             <Icon iconName='Sparkle' style={{ color: '#8764b8' }} />
-            <Grid.ColumnHeader.Ui.Label {...labelProps} />
+            <Text {...textProps} />
         </span>,
     },
 }} />

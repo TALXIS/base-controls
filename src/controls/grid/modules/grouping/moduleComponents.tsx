@@ -1,25 +1,23 @@
 import { Icon, IIconProps } from "@fluentui/react";
-import { ICellRendererParams } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
-import { GroupCell, GroupExpandCollapseHeader, GroupSelectionLimitDialog } from "./components";
-import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
+import type { IGroupCellComponents } from "./components/group-cell/components";
+import type { IGroupExpansionHeaderComponents } from "./components/group-expansion-header/components";
 
-/** The replaceable parts of grouping. */
-export interface IGridGroupingComponents {
-    /** What a column the rows are grouped by shows in its header, before the name. */
-    onRenderGroupingIcon: (props: IIconProps) => JSX.Element;
-    /** What the row standing for a group draws in the column it is grouped by. */
-    onRenderGroupCell: (props: ICellRendererParams<IRecord>) => JSX.Element;
-    /** The header that opens and closes the groups a level at a time. */
-    onRenderExpansionHeader: (props: IColumnHeaderParams) => JSX.Element;
-    /** What says a selection was refused because it would load too many groups. */
-    onRenderGroupSelectionLimitDialog: () => JSX.Element;
+/** The replaceable pieces of the icon a grouped column shows in its header. */
+export interface IGridGroupingIconComponents {
+    onRenderIcon: (props: IIconProps) => JSX.Element | null;
 }
 
-/** The defaults for {@link IGridGroupingComponents}. */
-export const GridGroupingComponents: IGridGroupingComponents = {
-    onRenderGroupingIcon: props => <Icon {...props} />,
-    onRenderGroupCell: props => <GroupCell {...props} />,
-    onRenderExpansionHeader: props => <GroupExpandCollapseHeader {...props} />,
-    onRenderGroupSelectionLimitDialog: () => <GroupSelectionLimitDialog />,
+/** The defaults for {@link IGridGroupingIconComponents}. */
+export const GridGroupingIconComponents: IGridGroupingIconComponents = {
+    onRenderIcon: props => <Icon {...props} />,
 };
+
+/** The replaceable parts of what grouping draws, by the piece they belong to. */
+export interface IGridGroupingComponents {
+    /** What a column the rows are grouped by shows in its header, before the name. */
+    groupingIcon?: Partial<IGridGroupingIconComponents>;
+    /** What the row standing for a group draws in the column it is grouped by. */
+    groupCell?: IGroupCellComponents;
+    /** The header that opens and closes the groups a level at a time. */
+    expansionHeader?: IGroupExpansionHeaderComponents;
+}

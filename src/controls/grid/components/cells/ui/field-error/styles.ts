@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
-export const getFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
+export const getCellUiFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
     outline: {
         position: 'absolute',
         inset: 0,

@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
-export const getColumnHeaderPrefixStyles = (alignment: IAlignment) => mergeStyleSets({
+export const getColumnHeaderUiPrefixStyles = (alignment: IAlignment) => mergeStyleSets({
     prefix: {
         display: 'flex',
         alignItems: 'center',

@@ -4,21 +4,21 @@ import { Callout } from "@ui";
 /** The replaceable pieces of what a row says when its record refused to save. */
 export interface IRecordSaveUiErrorCalloutComponents {
     /** What everything is drawn in, pointed at the indicator. */
-    onRenderCallout: (props: ICalloutProps) => JSX.Element;
+    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
     /** What the icon and the title are drawn in. */
-    onRenderHeader: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    onRenderIcon: (props: IIconProps) => JSX.Element;
-    onRenderTitle: (props: ITextProps) => JSX.Element;
+    onRenderHeader: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderIcon: (props: IIconProps) => JSX.Element | null;
+    onRenderTitle: (props: ITextProps) => JSX.Element | null;
     /** What the list of errors is drawn in. */
-    onRenderFields: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+    onRenderFields: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What one error is drawn in. */
-    onRenderField: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    onRenderFieldName: (props: ITextProps) => JSX.Element;
-    onRenderMessage: (props: ITextProps) => JSX.Element;
+    onRenderField: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderFieldName: (props: ITextProps) => JSX.Element | null;
+    onRenderMessage: (props: ITextProps) => JSX.Element | null;
     /** What the dismiss button is drawn in. */
-    onRenderFooter: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+    onRenderFooter: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What clears the failure. */
-    onRenderDismissButton: (props: IButtonProps) => JSX.Element;
+    onRenderDismissButton: (props: IButtonProps) => JSX.Element | null;
 }
 
 /** The defaults for {@link IRecordSaveUiErrorCalloutComponents}. */

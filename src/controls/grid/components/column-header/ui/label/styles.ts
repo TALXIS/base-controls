@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getColumnHeaderLabelStyles = () => mergeStyleSets({
+export const getColumnHeaderUiLabelStyles = () => mergeStyleSets({
     label: {
         fontWeight: 600,
         textOverflow: 'ellipsis',

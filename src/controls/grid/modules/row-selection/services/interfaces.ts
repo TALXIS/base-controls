@@ -6,7 +6,7 @@ import type { IGridRowSelectionComponents } from "../moduleComponents";
 export interface IGridRowSelectionServiceMap {
     /** The grid's locator: the provider, the columns, the other modules. */
     gridServices: IGridServiceLocator;
-    /** The parts this module renders. */
+    /** The parts of what this module draws, as the caller replaced them. */
     components: IGridRowSelectionComponents;
 }
 

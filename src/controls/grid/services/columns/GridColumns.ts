@@ -7,7 +7,7 @@ import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/Ce
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField, IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
-import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
+import { RecordSaveIndicatorCell } from "../../components/record-save-indicator/RecordSaveIndicatorCell";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";

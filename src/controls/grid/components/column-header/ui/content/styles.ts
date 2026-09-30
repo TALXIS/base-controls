@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { getJustifyContent, IAlignment } from "@utils";
 
-export const getColumnHeaderContentStyles = (alignment: IAlignment) => mergeStyleSets({
+export const getColumnHeaderUiContentStyles = (alignment: IAlignment) => mergeStyleSets({
     content: {
         display: 'flex',
         flex: 1,

@@ -4,14 +4,11 @@ import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/co
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { GroupingUi } from "../ui";
-import { IGroupExpandCollapseHeaderComponents } from "./components";
 
-export interface IGroupExpandCollapseHeaderProps extends IColumnHeaderParams {
-    components?: IGroupExpandCollapseHeaderComponents;
-}
+export interface IGroupExpansionHeaderProps extends IColumnHeaderParams { }
 
 /** Opens and closes the groups a level at a time. */
-export const GroupExpandCollapseHeader = (props: IGroupExpandCollapseHeaderProps) => {
+export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
     //the grouping module is registered wherever this header draws
     const grouping = useGridService('grouping')!;
     const labels = useGridGroupingLabels();
@@ -33,7 +30,7 @@ export const GroupExpandCollapseHeader = (props: IGroupExpandCollapseHeaderProps
                 canCollapse={expandedLevel >= 0}
                 onExpand={() => onStepLevel(1)}
                 onCollapse={() => onStepLevel(-1)}
-                components={props.components?.expandCollapse} />
+                components={grouping.components.expansionHeader?.expandCollapse} />
         </ColumnHeaderTheme>
     </ColumnHeaderRoot>;
 };

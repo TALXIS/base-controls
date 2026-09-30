@@ -1,6 +1,7 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { useGridComponents } from "@controls/grid/context";
+import { useGridComponents } from "../../../context";
+import { RowUi } from "../ui";
 
 export interface IRowErrorProps extends ICellRendererParams<IRecord> {
     /** What went wrong. */
@@ -11,5 +12,5 @@ export interface IRowErrorProps extends ICellRendererParams<IRecord> {
 export const RowError = (props: IRowErrorProps) => {
     const components = useGridComponents();
 
-    return components.onRenderRowError({ message: props.errorMessage });
+    return <RowUi.Error message={props.errorMessage} components={components.rowError} />;
 };

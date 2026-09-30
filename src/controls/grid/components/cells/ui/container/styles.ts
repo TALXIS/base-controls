@@ -3,7 +3,7 @@ import { ITheme, mergeStyleSets } from "@fluentui/react";
 /** What the grid's own styles hang a cell's state overlays off. */
 export const CELL_CONTAINER_CLASS_NAME = 'talxis__baseControl__GridCellBody';
 
-export const getCellContainerStyles = (theme: ITheme) => mergeStyleSets({
+export const getCellUiContainerStyles = (theme: ITheme) => mergeStyleSets({
     //the container sits between `.ag-cell` and the cell's content
     cellContainer: {
         width: '100%',

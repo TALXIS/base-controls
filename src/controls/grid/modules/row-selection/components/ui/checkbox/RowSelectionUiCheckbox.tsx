@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { IGridRowSelectionState } from "../../../GridRowSelection";
 import { IRowSelectionUiCheckboxComponents, RowSelectionUiCheckboxComponents } from "./components";
 import { getRowSelectionUiCheckboxStyles } from "./styles";

@@ -10,11 +10,13 @@ import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { GridComponentsContext, GridServicesContext } from "./context";
-import { GridComponents } from "./components/components";
+import { IGridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
+
+const NO_COMPONENTS: IGridComponents = {};
 /** Reads the PCF context off `PcfContextProvider`. */
 export const GridRoot = (props: IGrid) => {
     const pcfContext = usePcfContext();
@@ -34,7 +36,7 @@ export const GridRoot = (props: IGrid) => {
     const styles = useMemo(() => getGridStyles(theme, props.height, rowHeight, maxVisibleRows), [theme, props.height, rowHeight, maxVisibleRows]
     );
 
-    const components = useMemo(() => ({ ...GridComponents, ...props.components }), [props.components]);
+    const components = props.components ?? NO_COMPONENTS;
 
     useGridEventHandlers(runtime, props);
 

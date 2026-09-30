@@ -1,3 +1,2 @@
-//`CellValidation` is published through the namespace.
-export type { ICellValidationProps } from './CellValidation';
-export * from './components';
+//`CellFieldError` is published through the namespace.
+export type { ICellFieldErrorProps } from './CellFieldError';

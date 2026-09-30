@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { getClassNames, IAlignment } from "@utils";
 import { CellUiLockIconComponents, ICellUiLockIconComponents } from "./components";
-import { getCellLockIconStyles } from "./styles";
+import { getCellUiLockIconStyles } from "./styles";
 
 export interface ICellUiLockIconProps {
     /** Why the value cannot be changed, shown in the tooltip. */
@@ -18,7 +18,7 @@ export interface ICellUiLockIconProps {
 export const CellUiLockIcon = (props: ICellUiLockIconProps) => {
     const theme = useTheme();
     const { alignment = 'left' } = props;
-    const styles = useMemo(() => getCellLockIconStyles(theme, alignment), [theme, alignment]);
+    const styles = useMemo(() => getCellUiLockIconStyles(theme, alignment), [theme, alignment]);
     const components = { ...CellUiLockIconComponents, ...props.components };
 
     //`TooltipHost` is styled by `hostClassName`, not `className`

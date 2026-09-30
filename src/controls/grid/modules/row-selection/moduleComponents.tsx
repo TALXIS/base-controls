@@ -1,19 +1,10 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
-import { SelectionCell } from "./components/selection-cell/SelectionCell";
-import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
-import { SelectionHeader } from "./components/selection-header/SelectionHeader";
+import type { ISelectionCellComponents } from "./components/selection-cell/components";
+import type { ISelectionHeaderComponents } from "./components/selection-header/components";
 
-/** The replaceable parts of selection. */
+/** The replaceable parts of what selection draws, by the piece they belong to. */
 export interface IGridRowSelectionComponents {
-    /** The checkbox in a row. */
-    onRenderCell: (props: ICellRendererParams<IRecord>) => JSX.Element;
-    /** The select-all checkbox in the header. */
-    onRenderHeader: (props: IColumnHeaderParams) => JSX.Element;
+    /** A row's checkbox cell, and the save status it shows in place of the checkbox. */
+    cell?: ISelectionCellComponents;
+    /** The header that selects every record. */
+    header?: ISelectionHeaderComponents;
 }
-
-/** The defaults for {@link IGridRowSelectionComponents}. */
-export const GridRowSelectionComponents: IGridRowSelectionComponents = {
-    onRenderCell: (props) => <SelectionCell {...props} />,
-    onRenderHeader: (props) => <SelectionHeader {...props} />,
-};

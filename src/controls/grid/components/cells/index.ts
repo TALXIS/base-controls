@@ -9,15 +9,16 @@ export * from './theme';
 export * from './container';
 export * from './field';
 export * from './control';
-export * from './field-validation';
+export * from './field-error';
 export * from './commands';
 export * from './lock-icon';
 export * from './loading';
-export * from './row-resize-grip';
+export * from './resize-grip';
 export * from './legacy-nested-control-renderer';
 export * from './nested-react-root';
 //the pieces the parts draw with reach a consumer through `Grid.Cell.Ui`
 export type {
-    ICellUi, ICellUiContainerProps, ICellUiFieldErrorProps, ICellUiResizeGripProps, ICellUiCommandsProps,
-    ICellUiControlProps, ICellUiLoadingProps, ICellUiLockIconProps, ICellUiLockIconComponents, ICellUiFieldErrorComponents
+    ICellUi, ICellUiContainerProps, ICellUiFieldErrorProps, ICellUiResizeGripProps, ICellUiCommandsProps, ICellUiControlProps,
+    ICellUiLoadingProps, ICellUiLockIconProps, ICellUiContainerComponents, ICellUiFieldErrorComponents, ICellUiResizeGripComponents,
+    ICellUiCommandsComponents, ICellUiControlComponents, ICellUiLoadingComponents, ICellUiLockIconComponents,
 } from './ui';

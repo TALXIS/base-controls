@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getColumnHeaderSuffixStyles = () => mergeStyleSets({
+export const getColumnHeaderUiSuffixStyles = () => mergeStyleSets({
     suffixContainer: {
         display: 'flex',
         alignItems: 'center',

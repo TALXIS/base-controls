@@ -1,12 +1,11 @@
-import { ColDef, ICellRendererParams } from "@ag-grid-community/core";
+import { ColDef } from "@ag-grid-community/core";
 import { DataProvider, IRecord } from "@talxis/client-libraries";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
-import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
+import { SelectionCell } from "./components/selection-cell/SelectionCell";
+import { SelectionHeader } from "./components/selection-header/SelectionHeader";
 
 /** The column the checkboxes live in. */
-export const getSelectionColumnDefinition = (
-    onRenderHeader: (props: IColumnHeaderParams) => JSX.Element,
-    onRenderCell: (props: ICellRendererParams<IRecord>) => JSX.Element): ColDef<IRecord> => ({
+export const getSelectionColumnDefinition = (): ColDef<IRecord> => ({
     colId: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
     headerName: '',
     width: 40,
@@ -15,11 +14,11 @@ export const getSelectionColumnDefinition = (
     lockPosition: 'left',
     resizable: false,
     pinned: 'left',
-    headerComponent: onRenderHeader,
+    headerComponent: SelectionHeader,
     suppressSizeToFit: true,
     suppressMovable: true,
     valueGetter: () => null,
     valueFormatter: () => '',
     //a pinned row is no record to select
-    cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : onRenderCell }),
+    cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : SelectionCell }),
 });

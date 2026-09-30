@@ -1,22 +1,21 @@
-import * as React from "react";
-import { useTheme } from "@fluentui/react";
 import { useGridCell } from "../../../../components/cells/root/context";
 import { useGridField } from "../../../../components/cells/field";
 import { useGridService } from "../../../../useGridService";
-import { getTotalValueStyles } from "./styles";
+import { AggregationUi, IAggregationUiTotalValueComponents } from "../ui";
 
-/** What a total reads as: what it is a total of, and the total itself. */
-export const TotalValue = () => {
+export interface ITotalValueProps {
+    components?: Partial<IAggregationUiTotalValueComponents>;
+}
+
+/** What the cell's column adds up to, and what that total is called. */
+export const TotalValue = (props: ITotalValueProps) => {
     const cell = useGridCell();
     const field = useGridField();
     //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
-    const theme = useTheme();
-    const styles = React.useMemo(() => getTotalValueStyles(theme), [theme]);
-    const label = aggregation.getTotalLabel(cell.getColumnName());
 
-    return <div className={styles.total}>
-        {label && <span className={styles.label}>{label}</span>}
-        <span className={styles.value}>{field?.getFormattedValue()}</span>
-    </div>;
+    return <AggregationUi.TotalValue
+        label={aggregation.getTotalLabel(cell.getColumnName())}
+        value={field?.getFormattedValue() ?? undefined}
+        components={props.components} />;
 };

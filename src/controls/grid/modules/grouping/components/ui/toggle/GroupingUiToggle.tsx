@@ -11,19 +11,17 @@ export interface IGroupingUiToggleProps {
 
 /** The chevron that opens and closes one group. */
 export const GroupingUiToggle = (props: IGroupingUiToggleProps) => {
+    const components = { ...GroupingUiToggleComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getGroupingUiToggleStyles(theme), [theme]);
-    const components = { ...GroupingUiToggleComponents, ...props.components };
 
-    return components.onRenderCommands({
-        alignment: 'right',
-        className: styles.commands,
-        items: [{
-            key: 'groupExpansion',
-            iconOnly: true,
+    return components.onRenderContainer({
+        className: styles.container,
+        children: components.onRenderButton({
+            isExpanded: props.isExpanded,
             iconProps: { iconName: props.isExpanded ? 'ChevronDown' : 'ChevronRight' },
-            buttonStyles: styles.chevronStyles,
+            styles: { root: styles.button, icon: styles.icon, iconHovered: styles.iconHovered, iconPressed: styles.iconPressed },
             onClick: props.onToggle,
-        }],
+        }),
     });
 };

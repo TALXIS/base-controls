@@ -1,14 +1,20 @@
 import { useMemo } from "react";
-import { CommandBarButton, concatStyleSets, IButtonProps } from "@fluentui/react";
-import { getColumnHeaderContainerStyles } from "./styles";
+import { concatStyleSets, IButtonProps } from "@fluentui/react";
+import { ColumnHeaderUiContainerComponents, IColumnHeaderUiContainerComponents } from "./components";
+import { getColumnHeaderUiContainerStyles } from "./styles";
 
-export interface IColumnHeaderUiContainerProps extends IButtonProps { }
+export interface IColumnHeaderUiContainerProps extends IButtonProps {
+    components?: Partial<IColumnHeaderUiContainerComponents>;
+}
 
 /** What a column header is drawn in: wrap it around the name and what stands beside it. */
 export const ColumnHeaderUiContainer = (props: IColumnHeaderUiContainerProps) => {
-    const styles = useMemo(() => getColumnHeaderContainerStyles(), []);
+    const { components: _, ...buttonProps } = props;
+    const components = { ...ColumnHeaderUiContainerComponents, ...props.components };
+    const styles = useMemo(() => getColumnHeaderUiContainerStyles(), []);
 
-    return <CommandBarButton
-        {...props}
-        styles={concatStyleSets({ root: styles.containerRoot, flexContainer: styles.containerFlexContainer }, props.styles)} />;
+    return components.onRenderButton({
+        ...buttonProps,
+        styles: concatStyleSets({ root: styles.containerRoot, flexContainer: styles.containerFlexContainer }, props.styles),
+    });
 };

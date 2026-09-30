@@ -2,15 +2,15 @@ import { LocalizationService, ServiceLocator } from "@utils";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { IGridModule } from "../interfaces";
 import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
-import { GridGroupingComponents, IGridGroupingComponents } from "./moduleComponents";
+import { IGridGroupingComponents } from "./moduleComponents";
 import { GridGrouping } from "./GridGrouping";
 import { IGridGroupingServiceMap } from "./services";
 
 export interface IGroupingModuleOptions {
     /** Localized strings this module renders. */
     labels?: Partial<IGridGroupingLabels>;
-    /** The parts of this module to render differently. */
-    components?: Partial<IGridGroupingComponents>;
+    /** Overrides for the parts of what this module draws, by piece. */
+    components?: IGridGroupingComponents;
     /** Whether a column's menu offers grouping. */
     allowUserGrouping?: boolean;
     /** How the groups nest. */
@@ -29,10 +29,9 @@ export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGri
     onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
-        const components = { ...GridGroupingComponents, ...options.components };
         services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
-        services.register('components', () => components);
+        services.register('components', () => options.components ?? {});
         const grouping = new GridGrouping({ services, settings: options });
         gridServices.register('grouping', () => grouping);
     },

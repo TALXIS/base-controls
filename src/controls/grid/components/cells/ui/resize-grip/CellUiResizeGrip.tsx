@@ -1,12 +1,17 @@
 import React, { useMemo, useRef } from "react";
-import { getRowResizeGripStyles } from "./styles";
+import { getClassNames } from "@utils";
+import { CellUiResizeGripComponents, ICellUiResizeGripComponents } from "./components";
+import { getCellUiResizeGripStyles } from "./styles";
 
 export interface ICellUiResizeGripProps {
     /** The row's height a drag starts from. */
     height?: number;
     /** The height the drag has reached, as it reaches it. */
     onResize: (height: number) => void;
+    /** Put on the container, alongside its own class. */
+    className?: string;
     children?: React.ReactNode;
+    components?: Partial<ICellUiResizeGripComponents>;
 }
 
 //a row dragged to nothing takes its own grip off the screen with it
@@ -16,7 +21,8 @@ const MIN_HEIGHT = 20;
 export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
     const { height, onResize, children } = props;
     const rootRef = useRef<HTMLDivElement>(null);
-    const styles = useMemo(() => getRowResizeGripStyles(), []);
+    const components = { ...CellUiResizeGripComponents, ...props.components };
+    const styles = useMemo(() => getCellUiResizeGripStyles(), []);
 
     const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
         //the same press reads as the start of a cell range to the grid
@@ -41,8 +47,12 @@ export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
         grip.addEventListener('pointercancel', onPointerUp);
     };
 
-    return <div ref={rootRef} className={styles.gripRoot}>
-        {children}
-        <div className={styles.grip} onPointerDown={onPointerDown} />
-    </div>;
+    return components.onRenderContainer({
+        ref: rootRef,
+        className: getClassNames([styles.gripRoot, props.className]),
+        children: <>
+            {children}
+            {components.onRenderGrip({ className: styles.grip, onPointerDown: onPointerDown })}
+        </>,
+    });
 };

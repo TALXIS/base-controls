@@ -9,7 +9,7 @@ export interface IGridAggregationServiceMap {
     gridServices: IGridServiceLocator;
     /** The strings this module renders. */
     labels: ILocalizationService<IGridAggregationLabels>;
-    /** The parts this module renders, merged with whatever the caller replaced. */
+    /** The parts of what this module draws, as the caller replaced them. */
     components: IGridAggregationComponents;
 }
 

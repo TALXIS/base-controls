@@ -1,2 +1,2 @@
-export * from './GroupExpandCollapseHeader';
+export * from './GroupExpansionHeader';
 export * from './components';

@@ -3,16 +3,15 @@ import { IContextualMenuItem } from "@fluentui/react";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridColumnHeaderEvents } from "../../../services/column-header";
 import { useGridColumnHeader } from "../root/context";
-import { ColumnHeaderMenuComponents, IColumnHeaderMenuComponents } from "./components";
+import { ColumnHeaderUi, IColumnHeaderUiMenuComponents } from "../ui";
 
 export interface IColumnHeaderMenuProps {
-    components?: Partial<IColumnHeaderMenuComponents>;
+    components?: Partial<IColumnHeaderUiMenuComponents>;
 }
 
 /** What a column header opens over the grid: everything the modules offer for its column. */
 export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
     const header = useGridColumnHeader();
-    const components = { ...ColumnHeaderMenuComponents, ...props.components };
     //worked out when the menu opens, not for every header the grid draws
     const [items, setItems] = useState<IContextualMenuItem[]>();
 
@@ -36,5 +35,5 @@ export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
     }, [header]);
 
     //the menu belongs to the whole element AG Grid draws the header in
-    return components.onRenderMenu({ items: items, target: header.getElement(), onDismiss: () => header.closeMenu() });
+    return <ColumnHeaderUi.Menu items={items} target={header.getElement()} onDismiss={() => header.closeMenu()} components={props.components} />;
 };

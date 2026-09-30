@@ -1,9 +1,11 @@
+import { createElement } from "react";
 import { ColDef } from "@ag-grid-community/core";
 import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
-import { IGridFilteringComponents } from "./moduleComponents";
+import { GridFilteringIconComponents, IGridFilteringComponents } from "./moduleComponents";
+import { FilterCalloutHost } from "./components/filter-callout-host/FilterCalloutHost";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 import { IGridSurface } from "../../services/surfaces";
@@ -39,7 +41,7 @@ export interface IGridFiltering {
     /** @param target What to draw the filter against, where the caller knows. */
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
-    /** The parts this module renders, merged with whatever the caller replaced. */
+    /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridFilteringComponents;
 }
 
@@ -66,10 +68,9 @@ export class GridFiltering implements IGridFiltering {
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {
-        surfaces.push({ key: 'filterCallout', onRender: this._onRenderFilterCallout });
+        surfaces.push({ key: 'filterCallout', onRender: () => createElement(FilterCalloutHost) });
     };
 
-    private _onRenderFilterCallout = (): JSX.Element | null => this.components.onRenderFilterCallout();
 
     public getLabels(): ILocalizationService<IGridFilteringLabels> {
         return this._labels;
@@ -170,7 +171,7 @@ export class GridFiltering implements IGridFiltering {
         adornments.push({
             key: 'filter',
             placement: 'suffix',
-            onRender: () => this.components.onRenderFilterIcon({ iconName: 'Filter' }),
+            onRender: () => ({ ...GridFilteringIconComponents, ...this.components.filterIcon }).onRenderIcon({ iconName: 'Filter' }),
         });
     };
 

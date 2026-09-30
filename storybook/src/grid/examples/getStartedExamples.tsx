@@ -52,11 +52,6 @@ const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolea
     disabled={props.disabled}
     ref={input => { if (input) input.indeterminate = !!props.indeterminate }} />
 
-//a closed deal's lock, drawn as a check in the stage's colour
-const LOCK_CELL_COMPONENTS: IRecordLockIndicatorCellComponents = {
-    lockIcon: { onRenderIcon: iconProps => <Icon {...iconProps} iconName='CompletedSolid' style={{ color: '#107c10' }} /> },
-}
-
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -77,7 +72,7 @@ const GridExample = () => {
                     mode: 'multiple',
                     onSelectionChanged: setSelectedIds,
                     components: {
-                        onRenderCell: props => <SelectionCell {...props} components={{
+                        cell: {
                             checkbox: { onRenderCheckbox: renderNativeCheckbox },
                             //a cloud while the deal saves, and once it has
                             indicator: {
@@ -89,7 +84,7 @@ const GridExample = () => {
                                 onRenderIcon: iconProps => <Icon {...iconProps} iconName='Warning' />,
                                 onRenderDismissButton: buttonProps => <PrimaryButton {...buttonProps} text='Got it' />,
                             },
-                        }} />,
+                        },
                     },
                 }),
                 cellSelection: createCellSelectionModule(),
@@ -98,12 +93,12 @@ const GridExample = () => {
                 filtering: createFilteringModule(),
                 grouping: createGroupingModule({
                     components: {
-                        onRenderExpansionHeader: props => <GroupExpandCollapseHeader {...props} components={{
+                        expansionHeader: {
                             expandCollapse: {
                                 onRenderExpandButton: buttonProps => <IconButton {...buttonProps} iconProps={{ ...buttonProps.iconProps, iconName: 'DoubleChevronDown' }} />,
                                 onRenderCollapseButton: buttonProps => <IconButton {...buttonProps} iconProps={{ ...buttonProps.iconProps, iconName: 'DoubleChevronUp' }} />,
                             },
-                        }} />,
+                        },
                     },
                 }),
                 aggregation: createAggregationModule(),
@@ -111,7 +106,6 @@ const GridExample = () => {
             colDefs={[
                 ...COPYABLE_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetCommands: copyValue(colId) } } })),
                 { colId: 'stage', pinned: 'right' },
-                { colId: RECORD_LOCK_COLUMN_KEY, cellRendererParams: { components: LOCK_CELL_COMPONENTS } },
                 {
                     colId: 'closedate',
                     settings: {
@@ -146,6 +140,10 @@ const GridExample = () => {
             enableEditing
             enableAutoSave
             enableOptionSetColors
+            components={{
+                //a closed deal's lock, drawn as a check in the stage's colour
+                recordLockCell: { lockIcon: { onRenderIcon: iconProps => <Icon {...iconProps} iconName='CompletedSolid' style={{ color: '#107c10' }} /> } },
+            }}
             rowSettings={{ onGetLock: lockClosedDeals }}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
             height='520px' />

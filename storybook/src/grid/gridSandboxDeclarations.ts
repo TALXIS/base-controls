@@ -392,14 +392,95 @@ interface IGridModules {
     custom?: IGridModule[];
 }
 
-/** The parts the lock column's cell is drawn with, handed through its cell renderer params. */
-interface IRecordLockIndicatorCellComponents {
-    container?: { onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element };
-    lockIcon?: {
-        /** What carries the message and holds the icon. */
-        onRenderTooltip?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element;
-        onRenderIcon?: (props: IIconProps) => JSX.Element;
+/** A replaceable part: handed the props the grid would draw it with, and may draw nothing. */
+type IPart<P> = (props: P) => JSX.Element | null;
+type IDivProps = React.HTMLAttributes<HTMLDivElement>;
+type IDivRefProps = React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>;
+type IButtonPartProps = import('@fluentui/react').IButtonProps;
+type ITextPartProps = import('@fluentui/react').ITextProps;
+
+interface ICellContainerParts { onRenderContainer?: IPart<IDivProps> }
+interface ICellLoadingParts { onRenderShimmer?: IPart<IShimmerProps> }
+interface ICellControlParts {
+    /** The room the value is drawn in. */
+    onRenderContainer?: IPart<IDivProps>;
+    /** What draws the value, handed the default as defaultRender. */
+    onRenderControl?: (props: ICellControlProps, defaultRender: (props: ICellControlProps) => JSX.Element | null) => JSX.Element | null;
+}
+interface ICellCommandsParts {
+    onRenderContainer?: IPart<IDivRefProps>;
+    onRenderCommandBar?: IPart<import('@fluentui/react').ICommandBarProps>;
+}
+interface ICellLockIconParts {
+    /** What carries the message and holds the icon. */
+    onRenderTooltip?: IPart<import('@fluentui/react').ITooltipHostProps>;
+    onRenderIcon?: IPart<IIconProps>;
+}
+interface ICellFieldErrorParts {
+    /** What marks the cell's edges. */
+    onRenderOutline?: IPart<IDivProps>;
+    onRenderTooltip?: IPart<import('@fluentui/react').ITooltipHostProps>;
+    onRenderIcon?: IPart<IIconProps>;
+}
+interface ICellResizeGripParts {
+    onRenderContainer?: IPart<IDivRefProps>;
+    onRenderGrip?: IPart<IDivProps>;
+}
+
+/** The parts of a cell, by the piece they belong to. */
+interface ICellRendererComponents {
+    container?: ICellContainerParts;
+    loading?: ICellLoadingParts;
+    control?: ICellControlParts;
+    commands?: ICellCommandsParts;
+    lockIcon?: ICellLockIconParts;
+    fieldError?: ICellFieldErrorParts;
+    resizeGrip?: ICellResizeGripParts;
+}
+
+/** The parts of a column header, by the piece they belong to. */
+interface IColumnHeaderRendererComponents {
+    /** What the header is drawn in, and what opens its menu. */
+    container?: { onRenderButton?: IPart<IButtonPartProps> };
+    prefix?: { onRenderContainer?: IPart<IDivProps> };
+    content?: { onRenderContainer?: IPart<IDivProps> };
+    label?: { onRenderText?: IPart<ITextPartProps> };
+    requiredMarker?: { onRenderText?: IPart<ITextPartProps> };
+    suffix?: { onRenderContainer?: IPart<IDivProps>; onRenderLockIcon?: IPart<{ message?: string; components?: ICellLockIconParts }> };
+    menu?: { onRenderContextualMenu?: IPart<import('@fluentui/react').IContextualMenuProps> };
+}
+
+/** The parts of a row's save status, by the piece they belong to. */
+interface IRecordSaveParts {
+    /** The element the indicator is drawn in, where it is drawn in a cell of its own. */
+    container?: ICellContainerParts;
+    indicator?: {
+        onRenderContainer?: IPart<IDivRefProps>;
+        /** What says the record is saving. */
+        onRenderSpinner?: IPart<import('@fluentui/react').ISpinnerProps>;
+        /** What says how the save went, and opens the error callout when it failed. */
+        onRenderButton?: IPart<IButtonPartProps & { state: 'succeeded' | 'failed' }>;
     };
+    /** The callout a failed save opens, listing why. */
+    errorCallout?: {
+        onRenderCallout?: IPart<import('@fluentui/react').ICalloutProps>;
+        onRenderHeader?: IPart<IDivProps>;
+        onRenderIcon?: IPart<IIconProps>;
+        onRenderTitle?: IPart<ITextPartProps>;
+        onRenderFields?: IPart<IDivProps>;
+        onRenderField?: IPart<IDivProps>;
+        onRenderFieldName?: IPart<ITextPartProps>;
+        onRenderMessage?: IPart<ITextPartProps>;
+        onRenderFooter?: IPart<IDivProps>;
+        /** What clears the failure. */
+        onRenderDismissButton?: IPart<IButtonPartProps>;
+    };
+}
+
+/** The parts of the lock column's cell, by the piece they belong to. */
+interface IRecordLockIndicatorCellComponents {
+    container?: ICellContainerParts;
+    lockIcon?: ICellLockIconParts;
 }
 /** The id of the column a record locked as a whole shows its lock in. */
 declare const RECORD_LOCK_COLUMN_KEY: 'recordLock';
@@ -420,53 +501,25 @@ declare function createRowSelectionModule(options: {
     mode: 'single' | 'multiple';
     /** Called when the selected records change, with the ids now selected. */
     onSelectionChanged?: (selectedRecordIds: string[]) => void;
+    /** The parts of what selection draws, by piece. */
     components?: {
-        onRenderCell?: (props: IGridCellParams) => JSX.Element;
-        onRenderHeader?: (props: IColumnHeaderParams) => JSX.Element;
+        /** A row's checkbox cell, and the save status it shows in place of the checkbox. */
+        cell?: IRecordSaveParts & {
+            checkbox?: {
+                /** What the checkbox is drawn in, and what takes the click. */
+                onRenderContainer?: IPart<IDivProps>;
+                onRenderCheckbox?: IPart<import('@fluentui/react').ICheckboxProps>;
+            };
+        };
+        /** The header that selects every record. */
+        header?: {
+            headerCheckbox?: {
+                onRenderContainer?: IPart<IDivProps>;
+                onRenderCheckbox?: IPart<import('@fluentui/react').ICheckboxProps>;
+            };
+        };
     };
 }): IGridModule;
-/** The row selection module's own cell: the checkbox, or the status of the row's last save. */
-declare function SelectionCell(props: IGridCellParams & {
-    components?: {
-        container?: { onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element };
-        checkbox?: {
-            /** What the checkbox is drawn in, and what takes the click. */
-            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            onRenderCheckbox?: (props: import('@fluentui/react').ICheckboxProps) => JSX.Element;
-        };
-        indicator?: {
-            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element;
-            /** What says the record is saving. */
-            onRenderSpinner?: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element;
-            /** What says how the save went, and opens the error callout when it failed. */
-            onRenderButton?: (props: import('@fluentui/react').IButtonProps & { state: 'succeeded' | 'failed' }) => JSX.Element;
-        };
-        /** The callout a failed save opens, listing why. */
-        errorCallout?: {
-            onRenderCallout?: (props: import('@fluentui/react').ICalloutProps) => JSX.Element;
-            onRenderHeader?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            onRenderIcon?: (props: IIconProps) => JSX.Element;
-            onRenderTitle?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
-            onRenderFields?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            onRenderField?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            onRenderFieldName?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
-            onRenderMessage?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
-            onRenderFooter?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            /** What clears the failure. */
-            onRenderDismissButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
-        };
-    };
-}): JSX.Element;
-/** The grouping module's header over the expansion column: the buttons that open and close a level. */
-declare function GroupExpandCollapseHeader(props: IColumnHeaderParams & {
-    components?: {
-        expandCollapse?: {
-            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-            onRenderExpandButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
-            onRenderCollapseButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
-        };
-    };
-}): JSX.Element;
 declare function createCellSelectionModule(options?: {
     suppressMultiRangeSelection?: boolean;
     enableRangeHandle?: boolean;
@@ -481,22 +534,38 @@ declare function createClipboardModule(options?: {
 }): IGridModule;
 declare function createSortingModule(options?: {
     labels?: Partial<Record<'sortTextAscending' | 'sortTextDescending' | 'sortDateAscending' | 'sortDateDescending' | 'sortNumberAscending' | 'sortNumberDescending' | 'sortTwoOptionsJoint' | 'clear' | 'menuSection', string>>;
-    components?: { onRenderSortIcon?: (props: { descending: boolean }) => JSX.Element };
+    components?: { sortIcon?: { onRenderIcon?: IPart<IIconProps & { descending: boolean }> } };
 }): IGridModule;
 declare function createFilteringModule(options?: {
     labels?: Partial<Record<'filterMenuFilterBy' | 'clear' | 'menuSection', string>>;
     components?: {
-        onRenderFilterIcon?: (props: IIconProps) => JSX.Element;
-        onRenderFilterCallout?: () => JSX.Element | null;
+        filterIcon?: { onRenderIcon?: IPart<IIconProps> };
+        /** The callout a column's filter is set in. */
+        filterCallout?: {
+            onRenderCallout?: IPart<import('@fluentui/react').ICalloutProps>;
+            onRenderHeader?: IPart<IDivProps>;
+            onRenderTitle?: IPart<ITextPartProps>;
+            onRenderCloseButton?: IPart<IButtonPartProps>;
+        };
     };
 }): IGridModule;
 declare function createGroupingModule(options?: {
     labels?: Partial<Record<'group' | 'ungroup' | 'headerTitle' | 'menuSection' | 'expandLevel' | 'collapseLevel', string>>;
     components?: {
-        onRenderGroupingIcon?: (props: IIconProps) => JSX.Element;
-        onRenderGroupCell?: (props: IGridCellParams) => JSX.Element;
+        groupingIcon?: { onRenderIcon?: IPart<IIconProps> };
+        /** What a group row draws in the column it is grouped by. */
+        groupCell?: Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'commands'> & {
+            toggle?: { onRenderContainer?: IPart<IDivProps>; onRenderButton?: IPart<IButtonPartProps & { isExpanded: boolean }> };
+            count?: { onRenderCount?: IPart<React.HTMLAttributes<HTMLSpanElement>> };
+        };
         /** The header over the column that opens and closes the groups a level at a time. */
-        onRenderExpansionHeader?: (props: IColumnHeaderParams) => JSX.Element;
+        expansionHeader?: {
+            expandCollapse?: {
+                onRenderContainer?: IPart<IDivProps>;
+                onRenderExpandButton?: IPart<IButtonPartProps>;
+                onRenderCollapseButton?: IPart<IButtonPartProps>;
+            };
+        };
     };
     allowUserGrouping?: boolean;
     type?: 'nested' | 'flat';
@@ -508,8 +577,16 @@ declare function createAggregationModule(options?: {
     labels?: Partial<Record<'totalNone' | 'totalAverage' | 'totalMaximum' | 'totalMinimum' | 'totalSum' | 'totalCount' | 'totalCountColumn' | 'menuSection', string>>;
     allowUserAggregation?: boolean;
     components?: {
-        onRenderTotalCell?: (props: IGridCellParams) => JSX.Element;
-        onRenderAggregateCell?: (props: IGridCellParams) => JSX.Element;
+        /** What a column that totals something draws in the total row. */
+        totalCell?: Pick<ICellRendererComponents, 'container' | 'loading' | 'commands'> & {
+            totalValue?: {
+                onRenderContainer?: IPart<IDivProps>;
+                onRenderLabel?: IPart<React.HTMLAttributes<HTMLSpanElement>>;
+                onRenderValue?: IPart<React.HTMLAttributes<HTMLSpanElement>>;
+            };
+        };
+        /** What a column that totals something draws in a group's row. */
+        aggregateCell?: Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'commands'>;
     };
 }): IGridModule;
 
@@ -520,14 +597,15 @@ interface IGridLabels {
     noRecordsFound: string;
     valueNotEditable: string;
     recordNotEditable: string;
+    columnNotEditable: string;
     recordSaveErrorTitle: string;
     recordSaveErrorDismiss: string;
 }
 
 interface IOverlayUiLoadingComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    onRenderSpinner: (props: ISpinnerProps) => JSX.Element;
-    onRenderText: (props: ITextProps) => JSX.Element;
+    onRenderContainer: IPart<IDivProps>;
+    onRenderSpinner: IPart<ISpinnerProps>;
+    onRenderText: IPart<ITextProps>;
 }
 
 interface IOverlayUiLoadingProps {
@@ -536,9 +614,9 @@ interface IOverlayUiLoadingProps {
 }
 
 interface IOverlayUiEmptyRecordsComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    onRenderIcon: (props: IIconProps) => JSX.Element;
-    onRenderText: (props: ITextProps) => JSX.Element;
+    onRenderContainer: IPart<IDivProps>;
+    onRenderIcon: IPart<IIconProps>;
+    onRenderText: IPart<ITextProps>;
 }
 
 interface IOverlayUiEmptyRecordsProps {
@@ -547,20 +625,24 @@ interface IOverlayUiEmptyRecordsProps {
 }
 
 interface IRowUiLoadingProps {
-    components?: Partial<{ onRenderShimmer: (props: IShimmerProps) => JSX.Element }>;
+    components?: Partial<{ onRenderShimmer: IPart<IShimmerProps> }>;
 }
 
 interface IRowUiErrorProps {
     message: string;
-    components?: Partial<{ onRenderMessageBar: (props: IMessageBarProps) => JSX.Element }>;
+    components?: Partial<{ onRenderMessageBar: IPart<IMessageBarProps> }>;
 }
 
-/** The grid's own replaceable pieces. */
+/** The parts of what the grid draws itself, by the piece they belong to. */
 interface IGridComponents {
-    onRenderLoadingOverlay: (props: IOverlayUiLoadingProps) => JSX.Element;
-    onRenderEmptyRecordsOverlay: (props: IOverlayUiEmptyRecordsProps) => JSX.Element;
-    onRenderRowLoading: (props: IRowUiLoadingProps) => JSX.Element;
-    onRenderRowError: (props: IRowUiErrorProps) => JSX.Element;
+    loadingOverlay?: Partial<IOverlayUiLoadingComponents>;
+    emptyRecordsOverlay?: Partial<IOverlayUiEmptyRecordsComponents>;
+    rowLoading?: IRowUiLoadingProps['components'];
+    rowError?: IRowUiErrorProps['components'];
+    /** The cell a row reports its save in, on a grid with no checkbox column. */
+    recordSaveCell?: IRecordSaveParts;
+    /** The cell a record locked as a whole shows its lock in. */
+    recordLockCell?: IRecordLockIndicatorCellComponents;
 }
 
 interface IGridEditedCell {
@@ -582,7 +664,7 @@ interface IGridProps {
     maxVisibleRows?: number;
     height?: string;
     className?: string;
-    components?: Partial<IGridComponents>;
+    components?: IGridComponents;
     labels?: Partial<IGridLabels>;
     colDefs?: (IGridColDef & { colId: string })[];
     state?: any;
@@ -613,28 +695,6 @@ interface ICellControlProps {
     [key: string]: any;
 }
 
-interface ICellRendererComponents {
-    lockIcon?: {
-        onRenderLockIcon?: (props: {
-            message?: string;
-            alignment?: IAlignment;
-            className?: string;
-            components?: {
-                onRenderTooltip?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element;
-                onRenderIcon?: (props: IIconProps) => JSX.Element;
-            };
-        }) => JSX.Element;
-    };
-    control?: {
-        onRenderControl?: (props: ICellControlProps, defaultRender: (props: ICellControlProps) => JSX.Element | null) => JSX.Element | null;
-    };
-}
-
-interface IColumnHeaderRendererComponents {
-    label?: { onRenderLabel?: (props: ITextProps & { name?: string }) => JSX.Element };
-    container?: { onRenderContainer?: (props: IButtonProps) => JSX.Element };
-}
-
 type IGridCellComponent = (props: IGridCellParams & { components?: ICellRendererComponents }) => JSX.Element;
 type IGridPartComponent = (props: { children?: React.ReactNode; [key: string]: any }) => JSX.Element;
 
@@ -652,7 +712,7 @@ declare const Grid: {
     ColumnHeader: {
         Renderer: (props: IColumnHeaderParams & { components?: IColumnHeaderRendererComponents }) => JSX.Element;
         Ui: {
-            Label: (props: ITextProps & { name?: string }) => JSX.Element;
+            Label: (props: ITextProps & { name?: string; components?: IColumnHeaderRendererComponents['label'] }) => JSX.Element;
             [part: string]: any;
         };
         [part: string]: any;

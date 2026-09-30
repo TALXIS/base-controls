@@ -9,7 +9,7 @@ export interface IGridFilteringServiceMap {
     gridServices: IGridServiceLocator;
     /** The strings this module renders. */
     labels: ILocalizationService<IGridFilteringLabels>;
-    /** The parts this module renders. */
+    /** The parts of what this module draws, as the caller replaced them. */
     components: IGridFilteringComponents;
 }
 

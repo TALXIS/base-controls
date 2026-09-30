@@ -1,15 +1,17 @@
-import { ColDef, ICellRendererParams, IRowNode } from "@ag-grid-community/core";
+import { createElement } from "react";
+import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridGroupingLabels } from "./labels";
-import { IGridGroupingComponents } from "./moduleComponents";
-import { IColumnHeaderParams } from "../../components/column-header/root/ColumnHeaderRoot";
+import { GridGroupingIconComponents, IGridGroupingComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
+import { GroupCell } from "./components/group-cell/GroupCell";
+import { GroupSelectionLimitDialog } from "./components/group-selection-limit-dialog/GroupSelectionLimitDialog";
 import { IGridRowModelGrouping } from "../row-model/interfaces";
 import { IGridSurface } from "../../services/surfaces";
 import { IGridRowSelectionInterceptors } from "../row-selection";
@@ -77,7 +79,7 @@ export interface IGridGrouping {
     setExpandedLevel(level: number): void;
     toggleGroup(node: IRowNode<IRecord>): void;
     toggleColumnGroup(columnName: string): void;
-    /** The parts this module renders, merged with whatever the caller replaced. */
+    /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridGroupingComponents;
 }
 
@@ -183,7 +185,7 @@ export class GridGrouping implements IGridGrouping {
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {
-        surfaces.push({ key: 'groupSelectionLimit', onRender: this._onRenderGroupSelectionLimitDialog });
+        surfaces.push({ key: 'groupSelectionLimit', onRender: () => createElement(GroupSelectionLimitDialog) });
     };
 
     public getLabels(): ILocalizationService<IGridGroupingLabels> {
@@ -302,7 +304,7 @@ export class GridGrouping implements IGridGrouping {
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
         //nothing to open while nothing is grouped
         if (columnDefs.some(isGrouped)) {
-            columnDefs.push(getGroupExpansionColumnDefinition(this._onRenderExpansionHeader));
+            columnDefs.push(getGroupExpansionColumnDefinition());
         }
     };
 
@@ -341,7 +343,7 @@ export class GridGrouping implements IGridGrouping {
             key: 'grouping',
             placement: 'prefix',
             title: this._labels.getLocalizedString('headerTitle'),
-            onRender: () => this.components.onRenderGroupingIcon({ iconName: 'GroupList' }),
+            onRender: () => ({ ...GridGroupingIconComponents, ...this.components.groupingIcon }).onRenderIcon({ iconName: 'GroupList' }),
         });
     };
 
@@ -397,7 +399,7 @@ export class GridGrouping implements IGridGrouping {
                 //a grouped column's value lives in the group rows above the record
                 return this.isColumnGrouped(column) ? { component: CellEmptyRenderer } : cellRendererSelector?.(params);
             }
-            return this.isRowGroupedBy(params.data, column.name) ? { component: this._onRenderGroupCell } : { component: CellEmptyRenderer };
+            return this.isRowGroupedBy(params.data, column.name) ? { component: GroupCell } : { component: CellEmptyRenderer };
         };
     }
 
@@ -411,12 +413,6 @@ export class GridGrouping implements IGridGrouping {
     }
 
     private _isGroupOpenByDefault = (node: IRowNode<IRecord>): boolean => !this._hasUserExpanded && node.level <= this._expandedLevel;
-
-    private _onRenderGroupCell = (props: ICellRendererParams<IRecord>): JSX.Element => this.components.onRenderGroupCell(props);
-
-    private _onRenderExpansionHeader = (props: IColumnHeaderParams): JSX.Element => this.components.onRenderExpansionHeader(props);
-
-    private _onRenderGroupSelectionLimitDialog = (): JSX.Element => this.components.onRenderGroupSelectionLimitDialog();
 
     public get components(): IGridGroupingComponents {
         return this._services.get('components');

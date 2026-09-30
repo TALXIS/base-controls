@@ -1,17 +1,10 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
-import { AggregateCell, TotalCell } from "./components";
+import type { IAggregateCellComponents } from "./components/aggregate-cell/components";
+import type { ITotalCellComponents } from "./components/total-cell/components";
 
-/** The replaceable parts of the totals. */
+/** The replaceable parts of what the totals draw, by the piece they belong to. */
 export interface IGridAggregationComponents {
     /** What a column that totals something draws in the row pinned under the rest. */
-    onRenderTotalCell: (props: ICellRendererParams<IRecord>) => JSX.Element;
+    totalCell?: ITotalCellComponents;
     /** What a column that totals something draws in a group's row. */
-    onRenderAggregateCell: (props: ICellRendererParams<IRecord>) => JSX.Element;
+    aggregateCell?: IAggregateCellComponents;
 }
-
-/** The defaults for {@link IGridAggregationComponents}. */
-export const GridAggregationComponents: IGridAggregationComponents = {
-    onRenderTotalCell: props => <TotalCell {...props} />,
-    onRenderAggregateCell: props => <AggregateCell {...props} />,
-};

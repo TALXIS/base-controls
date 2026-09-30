@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getRowResizeGripStyles = () => mergeStyleSets({
+export const getCellUiResizeGripStyles = () => mergeStyleSets({
     gripRoot: {
         display: 'flex',
         width: '100%',

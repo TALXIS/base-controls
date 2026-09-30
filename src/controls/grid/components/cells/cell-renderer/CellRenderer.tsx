@@ -3,11 +3,11 @@ import { ITheme } from "@theme";
 import { CellCommands } from "../commands/CellCommands";
 import { CellContainer } from "../container/CellContainer";
 import { CellControl } from "../control/CellControl";
-import { CellValidation } from "../field-validation/CellValidation";
+import { CellFieldError } from "../field-error/CellFieldError";
 import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
-import { CellResizeGrip } from "../row-resize-grip/CellResizeGrip";
+import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
 import { CellLockIcon } from "../lock-icon/CellLockIcon";
 import { ICellRendererComponents } from "./components";
 
@@ -25,14 +25,14 @@ export const CellRenderer = (props: ICellRendererProps) => {
             <CellLockIcon components={components.lockIcon} />
             <CellControl components={components.control} />
             <CellCommands components={components.commands} />
-            <CellValidation components={components.validation} />
+            <CellFieldError components={components.fieldError} />
         </CellLoading>
     </CellContainer>;
 
     return <CellRoot {...props}>
         <CellTheme theme={props.theme}>
             {props.colDef?.autoHeight
-                ? <CellResizeGrip components={components.rowResizeGrip}>{content}</CellResizeGrip>
+                ? <CellResizeGrip components={components.resizeGrip}>{content}</CellResizeGrip>
                 : content}
         </CellTheme>
     </CellRoot>;

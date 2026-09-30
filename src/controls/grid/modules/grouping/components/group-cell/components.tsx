@@ -1,4 +1,4 @@
-import { ICellRendererComponents } from "@controls/grid/components/cells/cell-renderer/components";
+import { ICellRendererComponents } from "../../../../components/cells/cell-renderer/components";
 import { IGroupingUiCountComponents, IGroupingUiToggleComponents } from "../ui";
 
 /** The replaceable pieces of a group row's grouped cell, by the part they belong to. */

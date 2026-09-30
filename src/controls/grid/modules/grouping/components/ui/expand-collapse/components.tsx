@@ -3,9 +3,9 @@ import { IButtonProps, IconButton } from "@fluentui/react";
 /** The replaceable pieces of what opens and closes the groups a level at a time. */
 export interface IGroupingUiExpandCollapseComponents {
     /** What both buttons are drawn in. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    onRenderExpandButton: (props: IButtonProps) => JSX.Element;
-    onRenderCollapseButton: (props: IButtonProps) => JSX.Element;
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderExpandButton: (props: IButtonProps) => JSX.Element | null;
+    onRenderCollapseButton: (props: IButtonProps) => JSX.Element | null;
 }
 
 /** The defaults for {@link IGroupingUiExpandCollapseComponents}. */

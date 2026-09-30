@@ -11,10 +11,10 @@ import { CellLegacyNestedControl } from "./components/cells/legacy-nested-contro
 import { CellLoading } from "./components/cells/loading/CellLoading";
 import { CellNestedRoot } from "./components/cells/nested-react-root/CellNestedRoot";
 import { CellRenderer } from "./components/cells/cell-renderer/CellRenderer";
-import { CellResizeGrip } from "./components/cells/row-resize-grip/CellResizeGrip";
+import { CellResizeGrip } from "./components/cells/resize-grip/CellResizeGrip";
 import { CellRoot } from "./components/cells/root/CellRoot";
 import { CellTheme } from "./components/cells/theme/CellTheme";
-import { CellValidation } from "./components/cells/field-validation/CellValidation";
+import { CellFieldError } from "./components/cells/field-error/CellFieldError";
 import { CellUi, ICellUi } from "./components/cells/ui";
 import { ColumnHeaderContainer } from "./components/column-header/container/ColumnHeaderContainer";
 import { ColumnHeaderContent } from "./components/column-header/content/ColumnHeaderContent";
@@ -33,6 +33,11 @@ import { IOverlayUi, OverlayUi } from "./components/overlays/ui";
 import { RowLoading } from "./components/rows/loading";
 import { RowError } from "./components/rows/error";
 import { IRowUi, RowUi } from "./components/rows/ui";
+import { RecordSaveIndicator } from "./components/record-save-indicator/RecordSaveIndicator";
+import { RecordSaveIndicatorCell } from "./components/record-save-indicator/RecordSaveIndicatorCell";
+import { IRecordSaveUi, RecordSaveUi } from "./components/record-save-indicator/ui";
+import { RecordLockIndicatorCell } from "./components/record-lock-indicator/RecordLockIndicatorCell";
+import { RecordLockIcon } from "./components/record-lock-indicator/record-lock-icon/RecordLockIcon";
 import { GridRoot } from "./Grid";
 
 /** Everything a cell is drawn from. */
@@ -56,7 +61,7 @@ export interface IGridCellNamespace {
     /** What stands in for the content it wraps while the cell waits. */
     Loading: typeof CellLoading;
     /** What the cell says when the record refuses the value. */
-    Validation: typeof CellValidation;
+    FieldError: typeof CellFieldError;
     /** What draws the value, where the cell is bound to a field. */
     Control: typeof CellControl;
     /** What the cell offers to do. */
@@ -103,9 +108,9 @@ export interface IGridColumnHeaderNamespace {
 
 /** What the grid draws over its rows. */
 export interface IGridOverlayNamespace {
-    /** What the grid shows while it loads, drawn through `onRenderLoadingOverlay`. */
+    /** What the grid shows while it loads, its parts set through `components.loadingOverlay`. */
     Loading: typeof LoadingOverlay;
-    /** What the grid shows while it has no rows, drawn through `onRenderEmptyRecordsOverlay`. */
+    /** What the grid shows while it has no rows, its parts set through `components.emptyRecordsOverlay`. */
     EmptyRecords: typeof EmptyRecordsOverlay;
     /** What draws an overlay without knowing why it is shown. */
     Ui: IOverlayUi;
@@ -113,12 +118,30 @@ export interface IGridOverlayNamespace {
 
 /** What the grid draws across a whole row. */
 export interface IGridRowNamespace {
-    /** What a row shows while its records load, drawn through `onRenderRowLoading`. */
+    /** What a row shows while its records load, its parts set through `components.rowLoading`. */
     Loading: typeof RowLoading;
-    /** A row standing in for records that failed, drawn through `onRenderRowError`. */
+    /** A row standing in for records that failed, its parts set through `components.rowError`. */
     Error: typeof RowError;
     /** What draws a full-width row without knowing which row. */
     Ui: IRowUi;
+}
+
+/** What a row says about its last save. */
+export interface IGridRecordSaveNamespace {
+    /** The save status of the cell's record, or the children while there is none: drawn in the checkbox cell. */
+    Indicator: typeof RecordSaveIndicator;
+    /** The cell a row reports its save in, on a grid with no checkbox column. */
+    Cell: typeof RecordSaveIndicatorCell;
+    /** What draws a save status without knowing which record. */
+    Ui: IRecordSaveUi;
+}
+
+/** What says a record is locked as a whole. */
+export interface IGridRecordLockNamespace {
+    /** The lock drawn for a record locked as a whole, or nothing. */
+    Icon: typeof RecordLockIcon;
+    /** The cell a locked record's row shows its lock in. */
+    Cell: typeof RecordLockIndicatorCell;
 }
 
 /** Everything a grid is rendered from. */
@@ -133,6 +156,10 @@ export interface IGridNamespace {
     Overlay: IGridOverlayNamespace;
     /** What the grid draws across a whole row. */
     Row: IGridRowNamespace;
+    /** What a row says about its last save. */
+    RecordSave: IGridRecordSaveNamespace;
+    /** What says a record is locked as a whole. */
+    RecordLock: IGridRecordLockNamespace;
 }
 
 export const Grid: IGridNamespace = {
@@ -147,7 +174,7 @@ export const Grid: IGridNamespace = {
         Theme: CellTheme,
         Container: CellContainer,
         Loading: CellLoading,
-        Validation: CellValidation,
+        FieldError: CellFieldError,
         Control: CellControl,
         Commands: CellCommands,
         LockIcon: CellLockIcon,
@@ -179,5 +206,14 @@ export const Grid: IGridNamespace = {
         Loading: RowLoading,
         Error: RowError,
         Ui: RowUi,
+    },
+    RecordSave: {
+        Indicator: RecordSaveIndicator,
+        Cell: RecordSaveIndicatorCell,
+        Ui: RecordSaveUi,
+    },
+    RecordLock: {
+        Icon: RecordLockIcon,
+        Cell: RecordLockIndicatorCell,
     },
 };

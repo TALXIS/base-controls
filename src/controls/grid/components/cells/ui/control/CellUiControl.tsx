@@ -1,19 +1,19 @@
 import React, { useMemo } from "react";
 import { getClassNames, IAlignment } from "@utils";
-import { IGridControl } from "../../../../services/cells";
-import { getCellControlStyles } from "./styles";
+import { CellUiControlComponents, ICellUiControlComponents } from "./components";
+import { getCellUiControlStyles } from "./styles";
 
 export interface ICellUiControlProps extends React.HTMLAttributes<HTMLDivElement> {
-    /** What the cell draws. */
-    control: IGridControl;
     /** Which edge the value reads from. */
     alignment?: IAlignment;
+    components?: Partial<ICellUiControlComponents>;
 }
 
 /** The room a cell's value is drawn in. */
 export const CellUiControl = (props: ICellUiControlProps) => {
-    const { control, alignment = 'left', className, ...divProps } = props;
-    const styles = useMemo(() => getCellControlStyles(alignment), [alignment]);
+    const { alignment = 'left', className, components: _, ...divProps } = props;
+    const components = { ...CellUiControlComponents, ...props.components };
+    const styles = useMemo(() => getCellUiControlStyles(alignment), [alignment]);
 
-    return <div {...divProps} className={getClassNames([styles.control, className])} />;
+    return components.onRenderContainer({ ...divProps, className: getClassNames([styles.control, className]) });
 };

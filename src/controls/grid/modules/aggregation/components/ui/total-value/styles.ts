@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTotalValueStyles = (theme: ITheme) => mergeStyleSets({
+export const getAggregationUiTotalValueStyles = (theme: ITheme) => mergeStyleSets({
     total: {
         display: 'flex',
         flexDirection: 'column',

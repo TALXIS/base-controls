@@ -4,17 +4,16 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../../services/rows";
 import { useGridService } from "../../../useGridService";
 import { useGridCell } from "../root/context";
-import { CellCommandsComponents, ICellCommandsComponents } from "./components";
+import { CellUi, ICellUiCommandsComponents } from "../ui";
 
 export interface ICellCommandsProps {
-    components?: Partial<ICellCommandsComponents>;
+    components?: Partial<ICellUiCommandsComponents>;
 }
 
 /** A cell's commands, as the command bar wants them. */
 export const CellCommands = (props: ICellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridService('rows');
-    const components = { ...CellCommandsComponents, ...props.components };
     const rerender = useRerender();
     const isHighlighted = rows.isHighlighted(cell.getRecord());
     //what this cell last drew from.
@@ -33,9 +32,5 @@ export const CellCommands = (props: ICellCommandsProps) => {
 
     const { items, overflowItems } = cell.getCommands();
 
-    return components.onRenderCommands({
-        items: items,
-        overflowItems: overflowItems,
-        alignment: cell.getAlignment(),
-    });
+    return <CellUi.Commands items={items} overflowItems={overflowItems} alignment={cell.getAlignment()} components={props.components} />;
 };

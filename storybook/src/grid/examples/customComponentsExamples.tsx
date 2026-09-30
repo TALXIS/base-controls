@@ -26,9 +26,9 @@ const GridExample = () => <Grid.Root
 
 export const CUSTOM_HEADER_CODE = `const ValueHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
     label: {
-        onRenderLabel: labelProps => <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        onRenderText: textProps => <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
             <Icon iconName='Money' style={{ color: '#107c10' }} />
-            <Grid.ColumnHeader.Ui.Label {...labelProps} />
+            {textProps.children}
         </span>,
     },
 }} />
@@ -54,13 +54,11 @@ export const EMPTY_STATE_CODE = `const GridExample = () => {
     return <Grid.Root
         provider={emptyProvider}
         modules={{ rowModel: createClientSideRowModelModule() }}
+        labels={{ noRecordsFound: 'No deals in the pipeline yet.' }}
         components={{
-            onRenderEmptyRecordsOverlay: props => <Grid.Overlay.Ui.EmptyRecords
-                {...props}
-                message='No deals in the pipeline yet.'
-                components={{
-                    onRenderIcon: iconProps => <Icon {...iconProps} iconName='Money' style={{ color: '#5B5FC7' }} />,
-                }} />,
+            emptyRecordsOverlay: {
+                onRenderIcon: iconProps => <Icon {...iconProps} iconName='Money' style={{ color: '#5B5FC7' }} />,
+            },
         }}
         height='320px' />
 }
@@ -70,10 +68,10 @@ export const LOADING_OVERLAY_CODE = `const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
     components={{
-        onRenderLoadingOverlay: props => <Grid.Overlay.Ui.Loading {...props} components={{
+        loadingOverlay: {
             onRenderSpinner: () => <Icon iconName='Sync' style={{ fontSize: 28, color: '#5B5FC7' }} />,
             onRenderText: textProps => <span style={{ fontWeight: 600, color: '#5B5FC7' }}>{textProps.children}</span>,
-        }} />,
+        },
     }}
     height='320px' />
 `
@@ -91,11 +89,11 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createServerSideRowModelModule(), custom: [neverLoadModule] }}
     components={{
-        onRenderRowLoading: props => <Grid.Row.Ui.Loading {...props} components={{
+        rowLoading: {
             onRenderShimmer: () => <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: '100%', padding: '0 12px', color: '#605e5c' }}>
                 <Icon iconName='Sync' /> Loading deals...
             </div>,
-        }} />,
+        },
     }}
     height='320px' />
 `
@@ -106,12 +104,16 @@ export const MODULE_UI_CODE = `const GridExample = () => <Grid.Root
         rowModel: createClientSideRowModelModule(),
         sorting: createSortingModule({
             components: {
-                onRenderSortIcon: props => <Icon iconName={props.descending ? 'ChevronDownMed' : 'ChevronUpMed'} style={{ color: '#5B5FC7' }} />,
+                sortIcon: {
+                    onRenderIcon: ({ descending, ...iconProps }) => <Icon {...iconProps} iconName={descending ? 'ChevronDownMed' : 'ChevronUpMed'} style={{ color: '#5B5FC7' }} />,
+                },
             },
         }),
         filtering: createFilteringModule({
             components: {
-                onRenderFilterIcon: iconProps => <Icon {...iconProps} style={{ color: '#5B5FC7' }} />,
+                filterIcon: {
+                    onRenderIcon: iconProps => <Icon {...iconProps} style={{ color: '#5B5FC7' }} />,
+                },
             },
         }),
     }}

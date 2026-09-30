@@ -1,17 +1,22 @@
 import { useMemo } from "react";
-import { IAlignment } from "@utils";
-import { getColumnHeaderPrefixStyles } from "./styles";
+import { getClassNames, IAlignment } from "@utils";
+import { ColumnHeaderUiPrefixComponents, IColumnHeaderUiPrefixComponents } from "./components";
+import { getColumnHeaderUiPrefixStyles } from "./styles";
 
 export interface IColumnHeaderUiPrefixProps {
     /** Which edge the column reads from. */
     alignment?: IAlignment;
+    /** Put on the container, alongside its own class. */
+    className?: string;
     children?: React.ReactNode;
+    components?: Partial<IColumnHeaderUiPrefixComponents>;
 }
 
 /** What a column header draws before what names it. */
 export const ColumnHeaderUiPrefix = (props: IColumnHeaderUiPrefixProps) => {
     const { alignment = 'left' } = props;
-    const styles = useMemo(() => getColumnHeaderPrefixStyles(alignment), [alignment]);
+    const components = { ...ColumnHeaderUiPrefixComponents, ...props.components };
+    const styles = useMemo(() => getColumnHeaderUiPrefixStyles(alignment), [alignment]);
 
-    return <div className={styles.prefix}>{props.children}</div>;
+    return components.onRenderContainer({ className: getClassNames([styles.prefix, props.className]), children: props.children });
 };

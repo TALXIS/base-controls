@@ -1,5 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { CELL_CONTAINER_CLASS_NAME } from "./components/cells/ui/cell-container/styles";
+import { CELL_CONTAINER_CLASS_NAME } from "./components/cells/ui/container/styles";
 import { LOCKED_RECORD_ROW_CLASS } from "./services/locked-records";
 
 /** How tall the rows area stays when there is nothing in it. */

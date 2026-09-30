@@ -4,6 +4,7 @@ import { useGridCell } from "../root/context";
 import { useGridField } from "../field";
 import { CellLegacyNestedControl } from "../legacy-nested-control-renderer";
 import { GridControlContext } from "./context";
+import { CellUi } from "../ui";
 import { CellControlComponents, ICellControlComponents } from "./components";
 
 export interface ICellControlProps {
@@ -27,11 +28,9 @@ export const CellControl = (props: ICellControlProps) => {
     };
 
     return <GridControlContext.Provider value={control}>
-        {components.onRenderControlContainer({
-            control: control,
-            alignment: cell.getAlignment(),
-            //keyed: `AutoFocus` only affects a control's first render
-            children: <Fragment key={`${cell.isBeingEdited()}`}>{components.onRenderControl(controlProps, onRenderDefault)}</Fragment>,
-        })}
+        <CellUi.Control alignment={cell.getAlignment()} components={props.components}>
+            {/* keyed: `AutoFocus` only affects a control's first render */}
+            <Fragment key={`${cell.isBeingEdited()}`}>{components.onRenderControl(controlProps, onRenderDefault)}</Fragment>
+        </CellUi.Control>
     </GridControlContext.Provider>;
 };

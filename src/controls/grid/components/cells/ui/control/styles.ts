@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
-export const getCellControlStyles = (alignment: IAlignment) => mergeStyleSets({
+export const getCellUiControlStyles = (alignment: IAlignment) => mergeStyleSets({
     control: {
         //a right-aligned column reads outwards from its edge
         order: alignment === 'right' ? 2 : 1,
