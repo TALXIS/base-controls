@@ -3,11 +3,14 @@ import { BaseControls } from "@utils";
 import { IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IGridServiceLocator } from "../../services";
 import { IGridField } from "../fields";
+import type { IGridCell } from "./GridCell";
 
 export interface IGridFieldControlParameters {
     services: IGridServiceLocator;
     /** The field this draws. */
     field: IGridField;
+    /** The cell it draws in, whose column definition says how. */
+    cell: IGridCell;
     takesInput?: boolean;
 }
 
@@ -25,11 +28,13 @@ export interface IGridFieldControl {
 export class GridFieldControl implements IGridFieldControl {
     private _services: IGridServiceLocator;
     private _field: IGridField;
+    private _cell: IGridCell;
     private _takesInput: boolean;
 
     constructor(parameters: IGridFieldControlParameters) {
         this._services = parameters.services;
         this._field = parameters.field;
+        this._cell = parameters.cell;
         this._takesInput = !!parameters.takesInput;
     }
 
@@ -61,7 +66,6 @@ export class GridFieldControl implements IGridFieldControl {
         return {
             value: this._field.getValue(),
             Column: { raw: column },
-            IsPrimaryColumn: { raw: !!column.isPrimary, type: DataTypes.TwoOptions },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
         };
     }
@@ -86,8 +90,12 @@ export class GridFieldControl implements IGridFieldControl {
             }
             default: {
                 const metadata = this._field.getRecord().getDataProvider().getMetadata() as Xrm.Metadata.EntityMetadata | undefined;
-                return !!column.isPrimary || column.name === metadata?.PrimaryNameAttribute;
+                return this._isPrimary() || column.name === metadata?.PrimaryNameAttribute;
             }
         }
+    }
+
+    private _isPrimary(): boolean {
+        return !!this._cell.getSettings().isPrimary;
     }
 }

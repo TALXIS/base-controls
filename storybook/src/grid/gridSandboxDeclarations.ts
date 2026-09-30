@@ -182,6 +182,8 @@ interface IGridColumnSettings {
     alignment?: IAlignment;
     /** Whether what the cells hold is locked for good. */
     isLocked?: boolean;
+    /** Whether the column's value stands for the record, drawn as a link to it. */
+    isPrimary?: boolean;
     isRequired?: boolean;
     widthOffset?: number;
     /** How each of the column's cells behaves. */

@@ -157,7 +157,6 @@ export class GridColumns implements IGridColumns {
     private _hasEditor(column: IColumn): boolean {
         switch (true) {
             case !this._settings.isEditingEnabled():
-            case !!column.oneClickEdit:
             case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
             case column.dataType === DataTypes.File:
             case column.dataType === DataTypes.Image: {
@@ -203,6 +202,10 @@ export class GridColumns implements IGridColumns {
 
     /** Whether an editor may be opened over this cell. */
     private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
+        //a one-click column takes input where its cell stands
+        if (colDef.settings?.cell?.oneClickEdit) {
+            return false;
+        }
         return !!record && !this._services.get('locks').get({ record: record, columnName: colDef.colId }).isLocked;
     }
 
@@ -222,6 +225,7 @@ export class GridColumns implements IGridColumns {
             alignment: column.alignment,
             isLocked: this._isColumnLocked(column),
             isRequired: this._isColumnRequired(column),
+            isPrimary: !!column.isPrimary,
             cell: { oneClickEdit: !!column.oneClickEdit },
         };
     }

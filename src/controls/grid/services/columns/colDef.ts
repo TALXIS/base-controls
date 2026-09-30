@@ -41,6 +41,8 @@ export interface IGridColumnSettings {
     alignment?: IAlignment;
     /** Whether what the cells hold is locked for good. */
     isLocked?: boolean;
+    /** Whether the column's value stands for the record, drawn as a link to it. */
+    isPrimary?: boolean;
     /** Whether a value is demanded before the record may be saved. */
     isRequired?: boolean;
     /** Unsaved width a module adds for what it draws. */

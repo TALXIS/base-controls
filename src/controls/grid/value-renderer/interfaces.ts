@@ -23,6 +23,10 @@ export interface IGridValueRendererParameters extends IParameters {
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     /** Whether option set values are drawn as tags in their colours. */
     EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
+    /** Whether the value stands for the record, drawn as a link to it where navigation is on. */
+    IsPrimaryColumn?: Omit<ITwoOptionsProperty, 'attributes'>;
+    /** Whether the value wraps onto as many lines as it needs. */
+    IsMultiline?: Omit<ITwoOptionsProperty, 'attributes'>;
     Column: {
         raw: IColumn | undefined;
     }

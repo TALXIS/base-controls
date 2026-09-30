@@ -14,6 +14,7 @@ export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
     const record = useGridCell().getRecord();
     const status = useRecordSaveStatus(record);
     const labels = useGridService('labels');
+    const gridApi = useGridService('gridApi');
     const components = props.components ?? {};
     const saveResult = status.saveResult;
 
@@ -23,7 +24,8 @@ export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
     if (!saveResult) {
         return <>{props.children}</>;
     }
-    const columnsMap = record.getDataProvider().getColumnsMap();
+    //the name the header shows, which the caller's colDefs may have changed
+    const getFieldName = (fieldName: string) => gridApi?.getColumn(fieldName)?.getColDef().headerName ?? fieldName;
     return <RecordSaveUi.Indicator
         state={saveResult.success ? 'succeeded' : 'failed'}
         components={components.indicator}
@@ -31,7 +33,7 @@ export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
             title: labels.getLocalizedString('recordSaveErrorTitle'),
             dismissText: labels.getLocalizedString('recordSaveErrorDismiss'),
             errors: (saveResult.errors ?? []).map(error => ({
-                fieldName: error.fieldName ? columnsMap[error.fieldName]?.displayName ?? error.fieldName : undefined,
+                fieldName: error.fieldName ? getFieldName(error.fieldName) : undefined,
                 message: error.message,
             })),
             onClear: status.clearSaveResult,

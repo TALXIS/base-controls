@@ -81,7 +81,7 @@ export class GridSorting implements IGridSorting {
             const columnName = colDef.colId ?? colDef.field;
             const column = columnName ? this._provider.getColumnsMap()[columnName] : undefined;
             if (column) {
-                colDef.sortable = this.isColumnSortable(column);
+                colDef.sortable = this.isColumnSortable(column) && !column.disableSorting;
             }
         }
     };
@@ -89,7 +89,8 @@ export class GridSorting implements IGridSorting {
     /** What a column's menu offers: the two directions, and clearing them. */
     private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
-        if (!column || !this.isColumnSortable(column)) {
+        //the definition's word, which the caller's colDefs have the last of
+        if (!column || !header.getColDef().sortable) {
             return;
         }
         const mine: IContextualMenuItem[] = [{

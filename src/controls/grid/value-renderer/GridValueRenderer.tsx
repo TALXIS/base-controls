@@ -9,7 +9,7 @@ const DEFAULT_PLACEHOLDER = '---';
 
 /** A value, drawn by its column's data type, with every piece replaceable through `components`. */
 export const GridValueRenderer = (props: IGridValueRenderer) => {
-    const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, Column, Record } = props.parameters;
+    const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, IsPrimaryColumn, IsMultiline, Column, Record } = props.parameters;
     const record = Record.raw;
     const column = Column.raw;
     const dataType = column?.dataType;
@@ -17,7 +17,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
     const alignment = ColumnAlignment.raw ?? 'left';
     const value = column ? record.getValue(column.name) : undefined;
     const formattedValue = column ? record.getFormattedValue(column.name) : null;
-    const isMultiline = !!column?.autoHeight;
+    const isMultiline = !!IsMultiline?.raw;
     const styles = useMemo(() => getGridValueRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
     const components = { ...GridValueRendererComponents, ...props.components };
 
@@ -75,7 +75,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
             }
         }
         //the primary column's value is the one that stands for the record itself
-        return enableNavigation && column?.isPrimary
+        return enableNavigation && IsPrimaryColumn?.raw
             ? components.onRenderLink({ text: formattedValue, onClick: () => openRecord(), isMultiline: isMultiline })
             : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
     };

@@ -48,7 +48,7 @@ export class GridControl implements IGridControl {
         this._columnName = parameters.cell.getColumnName();
         this._takesInput = !!parameters.takesInput;
         this._fieldControl = parameters.field
-            ? new GridFieldControl({ services: parameters.services, field: parameters.field, takesInput: this._takesInput })
+            ? new GridFieldControl({ services: parameters.services, field: parameters.field, cell: parameters.cell, takesInput: this._takesInput })
             : undefined;
     }
 
@@ -113,7 +113,8 @@ export class GridControl implements IGridControl {
             Record: { raw: this._record },
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
-            IsPrimaryColumn: { raw: false, type: DataTypes.TwoOptions },
+            IsPrimaryColumn: { raw: !!this._cell.getSettings().isPrimary, type: DataTypes.TwoOptions },
+            IsMultiline: { raw: !!this._cell.getColDef().autoHeight, type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
             AutoFocus: { raw: this._cell.isBeingEdited(), type: DataTypes.TwoOptions },
             FillAvailableSpace: { raw: true, type: DataTypes.TwoOptions },

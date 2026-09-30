@@ -29,7 +29,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const commandBarRef = useRef<ICommandBar>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const rerender = useRerender();
-    const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.Record.raw.getDataProvider().getColumnsMap()[DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME].alignment ?? 'left', context.mode.allocatedHeight), [context.mode.allocatedHeight]);
+    const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.ColumnAlignment?.raw ?? 'left', context.mode.allocatedHeight), [props.parameters.ColumnAlignment?.raw, context.mode.allocatedHeight]);
     useEventEmitter<IGridInlineRibbonModelEvents>(model, MODEL_EVENTS, () => rerender());
 
     const observe = useResizeObserver(() => {

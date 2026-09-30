@@ -12,6 +12,8 @@ export class GridColumnLayout {
     private _services: IGridServiceLocator;
     /** What the widths were last laid out for so a user's drag outlives a reload. */
     private _layoutKey?: string;
+    //colDefs are rebuilt on load only, so a drag would otherwise revert to the definition's width
+    private _draggedWidths = new Map<string, number>();
 
     constructor(parameters: IGridColumnLayoutParameters) {
         this._services = parameters.services;
@@ -45,7 +47,7 @@ export class GridColumnLayout {
         const columnsMap = this._provider.getColumnsMap();
         const columns = gridApi.getAllDisplayedColumns();
         const dataColumns = columns.filter(column => !!columnsMap[column.getColId()]);
-        const widths = new Map(dataColumns.map(column => [column, this._getBaseWidth(column, columnsMap[column.getColId()])]));
+        const widths = new Map(dataColumns.map(column => [column, this._getBaseWidth(column)]));
         const totalWidth = columns.reduce((total, column) => total + (widths.get(column) ?? column.getActualWidth()), 0);
         const isFilling = totalWidth <= gridWidth;
         return {
@@ -59,10 +61,11 @@ export class GridColumnLayout {
         };
     }
 
-    private _getBaseWidth(column: Column, providerColumn: IColumn): number {
+    private _getBaseWidth(column: Column): number {
         const colDef = column.getColDef();
-        //what the user dragged to, else what the definition starts at
-        return (providerColumn.visualSizeFactor ?? colDef.initialWidth ?? DEFAULT_COLUMN_WIDTH) + (colDef.settings?.widthOffset ?? 0);
+        //what the user dragged to, else what the definition sets
+        const width = this._draggedWidths.get(column.getColId()) ?? colDef.width ?? colDef.initialWidth ?? DEFAULT_COLUMN_WIDTH;
+        return width + (colDef.settings?.widthOffset ?? 0);
     }
 
     private _onColumnResized = (event: ColumnResizedEvent<IRecord>): void => {
@@ -72,6 +75,7 @@ export class GridColumnLayout {
         }
         const resizedColumnName = event.column.getColId();
         const width = event.column.getActualWidth() - (event.column.getColDef().settings?.widthOffset ?? 0);
+        this._draggedWidths.set(resizedColumnName, width);
         this._writeColumns(column => column.name === resizedColumnName
             ? { ...column, visualSizeFactor: width }
             : column);
