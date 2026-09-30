@@ -72,6 +72,8 @@ interface IRecord {
     getValue(columnName: string): any;
     getFormattedValue(columnName: string): string | null;
     setValue(columnName: string, value: any): void;
+    /** Saves the record: refused while a value is invalid. */
+    save(): Promise<IRecordSaveOperationResult>;
     getDataProvider(): IDataProvider;
     expressions: {
         setValidationExpression(columnName: string, expression: () => { error: boolean; errorMessage: string }): void;
@@ -95,6 +97,8 @@ interface IDataProvider {
     getRecordsMap(): { [recordId: string]: IRecord };
     getSelectedRecordIds(): string[];
     refresh(): void;
+    /** Redraws what the grid shows, for a change the records don't carry. */
+    requestRender(): void;
     isLoading(): boolean;
     getLoadingMessage(): string;
     grouping: {
@@ -122,6 +126,7 @@ declare class MemoryDataProvider implements IDataProvider {
     getRecordsMap(): { [recordId: string]: IRecord };
     getSelectedRecordIds(): string[];
     refresh(): void;
+    requestRender(): void;
     isLoading(): boolean;
     getLoadingMessage(): string;
     grouping: IDataProvider['grouping'];

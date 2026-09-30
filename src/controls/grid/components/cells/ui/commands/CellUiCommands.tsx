@@ -3,7 +3,7 @@ import { concatStyleSets, ICommandBar, ICommandBarProps } from "@fluentui/react"
 import { useResizeObserver } from "@legacy";
 import { getClassNames, IAlignment } from "@utils";
 import { CellUiCommandsComponents, ICellUiCommandsComponents } from "./components";
-import { getCellUiCommandsStyles } from "./styles";
+import { CELL_COMMANDS_CLASS_NAME, getCellUiCommandsStyles } from "./styles";
 
 export interface ICellUiCommandsProps extends ICommandBarProps {
     /** Where the buttons sit in the width the bar takes. */
@@ -25,7 +25,7 @@ export const CellUiCommands = (props: ICellUiCommandsProps) => {
 
     return components.onRenderContainer({
         ref: (element: HTMLDivElement | null) => element && observe(element),
-        className: getClassNames([styles.commandsRoot, className]),
+        className: getClassNames([CELL_COMMANDS_CLASS_NAME, styles.commandsRoot, className]),
         children: components.onRenderCommandBar({
             ...commandBarProps,
             items: items,

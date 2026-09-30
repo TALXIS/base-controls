@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","compilerOptions":{"noUnusedLocals":false,"noUnusedParameters":false},"include":["src/grid/.snippet-check/real/*.tsx","src/types.d.ts"]}

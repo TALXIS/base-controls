@@ -5,6 +5,7 @@ import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { IGridRowSelectionComponents } from "./moduleComponents";
 import { GRID_MODULE_PRIORITY } from "../priorities";
+import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
@@ -179,10 +180,11 @@ export class GridRowSelection implements IGridRowSelection {
         const rowId = target.closest?.('[row-id]')?.getAttribute('row-id');
         const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
         const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
-        //the checkbox and a plain click on a group row bypass AG Grid's selection
+        //the checkbox, a cell's commands and a plain click on a group row bypass AG Grid's selection
         const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
         const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
-        if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
+        const isCommand = !!target.closest?.(`.${CELL_COMMANDS_CLASS_NAME}`);
+        if (this.isSelectionColumn(colId ?? undefined) || isCommand || (isGroupRow && !hasModifier)) {
             _.stopPropagationForAgGrid(event);
         }
     };

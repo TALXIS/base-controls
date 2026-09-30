@@ -205,7 +205,12 @@ export class GridCells implements IGridCells {
         this._cellCommandsHooks.apply(result, params);
     }
 
-    private _onRenderRequested = (): void => this._services.get('gridApi').refreshCells();
+    //forced, headers included: a render request is for what the values alone don't show, such as a theme
+    private _onRenderRequested = (): void => {
+        const gridApi = this._services.get('gridApi');
+        gridApi.refreshCells({ force: true });
+        gridApi.refreshHeader();
+    };
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
         const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
