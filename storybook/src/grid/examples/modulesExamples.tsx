@@ -100,8 +100,8 @@ const createGroupedProvider = () => {
 
 const createTotalledProvider = () => {
     const provider = createDocsProvider()
-    provider.aggregation.addAggregation({ alias: 'value', columnName: 'value', aggregationFunction: 'sum' })
-    provider.aggregation.addAggregation({ alias: 'timespent', columnName: 'timespent', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'value_sum', columnName: 'value', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'timespent_sum', columnName: 'timespent', aggregationFunction: 'sum' })
     provider.refresh()
     return provider
 }

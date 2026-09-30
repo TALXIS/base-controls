@@ -19,6 +19,10 @@ const isOverdue = (record: IRecord) => {
 
 //a deal that is won, or that nobody expects to win any more, is closed
 const lockClosedDeals = (result: { isLocked: boolean }, { record }: { record: IRecord }) => {
+    //a group row stands for many deals
+    if (isGroupRow(record)) {
+        return
+    }
     if (Number(record.getValue('stage')) === WON || Number(record.getValue('probability') ?? 0) === 0) {
         result.isLocked = true
     }
@@ -109,8 +113,8 @@ const GridExample = () => {
 
 const createOverviewProvider = () => {
     const provider = createDocsProvider()
-    provider.aggregation.addAggregation({ alias: 'value', columnName: 'value', aggregationFunction: 'sum' })
-    provider.aggregation.addAggregation({ alias: 'timespent', columnName: 'timespent', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'value_sum', columnName: 'value', aggregationFunction: 'sum' })
+    provider.aggregation.addAggregation({ alias: 'timespent_sum', columnName: 'timespent', aggregationFunction: 'sum' })
     provider.refresh()
     return provider
 }

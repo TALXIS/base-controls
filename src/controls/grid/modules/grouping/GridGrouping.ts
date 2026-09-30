@@ -321,6 +321,7 @@ export class GridGrouping implements IGridGrouping {
         theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
     };
 
+
     /** A group row holds no record's value to edit. */
     //per cell: locking the group record would draw its row muted
     private _onEditable: GridEditableHook = (result, { record, columnName }) => {
