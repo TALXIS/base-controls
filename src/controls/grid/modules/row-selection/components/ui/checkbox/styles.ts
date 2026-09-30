@@ -1,8 +1,8 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getSelectionCellStyles = () => {
+export const getRowSelectionUiCheckboxStyles = () => {
     return mergeStyleSets({
-        checkBoxContainer: {
+        container: {
             width: '100%',
             height: '100%',
             display: 'flex',
@@ -10,7 +10,7 @@ export const getSelectionCellStyles = () => {
             justifyContent: 'center',
             cursor: 'pointer'
         },
-        checkBox: {
+        checkbox: {
             marginRight: 0.5
         }
     })

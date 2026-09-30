@@ -1,42 +1,38 @@
-import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { Checkbox } from "@fluentui/react";
-import { CellRenderer } from "@controls/grid/components/cells/cell-renderer/CellRenderer";
-import { useGridService } from "@controls/grid/useGridService";
+import { ITheme } from "@theme";
+import { CellRoot } from "@controls/grid/components/cells/root/CellRoot";
+import { CellTheme } from "@controls/grid/components/cells/theme/CellTheme";
+import { CellContainer } from "@controls/grid/components/cells/container/CellContainer";
 import { RecordSaveIndicator } from "@controls/grid/components/record-save-indicator";
-import { getSelectionCellStyles } from "./styles";
+import { useGridService } from "@controls/grid/useGridService";
+import { RowSelectionUi } from "../ui";
+import { ISelectionCellComponents } from "./components";
+
+export interface ISelectionCellProps extends ICellRendererParams<IRecord> {
+    /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
+    theme?: ITheme;
+    components?: ISelectionCellComponents;
+}
 
 /** The row's checkbox, or the status of its last save. */
-export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
+export const SelectionCell = (props: ISelectionCellProps) => {
     //`cellRendererSelector` draws this only for rows with a record
     const record = props.data!;
     const selection = useGridService('rowSelection')!;
-    const recordSelectionState = selection.getRecordSelectionState(props.node);
-    const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
-    const styles = useMemo(() => getSelectionCellStyles(), []);
+    const components = props.components ?? {};
 
-    //the label activates the checkbox it wraps, toggling the record back off
-    const onCheckBoxClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (!isRecordSelectionDisabled) {
-            selection.toggleRecord(record);
-        }
-    };
-
-    const onRenderCheckBox = () => <RecordSaveIndicator>
-        <div
-            onClick={onCheckBoxClick}
-            className={styles.checkBoxContainer}>
-            <Checkbox
-                checked={recordSelectionState === 'checked'}
-                disabled={isRecordSelectionDisabled}
-                indeterminate={recordSelectionState === 'indeterminate'}
-                styles={{
-                    checkbox: styles.checkBox
-                }} />
-        </div>
-    </RecordSaveIndicator>;
-
-    return <CellRenderer {...props} components={{ control: { onRenderControl: onRenderCheckBox } }} />;
+    return <CellRoot {...props}>
+        <CellTheme theme={props.theme}>
+            <CellContainer components={components.container}>
+                <RecordSaveIndicator components={components}>
+                    <RowSelectionUi.Checkbox
+                        state={selection.getRecordSelectionState(props.node)}
+                        disabled={selection.isRecordSelectionDisabled(record)}
+                        onToggle={() => selection.toggleRecord(record)}
+                        components={components.checkbox} />
+                </RecordSaveIndicator>
+            </CellContainer>
+        </CellTheme>
+    </CellRoot>;
 };

@@ -14,6 +14,6 @@ export interface IGridRowSelectionComponents {
 
 /** The defaults for {@link IGridRowSelectionComponents}. */
 export const GridRowSelectionComponents: IGridRowSelectionComponents = {
-    onRenderCell: (props) => <SelectionCell {...props as any} />,
+    onRenderCell: (props) => <SelectionCell {...props} />,
     onRenderHeader: (props) => <SelectionHeader {...props} />,
 };
