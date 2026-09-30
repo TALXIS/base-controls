@@ -20,6 +20,8 @@ export interface IGridEventHandlers {
     onBeforeRecordSaved: (record: IRecord) => void;
     /** Fired when a record has finished saving, with how it went. */
     onAfterRecordSaved: (result: IRecordSaveOperationResult) => void;
+    /** Fired when the provider has finished saving its records, with how each went. */
+    onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
     /** Fired when the provider reports an error. */
     onError: (message: string, details?: any) => void;
     /** Fired when an editor opens or closes, with the cell now edited if any. */

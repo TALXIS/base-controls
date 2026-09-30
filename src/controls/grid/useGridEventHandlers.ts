@@ -17,6 +17,7 @@ export const useGridEventHandlers = (runtime: IGridRuntime, props: IGrid) => {
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordColumnValueChanged', (record: IRecord, columnName: string, newValue: any) => props.onRecordValueChanged?.(record, columnName, newValue));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onAfterRecordSaved?.(result));
+    useEventEmitter<IDataProviderEventListeners>(provider, 'onAfterSaved', (results: IRecordSaveOperationResult[]) => props.onAfterSaved?.(results));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onError', (message: string, details?: any) => props.onError?.(message, details));
     useEventEmitter<IGridEditingEvents>(runtime.services.get('cells').editing.events, 'onEditedCellChanged', (_previous: IGridEditedCell | undefined, next: IGridEditedCell | undefined) => props.onEditedCellChanged?.(next));
     useEventEmitter<IGridColumnsEvents>(columns.events, 'onCellDoubleClicked', (record: IRecord, columnName: string) => props.onCellDoubleClicked?.(record, columnName));

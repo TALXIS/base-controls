@@ -700,6 +700,8 @@ interface IGridProps {
     onRecordValueChanged?: (record: IRecord, columnName: string, newValue: any) => void;
     onBeforeRecordSaved?: (record: IRecord) => void;
     onAfterRecordSaved?: (result: IRecordSaveOperationResult) => void;
+    /** Fired when the provider has finished saving its records, with how each went. */
+    onAfterSaved?: (results: IRecordSaveOperationResult[]) => void;
     onError?: (message: string, details?: any) => void;
     onEditedCellChanged?: (cell: IGridEditedCell | undefined) => void;
     onCellDoubleClicked?: (record: IRecord, columnName: string) => void;
