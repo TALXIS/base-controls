@@ -1,19 +1,21 @@
-import { useMemo } from "react";
-import { Checkbox } from "@fluentui/react";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../../useGridService";
-import { Grid } from "../../../../namespace";
-import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { IGridRowSelectionState } from "../../GridRowSelection";
-import { getSelectionHeaderStyles } from "./styles";
+import { RowSelectionUi } from "../ui";
+import { ISelectionHeaderComponents } from "./components";
+
+export interface ISelectionHeaderProps extends IColumnHeaderParams {
+    components?: ISelectionHeaderComponents;
+}
 
 /** The header of the column the checkboxes live in: what selects every record, and clears them. */
-export const SelectionHeader = (props: IColumnHeaderParams) => {
+export const SelectionHeader = (props: ISelectionHeaderProps) => {
     const selection = useGridService('rowSelection')!;
     const provider = useGridService('provider');
-    const styles = useMemo(() => getSelectionHeaderStyles(), []);
     const rerender = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 
@@ -28,7 +30,7 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
         return 'indeterminate';
     };
 
-    const onChange = (checked?: boolean) => {
+    const onChange = (checked: boolean) => {
         if (checked) {
             selection.selectRecords(provider, provider.getSortedRecordIds());
             return;
@@ -36,20 +38,15 @@ export const SelectionHeader = (props: IColumnHeaderParams) => {
         provider.clearSelectedRecordIds();
     };
 
-    //drawn only in multiple mode and while there is something to select
-    const isDrawn = selection.getMode() === 'multiple' && (provider.getSortedRecordIds().length > 0 || provider.isLoading());
-    const checkboxState = getCheckboxState();
-
     //no container: it draws the menu button this column lacks
-    return <Grid.ColumnHeader.Root {...props}>
-        <Grid.ColumnHeader.Theme>
-            <div className={styles.container}>
-                {isDrawn && <Checkbox
-                    checked={checkboxState === 'checked'}
-                    indeterminate={checkboxState === 'indeterminate'}
-                    styles={{ checkbox: styles.checkbox }}
-                    onChange={(event, checked) => onChange(checked)} />}
-            </div>
-        </Grid.ColumnHeader.Theme>
-    </Grid.ColumnHeader.Root>;
+    return <ColumnHeaderRoot {...props}>
+        <ColumnHeaderTheme>
+            <RowSelectionUi.HeaderCheckbox
+                state={getCheckboxState()}
+                //drawn only in multiple mode and while there is something to select
+                isCheckboxVisible={selection.getMode() === 'multiple' && (provider.getSortedRecordIds().length > 0 || provider.isLoading())}
+                onChange={onChange}
+                components={props.components?.headerCheckbox} />
+        </ColumnHeaderTheme>
+    </ColumnHeaderRoot>;
 };
