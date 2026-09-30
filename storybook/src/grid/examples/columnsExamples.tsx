@@ -4,18 +4,10 @@ import { GridExampleRunner } from '../GridExampleRunner'
 export const PIN_AND_ALIGN_CODE = `const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    onGetColumnDefinitions={columnDefs => {
-        for (const columnDef of columnDefs) {
-            if (columnDef.colId === 'name') {
-                columnDef.pinned = 'left'
-            }
-            if (columnDef.colId === 'stage') {
-                columnDef.pinned = 'right'
-            }
-            if (columnDef.colId === 'owner') {
-                columnDef.settings = { ...columnDef.settings, alignment: 'center' }
-            }
-        }
+    colDefs={{
+        name: { pinned: 'left' },
+        stage: { pinned: 'right' },
+        owner: { settings: { alignment: 'center' } },
     }}
     height='440px' />
 `
@@ -37,14 +29,15 @@ export const COMPUTED_COLUMN_CODE = `const WeightedValueCell = (props: IGridCell
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    onGetColumnDefinitions={columnDefs => columnDefs.push({
-        colId: 'weighted',
-        headerName: 'Weighted value',
-        initialWidth: 140,
-        sortable: false,
-        valueGetter: () => null,
-        cellRenderer: WeightedValueCell,
-    })}
+    colDefs={{
+        weighted: {
+            headerName: 'Weighted value',
+            initialWidth: 140,
+            sortable: false,
+            valueGetter: () => null,
+            cellRenderer: WeightedValueCell,
+        },
+    }}
     height='440px' />
 `
 
@@ -56,27 +49,28 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
         <Grid.Root
             provider={provider}
             modules={{ rowModel: createClientSideRowModelModule() }}
-            onGetColumnDefinitions={columnDefs => columnDefs.push({
-                colId: 'actions',
-                headerName: '',
-                pinned: 'right',
-                initialWidth: 130,
-                sortable: false,
-                valueGetter: () => null,
-                settings: {
-                    cell: {
-                        onGetCommands: (result, { record }) => {
-                            result.items.push(
-                                { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
-                                { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
-                            )
-                            result.overflowItems.push(
-                                { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                            )
+            colDefs={{
+                actions: {
+                    headerName: '',
+                    pinned: 'right',
+                    initialWidth: 130,
+                    sortable: false,
+                    valueGetter: () => null,
+                    settings: {
+                        cell: {
+                            onGetCommands: (result, { record }) => {
+                                result.items.push(
+                                    { key: 'open', title: 'Open', iconProps: { iconName: 'OpenInNewWindow' }, onClick: () => setLog('Opened ' + record.getFormattedValue('name')) },
+                                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', 4) },
+                                )
+                                result.overflowItems.push(
+                                    { key: 'reset', text: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                                )
+                            },
                         },
                     },
                 },
-            })}
+            }}
             height='440px' />
     </Stack>
 }

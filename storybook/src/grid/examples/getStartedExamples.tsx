@@ -28,8 +28,6 @@ const lockClosedDeals = (result: { isLocked: boolean }, { record }: { record: IR
     }
 }
 
-const COPYABLE_WHEN_WON = ['name', 'value']
-
 const copyValue = (columnName: string) => (result: IGridCellCommands, { record }: { record: IRecord }) => {
     if (Number(record.getValue('stage')) !== WON) {
         return
@@ -58,48 +56,6 @@ const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolea
     checked={!!props.checked}
     disabled={props.disabled}
     ref={input => { if (input) input.indeterminate = !!props.indeterminate }} />
-
-const adjustDealColumn = (columnDef: IGridColDef) => {
-    if (COPYABLE_WHEN_WON.includes(columnDef.colId!)) {
-        columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetCommands: copyValue(columnDef.colId!), onGetValidation: validateWonValue(columnDef.colId!) } }
-    }
-    //a grouped stage stays where grouping pins it
-    if (columnDef.colId === 'stage') {
-        columnDef.pinned ??= 'right'
-    }
-    if (columnDef.colId === 'closedate') {
-        columnDef.settings = {
-            ...columnDef.settings,
-            cell: {
-                ...columnDef.settings?.cell,
-                onGetTheme: (theme, { record }) => {
-                    if (isOverdue(record)) {
-                        theme.colors.background = '#fde7e9'
-                        theme.colors.text = '#a4262c'
-                    }
-                },
-            },
-        }
-    }
-}
-
-const ACTIONS_COLUMN: IGridColDef = {
-    colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
-    settings: {
-        cell: {
-            onGetCommands: (result, { record }) => {
-                //a group row stands for many deals
-                if (isGroupRow(record)) {
-                    return
-                }
-                result.items.push(
-                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
-                    { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                )
-            },
-        },
-    },
-}
 
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
@@ -146,9 +102,40 @@ const GridExample = () => {
                 }),
                 aggregation: createAggregationModule(),
             }}
-            onGetColumnDefinitions={columnDefs => {
-                columnDefs.forEach(adjustDealColumn)
-                columnDefs.push(ACTIONS_COLUMN)
+            colDefs={{
+                name: { settings: { cell: { onGetCommands: copyValue('name'), onGetValidation: validateWonValue('name') } } },
+                value: { settings: { cell: { onGetCommands: copyValue('value'), onGetValidation: validateWonValue('value') } } },
+                //a grouped stage stays where grouping pins it
+                stage: colDef => ({ pinned: colDef.pinned ?? 'right' }),
+                closedate: {
+                    settings: {
+                        cell: {
+                            onGetTheme: (theme, { record }) => {
+                                if (isOverdue(record)) {
+                                    theme.colors.background = '#fde7e9'
+                                    theme.colors.text = '#a4262c'
+                                }
+                            },
+                        },
+                    },
+                },
+                actions: {
+                    headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
+                    settings: {
+                        cell: {
+                            onGetCommands: (result, { record }) => {
+                                //a group row stands for many deals
+                                if (isGroupRow(record)) {
+                                    return
+                                }
+                                result.items.push(
+                                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
+                                    { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                                )
+                            },
+                        },
+                    },
+                },
             }}
             enableEditing
             enableAutoSave

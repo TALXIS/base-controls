@@ -251,21 +251,13 @@ const validateEstimate = (result: IFieldValidationResult, { record }: { record: 
 }
 
 /** The columns the story adds or changes, beyond what the provider holds. */
-const onGetScratchColumnDefinitions: NonNullable<IGrid['onGetColumnDefinitions']> = columnDefs => {
-    for (const columnDef of columnDefs) {
-        if (columnDef.colId === 'status') {
-            columnDef.pinned ??= 'right'
-        }
-        //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
-        if (columnDef.colId === 'estimate') {
-            columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetValidation: validateEstimate } }
-        }
-        if (columnDef.colId === PAYLOAD_COLUMN) {
-            columnDef.cellRenderer = PayloadCell
-            columnDef.headerComponent = PayloadHeader
-        }
-    }
-    columnDefs.push({ ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader })
+const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = {
+    //a grouped status stays where grouping pins it
+    status: colDef => ({ pinned: colDef.pinned ?? 'right' }),
+    //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
+    estimate: { settings: { cell: { onGetValidation: validateEstimate } } },
+    [PAYLOAD_COLUMN]: { cellRenderer: PayloadCell, headerComponent: PayloadHeader },
+    [SUMMARY_COLUMN]: { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
 }
 
 export interface IScratchGridProps {
@@ -340,7 +332,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             key={key}
             provider={provider}
             modules={modules}
-            onGetColumnDefinitions={onGetScratchColumnDefinitions}
+            colDefs={SCRATCH_COL_DEFS}
             height='100%'
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}

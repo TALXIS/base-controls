@@ -42,12 +42,7 @@ const GridExample = () => {
             modules={{ rowModel: createClientSideRowModelModule() }}
             enableEditing
             enableAutoSave
-            onGetColumnDefinitions={columnDefs => {
-                const probability = columnDefs.find(columnDef => columnDef.colId === 'probability')
-                if (probability) {
-                    probability.settings = { ...probability.settings, cell: { ...probability.settings?.cell, onGetValidation: validateProbability } }
-                }
-            }}
+            colDefs={{ probability: { settings: { cell: { onGetValidation: validateProbability } } } }}
             onBeforeRecordSaved={record => setStatus('Saving ' + record.getFormattedValue('name') + '...')}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
             height='440px' />
