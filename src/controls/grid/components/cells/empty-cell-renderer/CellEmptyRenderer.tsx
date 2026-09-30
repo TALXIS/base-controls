@@ -4,6 +4,7 @@ import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
+import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ITheme } from "@theme";
 import { ICellRendererComponents } from "../cell-renderer/components";
@@ -25,7 +26,7 @@ export const CellEmptyRenderer = (props: ICellEmptyRendererProps) => {
 
     return <CellRoot {...props}>
         <CellTheme theme={props.theme}>
-            {props.colDef?.autoHeight
+            {hasResizeGrip(props.colDef)
                 ? <CellResizeGrip components={components.resizeGrip}>{content}</CellResizeGrip>
                 : content}
         </CellTheme>

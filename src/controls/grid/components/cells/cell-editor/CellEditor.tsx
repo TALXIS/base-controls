@@ -6,6 +6,7 @@ import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
+import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
 import { ICellEditorComponents } from "./components";
 
 export interface ICellEditorProps extends ICellRendererParams {
@@ -25,7 +26,7 @@ export const CellEditor = (props: ICellEditorProps) => {
 
     return <CellRoot {...props} isEditor>
         <CellTheme theme={props.theme}>
-            {props.colDef?.autoHeight
+            {hasResizeGrip(props.colDef)
                 ? <CellResizeGrip components={components.resizeGrip}>{content}</CellResizeGrip>
                 : content}
         </CellTheme>

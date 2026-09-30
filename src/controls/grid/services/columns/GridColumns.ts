@@ -226,8 +226,13 @@ export class GridColumns implements IGridColumns {
             isLocked: this._isColumnLocked(column),
             isRequired: this._isColumnRequired(column),
             isPrimary: !!column.isPrimary,
-            cell: { oneClickEdit: !!column.oneClickEdit },
+            cell: { oneClickEdit: !!column.oneClickEdit, isRowResizable: this._isLongText(column) },
         };
+    }
+
+    /** Whether the column holds text that runs over more than one line. */
+    private _isLongText(column: IColumn): boolean {
+        return column.dataType === DataTypes.Multiple || column.dataType === DataTypes.SingleLineTextArea;
     }
 
     /** Whether a key press on a header belongs to the header. */

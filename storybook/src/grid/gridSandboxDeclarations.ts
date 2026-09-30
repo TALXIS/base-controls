@@ -191,6 +191,8 @@ interface IGridColumnSettings {
     /** How each of the column's cells behaves. */
     cell?: {
         oneClickEdit?: boolean;
+        /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
+        isRowResizable?: boolean;
         /** Changes the commands a cell offers: push to result.items or result.overflowItems. */
         onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
         /** Changes the theme of this column's cells, as a cell theme hook does. */

@@ -8,6 +8,7 @@ import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
+import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
 import { CellLockIcon } from "../lock-icon/CellLockIcon";
 import { ICellRendererComponents } from "./components";
 
@@ -31,7 +32,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
 
     return <CellRoot {...props}>
         <CellTheme theme={props.theme}>
-            {props.colDef?.autoHeight
+            {hasResizeGrip(props.colDef)
                 ? <CellResizeGrip components={components.resizeGrip}>{content}</CellResizeGrip>
                 : content}
         </CellTheme>

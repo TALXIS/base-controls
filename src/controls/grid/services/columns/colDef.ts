@@ -11,6 +11,8 @@ import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-heade
 export interface IGridColumnCellSettings {
     /** Whether the control takes input where the cell stands, with no editor to open. */
     oneClickEdit?: boolean;
+    /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
+    isRowResizable?: boolean;
     /** Changes the commands a cell offers, after `registerCellCommandsHook`. */
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
     /** Changes a cell's theme, after `registerCellThemeHook`. */

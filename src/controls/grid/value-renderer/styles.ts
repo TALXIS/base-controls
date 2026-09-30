@@ -20,8 +20,8 @@ export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultil
     });
 };
 
-/** How a value that runs past one line is drawn: wrapped and clamped. */
-export const getMultilineStyles = (): CSSProperties => {
+/** How a value that runs past one line is drawn: wrapped, and clamped to the lines that fit. */
+export const getMultilineStyles = (lines: number): CSSProperties => {
     return {
         whiteSpace: 'normal',
         display: '-webkit-box',
@@ -29,7 +29,7 @@ export const getMultilineStyles = (): CSSProperties => {
         '-webkit-box-orient': 'vertical',
         //@ts-ignore
         wordBreak: 'auto-phrase',
-        '-webkit-line-clamp': '6',
+        '-webkit-line-clamp': `${lines}`,
         lineHeight: 'normal',
     };
 };

@@ -15,7 +15,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
     const { children } = props;
     const cell = useGridCell();
     const hasContainerAbove = useIsInsideCellContainer();
-    const gridApi = useGridService('gridApi');
+    const rows = useGridService('rows');
     const node = cell.getNode();
     const { rerender } = useRerender();
 
@@ -26,11 +26,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
         return () => node?.removeEventListener('heightChanged', onHeightChanged);
     }, [node]);
 
-    //AG Grid measures the renderer, not the editor, for an auto-height row
-    const onResize = (height: number) => {
-        node?.setRowHeight(height);
-        gridApi?.onRowHeightChanged();
-    };
+    const onResize = (height: number) => rows.setRowHeight(cell.getRecord(), height);
 
     //the container sits inside the element the drag grows
     if (hasContainerAbove) {

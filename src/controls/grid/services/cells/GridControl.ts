@@ -6,6 +6,7 @@ import { IGridServiceLocator } from "../../services";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
+import { hasResizeGrip } from "../../components/cells/resize-grip/hasResizeGrip";
 
 export interface IGridControlParameters {
     services: IGridServiceLocator;
@@ -114,7 +115,8 @@ export class GridControl implements IGridControl {
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
             IsPrimaryColumn: { raw: !!this._cell.getSettings().isPrimary, type: DataTypes.TwoOptions },
-            IsMultiline: { raw: !!this._cell.getColDef().autoHeight, type: DataTypes.TwoOptions },
+            //wrapped wherever the row can grow to show it
+            IsMultiline: { raw: hasResizeGrip(this._cell.getColDef()), type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
             AutoFocus: { raw: this._cell.isBeingEdited(), type: DataTypes.TwoOptions },
             FillAvailableSpace: { raw: true, type: DataTypes.TwoOptions },

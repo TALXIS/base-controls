@@ -182,9 +182,6 @@ const GridExample = () => {
                 },
                 //edited where it stands, with no editor to open
                 recurring: { settings: { cell: { oneClickEdit: true } } },
-                //the provider grows a row to fit long text by default
-                notes: { autoHeight: false },
-                nextstep: { autoHeight: false },
                 actions: {
                     headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
                     settings: {

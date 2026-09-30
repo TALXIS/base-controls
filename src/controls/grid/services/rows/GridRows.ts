@@ -41,6 +41,8 @@ export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
+    /** Sets how tall the record's row is, over what the hooks decide. */
+    setRowHeight(record: IRecord, height: number): void;
 }
 
 export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows {
@@ -49,6 +51,8 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
     private _rowHeightHooks = new HookRegistry<GridRowHeightHook>();
+    //a node's own height is lost once AG Grid asks `getRowHeight` again
+    private _setHeights = new Map<string, number>();
 
     constructor(parameters: IGridRowsParameters) {
         super();
@@ -67,6 +71,14 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         return this._rowHeightHooks.register(hook, priority);
     }
 
+    public setRowHeight(record: IRecord, height: number): void {
+        const recordId = record.getRecordId();
+        this._setHeights.set(recordId, height);
+        const gridApi = this._services.get('gridApi');
+        gridApi.getRowNode(recordId)?.setRowHeight(height);
+        gridApi.onRowHeightChanged();
+    }
+
     private _getRowHeight = (params: RowHeightParams<IRecord>): number | undefined => {
         if (!params.data) {
             return undefined;
@@ -74,7 +86,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         const result: IGridRowHeight = {};
         this._rowHeightHooks.apply(result, { record: params.data, node: params.node });
         this._services.get('settings').getRowSettings().onGetHeight?.(result, { record: params.data, node: params.node });
-        return result.height;
+        return this._setHeights.get(params.data.getRecordId()) ?? result.height;
     };
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
