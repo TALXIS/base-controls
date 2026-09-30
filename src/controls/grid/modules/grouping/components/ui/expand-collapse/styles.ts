@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGroupExpandCollapseHeaderStyles = () => mergeStyleSets({
+export const getGroupingUiExpandCollapseStyles = () => mergeStyleSets({
     root: {
         display: 'flex',
         justifyContent: 'center',

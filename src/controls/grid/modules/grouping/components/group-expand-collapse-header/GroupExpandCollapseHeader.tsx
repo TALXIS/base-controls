@@ -1,15 +1,17 @@
-import * as React from "react";
-import { IconButton } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useGridService } from "../../../../useGridService";
-import { Grid } from "../../../../namespace";
-import { IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
-import { getGroupExpandCollapseHeaderStyles } from "./styles";
+import { GroupingUi } from "../ui";
+import { IGroupExpandCollapseHeaderComponents } from "./components";
+
+export interface IGroupExpandCollapseHeaderProps extends IColumnHeaderParams {
+    components?: IGroupExpandCollapseHeaderComponents;
+}
 
 /** Opens and closes the groups a level at a time. */
-export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
-    const styles = React.useMemo(() => getGroupExpandCollapseHeaderStyles(), []);
+export const GroupExpandCollapseHeader = (props: IGroupExpandCollapseHeaderProps) => {
     //the grouping module is registered wherever this header draws
     const grouping = useGridService('grouping')!;
     const labels = useGridGroupingLabels();
@@ -22,22 +24,16 @@ export const GroupExpandCollapseHeader = (props: IColumnHeaderParams) => {
     };
 
     //no container: it draws the menu button this column lacks
-    return <Grid.ColumnHeader.Root {...props}>
-        <Grid.ColumnHeader.Theme>
-            <div className={styles.root}>
-                <IconButton
-                    title={labels.getLocalizedString('expandLevel')}
-                    disabled={expandedLevel >= grouping.getDeepestLevel()}
-                    styles={{ root: styles.button }}
-                    iconProps={{ iconName: 'Add', styles: { root: styles.icon } }}
-                    onClick={() => onStepLevel(1)} />
-                <IconButton
-                    title={labels.getLocalizedString('collapseLevel')}
-                    disabled={expandedLevel < 0}
-                    styles={{ root: styles.button }}
-                    iconProps={{ iconName: 'Remove', styles: { root: styles.icon } }}
-                    onClick={() => onStepLevel(-1)} />
-            </div>
-        </Grid.ColumnHeader.Theme>
-    </Grid.ColumnHeader.Root>;
+    return <ColumnHeaderRoot {...props}>
+        <ColumnHeaderTheme>
+            <GroupingUi.ExpandCollapse
+                expandTitle={labels.getLocalizedString('expandLevel')}
+                collapseTitle={labels.getLocalizedString('collapseLevel')}
+                canExpand={expandedLevel < grouping.getDeepestLevel()}
+                canCollapse={expandedLevel >= 0}
+                onExpand={() => onStepLevel(1)}
+                onCollapse={() => onStepLevel(-1)}
+                components={props.components?.expandCollapse} />
+        </ColumnHeaderTheme>
+    </ColumnHeaderRoot>;
 };
