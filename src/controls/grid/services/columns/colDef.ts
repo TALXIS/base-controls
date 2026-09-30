@@ -1,3 +1,4 @@
+import type { ColDef } from "@ag-grid-community/core";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
 import type { ThemeBuilder } from "@theme";
@@ -47,6 +48,9 @@ export interface IGridColumnSettings {
     /** Callbacks for the column's header. */
     header?: IGridColumnHeaderSettings;
 }
+
+/** A column of the grid: AG Grid's definition, with the grid's own `settings`. */
+export type IGridColDef = ColDef<IRecord>;
 
 declare module "@ag-grid-community/core" {
     interface ColDef<TData = any, TValue = any> {

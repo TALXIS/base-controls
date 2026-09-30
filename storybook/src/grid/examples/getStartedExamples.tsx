@@ -52,6 +52,48 @@ const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolea
     disabled={props.disabled}
     ref={input => { if (input) input.indeterminate = !!props.indeterminate }} />
 
+const adjustDealColumn = (columnDef: IGridColDef) => {
+    if (COPYABLE_WHEN_WON.includes(columnDef.colId!)) {
+        columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetCommands: copyValue(columnDef.colId!) } }
+    }
+    //a grouped stage stays where grouping pins it
+    if (columnDef.colId === 'stage') {
+        columnDef.pinned ??= 'right'
+    }
+    if (columnDef.colId === 'closedate') {
+        columnDef.settings = {
+            ...columnDef.settings,
+            cell: {
+                ...columnDef.settings?.cell,
+                onGetTheme: (theme, { record }) => {
+                    if (isOverdue(record)) {
+                        theme.colors.background = '#fde7e9'
+                        theme.colors.text = '#a4262c'
+                    }
+                },
+            },
+        }
+    }
+}
+
+const ACTIONS_COLUMN: IGridColDef = {
+    colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
+    settings: {
+        cell: {
+            onGetCommands: (result, { record }) => {
+                //a group row stands for many deals
+                if (isGroupRow(record)) {
+                    return
+                }
+                result.items.push(
+                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
+                    { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
+                )
+            },
+        },
+    },
+}
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -103,40 +145,10 @@ const GridExample = () => {
                 }),
                 aggregation: createAggregationModule(),
             }}
-            colDefs={[
-                ...COPYABLE_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetCommands: copyValue(colId) } } })),
-                { colId: 'stage', pinned: 'right' },
-                {
-                    colId: 'closedate',
-                    settings: {
-                        cell: {
-                            onGetTheme: (theme, { record }) => {
-                                if (isOverdue(record)) {
-                                    theme.colors.background = '#fde7e9'
-                                    theme.colors.text = '#a4262c'
-                                }
-                            },
-                        },
-                    },
-                },
-                {
-                    colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
-                    settings: {
-                        cell: {
-                            onGetCommands: (result, { record }) => {
-                                //a group row stands for many deals
-                                if (isGroupRow(record)) {
-                                    return
-                                }
-                                result.items.push(
-                                    { key: 'won', title: 'Mark as won', iconProps: { iconName: 'CheckMark' }, onClick: () => record.setValue('stage', WON) },
-                                    { key: 'reset', title: 'Reset probability', iconProps: { iconName: 'Undo' }, onClick: () => record.setValue('probability', 0) },
-                                )
-                            },
-                        },
-                    },
-                },
-            ]}
+            onGetColumnDefinitions={columnDefs => {
+                columnDefs.forEach(adjustDealColumn)
+                columnDefs.push(ACTIONS_COLUMN)
+            }}
             enableEditing
             enableAutoSave
             enableOptionSetColors

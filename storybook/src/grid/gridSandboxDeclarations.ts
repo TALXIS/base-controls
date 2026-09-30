@@ -666,7 +666,8 @@ interface IGridProps {
     className?: string;
     components?: IGridComponents;
     labels?: Partial<IGridLabels>;
-    colDefs?: (IGridColDef & { colId: string })[];
+    /** Changes the column definitions in place, after every module's hook has run. */
+    onGetColumnDefinitions?: (columnDefs: IGridColDef[]) => void;
     state?: any;
     /** Callbacks the grid runs for each row. */
     rowSettings?: {

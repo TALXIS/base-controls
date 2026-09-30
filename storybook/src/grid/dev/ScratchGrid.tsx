@@ -243,11 +243,18 @@ const SUMMARY_COLUMN_DEFINITION = {
     valueFormatter: () => '',
 }
 /** The columns the story adds or changes, beyond what the provider holds. */
-const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = [
-    { colId: 'status', pinned: 'right' },
-    { colId: PAYLOAD_COLUMN, cellRenderer: PayloadCell, headerComponent: PayloadHeader },
-    { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
-]
+const onGetScratchColumnDefinitions: NonNullable<IGrid['onGetColumnDefinitions']> = columnDefs => {
+    for (const columnDef of columnDefs) {
+        if (columnDef.colId === 'status') {
+            columnDef.pinned ??= 'right'
+        }
+        if (columnDef.colId === PAYLOAD_COLUMN) {
+            columnDef.cellRenderer = PayloadCell
+            columnDef.headerComponent = PayloadHeader
+        }
+    }
+    columnDefs.push({ ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader })
+}
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -331,7 +338,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             key={key}
             provider={provider}
             modules={modules}
-            colDefs={SCRATCH_COL_DEFS}
+            onGetColumnDefinitions={onGetScratchColumnDefinitions}
             height='100%'
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}

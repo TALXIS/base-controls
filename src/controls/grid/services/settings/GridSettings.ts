@@ -1,3 +1,5 @@
+import { ColDef } from "@ag-grid-community/core";
+import { IRecord } from "@talxis/client-libraries";
 import { IGrid } from "../../interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;
@@ -24,7 +26,8 @@ export interface IGridSettings {
     getDefaultRowHeight(): number;
     /** How many rows the grid grows to fit before it scrolls instead. */
     getMaxVisibleRows(): number;
-    getColDefs(): NonNullable<IGrid['colDefs']>;
+    /** Runs the caller's `onGetColumnDefinitions` over the definitions every module has had a say in. */
+    onGetColumnDefinitions(columnDefs: ColDef<IRecord>[]): void;
     /** The caller's per-row callbacks, read on every ask. */
     getRowSettings(): NonNullable<IGrid['rowSettings']>;
 }
@@ -67,8 +70,8 @@ export class GridSettings implements IGridSettings {
         return this._getProps().maxVisibleRows ?? DEFAULT_MAX_VISIBLE_ROWS;
     }
 
-    public getColDefs(): NonNullable<IGrid['colDefs']> {
-        return this._mountProps.colDefs ?? [];
+    public onGetColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+        this._getProps().onGetColumnDefinitions?.(columnDefs);
     }
 
     public getRowSettings(): NonNullable<IGrid['rowSettings']> {

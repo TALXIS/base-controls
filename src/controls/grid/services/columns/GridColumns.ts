@@ -61,6 +61,8 @@ export class GridColumns implements IGridColumns {
     constructor(parameters: IGridColumnsParameters) {
         this._services = parameters.services;
         this._headers = new GridColumnHeaders({ services: parameters.services });
+        //after every module's hook, so the caller sees the columns as the modules left them
+        this._hooks.register(columnDefs => this._settings.onGetColumnDefinitions(columnDefs), Number.MAX_SAFE_INTEGER);
     }
 
     public get headers(): IGridColumnHeaders {
@@ -79,23 +81,8 @@ export class GridColumns implements IGridColumns {
         }
         const own = new Set(columnDefs);
         this._hooks.apply(columnDefs);
-        //last, so the caller's definitions win over the hooks'
-        this._applyColDefs(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
-    }
-
-    /** The caller's `colDefs`: merged over the column with the same id, else added. */
-    private _applyColDefs(columnDefs: ColDef<IRecord>[]): void {
-        for (const colDef of this._settings.getColDefs()) {
-            const index = columnDefs.findIndex(columnDef => columnDef.colId === colDef.colId);
-            if (index === -1) {
-                columnDefs.push({ ...colDef });
-                continue;
-            }
-            const base = columnDefs[index];
-            columnDefs[index] = { ...base, ...colDef, settings: this._mergeSettings(base.settings, colDef.settings) };
-        }
     }
 
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
@@ -201,16 +188,6 @@ export class GridColumns implements IGridColumns {
     /** Whether an editor may be opened over this cell. */
     private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
         return !!record && this._services.get('editability').get({ record: record, columnName: colDef.colId }).isEditable;
-    }
-
-    //merged a level deep so an entry can change one setting, or one callback, and keep the rest
-    private _mergeSettings(base: IGridColumnSettings = {}, override: IGridColumnSettings = {}): IGridColumnSettings {
-        return {
-            ...base,
-            ...override,
-            cell: { ...base.cell, ...override.cell },
-            header: { ...base.header, ...override.header },
-        };
     }
 
     /** What the grid's cells and header read about this column. */

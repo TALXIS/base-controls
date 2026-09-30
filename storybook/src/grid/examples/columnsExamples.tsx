@@ -4,11 +4,19 @@ import { GridExampleRunner } from '../GridExampleRunner'
 export const PIN_AND_ALIGN_CODE = `const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={[
-        { colId: 'name', pinned: 'left' },
-        { colId: 'stage', pinned: 'right' },
-        { colId: 'owner', settings: { alignment: 'center' } },
-    ]}
+    onGetColumnDefinitions={columnDefs => {
+        for (const columnDef of columnDefs) {
+            if (columnDef.colId === 'name') {
+                columnDef.pinned = 'left'
+            }
+            if (columnDef.colId === 'stage') {
+                columnDef.pinned = 'right'
+            }
+            if (columnDef.colId === 'owner') {
+                columnDef.settings = { ...columnDef.settings, alignment: 'center' }
+            }
+        }
+    }}
     height='440px' />
 `
 
@@ -29,14 +37,14 @@ export const COMPUTED_COLUMN_CODE = `const WeightedValueCell = (props: IGridCell
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={[{
+    onGetColumnDefinitions={columnDefs => columnDefs.push({
         colId: 'weighted',
         headerName: 'Weighted value',
         initialWidth: 140,
         sortable: false,
         valueGetter: () => null,
         cellRenderer: WeightedValueCell,
-    }]}
+    })}
     height='440px' />
 `
 
@@ -48,7 +56,7 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
         <Grid.Root
             provider={provider}
             modules={{ rowModel: createClientSideRowModelModule() }}
-            colDefs={[{
+            onGetColumnDefinitions={columnDefs => columnDefs.push({
                 colId: 'actions',
                 headerName: '',
                 pinned: 'right',
@@ -68,7 +76,7 @@ export const ACTIONS_COLUMN_CODE = `const GridExample = () => {
                         },
                     },
                 },
-            }]}
+            })}
             height='440px' />
     </Stack>
 }

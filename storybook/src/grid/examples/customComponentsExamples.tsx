@@ -20,7 +20,12 @@ export const CUSTOM_CELL_CODE = `const StageCell = (props: IGridCellParams) => <
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={[{ colId: 'stage', cellRenderer: StageCell }]}
+    onGetColumnDefinitions={columnDefs => {
+        const stage = columnDefs.find(columnDef => columnDef.colId === 'stage')
+        if (stage) {
+            stage.cellRenderer = StageCell
+        }
+    }}
     height='440px' />
 `
 
@@ -36,7 +41,12 @@ export const CUSTOM_HEADER_CODE = `const ValueHeader = (props: IColumnHeaderRend
 const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-    colDefs={[{ colId: 'value', headerComponent: ValueHeader }]}
+    onGetColumnDefinitions={columnDefs => {
+        const value = columnDefs.find(columnDef => columnDef.colId === 'value')
+        if (value) {
+            value.headerComponent = ValueHeader
+        }
+    }}
     height='440px' />
 `
 

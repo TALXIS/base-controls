@@ -1,6 +1,7 @@
-import { ColDef, GridState } from "@ag-grid-community/core";
+import { GridState } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IGridModules } from "./modules";
+import type { IGridColDef } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
 import type { IGridEditedCell } from "./services/editing";
@@ -61,8 +62,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
 
     /** Overrides for the strings the grid renders; read once, at mount. */
     labels?: Partial<IGridLabels>;
-    /** Merged by `colId` over every column, the ones modules add included, or added; read at mount. */
-    colDefs?: (ColDef<IRecord> & { colId: string })[];
+    /** Changes the column definitions in place, after every module's hook has run. */
+    onGetColumnDefinitions?: (columnDefs: IGridColDef[]) => void;
     /** Callbacks the grid runs for each row, read whenever it asks. */
     rowSettings?: IGridRowSettings;
     /** AG Grid state for column order, widths and sorting; read at mount, then `gridApi`. */
