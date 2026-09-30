@@ -39,9 +39,16 @@ const copyValue = (columnName: string) => (result: IGridCellCommands, { record }
 
 const isWonBelowMinimum = (record: IRecord) => Number(record.getValue('stage')) === WON && Number(record.getValue('value') ?? 0) < 10000
 
-const validateWonValue = (record: IRecord) => {
-    record.expressions.setValidationExpression('value', () => ({ error: isWonBelowMinimum(record), errorMessage: 'A won deal needs a value of at least $10,000.' }))
-    record.expressions.setValidationExpression('name', () => ({ error: isWonBelowMinimum(record), errorMessage: 'This deal was won below the $10,000 minimum.' }))
+const WON_BELOW_MINIMUM_MESSAGES: { [columnName: string]: string } = {
+    value: 'A won deal needs a value of at least $10,000.',
+    name: 'This deal was won below the $10,000 minimum.',
+}
+
+const validateWonValue = (columnName: string) => (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+    if (!isGroupRow(record) && isWonBelowMinimum(record)) {
+        result.error = true
+        result.errorMessage = WON_BELOW_MINIMUM_MESSAGES[columnName]
+    }
 }
 
 //the cell toggles the row on click, so the input only shows the state it is handed
@@ -54,7 +61,7 @@ const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolea
 
 const adjustDealColumn = (columnDef: IGridColDef) => {
     if (COPYABLE_WHEN_WON.includes(columnDef.colId!)) {
-        columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetCommands: copyValue(columnDef.colId!) } }
+        columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetCommands: copyValue(columnDef.colId!), onGetValidation: validateWonValue(columnDef.colId!) } }
     }
     //a grouped stage stays where grouping pins it
     if (columnDef.colId === 'stage') {
@@ -97,12 +104,6 @@ const ACTIONS_COLUMN: IGridColDef = {
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
-
-    React.useEffect(() => {
-        provider.getRecords().forEach(validateWonValue)
-        provider.addEventListener('onRecordLoaded', validateWonValue)
-        return () => provider.removeEventListener('onRecordLoaded', validateWonValue)
-    }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{selectedIds.length ? selectedIds.length + ' deal(s) selected. ' : ''}{status}</MessageBar>

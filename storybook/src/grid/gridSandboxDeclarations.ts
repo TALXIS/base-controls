@@ -194,6 +194,8 @@ interface IGridColumnSettings {
         onGetEditable?: (result: { isEditable: boolean }, params: { record: IRecord }) => void;
         /** Decides whether this column's cells show they are loading. */
         onGetLoading?: (result: { isLoading: boolean }, params: { record: IRecord }) => void;
+        /** Decides whether a record's value is valid; the grid registers it into the record. */
+        onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
     };
     /** Callbacks for the column's header. */
     header?: {
@@ -312,6 +314,19 @@ interface IGridEditabilityContext {
     columnName?: string;
 }
 
+/** Whether a value is valid, and why not. */
+interface IFieldValidationResult {
+    error: boolean;
+    errorMessage: string;
+}
+
+interface IGridValidation {
+    /** Whether the record's value in the column is valid, after the hooks and the column's onGetValidation. */
+    get(params: { record: IRecord; columnName: string }): IFieldValidationResult;
+    /** A hook over every column of every record. */
+    registerValidationHook(hook: (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void, priority?: number): () => void;
+}
+
 interface IGridEditability {
     /** Whether what the context names can be edited, and which level locked it if not. */
     get(context?: IGridEditabilityContext): { isEditable: boolean; lockedBy?: 'grid' | 'column' | 'record' | 'cell' };
@@ -345,6 +360,7 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     cells: IGridCells;
     rows: IGridRows;
     editability: IGridEditability;
+    validation: IGridValidation;
     surfaces: IGridSurfaces;
     grid: IGridRuntime;
 }

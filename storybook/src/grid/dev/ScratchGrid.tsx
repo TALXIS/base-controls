@@ -1,7 +1,7 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
-import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
 const PAYLOAD_COLUMN = 'payload'
@@ -242,11 +242,23 @@ const SUMMARY_COLUMN_DEFINITION = {
     valueGetter: () => null,
     valueFormatter: () => '',
 }
+const validateEstimate = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+    const estimate = Number(record.getValue('estimate') ?? 0)
+    if (estimate > 5) {
+        result.error = true
+        result.errorMessage = `An estimate of ${estimate} days is more than the 5 this team plans a task in.`
+    }
+}
+
 /** The columns the story adds or changes, beyond what the provider holds. */
 const onGetScratchColumnDefinitions: NonNullable<IGrid['onGetColumnDefinitions']> = columnDefs => {
     for (const columnDef of columnDefs) {
         if (columnDef.colId === 'status') {
             columnDef.pinned ??= 'right'
+        }
+        //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
+        if (columnDef.colId === 'estimate') {
+            columnDef.settings = { ...columnDef.settings, cell: { ...columnDef.settings?.cell, onGetValidation: validateEstimate } }
         }
         if (columnDef.colId === PAYLOAD_COLUMN) {
             columnDef.cellRenderer = PayloadCell
@@ -306,16 +318,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
 
     React.useEffect(() => {
         provider.refresh()
-    }, [provider])
-
-    //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
-    React.useEffect(() => {
-        provider.addEventListener('onRecordLoaded', (record: IRecord) => {
-            record.expressions.setValidationExpression('estimate', () => {
-                const estimate = Number(record.getValue('estimate') ?? 0)
-                return { error: estimate > 5, errorMessage: `An estimate of ${estimate} days is more than the 5 this team plans a task in.` }
-            })
-        })
     }, [provider])
 
     //remounted on every change: modules are read once, which is the contract this story holds to

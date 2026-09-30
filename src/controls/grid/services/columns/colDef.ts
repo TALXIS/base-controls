@@ -1,5 +1,5 @@
 import type { ColDef } from "@ag-grid-community/core";
-import type { IRecord } from "@talxis/client-libraries";
+import type { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
 import type { ThemeBuilder } from "@theme";
 import type { IContextualMenuItem } from "@fluentui/react";
@@ -19,6 +19,8 @@ export interface IGridColumnCellSettings {
     onGetEditable?: (result: IGridEditable, params: { record: IRecord }) => void;
     /** Decides whether a cell shows it is loading, after `registerCellLoadingHook`. */
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
+    /** Decides whether a record's value is valid, after `registerValidationHook`. */
+    onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */

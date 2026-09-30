@@ -8,6 +8,7 @@ export * from './services/surfaces';
 export * from './services/editing';
 export * from './services/rows';
 export * from './services/editability';
+export * from './services/validation';
 export * from './services/runtime';
 export * from './services/fields';
 export * from './interfaces';
