@@ -49,6 +49,14 @@ const validateWonValue = (columnName: string) => (result: IFieldValidationResult
     }
 }
 
+const validateProbability = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+    const probability = Number(record.getValue('probability') ?? 0)
+    if (!isGroupRow(record) && (probability < 0 || probability > 100)) {
+        result.error = true
+        result.errorMessage = 'A probability is between 0 and 100 %.'
+    }
+}
+
 //the cell toggles the row on click, so the input only shows the state it is handed
 const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolean; disabled?: boolean }) => <input
     type='checkbox'
@@ -105,6 +113,7 @@ const GridExample = () => {
             colDefs={{
                 name: { settings: { cell: { onGetCommands: copyValue('name'), onGetValidation: validateWonValue('name') } } },
                 value: { settings: { cell: { onGetCommands: copyValue('value'), onGetValidation: validateWonValue('value') } } },
+                probability: { settings: { cell: { onGetValidation: validateProbability } } },
                 //a grouped stage stays where grouping pins it
                 stage: colDef => ({ pinned: colDef.pinned ?? 'right' }),
                 closedate: {
