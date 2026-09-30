@@ -3,8 +3,8 @@ import { ColumnHeaderUiSuffixComponents, IColumnHeaderUiSuffixComponents } from 
 import { getColumnHeaderUiSuffixStyles } from "./styles";
 
 export interface IColumnHeaderUiSuffixProps {
-    /** Whether what the column holds may be changed. */
-    isEditable?: boolean;
+    /** Whether what the column holds is locked. */
+    isLocked?: boolean;
     /** Why the column cannot be changed, shown on the lock. */
     lockMessage?: string;
     /** Drawn before the lock icon. */
@@ -14,7 +14,7 @@ export interface IColumnHeaderUiSuffixProps {
 
 /** What a column header draws after the name. */
 export const ColumnHeaderUiSuffix = (props: IColumnHeaderUiSuffixProps) => {
-    const { isEditable, children } = props;
+    const { isLocked, children } = props;
     const components = { ...ColumnHeaderUiSuffixComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiSuffixStyles(), []);
 
@@ -22,7 +22,7 @@ export const ColumnHeaderUiSuffix = (props: IColumnHeaderUiSuffixProps) => {
         className: styles.suffixContainer,
         children: <>
             {children}
-            {isEditable === false && components.onRenderLockIcon({ message: props.lockMessage })}
+            {isLocked && components.onRenderLockIcon({ message: props.lockMessage })}
         </>,
     });
 };

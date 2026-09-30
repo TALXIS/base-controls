@@ -1,1 +1,1 @@
-export * from './GridEditability';
+export * from './GridLocks';

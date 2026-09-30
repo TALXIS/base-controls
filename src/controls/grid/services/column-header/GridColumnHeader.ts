@@ -38,7 +38,7 @@ export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents
     /** Whether the column asks for a value. */
     isRequired(): boolean;
     /** Whether what the column holds may be changed. */
-    isEditable(): boolean;
+    isLocked(): boolean;
     getName(): string;
     /** The header's tooltip: the name plus the adornments' titles in parentheses. */
     getTitle(): string;
@@ -96,8 +96,8 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> impl
         return !!this.getSettings().isRequired;
     }
 
-    public isEditable(): boolean {
-        return this._services.get('editability').get({ columnName: this.getColDef().colId! }).isEditable;
+    public isLocked(): boolean {
+        return this._services.get('locks').get({ columnName: this.getColDef().colId! }).isLocked;
     }
 
     public getName(): string {

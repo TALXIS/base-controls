@@ -2,7 +2,7 @@ import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowN
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
-import type { IGridRecordLock } from "../editability";
+import type { IGridLock } from "../locks";
 
 export interface IGridRowsEvents {
     /** Fired when the rows the user is at change. */
@@ -21,8 +21,8 @@ export type GridRowHeightHook = (result: IGridRowHeight, params: { record: IReco
 
 /** What the caller decides for each row, after the row-level hooks. */
 export interface IGridRowSettings {
-    /** Locks a record as a whole, after the record-level `registerEditableHook` hooks. */
-    onGetLock?: (result: IGridRecordLock, params: { record: IRecord }) => void;
+    /** Locks a record as a whole, after the record-level `registerLockHook` hooks. */
+    onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     /** How tall a row is, after `registerRowHeightHook`. */
     onGetHeight?: GridRowHeightHook;
 }

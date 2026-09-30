@@ -256,7 +256,7 @@ export class GridCustomizer implements IGridCustomizer {
                     //a task's checklist is not a value on the task, so there is nothing to edit: no
                     //editor to open, and nothing a cell could change either
                     colDef.editable = false;
-                    colDef.settings = { ...colDef.settings, isEditable: false };
+                    colDef.settings = { ...colDef.settings, isLocked: true };
                     break;
                 }
                 case PREDECESSORS_COLUMN_NAME:
@@ -269,7 +269,7 @@ export class GridCustomizer implements IGridCustomizer {
                     //a task's dependencies are not a value on the task, so there is nothing to edit: no
                     //editor to open, and nothing a cell could change either
                     colDef.editable = false;
-                    colDef.settings = { ...colDef.settings, isEditable: false };
+                    colDef.settings = { ...colDef.settings, isLocked: true };
                     break;
                 }
             }

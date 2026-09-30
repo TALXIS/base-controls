@@ -10,7 +10,7 @@ import type { IGridColumns } from "../services/columns";
 import type { IGridCells } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
 import type { IGridRows } from "../services/rows";
-import type { IGridEditability } from "../services/editability";
+import type { IGridLocks } from "../services/locks";
 import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridRowSelection } from "../modules/row-selection/GridRowSelection";
@@ -43,8 +43,8 @@ export interface IGridServiceMap extends IGridOptionalServiceMap {
     settings: IGridSettings;
     /** What is true of a row as a whole. */
     rows: IGridRows;
-    /** Whether the grid, a column, a record's row or a cell can be edited. */
-    editability: IGridEditability;
+    /** Whether the grid, a column, a record's row or a cell is locked. */
+    locks: IGridLocks;
     /** What the grid says about the values its records hold. */
     validation: IGridValidation;
     /** Where the records, the columns and the paging come from. */

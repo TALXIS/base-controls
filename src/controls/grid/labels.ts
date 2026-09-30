@@ -1,9 +1,9 @@
 /** Every localizable string the grid itself renders. */
 export interface IGridLabels {
     noRecordsFound: string;
-    valueNotEditable: string;
-    recordNotEditable: string;
-    columnNotEditable: string;
+    valueLocked: string;
+    recordLocked: string;
+    columnLocked: string;
     recordSaveErrorTitle: string;
     recordSaveErrorDismiss: string;
 }
@@ -11,9 +11,9 @@ export interface IGridLabels {
 /** The English defaults for {@link IGridLabels}. */
 export const GRID_LABELS: IGridLabels = {
     noRecordsFound: 'No records found.',
-    valueNotEditable: 'This value cannot be edited.',
-    recordNotEditable: 'This record cannot be edited.',
-    columnNotEditable: 'This column cannot be edited.',
+    valueLocked: 'This value cannot be edited.',
+    recordLocked: 'This record cannot be edited.',
+    columnLocked: 'This column cannot be edited.',
     recordSaveErrorTitle: 'Your changes were not saved',
     recordSaveErrorDismiss: 'Dismiss',
 };

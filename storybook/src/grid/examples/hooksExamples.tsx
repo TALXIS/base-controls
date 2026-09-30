@@ -23,10 +23,10 @@ const GridExample = () => <Grid.Root
 
 export const EDITABLE_PER_RECORD_CODE = `const lockWonDealsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
+        runtime.services.get('locks').registerLockHook((result, { record, columnName }) => {
             //a cell: both are given
             if (record && columnName && Number(record.getValue('stage')) === 4) {
-                result.isEditable = false
+                result.isLocked = true
             }
         })
     },
@@ -41,10 +41,10 @@ const GridExample = () => <Grid.Root
 
 export const INACTIVE_RECORDS_CODE = `const inactiveWonDealsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
+        runtime.services.get('locks').registerLockHook((result, { record, columnName }) => {
             //a record's row: no column is given
             if (record && !columnName && Number(record.getValue('stage')) === 4) {
-                result.isEditable = false
+                result.isLocked = true
             }
         })
     },

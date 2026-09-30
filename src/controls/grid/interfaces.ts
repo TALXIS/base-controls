@@ -39,7 +39,7 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     provider: IDataProvider;
     /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
-    /** Whether cells may be edited; read at mount, then `registerEditableHook`. */
+    /** Whether cells may be edited; read at mount, then `registerLockHook`. */
     enableEditing?: boolean;
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;

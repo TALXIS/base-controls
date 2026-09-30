@@ -180,7 +180,8 @@ interface IGridCellCommands {
 
 interface IGridColumnSettings {
     alignment?: IAlignment;
-    isEditable?: boolean;
+    /** Whether what the cells hold is locked for good. */
+    isLocked?: boolean;
     isRequired?: boolean;
     widthOffset?: number;
     /** How each of the column's cells behaves. */
@@ -190,8 +191,8 @@ interface IGridColumnSettings {
         onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
         /** Changes the theme of this column's cells, as a cell theme hook does. */
         onGetTheme?: (theme: IThemeBuilder, params: { record: IRecord }) => void;
-        /** Decides whether this column's cells can be edited. */
-        onGetEditable?: (result: { isEditable: boolean }, params: { record: IRecord }) => void;
+        /** Decides whether this column's cells are locked. */
+        onGetLock?: (result: { isLocked: boolean }, params: { record: IRecord }) => void;
         /** Decides whether this column's cells show they are loading. */
         onGetLoading?: (result: { isLoading: boolean }, params: { record: IRecord }) => void;
         /** Decides whether a record's value is valid; the grid registers it into the record. */
@@ -309,7 +310,7 @@ interface IGridRows extends IEventEmitter<IGridRowsEvents> {
 }
 
 /** What is asked about: nothing for the grid, a column, a record's row, or both for a cell. */
-interface IGridEditabilityContext {
+interface IGridLockContext {
     record?: IRecord;
     columnName?: string;
 }
@@ -327,11 +328,11 @@ interface IGridValidation {
     registerValidationHook(hook: (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void, priority?: number): () => void;
 }
 
-interface IGridEditability {
-    /** Whether what the context names can be edited, and which level locked it if not. */
-    get(context?: IGridEditabilityContext): { isEditable: boolean; lockedBy?: 'grid' | 'column' | 'record' | 'cell' };
+interface IGridLocks {
+    /** Whether what the context names is locked, and at which level. */
+    get(context?: IGridLockContext): { isLocked: boolean; lockedBy?: 'grid' | 'column' | 'record' | 'cell' };
     /** A hook over any level; a record locked with no columnName is drawn as a muted row. */
-    registerEditableHook(hook: (result: { isEditable: boolean }, context: IGridEditabilityContext) => void, priority?: number): () => void;
+    registerLockHook(hook: (result: { isLocked: boolean }, context: IGridLockContext) => void, priority?: number): () => void;
 }
 
 interface IGridSurfaces {
@@ -359,7 +360,7 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     columns: IGridColumns;
     cells: IGridCells;
     rows: IGridRows;
-    editability: IGridEditability;
+    locks: IGridLocks;
     validation: IGridValidation;
     surfaces: IGridSurfaces;
     grid: IGridRuntime;
@@ -611,9 +612,9 @@ declare function useGridService<K extends keyof IGridServiceMap>(key: K): IGridS
 
 interface IGridLabels {
     noRecordsFound: string;
-    valueNotEditable: string;
-    recordNotEditable: string;
-    columnNotEditable: string;
+    valueLocked: string;
+    recordLocked: string;
+    columnLocked: string;
     recordSaveErrorTitle: string;
     recordSaveErrorDismiss: string;
 }

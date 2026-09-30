@@ -10,13 +10,13 @@ export interface IColumnHeaderSuffixProps {
 /** What the modules draw after the column's name, and what says the column cannot be changed. */
 export const ColumnHeaderSuffix = (props: IColumnHeaderSuffixProps) => {
     const header = useGridColumnHeader();
-    const editability = useGridService('editability');
+    const locks = useGridService('locks');
     const labels = useGridService('labels');
 
     return <ColumnHeaderUi.Suffix
-        //a grid that cannot be edited at all marks no column
-        isEditable={editability.get({ columnName: header.getColDef().colId }).lockedBy !== 'column'}
-        lockMessage={labels.getLocalizedString('columnNotEditable')}
+        //a grid with editing off marks no column
+        isLocked={locks.get({ columnName: header.getColDef().colId }).lockedBy === 'column'}
+        lockMessage={labels.getLocalizedString('columnLocked')}
         components={props.components}>
         {renderAdornments(header.getAdornments('suffix'))}
     </ColumnHeaderUi.Suffix>;

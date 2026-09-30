@@ -25,7 +25,7 @@ export class GridLockedRecords {
 
     constructor(parameters: IGridLockedRecordsParameters) {
         this._services = parameters.services;
-        //a grid that cannot be edited locks no record
+        //a grid with editing off marks no record
         if (!this._services.get('settings').isEditingEnabled()) {
             return;
         }
@@ -93,7 +93,7 @@ export class GridLockedRecords {
     private _isLocked(record: IRecord): boolean {
         let isLocked = this._isLockedByRecord.get(record);
         if (isLocked === undefined) {
-            isLocked = this._services.get('editability').get({ record }).lockedBy === 'record';
+            isLocked = this._services.get('locks').get({ record }).lockedBy === 'record';
             this._isLockedByRecord.set(record, isLocked);
         }
         return isLocked;

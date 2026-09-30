@@ -69,7 +69,7 @@ export const LABELS_CODE = `const GridExample = () => <Grid.Root
     }}
     labels={{
         noRecordsFound: 'Nebyly nalezeny žádné záznamy.',
-        valueNotEditable: 'Tuto hodnotu nelze upravit.',
+        valueLocked: 'Tuto hodnotu nelze upravit.',
     }}
     height='440px' />
 `

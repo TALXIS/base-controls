@@ -3,103 +3,97 @@ import { IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
-/** The level that keeps something from being edited. */
-export type IGridEditabilityLevel = 'grid' | 'column' | 'record' | 'cell';
+/** The level that locks something. */
+export type IGridLockLevel = 'grid' | 'column' | 'record' | 'cell';
 
 /** What is asked about: nothing for the grid, a column, a record's row, or both for a cell. */
-export interface IGridEditabilityContext {
+export interface IGridLockContext {
     record?: IRecord;
     columnName?: string;
 }
 
-export interface IGridEditabilityResult {
-    isEditable: boolean;
+export interface IGridLockResult {
+    isLocked: boolean;
     /** The level that locked it, where something did. */
-    lockedBy?: IGridEditabilityLevel;
+    lockedBy?: IGridLockLevel;
 }
 
-export interface IGridEditable {
-    isEditable: boolean;
-}
-
-/** Whether a record is locked as a whole, as `rowSettings.onGetLock` leaves it. */
-export interface IGridRecordLock {
+export interface IGridLock {
     isLocked: boolean;
 }
 
-/** A hook over whether something can be edited, handed the context it is asked about. */
-export type GridEditableHook = (result: IGridEditable, context: IGridEditabilityContext) => void;
+/** A hook over whether something is locked, handed the context it is asked about. */
+export type GridLockHook = (result: IGridLock, context: IGridLockContext) => void;
 
-export interface IGridEditabilityParameters {
+export interface IGridLocksParameters {
     services: IGridServiceLocator;
 }
 
-/** Whether the grid, a column, a record's row or a cell can be edited. */
-export interface IGridEditability {
-    /** Whether what the context names can be edited, and which level locked it if not. */
-    get(context?: IGridEditabilityContext): IGridEditabilityResult;
+/** Whether the grid, a column, a record's row or a cell is locked. */
+export interface IGridLocks {
+    /** Whether what the context names is locked, and at which level. */
+    get(context?: IGridLockContext): IGridLockResult;
     /**
      * Registers a hook over any level; it is handed the context it is asked about.
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerEditableHook(hook: GridEditableHook, priority?: number): () => void;
+    registerLockHook(hook: GridLockHook, priority?: number): () => void;
 }
 
-export class GridEditability implements IGridEditability {
+export class GridLocks implements IGridLocks {
     private _services: IGridServiceLocator;
-    private _hooks = new HookRegistry<GridEditableHook>();
+    private _hooks = new HookRegistry<GridLockHook>();
 
-    constructor(parameters: IGridEditabilityParameters) {
+    constructor(parameters: IGridLocksParameters) {
         this._services = parameters.services;
     }
 
-    public get(context: IGridEditabilityContext = {}): IGridEditabilityResult {
+    public get(context: IGridLockContext = {}): IGridLockResult {
         const { record, columnName } = context;
         if (!this._services.get('settings').isEditingEnabled()) {
-            return { isEditable: false, lockedBy: 'grid' };
+            return { isLocked: true, lockedBy: 'grid' };
         }
         const colDef = columnName ? this._getColDef(columnName) : undefined;
-        if (columnName && !this._isColumnEditable(columnName, colDef)) {
-            return { isEditable: false, lockedBy: 'column' };
+        if (columnName && this._isColumnLocked(columnName, colDef)) {
+            return { isLocked: true, lockedBy: 'column' };
         }
-        if (record && !this._isRecordEditable(record)) {
-            return { isEditable: false, lockedBy: 'record' };
+        if (record && this._isRecordLocked(record)) {
+            return { isLocked: true, lockedBy: 'record' };
         }
-        if (record && columnName && !this._isCellEditable(record, columnName, colDef)) {
-            return { isEditable: false, lockedBy: 'cell' };
+        if (record && columnName && this._isCellLocked(record, columnName, colDef)) {
+            return { isLocked: true, lockedBy: 'cell' };
         }
-        return { isEditable: true };
+        return { isLocked: false };
     }
 
-    public registerEditableHook(hook: GridEditableHook, priority?: number): () => void {
+    public registerLockHook(hook: GridLockHook, priority?: number): () => void {
         return this._hooks.register(hook, priority);
     }
 
-    //a column set as uneditable is final, no hook can open it
-    private _isColumnEditable(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
-        return colDef?.settings?.isEditable !== false && this._applyHooks(true, { columnName });
+    //a column set as locked is final, no hook can open it
+    private _isColumnLocked(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
+        return colDef?.settings?.isLocked === true || this._applyHooks(false, { columnName });
     }
 
-    private _isRecordEditable(record: IRecord): boolean {
-        const result: IGridEditable = { isEditable: record.isActive() };
+    private _isRecordLocked(record: IRecord): boolean {
+        const result: IGridLock = { isLocked: !record.isActive() };
         this._hooks.apply(result, { record });
-        const lock: IGridRecordLock = { isLocked: !result.isEditable };
-        this._services.get('settings').getRowSettings().onGetLock?.(lock, { record });
-        return !lock.isLocked;
+        this._services.get('settings').getRowSettings().onGetLock?.(result, { record });
+        return result.isLocked;
     }
 
-    private _isCellEditable(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
-        const result: IGridEditable = { isEditable: true };
+    private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
+        const result: IGridLock = { isLocked: false };
         this._hooks.apply(result, { record, columnName });
-        colDef?.settings?.cell?.onGetEditable?.(result, { record });
-        return result.isEditable;
+        colDef?.settings?.cell?.onGetLock?.(result, { record });
+        return result.isLocked;
     }
 
-    private _applyHooks(isEditable: boolean, context: IGridEditabilityContext): boolean {
-        const result: IGridEditable = { isEditable };
+    private _applyHooks(isLocked: boolean, context: IGridLockContext): boolean {
+        const result: IGridLock = { isLocked };
         this._hooks.apply(result, context);
-        return result.isEditable;
+        return result.isLocked;
     }
 
     private _getColDef(columnName: string): ColDef<IRecord> | undefined {

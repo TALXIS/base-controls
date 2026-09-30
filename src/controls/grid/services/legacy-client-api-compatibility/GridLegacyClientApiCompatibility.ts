@@ -2,7 +2,7 @@ import { IControlParameters, ICustomColumnControl, IField, IRecord } from "@talx
 import { merge } from "merge-anything";
 import { getTextColorForBackground, ThemeGenerator } from "@theme";
 import type { GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
-import type { GridEditableHook } from "../editability";
+import type { GridLockHook } from "../locks";
 import type { IGridServiceLocator } from "../../services";
 
 /** Ahead of every module. */
@@ -16,20 +16,20 @@ export interface IGridLegacyClientApiCompatibilityParameters {
 export class GridLegacyClientApiCompatibility {
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
         const cells = parameters.services.get('cells');
-        parameters.services.get('editability').registerEditableHook(this._onEditable, COMPATIBILITY_HOOK_PRIORITY);
+        parameters.services.get('locks').registerLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlHook(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlParametersHook(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
     }
 
-    private _onEditable: GridEditableHook = (result, { record, columnName }) => {
+    private _onLock: GridLockHook = (result, { record, columnName }) => {
         const field = record && columnName ? this._getField({ record, columnName }) : undefined;
         if (!field) {
             return;
         }
         //the record already answers for `disabledExpression`, inactive records and group rows
-        result.isEditable = !field.isDisabled();
+        result.isLocked = field.isDisabled();
     };
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {

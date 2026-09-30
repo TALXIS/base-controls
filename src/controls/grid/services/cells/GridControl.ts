@@ -71,7 +71,7 @@ export class GridControl implements IGridControl {
     }
 
     public getContext(): ComponentFramework.Context<any, any> {
-        const isDisabled = !this._cell.isEditable();
+        const isDisabled = this._cell.isLocked();
         if (this._context?.isDisabled === isDisabled) {
             return this._context.value;
         }

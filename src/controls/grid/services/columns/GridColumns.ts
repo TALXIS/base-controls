@@ -133,9 +133,9 @@ export class GridColumns implements IGridColumns {
         };
     }
 
-    /** Whether the values in this column may be changed at all. */
-    private _isColumnEditable(column: IColumn): boolean {
-        return !!column.metadata?.IsValidForUpdate;
+    /** Whether the values in this column are locked for good. */
+    private _isColumnLocked(column: IColumn): boolean {
+        return !column.metadata?.IsValidForUpdate;
     }
 
     /** Whether a value is demanded before the record may be saved. */
@@ -203,7 +203,7 @@ export class GridColumns implements IGridColumns {
 
     /** Whether an editor may be opened over this cell. */
     private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
-        return !!record && this._services.get('editability').get({ record: record, columnName: colDef.colId }).isEditable;
+        return !!record && !this._services.get('locks').get({ record: record, columnName: colDef.colId }).isLocked;
     }
 
     //merged a level deep so an entry can change one setting, or one callback, and keep the rest
@@ -220,7 +220,7 @@ export class GridColumns implements IGridColumns {
     private _getColumnSettings(column: IColumn): IGridColumnSettings {
         return {
             alignment: column.alignment,
-            isEditable: this._isColumnEditable(column),
+            isLocked: this._isColumnLocked(column),
             isRequired: this._isColumnRequired(column),
             cell: { oneClickEdit: !!column.oneClickEdit },
         };

@@ -55,7 +55,7 @@ export interface IGridCell {
     /** Makes what draws this cell's value. */
     createControl(field?: IGridField): IGridControl;
     /** Whether what this cell holds may be changed. */
-    isEditable(): boolean;
+    isLocked(): boolean;
     /** What this cell offers to do, as buttons and as what the overflow menu holds. */
     getCommands(): IGridCellCommands;
 }
@@ -148,8 +148,8 @@ export class GridCell implements IGridCell {
         return new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
     }
 
-    public isEditable(): boolean {
-        return this._services.get('editability').get({ record: this._record, columnName: this.getColumnName() }).isEditable;
+    public isLocked(): boolean {
+        return this._services.get('locks').get({ record: this._record, columnName: this.getColumnName() }).isLocked;
     }
 
     public getCommands(): IGridCellCommands {

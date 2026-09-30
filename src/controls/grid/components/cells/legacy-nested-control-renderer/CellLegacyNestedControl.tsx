@@ -42,7 +42,7 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
                     enableNavigation: !!parameters.EnableNavigation?.raw,
                 }),
                 ControlStates: {
-                    isControlDisabled: !cell.isEditable()
+                    isControlDisabled: cell.isLocked()
                 }
             }}
             onOverrideComponentProps={(componentProps: INestedControlRendererComponentProps) => ({
