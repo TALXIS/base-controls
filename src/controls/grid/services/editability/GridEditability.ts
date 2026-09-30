@@ -22,7 +22,7 @@ export interface IGridEditable {
     isEditable: boolean;
 }
 
-/** Whether a record is locked as a whole, as `onGetRecordLock` leaves it. */
+/** Whether a record is locked as a whole, as `rowSettings.onGetLock` leaves it. */
 export interface IGridRecordLock {
     isLocked: boolean;
 }
@@ -85,7 +85,7 @@ export class GridEditability implements IGridEditability {
         const result: IGridEditable = { isEditable: record.isActive() };
         this._hooks.apply(result, { record });
         const lock: IGridRecordLock = { isLocked: !result.isEditable };
-        this._services.get('settings').getRecordLockCallback()?.(lock, { record });
+        this._services.get('settings').getRowSettings().onGetLock?.(lock, { record });
         return !lock.isLocked;
     }
 

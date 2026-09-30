@@ -29,7 +29,7 @@ The grid draws whatever its \`provider\` holds: the records, and one column per 
 
 A column without these keys still shows its values. It just offers nothing in its menu.
 
-In an editable grid, a record the provider reports as inactive (\`record.isActive()\`, \`statecode\` on Dataverse) is drawn as a muted, read-only row, with a lock in a column pinned at the start, shown only while such a record is there. To lock records yourself, use \`onGetRecordLock\` on [**Get started**](?path=/story/grid-get-started--overview), or a hook: *Inactive records* on [**Hooks**](?path=/story/grid-extending-hooks--overview).
+In an editable grid, a record the provider reports as inactive (\`record.isActive()\`, \`statecode\` on Dataverse) is drawn as a muted, read-only row, with a lock in a column pinned at the start, shown only while such a record is there. To lock records yourself, use \`rowSettings.onGetLock\` on [**Get started**](?path=/story/grid-get-started--overview), or a hook: *Inactive records* on [**Hooks**](?path=/story/grid-extending-hooks--overview).
 
 \`\`\`ts
 {

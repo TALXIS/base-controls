@@ -531,8 +531,13 @@ interface IGridProps {
     labels?: Partial<IGridLabels>;
     colDefs?: (IGridColDef & { colId: string })[];
     state?: any;
-    /** Decides whether a record is locked as a whole; a locked one is drawn as a muted row. */
-    onGetRecordLock?: (result: { isLocked: boolean }, params: { record: IRecord }) => void;
+    /** Callbacks the grid runs for each row. */
+    rowSettings?: {
+        /** Locks a record as a whole; a locked one is drawn as a muted row. */
+        onGetLock?: (result: { isLocked: boolean }, params: { record: IRecord }) => void;
+        /** How tall a row is, in pixels; undefined keeps the grid's own. */
+        onGetHeight?: (result: { height?: number }, params: { record: IRecord }) => void;
+    };
     onGridReady?: (runtime: IGridRuntime) => void;
     onDestroyed?: (runtime: IGridRuntime) => void;
     onDataLoaded?: () => void;

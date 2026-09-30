@@ -25,8 +25,8 @@ export interface IGridSettings {
     /** How many rows the grid grows to fit before it scrolls instead. */
     getMaxVisibleRows(): number;
     getColDefs(): NonNullable<IGrid['colDefs']>;
-    /** The caller's say over a record as a whole, read on every ask. */
-    getRecordLockCallback(): IGrid['onGetRecordLock'];
+    /** The caller's per-row callbacks, read on every ask. */
+    getRowSettings(): NonNullable<IGrid['rowSettings']>;
 }
 
 export class GridSettings implements IGridSettings {
@@ -71,7 +71,7 @@ export class GridSettings implements IGridSettings {
         return this._mountProps.colDefs ?? [];
     }
 
-    public getRecordLockCallback(): IGrid['onGetRecordLock'] {
-        return this._getProps().onGetRecordLock;
+    public getRowSettings(): NonNullable<IGrid['rowSettings']> {
+        return this._getProps().rowSettings ?? {};
     }
 }

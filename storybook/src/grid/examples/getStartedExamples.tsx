@@ -100,7 +100,7 @@ const GridExample = () => {
             ]}
             enableEditing
             enableAutoSave
-            onGetRecordLock={lockClosedDeals}
+            rowSettings={{ onGetLock: lockClosedDeals }}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
             height='520px' />
     </Stack>

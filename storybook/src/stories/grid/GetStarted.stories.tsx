@@ -53,12 +53,21 @@ import { Grid, createClientSideRowModelModule, createSortingModule } from '@talx
 | \`components\` | — | | Your own overlays and loading rows. See [**Custom Components**](?path=/story/grid-customizations-custom-components--overview). |
 | \`labels\` | — | | Your own strings. Read at mount. See [**Customizations**](?path=/story/grid-customizations--overview). |
 | \`state\` | — | | AG Grid state to open with: column order, widths and sorting. Read at mount. |
-| \`onGetRecordLock\` | — | | \`(result, { record })\`: set \`result.isLocked = true\` to lock a record as a whole, or \`false\` to unlock one the provider or a hook locked. Its row is drawn muted, with a lock in a column pinned at the start. |
+| \`rowSettings\` | — | | Callbacks run for each row. See *Row settings* below. |
 | \`className\` | — | | Added to the grid's own element. |
 | \`onGridReady\` | — | | Called with the grid's runtime once it is ready. See [**Extending**](?path=/story/grid-extending--overview). |
 | \`onDestroyed\` | — | | Called with the grid's runtime as the grid is torn down. |
 
 A prop read at mount keeps the value it had when the grid first rendered. To change one, render the grid again with a new \`key\`, as the examples on these pages do when a toggle changes a module.
+
+### Row settings
+
+Each callback runs after the row-level hooks on [**Extending**](?path=/story/grid-extending--overview), and is handed the hooks' result and \`{ record }\`.
+
+| Callback | What it decides |
+|---|---|
+| \`onGetLock\` | Whether a record is locked as a whole: set \`result.isLocked = true\` to lock it, or \`false\` to unlock one the provider or a hook locked. Its row is drawn muted, with a lock in a column pinned at the start. |
+| \`onGetHeight\` | How tall a row is: set \`result.height\` in pixels. |
 
 ## Reacting to the grid
 
