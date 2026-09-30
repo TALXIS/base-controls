@@ -53,6 +53,7 @@ import { Grid, createClientSideRowModelModule, createSortingModule } from '@talx
 | \`components\` | — | | Your own overlays and loading rows. See [**Custom Components**](?path=/story/grid-customizations-custom-components--overview). |
 | \`labels\` | — | | Your own strings. Read at mount. See [**Customizations**](?path=/story/grid-customizations--overview). |
 | \`state\` | — | | AG Grid state to open with: column order, widths and sorting. Read at mount. |
+| \`onGetRecordLock\` | — | | \`(result, { record })\`: set \`result.isLocked = true\` to lock a record as a whole, or \`false\` to unlock one the provider or a hook locked. Its row is drawn muted, with a lock in a column pinned at the start. |
 | \`className\` | — | | Added to the grid's own element. |
 | \`onGridReady\` | — | | Called with the grid's runtime once it is ready. See [**Extending**](?path=/story/grid-extending--overview). |
 | \`onDestroyed\` | — | | Called with the grid's runtime as the grid is torn down. |

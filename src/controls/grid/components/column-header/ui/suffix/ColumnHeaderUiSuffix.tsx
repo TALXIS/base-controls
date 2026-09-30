@@ -5,7 +5,7 @@ import { getColumnHeaderSuffixStyles } from "./styles";
 export interface IColumnHeaderUiSuffixProps {
     /** Whether what the column holds may be changed. */
     isEditable?: boolean;
-    /** Drawn before the uneditable icon. */
+    /** Drawn before the lock icon. */
     children?: React.ReactNode;
     components?: Partial<IColumnHeaderUiSuffixComponents>;
 }
@@ -20,7 +20,7 @@ export const ColumnHeaderUiSuffix = (props: IColumnHeaderUiSuffixProps) => {
         className: styles.suffixContainer,
         children: <>
             {children}
-            {isEditable === false && components.onRenderUneditableIcon({ iconName: 'Uneditable' })}
+            {isEditable === false && components.onRenderLockIcon({ iconName: 'Lock' })}
         </>,
     });
 };

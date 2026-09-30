@@ -1,5 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { CELL_CONTAINER_CLASS_NAME } from "./components/cells/ui/cell-container/styles";
+import { LOCKED_RECORD_ROW_CLASS } from "./services/locked-records";
 
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
@@ -82,6 +83,15 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 height: '100%',
             },
             //every state the grid draws on a cell is an overlay over the cell's body.
+            //a record locked as a whole is dimmed as one row, over its cells
+            [`.ag-row.${LOCKED_RECORD_ROW_CLASS}::after`]: {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                backgroundColor: theme.semanticColors.disabledBackground,
+                opacity: 0.3,
+            },
             [`.${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 content: '""',
                 position: 'absolute',

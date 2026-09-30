@@ -5,6 +5,7 @@ import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
 import type { IGridEditedCell } from "./services/editing";
 import type { IGridComponents } from "./components/components";
+import type { IGridRecordLock } from "./services/editability";
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
 export interface IGridEventHandlers {
@@ -66,6 +67,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     state?: GridState;
     /** Fired once AG Grid is ready, with its api among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;
+    /** Decides whether a record is locked as a whole; a locked one is drawn as a muted row. */
+    onGetRecordLock?: (result: IGridRecordLock, params: { record: IRecord }) => void;
     /** Fired before the grid tears down, while its api still answers. */
     onDestroyed?: (runtime: IGridRuntime) => void;
 }

@@ -18,6 +18,7 @@ import { GridCells } from "../cells";
 import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
+import { GridLockedRecords } from "../locked-records";
 import { GridLegacyClientApiCompatibility } from "../legacy-client-api-compatibility/GridLegacyClientApiCompatibility";
 import { GridSurfaces } from "../surfaces";
 
@@ -116,6 +117,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('surfaces', () => surfaces);
         //built once and never looked up
         new GridLegacyClientApiCompatibility({ services: this._services });
+        new GridLockedRecords({ services: this._services });
 
         const { custom = [], ...builtIns } = onGetProps().modules;
         const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);

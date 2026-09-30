@@ -8,7 +8,7 @@ Everything the grid draws is built from parts you can replace. Every part has a 
 
 | What | Where you replace it | Its pieces |
 |---|---|---|
-| A cell | \`colDef.cellRenderer\`, with \`Grid.Cell.FieldRenderer\` or \`Grid.Cell.Renderer\` | \`components.control\`, \`container\`, \`loading\`, \`commands\`, \`validation\`, \`uneditableIcon\` |
+| A cell | \`colDef.cellRenderer\`, with \`Grid.Cell.FieldRenderer\` or \`Grid.Cell.Renderer\` | \`components.control\`, \`container\`, \`loading\`, \`commands\`, \`validation\`, \`lockIcon\` |
 | A header | \`colDef.headerComponent\`, with \`Grid.ColumnHeader.Renderer\` | \`components.label\`, \`container\`, \`prefix\`, \`suffix\`, \`menu\`, \`requiredMarker\` |
 | The loading overlay | \`components.onRenderLoadingOverlay\` on \`<Grid.Root />\` | \`Grid.Overlay.Ui.Loading\`: \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` |
 | The empty state | \`components.onRenderEmptyRecordsOverlay\` on \`<Grid.Root />\` | \`Grid.Overlay.Ui.EmptyRecords\`: \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` |

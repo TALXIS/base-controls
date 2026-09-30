@@ -17,40 +17,27 @@ const isOverdue = (record: IRecord) => {
     return !!closeDate && Number(record.getValue('stage')) !== WON && new Date(closeDate) < new Date()
 }
 
-const lockWonDeals = (result: { isEditable: boolean }, { record }: { record: IRecord }) => {
-    if (Number(record.getValue('stage')) === WON) {
-        result.isEditable = false
+//a deal that is won, or that nobody expects to win any more, is closed
+const lockClosedDeals = (result: { isLocked: boolean }, { record }: { record: IRecord }) => {
+    if (Number(record.getValue('stage')) === WON || Number(record.getValue('probability') ?? 0) === 0) {
+        result.isLocked = true
     }
 }
 
 const COPYABLE_WHEN_WON = ['name', 'value']
 
 const copyValue = (columnName: string) => (result: IGridCellCommands, { record }: { record: IRecord }) => {
-    if (!COPYABLE_WHEN_WON.includes(columnName) || Number(record.getValue('stage')) !== WON) {
+    if (Number(record.getValue('stage')) !== WON) {
         return
     }
     result.items.push({ key: 'copy', title: 'Copy', iconProps: { iconName: 'Copy' }, onClick: () => { navigator.clipboard.writeText(record.getFormattedValue(columnName) ?? '') } })
 }
-
-const LOCKED_WHEN_WON = ['name', 'owner', 'value', 'probability', 'timespent', 'recurring']
 
 const isWonBelowMinimum = (record: IRecord) => Number(record.getValue('stage')) === WON && Number(record.getValue('value') ?? 0) < 10000
 
 const validateWonValue = (record: IRecord) => {
     record.expressions.setValidationExpression('value', () => ({ error: isWonBelowMinimum(record), errorMessage: 'A won deal needs a value of at least $10,000.' }))
     record.expressions.setValidationExpression('name', () => ({ error: isWonBelowMinimum(record), errorMessage: 'This deal was won below the $10,000 minimum.' }))
-}
-
-//a deal nobody expects to win any more is inactive
-const lostDealsModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('editability').registerEditableHook((result, { record, columnName }) => {
-            //locked as a whole record, so its row is drawn muted
-            if (record && !columnName && Number(record.getValue('probability') ?? 0) === 0) {
-                result.isEditable = false
-            }
-        })
-    },
 }
 
 const GridExample = () => {
@@ -76,16 +63,14 @@ const GridExample = () => {
                 filtering: createFilteringModule(),
                 grouping: createGroupingModule(),
                 aggregation: createAggregationModule(),
-                custom: [lostDealsModule],
             }}
             colDefs={[
-                ...LOCKED_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetEditable: lockWonDeals, onGetCommands: copyValue(colId) } } })),
-                { colId: 'stage', pinned: 'right', settings: { cell: { onGetEditable: lockWonDeals } } },
+                ...COPYABLE_WHEN_WON.map(colId => ({ colId, settings: { cell: { onGetCommands: copyValue(colId) } } })),
+                { colId: 'stage', pinned: 'right' },
                 {
                     colId: 'closedate',
                     settings: {
                         cell: {
-                            onGetEditable: lockWonDeals,
                             onGetTheme: (theme, { record }) => {
                                 if (isOverdue(record)) {
                                     theme.colors.background = '#fde7e9'
@@ -115,6 +100,7 @@ const GridExample = () => {
             ]}
             enableEditing
             enableAutoSave
+            onGetRecordLock={lockClosedDeals}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save failed.')}
             height='520px' />
     </Stack>

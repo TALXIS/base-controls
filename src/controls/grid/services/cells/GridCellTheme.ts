@@ -42,9 +42,6 @@ export class GridCellTheme implements IGridCellTheme {
             builder.colors.background = this._rowBackground;
         }
         const record = this._cell.getRecord();
-        if (this._services.get('editability').get({ record }).lockedBy === 'record') {
-            builder.colors.text = this._gridTheme.semanticColors.disabledBodyText;
-        }
         //before the hooks so a hook gets the last word
         builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
         this._cells.applyCellThemeHooks(builder, { record, columnName: this._cell.getColumnName() });

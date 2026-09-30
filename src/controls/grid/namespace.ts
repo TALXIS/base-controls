@@ -1,5 +1,5 @@
 import { CellCommands } from "./components/cells/commands/CellCommands";
-import { CellUneditableIcon } from "./components/cells/uneditable-icon/CellUneditableIcon";
+import { CellLockIcon } from "./components/cells/lock-icon/CellLockIcon";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellControl } from "./components/cells/control/CellControl";
 import { CellEditor } from "./components/cells/cell-editor/CellEditor";
@@ -62,7 +62,7 @@ export interface IGridCellNamespace {
     /** What the cell offers to do. */
     Commands: typeof CellCommands;
     /** What says the cell is locked for its record. */
-    UneditableIcon: typeof CellUneditableIcon;
+    LockIcon: typeof CellLockIcon;
     /** What a row is dragged taller by, around the cell that is dragged. */
     ResizeGrip: typeof CellResizeGrip;
     /** What binds everything drawn inside it to one record's column. */
@@ -93,7 +93,7 @@ export interface IGridColumnHeaderNamespace {
     Label: typeof ColumnHeaderLabel;
     /** What says the column asks for a value. */
     RequiredMarker: typeof ColumnHeaderRequiredMarker;
-    /** What is drawn after the name, the uneditable icon included. */
+    /** What is drawn after the name, the lock icon included. */
     Suffix: typeof ColumnHeaderSuffix;
     /** What the header opens over the grid. */
     Menu: typeof ColumnHeaderMenu;
@@ -150,7 +150,7 @@ export const Grid: IGridNamespace = {
         Validation: CellValidation,
         Control: CellControl,
         Commands: CellCommands,
-        UneditableIcon: CellUneditableIcon,
+        LockIcon: CellLockIcon,
         ResizeGrip: CellResizeGrip,
         Field: CellField,
         NestedRoot: CellNestedRoot,

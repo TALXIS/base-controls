@@ -22,6 +22,11 @@ export interface IGridEditable {
     isEditable: boolean;
 }
 
+/** Whether a record is locked as a whole, as `onGetRecordLock` leaves it. */
+export interface IGridRecordLock {
+    isLocked: boolean;
+}
+
 /** A hook over whether something can be edited, handed the context it is asked about. */
 export type GridEditableHook = (result: IGridEditable, context: IGridEditabilityContext) => void;
 
@@ -58,7 +63,7 @@ export class GridEditability implements IGridEditability {
         if (columnName && !this._isColumnEditable(columnName, colDef)) {
             return { isEditable: false, lockedBy: 'column' };
         }
-        if (record && !this._applyHooks(record.isActive(), { record })) {
+        if (record && !this._isRecordEditable(record)) {
             return { isEditable: false, lockedBy: 'record' };
         }
         if (record && columnName && !this._isCellEditable(record, columnName, colDef)) {
@@ -74,6 +79,14 @@ export class GridEditability implements IGridEditability {
     //a column set as uneditable is final, no hook can open it
     private _isColumnEditable(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         return colDef?.settings?.isEditable !== false && this._applyHooks(true, { columnName });
+    }
+
+    private _isRecordEditable(record: IRecord): boolean {
+        const result: IGridEditable = { isEditable: record.isActive() };
+        this._hooks.apply(result, { record });
+        const lock: IGridRecordLock = { isLocked: !result.isEditable };
+        this._services.get('settings').getRecordLockCallback()?.(lock, { record });
+        return !lock.isLocked;
     }
 
     private _isCellEditable(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {

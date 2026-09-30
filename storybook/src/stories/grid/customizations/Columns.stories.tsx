@@ -47,7 +47,7 @@ The callbacks run after the hook of the same kind on [**Hooks**](?path=/story/gr
 | \`oneClickEdit\` | The cell takes input where it stands, without opening an editor. |
 | \`onGetCommands\` | The commands a cell offers: push to \`result.items\` or \`result.overflowItems\`. They are drawn while the row is hovered or focused. |
 | \`onGetTheme\` | A cell's theme: set \`theme.colors\` and the cell's palette is generated from them. |
-| \`onGetEditable\` | Decides per record whether a cell can be edited: set \`result.isEditable\`. A locked cell shows the not-editable icon. \`isEditable: false\` still locks the whole column. |
+| \`onGetEditable\` | Decides per record whether a cell can be edited: set \`result.isEditable\`. A locked cell shows the lock icon. \`isEditable: false\` still locks the whole column. |
 | \`onGetLoading\` | Decides per record whether a cell shows a loading placeholder: set \`result.isLoading\`. |
 
 ## \`settings.header\`

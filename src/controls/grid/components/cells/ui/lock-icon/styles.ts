@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
-export const getCellUneditableIconStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
+export const getCellLockIconStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
     root: {
         display: 'flex',
         alignItems: 'center',

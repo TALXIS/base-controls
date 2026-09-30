@@ -43,7 +43,7 @@ A hook is a function the grid calls with a result to change. Register it on its 
 | \`registerControlHook\` | \`cells\` | Which control draws a cell |
 | \`registerControlParametersHook\` | \`cells\` | The parameters that control is given |
 | \`registerRowHeightHook\` | \`rows\` | A row's height |
-| \`registerEditableHook\` | \`editability\` | Whether a column, a record's row or a cell can be edited. The hook is handed \`{ record, columnName }\` for the level it is asked about: \`columnName\` alone for a column, \`record\` alone for a row, both for a cell. A locked row is drawn muted, a locked cell shows the not-editable icon. |
+| \`registerEditableHook\` | \`editability\` | Whether a column, a record's row or a cell can be edited. The hook is handed \`{ record, columnName }\` for the level it is asked about: \`columnName\` alone for a column, \`record\` alone for a row, both for a cell. A locked row is drawn muted, a locked cell shows the lock icon. |
 | \`registerColumnDefinitionsHook\` | \`columns\` | The column definitions AG Grid gets |
 | \`registerColumnMenuSectionHook\` | \`columns.headers\` | The sections of a column's menu |
 | \`registerColumnMenuItemsHook\` | \`columns.headers\` | The items of a column's menu |

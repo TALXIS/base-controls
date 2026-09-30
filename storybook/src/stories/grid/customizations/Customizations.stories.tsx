@@ -26,6 +26,7 @@ Most of what a grid looks like and does is a prop on \`<Grid.Root />\`. The full
 |---|---|
 | \`noRecordsFound\` | No records found. |
 | \`valueNotEditable\` | This value cannot be edited. |
+| \`recordNotEditable\` | This record cannot be edited. |
 | \`recordSaveErrorTitle\` | Your changes were not saved |
 | \`recordSaveErrorDismiss\` | Dismiss |
 

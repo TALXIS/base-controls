@@ -43,7 +43,7 @@ export const EditablePerRecord: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerEditableHook\`, asked about a cell (both \`record\` and \`columnName\`), locks the cells of won deals. Each shows the not-editable icon.`,
+                story: `\`registerEditableHook\`, asked about a cell (both \`record\` and \`columnName\`), locks the cells of won deals. Each shows the lock icon.`,
             },
         },
     },
@@ -55,7 +55,7 @@ export const InactiveRecords: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerEditableHook\`, asked about a record (\`record\` without \`columnName\`), locks won deals as a whole. It starts from the provider's \`record.isActive()\`. Their rows are drawn muted and can't be edited.`,
+                story: `\`registerEditableHook\`, asked about a record (\`record\` without \`columnName\`), locks won deals as a whole. It starts from the provider's \`record.isActive()\`. Their rows are drawn muted and can't be edited, and a lock column appears next to them.`,
             },
         },
     },

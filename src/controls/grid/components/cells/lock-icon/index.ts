@@ -1,3 +1,3 @@
-//`CellUneditableIcon` is published through the namespace.
-export type { ICellUneditableIconProps } from './CellUneditableIcon';
+//`CellLockIcon` is published through the namespace.
+export type { ICellLockIconProps } from './CellLockIcon';
 export * from './components';

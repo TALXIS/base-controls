@@ -2,6 +2,7 @@
 export interface IGridLabels {
     noRecordsFound: string;
     valueNotEditable: string;
+    recordNotEditable: string;
     recordSaveErrorTitle: string;
     recordSaveErrorDismiss: string;
 }
@@ -10,6 +11,7 @@ export interface IGridLabels {
 export const GRID_LABELS: IGridLabels = {
     noRecordsFound: 'No records found.',
     valueNotEditable: 'This value cannot be edited.',
+    recordNotEditable: 'This record cannot be edited.',
     recordSaveErrorTitle: 'Your changes were not saved',
     recordSaveErrorDismiss: 'Dismiss',
 };

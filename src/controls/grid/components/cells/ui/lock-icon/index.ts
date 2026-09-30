@@ -1,2 +1,2 @@
-export * from './CellUiUneditableIcon';
+export * from './CellUiLockIcon';
 export * from './components';

@@ -464,6 +464,7 @@ declare function useGridService<K extends keyof IGridServiceMap>(key: K): IGridS
 interface IGridLabels {
     noRecordsFound: string;
     valueNotEditable: string;
+    recordNotEditable: string;
     recordSaveErrorTitle: string;
     recordSaveErrorDismiss: string;
 }
@@ -530,6 +531,8 @@ interface IGridProps {
     labels?: Partial<IGridLabels>;
     colDefs?: (IGridColDef & { colId: string })[];
     state?: any;
+    /** Decides whether a record is locked as a whole; a locked one is drawn as a muted row. */
+    onGetRecordLock?: (result: { isLocked: boolean }, params: { record: IRecord }) => void;
     onGridReady?: (runtime: IGridRuntime) => void;
     onDestroyed?: (runtime: IGridRuntime) => void;
     onDataLoaded?: () => void;
@@ -551,10 +554,11 @@ interface ICellControlProps {
 }
 
 interface ICellRendererComponents {
-    uneditableIcon?: {
-        onRenderUneditableIcon?: (props: {
+    lockIcon?: {
+        onRenderLockIcon?: (props: {
             message?: string;
             alignment?: IAlignment;
+            className?: string;
             components?: {
                 onRenderTooltip?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element;
                 onRenderIcon?: (props: IIconProps) => JSX.Element;
