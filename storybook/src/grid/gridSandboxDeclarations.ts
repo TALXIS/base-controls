@@ -414,6 +414,48 @@ declare function createRowSelectionModule(options: {
         onRenderHeader?: (props: IColumnHeaderParams) => JSX.Element;
     };
 }): IGridModule;
+/** The row selection module's own cell: the checkbox, or the status of the row's last save. */
+declare function SelectionCell(props: IGridCellParams & {
+    components?: {
+        container?: { onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element };
+        checkbox?: {
+            /** What the checkbox is drawn in, and what takes the click. */
+            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            onRenderCheckbox?: (props: import('@fluentui/react').ICheckboxProps) => JSX.Element;
+        };
+        indicator?: {
+            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element;
+            /** What says the record is saving. */
+            onRenderSpinner?: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element;
+            /** What says how the save went, and opens the error callout when it failed. */
+            onRenderButton?: (props: import('@fluentui/react').IButtonProps & { state: 'succeeded' | 'failed' }) => JSX.Element;
+        };
+        /** The callout a failed save opens, listing why. */
+        errorCallout?: {
+            onRenderCallout?: (props: import('@fluentui/react').ICalloutProps) => JSX.Element;
+            onRenderHeader?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            onRenderIcon?: (props: IIconProps) => JSX.Element;
+            onRenderTitle?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
+            onRenderFields?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            onRenderField?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            onRenderFieldName?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
+            onRenderMessage?: (props: import('@fluentui/react').ITextProps) => JSX.Element;
+            onRenderFooter?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            /** What clears the failure. */
+            onRenderDismissButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
+        };
+    };
+}): JSX.Element;
+/** The grouping module's header over the expansion column: the buttons that open and close a level. */
+declare function GroupExpandCollapseHeader(props: IColumnHeaderParams & {
+    components?: {
+        expandCollapse?: {
+            onRenderContainer?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+            onRenderExpandButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
+            onRenderCollapseButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element;
+        };
+    };
+}): JSX.Element;
 declare function createCellSelectionModule(options?: {
     suppressMultiRangeSelection?: boolean;
     enableRangeHandle?: boolean;
@@ -442,6 +484,8 @@ declare function createGroupingModule(options?: {
     components?: {
         onRenderGroupingIcon?: (props: IIconProps) => JSX.Element;
         onRenderGroupCell?: (props: IGridCellParams) => JSX.Element;
+        /** The header over the column that opens and closes the groups a level at a time. */
+        onRenderExpansionHeader?: (props: IColumnHeaderParams) => JSX.Element;
     };
     allowUserGrouping?: boolean;
     type?: 'nested' | 'flat';

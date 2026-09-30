@@ -1,6 +1,11 @@
 import { IButtonProps, IconButton, ISpinnerProps, Spinner } from "@fluentui/react";
 import { IRecordSaveUiErrorCalloutProps, RecordSaveUiErrorCallout } from "../error-callout";
 
+/** The indicator button's props, with how the save went. */
+export interface IRecordSaveUiIndicatorButtonProps extends IButtonProps {
+    state: 'succeeded' | 'failed';
+}
+
 /** The replaceable pieces of what a row says about its last save. */
 export interface IRecordSaveUiIndicatorComponents {
     /** What everything is drawn in, and what the error callout points at. */
@@ -8,7 +13,7 @@ export interface IRecordSaveUiIndicatorComponents {
     /** What says the record is saving. */
     onRenderSpinner: (props: ISpinnerProps) => JSX.Element;
     /** What says how the save went, and opens the error callout when it failed. */
-    onRenderButton: (props: IButtonProps) => JSX.Element;
+    onRenderButton: (props: IRecordSaveUiIndicatorButtonProps) => JSX.Element;
     onRenderErrorCallout: (props: IRecordSaveUiErrorCalloutProps) => JSX.Element;
 }
 
@@ -16,6 +21,6 @@ export interface IRecordSaveUiIndicatorComponents {
 export const RecordSaveUiIndicatorComponents: IRecordSaveUiIndicatorComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderSpinner: props => <Spinner {...props} />,
-    onRenderButton: props => <IconButton {...props} />,
+    onRenderButton: ({ state, ...props }) => <IconButton {...props} />,
     onRenderErrorCallout: props => <RecordSaveUiErrorCallout {...props} />,
 };

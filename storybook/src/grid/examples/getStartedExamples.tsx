@@ -44,6 +44,14 @@ const validateWonValue = (record: IRecord) => {
     record.expressions.setValidationExpression('name', () => ({ error: isWonBelowMinimum(record), errorMessage: 'This deal was won below the $10,000 minimum.' }))
 }
 
+//the cell toggles the row on click, so the input only shows the state it is handed
+const renderNativeCheckbox = (props: { checked?: boolean; indeterminate?: boolean; disabled?: boolean }) => <input
+    type='checkbox'
+    readOnly
+    checked={!!props.checked}
+    disabled={props.disabled}
+    ref={input => { if (input) input.indeterminate = !!props.indeterminate }} />
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Edit a value, group by a column, or select a few deals.')
@@ -60,12 +68,39 @@ const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createServerSideRowModelModule(),
-                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
+                rowSelection: createRowSelectionModule({
+                    mode: 'multiple',
+                    onSelectionChanged: setSelectedIds,
+                    components: {
+                        onRenderCell: props => <SelectionCell {...props} components={{
+                            checkbox: { onRenderCheckbox: renderNativeCheckbox },
+                            //a cloud while the deal saves, and once it has
+                            indicator: {
+                                onRenderSpinner: () => <Icon iconName='CloudUpload' title='Saving' style={{ color: '#0078d4' }} />,
+                                onRenderButton: ({ state, ...buttonProps }) => <IconButton {...buttonProps} iconProps={{ ...buttonProps.iconProps, iconName: state === 'succeeded' ? 'Cloud' : 'Warning' }} />,
+                            },
+                            //a deal over $30,000 is refused on save
+                            errorCallout: {
+                                onRenderIcon: iconProps => <Icon {...iconProps} iconName='Warning' />,
+                                onRenderDismissButton: buttonProps => <PrimaryButton {...buttonProps} text='Got it' />,
+                            },
+                        }} />,
+                    },
+                }),
                 cellSelection: createCellSelectionModule(),
                 clipboard: createClipboardModule(),
                 sorting: createSortingModule(),
                 filtering: createFilteringModule(),
-                grouping: createGroupingModule(),
+                grouping: createGroupingModule({
+                    components: {
+                        onRenderExpansionHeader: props => <GroupExpandCollapseHeader {...props} components={{
+                            expandCollapse: {
+                                onRenderExpandButton: buttonProps => <IconButton {...buttonProps} iconProps={{ ...buttonProps.iconProps, iconName: 'DoubleChevronDown' }} />,
+                                onRenderCollapseButton: buttonProps => <IconButton {...buttonProps} iconProps={{ ...buttonProps.iconProps, iconName: 'DoubleChevronUp' }} />,
+                            },
+                        }} />,
+                    },
+                }),
                 aggregation: createAggregationModule(),
             }}
             colDefs={[
@@ -116,6 +151,13 @@ const createOverviewProvider = () => {
     const provider = createDocsProvider()
     provider.aggregation.addAggregation({ alias: 'value_sum', columnName: 'value', aggregationFunction: 'sum' })
     provider.aggregation.addAggregation({ alias: 'timespent_sum', columnName: 'timespent', aggregationFunction: 'sum' })
+    const save = provider.onRecordSave.bind(provider)
+    provider.onRecordSave = async record => {
+        if (Number(record.getValue('value') ?? 0) <= 30000) {
+            return save(record)
+        }
+        return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'value', message: 'A deal over $30,000 needs a manager to sign it off.' }] }
+    }
     provider.refresh()
     return provider
 }

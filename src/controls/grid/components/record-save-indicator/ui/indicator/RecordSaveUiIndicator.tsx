@@ -26,12 +26,13 @@ export const RecordSaveUiIndicator = (props: IRecordSaveUiIndicatorProps) => {
         return components.onRenderContainer({ ref: rootRef, className: styles.root, children: components.onRenderSpinner({ size: SpinnerSize.small }) });
     }
     const isSuccess = state === 'succeeded';
-    
+
     return components.onRenderContainer({
         ref: rootRef,
         className: styles.root,
         children: <>
             {components.onRenderButton({
+                state: state,
                 onClick: () => setIsErrorCalloutVisible(!isSuccess),
                 iconProps: {
                     iconName: isSuccess ? 'SkypeCircleCheck' : 'StatusErrorFull',
