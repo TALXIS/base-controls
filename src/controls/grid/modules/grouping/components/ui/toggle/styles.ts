@@ -4,6 +4,7 @@ export const getGroupingUiToggleStyles = (theme: ITheme) => mergeStyleSets({
     container: {
         display: 'flex',
         alignItems: 'center',
+        height: '100%',
         //ahead of the value whatever order the column's alignment gives the two
         order: 0,
         //only the room the button needs
