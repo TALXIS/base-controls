@@ -4,7 +4,7 @@ import { IGridCell } from "../../../services/cells";
 export const GridCellContext = createContext<IGridCell | undefined>(undefined);
 GridCellContext.displayName = 'GridCell';
 
-/** A new symbol each time `CellRoot` hears the record change, and nothing more. */
+/** A new symbol each time `CellRoot` is asked to draw the cell again, and nothing more. */
 export const GridCellRevisionContext = createContext<symbol>(Symbol('cellRevision'));
 GridCellRevisionContext.displayName = 'GridCellRevision';
 

@@ -6,7 +6,7 @@ import { useRerender } from "@legacy/hooks";
 
 export const useInputButtons = (props: IInputButtons, theme: ITheme): {items: ICommandBarItemProps[]} => {
     const clickToCopyActiveRef = useRef<boolean>(false);
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const {clickToCopyProps, deleteButtonProps, value, disabled, buttons, readOnly} = {...props};
     const clickToCopyVisible = clickToCopyProps && value
     const deleteButtonVisible = deleteButtonProps && value && !readOnly;

@@ -16,7 +16,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     const labels = model.getLabels();
     const datasetControl = model.getDatasetControl();
     const dataset = datasetControl.getDataset();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const styles = useMemo(() => getHeaderStyles(), []);
     const [isEditColumnsPanelVisible, setIsEditColumnsPanelVisible] = useState<boolean>(false);
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);

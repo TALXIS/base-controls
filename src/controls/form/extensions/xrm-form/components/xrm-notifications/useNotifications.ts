@@ -4,7 +4,7 @@ import { useFormXmlContext } from "../context";
 
 export const useNotifications = () => {
     const form = useFormXmlContext();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter(form.events, "onNotificationsChanged", rerender);
 
     return form.getNotifications();

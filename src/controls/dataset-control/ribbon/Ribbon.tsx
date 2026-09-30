@@ -34,7 +34,7 @@ export const Ribbon = (props: IRibbon) => {
     const model = useMemo(() => new RibbonModel(() => propsRef.current), [])
     const commands = props.parameters.Commands?.raw ?? [];
     const styles = useMemo(() => getRibbonStyles(), []);
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     useEventEmitter<IRibbonModelEvents>(model, ['onBeforeCommandExecuted', 'onCommandExecutionFinished'], () => rerender())
     const componentProps = onOverrideComponentProps({

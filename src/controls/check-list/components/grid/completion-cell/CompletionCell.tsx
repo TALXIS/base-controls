@@ -28,7 +28,7 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const label = useLocalizationService().getLocalizedString('markItemFinished');
     const isEditingEnabled = datasetControl.getParameters().EnableEditing?.raw !== false;
     const record = props.data;
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', (columnName: string) => {
         if (columnName === completedColumnName) {

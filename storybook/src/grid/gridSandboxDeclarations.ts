@@ -97,8 +97,6 @@ interface IDataProvider {
     getRecordsMap(): { [recordId: string]: IRecord };
     getSelectedRecordIds(): string[];
     refresh(): void;
-    /** Redraws what the grid shows, for a change the records don't carry. */
-    requestRender(): void;
     isLoading(): boolean;
     getLoadingMessage(): string;
     grouping: {
@@ -126,7 +124,6 @@ declare class MemoryDataProvider implements IDataProvider {
     getRecordsMap(): { [recordId: string]: IRecord };
     getSelectedRecordIds(): string[];
     refresh(): void;
-    requestRender(): void;
     isLoading(): boolean;
     getLoadingMessage(): string;
     grouping: IDataProvider['grouping'];
@@ -295,6 +292,8 @@ interface IGridRuntimeEvents {
 interface IGridColumnHeaders {
     registerColumnMenuItemsHook(hook: (items: IContextualMenuItem[], header: IGridColumnHeader) => void, priority?: number): () => void;
     registerColumnHeaderAdornmentsHook(hook: (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void, priority?: number): () => void;
+    /** Draws every header on screen again, for a change their columns don't carry. */
+    render(): void;
 }
 
 interface IGridColumns {
@@ -308,6 +307,8 @@ interface IGridCells {
     registerCellThemeHook(hook: (theme: IThemeBuilder, params: IGridCellHookParams) => void, priority?: number): () => void;
     registerCellLoadingHook(hook: (result: { isLoading: boolean }, params: IGridCellHookParams) => void, priority?: number): () => void;
     registerCellCommandsHook(hook: (result: IGridCellCommands, params: IGridCellHookParams) => void, priority?: number): () => void;
+    /** Draws every cell on screen again, for a change their records don't carry. */
+    render(): void;
 }
 
 interface IGridRows extends IEventEmitter<IGridRowsEvents> {

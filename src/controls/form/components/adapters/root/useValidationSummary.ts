@@ -6,7 +6,7 @@ import { useRerender } from "@legacy";
 
 export const useValidationSummary = (): IValidation[] => {
     const form = useForm();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter(form.events, 'onValidationSummaryChanged', rerender);
 

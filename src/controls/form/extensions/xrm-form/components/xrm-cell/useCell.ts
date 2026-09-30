@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { IFormXmlCell } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
 
 export const useCell = (cell: IFormXmlCell) => {
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter(cell.events, ['onLabelChanged'], rerender);
 
     return cell;

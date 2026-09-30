@@ -17,7 +17,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
     const hasContainerAbove = useIsInsideCellContainer();
     const gridApi = useGridService('gridApi');
     const node = cell.getNode();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     //another cell's drag changes the row height a drag starts from
     useEffect(() => {

@@ -1,9 +1,11 @@
-import { useCallback, useContext, useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecordEvents } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";
 import { IGridEditedCell, IGridEditingEvents } from "../../../services/editing";
+import { IGridCellEvents } from "../../../services/cells";
 import { GridCellContext, GridCellRevisionContext } from "./context";
 
 //`useEventEmitter` keys its subscription on the array it is given
@@ -27,8 +29,7 @@ export const CellRoot = (props: ICellRootProps) => {
     const cell = useMemo(
         () => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell }),
         [cells, record, colDef, props.node, takesInput, props.eGridCell]);
-    const [revision, setRevision] = useState(() => Symbol('cellRevision'));
-    const redraw = useCallback(() => setRevision(Symbol('cellRevision')), []);
+    const { rerender: redraw, revision } = useRerender();
 
     const isThisCell = (edited: IGridEditedCell | undefined) => {
         return edited?.recordId === record.getRecordId() && edited?.columnName === cell.getColumnName();
@@ -38,6 +39,8 @@ export const CellRoot = (props: ICellRootProps) => {
     useEventEmitter<IRecordEvents>(record, RECORD_EVENTS, () => {
         redraw();
     });
+
+    useEventEmitter<IGridCellEvents>(cell.events, 'onRenderRequested', redraw);
 
     //both sides of the change redraw: `AutoFocus` is whether this cell is edited
     useEventEmitter<IGridEditingEvents>(editing.events, 'onEditedCellChanged', (previous, next) => {

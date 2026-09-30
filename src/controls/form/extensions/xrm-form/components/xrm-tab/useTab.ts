@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { IFormXmlTab } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
 
 export const useTab = (tab: IFormXmlTab) => {
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter(tab.events, ['onSectionVisibilityChanged', 'onLabelChanged'], rerender);
 
     return tab;

@@ -28,7 +28,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const localizationService = useLocalizationService();
     const [saveButtonState, setSaveButtonState] = React.useState<TSaveButtonState>('save');
     const successStateTimeout = React.useRef<number | null>(null);
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter(record, ['onFieldValueChanged'], rerender);
     useEventEmitter(form.events, 'onError', () => setSaveButtonState('save'));

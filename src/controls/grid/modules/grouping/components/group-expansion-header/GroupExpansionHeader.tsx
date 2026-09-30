@@ -12,7 +12,7 @@ export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
     //the grouping module is registered wherever this header draws
     const grouping = useGridService('grouping')!;
     const labels = useGridGroupingLabels();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const expandedLevel = grouping.getExpandedLevel();
 
     const onStepLevel = (step: number) => {

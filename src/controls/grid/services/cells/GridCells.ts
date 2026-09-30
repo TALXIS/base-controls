@@ -64,6 +64,8 @@ export interface IGridCells {
     addCell(cell: IGridCell): void;
     /** Removes a cell from the registry once it is gone. */
     removeCell(cell: IGridCell): void;
+    /** Draws every cell on screen again, for a change their records do not carry. */
+    render(): void;
     /** Every cell on screen. */
     getCells(): IGridCell[];
     /** The cell drawing this field, where one is rendered. */
@@ -135,10 +137,8 @@ export class GridCells implements IGridCells {
         this._services = parameters.services;
         this._editing = new GridEditing({ services: parameters.services });
         this._services.whenAvailable('gridApi', gridApi => {
-            this._provider.addEventListener('onRenderRequested', this._onRenderRequested);
             gridApi.addEventListener('cellFocused', this._onCellFocused);
         });
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public get editing(): IGridEditing {
@@ -155,6 +155,10 @@ export class GridCells implements IGridCells {
 
     public removeCell(cell: IGridCell): void {
         this._renderedCells.delete(cell.getId());
+    }
+
+    public render(): void {
+        this._renderedCells.forEach(cell => cell.render());
     }
 
     public getCells(): IGridCell[] {
@@ -205,25 +209,10 @@ export class GridCells implements IGridCells {
         this._cellCommandsHooks.apply(result, params);
     }
 
-    //forced, headers included: a render request is for what the values alone don't show, such as a theme
-    private _onRenderRequested = (): void => {
-        const gridApi = this._services.get('gridApi');
-        gridApi.refreshCells({ force: true });
-        gridApi.refreshHeader();
-    };
-
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
         const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
         const columnName = typeof event.column === 'string' ? event.column : event.column?.getColId();
         this.events.dispatchEvent('onFocusedCellChanged', record, record ? columnName : undefined);
     };
 
-    //the provider outlives the grid
-    private _onDestroyed = (): void => {
-        this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
-    };
-
-    private get _provider() {
-        return this._services.get('provider');
-    }
 }

@@ -51,7 +51,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
     //TODO: unify via hook?
     const components = { ...defaultComponents, ...props.components };
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnsChanged', rerender);
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onRelatedEntityColumnChanged', () => {

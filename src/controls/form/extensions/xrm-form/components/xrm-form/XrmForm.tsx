@@ -56,7 +56,7 @@ const XrmFormInternal = ({
     xrmFormContext: IXrmFormContextInternal,
     components: IXrmFormComponents
 }) => {
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
     React.useEffect(() => {

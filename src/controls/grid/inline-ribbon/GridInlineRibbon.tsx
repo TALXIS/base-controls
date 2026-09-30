@@ -28,7 +28,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     })
     const commandBarRef = useRef<ICommandBar>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.ColumnAlignment?.raw ?? 'left', context.mode.allocatedHeight), [props.parameters.ColumnAlignment?.raw, context.mode.allocatedHeight]);
     useEventEmitter<IGridInlineRibbonModelEvents>(model, MODEL_EVENTS, () => rerender());
 

@@ -21,7 +21,8 @@ export interface IGridColumnHeaderParameters {
 }
 
 /** The column a header is drawn for, with what the modules add to it. */
-export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents> {
+export interface IGridColumnHeader {
+    readonly events: IEventEmitter<IGridColumnHeaderEvents>;
     /** What this header is drawn in. */
     getTheme(): IGridColumnHeaderTheme;
     /** Asks for the menu to open. */
@@ -50,14 +51,14 @@ export interface IGridColumnHeader extends IEventEmitter<IGridColumnHeaderEvents
     getElement(): HTMLElement | undefined;
 }
 
-export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> implements IGridColumnHeader {
+export class GridColumnHeader implements IGridColumnHeader {
+    public readonly events: IEventEmitter<IGridColumnHeaderEvents> = new EventEmitter<IGridColumnHeaderEvents>();
     private _services: IGridServiceLocator;
     private _column: Column;
     private _element?: HTMLElement;
     private _theme: IGridColumnHeaderTheme;
 
     constructor(parameters: IGridColumnHeaderParameters) {
-        super();
         this._services = parameters.services;
         this._column = parameters.column;
         this._element = parameters.element;
@@ -69,11 +70,11 @@ export class GridColumnHeader extends EventEmitter<IGridColumnHeaderEvents> impl
     }
 
     public openMenu(): void {
-        this.dispatchEvent('onMenuVisibilityChanged', true);
+        this.events.dispatchEvent('onMenuVisibilityChanged', true);
     }
 
     public closeMenu(): void {
-        this.dispatchEvent('onMenuVisibilityChanged', false);
+        this.events.dispatchEvent('onMenuVisibilityChanged', false);
     }
 
     public getColDef(): ColDef<IRecord> {

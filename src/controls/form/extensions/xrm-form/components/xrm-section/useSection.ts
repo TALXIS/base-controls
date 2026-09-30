@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { IFormXmlSection } from "@controls/form/extensions/xrm-form/internal/form-xml-form";
 
 export const useSection = (section: IFormXmlSection) => {
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter(section.events, ['onCellVisibilityChanged', 'onLabelChanged'], rerender);
 
     return section;

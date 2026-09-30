@@ -10,7 +10,7 @@ export const ZoomSliderAdapter = () => {
     const provider = useTaskDataProvider();
     const zooming = useGanttService('ganttZooming');
     const labels = useGanttLabels();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter<IGanttZoomingEvents>(zooming?.events, 'onZoomChanged', rerender);
 
     return (

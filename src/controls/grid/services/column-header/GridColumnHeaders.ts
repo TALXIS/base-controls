@@ -1,3 +1,4 @@
+import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { Column } from "@ag-grid-community/core";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
@@ -41,12 +42,20 @@ export interface IGridColumnHeadersParameters {
 }
 
 /** What a column header offers and what it draws. */
+export interface IGridColumnHeadersEvents {
+    /** Every header on screen is to be drawn again. */
+    onRenderRequested: () => void;
+}
+
 export interface IGridColumnHeaders {
     /** The header of one column, as the parts drawing it read it. */
     createHeader(parameters: {
         column: Column;
         element?: HTMLElement;
     }): IGridColumnHeader;
+    readonly events: IEventEmitter<IGridColumnHeadersEvents>;
+    /** Draws every header on screen again, for a change their columns do not carry. */
+    render(): void;
     /**
      * Registers a hook over what a column's menu offers, under a heading of its own.
      *
@@ -81,6 +90,7 @@ export interface IGridColumnHeaders {
 
 export class GridColumnHeaders implements IGridColumnHeaders {
     private _services: IGridServiceLocator;
+    public readonly events: IEventEmitter<IGridColumnHeadersEvents> = new EventEmitter<IGridColumnHeadersEvents>();
     private _menuSectionHooks = new HookRegistry<GridColumnMenuSectionsHook>();
     private _menuItemHooks = new HookRegistry<GridColumnMenuItemsHook>();
     private _adornmentHooks = new HookRegistry<GridColumnHeaderAdornmentsHook>();
@@ -92,6 +102,10 @@ export class GridColumnHeaders implements IGridColumnHeaders {
 
     public createHeader(parameters: { column: Column; element?: HTMLElement }): IGridColumnHeader {
         return new GridColumnHeader({ services: this._services, ...parameters });
+    }
+
+    public render(): void {
+        this.events.dispatchEvent('onRenderRequested');
     }
 
     public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {

@@ -24,7 +24,7 @@ export const GroupCell = (props: IGroupCellProps) => {
     //the grouping module is registered wherever this cell draws
     const grouping = useGridService('grouping')!;
     const node = props.node;
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const components = grouping.components.groupCell ?? {};
 
     useEffect(() => {

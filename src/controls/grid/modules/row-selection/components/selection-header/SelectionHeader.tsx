@@ -13,7 +13,7 @@ export interface ISelectionHeaderProps extends IColumnHeaderParams { }
 export const SelectionHeader = (props: ISelectionHeaderProps) => {
     const selection = useGridService('rowSelection')!;
     const provider = useGridService('provider');
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 
     const getCheckboxState = (): IGridRowSelectionState => {

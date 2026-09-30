@@ -19,7 +19,7 @@ export const GroupCell = (props: IProps) => {
     const node = props.node;
     const expanded = node.expanded;
     const hasChildren = provider.getRecordTree().view.hasChildren(record.getRecordId());
-    const rerender = useRerender()
+    const { rerender } = useRerender()
     const styles = React.useMemo(() => getGroupCellStyles(getTheme(), expanded), [expanded]);
     const buttonRef = useRef<HTMLElement>(null);
 

@@ -26,7 +26,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     }
     //this is the first condition, we assume that the control is used for a single condition
     const condition = columnFilter.getConditions()[0];
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const [shouldRemountValueControl, setShouldRemountValueControl] = useState(false);
     const model = useMemo(() => {
         return new DatasetColumnFilteringModel({

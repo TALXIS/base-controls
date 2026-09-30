@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 
-export const useRerender = () => {
+export interface IRerender {
+    /** Asks for another render. */
+    rerender: () => void;
+    /** A new symbol on each render asked for. */
+    revision: symbol;
+}
+
+export const useRerender = (): IRerender => {
     const mountedRef = useRef(false);
-    const [, setRenderToken] = useState(() => Symbol("render"));
+    const [revision, setRevision] = useState(() => Symbol('revision'));
 
     useEffect(() => {
         mountedRef.current = true;
@@ -11,10 +18,11 @@ export const useRerender = () => {
         }
     }, []);
 
-    return () => {
-        if(!mountedRef.current) {
+    const rerender = () => {
+        if (!mountedRef.current) {
             return;
         }
-        setRenderToken(Symbol("render"));
-    }
+        setRevision(Symbol('revision'));
+    };
+    return { rerender, revision };
 }

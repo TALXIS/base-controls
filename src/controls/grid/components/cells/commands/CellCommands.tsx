@@ -14,7 +14,7 @@ export interface ICellCommandsProps {
 export const CellCommands = (props: ICellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridService('rows');
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const isHighlighted = rows.isHighlighted(cell.getRecord());
     //what this cell last drew from.
     const wasHighlighted = useRef(isHighlighted);

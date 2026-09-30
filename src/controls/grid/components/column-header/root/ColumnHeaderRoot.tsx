@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import { Column } from "@ag-grid-community/core";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";
-import { GridColumnHeaderContext } from "./context";
+import { IGridColumnHeadersEvents } from "../../../services/column-header";
+import { GridColumnHeaderContext, GridColumnHeaderRevisionContext } from "./context";
 
 /** What a column header is drawn from, of everything AG Grid hands a header component. */
 export interface IColumnHeaderParams {
@@ -21,6 +24,11 @@ export const ColumnHeaderRoot = (props: IColumnHeaderRootProps) => {
     const header = useMemo(
         () => headers.createHeader({ column: props.column, element: props.eGridHeader }),
         [headers, props.column, props.eGridHeader]);
+    const { rerender: redraw, revision } = useRerender();
 
-    return <GridColumnHeaderContext.Provider value={header}>{props.children}</GridColumnHeaderContext.Provider>;
+    useEventEmitter<IGridColumnHeadersEvents>(headers.events, 'onRenderRequested', redraw);
+
+    return <GridColumnHeaderContext.Provider value={header}>
+        <GridColumnHeaderRevisionContext.Provider value={revision}>{props.children}</GridColumnHeaderRevisionContext.Provider>
+    </GridColumnHeaderContext.Provider>;
 };

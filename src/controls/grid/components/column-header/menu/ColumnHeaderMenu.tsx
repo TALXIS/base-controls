@@ -15,7 +15,7 @@ export const ColumnHeaderMenu = (props: IColumnHeaderMenuProps) => {
     //worked out when the menu opens, not for every header the grid draws
     const [items, setItems] = useState<IContextualMenuItem[]>();
 
-    useEventEmitter<IGridColumnHeaderEvents>(header, 'onMenuVisibilityChanged', isOpen => {
+    useEventEmitter<IGridColumnHeaderEvents>(header.events, 'onMenuVisibilityChanged', isOpen => {
         setItems(isOpen ? header.getMenuItems() : undefined);
     });
 

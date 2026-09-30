@@ -38,7 +38,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
         languageId : props.context.userSettings.languageId,
         defaultTranslations: getDefaultNestedControlRendererTranslations()
     })
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const isBaseControl = useMemo(() => {
         return BaseControls.IsBaseControl(props.parameters.ControlName);
     }, [props.parameters.ControlName]);
@@ -227,7 +227,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
     const styles = useMemo(() => getInternalNestedControlStyles(), []);
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useImperativeHandle(ref, () => {
         return {

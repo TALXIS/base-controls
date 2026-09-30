@@ -25,7 +25,7 @@ export const DependenciesCellRenderer = (props: IDependenciesCellRendererProps) 
     //get, not find: the column this renders in only exists because the module does
     const provider = useServices().get('dependenciesModule').provider;
     const taskId = props.data.getRecordId();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     //the event carries every affected task, so each cell picks out its own — including when the change came
     //from a refresh of the task at the other end of the dependency
     useEventEmitter(provider.events, 'onAfterDependenciesRefreshed', (affectedTaskIds: string[]) => {

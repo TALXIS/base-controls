@@ -1,5 +1,5 @@
 import { ColDef, IRowNode } from "@ag-grid-community/core";
-import { IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
 import { IGridColumnSettings } from "../columns/colDef";
@@ -24,8 +24,16 @@ export interface IGridCellParameters {
 //enough to tell two cells apart in the registry, a renderer and its editor included
 let instanceCount = 0;
 
+export interface IGridCellEvents {
+    /** The cell is to be drawn again. */
+    onRenderRequested: () => void;
+}
+
 /** One cell of the grid, for as long as it is on screen. */
 export interface IGridCell {
+    readonly events: IEventEmitter<IGridCellEvents>;
+    /** Draws the cell again, for a change its record does not carry. */
+    render(): void;
     /** What tells this cell apart from every other one, this render of it included. */
     getId(): string;
     getRecord(): IRecord;
@@ -61,6 +69,7 @@ export interface IGridCell {
 }
 
 export class GridCell implements IGridCell {
+    public readonly events: IEventEmitter<IGridCellEvents> = new EventEmitter<IGridCellEvents>();
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _colDef: ColDef<IRecord>;
@@ -79,6 +88,10 @@ export class GridCell implements IGridCell {
         this._element = parameters.element;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, cell: this });
+    }
+
+    public render(): void {
+        this.events.dispatchEvent('onRenderRequested');
     }
 
     public getId(): string {

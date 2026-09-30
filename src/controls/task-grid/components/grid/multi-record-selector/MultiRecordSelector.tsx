@@ -31,6 +31,7 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
     const localizationService = useLocalizationService();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
     const ref = React.useRef<SelectInstance>(null);
+    //a counter: a key has to be a string or a number
     const [renderKey, setRenderKey] = React.useState(0);
     const isFirstRenderRef = React.useRef(true);
     const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);

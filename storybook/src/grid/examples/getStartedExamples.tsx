@@ -73,6 +73,7 @@ const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const [status, setStatus] = React.useState('Switch features on above, then try them: edit a value, select a few deals and mark them won, or group by Stage.')
     const highlightsBigDeals = React.useRef(false)
+    const gridRef = React.useRef<IGridRuntime>()
 
     const setFeature = (key: string, isOn: boolean) => {
         //grouped by stage while grouping is on
@@ -150,7 +151,9 @@ const GridExample = () => {
                                         iconProps: { iconName: 'Highlight' },
                                         onClick: () => {
                                             highlightsBigDeals.current = !highlightsBigDeals.current
-                                            provider.requestRender()
+                                            //the tint is not in the records, so nothing redraws on its own
+                                            gridRef.current?.services.get('cells').render()
+                                            gridRef.current?.services.get('columns').headers.render()
                                         },
                                     }],
                                 })
@@ -203,6 +206,7 @@ const GridExample = () => {
             enableAutoSave={features.autoSave}
             enableOptionSetColors={features.optionSetColors}
             enableZebra={features.zebra}
+            onGridReady={runtime => { gridRef.current = runtime }}
             rowSettings={{ onGetLock: lockClosedDeals }}
             onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save was refused: open the red icon to see why.')}
             height='560px' />

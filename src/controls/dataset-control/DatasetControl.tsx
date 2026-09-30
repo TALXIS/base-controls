@@ -30,7 +30,7 @@ export const DatasetControl = (props: IDatasetControlProps) => {
   }), []);
   useMemo(() => props.onGetDatasetControlInstance().init(), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-  const rerender = useRerender();
+  const { rerender } = useRerender();
   const styles = useMemo(() => getDatasetControlStyles(datasetControl.getHeight()), [datasetControl.getHeight()]);
   const dataset = datasetControl.getDataset();
 

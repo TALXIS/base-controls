@@ -9,7 +9,7 @@ import { useGanttWeekendsLabels } from "../../context";
 export const GanttWeekendToggle = () => {
     const weekends = useGanttService('ganttWeekends');
     const labels = useGanttWeekendsLabels();
-    const rerender = useRerender();
+    const { rerender } = useRerender();
 
     useEventEmitter<IGanttWeekendsEvents>(weekends?.events, 'onWeekendVisibilityChanged', rerender);
 

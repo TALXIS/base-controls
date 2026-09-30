@@ -9,7 +9,7 @@ export const useField = (name?: string | null): IField | null => {
     const contextFieldName = useFieldName();
     name = name ?? contextFieldName;
     const field = name ? form.getField(name) : null;
-    const _rerender = useRerender();
+    const { rerender: _rerender } = useRerender();
 
     const rerender = () => {
         if(field) _rerender();

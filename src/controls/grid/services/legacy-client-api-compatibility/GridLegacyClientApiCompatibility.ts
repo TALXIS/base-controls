@@ -14,13 +14,33 @@ export interface IGridLegacyClientApiCompatibilityParameters {
 
 /** What the legacy client API sets on a record's field, handed to the cells hooks. */
 export class GridLegacyClientApiCompatibility {
+    private _services: IGridServiceLocator;
+
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
+        this._services = parameters.services;
         const cells = parameters.services.get('cells');
         parameters.services.get('locks').registerLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlHook(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlParametersHook(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
+        //a legacy script redraws through the dataset
+        parameters.services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
+        parameters.services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+    }
+
+    private _onRenderRequested = (): void => {
+        this._services.get('cells').render();
+        this._services.get('columns').headers.render();
+    };
+
+    //the provider outlives the grid
+    private _onDestroyed = (): void => {
+        this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
+    };
+
+    private get _provider() {
+        return this._services.get('provider');
     }
 
     private _onLock: GridLockHook = (result, { record, columnName }) => {

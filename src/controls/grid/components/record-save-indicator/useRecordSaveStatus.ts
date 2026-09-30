@@ -16,7 +16,7 @@ export interface IRecordSaveStatus {
 
 /** Follows a record's saves. */
 export const useRecordSaveStatus = (record: IRecord): IRecordSaveStatus => {
-    const rerender = useRerender();
+    const { rerender } = useRerender();
     const successTimeoutRef = useRef<NodeJS.Timeout>();
     const [saveResult, setSaveResult] = useState<IRecordSaveOperationResult | null>(null);
 
