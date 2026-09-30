@@ -68,7 +68,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
                 //a formatted value the cell has is a column's, whatever the props say
                 const selected = getSelectedOptions(value, column!);
                 //a colour is what makes an option worth a shape of its own
-                if (selected.some(option => option.color)) {
+                if (props.parameters.EnableOptionSetColors?.raw && selected.some(option => option.color)) {
                     return components.onRenderOptions({ options: selected, alignment: alignment });
                 }
                 break;

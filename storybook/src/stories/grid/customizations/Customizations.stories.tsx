@@ -14,7 +14,7 @@ Most of what a grid looks like and does is a prop on \`<Grid.Root />\`. The full
 | \`enableAutoSave\` | A record saves as soon as a value in it changes. |
 | \`enableNavigation\` | A double click on a row opens its record. |
 | \`enableZebra\` | Every other row is shaded. |
-| \`enableOptionSetColors\` | An option set's editor shows its options in their colours. |
+| \`enableOptionSetColors\` | Option set values are drawn as tags in their colours, in cells and in the editor. |
 | \`rowHeight\` | How tall a row is. |
 | \`height\` and \`maxVisibleRows\` | How tall the grid is. |
 

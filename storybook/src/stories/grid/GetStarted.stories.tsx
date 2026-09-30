@@ -47,7 +47,7 @@ import { Grid, createClientSideRowModelModule, createSortingModule } from '@talx
 | \`enableAutoSave\` | — | \`false\` | Whether a record saves as soon as a value in it changes. |
 | \`enableNavigation\` | — | \`true\` | Whether a double click on a row opens its record. Read at mount. |
 | \`enableZebra\` | — | \`true\` | Whether every other row is shaded. Read at mount. |
-| \`enableOptionSetColors\` | — | \`false\` | Whether an option set's editor shows its options in their colours. Read at mount. |
+| \`enableOptionSetColors\` | — | \`false\` | Whether option set values are drawn as tags in their colours, in cells and in the editor. Read at mount. |
 | \`rowHeight\` | — | \`42\` | How tall a row is, in pixels. Read at mount. |
 | \`colDefs\` | — | | Changes to columns, and columns of your own. Read at mount. See [**Columns**](?path=/story/grid-customizations-columns--overview). |
 | \`components\` | — | | Your own overlays and loading rows. See [**Custom Components**](?path=/story/grid-customizations-custom-components--overview). |

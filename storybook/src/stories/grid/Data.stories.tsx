@@ -49,7 +49,7 @@ In an editable grid, a record the provider reports as inactive (\`record.isActiv
 
 ## The examples' data
 
-Every example on these pages gets a \`provider\` over the same sales pipeline of 30 deals: \`name\`, \`owner\` (the account manager), \`stage\` (an option set where \`4\` is *Won*), \`value\` (currency), \`probability\` (a percentage), \`closedate\`, \`timespent\` (a duration, in minutes) and \`recurring\` (two options). Every column carries all the keys above. The examples on this page build providers of their own.
+Every example on these pages gets a \`provider\` over the same sales pipeline of 30 deals: \`name\`, \`owner\` (the account manager), \`stage\` (an option set where \`4\` is *Won*), \`products\` (a multi-select option set), \`value\` (currency), \`probability\` (a percentage), \`closedate\`, \`timespent\` (a duration, in minutes) and \`recurring\` (two options). Every column carries all the keys above. The examples on this page build providers of their own.
 `
 
 const meta = {

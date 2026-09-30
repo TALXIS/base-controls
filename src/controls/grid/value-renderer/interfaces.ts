@@ -21,6 +21,8 @@ export interface IGridValueRendererParameters extends IParameters {
     ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<IAlignment>, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<'renderer' | 'editor'>, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
+    /** Whether option set values are drawn as tags in their colours. */
+    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
     Column: {
         raw: IColumn | undefined;
     }

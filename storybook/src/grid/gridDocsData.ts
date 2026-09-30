@@ -11,6 +11,13 @@ const STAGE_OPTIONS = [
     { Value: 4, Label: 'Won', Color: '#107c10' },
 ]
 
+const PRODUCT_OPTIONS = [
+    { Value: 10, Label: 'CRM', Color: '#0078d4' },
+    { Value: 20, Label: 'Support', Color: '#8764b8' },
+    { Value: 30, Label: 'Analytics', Color: '#498205' },
+    { Value: 40, Label: 'Training', Color: '#ca5010' },
+]
+
 const RECURRING_OPTIONS = [
     { Value: 0, Label: 'No', Color: '#605e5c' },
     { Value: 1, Label: 'Yes', Color: '#107c10' },
@@ -28,6 +35,7 @@ export const DOCS_COLUMNS: IColumn[] = [
     { name: 'name', dataType: DataTypes.SingleLineText, displayName: 'Deal', visualSizeFactor: 230, metadata: metadataFor(DataTypes.SingleLineText) },
     { name: 'owner', dataType: DataTypes.SingleLineText, displayName: 'Account manager', visualSizeFactor: 160, metadata: metadataFor(DataTypes.SingleLineText) },
     { name: 'stage', dataType: DataTypes.OptionSet, displayName: 'Stage', visualSizeFactor: 130, metadata: { ...metadataFor(DataTypes.OptionSet), OptionSet: STAGE_OPTIONS } },
+    { name: 'products', dataType: DataTypes.MultiSelectOptionSet, displayName: 'Products', visualSizeFactor: 200, metadata: { ...metadataFor(DataTypes.MultiSelectOptionSet), OptionSet: PRODUCT_OPTIONS } },
     { name: 'value', dataType: DataTypes.Currency, displayName: 'Value', visualSizeFactor: 130, metadata: { ...metadataFor(DataTypes.Currency), SupportedAggregations: SUPPORTED_AGGREGATIONS } },
     { name: 'probability', dataType: DataTypes.WholeNone, displayName: 'Probability (%)', visualSizeFactor: 130, metadata: { ...metadataFor(DataTypes.WholeNone), SupportedAggregations: SUPPORTED_AGGREGATIONS } },
     { name: 'closedate', dataType: DataTypes.DateAndTimeDateOnly, displayName: 'Close date', visualSizeFactor: 120, metadata: metadataFor(DataTypes.DateAndTimeDateOnly) },
@@ -39,6 +47,7 @@ const ACCOUNTS = ['Contoso', 'Fabrikam', 'Northwind', 'Adventure Works', 'Litwar
 const DEALS = ['CRM rollout', 'Support renewal', 'Data migration', 'Licence upgrade', 'Onboarding package']
 const OWNERS = ['Anna Novak', 'Ben Carter', 'Chloé Martin', 'David Kim']
 const PROBABILITIES = [20, 45, 70, 100]
+const PRODUCTS = [[10], [10, 20], [30], [20, 40], [10, 30, 40]]
 //in minutes, as a duration column holds them
 const TIME_SPENT = [30, 90, 240, 480, 960, 1440, 2880]
 
@@ -47,6 +56,7 @@ export const DOCS_ROWS: IRawRecord[] = Array.from({ length: 30 }, (_, index) => 
     name: `${ACCOUNTS[index % ACCOUNTS.length]}: ${DEALS[index % DEALS.length]}`,
     owner: OWNERS[index % OWNERS.length],
     stage: (index % STAGE_OPTIONS.length) + 1,
+    products: PRODUCTS[index % PRODUCTS.length],
     value: 4000 + ((index * 7) % 12) * 2500,
     //a few open deals are lost
     probability: index % 9 === 4 ? 0 : PROBABILITIES[index % PROBABILITIES.length],
