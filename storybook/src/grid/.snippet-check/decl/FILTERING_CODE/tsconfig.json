@@ -1,1 +1,0 @@
-{"compilerOptions":{"jsx":"react","target":"ES2020","lib":["ES2020","DOM"],"strict":false,"noEmit":true,"moduleResolution":"node","esModuleInterop":true,"skipLibCheck":true,"typeRoots":["/Users/dominikbrych/Repos/NETWORG/base-controls/storybook/node_modules/@types"]},"files":["snippet.tsx","../../sandbox.d.ts"]}

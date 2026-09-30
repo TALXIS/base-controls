@@ -75,7 +75,7 @@ const GridExample = () => {
     const highlightsBigDeals = React.useRef(false)
 
     const setFeature = (key: string, isOn: boolean) => {
-        //grouped by stage as soon as grouping is on; ungrouped once it is off, since nothing would draw the groups
+        //grouped by stage while grouping is on
         if (key === 'grouping') {
             provider.grouping.clear()
             if (isOn) {

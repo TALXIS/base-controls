@@ -1,4 +1,4 @@
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles } from "@fluentui/react";
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyleProps, IToggleStyles } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
 import { ITheme, ThemeBuilder } from "@theme";
 import { getJustifyContent, IAlignment } from "@utils";
@@ -109,11 +109,19 @@ export class GridCellTheme implements IGridCellTheme {
                 } as IDatePickerStyles
             },
             'Toggle': {
-                styles: {
+                //in place of the theme's own Toggle entry, the pill's hover border included
+                styles: (props: IToggleStyleProps): Partial<IToggleStyles> => ({
                     root: {
                         justifyContent: getJustifyContent(alignment)
+                    },
+                    pill: !props.checked && !props.disabled && {
+                        selectors: {
+                            ':hover': {
+                                borderColor: props.theme.semanticColors.smallInputBorder
+                            }
+                        }
                     }
-                } as IToggleStyles
+                })
             }
         } as any;
         componentStylesByAlignment.set(alignment, styles);
