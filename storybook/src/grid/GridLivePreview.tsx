@@ -7,6 +7,8 @@ interface IGridLivePreviewProps {
     code: string
     /** Injected so an edit keeps the rows, and whatever the reader did to them. */
     provider: IDataProvider
+    /** Handed to `GridExample` as its props. */
+    previewProps?: object
     onError?: (error: string | null) => void
 }
 
@@ -25,7 +27,7 @@ export const GridLivePreview = (props: IGridLivePreviewProps) => {
             })?.code ?? ''
             const factory = new Function(...SCOPE_NAMES, `${transformed}
                 return typeof GridExample !== "undefined" ? GridExample : null;`)
-            const Component = factory(...Object.values(GRID_SANDBOX_SCOPE), props.provider) as React.ComponentType | null
+            const Component = factory(...Object.values(GRID_SANDBOX_SCOPE), props.provider) as React.ComponentType<any> | null
             return { Component, error: null as string | null }
         } catch (error) {
             return { Component: null, error: (error as Error).message }
@@ -45,7 +47,7 @@ export const GridLivePreview = (props: IGridLivePreviewProps) => {
     const PreviewComponent = compiled.Component
     //keyed by the code: an edit remounts the grid
     return <GridPreviewBoundary key={props.code}>
-        <PreviewComponent />
+        <PreviewComponent {...props.previewProps} />
     </GridPreviewBoundary>
 }
 

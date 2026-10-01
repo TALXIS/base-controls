@@ -117,9 +117,9 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--talxis-cell-outline-bottom': '1px',
                 '--talxis-cell-outline-left': '1px',
             },
-            //`currentColor` is the cell's own text
+            //the grid's own text colour, whatever colour a cell's text is
             [`.ag-row-hover .${CELL_CONTAINER_CLASS_NAME}::after`]: {
-                backgroundColor: 'color-mix(in srgb, currentColor, transparent 92%)',
+                backgroundColor: `color-mix(in srgb, ${theme.semanticColors.bodyText}, transparent 92%)`,
             },
             //in the grid's accent
             [`.ag-row-selected .${CELL_CONTAINER_CLASS_NAME}::after`]: {

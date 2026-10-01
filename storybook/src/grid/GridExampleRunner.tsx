@@ -23,6 +23,10 @@ export interface IGridExampleRunnerProps {
     seedCode: string
     /** The provider handed to the snippet as `provider`, refreshed by whoever creates it. */
     onCreateProvider?: () => IDataProvider
+    /** Handed to the snippet's `GridExample` as its props. */
+    previewProps?: object
+    /** Drawn above the preview, outside the code the reader edits. */
+    renderAbovePreview?: () => React.ReactNode
 }
 
 /** A live Grid with a Code toggle: flip it to read the snippet, edit it, and watch it recompile. */
@@ -42,6 +46,9 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     return <ExampleRunner
         error={compileError}
         previewMinHeight={0}
-        renderPreview={() => <GridLivePreview code={debouncedCode} provider={provider} onError={setCompileError} />}
+        renderPreview={() => <>
+            {props.renderAbovePreview?.()}
+            <GridLivePreview code={debouncedCode} provider={provider} previewProps={props.previewProps} onError={setCompileError} />
+        </>}
         renderCode={() => <GridCodeEditor value={code} onChange={setCode} />} />
 }

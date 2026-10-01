@@ -1,5 +1,7 @@
 import React from 'react'
-import { IColumn } from '@talxis/client-libraries'
+import { CommandBar, Panel } from '@fluentui/react'
+import { DataTypes, IColumn } from '@talxis/client-libraries'
+import { Form, IFormApi, MemoryStrategy } from '@talxis/base-controls'
 import { GridExampleRunner } from '../GridExampleRunner'
 import { createDocsProvider, DOCS_COLUMNS, DOCS_OVERVIEW_COLUMNS, DOCS_ROWS } from '../gridDocsData'
 
@@ -51,58 +53,26 @@ const getTargets = (record: IRecord) => {
         : [record]
 }
 
-//each one switches a module or a prop; the grid remounts, since both are read when it mounts
-const FEATURES = [
-    { key: 'editing', label: 'Editing' },
-    { key: 'autoSave', label: 'Auto-save' },
-    { key: 'rowSelection', label: 'Row selection' },
-    { key: 'cellSelection', label: 'Cell selection' },
-    { key: 'clipboard', label: 'Clipboard' },
-    { key: 'sorting', label: 'Sorting' },
-    { key: 'filtering', label: 'Filtering' },
-    { key: 'grouping', label: 'Grouping' },
-    { key: 'aggregation', label: 'Totals' },
-    { key: 'optionSetColors', label: 'Option set colours' },
-    { key: 'zebra', label: 'Zebra rows' },
-]
+//what the Grid features panel above has switched on
+interface IOverviewProps {
+    features: { [feature: string]: boolean }
+}
 
-const ALL_OFF: { [feature: string]: boolean } = Object.fromEntries(FEATURES.map(feature => [feature.key, false]))
-
-const GridExample = () => {
-    const [features, setFeatures] = React.useState(ALL_OFF)
+const GridExample = (props: IOverviewProps) => {
+    const { features } = props
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-    const [status, setStatus] = React.useState('Switch features on above, then try them: edit a value, select a few deals and mark them won, or group by Stage.')
+    const [status, setStatus] = React.useState('Switch features on under Grid features, then try them: edit a value, select a few deals and mark them won, or group by Stage.')
     const highlightsBigDeals = React.useRef(false)
     const gridRef = React.useRef<IGridRuntime>()
 
-    const setFeature = (key: string, isOn: boolean) => {
-        //grouped by stage while grouping is on
-        if (key === 'grouping') {
-            provider.grouping.clear()
-            if (isOn) {
-                provider.grouping.addGroupBy({ alias: 'stage', columnName: 'stage' })
-            }
-            provider.refresh()
-        }
-        if (key === 'rowSelection' && !isOn) {
-            setSelectedIds([])
-        }
-        setFeatures(current => ({ ...current, [key]: isOn }))
-    }
+    //a selection only counts while the grid can select
+    const selectedDeals = features.rowSelection ? selectedIds : []
 
-    const selectedValue = selectedIds.reduce((total, id) => total + Number(provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
+    const selectedValue = selectedDeals.reduce((total, id) => total + Number(provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal wrap tokens={{ childrenGap: '4px 24px' }}>
-            {FEATURES.map(feature => <Toggle
-                key={feature.key}
-                label={feature.label}
-                inlineLabel
-                checked={features[feature.key]}
-                onChange={(_event, checked) => setFeature(feature.key, !!checked)} />)}
-        </Stack>
-        <MessageBar messageBarType={selectedIds.length ? MessageBarType.success : MessageBarType.info}>
-            {selectedIds.length ? selectedIds.length + ' deal(s) selected, worth ' + formatMoney(selectedValue) + '. ' : ''}{status}
+        <MessageBar messageBarType={selectedDeals.length ? MessageBarType.success : MessageBarType.info}>
+            {selectedDeals.length ? selectedDeals.length + ' deal(s) selected, worth ' + formatMoney(selectedValue) + '. ' : ''}{status}
         </MessageBar>
         <Grid.Root
             key={JSON.stringify(features)}
@@ -241,4 +211,91 @@ const createOverviewProvider = () => {
     return provider
 }
 
-export const OverviewExample = () => <GridExampleRunner seedCode={OVERVIEW_CODE} onCreateProvider={createOverviewProvider} />
+//each one switches a module or a prop; the grid remounts, since both are read when it mounts
+const FEATURE_GROUPS = [
+    { title: 'Editing', features: [{ key: 'editing', label: 'Editing' }, { key: 'autoSave', label: 'Auto-save' }] },
+    { title: 'Selection', features: [{ key: 'rowSelection', label: 'Rows' }, { key: 'cellSelection', label: 'Cells' }, { key: 'clipboard', label: 'Clipboard' }] },
+    { title: 'Data', features: [{ key: 'sorting', label: 'Sorting' }, { key: 'filtering', label: 'Filtering' }, { key: 'grouping', label: 'Grouping' }, { key: 'aggregation', label: 'Totals' }] },
+    { title: 'Look', features: [{ key: 'optionSetColors', label: 'Option set colours' }, { key: 'zebra', label: 'Zebra rows' }] },
+]
+const FEATURE_KEYS = FEATURE_GROUPS.flatMap(group => group.features.map(feature => feature.key))
+const ALL_OFF: { [feature: string]: boolean } = Object.fromEntries(FEATURE_KEYS.map(key => [key, false]))
+const EVERYTHING = 'everything'
+const ON_OFF = [{ Value: 0, Label: 'Off', Color: '#605e5c' }, { Value: 1, Label: 'On', Color: '#107c10' }]
+
+//the features, as a record the form edits
+const FEATURE_COLUMNS: IColumn[] = [{ key: EVERYTHING, label: 'All features' }, ...FEATURE_GROUPS.flatMap(group => group.features)].map(feature => ({
+    name: feature.key,
+    displayName: feature.label,
+    dataType: DataTypes.TwoOptions,
+    metadata: { IsValidForUpdate: true, OptionSet: ON_OFF },
+}))
+
+export const OverviewExample = () => {
+    const provider = React.useMemo(() => createOverviewProvider(), [])
+    const [features, setFeatures] = React.useState(ALL_OFF)
+    const [isPanelOpen, setIsPanelOpen] = React.useState(false)
+    const featuresRef = React.useRef(features)
+    featuresRef.current = features
+    const formRef = React.useRef<IFormApi>()
+
+    //read when the form loads, so it opens on what is switched on
+    const strategy = React.useMemo(() => new MemoryStrategy({
+        onGetColumns: () => FEATURE_COLUMNS,
+        onGetData: () => ({ id: 'features', ...featuresRef.current, [EVERYTHING]: FEATURE_KEYS.every(key => featuresRef.current[key]) }),
+        onGetMetadata: () => ({ PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'id' }),
+    }), [])
+
+    const setFeatureValues = (keys: string[], isOn: boolean) => {
+        //grouped by stage while grouping is on
+        if (keys.includes('grouping') && featuresRef.current.grouping !== isOn) {
+            provider.grouping.clear()
+            if (isOn) {
+                provider.grouping.addGroupBy({ alias: 'stage', columnName: 'stage' })
+            }
+            provider.refresh()
+        }
+        const next = { ...featuresRef.current, ...Object.fromEntries(keys.map(key => [key, isOn])) }
+        featuresRef.current = next
+        setFeatures(next)
+    }
+
+    //set while the form's own fields are brought in line
+    const isSyncing = React.useRef(false)
+
+    const onFeatureChanged = (fieldName: string, value: any) => {
+        if (isSyncing.current) {
+            return
+        }
+        //the form's toggle hands over '1' or '0'
+        const isOn = value === true || String(value) === '1'
+        setFeatureValues(fieldName === EVERYTHING ? FEATURE_KEYS : [fieldName], isOn)
+        const form = formRef.current
+        isSyncing.current = true
+        if (fieldName === EVERYTHING) {
+            FEATURE_KEYS.forEach(key => form?.getField(key).setValue(isOn))
+        }
+        else {
+            form?.getField(EVERYTHING).setValue(FEATURE_KEYS.every(key => featuresRef.current[key]))
+        }
+        isSyncing.current = false
+    }
+
+    return <>
+        <Panel isOpen={isPanelOpen} isLightDismiss headerText='Grid features' onDismiss={() => setIsPanelOpen(false)}>
+            <Form.Root strategy={strategy} onFormReady={api => { formRef.current = api }} onFieldValueChanged={onFeatureChanged}>
+                <Form.Section label='Everything' layout={{ lg: 1 }}>
+                    <Form.Field name={EVERYTHING}><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                </Form.Section>
+                {FEATURE_GROUPS.map(group => <Form.Section key={group.title} label={group.title} layout={{ lg: 1 }}>
+                    {group.features.map(feature => <Form.Field key={feature.key} name={feature.key}><Form.Cell><Form.Control /></Form.Cell></Form.Field>)}
+                </Form.Section>)}
+            </Form.Root>
+        </Panel>
+        <GridExampleRunner
+            seedCode={OVERVIEW_CODE}
+            onCreateProvider={() => provider}
+            previewProps={{ features }}
+            renderAbovePreview={() => <CommandBar items={[{ key: 'features', text: 'Grid features', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} styles={{ root: { padding: 0, marginBottom: 8 } }} />} />
+    </>
+}
