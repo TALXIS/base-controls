@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from '@fluentui/react';
 
-export const getNotificationsStyles = (theme: ITheme, isUnfolded: boolean) => {
+export const getNotificationMessageBarStyles = (theme: ITheme, isUnfolded: boolean) => {
 	return mergeStyleSets({
 		notification: {
 			flexDirection: 'row',

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createRowSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
+import { createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createLegacyClientApiCompatibilityModule, createRowSelectionModule, createServerSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid";
 import { useTheme } from "@fluentui/react";
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
 import { ICheckListDatasetControl } from "../../CheckListDatasetControl";
@@ -32,6 +32,7 @@ export const Grid = (props: ICheckListGridProps) => {
         rowModel: createServerSideRowModelModule(),
         //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
         rowSelection: selectionMode === 'none' ? undefined : createRowSelectionModule({ mode: selectionMode }),
+        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
         sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
         filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
         aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,

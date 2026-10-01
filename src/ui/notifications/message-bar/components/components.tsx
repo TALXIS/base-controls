@@ -1,3 +1,3 @@
-export interface INotificationsComponents {}
+export interface INotificationMessageBarComponents {}
 
-export const NotificationsComponents: INotificationsComponents = {};
+export const NotificationMessageBarComponents: INotificationMessageBarComponents = {};

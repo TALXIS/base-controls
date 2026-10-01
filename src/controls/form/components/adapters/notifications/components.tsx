@@ -1,9 +1,9 @@
-import { INotificationsProps, Notifications as NotificationsBase } from "@ui/notifications";
+import { INotificationMessageBarProps, NotificationMessageBar } from "@ui/notifications";
 
 export interface IFormNotificationsComponents {
-    onRenderNotifications: (props: INotificationsProps) => JSX.Element;
+    onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element;
 }
 
 export const FormNotificationsComponents: IFormNotificationsComponents = {
-    onRenderNotifications: (props: INotificationsProps) => <NotificationsBase {...props} />,
+    onRenderNotifications: (props: INotificationMessageBarProps) => <NotificationMessageBar {...props} />,
 };

@@ -1,7 +1,7 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
-import { IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
 const PAYLOAD_COLUMN = 'payload'
@@ -280,6 +280,44 @@ export interface IScratchGridProps {
     rowCount?: number
 }
 
+/** Notifications a legacy script would set on the Name cell. */
+const getNotifications = (record: IRecord): IAddControlNotificationOptions[] => {
+    const name = record.getValue('name')
+    const getActions = (count: number) => Array.from({ length: count }, (_, index) => ({
+        message: `Action ${index + 1}`,
+        actions: [() => alert(`${name}: action ${index + 1}`)],
+    }))
+    return [{
+        uniqueId: 'single',
+        notificationLevel: 'RECOMMENDATION',
+        text: 'Single Action',
+        iconName: 'LightningBolt',
+        messages: [],
+        actions: getActions(1),
+    }, {
+        uniqueId: 'two',
+        notificationLevel: 'RECOMMENDATION',
+        text: 'Two Actions',
+        iconName: 'LightningBolt',
+        messages: ['Choose one of the following actions:'],
+        actions: getActions(2),
+    }, {
+        uniqueId: 'multiple',
+        notificationLevel: 'RECOMMENDATION',
+        text: 'Multiple Actions',
+        iconName: 'LightningBolt',
+        messages: ['Choose one of the following actions:'],
+        actions: getActions(4),
+    }, {
+        uniqueId: 'history',
+        notificationLevel: 'RECOMMENDATION',
+        text: 'History',
+        iconName: 'History',
+        messages: [`Last touched by ${record.getValue('owner')}`],
+        buttonProps: { renderedInOverflow: true },
+    }]
+}
+
 /**
  * The scratch harness for the shared `Grid`: an in-memory provider, and the grid rendered directly rather
  * than through a dataset control. Edit this file to try things against the grid.
@@ -305,6 +343,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)
+        provider.addEventListener('onRecordLoaded', record => record.expressions.ui.setNotificationsExpression('name', () => getNotifications(record)))
         return provider
     }, [rowCount])
 
@@ -319,6 +358,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
+        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         rowSelection: props.selectableRows === 'none' ? undefined : createRowSelectionModule({ mode: props.selectableRows }),
         sorting: props.sorting ? createSortingModule() : undefined,

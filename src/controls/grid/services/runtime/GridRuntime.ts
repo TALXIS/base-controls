@@ -20,7 +20,6 @@ import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridLockedRecords } from "../locked-records";
-import { GridLegacyClientApiCompatibility } from "../legacy-client-api-compatibility/GridLegacyClientApiCompatibility";
 import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
@@ -119,7 +118,6 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
         //built once and never looked up
-        new GridLegacyClientApiCompatibility({ services: this._services });
         new GridLockedRecords({ services: this._services });
 
         const { custom = [], ...builtIns } = onGetProps().modules;

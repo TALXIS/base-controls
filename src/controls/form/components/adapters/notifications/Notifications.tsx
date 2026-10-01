@@ -1,9 +1,9 @@
 import { useForm, useLocalizationService } from '../root/context';
-import { INotificationsProps } from '@ui/notifications';
+import { INotificationMessageBarProps } from '@ui/notifications';
 import { useValidationSummary } from '../root';
 import { FormNotificationsComponents, IFormNotificationsComponents } from './components';
 
-export interface IFormNotificationsProps extends Omit<INotificationsProps, 'labels'> {
+export interface IFormNotificationsProps extends Omit<INotificationMessageBarProps, 'labels'> {
 	components?: Partial<IFormNotificationsComponents>;
 }
 

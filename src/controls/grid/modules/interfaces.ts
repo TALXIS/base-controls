@@ -27,6 +27,8 @@ export interface IGridModules {
     aggregation?: IGridModule;
     /** Copying rows: {@link createClipboardModule}. */
     clipboard?: IGridModule;
+    /** What legacy scripts set on a record's fields: {@link createLegacyClientApiCompatibilityModule}. */
+    legacyClientApiCompatibility?: IGridModule;
     /** The caller's own modules, ordered against {@link GRID_MODULE_PRIORITY}. */
     custom?: IGridModule[];
 }

@@ -1,21 +1,21 @@
 import React, { useMemo } from 'react';
 import { IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } from '@fluentui/react';
 import { ContextualMenu } from '@ui/surfaces';
-import { INotificationsComponents } from './components';
-import { getNotificationsStyles } from './styles';
+import { INotificationMessageBarComponents } from './components';
+import { getNotificationMessageBarStyles } from './styles';
 import { LocalizationService } from '@utils';
-import { INotificationsLabels, NOTIFICATIONS_LABELS } from './labels';
+import { INotificationMessageBarLabels, NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
 
-export interface INotificationsProps {
+export interface INotificationMessageBarProps {
 	messages?: {
 		text: string;
 		level: 'ERROR' | 'WARNING' | 'INFO';
 	}[],
-	components?: Partial<INotificationsComponents>;
-	labels?: Partial<INotificationsLabels>;
+	components?: Partial<INotificationMessageBarComponents>;
+	labels?: Partial<INotificationMessageBarLabels>;
 }
 
-const getMessageBarType = (messages: INotificationsProps['messages'] = []): MessageBarType => {
+const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = []): MessageBarType => {
 	const hasError = messages.some(message => message.level === 'ERROR');
 	if (hasError) return MessageBarType.error;
 	const hasWarning = messages.some(message => message.level === 'WARNING');
@@ -23,14 +23,14 @@ const getMessageBarType = (messages: INotificationsProps['messages'] = []): Mess
 	return MessageBarType.info;
 }
 
-export const Notifications = (props: INotificationsProps) => {
+export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 	const theme = useTheme();
 	const { labels, messages = [] } = props;
 	const [isUnfolded, setIsUnfolded] = React.useState(false);
-	const styles = useMemo(() => getNotificationsStyles(theme, isUnfolded), [theme, isUnfolded]);
+	const styles = useMemo(() => getNotificationMessageBarStyles(theme, isUnfolded), [theme, isUnfolded]);
 	const groupedNotificationRef = React.useRef<HTMLDivElement>(null);
 	const localizationService = useMemo(() => new LocalizationService({
-		...NOTIFICATIONS_LABELS,
+		...NOTIFICATION_MESSAGE_BAR_LABELS,
 		...labels,
 	}), []);
 

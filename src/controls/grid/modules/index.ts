@@ -9,3 +9,4 @@ export * from './sorting';
 export * from './filtering';
 export * from './aggregation';
 export * from './grouping';
+export * from './legacy-client-api-compatibility';
