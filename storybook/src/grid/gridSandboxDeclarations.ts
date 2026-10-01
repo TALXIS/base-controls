@@ -365,6 +365,12 @@ interface IGridApi {
 interface IGridOptionalServiceMap {
     gridApi: IGridApi;
     gridRoot: HTMLElement;
+    filtering: IGridFiltering;
+}
+
+interface IGridFiltering {
+    /** A hook over the parameters the filter callout's operator and value controls are handed. */
+    registerFilterControlParametersHook(hook: (result: { [name: string]: any }, params: { column: IColumn; control: 'operator' | 'value'; index: number }) => void, priority?: number): () => void;
 }
 
 interface IGridServiceMap extends IGridOptionalServiceMap {

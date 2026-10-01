@@ -1,8 +1,9 @@
 import { createElement } from "react";
 import { ColDef } from "@ag-grid-community/core";
 import { IContextualMenuItem } from "@fluentui/react";
-import { ColumnFilter, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ILocalizationService } from "@utils";
+import { ColumnFilter, DataTypes, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { HookRegistry, ILocalizationService } from "@utils";
+import { IParameters } from "@interfaces";
 import { IGridFilteringLabels } from "./labels";
 import { GridFilteringIconComponents, IGridFilteringComponents } from "./moduleComponents";
 import { FilterCalloutHost } from "./components/filter-callout-host/FilterCalloutHost";
@@ -18,6 +19,19 @@ export interface IGridFilteringEvents {
     /** Whatever was open was closed. */
     onFilterClosed: () => void;
 }
+
+const LOOKUP_DATA_TYPES = new Set<string>(['Lookup.Customer', 'Lookup.Owner', 'Lookup.Regarding', 'Lookup.Simple']);
+
+/** Which of a column's filter controls the parameters are for. */
+export type GridFilterControl = 'operator' | 'value';
+
+/** A hook over the parameters a filter control is handed. */
+export type GridFilterControlParametersHook = (result: IParameters, params: {
+    column: IColumn;
+    control: GridFilterControl;
+    /** Which value control, where an operator such as between takes two. */
+    index: number;
+}) => void;
 
 export interface IGridFilteringParameters {
     /** This module's own locator. */
@@ -41,6 +55,14 @@ export interface IGridFiltering {
     /** @param target What to draw the filter against, where the caller knows. */
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
+    /**
+     * Registers a hook over the parameters the filter callout's controls are handed.
+     *
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    /** The parameters a filter control is handed: the ones it came with, the grid's defaults, then the hooks. */
+    getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridFilteringComponents;
 }
@@ -51,11 +73,38 @@ export class GridFiltering implements IGridFiltering {
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();
     private _openColumnName?: string;
     private _openTarget?: HTMLElement;
+    private _filterControlParametersHooks = new HookRegistry<GridFilterControlParametersHook>();
 
     constructor(parameters: IGridFilteringParameters) {
         this._services = parameters.services;
         this._filtering = new Filtering(this._provider, FieldValue);
         this._registerHooks();
+    }
+
+    public registerFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void {
+        return this._filterControlParametersHooks.register(hook, priority);
+    }
+
+    public getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters {
+        const result = { ...parameters };
+        if (params.control === 'value') {
+            Object.assign(result, this._getDefaultValueControlParameters(result, params.column));
+        }
+        this._filterControlParametersHooks.apply(result, params);
+        return result;
+    }
+
+    private _getDefaultValueControlParameters(parameters: IParameters, column: IColumn): IParameters {
+        const result: IParameters = {
+            EnableOptionSetColors: { raw: this._services.get('gridServices').get('settings').areOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
+        };
+        //a lookup filters among existing records and asks for one view type
+        if (LOOKUP_DATA_TYPES.has(column.dataType) && parameters.value) {
+            const originalGetAllViews = parameters.value.getAllViews;
+            result.IsInlineNewEnabled = { raw: false };
+            result.value = { ...parameters.value, getAllViews: (...args: any[]) => originalGetAllViews(...args, 1) };
+        }
+        return result;
     }
 
     private _registerHooks(): void {

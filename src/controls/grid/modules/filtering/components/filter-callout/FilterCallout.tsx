@@ -3,8 +3,10 @@ import { Target } from "@fluentui/react";
 import { IColumn, IInternalDataProvider } from "@talxis/client-libraries";
 import { getClassNames, usePcfContext } from "@utils";
 import { DatasetColumnFiltering } from "@controls/dataset-control/filtering/DatasetColumnFiltering";
-import { ILookup } from "@controls/fields/lookup";
+import { IOptionSet } from "@controls/fields/option-set";
 import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
+import { IControl, IParameters } from "@interfaces";
+import { GridFilterControl } from "../../GridFiltering";
 import { useGridService } from "../../../../useGridService";
 import { useGridFilteringLabels } from "../../useGridFilteringLabels";
 import { FilteringUi, IFilteringUiCalloutComponents } from "../ui";
@@ -36,45 +38,29 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
         })
     }
 
-    const onRenderConditionValueControl = (props: INestedControlRenderer, defaultRender: (props: INestedControlRenderer) => React.ReactElement) => {
-        switch (column.dataType) {
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding':
-            case 'Lookup.Simple': {
-                return defaultRender({
-                    ...props,
-                    onOverrideComponentProps: (props) => {
-                        return {
-                            ...props,
-                            onOverrideControlProps: (props: ILookup): ILookup => {
-                                return {
-                                    ...props,
-                                    parameters: {
-                                        ...props.parameters,
-                                        IsInlineNewEnabled: {
-                                            raw: false
-                                        },
-                                        value: {
-                                            ...props.parameters.value,
-                                            //@ts-ignore
-                                            getAllViews: (() => {
-                                                const originalGetAllViews = props.parameters.value.getAllViews;
-                                                //@ts-ignore
-                                                return (...args) => originalGetAllViews(...args, 1);
-                                            })()
-                                        }
-                                    }
-                                }
-                            }
-                        }
+    const getParameters = (parameters: IParameters, control: GridFilterControl, index: number): IParameters => {
+        return filtering.getFilterControlParameters(parameters, { column: column, control: control, index: index });
+    }
+
+    const onRenderConditionOperatorControl = (props: IOptionSet, defaultRender: (props: IOptionSet) => React.ReactElement) => {
+        return defaultRender({ ...props, parameters: getParameters(props.parameters, 'operator', 0) as IOptionSet['parameters'] });
+    }
+
+    const onRenderConditionValueControl = (props: INestedControlRenderer, defaultRender: (props: INestedControlRenderer) => React.ReactElement, index: number) => {
+        const onOverrideComponentProps = props.onOverrideComponentProps;
+        return defaultRender({
+            ...props,
+            onOverrideComponentProps: (componentProps) => {
+                const base = onOverrideComponentProps?.(componentProps) ?? componentProps;
+                return {
+                    ...base,
+                    onOverrideControlProps: (controlProps: IControl<any, any, any, any>) => {
+                        const next = base.onOverrideControlProps?.(controlProps) ?? controlProps;
+                        return { ...next, parameters: getParameters(next.parameters, 'value', index) };
                     }
-                })
+                }
             }
-            default: {
-                return defaultRender(props);
-            }
-        }
+        });
     }
 
     useEffect(() => {
@@ -103,6 +89,8 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
                     return {
                         ...props,
                         onRender: (props, defaultRender) => {
+                            //the value controls are drawn in order, one or two of them
+                            let valueControlIndex = 0;
                             return defaultRender({
                                 ...props,
                                 container: {
@@ -113,7 +101,8 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
                                     ...props.valueControlsContainer,
                                     className: getClassNames([props.valueControlsContainer.className, filterCalloutStyles.valueControlsContainer]),
                                 },
-                                onRenderConditionValueControl: onRenderConditionValueControl,
+                                onRenderConditionOperatorControl: onRenderConditionOperatorControl,
+                                onRenderConditionValueControl: (props, defaultRender) => onRenderConditionValueControl(props, defaultRender, valueControlIndex++),
                                 onRenderButtons: (props, defaultRender) => {
                                     return defaultRender({
                                         ...props,
