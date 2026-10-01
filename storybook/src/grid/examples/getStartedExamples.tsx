@@ -45,6 +45,96 @@ const closedDealsModule: IGridModule = {
     },
 }
 
+//what a legacy form script sets on the records, shown by the legacy client API module
+const getDealNotifications = (record: IRecord): IAddControlNotificationOptions[] => {
+    if (isSummaryRow(record)) {
+        return []
+    }
+    const notifications: IAddControlNotificationOptions[] = []
+    const moveCloseDate = (days: number) => () => record.setValue('closedate', new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString())
+    const closeDate = record.getValue('closedate')
+    if (closeDate && new Date(closeDate) < new Date()) {
+        notifications.push({
+            uniqueId: 'overdue',
+            notificationLevel: 'RECOMMENDATION',
+            iconName: 'Clock',
+            text: 'Overdue',
+            messages: ['The close date has passed. Move it out, or close the deal.'],
+            actions: [
+                { message: 'A week out', iconName: 'Calendar', actions: [moveCloseDate(7)] },
+                { message: 'A month out', iconName: 'Calendar', actions: [moveCloseDate(30)] },
+                { message: 'A quarter out', iconName: 'Calendar', actions: [moveCloseDate(90)] },
+                { message: 'Mark as won', iconName: 'Trophy2', actions: [() => { record.setValue('stage', WON); record.save() }] },
+                { message: 'Mark as lost', iconName: 'Cancel', actions: [() => { record.setValue('stage', LOST); record.save() }] },
+            ],
+        })
+    }
+    if (Number(record.getValue('stage')) === 1) {
+        notifications.push({
+            uniqueId: 'qualify',
+            notificationLevel: 'RECOMMENDATION',
+            iconName: 'Forward',
+            text: 'Move to Propose',
+            messages: [],
+            actions: [{ actions: [() => record.setValue('stage', 2)] }],
+        })
+    }
+    if (Number(record.getValue('value') ?? 0) > 30000) {
+        notifications.push({
+            uniqueId: 'signOff',
+            notificationLevel: 'RECOMMENDATION',
+            iconName: 'Shield',
+            text: 'Needs sign-off',
+            messages: ['A deal over $30,000 needs a manager to sign it off before it can be saved.'],
+            buttonProps: { renderedInOverflow: true },
+            actions: [
+                { message: 'Ask for sign-off', actions: [() => record.setValue('nextstep', 'Waiting for sign-off')] },
+                { message: 'Cap at $30,000', actions: [() => record.setValue('value', 30000)] },
+            ],
+        })
+    }
+    return notifications
+}
+
+const ROW_COLORS = ['#fff4ce', '#dff6dd', '#deecf9', '#f4e3f9', '#fde7e9', '#e1f5f3', '#fff1e5', '#ebeaf7']
+
+//a number per record that stays put however the rows are sorted
+const getRecordSeed = (record: IRecord) => record.getRecordId().split('').reduce((total, char) => total + char.charCodeAt(0), 0)
+
+//for testing: every row its own colour, and validation that fails on some rows
+const testingModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
+            if (!isSummaryRow(record)) {
+                theme.colors.background = ROW_COLORS[getRecordSeed(record) % ROW_COLORS.length]
+            }
+        }, GRID_MODULE_PRIORITY.grouping)
+        runtime.services.get('validation').registerValidationHook((result, { record, columnName }) => {
+            if (isSummaryRow(record)) {
+                return
+            }
+            if (columnName === 'email' && getRecordSeed(record) % 4 === 1) {
+                result.error = true
+                result.errorMessage = 'An .example address cannot receive email.'
+            }
+            if (columnName === 'name' && getRecordSeed(record) % 3 === 0) {
+                result.error = true
+                result.errorMessage = 'This deal has no contact person.'
+            }
+        })
+    },
+}
+
+const dealNotificationsModule: IGridModule = {
+    onRegister: runtime => {
+        const addNotifications = (record: IRecord) => record.expressions.ui.setNotificationsExpression('name', () => getDealNotifications(record))
+        provider.getRecords().forEach(addNotifications)
+        provider.addEventListener('onRecordLoaded', addNotifications)
+        //the provider outlives the grid
+        runtime.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addNotifications))
+    },
+}
+
 //a command on a selected row acts on the whole selection, read when it is drawn
 const getTargets = (record: IRecord) => {
     const selectedIds = provider.getSelectedRecordIds()
@@ -86,7 +176,8 @@ const GridExample = (props: IOverviewProps) => {
                 filtering: features.filtering ? createFilteringModule() : undefined,
                 grouping: features.grouping ? createGroupingModule() : undefined,
                 aggregation: features.aggregation ? createAggregationModule() : undefined,
-                custom: [closedDealsModule],
+                legacyClientApiCompatibility: features.notifications ? createLegacyClientApiCompatibilityModule() : undefined,
+                custom: features.notifications ? [closedDealsModule, testingModule, dealNotificationsModule] : [closedDealsModule, testingModule],
             }}
             colDefs={{
                 //the deal's name stands for the deal, drawn as a link that opens it
@@ -217,6 +308,7 @@ const FEATURE_GROUPS = [
     { title: 'Selection', features: [{ key: 'rowSelection', label: 'Rows' }, { key: 'cellSelection', label: 'Cells' }, { key: 'clipboard', label: 'Clipboard' }] },
     { title: 'Data', features: [{ key: 'sorting', label: 'Sorting' }, { key: 'filtering', label: 'Filtering' }, { key: 'grouping', label: 'Grouping' }, { key: 'aggregation', label: 'Totals' }] },
     { title: 'Look', features: [{ key: 'optionSetColors', label: 'Option set colours' }, { key: 'zebra', label: 'Zebra rows' }] },
+    { title: 'Legacy client API', features: [{ key: 'notifications', label: 'Notifications' }] },
 ]
 const FEATURE_KEYS = FEATURE_GROUPS.flatMap(group => group.features.map(feature => feature.key))
 const ALL_OFF: { [feature: string]: boolean } = Object.fromEntries(FEATURE_KEYS.map(key => [key, false]))

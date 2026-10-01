@@ -77,7 +77,23 @@ interface IRecord {
     getDataProvider(): IDataProvider;
     expressions: {
         setValidationExpression(columnName: string, expression: () => { error: boolean; errorMessage: string }): void;
+        ui: {
+            /** Shown in the column's cell when the legacy client API compatibility module is on. */
+            setNotificationsExpression(columnName: string, expression: () => IAddControlNotificationOptions[]): void;
+        };
     };
+}
+
+/** A notification the legacy client API sets on a record's field. */
+interface IAddControlNotificationOptions {
+    uniqueId: string;
+    notificationLevel: 'ERROR' | 'RECOMMENDATION';
+    messages: string[];
+    text?: string;
+    iconName?: string;
+    buttonProps?: { renderedInOverflow?: boolean; [prop: string]: any };
+    /** One action runs on click; otherwise the notification opens a callout. */
+    actions?: { message?: string; iconName?: string; actions: (() => void)[] }[];
 }
 
 interface IRecordSaveOperationResult {
@@ -424,6 +440,7 @@ interface IGridModules {
     grouping?: IGridModule;
     aggregation?: IGridModule;
     clipboard?: IGridModule;
+    legacyClientApiCompatibility?: IGridModule;
     custom?: IGridModule[];
 }
 
@@ -520,6 +537,7 @@ interface IRecordLockIndicatorCellComponents {
 /** The id of the column a record locked as a whole shows its lock in. */
 declare const RECORD_LOCK_COLUMN_KEY: 'recordLock';
 declare const GRID_MODULE_PRIORITY: {
+    legacyClientApiCompatibility: 0;
     rowModel: 10;
     rowSelection: 20;
     cellSelection: 30;
@@ -530,6 +548,8 @@ declare const GRID_MODULE_PRIORITY: {
     clipboard: 80;
 };
 
+/** Carries what legacy scripts set on records' fields into the grid. */
+declare function createLegacyClientApiCompatibilityModule(): IGridModule;
 declare function createClientSideRowModelModule(): IGridModule;
 declare function createServerSideRowModelModule(): IGridModule;
 declare function createRowSelectionModule(options: {
