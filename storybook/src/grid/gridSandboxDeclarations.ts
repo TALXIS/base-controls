@@ -203,6 +203,8 @@ interface IGridColumnSettings {
         onGetLoading?: (result: { isLoading: boolean }, params: { record: IRecord }) => void;
         /** Decides whether a record's value is valid; the grid registers it into the record. */
         onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
+        /** Changes the parameters this column's cell controls are handed. */
+        onGetControlParameters?: (parameters: { [name: string]: { raw: any; type?: string } }, params: { record: IRecord }) => void;
     };
     /** Callbacks for the column's header. */
     header?: {

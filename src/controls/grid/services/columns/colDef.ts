@@ -3,6 +3,7 @@ import type { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
 import type { ThemeBuilder } from "@theme";
 import type { IContextualMenuItem } from "@fluentui/react";
+import type { IParameters } from "@interfaces";
 import type { IGridCellCommands, IGridCellLoading } from "../cells";
 import type { IGridLock } from "../locks";
 import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-header";
@@ -23,6 +24,8 @@ export interface IGridColumnCellSettings {
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
     /** Decides whether a record's value is valid, after `registerValidationHook`. */
     onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
+    /** Changes the parameters a cell's control is handed, after `registerControlParametersHook`. */
+    onGetControlParameters?: (parameters: IParameters, params: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
