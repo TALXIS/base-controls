@@ -201,7 +201,6 @@ export class GridRuntime implements IGridRuntime {
             options: {
                 loadingCellRenderer: RowLoading,
                 suppressDragLeaveHidesColumns: true,
-                animateRows: false,
                 enterNavigatesVertically: true,
                 enterNavigatesVerticallyAfterEdit: true,
                 //AG Grid hands its own writes over as `cellEditRequest`
