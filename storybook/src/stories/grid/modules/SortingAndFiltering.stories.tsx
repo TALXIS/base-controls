@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { OpenOnWhatMattersExample, SavedViewsExample, TailoredFiltersExample, TriageQueueExample } from '../../../grid/examples/sortingFilteringExamples'
 
 const DESCRIPTION = `
-Sorting and filtering let people order a long list and narrow it down from each column's menu. Both are modules you add to \`modules\`, neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
+Sorting and filtering let users order a long list and narrow it down from each column's menu. Both are modules you add to \`modules\`, neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
 
 {{story: Triage the support queue}}
 

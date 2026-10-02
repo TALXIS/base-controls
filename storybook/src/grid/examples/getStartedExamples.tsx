@@ -7,6 +7,12 @@ import { FeatureSwitcher, IShowcaseFeatureGroup, IShowcaseFeatureValues, IShowca
 
 export const SHOWCASE_CODE = `const WON = 4
 const LOST = 5
+//a little roomier than Excel's 20 pixels
+const COMPACT_ROW_HEIGHT = 28
+
+const EXCEL_BASE_THEME = ThemeGenerator.generate({ primary: '#217346', background: '#ffffff', text: '#000000' })
+//the grid draws its row lines in the divider colour
+const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME.semanticColors, menuDivider: '#d4d4d4' } }
 
 const isSummaryRow = (record: IRecord) => record.getDataProvider().getSummarizationType() !== 'none'
 const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValue('stage')))
@@ -48,50 +54,6 @@ const closedDealColoursModule: IGridModule = {
     },
 }
 
-//the notifications a client script would set on a deal
-const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] => {
-    if (isSummaryRow(record) || isClosed(record)) {
-        return []
-    }
-    const notifications: IAddControlNotificationOptions[] = []
-    const moveCloseDate = (days: number) => () => saveValue(record, 'closedate', dayjs().add(days, 'day').format('YYYY-MM-DD'))
-    if (isOverdue(record)) {
-        notifications.push({
-            uniqueId: 'overdue',
-            notificationLevel: 'RECOMMENDATION',
-            iconName: 'Clock',
-            text: 'Overdue',
-            messages: ['The close date has passed. Move it out, or close the deal.'],
-            actions: [
-                { message: 'A week out', iconName: 'Calendar', actions: [moveCloseDate(7)] },
-                { message: 'A month out', iconName: 'Calendar', actions: [moveCloseDate(30)] },
-                { message: 'Mark as won', iconName: 'Trophy2', actions: [() => saveValue(record, 'stage', WON)] },
-                { message: 'Mark as lost', iconName: 'Cancel', actions: [() => saveValue(record, 'stage', LOST)] },
-            ],
-        })
-    }
-    if (Number(record.getValue('value') ?? 0) > 30000) {
-        notifications.push({
-            uniqueId: 'signOff',
-            notificationLevel: 'RECOMMENDATION',
-            iconName: 'Shield',
-            text: 'Needs sign-off',
-            messages: ['A deal over $30,000 needs a manager to sign it off before it can be saved.'],
-        })
-    }
-    return notifications
-}
-
-const recommendationsModule: IGridModule = {
-    onRegister: runtime => {
-        const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('name', () => getRecommendations(record))
-        provider.getRecords().forEach(addRecommendations)
-        provider.addEventListener('onRecordLoaded', addRecommendations)
-        //the provider outlives the grid
-        runtime.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addRecommendations))
-    },
-}
-
 const validateDiscount = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
     if (Number(record.getValue('discount') ?? 0) > 20) {
         result.error = true
@@ -121,29 +83,25 @@ const GridExample = (props: IShowcaseProps) => {
         }
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        {selectedIds.length > 0 && <MessageBar>{selectedIds.length} selected, worth {formatMoney(selectedValue)}.</MessageBar>}
-        {lastSave && <MessageBar messageBarType={lastSave.success ? MessageBarType.success : MessageBarType.warning} onDismiss={() => setLastSave(undefined)}>
-            {lastSave.success ? 'Saved.' : 'Not saved. ' + (lastSave.errors ?? []).map(error => error.message).join(' ')}
-        </MessageBar>}
-        <Grid.Root
-            key={JSON.stringify(features)}
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                rowSelection: features.rowSelection ? createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelection }) : undefined,
-                cellSelection: features.cellSelection ? createCellSelectionModule() : undefined,
-                clipboard: features.clipboard ? createClipboardModule() : undefined,
-                sorting: features.sorting ? createSortingModule() : undefined,
-                filtering: features.filtering ? createFilteringModule() : undefined,
-                grouping: features.grouping ? createGroupingModule() : undefined,
-                aggregation: features.aggregation ? createAggregationModule() : undefined,
-                legacyClientApiCompatibility: features.recommendations ? createLegacyClientApiCompatibilityModule() : undefined,
-                custom: features.recommendations ? [closedDealColoursModule, recommendationsModule] : [closedDealColoursModule],
-            }}
-            colDefs={{
-                name: { pinned: 'left' },
-                discount: { settings: { cell: { onGetValidation: validateDiscount } } },
+    const grid = <Grid.Root
+        key={JSON.stringify(features)}
+        provider={provider}
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            rowSelection: features.rowSelection ? createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelection }) : undefined,
+            cellSelection: features.cellSelection ? createCellSelectionModule() : undefined,
+            clipboard: features.clipboard ? createClipboardModule() : undefined,
+            sorting: features.sorting ? createSortingModule() : undefined,
+            filtering: features.filtering ? createFilteringModule() : undefined,
+            grouping: features.grouping ? createGroupingModule() : undefined,
+            aggregation: features.aggregation ? createAggregationModule() : undefined,
+            custom: features.closedDealColours ? [closedDealColoursModule] : [],
+        }}
+        colDefs={{
+            name: { pinned: 'left' },
+            recurring: { settings: { cell: { oneClickEdit: features.editing } } },
+            ...(features.discountRule && { discount: { settings: { cell: { onGetValidation: validateDiscount } } } }),
+            ...(features.overdueDates && {
                 closedate: {
                     settings: {
                         cell: {
@@ -155,31 +113,39 @@ const GridExample = (props: IShowcaseProps) => {
                         },
                     },
                 },
-                recurring: { settings: { cell: { oneClickEdit: features.editing } } },
-                actions: {
-                    headerName: '',
-                    pinned: 'right',
-                    initialWidth: 96,
-                    settings: {
-                        cell: {
-                            onGetCommands: (result, { record }) => {
-                                if (isSummaryRow(record) || isClosed(record)) {
-                                    return
-                                }
-                                result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: () => closeDeals(record, WON) })
-                                result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: () => closeDeals(record, LOST) })
-                            },
+            }),
+            ...(features.rowActions && { actions: {
+                headerName: '',
+                pinned: 'right',
+                initialWidth: 96,
+                settings: {
+                    cell: {
+                        onGetCommands: (result, { record }) => {
+                            if (isSummaryRow(record) || isClosed(record)) {
+                                return
+                            }
+                            result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: () => closeDeals(record, WON) })
+                            result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: () => closeDeals(record, LOST) })
                         },
                     },
                 },
-            }}
-            enableEditing={features.editing}
-            enableAutoSave={features.autoSave}
-            enableOptionSetColors={features.optionSetColors}
-            enableZebra={features.zebra}
-            rowSettings={{ onGetLock: lockClosedDeals }}
-            onAfterRecordSaved={setLastSave}
-            height='520px' />
+            } }),
+        }}
+        enableEditing={features.editing}
+        enableAutoSave={features.autoSave}
+        enableOptionSetColors={features.optionSetColors}
+        enableZebra={features.zebra}
+        rowHeight={features.compactRows ? COMPACT_ROW_HEIGHT : undefined}
+        rowSettings={features.lockClosedDeals ? { onGetLock: lockClosedDeals } : undefined}
+        onAfterRecordSaved={setLastSave}
+        height='520px' />
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        {selectedIds.length > 0 && <MessageBar>{selectedIds.length} selected, worth {formatMoney(selectedValue)}.</MessageBar>}
+        {lastSave && !lastSave.success && <MessageBar messageBarType={MessageBarType.warning} onDismiss={() => setLastSave(undefined)}>
+            {'Not saved. ' + (lastSave.errors ?? []).map(error => error.message).join(' ')}
+        </MessageBar>}
+        {features.excelTheme ? <ThemeProvider theme={EXCEL_THEME}>{grid}</ThemeProvider> : grid}
     </Stack>
 }
 `
@@ -218,14 +184,14 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
     {
         title: 'Editing',
         features: [
-            { key: 'editing', label: 'Editing', hint: 'Double-click a Value or a Close date to change it, or flip Recurring right in its cell. A Discount over 20 % turns its cell red. Without Auto-save, changes are kept but not saved.' },
+            { key: 'editing', label: 'Editing', hint: 'Double-click a Value or a Close date to change it, or flip Recurring right in its cell. Without Auto-save, changes are kept but not saved.' },
             { key: 'autoSave', label: 'Auto-save', hint: 'Turn on Editing too, then change a value: the row saves as soon as the cell takes it. The server refuses deals over $30,000, and the red icon at the start of the row says why.' },
         ],
     },
     {
         title: 'Selection',
         features: [
-            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals, then hover one of them and pick Mark as won in the last column: every selected deal is closed, except those the server refuses.' },
+            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals: the bar above the grid adds up their value. With Row actions on, Mark as won closes every selected deal.' },
             { key: 'cellSelection', isEnterprise: true, label: 'Cell ranges', hint: 'Drag across a block of cells to highlight it, as in a spreadsheet.' },
             { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet. With Editing on, Ctrl+V pastes back into the grid.' },
         ],
@@ -244,26 +210,22 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
         features: [
             { key: 'optionSetColors', label: 'Option set colours', hint: 'Stage and Products are drawn as tags in their own colours, and so is Recurring while Editing is off.' },
             { key: 'zebra', label: 'Zebra rows', hint: 'Every other row is shaded, except while the deals are grouped.' },
-        ],
-    },
-    {
-        title: 'Model-driven apps',
-        features: [
-            { key: 'recommendations', label: 'Client script notifications', hint: 'Overdue deals and deals over $30,000 carry notifications a client script set. Hover one and open them in its Deal cell.' },
+            { key: 'compactRows', label: 'Compact rows', hint: 'Rows are 28 pixels tall, a little roomier than in Excel.' },
         ],
     },
 ]
-
-const FEATURE_KEYS = FEATURE_GROUPS.flatMap(group => group.features.map(feature => feature.key))
 
 const PRESETS: IShowcasePreset[] = [
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
-    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place with auto-save, highlight ranges and copy them out.', features: ['editing', 'autoSave', 'cellSelection', 'clipboard', 'sorting'] },
-    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, select deals and close them in bulk.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'recommendations'] },
-    { key: 'everything', label: 'Everything', iconName: 'Waffle', description: 'Every feature at once. Edit, select, group, total and copy.', features: FEATURE_KEYS },
+    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place with auto-save, highlight ranges and copy them out.', features: ['editing', 'autoSave', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
+    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors'] },
 ]
 
-const IDLE_HINT = 'Pick a preset or switch features on one by one. Hover a feature to see what it adds.'
+//what the example adds through its own code, each in a use case of its own
+const EXTENSIBILITY_EXAMPLES: IShowcasePreset[] = [
+    { key: 'closing', label: 'Closing deals', iconName: 'Trophy2', description: 'A row command marks deals won or lost, a module colours them by outcome and a row lock keeps them from being edited. Select a few deals and close them all at once.', features: ['editing', 'autoSave', 'rowSelection', 'sorting', 'optionSetColors', 'rowActions', 'closedDealColours', 'lockClosedDeals'] },
+    { key: 'rules', label: 'Business rules', iconName: 'Shield', description: 'A cell rule refuses a Discount over 20 %, and a cell theme draws overdue close dates in red. Edit a Discount to see the rule.', features: ['editing', 'autoSave', 'sorting', 'filtering', 'optionSetColors', 'discountRule', 'overdueDates'] },
+]
 
 export const ShowcaseExample = () => {
     const [features, setFeatures] = React.useState<IShowcaseFeatureValues>(Object.fromEntries(PRESETS[0].features.map(key => [key, true])))
@@ -286,5 +248,5 @@ export const ShowcaseExample = () => {
         seedCode={SHOWCASE_CODE}
         onCreateProvider={createProvider}
         previewProps={{ features }}
-        renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={PRESETS} values={features} onChange={onChange} idleHint={IDLE_HINT} />} />
+        renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={[...PRESETS, ...EXTENSIBILITY_EXAMPLES]} values={features} onChange={onChange} />} />
 }

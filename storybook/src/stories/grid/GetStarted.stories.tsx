@@ -6,9 +6,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid shows the records of a data provider and lets people work with them. Each value is drawn and edited the way its data type calls for, with this library's own controls. Edits are validated and saved, and everything else (selection, sorting, filtering, grouping, totals, copying) is a module you switch on. It runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>, which draws only the rows in view.
+Grid displays and edits the records of a data provider. Each column uses the control for its data type, and edits are validated and saved. Selection, sorting, filtering, grouping, totals and copying are modules you turn on. It is built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>.
 
-Below is a sales pipeline. Start from a preset, or switch features on and off one by one: it is the same component in every combination. **Code** shows what renders it, and you can edit it; the totals, the grouping by Stage and a server that refuses deals over $30,000 are set up on the provider it is handed. Features marked *Enterprise* need an AG Grid Enterprise licence. These docs have none, so once you switch one on, AG Grid may draw its watermark over the grids on these pages.
+The example below is a sales pipeline. Pick a preset or toggle features one by one, and open **Code** to see and edit the source. Beyond its built-in features, the grid is open to extension: modules, cell rules, themes, row commands and locks let it fit custom scenarios, and the *Closing deals* and *Business rules* presets show a few. Features marked *Enterprise* need an AG Grid Enterprise licence; these docs don't have one, so turning them on may show AG Grid's watermark.
 
 {{canvas: Overview}}
 

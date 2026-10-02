@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ApproveInBulkExample, CopyPriceListExample, PickOneProductExample } from '../../../grid/examples/selectionExamples'
 
 const DESCRIPTION = `
-Let people pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and copying need AG Grid Enterprise (see [**Modules**](?path=/docs/grid-modules--overview)).
+Let users pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and copying need AG Grid Enterprise (see [**Modules**](?path=/docs/grid-modules--overview)).
 
 {{story: Approve timesheets in bulk}}
 
@@ -25,7 +25,7 @@ The module adds a checkbox column, pinned first. Its options:
 
 The options are read once, when the grid mounts, so the \`onSelectionChanged\` the grid mounted with runs for its whole life. Pass a state setter, as the examples here do, or read anything that changes through a ref.
 
-### How people select
+### How users select
 
 | Action | What it does |
 |---|---|
@@ -98,7 +98,7 @@ Pass it in \`modules.custom\`.
 
 ## Cell ranges and copying
 
-The cell selection module lets people highlight blocks of cells as in a spreadsheet, and the clipboard module copies them out. Both need AG Grid Enterprise.
+The cell selection module lets users highlight blocks of cells as in a spreadsheet, and the clipboard module copies them out. Both need AG Grid Enterprise.
 
 {{story: Copy a price list into a spreadsheet}}
 

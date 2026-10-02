@@ -1,5 +1,5 @@
 import React from 'react'
-import { DefaultButton, Icon, mergeStyleSets, Text, TooltipHost } from '@fluentui/react'
+import { DefaultButton, Icon, mergeStyleSets, TooltipHost } from '@fluentui/react'
 
 const styles = mergeStyleSets({
     root: {
@@ -80,16 +80,6 @@ const styles = mergeStyleSets({
         fontWeight: 600,
         lineHeight: '16px',
     },
-    hint: {
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 8,
-        color: '#323130',
-    },
-    hintIcon: {
-        marginTop: 2,
-        color: '#5B5FC7',
-    },
 })
 
 export interface IShowcaseFeature {
@@ -122,29 +112,26 @@ interface IFeatureSwitcherProps {
     presets: IShowcasePreset[]
     values: IShowcaseFeatureValues
     onChange: (values: IShowcaseFeatureValues) => void
-    /** Shown at first, and after a feature is switched off. */
-    idleHint: string
 }
 
 /** Switches the showcase grid's features on and off, one at a time or a preset at a time. */
 export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
-    const [hint, setHint] = React.useState(props.idleHint)
     const features = props.groups.flatMap(group => group.features)
+    //a preset may switch on features no group shows, and picking another one switches them off again
+    const featureKeys = [...new Set([...features.map(feature => feature.key), ...props.presets.flatMap(preset => preset.features)])]
 
     const toggle = (feature: IShowcaseFeature) => {
         const isOn = !props.values[feature.key]
-        setHint(isOn ? feature.hint : props.idleHint)
         props.onChange({ ...props.values, [feature.key]: isOn })
     }
 
     const applyPreset = (preset: IShowcasePreset) => {
-        setHint(preset.description)
-        props.onChange(Object.fromEntries(features.map(feature => [feature.key, preset.features.includes(feature.key)])))
+        props.onChange(Object.fromEntries(featureKeys.map(key => [key, preset.features.includes(key)])))
     }
 
     return <div className={styles.root}>
         <div className={styles.presets}>
-            <span className={styles.caption}>Start from</span>
+            <span className={styles.caption}>Presets</span>
             {props.presets.map(preset => <DefaultButton key={preset.key} className={styles.preset} iconProps={{ iconName: preset.iconName }} text={preset.label} title={preset.description} onClick={() => applyPreset(preset)} />)}
         </div>
         <div className={styles.groups}>
@@ -164,10 +151,6 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
                     })}
                 </div>
             </div>)}
-        </div>
-        <div className={styles.hint} aria-live='polite'>
-            <Icon iconName='Lightbulb' className={styles.hintIcon} />
-            <Text>{hint}</Text>
         </div>
     </div>
 }

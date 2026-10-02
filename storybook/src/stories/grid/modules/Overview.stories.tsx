@@ -95,7 +95,7 @@ These docs have no licence, so once an example with an Enterprise module has run
 | Opening a group | Instant, once the groups have arrived | Shows a loading row until the group's records arrive |
 | Requests to your data source | One per group, all at once, after every load: sorting, filtering or refreshing fetches every group again | One per group the user opens; after a reload, one per group still open |
 
-Use the client side by default. Use the server side when people group by a column with many values, or into big groups, so that only the groups they open are fetched. Grouping itself is on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+Use the client side by default. Use the server side when users group by a column with many values, or into big groups, so that only the groups they open are fetched. Grouping itself is on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
 {{story: Open ticket groups on demand}}
 `
