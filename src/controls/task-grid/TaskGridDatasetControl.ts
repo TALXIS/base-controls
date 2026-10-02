@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { IDatasetControlParameters } from "@controls/dataset-control";
 import { IDatasetControlEvents } from "@utils/dataset-control";
 import { EditColumns, IEditColumns } from "@utils/dataset-control/EditColumns";
@@ -206,7 +207,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getDataset(): IDataset {
         return this._dataset;
     }
-    public getPcfContext(): ComponentFramework.Context<any> {
+    public getPcfContext(): IPcfContext {
         return this._services.get('pcfContext');
     }
     public isTaskEditingEnabled(): boolean {

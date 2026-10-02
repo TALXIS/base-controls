@@ -1,4 +1,4 @@
-import { EventEmitter, Formatting, IEventEmitter, IRecord } from '@talxis/client-libraries';
+import { EventEmitter, IEventEmitter, IRecord } from '@talxis/client-libraries';
 import { GanttStatic, ZoomLevel } from 'gantt-trial';
 import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
@@ -59,7 +59,6 @@ export interface IGanttZoomingParameters {
 export class GanttZooming implements IGanttZooming {
     public readonly events: IEventEmitter<IGanttZoomingEvents> = new EventEmitter<IGanttZoomingEvents>();
     private _services: IGanttServiceLocator;
-    private _formatting = Formatting.Get();
     private _anchor = new GanttZoomAnchor();
     private _levels: ZoomLevel[];
     private _stops: IGanttZoomStop[];
@@ -238,6 +237,10 @@ export class GanttZooming implements IGanttZooming {
 
     private get _taskGridServices(): ITaskGridServiceLocator {
         return this._services.get('taskGridServices');
+    }
+
+    private get _formatting() {
+        return this._taskGridServices.get('pcfContext').formatting;
     }
 
     private get _gantt(): GanttStatic {

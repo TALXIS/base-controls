@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps } from "@fluentui/react";
 import { IThemeProviderProps } from "@utils";
 import { ITranslation } from "@hooks";
@@ -21,7 +22,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: IPcfContext, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any, any>>
 }
 
 /**

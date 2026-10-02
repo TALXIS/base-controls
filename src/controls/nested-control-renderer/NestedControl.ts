@@ -1,4 +1,5 @@
-import { DataType, DataTypes, Formatting, PromiseCache } from "@talxis/client-libraries";
+import { IPcfContext } from "@interfaces";
+import { DataType, DataTypes, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./properties/Property";
 import { TextProperty } from "./properties/TextProperty";
 import { OptionSetProperty } from "./properties/OptionSetProperty";
@@ -23,7 +24,7 @@ export interface IOptions {
     /**
     * PCF Context of parent control using this class. It will be used as base for nested control PCF context.
     */
-    parentPcfContext: ComponentFramework.Context<any, any>;
+    parentPcfContext: IPcfContext;
 
     /**
      * Custom PCF to be rendered, if not provided you will get Base Control props.
@@ -100,7 +101,6 @@ export class NestedControl {
                     ...this.getOptions().parentPcfContext.factory,
                     requestRender: () => this.render(),
                 },
-                formatting: Formatting.Get(),
             },
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {

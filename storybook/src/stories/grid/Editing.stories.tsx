@@ -96,7 +96,7 @@ A server can refuse a save the browser allowed. A provider reports that as \`{ s
 {{story: When the server says no}}
 
 - \`fieldName\` is the column's logical name; the callout shows its header name. Leave it out for an error about the whole record.
-- Resolve a refusal; never throw or reject. A save that rejects leaves the row's spinner running and fires no \`onAfterRecordSaved\`.
+- Resolve a refusal rather than throwing. A save that throws or rejects is reported as a failed save, with the error's message in the callout.
 - A refused record keeps its values and stays unsaved, ready to be saved again.
 - Errors from the server appear only in the callout. A cell outlines only what fails validation in the browser.
 - A provider holds one interceptor per name: a second \`setInterceptor('onRecordSave', ...)\` replaces the first.

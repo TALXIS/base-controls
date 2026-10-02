@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
 import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid/value-renderer";
@@ -26,7 +27,7 @@ export interface IGridControl {
     /** What draws this cell and what it is given. */
     getControlProps(): IGridValueRenderer;
     /** What the host gave the grid, with what a control may do in this cell. */
-    getContext(): ComponentFramework.Context<any, any>;
+    getContext(): IPcfContext;
     /** The control a hook named for this cell, or the grid's renderer. */
     getCustomControl(): Required<ICustomColumnControl>;
     /** The parameters a control is actually handed. */
@@ -40,7 +41,7 @@ export class GridControl implements IGridControl {
     private _takesInput: boolean;
     private _cell: IGridCell;
     private _fieldControl?: IGridFieldControl;
-    private _context?: { isDisabled: boolean; value: ComponentFramework.Context<any, any> };
+    private _context?: { isDisabled: boolean; value: IPcfContext };
 
     constructor(parameters: IGridControlParameters) {
         this._services = parameters.services;
@@ -71,7 +72,7 @@ export class GridControl implements IGridControl {
         };
     }
 
-    public getContext(): ComponentFramework.Context<any, any> {
+    public getContext(): IPcfContext {
         const isDisabled = this._cell.isLocked();
         if (this._context?.isDisabled === isDisabled) {
             return this._context.value;

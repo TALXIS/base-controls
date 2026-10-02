@@ -2,6 +2,8 @@ import { mergeStyles } from "@fluentui/react";
 import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IDataset, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IDatasetControlParameters, IDatasetControlProps } from "@controls";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
+import { PcfContextFactory } from "@utils/adapters/pcf-context/factory";
+import { IPcfContext } from "@interfaces";
 
 interface IOutputs {
     DatasetControl?: any;
@@ -60,6 +62,7 @@ interface IVirtualDatasetAdapterOptions {
  */
 export class VirtualDatasetAdapter {
     private _context!: ComponentFramework.Context<IInputs, IOutputs>;
+    private _pcfContext!: IPcfContext;
     private _dataset!: Dataset<IDataProvider>;
     private _container!: HTMLDivElement;
     private _options?: IVirtualDatasetAdapterOptions
@@ -74,6 +77,7 @@ export class VirtualDatasetAdapter {
     public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
         this._container = container;
         this._context = context;
+        this._pcfContext = PcfContextFactory.createContext({ baseContext: context });
         this._state = state ?? {};
         if (!context.parameters.Data.raw) {
             this._createDummyDatasetControl();
@@ -88,7 +92,7 @@ export class VirtualDatasetAdapter {
             state: this._state,
             //@ts-ignore - typings
             controlId: this._context.utils._customControlProperties?.controlId,
-            onGetPcfContext: () => this._context,
+            onGetPcfContext: () => this._pcfContext,
             onGetParameters: () => this._getDatasetControlParameters()
         });
         this._datasetControl.setInterceptor('onInitialize', async (parameters, defaultAction) => {
@@ -109,6 +113,7 @@ export class VirtualDatasetAdapter {
      */
     public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void, onRenderEmptyData?: () => void) {
         this._context = context;
+        this._pcfContext = PcfContextFactory.createContext({ baseContext: context });
         if (!context.parameters.Data.raw) {
             return onRenderEmptyData?.()
         }
@@ -146,13 +151,14 @@ export class VirtualDatasetAdapter {
             state: this._state,
             //@ts-ignore - typings
             controlId: this._context.utils._customControlProperties?.controlId,
-            onGetPcfContext: () => this._context,
+            onGetPcfContext: () => this._pcfContext,
             onGetParameters: () => {
                 return {
                     ...this._getDatasetControlParameters(),
                     Grid: new Dataset(new MemoryDataProvider({
                         dataSource: [],
-                        metadata: {PrimaryIdAttribute: 'id'}
+                        metadata: {PrimaryIdAttribute: 'id'},
+                        formatting: this._pcfContext.formatting
                     }))
                 }
             }
@@ -246,13 +252,15 @@ export class VirtualDatasetAdapter {
         switch (this._context.parameters.DataProvider.raw) {
             case "FetchXml": {
                 return new FetchXmlDataProvider({
-                    fetchXml: this._context.parameters.Data.raw as string
+                    fetchXml: this._context.parameters.Data.raw as string,
+                    formatting: this._pcfContext.formatting
                 })
             }
             case 'Memory': {
                 return new MemoryDataProvider({
                     dataSource: this._context.parameters.Data.raw!,
-                    metadata: this._getEntityMetadata()
+                    metadata: this._getEntityMetadata(),
+                    formatting: this._pcfContext.formatting
                 });
             }
         }

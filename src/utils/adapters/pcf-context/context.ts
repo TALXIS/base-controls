@@ -1,6 +1,7 @@
+import { IPcfContext } from "@interfaces";
 import React from "react";
 
-export const PcfContext = React.createContext<ComponentFramework.Context<any, any> | null>(null);
+export const PcfContext = React.createContext<IPcfContext | null>(null);
 
 PcfContext.displayName = "PcfContext";
 

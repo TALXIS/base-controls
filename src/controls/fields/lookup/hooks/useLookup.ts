@@ -167,7 +167,7 @@ export const useLookup = (props: ILookup): [
                 primaryName = entity[`${attribute}@OData.Community.Display.V1.FormattedValue`];
                 break;
             case "datetime":
-                primaryName = props.context.formatting.formatTime(dayjs(entity[attribute]).toDate(), 1);
+                primaryName = props.context.formatting.formatDateShort(dayjs(entity[attribute]).toDate(), true);
                 break
             default:
                 primaryName = entity[attribute];

@@ -227,7 +227,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
         features: [
             { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals, then hover one of them and pick Mark as won in the last column: every selected deal is closed, except those the server refuses.' },
             { key: 'cellSelection', isEnterprise: true, label: 'Cell ranges', hint: 'Drag across a block of cells to highlight it, as in a spreadsheet.' },
-            { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet.' },
+            { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet. With Editing on, Ctrl+V pastes back into the grid.' },
         ],
     },
     {

@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { Dataset } from "@talxis/client-libraries";
 import { GridCustomizer } from "./components/grid/grid-customizer/GridCustomizer";
 import { TaskDataProvider } from "./providers/task";
@@ -15,7 +16,7 @@ interface ITaskGridDatasetControlFactoryParameters {
     state: ITaskGridState;
     taskGridDescriptor: ITaskGridDescriptor;
     localizationService: ILocalizationService<ITaskGridLabels>;
-    onGetPcfContext: () => ComponentFramework.Context<any>;
+    onGetPcfContext: () => IPcfContext;
 }
 
 /** Builds a ready-to-use {@link ITaskGridDatasetControl} from a descriptor. */

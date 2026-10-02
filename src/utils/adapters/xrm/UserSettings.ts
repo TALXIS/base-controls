@@ -1,4 +1,4 @@
-import { Formatting } from "@talxis/client-libraries";
+import { getFormatting, getLocaleFromLanguageId } from "@talxis/client-libraries";
 
 export interface IUserSettingsParams {
     lcid?: number;
@@ -62,7 +62,7 @@ export class UserSettings implements IInternalXrmUserSettings {
     }
 
     public initializeFormatting(): void {
-        const formatting = Formatting.Get(this.formatInfoCultureName);
+        const formatting = getFormatting({ formatInfoCultureName: this.formatInfoCultureName ?? 'en-US', locale: getLocaleFromLanguageId(this.languageId) });
         this.dateFormattingInfo = formatting.dateFormattingInfo as any;
         this.numberFormattingInfo = formatting.numberFormattingInfo as any;
     }

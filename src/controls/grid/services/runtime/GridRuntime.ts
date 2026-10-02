@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { ColDef, GetRowIdParams, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
@@ -48,7 +49,7 @@ export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
     onGetProps: () => IGrid;
     /** The host context. */
-    pcfContext: ComponentFramework.Context<any, any>;
+    pcfContext: IPcfContext;
     /** The control's theme. */
     theme: ITheme;
 }
@@ -203,6 +204,8 @@ export class GridRuntime implements IGridRuntime {
                 animateRows: false,
                 enterNavigatesVertically: true,
                 enterNavigatesVerticallyAfterEdit: true,
+                //AG Grid hands its own writes over as `cellEditRequest`
+                readOnlyEdit: true,
                 columnDefs: this._columnDefs,
             },
         };

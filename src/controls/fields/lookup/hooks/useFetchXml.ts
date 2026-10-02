@@ -1,8 +1,9 @@
+import { IPcfContext } from "@interfaces";
 import { useRef } from "react"
 import { IEntity } from "../interfaces";
 import { FetchXmlBuilder } from "@talxis/client-libraries";
 
-export const useFetchXml = (context: ComponentFramework.Context<any>): [
+export const useFetchXml = (context: IPcfContext): [
     (viewId: string) => Promise<{ fetchxml: string, layoutjson: string }>,
     (entity: IEntity, fetchXml: string, query: string) => Promise<string>
 ] => {

@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "@controls/dataset-control/interfaces";
@@ -7,7 +8,7 @@ import { EditColumns, IEditColumns } from "./EditColumns";
 interface IDatasetControlOptions {
     state: ComponentFramework.Dictionary;
     controlId: string;
-    onGetPcfContext: () => ComponentFramework.Context<any, any>;
+    onGetPcfContext: () => IPcfContext;
     onGetParameters: () => IDatasetControlParameters;
 }
 
@@ -33,7 +34,7 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     isRibbonVisible(): boolean;
     getHeight(): string | null;
     getDataset(): IDataset;
-    getPcfContext(): ComponentFramework.Context<any>;
+    getPcfContext(): IPcfContext;
     getParameters(): IDatasetControlParameters;
     loadCommands(ids: string[]): Promise<void>;
     retrieveRecordCommands(): ICommand[];

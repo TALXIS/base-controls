@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Formatting } from "@talxis/client-libraries";
 import { useTaskDataProvider } from '@controls/task-grid/context';
 import { useGanttService, useGanttServices } from '../../../../context';
 import { getTaskCreateCursorStyles } from '../../styles';
@@ -52,7 +51,7 @@ export const useTimelineTaskCreate = () => {
     const gantt = useGanttService('ganttChart');
     const dragging = useGanttService('ganttDragging');
     const taskDataProvider = useTaskDataProvider();
-    const formatting = Formatting.Get();
+    const formatting = services.get('taskGridServices').get('pcfContext').formatting;
     const [linePreview, setLinePreview] = useState<ILinePreview | null>(null);
     const [rowOverlay, setRowOverlay] = useState<IRowOverlay | null>(null);
     const [hoverPreview, setHoverPreview] = useState<IHoverPreview | null>(null);

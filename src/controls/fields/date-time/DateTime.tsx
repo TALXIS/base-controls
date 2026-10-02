@@ -70,7 +70,7 @@ export const DateTime = (componentProps: IDateTime) => {
             }
             return null;
         },
-        firstDayOfWeek: componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek,
+        firstDayOfWeek: componentProps.context.formatting.dateFormattingInfo.firstDayOfWeek,
         deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
             key: 'Delete',
             showOnlyOnHover: true,

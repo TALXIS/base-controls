@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTheme } from '@fluentui/react';
 import { getMarkerStyles } from './styles';
-import { Formatting } from '@talxis/client-libraries';
+import { useGanttServices } from '../../../../context';
 import { IMarkerComponents, MarkerComponents } from './components';
 import { IGanttMarker } from '../../GanttMarkersProvider';
 
@@ -15,7 +15,7 @@ export const Marker = (props: IMarkerProps) => {
     const color = props.color ?? theme.palette.themePrimary;
     const styles = useMemo(() => getMarkerStyles(theme, color), [theme, color]);
     const components = { ...MarkerComponents, ...props.components };
-    const formatting = Formatting.Get();
+    const formatting = useGanttServices().get('taskGridServices').get('pcfContext').formatting;
     const id = useMemo(() => `gantt_marker_${props.id}`, [props.id]);
     const tooltipContent = formatting.formatDateShort(start_date) ?? '';
 

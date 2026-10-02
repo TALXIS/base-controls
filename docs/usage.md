@@ -24,7 +24,7 @@ return <Decimal
 </details>
 <br />
 
-This piece of code will render a Decimal component showcasing the number you have inputted. Notice that you always need to pass it a PCF `context` and a parameters object with binding parameter. 
+This piece of code will render a Decimal component showcasing the number you have inputted. Notice that you always need to pass it a PCF `context` and a parameters object with binding parameter. The `context` is the library's own (`IPcfContext`): build it from the context your PCF receives with `PcfContextFactory.createContext({ baseContext: context })`, which gives it the formatting the controls parse and format with.
 
 
 ![Decimal component rendering 3,000.00](./.attachments/image-a4b04e82-7b61-4c4f-a745-0b098312ba8e.png)
@@ -80,7 +80,7 @@ You might have noticed that the prop structure of a Base Control is very similar
     }
     public updateView(context: ComponentFramework.Context<IInputs>): void {
         ReactDOM.render(React.createElement(DecimalComponent, {
-            context: context,
+            context: PcfContextFactory.createContext({ baseContext: context }),
             parameters: {
                 value: context.parameters.value,
                 EnableDeleteButton: {

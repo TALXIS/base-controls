@@ -1,4 +1,5 @@
-import { Client, Formatting } from "@talxis/client-libraries";
+import { IPcfContext } from "@interfaces";
+import { Client, getFormatting, getLocaleFromLanguageId } from "@talxis/client-libraries";
 import { XrmFactory } from "@utils/adapters/xrm";
 import { Device } from "./Device";
 import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
@@ -43,13 +44,16 @@ export class PcfContextFactory {
      * context surfaces.
      * @returns A context object shaped like a PCF runtime context.
      */
-    public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
+    public static createContext(params: IPcfContextFactoryParams = {}): IPcfContext {
         const { baseContext, userSettings, mode, factory } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
         const resolvedUserSettings = baseContext?.userSettings ?? new UserSettings(userSettings);
-        const formatting = Formatting.Get((resolvedUserSettings as { formatInfoCultureName?: string }).formatInfoCultureName);
+        const formatting = getFormatting({
+            formatInfoCultureName: (resolvedUserSettings as { formatInfoCultureName?: string }).formatInfoCultureName ?? 'en-US',
+            locale: getLocaleFromLanguageId(resolvedUserSettings.languageId ?? 1033),
+        });
 
-        const context: ComponentFramework.Context<any, any> = {
+        const context: IPcfContext = {
             ...baseContext,
             formatting,
             client: new Client(),
@@ -66,6 +70,7 @@ export class PcfContextFactory {
             factory: baseContext?.factory ?? this._createFactoryApi(factory)
         };
         context.userSettings.numberFormattingInfo = formatting.numberFormattingInfo;
+        context.userSettings.dateFormattingInfo = formatting.dateFormattingInfo;
         return context;
     }
 

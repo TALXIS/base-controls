@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Formatting } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
 import { useGridService } from "../../../../useGridService";
 import { IGridGroupingEvents } from "../../GridGrouping";
@@ -16,7 +15,7 @@ export const GroupSelectionLimitDialog = () => {
 
     const openAlertDialog = async (): Promise<void> => {
         await pcfContext.navigation.openAlertDialog({
-            text: labels.getLocalizedString('groupSelectionLimitMessage', { maxGroupLoads: Formatting.Get().formatInteger(grouping.getMaxGroupLoadsPerSelection()) }),
+            text: labels.getLocalizedString('groupSelectionLimitMessage', { maxGroupLoads: pcfContext.formatting.formatInteger(grouping.getMaxGroupLoadsPerSelection()) }),
             confirmButtonLabel: labels.getLocalizedString('groupSelectionLimitConfirm'),
         });
         grouping.closeGroupSelectionLimitDialog();

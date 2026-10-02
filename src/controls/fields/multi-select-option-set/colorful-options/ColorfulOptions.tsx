@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
-import { IContext, IMultiSelectOptionSetProperty } from "@interfaces";
+import { IPcfContext, IMultiSelectOptionSetProperty } from "@interfaces";
 import { useTheme } from "@fluentui/react";
 import { OptionTag } from "@ui";
 
 interface IColorfulOptionsProps {
     value: IMultiSelectOptionSetProperty;
-    context: IContext;
+    context: IPcfContext;
 }
 
 export const ColorfulOptions = (props: IColorfulOptionsProps) => {

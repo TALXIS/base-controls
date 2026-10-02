@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { DataTypes, IRecord } from "@talxis/client-libraries";
 import { ITaskGridServiceLocator } from '@controls/task-grid/services';
 import { IGanttServiceLocator } from '../services';
@@ -24,14 +23,7 @@ export interface IGanttDatesParameters {
     services: IGanttServiceLocator;
 }
 
-/**
- * What the mapped date columns mean: the precision they hold, and how a value of theirs becomes a date.
- *
- * A record hands over a date column's value as a string — a calendar day for a date-only column, an
- * instant for a date-time one — and takes one back the same way, dropping a time the column cannot keep.
- * So nothing here truncates a date; a value is read with the same parser the record wrote it with, which
- * puts a calendar day at local midnight rather than at UTC midnight.
- */
+/** What the mapped date columns mean: the precision they hold, and how a value of theirs becomes a date. */
 export class GanttDates implements IGanttDates {
     private _services: IGanttServiceLocator;
 
@@ -52,11 +44,11 @@ export class GanttDates implements IGanttDates {
     }
 
     public getStartDate(record: IRecord): Date | null {
-        return this._toDate(record.getValue(this._services.get('fieldMapping').startDate));
+        return this._toDate(record, this._services.get('fieldMapping').startDate);
     }
 
     public getEndDate(record: IRecord): Date | null {
-        return this._toDate(record.getValue(this._services.get('fieldMapping').endDate));
+        return this._toDate(record, this._services.get('fieldMapping').endDate);
     }
 
     public getStartEndDateFromRecords(records: IRecord[]): { startDate: Date | null, endDate: Date | null, startRecord: IRecord | null, endRecord: IRecord | null } {
@@ -93,12 +85,9 @@ export class GanttDates implements IGanttDates {
         return column?.dataType === DataTypes.DateAndTimeDateOnly ? 'date' : 'dateTime';
     }
 
-    private _toDate(value: unknown): Date | null {
-        if (!value) {
-            return null;
-        }
-        const date = dayjs(value as string | Date);
-        return date.isValid() ? date.toDate() : null;
+    private _toDate(record: IRecord, columnName: string): Date | null {
+        const date = record.getValue(columnName);
+        return date instanceof Date ? date : null;
     }
 
     private get _taskGridServices(): ITaskGridServiceLocator {

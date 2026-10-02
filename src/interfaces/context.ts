@@ -1,13 +1,17 @@
+import type { IFormatting } from "@talxis/client-libraries";
 import { IParameters } from ".";
 
 export interface IOutputs {
     [key: string]: any
 }
 
-export type IContext = ComponentFramework.Context<any>;
+/** The PCF context as this library provides it, with its own formatting. */
+export interface IPcfContext<TInputs = any, TEvents = any> extends ComponentFramework.Context<TInputs, TEvents> {
+    formatting: IFormatting;
+}
 
 export interface IControl<TParameters extends IParameters, TOutputs, TTranslations, TComponentProps> {
-    context: IContext;
+    context: IPcfContext;
     parameters: TParameters;
     translations?: TTranslations;
     state?: ComponentFramework.Dictionary;

@@ -43,10 +43,12 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
+    const isEditedRef = useRef(false);
     const { labels, sizing, className, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
+        isEditedRef.current = false;
         setValue(formattedValue ?? rawValue);
         //console.log(`Updating component ${name} with new value: ${formattedValue ?? rawValue}`);
     }, [rawValue]);
@@ -57,17 +59,26 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
 
     useEffect(() => {
         return () => {
+            //only what the user typed is written; the text lags behind a value set another way
+            if (!isEditedRef.current) {
+                return;
+            }
             onNotifyOutputChanged({
                 value: valueExtractor?.(valueRef.current) ?? valueRef.current
             } as any);
         };
     }, []);
+
+    const setEditedValue = (editedValue: TValue) => {
+        isEditedRef.current = true;
+        setValue(editedValue);
+    };
     return {
         className: className,
         value,
         labels,
         sizing,
         onNotifyOutputChanged,
-        setValue
+        setValue: setEditedValue
     }
 };

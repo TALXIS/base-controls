@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import type { GridApi } from "@ag-grid-community/core";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { ITheme } from "@theme";
@@ -50,7 +51,7 @@ export interface IGridServiceMap extends IGridOptionalServiceMap {
     /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
     /** The host context. */
-    pcfContext: ComponentFramework.Context<any, any>;
+    pcfContext: IPcfContext;
     /** Every string the grid renders, resolved. */
     labels: ILocalizationService<IGridLabels>;
     /** The theme the control was given. */

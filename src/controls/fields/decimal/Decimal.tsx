@@ -2,18 +2,15 @@ import { TextField } from "@legacy";
 import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
-import numeral from "numeral";
-import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "@/constants";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
-import { Numeral } from "@talxis/client-libraries";
+import type { IParseNumberOptions } from "@talxis/client-libraries";
 
 export const Decimal = (props: IDecimal) => {
     const arrowButtonsRef = useRef<IArrowButtons>(null);
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const numberFormatting = context.userSettings.numberFormattingInfo;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const formatter = (value: string | number | null): string | undefined | null => {
@@ -33,70 +30,15 @@ export const Decimal = (props: IDecimal) => {
         return value;
     };
 
-    const createNumberPattern = (pattern: string, numberPattern: string) => {
-        return new RegExp(`^${escapeRegExp(pattern).replace('n', numberPattern)}$`.replace(/\s/g, ''));
-    };
-
-    const createCurrencyPattern = (pattern: string, numberPattern: string) => {
-        const escapedPattern = escapeRegExp(pattern);
-        const escapedCurrencySymbolPattern = `(${escapeRegExp(numberFormatting.currencySymbol)})?`;
-        const finalPattern = escapedPattern.replace('\\$', escapedCurrencySymbolPattern).replace('n', numberPattern);
-        return new RegExp(`^${finalPattern.replace(/\s/g, '')}$`);
-    };
-
-    const escapeRegExp = (string: string) => {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    };
-
     const extractNumericPart = (value: any): number | undefined => {
-        // Currency control just sends the string up and lets the framework decide whether the value is correct
-        // It only tries to parse the number based on the current user format
-        // This means that the value will also pass if the user inputs his own currency even though
-        // the currency is different on the field
-        if (typeof value === 'number') {
-            return value
-        }
         //TODO: investigate why this is needed
         if(value === initialFormattedValue) {
             return initialValue as number;
         }
-        const str = value?.replace(/\s/g, '');
-        Numeral.decimal(numberFormatting);
-        let positivePattern: any;
-        let negativePattern: any;
-
-        switch (props.parameters.value.type) {
-            case 'Whole.None': {
-                const numberPattern = `\\d{1,}(${numberFormatting.numberGroupSeparator}\\d{1,})*`;
-                positivePattern = createNumberPattern('n', numberPattern);
-                negativePattern = createNumberPattern(NUMBER_NEGATIVE_PATTERN[numberFormatting.numberNegativePattern], numberPattern);
-                break;
-            }
-            case 'Decimal': {
-                const numberPattern = `\\d{1,}(${numberFormatting.numberGroupSeparator}\\d{1,})*(\\${numberFormatting.numberDecimalSeparator}\\d+)?`;
-                positivePattern = createNumberPattern('n', numberPattern);
-                negativePattern = createNumberPattern(NUMBER_NEGATIVE_PATTERN[numberFormatting.numberNegativePattern], numberPattern);
-                break;
-            }
-            case 'Currency': {
-                Numeral.currency(numberFormatting);
-                const numberPattern = `\\d{1,}(${numberFormatting.currencyGroupSeparator}\\d{1,})*(\\${numberFormatting.currencyDecimalSeparator}\\d+)?`;
-                positivePattern = createCurrencyPattern(CURRENCY_POSITIVE_PATTERN[numberFormatting.currencyPositivePattern], numberPattern);
-                negativePattern = createCurrencyPattern(CURRENCY_NEGATIVE_PATTERN[numberFormatting.currencyNegativePattern], numberPattern);
-                break;
-            }
-        }
-        if (positivePattern.test(str)) {
-            return numeral(str).value() ?? undefined;
-        }
-        if (negativePattern.test(str)) {
-            const value = numeral(str).value()!;
-            if (value > 0) {
-                return value * -1;
-            }
-            return value;
-        }
-        return value;
+        const dataType = props.parameters.value.type as IParseNumberOptions['dataType'];
+        const result = context.formatting.parsing.number.parse({ value: value ?? '', dataType });
+        //text that is not a number is sent up as it is, for the layer above to report
+        return result.value as number;
     };
 
     const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {

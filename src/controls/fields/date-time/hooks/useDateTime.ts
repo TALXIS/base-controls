@@ -3,15 +3,12 @@ import { useEffect, useRef } from "react";
 import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
 import { ITranslation } from "@hooks";
 import { ITheme } from "@theme";
-import { IFormatting } from "@talxis/client-libraries/dist/utils/formatting";
 
 dayjs.extend(customParseFormat);
-dayjs.extend(utc);
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
     boolean,
@@ -34,10 +31,8 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const boundValue = props.parameters.value;
     const context = props.context;
-    const behavior = boundValue.attributes.Behavior;
-    const format = boundValue.attributes.Format ?? boundValue.type;
-    //client libraries formatting contains dateFormattingInfo, fallback to user settings if it was not found (uses Power Apps formatting implementation)
-    const dateFormattingInfo = (<IFormatting>context.formatting).dateFormattingInfo ?? context.userSettings.dateFormattingInfo;
+    const format = boundValue.attributes?.Format ?? boundValue.type;
+    const dateFormattingInfo = context.formatting.dateFormattingInfo;
     const lastValidDateRef = useRef<Date | undefined>(undefined);
 
     const isDateTime = (() => {
@@ -57,20 +52,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     //MS returns the pattern without correct separator and they do this during formatting
     const shortDatePattern = dateFormattingInfo.shortDatePattern.replace(/\//g, dateFormattingInfo.dateSeparator).toUpperCase();
     const shortTimePattern = dateFormattingInfo.shortTimePattern.replace(/:/g, dateFormattingInfo.timeSeparator).replace('tt', 'A');
-    const formatting = (() => {
-        if (isDateTime) {
-            return `${shortDatePattern} ${shortTimePattern}`;
-        }
-        return shortDatePattern;
-    })();
-
     const formatDate = (date: Date | undefined | null | string): string | undefined | null => {
         if (date instanceof Date) {
-            if (isDateTime) {
-                //should handle the time zone conversion
-                return context.formatting.formatTime(date, behavior);
-            }
-            return context.formatting.formatDateShort(date);
+            return context.formatting.formatDateShort(date, isDateTime);
         }
         return date;
     };
@@ -83,15 +67,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const getDate = (): Date | undefined => {
         if (boundValue.raw instanceof Date) {
-            if (behavior === 3) {
-                //the date in javascript gets automatically adjusted to local time zone
-                //this will make it think that the date already came in local time, thus not adjusting the time
-                const date = new Date(boundValue.raw.toISOString().replace('Z', ''));
-                return date;
-            }
             return boundValue.raw;
         }
-        if(boundValue.error) {
+        if (boundValue.error) {
             return lastValidDateRef.current;
         }
         return undefined;
@@ -101,27 +79,8 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         if (value instanceof Date) {
             return value;
         }
-        const dayjsDate = dayjs(value, formatting, true);
-        if (!dayjsDate.isValid()) {
-            const dayJsDateNoWhiteSpace = dayjs(value?.replaceAll(' ', ''), formatting.replaceAll(' ', ''));
-            if (!dayJsDateNoWhiteSpace.isValid()) {
-                return value;
-            }
-            else {
-                return dayJsDateNoWhiteSpace.toDate();
-            }
-        }
-        return dayjsDate.toDate();
+        return context.formatting.parsing.date.parse({ value: value ?? '', includeTime: isDateTime }).value;
     };
-
-    const dateExtractor = (value: string | Date): Date | string => {
-        let parsedDate = parseDateString(value);
-        if (parsedDate instanceof Date && behavior === 3) {
-            //convert from "UTC" back to local time by setting the offset
-            parsedDate = new Date(parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000);
-        }
-        return parsedDate;
-    }
 
     const clearDate = () => {
         onNotifyOutputChanged({
@@ -148,12 +107,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         dayjsDate = dayjsDate.hour(dayjsTime.hour());
         dayjsDate = dayjsDate.minute(dayjsTime.minute());
         onNotifyOutputChanged({
-            value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
+            value: parseDateString(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
     const { value, labels, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
-        valueExtractor: dateExtractor,
+        valueExtractor: parseDateString,
         defaultTranslations: getDefaultDateTimeTranslations(dateFormattingInfo)
     });
     const theme = useTheme();
@@ -161,8 +120,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     useEffect(() => {
         const onBlur = () => {
+            //unchanged text would put back a date just picked from the calendar
+            if (value === formatDate(boundValue.raw)) {
+                return;
+            }
             onNotifyOutputChanged({
-                value: dateExtractor(value!) as any
+                value: parseDateString(value!) as any
             });
         };
         const input = ref.current?.querySelector('input');

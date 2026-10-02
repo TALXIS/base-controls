@@ -2,6 +2,8 @@ import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetPr
 import { mergeStyles } from "@fluentui/react";
 import { IDatasetControlParameters, IDatasetControlProps } from "@controls";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
+import { PcfContextFactory } from "@utils/adapters/pcf-context/factory";
+import { IPcfContext } from "@interfaces";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;
@@ -47,6 +49,7 @@ export class DatasetAdapter {
     private _container!: HTMLDivElement;
     private _dataset!: IDataset;
     private _context!: ComponentFramework.Context<IInputs, IOutputs>;
+    private _pcfContext!: IPcfContext;
     private _client = new Client();
     private _scheduleForRefresh: boolean = false;
     private _options?: IDatasetAdapterOptions;
@@ -60,13 +63,14 @@ export class DatasetAdapter {
     public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
         this._container = container;
         this._context = context;
+        this._pcfContext = PcfContextFactory.createContext({ baseContext: context });
         this._state = state ?? {};
         this._flushInvalidState();
         this._dataset = this.getDataset();
         this._datasetControl = new DatasetControl({
             state: this._state,
             controlId: this._dataset.getViewId(),
-            onGetPcfContext: () => this._context,
+            onGetPcfContext: () => this._pcfContext,
             onGetParameters: () => this._getDatasetControlParameters()
         });
         //loads parameter columns
@@ -87,6 +91,7 @@ export class DatasetAdapter {
 
     public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void) {
         this._context = context;
+        this._pcfContext = PcfContextFactory.createContext({ baseContext: context });
         if (!this._client.isTalxisPortal()) {
             this._syncPowerAppsDatasetSetup();
             this._syncPowerAppsDatasetOnNativeRefresh();
@@ -347,7 +352,8 @@ export class DatasetAdapter {
 
     private _getPowerAppsDatasetProvider() {
         return new PowerAppsDatasetProvider({
-            onGetContext: () => this._context
+            onGetContext: () => this._context,
+            formatting: this._pcfContext.formatting
         })
     }
 }

@@ -152,7 +152,7 @@ export const Lookup = (props: ILookup) => {
                     primaryName = result.entityData[`${targetAttribute}@OData.Community.Display.V1.FormattedValue`];
                     break;
                 case "datetime":
-                    primaryName = props.context.formatting.formatTime(dayjs(result.entityData[attribute]).toDate(), 1);
+                    primaryName = props.context.formatting.formatDateShort(dayjs(result.entityData[attribute]).toDate(), true);
                     break;
                 default:
                     primaryName = result.entityData[attribute];

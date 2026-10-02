@@ -1,4 +1,4 @@
-import { CellEditingStartedEvent, CellFocusedEvent, GridApi } from "@ag-grid-community/core";
+import { CellEditingStartedEvent, CellEditRequestEvent, CellFocusedEvent, GridApi } from "@ag-grid-community/core";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import type { IGridCell } from "../cells";
@@ -39,6 +39,7 @@ export class GridEditing implements IGridEditing {
     private _services: IGridServiceLocator;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;
+    private _recordsToSave = new Set<IRecord>();
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
 
     constructor(parameters: IGridEditingParameters) {
@@ -49,6 +50,7 @@ export class GridEditing implements IGridEditing {
             //an editor AG Grid opens is an edit too
             gridApi.addEventListener('cellEditingStarted', this._onCellEditingStarted);
             gridApi.addEventListener('cellEditingStopped', () => this._setEditedCell(undefined));
+            gridApi.addEventListener('cellEditRequest', this._onCellEditRequest);
         });
     }
 
@@ -113,6 +115,51 @@ export class GridEditing implements IGridEditing {
             this._setEditedCell({ recordId: event.data.getRecordId(), columnName: event.column.getColId() });
         }
     };
+
+    //what AG Grid writes itself: a paste, a cut, a fill or a cleared cell
+    private _onCellEditRequest = (event: CellEditRequestEvent<IRecord>): void => {
+        //an editor's value has already reached the record through its control
+        if (event.source === 'edit' || !event.data) {
+            return;
+        }
+        const columnName = event.column.getColId();
+        const column = event.data.getDataProvider().getColumnsMap()[columnName];
+        if (!column) {
+            return;
+        }
+        const parser = this._services.get('pcfContext').formatting.parsing;
+        const lookupReferences = column.dataType?.startsWith('Lookup.') ? this._getLookupReferences(columnName) : undefined;
+        const result = parser.parse({ value: event.newValue, column, lookupReferences });
+        if (!result.success) {
+            return;
+        }
+        event.data.setValue(columnName, result.value);
+        this._saveOnceWritten(event.data);
+    };
+
+    //while grouped, the records are held by the providers of their groups
+    private _getLookupReferences(columnName: string): ComponentFramework.EntityReference[] {
+        const provider = this._services.get('provider');
+        return [provider, ...provider.getGroupedRecordDataProviders(true)].flatMap(source => source.getRecords()).flatMap(record => {
+            const value = record.getValue(columnName);
+            return Array.isArray(value) ? value : [];
+        });
+    }
+
+    //one save per record once a paste or fill has written all its cells
+    private _saveOnceWritten(record: IRecord): void {
+        if (!this._services.get('settings').isAutoSaveEnabled()) {
+            return;
+        }
+        if (this._recordsToSave.size === 0) {
+            queueMicrotask(() => {
+                const records = [...this._recordsToSave];
+                this._recordsToSave.clear();
+                records.forEach(record => record.save());
+            });
+        }
+        this._recordsToSave.add(record);
+    }
 
     private _setEditedCell(editedCell: IGridEditedCell | undefined): void {
         const previous = this._editedCell;

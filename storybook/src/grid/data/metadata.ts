@@ -37,7 +37,7 @@ class DocsMemoryDataProvider extends MemoryDataProvider {
 
 /** An in-memory provider over a copy of the rows, every row on one page, not yet loaded. */
 export const createMemoryProvider = (options: IDocsProviderOptions): MemoryDataProvider => {
-    const provider = new DocsMemoryDataProvider({
+    return new DocsMemoryDataProvider({
         dataSource: options.rows.map(row => ({ ...row })),
         metadata: {
             PrimaryIdAttribute: options.primaryIdAttribute,
@@ -45,8 +45,6 @@ export const createMemoryProvider = (options: IDocsProviderOptions): MemoryDataP
             LogicalName: options.logicalName,
             EntitySetName: options.logicalName + 's',
         },
+        columns: options.columns,
     })
-    provider.setColumns(options.columns)
-    provider.getPaging().setPageSize(options.rows.length)
-    return provider
 }

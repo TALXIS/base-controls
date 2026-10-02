@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { Dataset, IColumn, IDataset, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IDatasetControlParameters } from "@controls/dataset-control";
 import { ILocalizationService } from "@utils";
@@ -18,7 +19,7 @@ interface ICheckListDatasetControlFactoryParameters {
     onInitialize: () => Promise<ICheckListInitializeResult> | ICheckListInitializeResult;
     controlId: string;
     localizationService: ILocalizationService<ICheckListLabels>;
-    onGetPcfContext: () => ComponentFramework.Context<any, any>;
+    onGetPcfContext: () => IPcfContext;
     /** Called with the dataset the factory built, since the parameters have to carry it. */
     onGetParameters: (dataset: IDataset) => IDatasetControlParameters;
 }

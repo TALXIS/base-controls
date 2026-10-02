@@ -110,8 +110,8 @@ Drag across cells to highlight them, or extend a block from the focused cell wit
 |---|---|---|
 | \`suppressMultiRangeSelection\` | \`false\` | \`true\` keeps one block at a time. |
 | \`enableRangeHandle\` | \`false\` | \`true\` draws a handle on the block's corner that resizes it by dragging. |
-
-The module also accepts AG Grid's fill-handle options, listed in \`IGridCellSelectionOptions\`, but a value the fill handle writes does not reach the record, so leave them off.
+| \`enableFillHandle\` | \`false\` | \`true\` draws a handle that copies the block's values into the cells it is dragged over, in an editable grid. |
+| \`fillHandleDirection\` | \`'xy'\` | Which way the fill handle drags: \`'x'\`, \`'y'\` or \`'xy'\`. |
 
 ### Copying
 
@@ -129,7 +129,13 @@ The module also accepts AG Grid's fill-handle options, listed in \`IGridCellSele
 
 It also accepts AG Grid's other clipboard options, listed in \`IGridClipboardOptions\`.
 
-**Pasting into the grid is not supported.** Ctrl+V changes nothing, Ctrl+X copies without clearing, and Delete on a highlighted block clears nothing, even in an editable grid. The clipboard works one way: out of the grid.
+### Pasting and clearing
+
+In an editable grid, Ctrl+V pastes into the focused cell, or into the highlighted block; Ctrl+X copies and clears; Delete and Backspace clear the highlighted cells. Each value reaches the record as if it was typed into the cell:
+
+- Locked cells, and columns drawn with \`oneClickEdit\`, are skipped.
+- Text is read the way the grid shows it, as typing it into the cell would read it: numbers and money in the user's number format, durations such as *2 hours*, dates in the user's date format, option sets and two options by their labels, and several option set labels separated by \`;\`. A lookup takes the record of that name, when exactly one record of that name is already in the column's loaded values. Text a column cannot take, and files and images, leave the cell as it was.
+- Values are validated like any other edit, and with \`enableAutoSave\` each changed record saves once after the paste.
 `
 
 const meta = {

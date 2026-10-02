@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { FontWeights } from "@fluentui/react";
-import { DataProvider, DataTypes, EventEmitter, Formatting, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridGroupingLabels } from "./labels";
@@ -385,7 +385,7 @@ export class GridGrouping implements IGridGrouping {
         this._hasReportedChildLimit = true;
         this._gridServices.get('pcfContext').navigation.openErrorDialog({
             message: this._labels.getLocalizedString('maximumGroupChildrenLimitReached', {
-                maxGroupChildren: Formatting.Get().formatInteger(CHILD_LIMIT),
+                maxGroupChildren: this._gridServices.get('pcfContext').formatting.formatInteger(CHILD_LIMIT),
             }),
         });
     };

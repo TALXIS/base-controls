@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 //types only: the map names every dependency by its contract, so registering a service can never pull an
 //implementation into the bundle
 import type { ILocalizationService, IServiceLocator } from "@utils";
@@ -21,7 +22,7 @@ import type { ITaskGridComponents } from "@controls/task-grid/components/compone
  */
 export interface ITaskGridServiceMap {
     /** The PCF context the grid renders in: navigation, formatting, dialogs. */
-    pcfContext: ComponentFramework.Context<any>;
+    pcfContext: IPcfContext;
     /** What the grid carries across a remount: the view to open on, and what modules keep. */
     taskGridState: ITaskGridStateProvider;
     /** Resolves every UI label. */

@@ -35,7 +35,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
         if (!parameters.RestrictedDates?.raw) {
             return undefined;
         }
-        return JSON.parse(parameters.RestrictedDates.raw).map((x: string) => new Date(x));
+        return JSON.parse(parameters.RestrictedDates.raw).map((x: string) => dayjs(x).toDate());
     };
 
     /** A day of the week the value may not take is drawn as out of bounds, and refuses the click. */

@@ -25,7 +25,7 @@ export interface IGridModules {
     grouping?: IGridModule;
     /** Totals under the rows: {@link createAggregationModule}. */
     aggregation?: IGridModule;
-    /** Copying rows: {@link createClipboardModule}. */
+    /** Copying and pasting cells: {@link createClipboardModule}. */
     clipboard?: IGridModule;
     /** What legacy scripts set on a record's fields: {@link createLegacyClientApiCompatibilityModule}. */
     legacyClientApiCompatibility?: IGridModule;

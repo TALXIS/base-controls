@@ -1,3 +1,4 @@
+import { IPcfContext } from "@interfaces";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 import { EventEmitter, IDataset, IDataProvider, IRawRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IDatasetControlParameters } from "@controls/dataset-control";
@@ -28,7 +29,7 @@ export interface ICheckListDatasetControlParameters {
     fieldMapping: ICheckListFieldMapping;
     controlId: string;
     localizationService: ILocalizationService<ICheckListLabels>;
-    onGetPcfContext: () => ComponentFramework.Context<any, any>;
+    onGetPcfContext: () => IPcfContext;
     onGetParameters: () => IDatasetControlParameters;
 }
 

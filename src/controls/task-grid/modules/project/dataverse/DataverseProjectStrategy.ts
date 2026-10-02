@@ -88,11 +88,7 @@ export class DataverseProjectStrategy implements IProjectStrategy<IDataverseProj
         if (!columnName) {
             return undefined;
         }
-        const value = this._params.projectRecord.getValue(columnName);
-        if (!value || (typeof value !== 'string' && !(value instanceof Date))) {
-            return undefined;
-        }
-        const date = new Date(value);
-        return isNaN(date.getTime()) ? undefined : date;
+        const date = this._params.projectRecord.getValue(columnName);
+        return date instanceof Date ? date : undefined;
     }
 }

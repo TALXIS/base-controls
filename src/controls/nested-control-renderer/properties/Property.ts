@@ -1,10 +1,11 @@
+import { IPcfContext } from "@interfaces";
 import { FieldValue, IAttributeMetadata} from "@talxis/client-libraries";
 import { IOptions } from "../NestedControl";
 import { IBinding } from "../interfaces";
 
 export abstract class Property {
     private _onGetBinding: () => IBinding;
-    private _parentPcfContext: ComponentFramework.Context<any, any>;
+    private _parentPcfContext: IPcfContext;
     private _attributeMetadata: IAttributeMetadata = {} as any;
 
     constructor(options: IOptions, onGetBinding: () => IBinding) {
