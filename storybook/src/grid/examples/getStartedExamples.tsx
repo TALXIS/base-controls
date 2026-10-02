@@ -1,59 +1,61 @@
 import React from 'react'
-import { CommandBar, Panel } from '@fluentui/react'
-import { DataTypes, IColumn } from '@talxis/client-libraries'
-import { Form, IFormApi, MemoryStrategy } from '@talxis/base-controls'
+import dayjs from 'dayjs'
+import type { MemoryDataProvider } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createDocsProvider, DOCS_COLUMNS, DOCS_OVERVIEW_COLUMNS, DOCS_ROWS } from '../gridDocsData'
+import { createDealsProvider, DEAL_COLUMNS, DEAL_DETAIL_COLUMNS, DEAL_ROWS } from '../data'
+import { FeatureSwitcher, IShowcaseFeatureGroup, IShowcaseFeatureValues, IShowcasePreset } from '../showcase/FeatureSwitcher'
 
-export const OVERVIEW_CODE = `const WON = 4
+export const SHOWCASE_CODE = `const WON = 4
 const LOST = 5
 
 const isSummaryRow = (record: IRecord) => record.getDataProvider().getSummarizationType() !== 'none'
-const isWon = (record: IRecord) => Number(record.getValue('stage')) === WON
-const isLost = (record: IRecord) => Number(record.getValue('stage')) === LOST
+const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValue('stage')))
 const formatMoney = (amount: number) => '$' + amount.toLocaleString('en-US')
 
 const isOverdue = (record: IRecord) => {
     const closeDate = record.getValue('closedate')
-    return !isSummaryRow(record) && !isWon(record) && !!closeDate && new Date(closeDate) < new Date()
+    return !isSummaryRow(record) && !isClosed(record) && !!closeDate && dayjs(closeDate).isBefore(dayjs(), 'day')
 }
 
-//a deal that is won or lost is closed
-const lockClosedDeals = (result: { isLocked: boolean }, { record }: { record: IRecord }) => {
-    if (!isSummaryRow(record) && (isWon(record) || isLost(record))) {
+const saveValue = async (record: IRecord, columnName: string, value: unknown) => {
+    record.setValue(columnName, value)
+    const result = await record.save()
+    if (!result.success) {
+        record.clearChanges()
+    }
+}
+
+//while grouped, a deal is held by the provider of its group
+const findDeal = (recordId: string) => [provider, ...provider.getGroupedRecordDataProviders(true)].map(source => source.getRecordsMap()[recordId]).find(Boolean)
+
+const lockClosedDeals = (result: IGridLock, { record }: { record: IRecord }) => {
+    if (!isSummaryRow(record) && isClosed(record)) {
         result.isLocked = true
     }
 }
 
-//a closed deal is coloured in every cell: green once won, red once lost
-const closedDealsModule: IGridModule = {
+const closedDealColoursModule: IGridModule = {
     onRegister: runtime => {
-        //after grouping, which puts a grouped record back on the grid's own background
+        //grouping repaints every record row while the deals are grouped
         runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
-            if (isSummaryRow(record)) {
+            if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }
-            if (isWon(record)) {
-                theme.colors.background = '#dff6dd'
-                theme.colors.text = '#0b6a0b'
-            }
-            if (isLost(record)) {
-                theme.colors.background = '#fde7e9'
-                theme.colors.text = '#a4262c'
-            }
+            const isWon = Number(record.getValue('stage')) === WON
+            theme.colors.background = isWon ? '#dff6dd' : '#fde7e9'
+            theme.colors.text = isWon ? '#0b6a0b' : '#a4262c'
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
 }
 
-//what a legacy form script sets on the records, shown by the legacy client API module
-const getDealNotifications = (record: IRecord): IAddControlNotificationOptions[] => {
-    if (isSummaryRow(record)) {
+//the notifications a client script would set on a deal
+const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] => {
+    if (isSummaryRow(record) || isClosed(record)) {
         return []
     }
     const notifications: IAddControlNotificationOptions[] = []
-    const moveCloseDate = (days: number) => () => record.setValue('closedate', new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString())
-    const closeDate = record.getValue('closedate')
-    if (closeDate && new Date(closeDate) < new Date()) {
+    const moveCloseDate = (days: number) => () => saveValue(record, 'closedate', dayjs().add(days, 'day').format('YYYY-MM-DD'))
+    if (isOverdue(record)) {
         notifications.push({
             uniqueId: 'overdue',
             notificationLevel: 'RECOMMENDATION',
@@ -63,20 +65,9 @@ const getDealNotifications = (record: IRecord): IAddControlNotificationOptions[]
             actions: [
                 { message: 'A week out', iconName: 'Calendar', actions: [moveCloseDate(7)] },
                 { message: 'A month out', iconName: 'Calendar', actions: [moveCloseDate(30)] },
-                { message: 'A quarter out', iconName: 'Calendar', actions: [moveCloseDate(90)] },
-                { message: 'Mark as won', iconName: 'Trophy2', actions: [() => { record.setValue('stage', WON); record.save() }] },
-                { message: 'Mark as lost', iconName: 'Cancel', actions: [() => { record.setValue('stage', LOST); record.save() }] },
+                { message: 'Mark as won', iconName: 'Trophy2', actions: [() => saveValue(record, 'stage', WON)] },
+                { message: 'Mark as lost', iconName: 'Cancel', actions: [() => saveValue(record, 'stage', LOST)] },
             ],
-        })
-    }
-    if (Number(record.getValue('stage')) === 1) {
-        notifications.push({
-            uniqueId: 'qualify',
-            notificationLevel: 'RECOMMENDATION',
-            iconName: 'Forward',
-            text: 'Move to Propose',
-            messages: [],
-            actions: [{ actions: [() => record.setValue('stage', 2)] }],
         })
     }
     if (Number(record.getValue('value') ?? 0) > 30000) {
@@ -86,142 +77,73 @@ const getDealNotifications = (record: IRecord): IAddControlNotificationOptions[]
             iconName: 'Shield',
             text: 'Needs sign-off',
             messages: ['A deal over $30,000 needs a manager to sign it off before it can be saved.'],
-            buttonProps: { renderedInOverflow: true },
-            actions: [
-                { message: 'Ask for sign-off', actions: [() => record.setValue('nextstep', 'Waiting for sign-off')] },
-                { message: 'Cap at $30,000', actions: [() => record.setValue('value', 30000)] },
-            ],
         })
     }
     return notifications
 }
 
-const ROW_COLORS = ['#fff4ce', '#dff6dd', '#deecf9', '#f4e3f9', '#fde7e9', '#e1f5f3', '#fff1e5', '#ebeaf7']
-
-//a number per record that stays put however the rows are sorted
-const getRecordSeed = (record: IRecord) => record.getRecordId().split('').reduce((total, char) => total + char.charCodeAt(0), 0)
-
-//for testing: every row its own colour, and validation that fails on some rows
-const testingModule: IGridModule = {
+const recommendationsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
-            if (!isSummaryRow(record)) {
-                theme.colors.background = ROW_COLORS[getRecordSeed(record) % ROW_COLORS.length]
-            }
-        }, GRID_MODULE_PRIORITY.grouping)
-        runtime.services.get('validation').registerValidationHook((result, { record, columnName }) => {
-            if (isSummaryRow(record)) {
-                return
-            }
-            if (columnName === 'email' && getRecordSeed(record) % 4 === 1) {
-                result.error = true
-                result.errorMessage = 'An .example address cannot receive email.'
-            }
-            if (columnName === 'name' && getRecordSeed(record) % 3 === 0) {
-                result.error = true
-                result.errorMessage = 'This deal has no contact person.'
-            }
-        })
-    },
-}
-
-const dealNotificationsModule: IGridModule = {
-    onRegister: runtime => {
-        const addNotifications = (record: IRecord) => record.expressions.ui.setNotificationsExpression('name', () => getDealNotifications(record))
-        provider.getRecords().forEach(addNotifications)
-        provider.addEventListener('onRecordLoaded', addNotifications)
+        const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('name', () => getRecommendations(record))
+        provider.getRecords().forEach(addRecommendations)
+        provider.addEventListener('onRecordLoaded', addRecommendations)
         //the provider outlives the grid
-        runtime.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addNotifications))
+        runtime.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addRecommendations))
     },
 }
 
-//a command on a selected row acts on the whole selection, read when it is drawn
-const getTargets = (record: IRecord) => {
-    const selectedIds = provider.getSelectedRecordIds()
-    return selectedIds.includes(record.getRecordId())
-        ? selectedIds.map(id => provider.getRecordsMap()[id]).filter(Boolean)
-        : [record]
+const validateDiscount = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+    if (Number(record.getValue('discount') ?? 0) > 20) {
+        result.error = true
+        result.errorMessage = 'A discount over 20 % needs a manager.'
+    }
 }
 
-//what the Grid features panel above has switched on
-interface IOverviewProps {
+interface IShowcaseProps {
     features: { [feature: string]: boolean }
 }
 
-const GridExample = (props: IOverviewProps) => {
+const GridExample = (props: IShowcaseProps) => {
     const { features } = props
-    const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-    const [status, setStatus] = React.useState('Switch features on under Grid features, then try them: edit a value, select a few deals and mark them won, or group by Stage.')
-    const highlightsBigDeals = React.useRef(false)
-    const gridRef = React.useRef<IGridRuntime>()
+    const [selection, setSelection] = React.useState<string[]>([])
+    const [lastSave, setLastSave] = React.useState<IRecordSaveOperationResult>()
+    const selectedIds = features.rowSelection ? selection : []
+    const selectedValue = selectedIds.reduce((total, recordId) => total + Number(findDeal(recordId)?.getValue('value') ?? 0), 0)
 
-    //a selection only counts while the grid can select
-    const selectedDeals = features.rowSelection ? selectedIds : []
-
-    const selectedValue = selectedDeals.reduce((total, id) => total + Number(provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
+    //a command on a selected deal closes every selected deal
+    const closeDeals = (record: IRecord, stage: number) => {
+        const selected = features.rowSelection ? provider.getSelectedRecordIds() : []
+        const targets = selected.includes(record.getRecordId()) ? selected.map(findDeal) : [record]
+        for (const target of targets) {
+            if (target && !isClosed(target)) {
+                saveValue(target, 'stage', stage)
+            }
+        }
+    }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <MessageBar messageBarType={selectedDeals.length ? MessageBarType.success : MessageBarType.info}>
-            {selectedDeals.length ? selectedDeals.length + ' deal(s) selected, worth ' + formatMoney(selectedValue) + '. ' : ''}{status}
-        </MessageBar>
+        {selectedIds.length > 0 && <MessageBar>{selectedIds.length} selected, worth {formatMoney(selectedValue)}.</MessageBar>}
+        {lastSave && <MessageBar messageBarType={lastSave.success ? MessageBarType.success : MessageBarType.warning} onDismiss={() => setLastSave(undefined)}>
+            {lastSave.success ? 'Saved.' : 'Not saved. ' + (lastSave.errors ?? []).map(error => error.message).join(' ')}
+        </MessageBar>}
         <Grid.Root
             key={JSON.stringify(features)}
             provider={provider}
             modules={{
-                rowModel: createServerSideRowModelModule(),
-                rowSelection: features.rowSelection ? createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }) : undefined,
+                rowModel: createClientSideRowModelModule(),
+                rowSelection: features.rowSelection ? createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelection }) : undefined,
                 cellSelection: features.cellSelection ? createCellSelectionModule() : undefined,
                 clipboard: features.clipboard ? createClipboardModule() : undefined,
                 sorting: features.sorting ? createSortingModule() : undefined,
                 filtering: features.filtering ? createFilteringModule() : undefined,
                 grouping: features.grouping ? createGroupingModule() : undefined,
                 aggregation: features.aggregation ? createAggregationModule() : undefined,
-                legacyClientApiCompatibility: features.notifications ? createLegacyClientApiCompatibilityModule() : undefined,
-                custom: features.notifications ? [closedDealsModule, testingModule, dealNotificationsModule] : [closedDealsModule, testingModule],
+                legacyClientApiCompatibility: features.recommendations ? createLegacyClientApiCompatibilityModule() : undefined,
+                custom: features.recommendations ? [closedDealColoursModule, recommendationsModule] : [closedDealColoursModule],
             }}
             colDefs={{
-                //the deal's name stands for the deal, drawn as a link that opens it
-                name: { settings: { isPrimary: true } },
-                value: {
-                    settings: {
-                        cell: {
-                            onGetTheme: (theme, { record }) => {
-                                if (highlightsBigDeals.current && !isSummaryRow(record) && !isWon(record) && !isLost(record) && Number(record.getValue('value') ?? 0) > 20000) {
-                                    theme.colors.background = '#e8ebfa'
-                                    theme.colors.text = '#3b3a93'
-                                }
-                            },
-                        },
-                        header: {
-                            //the header says the highlight is on
-                            onGetTheme: theme => {
-                                if (highlightsBigDeals.current) {
-                                    theme.colors.background = '#e8ebfa'
-                                    theme.colors.text = '#3b3a93'
-                                }
-                            },
-                            onGetMenuSections: sections => {
-                                sections.push({
-                                    key: 'highlight',
-                                    title: 'Highlight',
-                                    items: [{
-                                        key: 'bigDeals',
-                                        text: 'Deals over $20,000',
-                                        canCheck: true,
-                                        checked: highlightsBigDeals.current,
-                                        iconProps: { iconName: 'Highlight' },
-                                        onClick: () => {
-                                            highlightsBigDeals.current = !highlightsBigDeals.current
-                                            //the tint is not in the records, so nothing redraws on its own
-                                            gridRef.current?.services.get('cells').render()
-                                            gridRef.current?.services.get('columns').headers.render()
-                                        },
-                                    }],
-                                })
-                            },
-                        },
-                    },
-                },
+                name: { pinned: 'left' },
+                discount: { settings: { cell: { onGetValidation: validateDiscount } } },
                 closedate: {
                     settings: {
                         cell: {
@@ -231,30 +153,21 @@ const GridExample = (props: IOverviewProps) => {
                                 }
                             },
                         },
-                        header: {
-                            onGetAdornments: adornments => {
-                                const overdue = provider.getRecords().filter(isOverdue).length
-                                if (overdue > 0) {
-                                    adornments.push({ key: 'overdue', placement: 'suffix', title: overdue + ' overdue', onRender: () => <Icon iconName='Clock' style={{ color: '#a4262c' }} /> })
-                                }
-                            },
-                        },
                     },
                 },
-                //edited where it stands, with no editor to open
-                recurring: { settings: { cell: { oneClickEdit: true } } },
+                recurring: { settings: { cell: { oneClickEdit: features.editing } } },
                 actions: {
-                    headerName: '', pinned: 'right', initialWidth: 96, sortable: false, valueGetter: () => null,
+                    headerName: '',
+                    pinned: 'right',
+                    initialWidth: 96,
                     settings: {
                         cell: {
                             onGetCommands: (result, { record }) => {
-                                if (isSummaryRow(record) || isWon(record)) {
+                                if (isSummaryRow(record) || isClosed(record)) {
                                     return
                                 }
-                                const targets = getTargets(record)
-                                const suffix = targets.length > 1 ? ' (' + targets.length + ')' : ''
-                                result.items.push({ key: 'won', title: 'Mark as won' + suffix, iconProps: { iconName: 'Trophy2' }, onClick: () => targets.forEach(target => { target.setValue('stage', WON); target.save() }) })
-                                result.items.push({ key: 'lost', title: 'Mark as lost' + suffix, iconProps: { iconName: 'Cancel' }, onClick: () => targets.forEach(target => { target.setValue('stage', LOST); target.save() }) })
+                                result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: () => closeDeals(record, WON) })
+                                result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: () => closeDeals(record, LOST) })
                             },
                         },
                     },
@@ -264,130 +177,114 @@ const GridExample = (props: IOverviewProps) => {
             enableAutoSave={features.autoSave}
             enableOptionSetColors={features.optionSetColors}
             enableZebra={features.zebra}
-            onGridReady={runtime => { gridRef.current = runtime }}
             rowSettings={{ onGetLock: lockClosedDeals }}
-            onAfterRecordSaved={result => setStatus(result.success ? 'Saved.' : 'The save was refused: open the red icon to see why.')}
-            height='560px' />
+            onAfterRecordSaved={setLastSave}
+            height='520px' />
     </Stack>
 }
 `
 
-const HIDDEN_COLUMNS = ['probability', 'language', 'timezone']
+const HIDDEN_COLUMNS = ['probability', 'language', 'timezone', 'logo']
+const NEGOTIATE = 3
 
-const getOverviewColumn = (column: IColumn): IColumn => {
-    switch (column.name) {
-        //a deal can be lost as well as won
-        case 'stage':
-            return { ...column, metadata: { ...column.metadata, OptionSet: [...(column.metadata?.OptionSet ?? []), { Value: 5, Label: 'Lost', Color: '#a4262c' }] } }
-        default:
-            return column
+const setGroupedByStage = (provider: MemoryDataProvider, isGrouped: boolean) => {
+    //clear() would leave an ungrouped column read-only
+    provider.grouping.getGroupBys().forEach(groupBy => provider.grouping.removeGroupBy(groupBy.alias))
+    if (isGrouped) {
+        provider.grouping.addGroupBy({ alias: 'stage_group', columnName: 'stage' })
     }
 }
 
-const createOverviewProvider = () => {
-    const provider = createDocsProvider()
-    //nothing is won or lost yet: closing a deal is what the overview lets you do
-    provider.setDataSource(DOCS_ROWS.map(row => row.stage === 4 ? { ...row, stage: 3 } : { ...row }))
-    provider.setColumns([...DOCS_COLUMNS, ...DOCS_OVERVIEW_COLUMNS].filter(column => !HIDDEN_COLUMNS.includes(column.name)).map(getOverviewColumn))
+const createShowcaseProvider = (isGrouped: boolean) => {
+    const provider = createDealsProvider()
+    //open deals due around the day the page is read
+    provider.setDataSource(DEAL_ROWS.map((row, index) => ({ ...row, stage: Math.min(row.stage, NEGOTIATE), closedate: row.closedate && dayjs().add(index * 4 - 30, 'day').format('YYYY-MM-DD') })))
+    provider.setColumns([...DEAL_COLUMNS, ...DEAL_DETAIL_COLUMNS].filter(column => !HIDDEN_COLUMNS.includes(column.name)))
     provider.aggregation.addAggregation({ alias: 'value_sum', columnName: 'value', aggregationFunction: 'sum' })
     provider.aggregation.addAggregation({ alias: 'timespent_sum', columnName: 'timespent', aggregationFunction: 'sum' })
-    const save = provider.onRecordSave.bind(provider)
-    provider.onRecordSave = async record => {
+    //stands in for a server that refuses big deals without a sign-off
+    provider.setInterceptor('onRecordSave', async (record, defaultAction) => {
         if (Number(record.getValue('value') ?? 0) <= 30000) {
-            return save(record)
+            return defaultAction(record)
         }
         return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'value', message: 'A deal over $30,000 needs a manager to sign it off.' }] }
-    }
+    })
+    setGroupedByStage(provider, isGrouped)
     provider.refresh()
     return provider
 }
 
-//each one switches a module or a prop; the grid remounts, since both are read when it mounts
-const FEATURE_GROUPS = [
-    { title: 'Editing', features: [{ key: 'editing', label: 'Editing' }, { key: 'autoSave', label: 'Auto-save' }] },
-    { title: 'Selection', features: [{ key: 'rowSelection', label: 'Rows' }, { key: 'cellSelection', label: 'Cells' }, { key: 'clipboard', label: 'Clipboard' }] },
-    { title: 'Data', features: [{ key: 'sorting', label: 'Sorting' }, { key: 'filtering', label: 'Filtering' }, { key: 'grouping', label: 'Grouping' }, { key: 'aggregation', label: 'Totals' }] },
-    { title: 'Look', features: [{ key: 'optionSetColors', label: 'Option set colours' }, { key: 'zebra', label: 'Zebra rows' }] },
-    { title: 'Legacy client API', features: [{ key: 'notifications', label: 'Notifications' }] },
+const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
+    {
+        title: 'Editing',
+        features: [
+            { key: 'editing', label: 'Editing', hint: 'Double-click a Value or a Close date to change it, or flip Recurring right in its cell. A Discount over 20 % turns its cell red. Without Auto-save, changes are kept but not saved.' },
+            { key: 'autoSave', label: 'Auto-save', hint: 'Turn on Editing too, then change a value: the row saves as soon as the cell takes it. The server refuses deals over $30,000, and the red icon at the start of the row says why.' },
+        ],
+    },
+    {
+        title: 'Selection',
+        features: [
+            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals, then hover one of them and pick Mark as won in the last column: every selected deal is closed, except those the server refuses.' },
+            { key: 'cellSelection', isEnterprise: true, label: 'Cell ranges', hint: 'Drag across a block of cells to highlight it, as in a spreadsheet.' },
+            { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet.' },
+        ],
+    },
+    {
+        title: 'Shaping the data',
+        features: [
+            { key: 'sorting', label: 'Sorting', hint: "Click a column's header to open its menu, and sort by it." },
+            { key: 'filtering', label: 'Filtering', hint: 'Open the Stage menu, pick Filter By and keep only the deals in negotiation.' },
+            { key: 'grouping', isEnterprise: true, label: 'Grouping', hint: 'Deals are grouped by Stage. Open the Account manager menu and pick Group to group by it too.' },
+            { key: 'aggregation', label: 'Totals', hint: "Value and Time spent are totalled under the rows, and in every group row. Pick another total from a number column's menu." },
+        ],
+    },
+    {
+        title: 'Look',
+        features: [
+            { key: 'optionSetColors', label: 'Option set colours', hint: 'Stage and Products are drawn as tags in their own colours, and so is Recurring while Editing is off.' },
+            { key: 'zebra', label: 'Zebra rows', hint: 'Every other row is shaded, except while the deals are grouped.' },
+        ],
+    },
+    {
+        title: 'Model-driven apps',
+        features: [
+            { key: 'recommendations', label: 'Client script notifications', hint: 'Overdue deals and deals over $30,000 carry notifications a client script set. Hover one and open them in its Deal cell.' },
+        ],
+    },
 ]
+
 const FEATURE_KEYS = FEATURE_GROUPS.flatMap(group => group.features.map(feature => feature.key))
-const ALL_OFF: { [feature: string]: boolean } = Object.fromEntries(FEATURE_KEYS.map(key => [key, false]))
-const EVERYTHING = 'everything'
-const ON_OFF = [{ Value: 0, Label: 'Off', Color: '#605e5c' }, { Value: 1, Label: 'On', Color: '#107c10' }]
 
-//the features, as a record the form edits
-const FEATURE_COLUMNS: IColumn[] = [{ key: EVERYTHING, label: 'All features' }, ...FEATURE_GROUPS.flatMap(group => group.features)].map(feature => ({
-    name: feature.key,
-    displayName: feature.label,
-    dataType: DataTypes.TwoOptions,
-    metadata: { IsValidForUpdate: true, OptionSet: ON_OFF },
-}))
+const PRESETS: IShowcasePreset[] = [
+    { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
+    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place with auto-save, highlight ranges and copy them out.', features: ['editing', 'autoSave', 'cellSelection', 'clipboard', 'sorting'] },
+    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, select deals and close them in bulk.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'recommendations'] },
+    { key: 'everything', label: 'Everything', iconName: 'Waffle', description: 'Every feature at once. Edit, select, group, total and copy.', features: FEATURE_KEYS },
+]
 
-export const OverviewExample = () => {
-    const provider = React.useMemo(() => createOverviewProvider(), [])
-    const [features, setFeatures] = React.useState(ALL_OFF)
-    const [isPanelOpen, setIsPanelOpen] = React.useState(false)
-    const featuresRef = React.useRef(features)
-    featuresRef.current = features
-    const formRef = React.useRef<IFormApi>()
+const IDLE_HINT = 'Pick a preset or switch features on one by one. Hover a feature to see what it adds.'
 
-    //read when the form loads, so it opens on what is switched on
-    const strategy = React.useMemo(() => new MemoryStrategy({
-        onGetColumns: () => FEATURE_COLUMNS,
-        onGetData: () => ({ id: 'features', ...featuresRef.current, [EVERYTHING]: FEATURE_KEYS.every(key => featuresRef.current[key]) }),
-        onGetMetadata: () => ({ PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'id' }),
-    }), [])
+export const ShowcaseExample = () => {
+    const [features, setFeatures] = React.useState<IShowcaseFeatureValues>(Object.fromEntries(PRESETS[0].features.map(key => [key, true])))
+    const provider = React.useRef<MemoryDataProvider>()
 
-    const setFeatureValues = (keys: string[], isOn: boolean) => {
-        //grouped by stage while grouping is on
-        if (keys.includes('grouping') && featuresRef.current.grouping !== isOn) {
-            provider.grouping.clear()
-            if (isOn) {
-                provider.grouping.addGroupBy({ alias: 'stage', columnName: 'stage' })
-            }
-            provider.refresh()
+    const createProvider = () => {
+        provider.current = createShowcaseProvider(!!features.grouping)
+        return provider.current
+    }
+
+    const onChange = (next: IShowcaseFeatureValues) => {
+        if (provider.current && !!next.grouping !== !!features.grouping) {
+            setGroupedByStage(provider.current, !!next.grouping)
+            provider.current.refresh()
         }
-        const next = { ...featuresRef.current, ...Object.fromEntries(keys.map(key => [key, isOn])) }
-        featuresRef.current = next
         setFeatures(next)
     }
 
-    //set while the form's own fields are brought in line
-    const isSyncing = React.useRef(false)
-
-    const onFeatureChanged = (fieldName: string, value: any) => {
-        if (isSyncing.current) {
-            return
-        }
-        //the form's toggle hands over '1' or '0'
-        const isOn = value === true || String(value) === '1'
-        setFeatureValues(fieldName === EVERYTHING ? FEATURE_KEYS : [fieldName], isOn)
-        const form = formRef.current
-        isSyncing.current = true
-        if (fieldName === EVERYTHING) {
-            FEATURE_KEYS.forEach(key => form?.getField(key).setValue(isOn))
-        }
-        else {
-            form?.getField(EVERYTHING).setValue(FEATURE_KEYS.every(key => featuresRef.current[key]))
-        }
-        isSyncing.current = false
-    }
-
-    return <>
-        <Panel isOpen={isPanelOpen} isLightDismiss headerText='Grid features' onDismiss={() => setIsPanelOpen(false)}>
-            <Form.Root strategy={strategy} onFormReady={api => { formRef.current = api }} onFieldValueChanged={onFeatureChanged}>
-                <Form.Section label='Everything' layout={{ lg: 1 }}>
-                    <Form.Field name={EVERYTHING}><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                </Form.Section>
-                {FEATURE_GROUPS.map(group => <Form.Section key={group.title} label={group.title} layout={{ lg: 1 }}>
-                    {group.features.map(feature => <Form.Field key={feature.key} name={feature.key}><Form.Cell><Form.Control /></Form.Cell></Form.Field>)}
-                </Form.Section>)}
-            </Form.Root>
-        </Panel>
-        <GridExampleRunner
-            seedCode={OVERVIEW_CODE}
-            onCreateProvider={() => provider}
-            previewProps={{ features }}
-            renderAbovePreview={() => <CommandBar items={[{ key: 'features', text: 'Grid features', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} styles={{ root: { padding: 0, marginBottom: 8 } }} />} />
-    </>
+    return <GridExampleRunner
+        seedCode={SHOWCASE_CODE}
+        onCreateProvider={createProvider}
+        previewProps={{ features }}
+        renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={PRESETS} values={features} onChange={onChange} idleHint={IDLE_HINT} />} />
 }

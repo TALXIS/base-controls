@@ -14,6 +14,9 @@ const styles = mergeStyleSets({
 
 let editorCount = 0
 
+//Monaco's typings do not name ModuleDetectionKind.Force
+const MODULE_DETECTION_FORCE = 3
+
 interface IGridCodeEditorProps {
     value: string
     onChange: (value: string) => void
@@ -26,6 +29,9 @@ export const GridCodeEditor = (props: IGridCodeEditorProps) => {
     const path = React.useMemo(() => `file:///sandbox/grid-snippet-${++editorCount}.tsx`, [])
     const handleMount: OnMount = (_editor, monaco) => {
         configureTypeScriptCompiler(monaco)
+        const { typescriptDefaults } = monaco.languages.typescript
+        //as modules, two open editors do not both declare `GridExample`
+        typescriptDefaults.setCompilerOptions({ ...typescriptDefaults.getCompilerOptions(), moduleDetection: MODULE_DETECTION_FORCE })
         registerExtraLibs(monaco, gridSandboxDeclarations, 'file:///sandbox/grid-runtime.d.ts')
     }
 

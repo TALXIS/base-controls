@@ -1,99 +1,78 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
-import { OverviewExample } from '../../grid/examples/getStartedExamples'
-import { docsPageWithExample } from '../docsPageWithExample'
+import { ShowcaseExample } from '../../grid/examples/getStartedExamples'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid is the data grid the dataset controls are built on. It draws the records of a data provider with the right control for each column's data type, lets users edit them, and grows with modules: sorting, filtering, grouping, totals, selection and more. It is built on <a href="https://www.ag-grid.com/" target="_blank">AG Grid</a>.
+Grid shows the records of a data provider and lets people work with them. Each value is drawn and edited the way its data type calls for, with this library's own controls. Edits are validated and saved, and everything else (selection, sorting, filtering, grouping, totals, copying) is a module you switch on. It runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>, which draws only the rows in view.
 
-The grid below is real. Flip **Code** to see what renders it, and edit it: the preview follows.
+Below is a sales pipeline. Start from a preset, or switch features on and off one by one: it is the same component in every combination. **Code** shows what renders it, and you can edit it; the totals, the grouping by Stage and a server that refuses deals over $30,000 are set up on the provider it is handed. Features marked *Enterprise* need an AG Grid Enterprise licence. These docs have none, so once you switch one on, AG Grid may draw its watermark over the grids on these pages.
+
+{{canvas: Overview}}
 
 ## What you get
 
-- A cell for every data type a provider knows (text, numbers, currency, dates, option sets, lookups, files), drawn and edited with the platform's own controls.
-- Editing with validation, required values and saving, switched on with one prop.
-- Modules for sorting, filtering, grouping, totals, row and cell selection, and copying. A grid has the ones you give it.
-- Replaceable UI: cells, headers, overlays and loading rows can be drawn by your own components.
-- Hooks that change what the grid does per record or per column, and modules of your own on top.
+{{block: explore}}
 
-## Render it
+## Your first grid
 
 \`\`\`tsx
-import { Grid, createClientSideRowModelModule, createSortingModule } from '@talxis/base-controls'
+import { useMemo } from 'react'
+import { Grid, PcfContextProvider, createClientSideRowModelModule, createSortingModule } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
-<Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule(),
-    }}
-    height='440px' />
+const createProvider = () => {
+    const provider = new MemoryDataProvider({
+        dataSource: [
+            { productid: 'desk', name: 'Standing desk', price: 640 },
+            { productid: 'chair', name: 'Ergonomic chair', price: 410 },
+        ],
+        metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
+    })
+    provider.setColumns([
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, metadata: { IsValidForGrid: true } },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, metadata: { IsValidForGrid: true } },
+    ])
+    provider.refresh()
+    return provider
+}
+
+export const ProductGrid = () => {
+    const provider = useMemo(createProvider, [])
+    return <PcfContextProvider>
+        <Grid.Root
+            provider={provider}
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+            }} />
+    </PcfContextProvider>
+}
 \`\`\`
 
-- \`provider\` is any data provider from \`@talxis/client-libraries\`, such as \`MemoryDataProvider\`. What the grid reads from it is on [**Data**](?path=/story/grid-data--overview).
-- \`modules.rowModel\` is the one module every grid needs. The rest are on [**Modules**](?path=/story/grid-modules--overview).
-- The grid reads the PCF context and the theme from \`PcfContextProvider\`, so render it inside one.
+- \`provider\` holds the records and describes the columns. Any data provider from \`@talxis/client-libraries\` works. The grid does not load it: call \`refresh()\` yourself. What the grid reads from it is on [**Data**](?path=/docs/grid-get-started-data--overview).
+- \`modules\` lists the features the grid has. \`rowModel\` is the only one every grid needs; the rest are on [**Modules**](?path=/docs/grid-modules--overview).
+- \`PcfContextProvider\` is required: the grid reads the PCF context from it. Inside a PCF control, pass it your control's \`context\`; without one it builds a sample context.
 
-### \`<Grid.Root />\` props
+Before the first grid renders, also:
 
-| Prop | Required | Default | Description |
-|---|---|---|---|
-| \`provider\` | ✅ | | Where the records and columns come from. Read at mount. |
-| \`modules\` | ✅ | | The features the grid has. Read at mount. See [**Modules**](?path=/story/grid-modules--overview). |
-| \`height\` | — | grows with its rows | How tall the grid is, as a CSS length. |
-| \`maxVisibleRows\` | — | \`15\` | How many rows a grid without a \`height\` grows to before it scrolls. |
-| \`enableEditing\` | — | \`false\` | Whether users can edit cells. Read at mount. |
-| \`enableAutoSave\` | — | \`false\` | Whether a record saves as soon as a value in it changes. |
-| \`enableNavigation\` | — | \`true\` | Whether a double click on a row opens its record. Read at mount. |
-| \`enableZebra\` | — | \`true\` | Whether every other row is shaded. Read at mount. |
-| \`enableOptionSetColors\` | — | \`false\` | Whether option set values are drawn as tags in their colours, in cells and in the editor. Read at mount. |
-| \`rowHeight\` | — | \`42\` | How tall a row is, in pixels. Read at mount. |
-| \`colDefs\` | — | | Changes to columns, and columns of your own. Read at mount. See [**Columns**](?path=/story/grid-customizations-columns--overview). |
-| \`components\` | — | | Your own overlays and loading rows. See [**Custom Components**](?path=/story/grid-customizations-custom-components--overview). |
-| \`labels\` | — | | Your own strings. Read at mount. See [**Customizations**](?path=/story/grid-customizations--overview). |
-| \`state\` | — | | AG Grid state to open with: column order, widths and sorting. Read at mount. |
-| \`rowSettings\` | — | | Callbacks run for each row. See *Row settings* below. |
-| \`className\` | — | | Added to the grid's own element. |
-| \`onGridReady\` | — | | Called with the grid's runtime once it is ready. See [**Extending**](?path=/story/grid-extending--overview). |
-| \`onDestroyed\` | — | | Called with the grid's runtime as the grid is torn down. |
+- call \`initializeIcons()\` from \`@fluentui/react\` once, since the grid draws Fluent icons and registers none;
+- let your bundler handle CSS imports from \`node_modules\`, since the grid imports AG Grid's stylesheets;
+- wrap the grid in a \`ThemeProvider\` for your own colours, or it uses Fluent's default theme. See [**Appearance**](?path=/docs/grid-appearance--overview).
 
-A prop read at mount keeps the value it had when the grid first rendered. To change one, render the grid again with a new \`key\`, as the examples on these pages do when a toggle changes a module.
-
-### Row settings
-
-Each callback runs after the row-level hooks on [**Extending**](?path=/story/grid-extending--overview), and is handed the hooks' result and \`{ record }\`.
-
-| Callback | What it decides |
-|---|---|
-| \`onGetLock\` | Whether a record is locked as a whole: set \`result.isLocked = true\` to lock it, or \`false\` to unlock one the provider or a hook locked. Its row is drawn muted, with a lock in a column pinned at the start. |
-| \`onGetHeight\` | How tall a row is: set \`result.height\` in pixels. |
-
-## Reacting to the grid
-
-These events are props on \`<Grid.Root />\`. A module's own events are options of that module, such as \`onSelectionChanged\` of row selection on [**Modules**](?path=/story/grid-modules--overview).
-
-| Prop | Called with | When |
-|---|---|---|
-| \`onDataLoaded\` | | New data is in the grid. |
-| \`onLoadingChanged\` | \`isLoading\` | The grid starts or stops loading. |
-| \`onRowClicked\` | \`record\` | A row is clicked. |
-| \`onCellDoubleClicked\` | \`record\`, \`columnName\` | A cell is double-clicked. |
-| \`onFocusedCellChanged\` | \`record\`, \`columnName\` | The focus moves to another cell; both are \`undefined\` when it leaves the rows. |
-| \`onEditedCellChanged\` | \`{ recordId, columnName }\` or \`undefined\` | An editor opens or closes. |
-| \`onRecordValueChanged\` | \`record\`, \`columnName\`, \`newValue\` | A value in a record changes. |
-| \`onBeforeRecordSaved\` | \`record\` | A record starts saving. |
-| \`onAfterRecordSaved\` | \`{ recordId, success, fields }\` | A record has finished saving. |
-| \`onColumnsChanged\` | \`columns\` | The user resizes or moves a column. \`columns\` are the provider's columns afterwards. |
-| \`onError\` | \`message\`, \`details\` | The provider reports an error. |
-
-## Where to go next
-
-- [**Data**](?path=/story/grid-data--overview): what a provider needs to say about its columns.
-- [**Modules**](?path=/story/grid-modules--overview): row models, selection, sorting, filtering, grouping and totals.
-- [**Customizations**](?path=/story/grid-customizations--overview): the feature props and labels. [**Columns**](?path=/story/grid-customizations-columns--overview) and [**Custom Components**](?path=/story/grid-customizations-custom-components--overview) sit under it.
-- [**Extending**](?path=/story/grid-extending--overview): hooks, modules of your own, and AG Grid itself.
+Every prop and event of \`<Grid.Root />\` is listed on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-get-started-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
+    { title: 'Editing that saves', iconName: 'Edit', href: '?path=/docs/grid-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
+    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add row commands, and extend the header menus.' },
+    { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, your own labels, and your own cells, headers and overlays.' },
+    { title: 'Built to extend', iconName: 'Plug', href: '?path=/docs/grid-extending--overview', text: 'Hooks into what the grid draws and decides, modules of your own, and AG Grid underneath when you need it.' },
+]
 
 const meta = {
     title: 'Grid/Get started',
@@ -101,7 +80,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: docsPageWithExample(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -113,5 +92,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<OverviewExample />),
+    render: () => renderStory(<ShowcaseExample />),
 }
