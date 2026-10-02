@@ -1,4 +1,4 @@
-import { IDataset, IRecord } from "@talxis/client-libraries";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IControl } from "@interfaces/context";
 import { IRibbonComponentProps } from "@controls/dataset-control/ribbon/interfaces";
 import { IStringProperty } from "@interfaces";
@@ -8,8 +8,8 @@ export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, any,
 }
 
 export interface IRibbonParameters {
-    Dataset: {
-        raw: IDataset;
+    Provider: {
+        raw: IDataProvider;
     }
     Record: {
         raw: IRecord;

@@ -1,4 +1,4 @@
-import { EventEmitter, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, ICommand, IDataProvider, IRecord } from "@talxis/client-libraries";
 
 export interface IGridInlineRibbonModelEvents {
     onBeforeCommandsRefreshed: () => void;
@@ -8,7 +8,7 @@ export interface IGridInlineRibbonModelEvents {
 interface IDeps {
     onGetRecord: () => IRecord;
     onGetCommandButtonIds: () => string[];
-    onGetDataset: () => IDataset;
+    onGetProvider: () => IDataProvider;
 }
 
 export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEvents> {
@@ -33,14 +33,18 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     public refreshCommands = async () => {
         this._loading = true;
         this.dispatchEvent('onBeforeCommandsRefreshed');
-        this._commands = await this._getDataset().getDataProvider().retrieveRecordCommand({
-            recordIds: [this._getRecord().getRecordId()],
-            refreshAllRules: true,
-            isInline: true,
-            isGrouped: this._getRecord().getSummarizationType() === 'grouping'
-        })
-        this._loading = false;
-        this.dispatchEvent('onAfterCommandsRefreshed');
+        try {
+            this._commands = await this._getProvider().retrieveRecordCommand({
+                recordIds: [this._getRecord().getRecordId()],
+                refreshAllRules: true,
+                isInline: true,
+                isGrouped: this._getRecord().getSummarizationType() === 'grouping'
+            })
+        }
+        finally {
+            this._loading = false;
+            this.dispatchEvent('onAfterCommandsRefreshed');
+        }
     }
 
     private _registerEventListeners() {
@@ -54,7 +58,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     private _getRecord() {
         return this._deps.onGetRecord();
     }
-    private _getDataset() {
-        return this._deps.onGetDataset();
+    private _getProvider() {
+        return this._deps.onGetProvider();
     }
 }

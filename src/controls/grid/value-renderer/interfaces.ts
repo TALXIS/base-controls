@@ -1,6 +1,6 @@
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
 import { IAlignment } from "@utils";
-import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
+import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IGridCell } from "@controls/grid";
 import { IGridValueRendererComponents } from "./components";
 
@@ -34,9 +34,9 @@ export interface IGridValueRendererParameters extends IParameters {
     Cell: {
         raw: IGridCell | undefined;
     }
-    /** Always the main dataset, even when the cell is drawn by a child data provider. */
-    Dataset: {
-        raw: IDataset;
+    /** Always the main provider, even when the cell is drawn by a child data provider. */
+    Provider: {
+        raw: IDataProvider;
     }
     Record: {
         raw: IRecord;

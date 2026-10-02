@@ -2223,7 +2223,7 @@ interface IGridValueRendererParameters extends IParameters {
     Column: { raw: IColumn | undefined };
     Cell: { raw: IGridCell | undefined };
     /** Always the grid's own provider, also in a group row. */
-    Dataset: { raw: any };
+    Provider: { raw: IDataProvider };
     Record: { raw: IRecord };
     PrefixIcon: { raw: string | null; type?: string };
     SuffixIcon: { raw: string | null; type?: string };

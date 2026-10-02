@@ -1,4 +1,4 @@
-import { DataTypes, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
+import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
 import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IParameters } from "@interfaces";
@@ -111,7 +111,7 @@ export class GridControl implements IGridControl {
             EnableNavigation: { raw: false, type: DataTypes.TwoOptions },
             Column: { raw: undefined },
             Cell: { raw: this._cell },
-            Dataset: { raw: this._provider as unknown as IDataset },
+            Provider: { raw: this._provider },
             Record: { raw: this._record },
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },

@@ -18,7 +18,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const record = props.parameters.Record.raw;
     //one model per record: a reload can hand the same row a new one
     const model = useMemo(() => new GridInlineRibbonModel({
-        onGetDataset: () => propsRef.current.parameters.Dataset.raw,
+        onGetProvider: () => propsRef.current.parameters.Provider.raw,
         onGetRecord: () => record,
         onGetCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
     }), [record]);
