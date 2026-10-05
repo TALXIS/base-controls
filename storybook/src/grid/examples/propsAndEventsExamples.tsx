@@ -24,7 +24,6 @@ const createInvoiceLines = () => {
         { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
         { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
     ])
-    lines.refresh()
     return lines
 }
 

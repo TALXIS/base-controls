@@ -22,7 +22,6 @@ const createQueueProvider = () => {
         filterOperator: Type.And.Value,
         conditions: [{ attributeName: 'status', conditionOperator: Operators.DoesNotEqual.Value, value: RESOLVED }],
     })
-    tickets.refresh()
     return tickets
 }
 
@@ -141,7 +140,6 @@ const createQueueProvider = () => {
         const operators = FILTER_OPERATORS.get(column.name)
         return operators ? { ...column, metadata: { ...column.metadata, SupportedFilterConditionOperators: operators } } : column
     }))
-    tickets.refresh()
     return tickets
 }
 

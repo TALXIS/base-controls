@@ -17,9 +17,21 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
     return { ...GRID_SANDBOX_SCOPE, Grid: { ...Grid, Root: Root as typeof Grid.Root } }
 }
 
+/** One file of a live example; the first is the one that defines `GridExample`. */
+export interface IGridExampleFile {
+    name: string
+    code: string
+}
+
 interface ICompiledGridExample {
     Component: React.ComponentType<any> | null
     error: string | null
+}
+
+interface ISnippetModule {
+    exports: { [name: string]: any }
+    //set by a file that declares `GridExample` without exporting it
+    component?: React.ComponentType<any>
 }
 
 const transpile = (code: string) => Babel.transform(code, {
@@ -27,8 +39,12 @@ const transpile = (code: string) => Babel.transform(code, {
         ['typescript', { allExtensions: true, isTSX: true }],
         ['react', { runtime: 'classic' }],
     ],
+    //the files of an example import each other
+    plugins: ['transform-modules-commonjs'],
     filename: 'grid-snippet.tsx',
 })?.code ?? ''
+
+const withoutExtension = (name: string) => name.replace(/^\.\//, '').replace(/\.tsx?$/, '')
 
 /** Why a snippet does not compile, or `null` when it does. */
 export const getGridExampleSyntaxError = (code: string): string | null => {
@@ -40,12 +56,33 @@ export const getGridExampleSyntaxError = (code: string): string | null => {
     }
 }
 
-const compileGridExample = (code: string, scope: ISandboxScope, provider: IDataProvider): ICompiledGridExample => {
+const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, provider: IDataProvider): ICompiledGridExample => {
+    const modules = new Map<string, ISnippetModule>()
+
+    const load = (path: string): ISnippetModule => {
+        const file = files.find(candidate => withoutExtension(candidate.name) === withoutExtension(path))
+        if (!file) {
+            throw new Error(`There is no file '${path}' in this example.`)
+        }
+        const loaded = modules.get(file.name)
+        if (loaded) {
+            return loaded
+        }
+        const module: ISnippetModule = { exports: {} }
+        //registered first for files that import each other
+        modules.set(file.name, module)
+        //in a block, so the file may declare a name the scope also has
+        const factory = new Function('require', 'module', 'exports', ...SCOPE_NAMES, `{
+            ${transpile(file.code)}
+            return typeof GridExample !== "undefined" ? GridExample : undefined;
+        }`)
+        module.component = factory((path: string) => load(path).exports, module, module.exports, ...Object.values(scope), provider)
+        return module
+    }
+
     try {
-        const transformed = transpile(code)
-        const factory = new Function(...SCOPE_NAMES, `${transformed}
-            return typeof GridExample !== "undefined" ? GridExample : null;`)
-        const Component = factory(...Object.values(scope), provider) as React.ComponentType<any> | null
+        const entry = load(files[0].name)
+        const Component = entry.component ?? entry.exports.GridExample ?? null
         return { Component, error: Component ? null : 'The code must define a GridExample component.' }
     } catch (error) {
         return { Component: null, error: (error as Error).message }
@@ -53,7 +90,7 @@ const compileGridExample = (code: string, scope: ISandboxScope, provider: IDataP
 }
 
 interface IGridLivePreviewProps {
-    code: string
+    files: IGridExampleFile[]
     /** Injected so an edit keeps the rows, and whatever the reader did to them. */
     provider: IDataProvider
     /** Handed to `GridExample` as its props. */
@@ -68,7 +105,8 @@ export const GridLivePreview = (props: IGridLivePreviewProps) => {
     const onProviderRenderedRef = React.useRef(props.onProviderRendered)
     onProviderRenderedRef.current = props.onProviderRendered
     const scope = React.useMemo(() => createScope(provider => onProviderRenderedRef.current?.(provider)), [])
-    const compiled = React.useMemo(() => compileGridExample(props.code, scope, props.provider), [props.code])
+    const code = JSON.stringify(props.files)
+    const compiled = React.useMemo(() => compileGridExample(props.files, scope, props.provider), [code])
 
     React.useEffect(() => {
         props.onError?.(compiled.error)
@@ -79,7 +117,7 @@ export const GridLivePreview = (props: IGridLivePreviewProps) => {
     }
     const PreviewComponent = compiled.Component
     //keyed by the code: an edit remounts the grid
-    return <GridPreviewBoundary key={props.code}>
+    return <GridPreviewBoundary key={code}>
         <PreviewComponent {...props.previewProps} />
     </GridPreviewBoundary>
 }

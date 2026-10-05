@@ -660,6 +660,8 @@ interface IDataProvider extends IEventEmitter<IDataProviderEventListeners> {
     getViewId(): string;
     setViewId(id: string): void;
     isLoading(): boolean;
+    /** Whether the first load has been requested, by a refresh or a page load. */
+    isFirstLoadRequested(): boolean;
     getLoadingMessage(): string;
     /** The message shows in the grid's loading overlay. */
     setLoading(value: boolean, message?: string): void;
@@ -722,6 +724,9 @@ interface IMemoryDataProviderOptions {
     /** The rows, or the rows as JSON. */
     dataSource: IRawRecord[] | string;
     metadata: IMemoryProviderEntityMetadata;
+    columns?: IColumn[];
+    /** Every record on one page unless given. */
+    pageSize?: number;
 }
 
 interface IMemoryProvider extends IDataProvider {

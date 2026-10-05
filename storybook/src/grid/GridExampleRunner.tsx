@@ -4,7 +4,7 @@ import { ActionButton, initializeIcons, mergeStyleSets, Pivot, PivotItem, Text }
 import type { IDataProvider, IMemoryProvider } from '@talxis/client-libraries'
 import { baseEditorOptions } from '../form/shared/monacoEditor'
 import { GridCodeEditor } from './GridCodeEditor'
-import { getGridExampleSyntaxError, GridLivePreview } from './GridLivePreview'
+import { getGridExampleSyntaxError, GridLivePreview, IGridExampleFile } from './GridLivePreview'
 import { createDocsDataset, IGridDocsDataset } from './data'
 
 //nothing in the grid's tree registers the Fluent icons it draws
@@ -41,14 +41,16 @@ const styles = mergeStyleSets({
     },
 })
 
-const useDebouncedCode = (code: string, delay = 400) => {
-    const [debouncedCode, setDebouncedCode] = React.useState(code)
+const useDebounced = <T,>(value: T, delay = 400) => {
+    const [debounced, setDebounced] = React.useState(value)
     React.useEffect(() => {
-        const timeout = window.setTimeout(() => setDebouncedCode(code), delay)
+        const timeout = window.setTimeout(() => setDebounced(value), delay)
         return () => window.clearTimeout(timeout)
-    }, [code, delay])
-    return debouncedCode
+    }, [value, delay])
+    return debounced
 }
+
+const toFiles = (seedCode: string | IGridExampleFile[]): IGridExampleFile[] => typeof seedCode === 'string' ? [{ name: 'GridExample.tsx', code: seedCode }] : seedCode
 
 const describeProvider = (provider: IDataProvider) => {
     const memoryProvider = provider as Partial<IMemoryProvider>
@@ -62,8 +64,8 @@ const describeProvider = (provider: IDataProvider) => {
 type IRunnerTab = 'preview' | 'code' | 'data'
 
 export interface IGridExampleRunnerProps {
-    /** The snippet the example starts with; it must define a `GridExample` component. */
-    seedCode: string
+    /** The snippet the example starts with, or its files; the first must define a `GridExample` component. */
+    seedCode: string | IGridExampleFile[]
     /** The docs dataset handed to the snippet as `provider`, loaded; the sales pipeline when omitted. */
     dataset?: IGridDocsDataset
     /** A provider of the example's own, handed to the snippet as `provider` in place of `dataset`. */
@@ -77,26 +79,33 @@ export interface IGridExampleRunnerProps {
 /** A live Grid with tabs for its preview, its editable code and the data it is handed. */
 export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     const [tab, setTab] = React.useState<IRunnerTab>('preview')
-    const [code, setCode] = React.useState(props.seedCode)
+    const seedFiles = React.useMemo(() => toFiles(props.seedCode), [props.seedCode])
+    const [files, setFiles] = React.useState(seedFiles)
+    const [activeFile, setActiveFile] = React.useState(seedFiles[0].name)
     const [revision, setRevision] = React.useState(0)
     const [previewError, setPreviewError] = React.useState<string | null>(null)
     const [isCopied, setIsCopied] = React.useState(false)
-    const debouncedCode = useDebouncedCode(code)
+    const debouncedFiles = useDebounced(files)
+    const debouncedCode = debouncedFiles.find(file => file.name === activeFile)?.code ?? ''
     const createProvider = () => props.onCreateProvider?.() ?? createDocsDataset(props.dataset ?? 'deals')
     const [provider, setProvider] = React.useState(createProvider)
     const [renderedProvider, setRenderedProvider] = React.useState<IDataProvider>()
-    const isEdited = code !== props.seedCode
+    const isEdited = JSON.stringify(files) !== JSON.stringify(seedFiles)
     const syntaxError = React.useMemo(() => tab === 'code' ? getGridExampleSyntaxError(debouncedCode) : null, [tab, debouncedCode])
 
     const reset = () => {
-        setCode(props.seedCode)
+        setFiles(seedFiles)
         setProvider(createProvider())
         setRenderedProvider(undefined)
         setRevision(current => current + 1)
     }
 
+    const onFileChange = (name: string, code: string) => {
+        setFiles(current => current.map(file => file.name === name ? { ...file, code } : file))
+    }
+
     const copy = async () => {
-        await navigator.clipboard?.writeText(code)
+        await navigator.clipboard?.writeText(files.find(file => file.name === activeFile)?.code ?? '')
         setIsCopied(true)
         window.setTimeout(() => setIsCopied(false), 1500)
     }
@@ -106,10 +115,15 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
             case 'preview':
                 return <>
                     {props.renderAbovePreview?.()}
-                    <GridLivePreview key={revision} code={debouncedCode} provider={provider} previewProps={props.previewProps} onError={setPreviewError} onProviderRendered={setRenderedProvider} />
+                    <GridLivePreview key={revision} files={debouncedFiles} provider={provider} previewProps={props.previewProps} onError={setPreviewError} onProviderRendered={setRenderedProvider} />
                 </>
             case 'code':
-                return <GridCodeEditor key={revision} value={code} onChange={setCode} />
+                return <>
+                    {files.length > 1 && <Pivot headersOnly selectedKey={activeFile} onLinkClick={item => setActiveFile(item?.props.itemKey!)}>
+                        {files.map(file => <PivotItem key={file.name} itemKey={file.name} headerText={file.name} />)}
+                    </Pivot>}
+                    <GridCodeEditor key={revision} files={files} activeFile={activeFile} onChange={onFileChange} />
+                </>
             case 'data':
                 return <div className={styles.frame}>
                     <Editor height='480px' language='json' value={describeProvider(renderedProvider ?? provider)} options={{ ...baseEditorOptions, readOnly: true, domReadOnly: true, padding: { top: 12, bottom: 12 } }} theme='vs-light' />
@@ -127,7 +141,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
             <div className={styles.actions}>
                 {isEdited && <Text variant='small' className={styles.edited}>Edited</Text>}
                 <ActionButton iconProps={{ iconName: 'Undo' }} text='Reset' title="Restore the example's code and data" onClick={reset} />
-                <ActionButton iconProps={{ iconName: isCopied ? 'CheckMark' : 'Copy' }} text={isCopied ? 'Copied' : 'Copy code'} onClick={copy} />
+                <ActionButton iconProps={{ iconName: isCopied ? 'CheckMark' : 'Copy' }} text={isCopied ? 'Copied' : files.length > 1 ? 'Copy file' : 'Copy code'} onClick={copy} />
             </div>
         </div>
         {renderTab()}

@@ -7,7 +7,6 @@ export const PIPELINE_BY_MANAGER_CODE = `const createPipelineProvider = () => {
     deals.aggregation.addAggregation({ columnName: 'value', alias: 'value_sum', aggregationFunction: 'sum' })
     deals.aggregation.addAggregation({ columnName: 'probability', alias: 'probability_avg', aggregationFunction: 'avg' })
     deals.setSorting([{ name: 'value', sortDirection: 1 }])
-    deals.refresh()
     return deals
 }
 
@@ -72,7 +71,6 @@ export const FILTERED_TOTALS_CODE = `const createDealsWithTotals = () => {
     const deals = createDealsProvider()
     deals.aggregation.addAggregation({ columnName: 'name', alias: 'name_countcolumn', aggregationFunction: 'countcolumn' })
     deals.aggregation.addAggregation({ columnName: 'value', alias: 'value_sum', aggregationFunction: 'sum' })
-    deals.refresh()
     return deals
 }
 
@@ -97,7 +95,6 @@ export const EXPAND_FROM_TOOLBAR_CODE = `const createReviewProvider = () => {
     timesheets.grouping.addGroupBy({ columnName: 'status', alias: 'status_group' })
     timesheets.grouping.addGroupBy({ columnName: 'employee', alias: 'employee_group' })
     timesheets.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
-    timesheets.refresh()
     return timesheets
 }
 

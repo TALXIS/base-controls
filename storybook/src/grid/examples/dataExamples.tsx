@@ -21,7 +21,6 @@ export const OWN_RECORDS_CODE = `const createCatalogue = () => {
         { name: 'price', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120, metadata: { IsValidForGrid: true } },
         { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100, metadata: { IsValidForGrid: true } },
     ])
-    catalogue.refresh()
     return catalogue
 }
 
@@ -113,7 +112,6 @@ const createDirectory = (onOpen: (message: string) => void) => {
         { name: 'logo', displayName: 'Logo', dataType: DataTypes.Image, visualSizeFactor: 130 },
     ])
     directory.setInterceptor('onOpenDatasetItem', reference => onOpen('Opening ' + reference.etn + ' ' + reference.name))
-    directory.refresh()
     return directory
 }
 
@@ -149,7 +147,6 @@ export const REQUIRED_AND_READ_ONLY_CODE = `const createStockCount = () => {
         { name: 'counted', displayName: 'Counted', dataType: DataTypes.WholeNone, visualSizeFactor: 110, metadata: { RequiredLevel: 2 } },
         { name: 'note', displayName: 'Note', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
     ])
-    stockCount.refresh()
     return stockCount
 }
 
@@ -200,7 +197,6 @@ const createCatalogue = () => {
         { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100, metadata: { IsValidForGrid: true } },
     ])
     catalogue.getPaging().setPageSize(25)
-    catalogue.refresh()
     return catalogue
 }
 

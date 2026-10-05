@@ -64,7 +64,6 @@ const REJECTED = 4
 const createTimesheets = () => {
     const timesheets = createTimesheetsProvider()
     timesheets.setColumns(timesheets.getColumns().map(column => column.name === 'description' ? { ...column, metadata: { ...column.metadata, RequiredLevel: APPLICATION_REQUIRED } } : column))
-    timesheets.refresh()
     return timesheets
 }
 
@@ -170,7 +169,6 @@ const createTimesheets = () => {
         }
         return defaultAction(record)
     })
-    timesheets.refresh()
     return timesheets
 }
 

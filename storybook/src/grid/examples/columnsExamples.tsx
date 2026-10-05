@@ -118,9 +118,10 @@ const GridExample = () => {
         setStatus('Ordered ' + product.getValue('reorderlevel') + ' more of ' + product.getFormattedValue('name') + ' from ' + product.getFormattedValue('supplier') + '.')
     }
 
-    const copySku = (product: IRecord) => {
+    const copySku = async (product: IRecord) => {
         const sku = product.getFormattedValue('sku') ?? ''
-        navigator.clipboard.writeText(sku).then(() => setStatus('Copied ' + sku + '.'))
+        await navigator.clipboard.writeText(sku)
+        setStatus('Copied ' + sku + '.')
     }
 
     const discontinue = (product: IRecord) => {
@@ -144,7 +145,7 @@ const GridExample = () => {
                                 if (isLowStock(record) && !isDiscontinued(record)) {
                                     result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
                                 }
-                                result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => copySku(record) })
+                                result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
                                 if (!isDiscontinued(record)) {
                                     result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
                                 }
@@ -244,7 +245,6 @@ const openProducts = (layout: IColumnLayout[]) => {
     const products = createProductsProvider()
     const saved = new Map(layout.map(column => [column.name, column]))
     products.setColumns(products.getColumns().map(column => ({ ...column, ...saved.get(column.name) })))
-    products.refresh()
     return products
 }
 
