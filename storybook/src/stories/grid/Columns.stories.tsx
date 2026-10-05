@@ -47,7 +47,7 @@ Every column of the provider becomes a column of the grid, drawn and edited by i
 - **Once they overflow**, the same numbers are widths in pixels and the grid scrolls sideways.
 - Pinned columns and added columns keep their width either way. Cap a column that must not stretch with \`maxWidth\`, or pin it.
 - \`initialWidth\` in \`colDefs\` takes the place of \`visualSizeFactor\`. Prefer it to \`width\`, which AG Grid applies again at every load and which can undo a width the user dragged to.
-- A width the user drags a column to is kept and written to its \`visualSizeFactor\`: see *Remembering the layout* below. Users can also drag a column to another place, unless the provider column sets \`isDraggable: false\` ([**Data**](?path=/docs/grid-get-started-data--overview)).
+- A width the user drags a column to is kept and written to its \`visualSizeFactor\`: see *Remembering the layout* below. Users can also drag a column to another place, unless \`colDefs\` sets \`suppressMovable: true\`.
 
 {{story: Open a product from its name}}
 
@@ -138,7 +138,7 @@ Each callback is handed \`{ record }\`, runs after the cell hooks of its kind, a
 
 | Key | Default | What it does |
 |---|---|---|
-| \`oneClickEdit\` | the provider column's \`oneClickEdit\` | Draws the input in the cell itself, with no editor to open. See [**Editing**](?path=/docs/grid-editing--overview). |
+| \`oneClickEdit\` | \`false\` | Draws the input in the cell itself, with no editor to open. See [**Editing**](?path=/docs/grid-editing--overview). |
 | \`isRowResizable\` | \`true\` for multiline text and text area columns | Wraps the text and draws the grip a row is dragged taller by. |
 | \`onGetCommands(result, { record })\` | | Push \`ICommandBarItemProps\` to \`result.items\` and \`result.overflowItems\`. |
 | \`onGetTheme(theme, { record })\` | | Colours the cell: set \`theme.colors.background\`, \`text\` or \`primary\`. See [**Appearance**](?path=/docs/grid-appearance--overview). |

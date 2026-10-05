@@ -594,8 +594,8 @@ export class CheckListGridCustomizer {
      * The new-record row exists only to be typed into, so focusing one of its cells opens the editor
      * there and then — no double click, and the row always shows editors rather than read-only values.
      *
-     * Done here rather than with the column's own `oneClickEdit`, which is read off the column object
-     * every row shares and would turn the whole list into live inputs.
+     * Done here rather than with the column's `settings.cell.oneClickEdit`, which every row shares
+     * and would turn the whole list into live inputs.
      */
     private _onCellFocused(event: CellFocusedEvent<IRecord>) {
         if (event.rowPinned !== 'bottom' || event.rowIndex === null || event.rowIndex === undefined) {

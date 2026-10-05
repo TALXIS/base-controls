@@ -261,12 +261,8 @@ interface IColumn {
     isVirtual?: boolean;
     metadata?: IAttributeMetadata;
     type?: 'data' | 'action';
-    /** True by default. */
-    isDraggable?: boolean;
     aggregation?: { aggregationFunction: AggregationFunction; columnName?: string; alias?: string };
     grouping?: { isGrouped: boolean; alias?: string; ungroupedOrder?: number };
-    /** Whether the cells take input in place without opening an editor. */
-    oneClickEdit?: boolean;
     /** Whether a row grows to fit the column's content. */
     autoHeight?: boolean;
     controls?: ICustomColumnControl[];

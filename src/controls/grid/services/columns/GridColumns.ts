@@ -189,7 +189,6 @@ export class GridColumns implements IGridColumns {
             lockPinned: true,
             autoHeaderHeight: true,
             autoHeight: !!column.autoHeight,
-            suppressMovable: column.isDraggable === false,
             settings: this._getColumnSettings(column),
             editable: this._getEditorAvailability(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
@@ -238,7 +237,7 @@ export class GridColumns implements IGridColumns {
             isLocked: this._isColumnLocked(column),
             isRequired: this._isColumnRequired(column),
             isPrimary: !!column.isPrimary,
-            cell: { oneClickEdit: !!column.oneClickEdit, isRowResizable: this._isLongText(column) },
+            cell: { isRowResizable: this._isLongText(column) },
         };
     }
 
