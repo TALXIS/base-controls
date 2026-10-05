@@ -1565,8 +1565,8 @@ interface IGridField {
     getColumnName(): string;
     getColumn(): IColumn;
     getValue(): any;
-    /** Also saves the record while auto-save is on. */
-    setValue(newValue: any): void;
+    /** Returns the record's save, or null without auto-save. */
+    setValue(newValue: any): Promise<IRecordSaveOperationResult> | null;
     getFormattedValue(): string | null;
     isValid(): IFieldValidationResult;
 }

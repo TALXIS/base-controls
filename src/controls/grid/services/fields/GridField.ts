@@ -1,4 +1,4 @@
-import { IColumn, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
+import { IColumn, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridServiceLocator } from "../../services";
 
 export interface IGridFieldParameters {
@@ -15,8 +15,8 @@ export interface IGridField {
     /** The column as this record's own provider has it. */
     getColumn(): IColumn;
     getValue(): any;
-    /** Hands the value to the record to take and save. */
-    setValue(newValue: any): void;
+    /** Returns the record's save, or null without auto-save. */
+    setValue(newValue: any): Promise<IRecordSaveOperationResult> | null;
     getFormattedValue(): string | null;
     /** Whether the value is one the record will accept. */
     isValid(): IFieldValidationResult;
@@ -49,11 +49,12 @@ export class GridField implements IGridField {
         return this._getField().getValue();
     }
 
-    public setValue(newValue: any): void {
+    public setValue(newValue: any): Promise<IRecordSaveOperationResult> | null {
         this._record.setValue(this._columnName, newValue);
         if (this._services?.get('settings').isAutoSaveEnabled()) {
-            this._record.save();
+            return this._record.save();
         }
+        return null;
     }
 
     public getFormattedValue(): string | null {
