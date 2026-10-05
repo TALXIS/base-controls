@@ -22,10 +22,10 @@ A column's callout sets one condition, and the conditions of all filtered column
 
 | | A column offers it when | To take it off one column |
 |---|---|---|
-| Sorting | \`metadata.IsValidForGrid\` is \`true\`, the column is not a multi-select option set and \`disableSorting\` is not set | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
+| Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-\`IsValidForGrid\` has no default, so a column you describe yourself cannot be sorted until you set it; the provider's defaults for the other keys are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`settings.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns--overview).
+The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`settings.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns--overview).
 
 ## Open the grid sorted and filtered
 
@@ -80,7 +80,7 @@ Reach them with \`runtime.services.get('sorting')\` and \`runtime.services.get('
 | \`sortColumn(columnName, descending?, appendToExisting?)\` | Sorts by the column and reloads. \`descending\` defaults to \`false\`. \`appendToExisting: true\` adds a sort level, as Shift+click does. |
 | \`clearColumnSorting(columnName)\` | Takes the column out of the sort and reloads. |
 | \`isSorted(column)\`, \`isSortedDescending(column)\` | Read the provider's sort. |
-| \`isColumnSortable(column)\` | Whether \`IsValidForGrid\` and the data type allow sorting. It does not look at \`disableSorting\` or \`colDefs\`. |
+| \`isColumnSortable(column)\` | Whether the column does not set \`disableSorting\`. It does not look at \`colDefs\`. |
 | \`getSortingLabel(columnName, descending?)\` | The text of the column's sort item, such as *Sort older to newer*. |
 
 | \`filtering\` | What it does |

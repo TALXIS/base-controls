@@ -221,7 +221,6 @@ type AggregationFunction = 'count' | 'sum' | 'avg' | 'min' | 'max' | 'countcolum
 type DataProviderSummarizationType = 'none' | 'aggregation' | 'grouping';
 
 interface IAttributeMetadata {
-    /** Sorting is off unless this is true. */
     IsValidForGrid?: boolean;
     /** The provider defaults it to true for most data types. */
     IsValidForUpdate?: boolean;
@@ -1310,7 +1309,7 @@ interface IGridColDef {
     equals?: (valueA: any, valueB: any) => boolean;
     comparator?: (valueA: any, valueB: any, nodeA: IRowNode<IRecord>, nodeB: IRowNode<IRecord>, isDescending: boolean) => number;
     tooltipValueGetter?: (params: ITooltipParams<IRecord>) => string | any;
-    /** Set by the sorting module from the provider column's IsValidForGrid. */
+    /** Set by the sorting module from the provider column's disableSorting. */
     sortable?: boolean;
     sort?: 'asc' | 'desc' | null;
     filter?: any;
@@ -1830,7 +1829,7 @@ interface IGridRowSelection {
 
 interface IGridSorting {
     getSorting(): Sorting;
-    /** Whether the column has IsValidForGrid and is not a multi-select option set. */
+    /** Whether the column does not set disableSorting. */
     isColumnSortable(column: IColumn): boolean;
     isSorted(column: IColumn): boolean;
     isSortedDescending(column: IColumn): boolean;
@@ -3202,7 +3201,7 @@ declare function createRowSelectionModule(options: IRowSelectionModuleOptions): 
 declare function createCellSelectionModule(options?: IGridCellSelectionOptions): IGridModule;
 /** AG Grid Enterprise copying, with no paste into records. */
 declare function createClipboardModule(options?: IGridClipboardOptions): IGridModule;
-/** Lets a column with IsValidForGrid be sorted from its menu. */
+/** Lets a column be sorted from its menu, unless it sets disableSorting. */
 declare function createSortingModule(options?: ISortingModuleOptions): IGridModule;
 /** Lets a column with filter operators be filtered from its menu. */
 declare function createFilteringModule(options?: IFilteringModuleOptions): IGridModule;

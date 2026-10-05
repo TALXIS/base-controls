@@ -53,14 +53,13 @@ const YES_NO = [
 
 const TOTALS: IAttributeMetadata = { SupportedAggregations: ['sum', 'avg', 'min', 'max'] }
 
-//sorting, filtering, grouping and editing are each switched on by the column's metadata
+//filtering, grouping and editing are each switched on by the column's metadata
 const createColumn = (name: string, displayName: string, dataType: DataType, width: number, metadata: IAttributeMetadata = {}): IColumn => ({
     name,
     displayName,
     dataType,
     visualSizeFactor: width,
     metadata: {
-        IsValidForGrid: true,
         IsValidForUpdate: true,
         CanBeGrouped: true,
         SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(dataType).map(operator => operator.Value),

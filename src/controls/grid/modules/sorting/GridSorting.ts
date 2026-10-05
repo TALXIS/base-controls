@@ -50,7 +50,7 @@ export class GridSorting implements IGridSorting {
     }
 
     public isColumnSortable(column: IColumn): boolean {
-        return !!column.metadata?.IsValidForGrid && column.dataType !== DataTypes.MultiSelectOptionSet;
+        return !column.disableSorting;
     }
 
     public isSorted(column: IColumn): boolean {
@@ -81,7 +81,7 @@ export class GridSorting implements IGridSorting {
             const columnName = colDef.colId ?? colDef.field;
             const column = columnName ? this._provider.getColumnsMap()[columnName] : undefined;
             if (column) {
-                colDef.sortable = this.isColumnSortable(column) && !column.disableSorting;
+                colDef.sortable = this.isColumnSortable(column);
             }
         }
     };

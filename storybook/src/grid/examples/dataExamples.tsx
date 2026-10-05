@@ -1,28 +1,25 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const OWN_RECORDS_CODE = `const createCatalogue = () => {
-    const catalogue = new MemoryDataProvider({
-        dataSource: [
-            { itemid: 'pens-blue', name: 'Ballpoint pens, blue, box of 50', sku: 'WRI-1001', price: 9.9, instock: 140 },
-            { itemid: 'pens-gel', name: 'Gel pens, assorted colours, pack of 12', sku: 'WRI-1004', price: 7.5, instock: 62 },
-            { itemid: 'notepads', name: 'Notepads A5, ruled, pack of 10', sku: 'PAP-2010', price: 14, instock: 85 },
-            { itemid: 'paper', name: 'Copy paper A4, 80 g, 5 reams', sku: 'PAP-2001', price: 24.9, instock: 38 },
-            { itemid: 'notes', name: 'Sticky notes 76 x 76 mm, pack of 12', sku: 'PAP-2030', price: 11.6, instock: 0 },
-            { itemid: 'stapler', name: 'Desk stapler, 30 sheets', sku: 'DSK-3002', price: 12.4, instock: 21 },
-            { itemid: 'staples', name: 'Staples 24/6, box of 5,000', sku: 'DSK-3003', price: 3.2, instock: 210 },
-            { itemid: 'files', name: 'Lever arch files A4, pack of 10', sku: 'FIL-4001', price: 29, instock: 16 },
-        ],
-        metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'catalogueitem' },
-    })
-    catalogue.setColumns([
-        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 300, metadata: { IsValidForGrid: true } },
-        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 120, metadata: { IsValidForGrid: true } },
-        { name: 'price', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120, metadata: { IsValidForGrid: true } },
-        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100, metadata: { IsValidForGrid: true } },
-    ])
-    return catalogue
-}
+export const OWN_RECORDS_CODE = `const createCatalogue = () => new MemoryDataProvider({
+    dataSource: [
+        { itemid: 'pens-blue', name: 'Ballpoint pens, blue, box of 50', sku: 'WRI-1001', price: 9.9, instock: 140 },
+        { itemid: 'pens-gel', name: 'Gel pens, assorted colours, pack of 12', sku: 'WRI-1004', price: 7.5, instock: 62 },
+        { itemid: 'notepads', name: 'Notepads A5, ruled, pack of 10', sku: 'PAP-2010', price: 14, instock: 85 },
+        { itemid: 'paper', name: 'Copy paper A4, 80 g, 5 reams', sku: 'PAP-2001', price: 24.9, instock: 38 },
+        { itemid: 'notes', name: 'Sticky notes 76 x 76 mm, pack of 12', sku: 'PAP-2030', price: 11.6, instock: 0 },
+        { itemid: 'stapler', name: 'Desk stapler, 30 sheets', sku: 'DSK-3002', price: 12.4, instock: 21 },
+        { itemid: 'staples', name: 'Staples 24/6, box of 5,000', sku: 'DSK-3003', price: 3.2, instock: 210 },
+        { itemid: 'files', name: 'Lever arch files A4, pack of 10', sku: 'FIL-4001', price: 29, instock: 16 },
+    ],
+    metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'catalogueitem' },
+    columns: [
+        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 300 },
+        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 120 },
+        { name: 'price', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
+        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
+    ],
+})
 
 const GridExample = () => {
     const catalogue = React.useMemo(createCatalogue, [])
@@ -188,15 +185,15 @@ const createCatalogue = () => {
     const catalogue = new MemoryDataProvider({
         dataSource: PRODUCTS,
         metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
+        pageSize: 25,
     })
     catalogue.setColumns([
-        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 110, metadata: { IsValidForGrid: true } },
-        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 240, metadata: { IsValidForGrid: true } },
-        { name: 'category', displayName: 'Category', dataType: DataTypes.OptionSet, visualSizeFactor: 140, metadata: { IsValidForGrid: true, OptionSet: CATEGORIES } },
-        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 110, metadata: { IsValidForGrid: true } },
-        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100, metadata: { IsValidForGrid: true } },
+        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 110 },
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 240 },
+        { name: 'category', displayName: 'Category', dataType: DataTypes.OptionSet, visualSizeFactor: 140, metadata: { OptionSet: CATEGORIES } },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 110 },
+        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
     ])
-    catalogue.getPaging().setPageSize(25)
     return catalogue
 }
 
