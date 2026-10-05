@@ -7,6 +7,7 @@ import { useGridService } from "../../../useGridService";
 import { IGridEditedCell, IGridEditingEvents } from "../../../services/editing";
 import { IGridCellEvents } from "../../../services/cells";
 import { GridCellContext, GridCellRevisionContext } from "./context";
+import { useGridField } from "../field/context";
 
 //`useEventEmitter` keys its subscription on the array it is given
 const RECORD_EVENTS: (keyof IRecordEvents)[] = ['onFieldValueChanged', 'onAfterSaved'];
@@ -23,12 +24,11 @@ export const CellRoot = (props: ICellRootProps) => {
     const cells = useGridService('cells');
     const editing = cells.editing;
     const parentCell = useContext(GridCellContext);
+    const field = useGridField();
     const colDef = props.colDef!;
     //editors and one-click columns take input
     const takesInput = !!props.isEditor || !!colDef.settings?.cell?.oneClickEdit;
-    const cell = useMemo(
-        () => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell }),
-        [cells, record, colDef, props.node, takesInput, props.eGridCell]);
+    const cell = useMemo(() => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell, field: field }),[cells, record, colDef, props.node, takesInput, props.eGridCell, field]);
     const { rerender: redraw, revision } = useRerender();
 
     const isThisCell = (edited: IGridEditedCell | undefined) => {

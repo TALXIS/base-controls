@@ -1,7 +1,6 @@
 import { Fragment, useMemo } from "react";
 import { GridValueRenderer, IGridValueRenderer } from "@controls/grid/value-renderer";
 import { useGridCell } from "../root/context";
-import { useGridField } from "../field";
 import { CellLegacyNestedControl } from "../legacy-nested-control-renderer";
 import { GridControlContext } from "./context";
 import { CellUi } from "../ui";
@@ -14,8 +13,7 @@ export interface ICellControlProps {
 /** What a cell draws for its value, and what tells it to redraw. */
 export const CellControl = (props: ICellControlProps) => {
     const cell = useGridCell();
-    const field = useGridField();
-    const control = useMemo(() => cell.createControl(field), [cell, field]);
+    const control = useMemo(() => cell.createControl(), [cell]);
     const components = { ...CellControlComponents, ...props.components };
     const controlProps = control.getControlProps();
 

@@ -112,6 +112,7 @@ const isDiscontinued = (product: IRecord) => product.getValue('discontinued') ==
 
 const GridExample = () => {
     const [status, setStatus] = React.useState('Hover a product to see what you can do with it.')
+    const runtime = React.useRef<IGridRuntime>()
 
     const reorder = (product: IRecord) => {
         setStatus('Ordered ' + product.getValue('reorderlevel') + ' more of ' + product.getFormattedValue('name') + ' from ' + product.getFormattedValue('supplier') + '.')
@@ -123,8 +124,7 @@ const GridExample = () => {
     }
 
     const discontinue = (product: IRecord) => {
-        product.setValue('discontinued', true)
-        product.save()
+        runtime.current?.services.get('fields').get(product, 'discontinued').setValue(true)
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
@@ -153,6 +153,8 @@ const GridExample = () => {
                     },
                 },
             }}
+            enableAutoSave
+            onGridReady={gridRuntime => runtime.current = gridRuntime}
             height='440px' />
     </Stack>
 }

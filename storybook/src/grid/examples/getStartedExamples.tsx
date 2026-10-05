@@ -22,14 +22,6 @@ const isOverdue = (record: IRecord) => {
     return !isSummaryRow(record) && !isClosed(record) && !!closeDate && dayjs(closeDate).isBefore(dayjs(), 'day')
 }
 
-const saveValue = async (record: IRecord, columnName: string, value: unknown) => {
-    record.setValue(columnName, value)
-    const result = await record.save()
-    if (!result.success) {
-        record.clearChanges()
-    }
-}
-
 //while grouped, a deal is held by the provider of its group
 const findDeal = (recordId: string) => [provider, ...provider.getGroupedRecordDataProviders(true)].map(source => source.getRecordsMap()[recordId]).find(Boolean)
 
@@ -70,6 +62,7 @@ const GridExample = (props: IShowcaseProps) => {
     const { formatting } = usePcfContext()
     const [selection, setSelection] = React.useState<string[]>([])
     const [lastSave, setLastSave] = React.useState<IRecordSaveOperationResult>()
+    const runtime = React.useRef<IGridRuntime>()
     const selectedIds = rowSelection ? selection : []
     const selectedValue = selectedIds.reduce((total, recordId) => total + Number(findDeal(recordId)?.getValue('value') ?? 0), 0)
 
@@ -79,7 +72,11 @@ const GridExample = (props: IShowcaseProps) => {
         const targets = selected.includes(record.getRecordId()) ? selected.map(findDeal) : [record]
         for (const target of targets) {
             if (target && !isClosed(target)) {
-                saveValue(target, 'stage', stage)
+                runtime.current?.services.get('fields').get(target, 'stage').setValue(stage)?.then(result => {
+                    if (!result.success) {
+                        target.clearChanges()
+                    }
+                })
             }
         }
     }
@@ -139,6 +136,7 @@ const GridExample = (props: IShowcaseProps) => {
         rowHeight={features.compactRows ? COMPACT_ROW_HEIGHT : undefined}
         rowSettings={features.lockClosedDeals ? { onGetLock: lockClosedDeals } : undefined}
         onAfterRecordSaved={setLastSave}
+        onGridReady={gridRuntime => runtime.current = gridRuntime}
         height='520px' />
 
     return <Stack tokens={{ childrenGap: 8 }}>

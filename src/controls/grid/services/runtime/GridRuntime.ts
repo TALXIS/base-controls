@@ -17,6 +17,7 @@ import { GridLocks } from "../locks";
 import { GridValidation } from "../validation";
 import { GridColumns } from "../columns";
 import { GridCells } from "../cells";
+import { GridFields } from "../fields";
 import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
@@ -108,6 +109,7 @@ export class GridRuntime implements IGridRuntime {
         const validation = new GridValidation({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
         const surfaces = new GridSurfaces();
+        const fields = new GridFields({ services: this._services });
         //both wire themselves to the api and the provider
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });
@@ -118,6 +120,7 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('validation', () => validation);
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
+        this._services.register('fields', () => fields);
         //built once and never looked up
         new GridLockedRecords({ services: this._services });
 

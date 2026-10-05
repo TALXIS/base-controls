@@ -14,6 +14,7 @@ import type { IGridRows } from "../services/rows";
 import type { IGridLocks } from "../services/locks";
 import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
+import type { IGridFields } from "../services/fields";
 import type { IGridRowSelection } from "../modules/row-selection/GridRowSelection";
 import type { IGridSorting } from "../modules/sorting/GridSorting";
 import type { IGridFiltering } from "../modules/filtering/GridFiltering";
@@ -64,6 +65,8 @@ export interface IGridServiceMap extends IGridOptionalServiceMap {
     keyboard: IGridKeyboard;
     /** What the modules draw over the grid. */
     surfaces: IGridSurfaces;
+    /** The fields of the grid's records, saved as the grid saves. */
+    fields: IGridFields;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
     /** The running grid and the hooks over AG Grid's props. */

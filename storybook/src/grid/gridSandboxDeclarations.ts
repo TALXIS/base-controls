@@ -1559,6 +1559,12 @@ interface IGridCellTheme {
     get(): ITheme;
 }
 
+/** Hands out the fields of the grid's records. */
+interface IGridFields {
+    /** The same instance for as long as the record lives. */
+    get(record: IRecord, columnName: string): IGridField;
+}
+
 /** One column of one record. */
 interface IGridField {
     getRecord(): IRecord;
@@ -1608,7 +1614,9 @@ interface IGridCell {
     startEditing(): void;
     /** The edit is over. */
     finishEditing(): void;
-    createControl(field?: IGridField): IGridControl;
+    /** The record's field this cell is bound to, where it is bound to one. */
+    getField(): IGridField | undefined;
+    createControl(): IGridControl;
     isLocked(): boolean;
     getCommands(): IGridCellCommands;
 }
@@ -1926,6 +1934,8 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     cells: IGridCells;
     keyboard: IGridKeyboard;
     surfaces: IGridSurfaces;
+    /** The fields of the grid's records, saved as the grid saves. */
+    fields: IGridFields;
     rowModel: IGridRowModel;
     grid: IGridRuntime;
 }

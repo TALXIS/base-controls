@@ -19,6 +19,7 @@ export interface IGridCellParameters {
     takesInput?: boolean;
     /** The element AG Grid draws this cell in. */
     element?: HTMLElement;
+    field?: IGridField;
 }
 
 //enough to tell two cells apart in the registry, a renderer and its editor included
@@ -60,8 +61,10 @@ export interface IGridCell {
     startEditing(): void;
     /** The edit is over. */
     finishEditing(): void;
+    /** The record's field this cell is bound to, where it is bound to one. */
+    getField(): IGridField | undefined;
     /** Makes what draws this cell's value. */
-    createControl(field?: IGridField): IGridControl;
+    createControl(): IGridControl;
     /** Whether what this cell holds may be changed. */
     isLocked(): boolean;
     /** What this cell offers to do, as buttons and as what the overflow menu holds. */
@@ -78,6 +81,7 @@ export class GridCell implements IGridCell {
     private _theme: IGridCellTheme;
     private _takesInput: boolean;
     private _element?: HTMLElement;
+    private _field?: IGridField;
 
     constructor(parameters: IGridCellParameters) {
         this._services = parameters.services;
@@ -86,6 +90,7 @@ export class GridCell implements IGridCell {
         this._node = parameters.node;
         this._takesInput = !!parameters.takesInput;
         this._element = parameters.element;
+        this._field = parameters.field;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, cell: this });
     }
@@ -157,8 +162,12 @@ export class GridCell implements IGridCell {
         this._editing.finish(this);
     }
 
-    public createControl(field?: IGridField): IGridControl {
-        return new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
+    public getField(): IGridField | undefined {
+        return this._field;
+    }
+
+    public createControl(): IGridControl {
+        return new GridControl({ services: this._services, cell: this, field: this._field, takesInput: this._takesInput });
     }
 
     public isLocked(): boolean {

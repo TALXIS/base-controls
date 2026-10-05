@@ -5,7 +5,7 @@ import { HookRegistry } from "@utils";
 import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { GridField, IGridField } from "../fields";
+import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator/RecordSaveIndicatorCell";
 import { IGridColumnSettings } from "./colDef";
@@ -289,7 +289,7 @@ export class GridColumns implements IGridColumns {
 
     /** The field AG Grid is asking about, as something to ask. */
     private _getField(record: IRecord, columnName: string): IGridField {
-        return new GridField({ record: record, columnName: columnName });
+        return this._services.get('fields').get(record, columnName);
     }
 
 

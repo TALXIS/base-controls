@@ -4,8 +4,7 @@ import type { IGridServiceLocator } from "../../services";
 export interface IGridFieldParameters {
     record: IRecord;
     columnName: string;
-    /** The grid this field is drawn in, where it is drawn in one. */
-    services?: IGridServiceLocator;
+    services: IGridServiceLocator;
 }
 
 /** One column of one record. */
@@ -25,7 +24,7 @@ export interface IGridField {
 export class GridField implements IGridField {
     private _record: IRecord;
     private _columnName: string;
-    private _services?: IGridServiceLocator;
+    private _services: IGridServiceLocator;
 
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
@@ -51,7 +50,7 @@ export class GridField implements IGridField {
 
     public setValue(newValue: any): Promise<IRecordSaveOperationResult> | null {
         this._record.setValue(this._columnName, newValue);
-        if (this._services?.get('settings').isAutoSaveEnabled()) {
+        if (this._services.get('settings').isAutoSaveEnabled()) {
             return this._record.save();
         }
         return null;

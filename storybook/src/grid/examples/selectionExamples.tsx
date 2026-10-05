@@ -7,14 +7,14 @@ const REJECTED = 4
 
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+    const runtime = React.useRef<IGridRuntime>()
     const selectedEntries = selectedIds.map(id => provider.getRecordsMap()[id])
     const selectedHours = selectedEntries.reduce((total, entry) => total + Number(entry.getValue('hours') ?? 0), 0)
     const hasSelection = selectedEntries.length > 0
 
     const setStatus = (status: number) => {
         selectedEntries.forEach(entry => {
-            entry.setValue('status', status)
-            entry.save()
+            runtime.current?.services.get('fields').get(entry, 'status').setValue(status)
         })
         provider.clearSelectedRecordIds()
     }
@@ -42,6 +42,8 @@ const GridExample = () => {
                 sorting: createSortingModule(),
             }}
             enableOptionSetColors
+            enableAutoSave
+            onGridReady={gridRuntime => runtime.current = gridRuntime}
             height='440px' />
     </Stack>
 }
