@@ -124,7 +124,7 @@ Do not restore a layout through the \`state\` prop. It is AG Grid's \`initialSta
 
 | Key | Default | What it does |
 |---|---|---|
-| \`alignment\` | the provider column's \`alignment\` ([**Data**](?path=/docs/grid-get-started-data--overview)) | Which edge the cells' values and commands and the header's name sit against: \`'left'\`, \`'center'\` or \`'right'\`. |
+| \`alignment\` | \`'right'\` for whole numbers, decimals and currency, \`'left'\` for the rest | Which edge the cells' values and commands and the header's name sit against: \`'left'\`, \`'center'\` or \`'right'\`. |
 | \`isLocked\` | \`true\` when the column's \`metadata.IsValidForUpdate\` is \`false\` | Locks every cell of the column for good: no lock hook can unlock it. With editing on, the header shows a lock. \`false\` unlocks a column the metadata locks. See [**Editing**](?path=/docs/grid-editing--overview). |
 | \`isPrimary\` | the provider column's \`isPrimary\` | Draws the value as a link that opens the record. |
 | \`isRequired\` | \`true\` with editing on and \`metadata.RequiredLevel\` 1 or 2 | Draws the red \`*\` after the header's name, and nothing more: what makes a value required is on [**Editing**](?path=/docs/grid-editing--overview). |

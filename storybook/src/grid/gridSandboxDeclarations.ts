@@ -263,7 +263,6 @@ interface IColumn {
     type?: 'data' | 'action';
     /** True by default. */
     isDraggable?: boolean;
-    alignment?: 'left' | 'center' | 'right';
     aggregation?: { aggregationFunction: AggregationFunction; columnName?: string; alias?: string };
     grouping?: { isGrouped: boolean; alias?: string; ungroupedOrder?: number };
     /** Whether the cells take input in place without opening an editor. */
@@ -336,7 +335,7 @@ interface IControlParameters {
     Record?: IRecord;
     Column?: IColumn;
     EnableNavigation?: { raw: boolean };
-    ColumnAlignment?: { raw: IColumn['alignment'] };
+    ColumnAlignment?: { raw: 'left' | 'center' | 'right' | undefined };
     IsPrimaryColumn?: { raw: boolean };
     ShowErrorMessage?: { raw: boolean };
     CellType?: { raw: 'editor' | 'renderer' };

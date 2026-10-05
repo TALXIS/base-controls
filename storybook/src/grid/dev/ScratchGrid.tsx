@@ -253,7 +253,7 @@ const validateEstimate = (result: IFieldValidationResult, { record }: { record: 
 /** The columns the story adds or changes, beyond what the provider holds. */
 const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = {
     //a grouped status stays where grouping pins it
-    status: colDef => ({ pinned: colDef.pinned ?? 'right' }),
+    status: colDef => ({ pinned: colDef.pinned ?? 'right', settings: { ...colDef.settings, alignment: 'right' } }),
     //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
     estimate: { settings: { cell: { onGetValidation: validateEstimate } } },
     [PAYLOAD_COLUMN]: { cellRenderer: PayloadCell, headerComponent: PayloadHeader },
@@ -338,8 +338,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 EntitySetName: 'mem_tasks',
             },
         })
-        //the alignment is the dataset column's, which is what the header, the cells and what they draw read
-        provider.setColumns(COLUMNS.map(column => column.name === 'status' ? { ...column, alignment: 'right' as const } : column))
+        provider.setColumns(COLUMNS)
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)

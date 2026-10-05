@@ -24,7 +24,6 @@ The grid shows what its provider holds: the provider's columns become the grid's
 | \`visualSizeFactor\` | The width in pixels. Columns share spare space in proportion to it. A resize is written back here. | \`200\` |
 | \`order\` | The position, lowest first. A move is written back here. | The order you passed |
 | \`isHidden\` | Leaves the column out of the grid. | \`false\` |
-| \`alignment\` | \`'left'\`, \`'center'\` or \`'right'\`. | Right for numbers and currency, left for the rest |
 | \`isPrimary\` | Draws the value as a link that opens the record. | \`false\` |
 | \`oneClickEdit\` | Shows the editor in the cell without a double-click. See [**Editing**](?path=/docs/grid-editing--overview). | \`false\` |
 | \`autoHeight\` | Grows the row to fit wrapped text. | \`false\` |

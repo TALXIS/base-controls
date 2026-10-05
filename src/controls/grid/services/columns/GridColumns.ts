@@ -1,7 +1,7 @@
 import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
-import { HookRegistry } from "@utils";
+import { HookRegistry, IAlignment } from "@utils";
 import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
@@ -166,6 +166,18 @@ export class GridColumns implements IGridColumns {
         return true;
     }
 
+    private _getAlignment(column: IColumn): IAlignment {
+        switch (true) {
+            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
+            case column.dataType === DataTypes.WholeNone:
+            case column.dataType === DataTypes.Decimal:
+            case column.dataType === DataTypes.Currency: {
+                return 'right';
+            }
+        }
+        return 'left';
+    }
+
     private _getColumnDefinition(column: IColumn): ColDef<IRecord> {
         return {
             colId: column.name,
@@ -222,7 +234,7 @@ export class GridColumns implements IGridColumns {
     /** What the grid's cells and header read about this column. */
     private _getColumnSettings(column: IColumn): IGridColumnSettings {
         return {
-            alignment: column.alignment,
+            alignment: this._getAlignment(column),
             isLocked: this._isColumnLocked(column),
             isRequired: this._isColumnRequired(column),
             isPrimary: !!column.isPrimary,
