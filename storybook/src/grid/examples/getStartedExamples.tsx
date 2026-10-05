@@ -63,18 +63,19 @@ const validateDiscount = (result: IFieldValidationResult, { record }: { record: 
 
 interface IShowcaseProps {
     features: { [feature: string]: boolean }
+    rowSelection?: 'single' | 'multiple'
 }
 
 const GridExample = (props: IShowcaseProps) => {
-    const { features } = props
+    const { features, rowSelection } = props
     const [selection, setSelection] = React.useState<string[]>([])
     const [lastSave, setLastSave] = React.useState<IRecordSaveOperationResult>()
-    const selectedIds = features.rowSelection ? selection : []
+    const selectedIds = rowSelection ? selection : []
     const selectedValue = selectedIds.reduce((total, recordId) => total + Number(findDeal(recordId)?.getValue('value') ?? 0), 0)
 
     //a command on a selected deal closes every selected deal
     const closeDeals = (record: IRecord, stage: number) => {
-        const selected = features.rowSelection ? provider.getSelectedRecordIds() : []
+        const selected = rowSelection ? provider.getSelectedRecordIds() : []
         const targets = selected.includes(record.getRecordId()) ? selected.map(findDeal) : [record]
         for (const target of targets) {
             if (target && !isClosed(target)) {
@@ -84,11 +85,11 @@ const GridExample = (props: IShowcaseProps) => {
     }
 
     const grid = <Grid.Root
-        key={JSON.stringify(features)}
+        key={JSON.stringify(props)}
         provider={provider}
         modules={{
             rowModel: createClientSideRowModelModule(),
-            rowSelection: features.rowSelection ? createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelection }) : undefined,
+            rowSelection: rowSelection ? createRowSelectionModule({ mode: rowSelection, onSelectionChanged: setSelection }) : undefined,
             cellSelection: features.cellSelection ? createCellSelectionModule() : undefined,
             clipboard: features.clipboard ? createClipboardModule() : undefined,
             sorting: features.sorting ? createSortingModule() : undefined,
@@ -191,7 +192,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
     {
         title: 'Selection',
         features: [
-            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals: the bar above the grid adds up their value. With Row actions on, Mark as won closes every selected deal.' },
+            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals: the bar above the grid adds up their value.', options: [{ key: 'multiple', label: 'Multiple' }, { key: 'single', label: 'Single' }] },
             { key: 'cellSelection', isEnterprise: true, label: 'Cell ranges', hint: 'Drag across a block of cells to highlight it, as in a spreadsheet.' },
             { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet. With Editing on, Ctrl+V pastes back into the grid.' },
         ],
@@ -217,7 +218,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
 
 const PRESETS: IShowcasePreset[] = [
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
-    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place with auto-save, highlight ranges and copy them out.', features: ['editing', 'autoSave', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
+    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
     { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors'] },
 ]
 
@@ -244,9 +245,11 @@ export const ShowcaseExample = () => {
         setFeatures(next)
     }
 
+    const { rowSelection, ...switches } = features
+
     return <GridExampleRunner
         seedCode={SHOWCASE_CODE}
         onCreateProvider={createProvider}
-        previewProps={{ features }}
+        previewProps={{ features: switches, rowSelection: rowSelection || undefined }}
         renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={[...PRESETS, ...EXTENSIBILITY_EXAMPLES]} values={features} onChange={onChange} />} />
 }

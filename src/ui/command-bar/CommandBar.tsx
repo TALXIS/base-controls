@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { CommandBar as CommandBarBase, ICommandBarItemProps, ICommandBarProps } from "@fluentui/react";
+import { CommandBar as CommandBarBase, concatStyleSetsWithProps, ICommandBarItemProps, ICommandBarProps, ICommandBarStyleProps } from "@fluentui/react";
 import { useSurfaceTheme } from "@theme";
 import { getThemedContextualItems } from "../surfaces";
 import { useSurfaceMenuProps } from "../surfaces";
 
 /** A command bar whose menus are drawn in the application's theme rather than in the bar's. */
 export const CommandBar = (props: ICommandBarProps) => {
-    const { items, farItems, overflowItems, overflowButtonProps, ...commandBarProps } = props;
+    const { items, farItems, overflowItems, overflowButtonProps, styles, ...commandBarProps } = props;
     const theme = useSurfaceTheme();
     const themed = React.useCallback(
         (bar?: ICommandBarItemProps[]) => bar && getThemedContextualItems(bar, theme) as ICommandBarItemProps[],
@@ -16,6 +16,7 @@ export const CommandBar = (props: ICommandBarProps) => {
 
     return <CommandBarBase
         {...commandBarProps}
+        styles={(styleProps: ICommandBarStyleProps) => concatStyleSetsWithProps(styleProps, { root: { paddingLeft: 0 } }, styles)}
         items={themed(items) ?? []}
         farItems={themed(farItems)}
         overflowItems={themed(overflowItems)}
