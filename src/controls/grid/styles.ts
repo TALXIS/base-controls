@@ -57,36 +57,6 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`
             },
-            //`--ag-borders-critical` is off, and that border is what sets pinned columns apart
-            '.ag-pinned-left-header': {
-                borderRight: `1px solid ${theme.semanticColors.menuDivider}`
-            },
-            '.ag-pinned-right-header': {
-                borderLeft: `1px solid ${theme.semanticColors.menuDivider}`
-            },
-            //drawn over the cells, whose own background would hide a border
-            '.ag-pinned-left-cols-container::after, .ag-pinned-left-floating-top::after, .ag-pinned-left-floating-bottom::after, .ag-pinned-left-sticky-top::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                right: 0,
-                width: 1,
-                background: theme.semanticColors.menuDivider,
-                zIndex: 1,
-                pointerEvents: 'none',
-            },
-            '.ag-pinned-right-cols-container::after, .ag-pinned-right-floating-top::after, .ag-pinned-right-floating-bottom::after, .ag-pinned-right-sticky-top::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: 0,
-                width: 1,
-                background: theme.semanticColors.menuDivider,
-                zIndex: 1,
-                pointerEvents: 'none',
-            },
             '.ag-center-cols-container': {
                 minWidth: '100%',
             },
