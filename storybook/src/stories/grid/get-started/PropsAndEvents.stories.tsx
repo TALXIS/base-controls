@@ -28,7 +28,7 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`state\` | \`GridState\`, from AG Grid | None | At mount | The AG Grid state the grid starts from. See *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview). |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
-| \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | See *onGridReady and onDestroyed* below. |
+| \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |
 | \`onDataLoaded\`, \`onRowClicked\` and the other events | Functions | None | Live | See *Events* below. |
 
 A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without its scroll position, its focus or the save status of its rows.
@@ -57,7 +57,7 @@ Every event is a prop. The grid calls the callback you passed last, so a callbac
 | Event | Arguments | When it fires |
 |---|---|---|
 | \`onDataLoaded\` | None | After every load of the provider, such as \`refresh()\`, a page, a sort or a filter, once the grid has its new columns and rows. At mount, a provider that has already loaded fires it once, before \`onGridReady\`. |
-| \`onLoadingChanged\` | \`isLoading: boolean\` | When the provider starts or stops loading. A load already running at mount does not fire \`true\`: read \`provider.isLoading()\` for that. |
+| \`onLoadingChanged\` | \`isLoading: boolean\` | When the provider starts or stops loading. |
 | \`onRecordValueChanged\` | \`record: IRecord\`, \`columnName: string\`, \`newValue: any\` | When a value in a record changes, whether the user edited it or your code called \`record.setValue()\`. |
 | \`onBeforeRecordSaved\` | \`record: IRecord\` | When a record starts to save, before its values are checked. |
 | \`onAfterRecordSaved\` | \`result: IRecordSaveOperationResult\`: \`{ recordId, success, fields, errors? }\` | Once for every record that saves: on auto-save, on \`record.save()\`, and for each record of \`provider.save()\`. A save refused because a value is not valid fires it too, with \`success: false\` and the \`errors\`. |
@@ -71,28 +71,10 @@ Every event is a prop. The grid calls the callback you passed last, so a callbac
 | \`onGridReady\` | \`runtime: IGridRuntime\` | Once, when AG Grid is ready. |
 | \`onDestroyed\` | \`runtime: IGridRuntime\` | Once, as the grid unmounts, while AG Grid still answers. |
 
-A group row and the totals row are records of their own. A handler that only wants real records skips a record whose \`record.getDataProvider().getSummarizationType()\` is not \`'none'\`: see *Group rows and the totals row are records too* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
-
-In what order they fire:
-
-- **Mount** with a provider that has loaded: \`onDataLoaded\`, then \`onGridReady\`. With a provider still loading: \`onGridReady\`, then \`onLoadingChanged(false)\` and \`onDataLoaded\` once it is in.
-- **A load**, such as \`refresh()\`, a page or a sort: \`onLoadingChanged(true)\`, \`onLoadingChanged(false)\`, \`onDataLoaded\`.
-- **An edit with auto-save on**: \`onRecordValueChanged\`, \`onBeforeRecordSaved\`, \`onAfterRecordSaved\`.
-- **\`provider.save()\`**: \`onLoadingChanged(true)\`, \`onBeforeRecordSaved\` for each changed record, \`onAfterRecordSaved\` for each, \`onLoadingChanged(false)\`, \`onAfterSaved\`.
-- **Unmount**: \`onDestroyed\`.
-
 {{story: Watch every event}}
 
 {{story: Ticket queue with a preview pane}}
 
-## onGridReady and onDestroyed
-
-Both hand you the grid's runtime: its services, its hooks and its events, described on [**Extending**](?path=/docs/grid-extending--overview).
-
-- \`onGridReady\` fires once, when AG Grid is ready. From then on, \`runtime.services.get('gridApi')\` returns AG Grid's api. With a provider that has already loaded, the rows are in by then and \`onDataLoaded\` has fired.
-- \`onDestroyed\` fires once, as the grid unmounts and before AG Grid tears down, so \`gridApi\` still answers. Read what you want to keep there, such as \`gridApi.getState()\`.
-
-A module cleans up on the runtime's own \`onDestroyed\` event instead, which fires later, once AG Grid is gone: see [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 `
 
 const meta = {
@@ -117,7 +99,7 @@ export const InvoiceLinesThatGrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An invoice form's line items. The grid has no \`height\`, so it grows with its lines up to \`maxVisibleRows\` and then scrolls. Add lines until it scrolls, move the slider to change \`maxVisibleRows\` while the grid stays mounted, or remove lines to see the grid stay 220px tall however few it holds.`,
+                story: `An invoice's line items. The grid has no \`height\`, so it grows with its lines up to \`maxVisibleRows\` and then scrolls. Add lines until it scrolls, move the slider to change \`maxVisibleRows\` while the grid stays mounted, or remove lines to see the grid stay 220px tall however few it holds.`,
             },
         },
     },
@@ -153,7 +135,7 @@ export const TicketQueueWithAPreviewPane: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A service desk works through its queue: \`onRowClicked\` and \`onFocusedCellChanged\` show the ticket in the pane, so the arrow keys move through the queue too. With \`enableNavigation={false}\` a double-click opens nothing by itself, and \`onCellDoubleClicked\` opens the ticket in a panel.`,
+                story: `A service desk works through its queue: \`onRowClicked\` and \`onFocusedCellChanged\` show the ticket in a \`Form\` beside the grid, so the arrow keys move through the queue too. A change saves straight away, and the grid shows it. With \`enableNavigation={false}\` a double-click opens nothing by itself, and \`onCellDoubleClicked\` opens the whole ticket in a panel.`,
             },
         },
     },

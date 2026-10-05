@@ -14,26 +14,20 @@ export const INVOICE_LINES_CODE = `const CATALOGUE = [
 
 const toLine = (index: number): IRawRecord => ({ lineid: 'line-' + (index + 1), ...CATALOGUE[index % CATALOGUE.length], quantity: (index % 3) + 1 })
 
-const createInvoiceLines = () => {
-    const lines = new MemoryDataProvider({
-        dataSource: [0, 1, 2].map(toLine),
-        metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'item', LogicalName: 'invoiceline' },
-    })
-    lines.setColumns([
+const createInvoiceLines = () => new MemoryDataProvider({
+    dataSource: [0, 1, 2].map(toLine),
+    metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'item', LogicalName: 'invoiceline' },
+    columns: [
         { name: 'item', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
         { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
         { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
-    ])
-    return lines
-}
-
-const formatMoney = (amount: number) => '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2 })
+    ],
+})
 
 const GridExample = () => {
     const lines = React.useMemo(createInvoiceLines, [])
     const [lineCount, setLineCount] = React.useState(3)
     const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
-    const total = lines.getDataSource().reduce((sum, line) => sum + line.quantity * line.unitprice, 0)
 
     const showLines = (count: number) => {
         lines.setDataSource(Array.from({ length: count }, (_, index) => toLine(index)))
@@ -41,15 +35,22 @@ const GridExample = () => {
         setLineCount(count)
     }
 
-    return <Stack tokens={{ childrenGap: 12 }}>
-        <Text variant='xLarge'>Invoice INV-2026-0142 · Contoso Ltd.</Text>
-        <Stack horizontal wrap verticalAlign='end' tokens={{ childrenGap: 8 }}>
-            <PrimaryButton iconProps={{ iconName: 'Add' }} text='Add line' onClick={() => showLines(lineCount + 1)} />
-            <DefaultButton iconProps={{ iconName: 'Remove' }} text='Remove last line' disabled={lineCount === 0} onClick={() => showLines(lineCount - 1)} />
-            <Slider label='Rows before it scrolls' min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 300 } }} />
-        </Stack>
+    const commands: ICommandBarItemProps[] = [
+        { key: 'add', text: 'Add line', iconProps: { iconName: 'Add' }, onClick: () => showLines(lineCount + 1) },
+        { key: 'remove', text: 'Remove last line', iconProps: { iconName: 'Remove' }, disabled: lineCount === 0, onClick: () => showLines(lineCount - 1) },
+    ]
+
+    const rowsSlider: ICommandBarItemProps = {
+        key: 'maxVisibleRows',
+        onRender: () => <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
+            <Text>Rows before it scrolls</Text>
+            <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
+        </Stack>,
+    }
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <CommandBar items={commands} farItems={[rowsSlider]} />
         <Grid.Root provider={lines} modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
-        <Text variant='large'>{lineCount === 1 ? '1 line' : lineCount + ' lines'} · Total {formatMoney(total)}</Text>
     </Stack>
 }
 `
@@ -148,20 +149,48 @@ const GridExample = () => {
 }
 `
 
-export const PREVIEW_PANE_CODE = `const PANE_COLUMNS = ['ticketnumber', 'customer', 'priority', 'status', 'assignee', 'duedate']
+export const PREVIEW_PANE_CODE = `const SECTIONS = [
+    { label: 'Ticket', columnNames: ['ticketnumber', 'title', 'customer', 'channel'] },
+    { label: 'Handling', columnNames: ['priority', 'status', 'assignee', 'escalated'] },
+    { label: 'Timing', columnNames: ['createdon', 'duedate', 'timespent'] },
+]
 
 const styles = mergeStyleSets({
     layout: { display: 'flex', gap: 16 },
     grid: { flex: 1, minWidth: 0 },
-    pane: { width: 280, flexShrink: 0, paddingLeft: 16, borderLeft: '1px solid #edebe9' },
+    pane: { width: 320, flexShrink: 0, maxHeight: 480, overflowY: 'auto', paddingLeft: 16, borderLeft: '1px solid #edebe9' },
 })
 
-const TicketFields = (props: { ticket: IRecord; columnNames: string[] }) => <Stack tokens={{ childrenGap: 4 }}>
-    {props.columnNames.map(columnName => <Stack key={columnName}>
-        <Label>{provider.getColumnsMap()[columnName].displayName}</Label>
-        <span>{props.ticket.getFormattedValue(columnName) || '---'}</span>
-    </Stack>)}
-</Stack>
+const createTicketStrategy = (ticket: IRecord) => new MemoryStrategy({
+    onGetColumns: () => provider.getColumns(),
+    onGetData: () => ({ ...ticket.getRawData() }),
+    onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'title' }),
+})
+
+interface ITicketFormProps {
+    ticket: IRecord
+    /** How many fields a section puts side by side. */
+    columnsPerSection?: number
+}
+
+const TicketForm = (props: ITicketFormProps) => {
+    const strategy = React.useMemo(() => createTicketStrategy(props.ticket), [props.ticket])
+    //every change is saved into the record the grid shows
+    const saveChange = async (columnName: string, value: unknown) => {
+        props.ticket.setValue(columnName, value)
+        await props.ticket.save()
+    }
+
+    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName, value) => { saveChange(columnName, value) }}>
+        {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: props.columnsPerSection ?? 1 }} cellLabelPosition='Top'>
+            {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
+                <Form.Cell>
+                    <Form.Control />
+                </Form.Cell>
+            </Form.Field>)}
+        </Form.Section>)}
+    </Form.Root>
+}
 
 const GridExample = () => {
     const [ticket, setTicket] = React.useState<IRecord>()
@@ -173,22 +202,18 @@ const GridExample = () => {
                 provider={provider}
                 modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
                 enableNavigation={false}
-                height='440px'
+                height='480px'
                 onRowClicked={setTicket}
                 onFocusedCellChanged={record => record && setTicket(record)}
                 onCellDoubleClicked={record => setOpenedTicket(record)} />
         </div>
         <div className={styles.pane}>
             {ticket
-                ? <Stack tokens={{ childrenGap: 12 }}>
-                    <Text variant='xLarge'>{ticket.getFormattedValue('title')}</Text>
-                    <TicketFields ticket={ticket} columnNames={PANE_COLUMNS} />
-                    <DefaultButton iconProps={{ iconName: 'OpenPane' }} text='Open ticket' onClick={() => setOpenedTicket(ticket)} />
-                </Stack>
+                ? <TicketForm key={ticket.getRecordId()} ticket={ticket} />
                 : <span>Click a ticket, or move through the queue with the arrow keys.</span>}
         </div>
         <Panel isOpen={!!openedTicket} type={PanelType.medium} headerText={openedTicket?.getFormattedValue('title') ?? ''} isLightDismiss onDismiss={() => setOpenedTicket(undefined)}>
-            {openedTicket && <TicketFields ticket={openedTicket} columnNames={provider.getColumns().filter(column => !column.isHidden).map(column => column.name)} />}
+            {openedTicket && <TicketForm ticket={openedTicket} columnsPerSection={2} />}
         </Panel>
     </div>
 }

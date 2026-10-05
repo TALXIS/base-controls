@@ -269,12 +269,70 @@ const quickViews: IGridModule = {
     },
 }
 
+const FORM_SECTIONS = [
+    { label: 'Deal', columnNames: ['name', 'owner', 'stage', 'products'] },
+    { label: 'Money', columnNames: ['value', 'discount', 'recurring'] },
+    { label: 'Timing', columnNames: ['closedate', 'timespent', 'nextstep'] },
+]
+
+//the form saves into the record the grid shows
+const createDealStrategy = (deal: IRecord) => {
+    const strategy = new MemoryStrategy({
+        onGetColumns: () => deal.getDataProvider().getColumns(),
+        onGetData: () => ({ ...deal.getRawData() }),
+        onGetMetadata: () => ({ PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name' }),
+    })
+    strategy.onSave = async ({ updatedData }) => {
+        Object.entries(updatedData).forEach(([columnName, value]) => deal.setValue(columnName, value))
+        return deal.save()
+    }
+    return strategy
+}
+
+/** The deal in a form, saved from its ribbon. */
+const DealForm = (props: { deal: IRecord }) => {
+    const strategy = React.useMemo(() => createDealStrategy(props.deal), [props.deal])
+
+    return <Form.Root strategy={strategy}>
+        <Form.Ribbon />
+        {FORM_SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: 2 }} cellLabelPosition='Top'>
+            {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
+                <Form.Cell>
+                    <Form.Control />
+                </Form.Cell>
+            </Form.Field>)}
+        </Form.Section>)}
+    </Form.Root>
+}
+
+const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} type={PanelType.medium} headerText={props.deal?.getFormattedValue('name') ?? ''} isLightDismiss onDismiss={props.onDismiss}>
+    {props.deal && <DealForm key={props.deal.getRecordId()} deal={props.deal} />}
+</Panel>
+
+/** An Open in a form command beside every deal's name. */
+const openInForm: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
+            if (columnName !== 'name' || isSummaryRow(record)) {
+                return
+            }
+            result.items.push({ key: 'openInForm', title: 'Open in a form', iconProps: { iconName: 'OpenPane' }, onClick: () => runtime.openRecord({ record, reference: record.getNamedReference(), columnName }) })
+        })
+    },
+}
+
 export const AT_A_GLANCE: { [feature: string]: IFeature } = {
     statusIcons: () => ({ modules: { custom: [statusIcons] } }),
     colourRules: () => ({ modules: { custom: [colourRules] } }),
     headerExtras: () => ({ modules: { custom: [headerExtras] } }),
     overdueActions: () => ({ modules: { custom: [overdueActions] } }),
     quickViews: () => ({ modules: { custom: [quickViews] } }),
+    //the command and the Deal link both open the deal through onOpenRecord
+    dealForm: ({ openedDeal, onOpenDeal }) => ({
+        modules: { custom: [openInForm] },
+        onOpenRecord: ({ record }) => onOpenDeal(record),
+        frame: { overlays: [<DealPanel key='dealPanel' deal={openedDeal} onDismiss={() => onOpenDeal(undefined)} />] },
+    }),
 }
 `
 
@@ -489,6 +547,8 @@ export interface IFeatureSwitches {
 /** What is drawn around the grid. */
 interface IFeatureFrameProps {
     theme?: ITheme
+    /** Drawn beside the grid, such as panels. */
+    overlays?: JSX.Element[]
     children?: JSX.Element
 }
 
@@ -505,37 +565,44 @@ export interface IFeatureContext {
     switches: IFeatureSwitches
     toasts: IToasts
     formatting: IFormatting
+    /** The deal open in a form, if any. */
+    openedDeal?: IRecord
+    onOpenDeal: (deal?: IRecord) => void
 }
 
 export type IFeature = (context: IFeatureContext) => IFeatureProps
 
 const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS }
 
-//the deal's name stays in view while nothing is grouped
-const getBaseProps = (switches: IFeatureSwitches): IFeatureProps => switches.grouping ? {} : { colDefs: { name: { pinned: 'left' } } }
+//the deal's name stays in view while nothing is grouped, which the grid checks on every load
+const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
+    colDefs: { name: () => deals.grouping.getGroupBys().length > 0 ? {} : { pinned: 'left' } },
+})
 
-//modules, columns and row settings add up across the features
+//modules, columns, row settings and overlays add up across the features
 const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => ({
     ...props,
     ...added,
     modules: { ...props.modules, ...added.modules, custom: [...props.modules?.custom ?? [], ...added.modules?.custom ?? []] },
     colDefs: { ...props.colDefs, ...added.colDefs },
     rowSettings: { ...props.rowSettings, ...added.rowSettings },
-    frame: { ...props.frame, ...added.frame },
+    frame: { ...props.frame, ...added.frame, overlays: [...props.frame?.overlays ?? [], ...added.frame?.overlays ?? []] },
 })
 
 export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches): IFeatureProps => {
     const toasts = useToastController(TOASTER_ID)
     const { formatting } = usePcfContext()
+    const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
     useStageGrouping(deals, switches)
     useSelectionTotal(toasts, !!switches.rowSelection)
-    const context: IFeatureContext = { deals, switches, toasts, formatting }
-    return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(switches))
+    const context: IFeatureContext = { deals, switches, toasts, formatting, openedDeal, onOpenDeal: setOpenedDeal }
+    return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(deals))
 }
 
 /** Draws the grid in the theme a feature picks, with the toasts the features raise. */
 export const FeatureFrame = (props: IFeatureFrameProps) => <>
     {props.theme ? <ThemeProvider theme={props.theme}>{props.children}</ThemeProvider> : props.children}
+    {props.overlays}
     <FluentProvider theme={webLightTheme}>
         <Toaster toasterId={TOASTER_ID} position='bottom-end' />
     </FluentProvider>
@@ -589,7 +656,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
 ]
 
 const PRESETS: IShowcasePreset[] = [
-    { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints that read the pipeline for you.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews'] },
+    { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints that read the pipeline for you.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews', 'dealForm'] },
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
     { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
     { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },

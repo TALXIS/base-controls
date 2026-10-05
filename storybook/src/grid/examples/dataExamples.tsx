@@ -152,85 +152,9 @@ const GridExample = () => {
 }
 `
 
-export const PAGE_BY_PAGE_CODE = `const CATEGORIES = [
-    { Value: 1, Label: 'Desks', Color: '#038387' },
-    { Value: 2, Label: 'Seating', Color: '#8764b8' },
-    { Value: 3, Label: 'Lighting', Color: '#c19c00' },
-    { Value: 4, Label: 'Storage', Color: '#ca5010' },
-    { Value: 5, Label: 'Accessories', Color: '#0078d4' },
-]
-
-const KINDS = [
-    { name: 'desk', category: 1, price: 420 },
-    { name: 'chair', category: 2, price: 260 },
-    { name: 'lamp', category: 3, price: 60 },
-    { name: 'cabinet', category: 4, price: 190 },
-    { name: 'monitor arm', category: 5, price: 85 },
-    { name: 'footrest', category: 5, price: 35 },
-]
-const SERIES = ['Aria', 'Bento', 'Cove', 'Dune', 'Echo', 'Fjord', 'Grove', 'Halo', 'Isle', 'Juno']
-const FINISHES = ['oak', 'walnut', 'white', 'black', 'grey']
-
-const PRODUCTS: IRawRecord[] = Array.from({ length: 300 }, (_, index) => {
-    const kind = KINDS[index % KINDS.length]
-    const series = SERIES[Math.floor(index / KINDS.length) % SERIES.length]
-    const finish = FINISHES[Math.floor(index / (KINDS.length * SERIES.length))]
-    return { productid: 'product-' + (index + 1), sku: 'FUR-' + (10001 + index), name: series + ' ' + kind.name + ', ' + finish, category: kind.category, price: kind.price + (index % 7) * 15, instock: (index * 37) % 120 }
-})
-
-const PAGE_SIZES = [25, 50, 100].map(size => ({ key: size, text: size + ' per page' }))
-
-const createCatalogue = () => {
-    const catalogue = new MemoryDataProvider({
-        dataSource: PRODUCTS,
-        metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
-        pageSize: 25,
-    })
-    catalogue.setColumns([
-        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 110 },
-        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 240 },
-        { name: 'category', displayName: 'Category', dataType: DataTypes.OptionSet, visualSizeFactor: 140, metadata: { OptionSet: CATEGORIES } },
-        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 110 },
-        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
-    ])
-    return catalogue
-}
-
-const GridExample = () => {
-    const catalogue = React.useMemo(createCatalogue, [])
-    const [paging, setPaging] = React.useState(() => catalogue.getPaging())
-    const first = (paging.pageNumber - 1) * paging.pageSize + 1
-    const last = Math.min(paging.pageNumber * paging.pageSize, paging.totalResultCount)
-    const pageCount = Math.ceil(paging.totalResultCount / paging.pageSize)
-
-    const changePageSize = (pageSize: number) => {
-        catalogue.getPaging().setPageSize(pageSize)
-        catalogue.refresh()
-    }
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Grid.Root
-            provider={catalogue}
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-            height='440px'
-            onDataLoaded={() => setPaging(catalogue.getPaging())} />
-        <Stack horizontal wrap horizontalAlign='space-between' verticalAlign='center' tokens={{ childrenGap: 8 }}>
-            <span>Products {first}–{last} of {paging.totalResultCount}</span>
-            <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 4 }}>
-                <Dropdown ariaLabel='Page size' options={PAGE_SIZES} selectedKey={paging.pageSize} onChange={(_, option) => changePageSize(Number(option?.key))} styles={{ root: { width: 140, marginRight: 8 } }} />
-                <IconButton iconProps={{ iconName: 'ChevronLeft' }} title='Previous page' disabled={!paging.hasPreviousPage} onClick={() => catalogue.getPaging().loadPreviousPage()} />
-                <span>Page {paging.pageNumber} of {pageCount}</span>
-                <IconButton iconProps={{ iconName: 'ChevronRight' }} title='Next page' disabled={!paging.hasNextPage} onClick={() => catalogue.getPaging().loadNextPage()} />
-            </Stack>
-        </Stack>
-    </Stack>
-}
-`
-
 export const OwnRecordsExample = () => <GridExampleRunner seedCode={OWN_RECORDS_CODE} />
 
 export const EveryDataTypeExample = () => <GridExampleRunner seedCode={EVERY_DATA_TYPE_CODE} />
 
 export const RequiredAndReadOnlyExample = () => <GridExampleRunner seedCode={REQUIRED_AND_READ_ONLY_CODE} />
 
-export const PageByPageExample = () => <GridExampleRunner seedCode={PAGE_BY_PAGE_CODE} />

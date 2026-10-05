@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { EveryDataTypeExample, OwnRecordsExample, PageByPageExample, RequiredAndReadOnlyExample } from '../../../grid/examples/dataExamples'
+import { EveryDataTypeExample, OwnRecordsExample, RequiredAndReadOnlyExample } from '../../../grid/examples/dataExamples'
 
 const DESCRIPTION = `
 The grid shows what its provider holds: the provider's columns become the grid's columns, and the records of the current page become its rows.
@@ -82,37 +82,6 @@ Links need \`enableNavigation\`, which is on by default. An empty value is shown
 
 Compare option sets and two options as strings, such as \`record.getValue('billable') === '1'\`. \`'0'\` is truthy.
 
-## Paging
-
-The grid shows one page and has no pager of its own. A \`MemoryDataProvider\` puts every record on one page unless you pass \`pageSize\`; other providers show 50 a page. To page, set the size and draw your own pager over \`getPaging()\`:
-
-{{story: Browse a large catalogue page by page}}
-
-| \`getPaging()\` | What it is |
-|---|---|
-| \`pageNumber\` | The current page, from 1. |
-| \`pageSize\` | Records per page. |
-| \`totalResultCount\` | Records across all pages. |
-| \`hasPreviousPage\`, \`hasNextPage\` | Whether there is another page. |
-| \`loadPreviousPage()\`, \`loadNextPage()\`, \`loadExactPage(n)\` | Loads that page. |
-| \`setPageSize(n)\` | Sets the size for the next load. Call \`refresh()\` after it. |
-
-\`getPaging()\` is a snapshot, so read it again after each load, for example in \`onDataLoaded\`. Sorting and filtering cover every record and go back to page 1.
-
-## The examples' data
-
-Most examples get a \`provider\` over one of four datasets, already loaded. Their columns can be sorted, filtered, grouped and edited, apart from files and images.
-
-| Dataset | Records | Columns |
-|---|---|---|
-| Sales pipeline | 30 deals | Deal, Account manager, Stage, Products, Value, Probability, Close date, Time spent, Recurring |
-| Timesheets | 24 entries from last week | Work done, Employee, Project, Date, Hours, Billable, Hourly rate, Status, Comment |
-| Support tickets | 36 tickets from the last week | Ticket, Subject, Customer, Priority, Status, Channel, Assigned to, Opened, Respond by, Time spent, Escalated |
-| Products | 16 office furniture products | Photo, Product, SKU, Category, Price, In stock, Reorder at, Supplier, Last restocked, Discontinued, Product page |
-
-Dates are relative to today. In **Code**, \`createDealsProvider()\`, \`createTimesheetsProvider()\`, \`createTicketsProvider()\` and \`createProductsProvider()\` create a fresh copy of each.
-
-Every example has three tabs: **Preview** runs it, **Code** lets you edit it (some examples have several files), and **Data** shows the provider as JSON. **Reset** restores the original code and data.
 `
 
 const meta = {
@@ -162,18 +131,6 @@ export const EveryDataTypeInOneGrid: Story = {
         docs: {
             description: {
                 story: `A supplier directory with a column of each data type in the table below, with \`enableEditing\` and \`enableOptionSetColors\`. Double-click a cell to open its editor, or click a Supplier or a Contact: \`onOpenRecord\` says what the link opens. Contact is read-only because a lookup's editor currently only works in an Xrm environment with a \`FetchXmlDataProvider\`.`,
-            },
-        },
-    },
-}
-
-export const BrowseALargeCataloguePageByPage: Story = {
-    name: 'Browse a large catalogue page by page',
-    render: () => renderStory(<PageByPageExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `300 products, 25 a page through \`pageSize\`. The pager under the grid reads \`getPaging()\` in \`onDataLoaded\`. Sorting by Price sorts all 300 and goes back to page 1.`,
             },
         },
     },

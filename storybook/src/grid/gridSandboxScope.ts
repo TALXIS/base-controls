@@ -2,7 +2,7 @@ import React from 'react'
 import dayjs from 'dayjs'
 import confetti from 'canvas-confetti'
 import {
-    ActionButton, Checkbox, ChoiceGroup, CommandBar, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarType, Panel, PanelType,
+    ActionButton, Checkbox, ChoiceGroup, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarType, Panel, PanelType,
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
@@ -11,7 +11,7 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY,
-    RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
+    CommandBar, Form, MemoryStrategy, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
@@ -28,6 +28,8 @@ export const GRID_SANDBOX_SCOPE = {
     useGridField,
     useGridColumnHeader,
     usePcfContext,
+    Form,
+    MemoryStrategy,
     FluentProvider,
     webLightTheme,
     Toaster,

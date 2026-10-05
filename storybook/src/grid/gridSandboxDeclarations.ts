@@ -18,7 +18,8 @@ declare namespace JSX {
 declare const ActionButton: typeof import('@fluentui/react').ActionButton;
 declare const Checkbox: typeof import('@fluentui/react').Checkbox;
 declare const ChoiceGroup: typeof import('@fluentui/react').ChoiceGroup;
-declare const CommandBar: typeof import('@fluentui/react').CommandBar;
+/** Fluent's command bar, with its menus drawn in the application's theme. */
+declare const CommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element;
 declare const DefaultButton: typeof import('@fluentui/react').DefaultButton;
 declare const Dropdown: typeof import('@fluentui/react').Dropdown;
 declare const FontWeights: typeof import('@fluentui/react').FontWeights;
@@ -1978,6 +1979,11 @@ interface IPcfContext {
 
 /** Throws outside PcfContextProvider. */
 declare function usePcfContext(): IPcfContext;
+
+/** The record form: Form.Root, Form.Section, Form.Field, Form.Cell, Form.Control and the rest. */
+declare const Form: typeof import('@talxis/base-controls').Form;
+/** A form strategy over a record kept in memory. */
+declare const MemoryStrategy: typeof import('@talxis/base-controls').MemoryStrategy;
 
 declare const FluentProvider: typeof import('@fluentui/react-components').FluentProvider;
 declare const webLightTheme: typeof import('@fluentui/react-components').webLightTheme;
