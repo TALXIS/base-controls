@@ -16,7 +16,6 @@ const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME
 
 const isSummaryRow = (record: IRecord) => record.getDataProvider().getSummarizationType() !== 'none'
 const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValue('stage')))
-const formatMoney = (amount: number) => '$' + amount.toLocaleString('en-US')
 
 const isOverdue = (record: IRecord) => {
     const closeDate = record.getValue('closedate')
@@ -68,6 +67,7 @@ interface IShowcaseProps {
 
 const GridExample = (props: IShowcaseProps) => {
     const { features, rowSelection } = props
+    const { formatting } = usePcfContext()
     const [selection, setSelection] = React.useState<string[]>([])
     const [lastSave, setLastSave] = React.useState<IRecordSaveOperationResult>()
     const selectedIds = rowSelection ? selection : []
@@ -142,7 +142,7 @@ const GridExample = (props: IShowcaseProps) => {
         height='520px' />
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        {selectedIds.length > 0 && <MessageBar>{selectedIds.length} selected, worth {formatMoney(selectedValue)}.</MessageBar>}
+        {selectedIds.length > 0 && <MessageBar>{selectedIds.length} selected, worth {formatting.formatCurrency(selectedValue)}.</MessageBar>}
         {lastSave && !lastSave.success && <MessageBar messageBarType={MessageBarType.warning} onDismiss={() => setLastSave(undefined)}>
             {'Not saved. ' + (lastSave.errors ?? []).map(error => error.message).join(' ')}
         </MessageBar>}

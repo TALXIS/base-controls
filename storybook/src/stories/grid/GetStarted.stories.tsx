@@ -6,9 +6,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid displays and edits the records of a data provider. Each column uses the control for its data type, and edits are validated and saved. Selection, sorting, filtering, grouping, totals and copying are modules you turn on. It is built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>.
+Grid is a data grid for viewing and editing records, built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It shows the records of any data provider from \`@talxis/client-libraries\`, edits each column with the control for its data type, and saves the changes back. Features such as sorting, filtering, grouping and selection are modules, so a grid has only the ones you add.
 
-The example below is a sales pipeline. Pick a preset or toggle features one by one, and open **Code** to see and edit the source. Beyond its built-in features, the grid is open to extension: modules, cell rules, themes, row commands and locks let it fit custom scenarios, and the *Closing deals* and *Business rules* presets show a few. Features marked *Enterprise* need an AG Grid Enterprise licence; these docs don't have one, so turning them on may show AG Grid's watermark.
+The example below is a sales pipeline. Pick a preset, or open **Features** to change features one by one. *Closing deals* and *Business rules* add custom code on top to show how far the grid can be extended. Open **Code** to see and edit the source. Features marked *Enterprise* need an AG Grid Enterprise licence and may show its watermark here.
 
 {{canvas: Overview}}
 

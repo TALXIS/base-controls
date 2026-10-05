@@ -1946,6 +1946,21 @@ declare function useGridField(): IGridField | undefined;
 /** Throws outside Grid.ColumnHeader.Root. */
 declare function useGridColumnHeader(): IGridColumnHeader;
 
+/** Formats values in the user's own formatting. */
+interface IFormatting {
+    formatCurrency(value: number, precision?: number, symbol?: string): string;
+    formatDecimal(value: number, precision?: number): string;
+    formatDateShort(value: Date, includeTime?: boolean): string;
+}
+
+/** The PCF context the grid is drawn in. */
+interface IPcfContext {
+    formatting: IFormatting;
+}
+
+/** Throws outside PcfContextProvider. */
+declare function usePcfContext(): IPcfContext;
+
 /** An optional feature a grid can be given. */
 interface IGridModule {
     /** AG Grid modules the feature needs. */
