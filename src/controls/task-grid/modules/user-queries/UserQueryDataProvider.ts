@@ -124,7 +124,6 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
                         metadata: {}
                     }
                     this._addPropToMetadataQueryCol(newCol, 'isVirtual', col.isVirtual);
-                    this._addPropToMetadataQueryCol(newCol, 'autoHeight', col.autoHeight);
                     return newCol;
                 })
             ]

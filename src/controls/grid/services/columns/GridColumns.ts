@@ -188,7 +188,6 @@ export class GridColumns implements IGridColumns {
             minWidth: MIN_COLUMN_WIDTH,
             lockPinned: true,
             autoHeaderHeight: true,
-            autoHeight: !!column.autoHeight,
             settings: this._getColumnSettings(column),
             editable: this._getEditorAvailability(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),

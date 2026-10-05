@@ -91,7 +91,7 @@ export const COLUMNS: IColumn[] = [
         metadata: gridMetadata(DataTypes.DateAndTimeDateOnly),
     },
     {
-        name: 'summary', dataType: DataTypes.SingleLineTextArea, displayName: 'Summary', visualSizeFactor: 220, autoHeight: false,
+        name: 'summary', dataType: DataTypes.SingleLineTextArea, displayName: 'Summary', visualSizeFactor: 220,
         metadata: gridMetadata(DataTypes.SingleLineTextArea),
     },
     {
@@ -107,7 +107,7 @@ export const COLUMNS: IColumn[] = [
         metadata: gridMetadata(DataTypes.SingleLineUrl),
     },
     {
-        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240, autoHeight: false,
+        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240,
         metadata: gridMetadata(DataTypes.Multiple),
     },
     {

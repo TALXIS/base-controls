@@ -25,7 +25,6 @@ The grid shows what its provider holds: the provider's columns become the grid's
 | \`order\` | The position, lowest first. A move is written back here. | The order you passed |
 | \`isHidden\` | Leaves the column out of the grid. | \`false\` |
 | \`isPrimary\` | Draws the value as a link that opens the record. | \`false\` |
-| \`autoHeight\` | Grows the row to fit wrapped text. | \`false\` |
 | \`disableSorting\` | Keeps the column out of sorting. | \`false\`; \`true\` for multi-select option sets |
 | \`grouping\`, \`aggregation\` | Groups by the column, or totals it. See [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). | None |
 | \`metadata\` | What can be done with the column. See below. | |

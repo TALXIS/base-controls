@@ -263,8 +263,6 @@ interface IColumn {
     type?: 'data' | 'action';
     aggregation?: { aggregationFunction: AggregationFunction; columnName?: string; alias?: string };
     grouping?: { isGrouped: boolean; alias?: string; ungroupedOrder?: number };
-    /** Whether a row grows to fit the column's content. */
-    autoHeight?: boolean;
     controls?: ICustomColumnControl[];
 }
 
