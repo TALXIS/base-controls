@@ -2,6 +2,7 @@
 export const gridSandboxDeclarations = `
 declare const React: typeof import('react');
 declare const dayjs: typeof import('dayjs');
+declare const confetti: typeof import('canvas-confetti');
 type Dayjs = import('dayjs').Dayjs;
 
 /** What React's types say about JSX, for an editor that cannot load them. */
@@ -1975,6 +1976,14 @@ interface IPcfContext {
 
 /** Throws outside PcfContextProvider. */
 declare function usePcfContext(): IPcfContext;
+
+declare const FluentProvider: typeof import('@fluentui/react-components').FluentProvider;
+declare const webLightTheme: typeof import('@fluentui/react-components').webLightTheme;
+declare const Toaster: typeof import('@fluentui/react-components').Toaster;
+declare const Toast: typeof import('@fluentui/react-components').Toast;
+declare const ToastTitle: typeof import('@fluentui/react-components').ToastTitle;
+declare const ToastBody: typeof import('@fluentui/react-components').ToastBody;
+declare const useToastController: typeof import('@fluentui/react-components').useToastController;
 
 /** An optional feature a grid can be given. */
 interface IGridModule {

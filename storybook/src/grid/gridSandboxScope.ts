@@ -1,5 +1,6 @@
 import React from 'react'
 import dayjs from 'dayjs'
+import confetti from 'canvas-confetti'
 import {
     ActionButton, Checkbox, ChoiceGroup, CommandBar, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarType, Panel, PanelType,
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
@@ -12,6 +13,7 @@ import {
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY,
     RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
+import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
 import { createDealsProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider } from './data'
 
@@ -19,12 +21,20 @@ import { createDealsProvider, createProductsProvider, createTicketsProvider, cre
 export const GRID_SANDBOX_SCOPE = {
     React,
     dayjs,
+    confetti,
     Grid,
     useGridService,
     useGridCell,
     useGridField,
     useGridColumnHeader,
     usePcfContext,
+    FluentProvider,
+    webLightTheme,
+    Toaster,
+    Toast,
+    ToastTitle,
+    ToastBody,
+    useToastController,
     GRID_MODULE_PRIORITY,
     GRID_LABELS,
     GRID_SORTING_LABELS,

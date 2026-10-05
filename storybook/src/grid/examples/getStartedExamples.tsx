@@ -1,11 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 import type { IGridExampleFile } from '../GridLivePreview'
-import { FeatureSwitcher, IShowcaseFeatureGroup, IShowcaseFeatureValues, IShowcasePreset } from '../showcase/FeatureSwitcher'
+import { FeatureSwitcher, getPresetValues, IShowcaseFeatureGroup, IShowcaseFeatureValues, IShowcasePreset } from '../showcase/FeatureSwitcher'
 
 const GRID_EXAMPLE = `import { createDealsProvider } from './deals'
-import { IFeatureSwitches, useFeatures } from './features'
-import { SelectionTotal } from './pipelineReview'
+import { FeatureFrame, IFeatureSwitches, useFeatures } from './features'
 
 interface IGridExampleProps {
     /** What the Features panel and its presets have switched on. */
@@ -14,27 +13,17 @@ interface IGridExampleProps {
 
 export const GridExample = (props: IGridExampleProps) => {
     const deals = React.useMemo(createDealsProvider, [])
-    const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-    const [failedSave, setFailedSave] = React.useState<IRecordSaveOperationResult>()
-    const { modules, colDefs, theme, ...featureProps } = useFeatures(deals, props.features, { onSelectionChanged: setSelectedIds })
+    const { modules, frame, ...featureProps } = useFeatures(deals, props.features)
 
-    const grid = <Grid.Root
-        //modules are read once, at mount
-        key={JSON.stringify(props.features)}
-        provider={deals}
-        modules={{ rowModel: createClientSideRowModelModule(), ...modules }}
-        colDefs={{ name: { pinned: 'left' }, ...colDefs }}
-        {...featureProps}
-        onAfterRecordSaved={result => setFailedSave(result.success ? undefined : result)}
-        height='520px' />
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        {props.features.rowSelection && <SelectionTotal deals={deals} selectedIds={selectedIds} />}
-        {failedSave && <MessageBar messageBarType={MessageBarType.warning} onDismiss={() => setFailedSave(undefined)}>
-            Not saved. {failedSave.errors?.map(error => error.message).join(' ')}
-        </MessageBar>}
-        {theme ? <ThemeProvider theme={theme}>{grid}</ThemeProvider> : grid}
-    </Stack>
+    return <FeatureFrame {...frame}>
+        <Grid.Root
+            //modules are read once, at mount
+            key={JSON.stringify(props.features)}
+            provider={deals}
+            modules={{ rowModel: createClientSideRowModelModule(), ...modules }}
+            {...featureProps}
+            height='520px' />
+    </FeatureFrame>
 }
 `
 
@@ -56,9 +45,10 @@ const PRODUCTS = [
     { Value: 40, Label: 'Training', Color: '#ca5010' },
 ]
 
+//without colours, so Recurring reads as plain text
 const YES_NO = [
-    { Value: 0, Label: 'No', Color: '#605e5c' },
-    { Value: 1, Label: 'Yes', Color: '#107c10' },
+    { Value: 0, Label: 'No', Color: '' },
+    { Value: 1, Label: 'Yes', Color: '' },
 ]
 
 const TOTALS: IAttributeMetadata = { SupportedAggregations: ['sum', 'avg', 'min', 'max'] }
@@ -79,14 +69,14 @@ const createColumn = (name: string, displayName: string, dataType: DataType, wid
 })
 
 const COLUMNS: IColumn[] = [
-    createColumn('name', 'Deal', DataTypes.SingleLineText, 230),
+    { ...createColumn('name', 'Deal', DataTypes.SingleLineText, 230), isPrimary: true },
     createColumn('owner', 'Account manager', DataTypes.SingleLineText, 160),
     createColumn('stage', 'Stage', DataTypes.OptionSet, 130, { OptionSet: STAGES }),
     createColumn('products', 'Products', DataTypes.MultiSelectOptionSet, 200, { OptionSet: PRODUCTS }),
-    { ...createColumn('value', 'Value', DataTypes.Currency, 130, TOTALS), aggregation: { aggregationFunction: 'sum' } },
+    createColumn('value', 'Value', DataTypes.Currency, 130, TOTALS),
     createColumn('discount', 'Discount (%)', DataTypes.Decimal, 120, { ...TOTALS, Precision: 1 }),
-    createColumn('closedate', 'Close date', DataTypes.DateAndTimeDateOnly, 120),
-    { ...createColumn('timespent', 'Time spent', DataTypes.WholeDuration, 120, TOTALS), aggregation: { aggregationFunction: 'sum' } },
+    createColumn('closedate', 'Close date', DataTypes.DateAndTimeDateOnly, 360),
+    createColumn('timespent', 'Time spent', DataTypes.WholeDuration, 120, TOTALS),
     createColumn('recurring', 'Recurring', DataTypes.TwoOptions, 100, { OptionSet: YES_NO }),
     createColumn('nextstep', 'Next step', DataTypes.SingleLineTextArea, 170),
 ]
@@ -136,8 +126,157 @@ export const isSummaryRow = (record: IRecord) => record.getDataProvider().getSum
 
 export const isClosed = (deal: IRecord) => [WON, LOST].includes(Number(deal.getValue('stage')))
 
+/** Whether a close date has passed, or falls within the next seven days. */
+export const getCloseDateState = (closeDate: Date | null | undefined) => {
+    if (!closeDate) {
+        return undefined
+    }
+    const days = dayjs(closeDate).startOf('day').diff(dayjs().startOf('day'), 'day')
+    return days < 0 ? 'overdue' : days <= 7 ? 'dueThisWeek' : undefined
+}
+
+export const isOverdue = (deal: IRecord) => !isSummaryRow(deal) && !isClosed(deal) && getCloseDateState(deal.getValue('closedate')) === 'overdue'
+
+const LARGEST_VALUE = Math.max(...ROWS.map(row => Number(row.value)))
+
+/** How big a value is next to the largest deal, from 0 to 1. */
+export const getValueShare = (value: number) => value / LARGEST_VALUE
+
 //while grouped, a deal is held by the provider of its group
 export const findDeal = (deals: IDataProvider, recordId: string) => [deals, ...deals.getGroupedRecordDataProviders(true)].map(source => source.getRecordsMap()[recordId]).find(Boolean)
+`
+
+const AT_A_GLANCE = `import { getCloseDateState, getValueShare, isClosed, isOverdue, isSummaryRow, LOST, WON } from './deals'
+import type { IFeature } from './features'
+
+/** What a cell shows: a grouped column draws its value in the group's row rather than in the deal's. */
+const getShownValue = (runtime: IGridRuntime, record: IRecord, columnName: string) => {
+    const grouping = runtime.services.find('grouping')
+    const column = runtime.services.get('provider').getColumnsMap()[columnName]
+    if (column && grouping?.isColumnGrouped(column)) {
+        return grouping.isRowGroupedBy(record, columnName) ? record.getValue(grouping.getGroupedValueColumnName(record, columnName)) : undefined
+    }
+    return isSummaryRow(record) ? undefined : record.getValue(columnName)
+}
+
+const CLOSE_DATE_ICONS = { overdue: 'Warning', dueThisWeek: 'Clock' }
+const CLOSE_DATE_TINTS = { overdue: '#fde7e9', dueThisWeek: '#fff4ce' }
+
+//light to deep green, by how big the deal is
+const VALUE_TINTS = ['#f3faf3', '#dff6dd', '#bfe8bc']
+
+/** An icon before overdue and due close dates. */
+const statusIcons: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('cells').registerControlParametersHook((parameters, { record, columnName }) => {
+            const value = getShownValue(runtime, record, columnName)
+            const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
+            if (state) {
+                parameters.PrefixIcon = { raw: CLOSE_DATE_ICONS[state] }
+            }
+        })
+    },
+}
+
+/** Close dates tinted red when overdue and amber when due this week, and Value tinted by deal size. */
+const colourRules: IGridModule = {
+    onRegister: runtime => {
+        //after grouping, which repaints every row while the deals are grouped
+        runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
+            const value = getShownValue(runtime, record, columnName)
+            if (value == null || isClosed(record)) {
+                return
+            }
+            const state = columnName === 'closedate' ? getCloseDateState(value) : undefined
+            if (state) {
+                theme.colors.background = CLOSE_DATE_TINTS[state]
+            }
+            if (columnName === 'value') {
+                theme.colors.background = VALUE_TINTS[Math.min(Math.floor(getValueShare(Number(value)) * VALUE_TINTS.length), VALUE_TINTS.length - 1)]
+            }
+        }, GRID_MODULE_PRIORITY.grouping + 1)
+    },
+}
+
+/** What the colours and icons in Close date mean. */
+const headerExtras: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('columns').headers.registerColumnHeaderAdornmentsHook((adornments, header) => {
+            const legend = LEGENDS[header.getColumn()?.name ?? '']
+            if (legend) {
+                adornments.push({ key: 'legend', placement: 'suffix', title: legend, onRender: () => <Icon iconName='Info' /> })
+            }
+        })
+    },
+}
+
+const LEGENDS: { [columnName: string]: string } = {
+    closedate: 'red when overdue, amber when due this week',
+}
+
+/** Commands in the close date of an overdue deal that push it back. */
+const overdueActions: IGridModule = {
+    onRegister: runtime => {
+        //the field saves the deal while auto-save is on
+        const pushBack = (deal: IRecord, days: number) => runtime.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
+        runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
+            if (columnName !== 'closedate' || !isOverdue(record) || getShownValue(runtime, record, columnName) == null) {
+                return
+            }
+            result.items.push({ key: 'pushWeek', text: 'Push a week', iconProps: { iconName: 'Forward' }, onClick: () => { pushBack(record, 7) } })
+            result.items.push({ key: 'pushMonth', text: 'Push a month', iconProps: { iconName: 'Calendar' }, onClick: () => { pushBack(record, 30) } })
+        })
+    },
+}
+
+type ICondition = ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression
+
+//the filter writes option set values as strings
+const OPEN_DEALS: ICondition[] = [{ attributeName: 'stage', conditionOperator: Operators.NotIn.Value, value: [String(WON), String(LOST)] }]
+const today = () => dayjs().format('YYYY-MM-DD')
+
+const QUICK_VIEWS: { [columnName: string]: { key: string; text: string; iconName: string; conditions: ICondition[] }[] } = {
+    closedate: [
+        { key: 'overdue', text: 'Overdue', iconName: 'Warning', conditions: [...OPEN_DEALS, { attributeName: 'closedate', conditionOperator: Operators.OnOrBefore.Value, value: dayjs().subtract(1, 'day').format('YYYY-MM-DD') }] },
+        { key: 'dueThisWeek', text: 'Due this week', iconName: 'Clock', conditions: [...OPEN_DEALS, { attributeName: 'closedate', conditionOperator: Operators.OnOrAfter.Value, value: today() }, { attributeName: 'closedate', conditionOperator: Operators.OnOrBefore.Value, value: dayjs().add(7, 'day').format('YYYY-MM-DD') }] },
+    ],
+    value: [
+        { key: 'bigDeals', text: 'Deals over $25,000', iconName: 'Money', conditions: [{ attributeName: 'value', conditionOperator: Operators.GreaterThan.Value, value: '25000' }] },
+    ],
+}
+
+/** A Quick views section in the menus of Close date and Value, each view a ready-made filter. */
+const quickViews: IGridModule = {
+    onRegister: runtime => {
+        const deals = runtime.services.get('provider')
+        const show = (conditions: ICondition[] | null) => {
+            deals.setFiltering(conditions ? { filterOperator: Type.And.Value, conditions } : null)
+            deals.refresh()
+        }
+        runtime.services.get('columns').headers.registerColumnMenuSectionHook((sections, header) => {
+            const views = QUICK_VIEWS[header.getColumn()?.name ?? '']
+            if (!views) {
+                return
+            }
+            sections.push({
+                key: 'quickViews',
+                title: 'Quick views',
+                items: [
+                    ...views.map(view => ({ key: view.key, text: view.text, iconProps: { iconName: view.iconName }, onClick: () => show(view.conditions) })),
+                    { key: 'showAll', text: 'Show all deals', iconProps: { iconName: 'ClearFilter' }, onClick: () => show(null) },
+                ],
+            })
+        }, GRID_MODULE_PRIORITY.aggregation + 1)
+    },
+}
+
+export const AT_A_GLANCE: { [feature: string]: IFeature } = {
+    statusIcons: () => ({ modules: { custom: [statusIcons] } }),
+    colourRules: () => ({ modules: { custom: [colourRules] } }),
+    headerExtras: () => ({ modules: { custom: [headerExtras] } }),
+    overdueActions: () => ({ modules: { custom: [overdueActions] } }),
+    quickViews: () => ({ modules: { custom: [quickViews] } }),
+}
 `
 
 const READ_ONLY_LIST = `import type { IFeature } from './features'
@@ -163,53 +302,103 @@ const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME
 export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
     editing: () => ({ enableEditing: true, colDefs: { recurring: { settings: { cell: { oneClickEdit: true } } } } }),
-    autoSave: () => ({ enableAutoSave: true }),
+    autoSave: ({ toasts }) => ({
+        enableAutoSave: true,
+        onAfterRecordSaved: result => {
+            if (!result.success) {
+                toasts.dispatchToast(<Toast>
+                    <ToastTitle>Not saved</ToastTitle>
+                    <ToastBody>{result.errors?.map(error => error.message).join(' ')}</ToastBody>
+                </Toast>, { intent: 'error', timeout: 6000 })
+            }
+        },
+    }),
     cellSelection: () => ({ modules: { cellSelection: createCellSelectionModule() } }),
     clipboard: () => ({ modules: { clipboard: createClipboardModule() } }),
     compactRows: () => ({ rowHeight: COMPACT_ROW_HEIGHT }),
-    excelTheme: () => ({ theme: EXCEL_THEME }),
+    excelTheme: () => ({ frame: { theme: EXCEL_THEME } }),
 }
 `
 
 const PIPELINE_REVIEW = `import { findDeal } from './deals'
-import type { IFeature } from './features'
+import type { IFeature, IFeatureSwitches, IToasts } from './features'
 
 export const PIPELINE_REVIEW: { [feature: string]: IFeature } = {
-    rowSelection: ({ switches, onSelectionChanged }) => ({ modules: { rowSelection: createRowSelectionModule({ mode: switches.rowSelection || 'multiple', onSelectionChanged }) } }),
+    rowSelection: ({ deals, switches, toasts, formatting }) => ({
+        modules: { rowSelection: createRowSelectionModule({ mode: switches.rowSelection || 'multiple', onSelectionChanged: selectedIds => showSelectionTotal(deals, selectedIds, toasts, formatting) }) },
+    }),
     grouping: () => ({ modules: { grouping: createGroupingModule() } }),
     aggregation: () => ({ modules: { aggregation: createAggregationModule() } }),
 }
 
-/** Groups the deals by stage while the Grouping feature is on. */
-export const useStageGrouping = (deals: IDataProvider, isGrouped: boolean) => {
+const STAGE_GROUP: IGroupByMetadata = { alias: 'stage_group', columnName: 'stage' }
+
+const STAGE_TOTALS: IAggregationMetadata[] = [
+    { alias: 'value_sum', columnName: 'value', aggregationFunction: 'sum' },
+    { alias: 'timespent_sum', columnName: 'timespent', aggregationFunction: 'sum' },
+]
+
+/** Groups the deals by stage with totals for the Pipeline review preset, and clears what the user grouped or totalled when the features change. */
+export const useStageGrouping = (deals: IDataProvider, switches: IFeatureSwitches) => {
+    const isReviewed = !!switches.groupByStage
     React.useEffect(() => {
-        const isGroupedNow = deals.grouping.getGroupBys().length > 0
-        if (isGroupedNow === isGrouped) {
+        const groupBys = deals.grouping.getGroupBys()
+        const aggregations = deals.aggregation.getAggregations()
+        if (!groupBys.length && !aggregations.length && !isReviewed) {
             return
         }
         //clear() would leave an ungrouped column read-only
-        deals.grouping.getGroupBys().forEach(groupBy => deals.grouping.removeGroupBy(groupBy.alias))
-        if (isGrouped) {
-            deals.grouping.addGroupBy({ alias: 'stage_group', columnName: 'stage' })
+        groupBys.forEach(groupBy => deals.grouping.removeGroupBy(groupBy.alias))
+        aggregations.forEach(aggregation => deals.aggregation.removeAggregation(aggregation.alias))
+        if (isReviewed) {
+            deals.grouping.addGroupBy(STAGE_GROUP)
+            STAGE_TOTALS.forEach(total => deals.aggregation.addAggregation(total))
         }
         deals.refresh()
-    }, [isGrouped])
+    }, [switches.grouping, switches.aggregation, isReviewed])
 }
 
-interface ISelectionTotalProps {
-    deals: IDataProvider
-    selectedIds: string[]
-}
+const SELECTION_TOAST = 'selectionTotal'
 
-/** Adds up the value of the selected deals. */
-export const SelectionTotal = (props: ISelectionTotalProps) => {
-    const { formatting } = usePcfContext()
-    const selected = props.selectedIds.map(recordId => findDeal(props.deals, recordId)).filter(Boolean)
+//whether the total is on screen, to update it rather than raise it again
+let isSelectionTotalShown = false
+
+/** Adds up the value of the selected deals in a toast that stays while any are selected. */
+const showSelectionTotal = (deals: IDataProvider, selectedIds: string[], toasts: IToasts, formatting: IFormatting) => {
+    const selected = selectedIds.map(recordId => findDeal(deals, recordId)).filter(Boolean)
     if (!selected.length) {
-        return null
+        toasts.dismissToast(SELECTION_TOAST)
+        return
     }
     const value = selected.reduce((total, deal) => total + Number(deal.getValue('value') ?? 0), 0)
-    return <MessageBar>{selected.length} selected, worth {formatting.formatCurrency(value)}.</MessageBar>
+    const content = <Toast>
+        <ToastTitle>{selected.length} selected</ToastTitle>
+        <ToastBody>Worth {formatting.formatCurrency(value)} together.</ToastBody>
+    </Toast>
+    if (isSelectionTotalShown) {
+        toasts.updateToast({ toastId: SELECTION_TOAST, content })
+        return
+    }
+    isSelectionTotalShown = true
+    toasts.dispatchToast(content, {
+        toastId: SELECTION_TOAST,
+        intent: 'info',
+        timeout: -1,
+        onStatusChange: (_, data) => {
+            if (data.status === 'unmounted') {
+                isSelectionTotalShown = false
+            }
+        },
+    })
+}
+
+/** Takes the selection total away when rows can no longer be selected. */
+export const useSelectionTotal = (toasts: IToasts, isSelectable: boolean) => {
+    React.useEffect(() => {
+        if (!isSelectable) {
+            toasts.dismissToast(SELECTION_TOAST)
+        }
+    }, [isSelectable])
 }
 `
 
@@ -221,24 +410,37 @@ const closeDeal = async (runtime: IGridRuntime, deal: IRecord, stage: number) =>
     const result = await runtime.services.get('fields').get(deal, 'stage').setValue(stage)
     if (result && !result.success) {
         deal.clearChanges()
+        return false
     }
+    return true
 }
+
+//confetti bursts from the button that won the deal
+const celebrate = (origin: { x: number; y: number }) => confetti({ particleCount: 150, spread: 80, origin })
 
 /** Mark as won and Mark as lost in the actions column; on a selected deal they close every selected deal. */
 const dealCommands: IGridModule = {
     onRegister: runtime => {
         const deals = runtime.services.get('provider')
-        const closeDeals = (deal: IRecord, stage: number) => {
+        const closeDeals = async (deal: IRecord, stage: number, origin: { x: number; y: number }) => {
             const selectedIds = deals.getSelectedRecordIds()
             const targets = selectedIds.includes(deal.getRecordId()) ? selectedIds.map(recordId => findDeal(deals, recordId)) : [deal]
-            targets.filter(target => target && !isClosed(target)).forEach(target => closeDeal(runtime, target, stage))
+            const closed = await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(runtime, target, stage)))
+            if (stage === WON && closed.some(Boolean)) {
+                celebrate(origin)
+            }
+        }
+        //read during the click, since React reuses its events
+        const getOrigin = (button?: HTMLElement) => {
+            const rect = button?.getBoundingClientRect()
+            return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
         }
         runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
-            result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: () => closeDeals(record, WON) })
-            result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: () => closeDeals(record, LOST) })
+            result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: event => { closeDeals(record, WON, getOrigin(event?.currentTarget)) } })
+            result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: event => { closeDeals(record, LOST, getOrigin(event?.currentTarget)) } })
         })
     },
 }
@@ -271,32 +473,9 @@ export const CLOSING_DEALS: { [feature: string]: IFeature } = {
 }
 `
 
-const BUSINESS_RULES = `import { isClosed, isSummaryRow } from './deals'
-import type { IFeature } from './features'
-
-const validateDiscount = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
-    if (Number(record.getValue('discount') ?? 0) > 20) {
-        result.error = true
-        result.errorMessage = 'A discount over 20 % needs a manager.'
-    }
-}
-
-const highlightOverdue = (theme: ThemeBuilder, { record }: { record: IRecord }) => {
-    const closeDate = record.getValue('closedate')
-    if (!isSummaryRow(record) && !isClosed(record) && closeDate && dayjs(closeDate).isBefore(dayjs(), 'day')) {
-        theme.colors.text = '#a4262c'
-    }
-}
-
-export const BUSINESS_RULES: { [feature: string]: IFeature } = {
-    discountRule: () => ({ colDefs: { discount: { settings: { cell: { onGetValidation: validateDiscount } } } } }),
-    overdueDates: () => ({ colDefs: { closedate: { settings: { cell: { onGetTheme: highlightOverdue } } } } }),
-}
-`
-
-const FEATURES = `import { BUSINESS_RULES } from './businessRules'
+const FEATURES = `import { AT_A_GLANCE } from './atAGlance'
 import { CLOSING_DEALS } from './closingDeals'
-import { PIPELINE_REVIEW, useStageGrouping } from './pipelineReview'
+import { PIPELINE_REVIEW, useSelectionTotal, useStageGrouping } from './pipelineReview'
 import { READ_ONLY_LIST } from './readOnlyList'
 import { SPREADSHEET } from './spreadsheet'
 
@@ -308,17 +487,33 @@ export interface IFeatureSwitches {
     [feature: string]: boolean | string | undefined
 }
 
-/** What a feature adds to the grid, besides the theme it is drawn in. */
-export type IFeatureProps = Omit<Partial<IGrid>, 'modules'> & { modules?: Partial<IGridModules>; theme?: ITheme }
+/** What is drawn around the grid. */
+interface IFeatureFrameProps {
+    theme?: ITheme
+    children?: JSX.Element
+}
 
+export const TOASTER_ID = 'deals'
+
+export type IToasts = ReturnType<typeof useToastController>
+
+/** What a feature adds to the grid, and to what is drawn around it. */
+export type IFeatureProps = Omit<Partial<IGrid>, 'modules'> & { modules?: Partial<IGridModules>; frame?: IFeatureFrameProps }
+
+/** What the feature code shares. */
 export interface IFeatureContext {
+    deals: IDataProvider
     switches: IFeatureSwitches
-    onSelectionChanged: (recordIds: string[]) => void
+    toasts: IToasts
+    formatting: IFormatting
 }
 
 export type IFeature = (context: IFeatureContext) => IFeatureProps
 
-const FEATURES: { [feature: string]: IFeature } = { ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS, ...BUSINESS_RULES }
+const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS }
+
+//the deal's name stays in view while nothing is grouped
+const getBaseProps = (switches: IFeatureSwitches): IFeatureProps => switches.grouping ? {} : { colDefs: { name: { pinned: 'left' } } }
 
 //modules, columns and row settings add up across the features
 const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => ({
@@ -327,24 +522,36 @@ const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => (
     modules: { ...props.modules, ...added.modules, custom: [...props.modules?.custom ?? [], ...added.modules?.custom ?? []] },
     colDefs: { ...props.colDefs, ...added.colDefs },
     rowSettings: { ...props.rowSettings, ...added.rowSettings },
+    frame: { ...props.frame, ...added.frame },
 })
 
-export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches, handlers: Omit<IFeatureContext, 'switches'>): IFeatureProps => {
-    useStageGrouping(deals, !!switches.grouping)
-    const context = { ...handlers, switches }
-    return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, {})
+export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches): IFeatureProps => {
+    const toasts = useToastController(TOASTER_ID)
+    const { formatting } = usePcfContext()
+    useStageGrouping(deals, switches)
+    useSelectionTotal(toasts, !!switches.rowSelection)
+    const context: IFeatureContext = { deals, switches, toasts, formatting }
+    return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(switches))
 }
+
+/** Draws the grid in the theme a feature picks, with the toasts the features raise. */
+export const FeatureFrame = (props: IFeatureFrameProps) => <>
+    {props.theme ? <ThemeProvider theme={props.theme}>{props.children}</ThemeProvider> : props.children}
+    <FluentProvider theme={webLightTheme}>
+        <Toaster toasterId={TOASTER_ID} position='bottom-end' />
+    </FluentProvider>
+</>
 `
 
 export const SHOWCASE_FILES: IGridExampleFile[] = [
     { name: 'GridExample.tsx', code: GRID_EXAMPLE },
     { name: 'deals.ts', code: DEALS },
+    { name: 'atAGlance.tsx', code: AT_A_GLANCE },
     { name: 'readOnlyList.ts', code: READ_ONLY_LIST },
-    { name: 'spreadsheet.ts', code: SPREADSHEET },
+    { name: 'spreadsheet.tsx', code: SPREADSHEET },
     { name: 'pipelineReview.tsx', code: PIPELINE_REVIEW },
     { name: 'closingDeals.ts', code: CLOSING_DEALS },
-    { name: 'businessRules.ts', code: BUSINESS_RULES },
-    { name: 'features.ts', code: FEATURES },
+    { name: 'features.tsx', code: FEATURES },
 ]
 
 const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
@@ -368,14 +575,14 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
         features: [
             { key: 'sorting', label: 'Sorting', hint: "Click a column's header to open its menu, and sort by it." },
             { key: 'filtering', label: 'Filtering', hint: 'Open the Stage menu, pick Filter By and keep only the deals in negotiation.' },
-            { key: 'grouping', isEnterprise: true, label: 'Grouping', hint: 'Deals are grouped by Stage. Open the Account manager menu and pick Group to group by it too.' },
-            { key: 'aggregation', label: 'Totals', hint: "Value and Time spent are totalled under the rows, and in every group row. Pick another total from a number column's menu." },
+            { key: 'grouping', isEnterprise: true, label: 'Grouping', hint: "Open a column's menu and pick Group to group the deals by it." },
+            { key: 'aggregation', label: 'Totals', hint: "Open a number column's menu and pick a total; it shows under the rows and in every group row." },
         ],
     },
     {
         title: 'Look',
         features: [
-            { key: 'optionSetColors', label: 'Option set colours', hint: 'Stage and Products are drawn as tags in their own colours, and so is Recurring while Editing is off.' },
+            { key: 'optionSetColors', label: 'Option set colours', hint: 'Stage and Products are drawn as tags in their own colours.' },
             { key: 'zebra', label: 'Zebra rows', hint: 'Every other row is shaded, except while the deals are grouped.' },
             { key: 'compactRows', label: 'Compact rows', hint: 'Rows are 28 pixels tall, a little roomier than in Excel.' },
         ],
@@ -383,21 +590,23 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
 ]
 
 const PRESETS: IShowcasePreset[] = [
+    { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints that read the pipeline for you.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews'] },
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
     { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
-    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors'] },
+    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },
 ]
 
 //what the example adds through its own code, each in a use case of its own
 const EXTENSIBILITY_EXAMPLES: IShowcasePreset[] = [
     { key: 'closing', label: 'Closing deals', iconName: 'Trophy2', description: 'A row command marks deals won or lost, a module colours them by outcome and a row lock keeps them from being edited. Select a few deals and close them all at once.', features: ['editing', 'autoSave', 'rowSelection', 'sorting', 'optionSetColors', 'rowActions', 'closedDealColours', 'lockClosedDeals'] },
-    { key: 'rules', label: 'Business rules', iconName: 'Shield', description: 'A cell rule refuses a Discount over 20 %, and a cell theme draws overdue close dates in red. Edit a Discount to see the rule.', features: ['editing', 'autoSave', 'sorting', 'filtering', 'optionSetColors', 'discountRule', 'overdueDates'] },
 ]
 
+const ALL_PRESETS = [...PRESETS, ...EXTENSIBILITY_EXAMPLES]
+
 export const ShowcaseExample = () => {
-    const [features, setFeatures] = React.useState<IShowcaseFeatureValues>(Object.fromEntries(PRESETS[0].features.map(key => [key, true])))
+    const [features, setFeatures] = React.useState<IShowcaseFeatureValues>(() => getPresetValues(FEATURE_GROUPS, ALL_PRESETS, PRESETS[0]))
     return <GridExampleRunner
         seedCode={SHOWCASE_FILES}
         previewProps={{ features }}
-        renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={[...PRESETS, ...EXTENSIBILITY_EXAMPLES]} values={features} onChange={setFeatures} />} />
+        renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={ALL_PRESETS} values={features} onChange={setFeatures} />} />
 }

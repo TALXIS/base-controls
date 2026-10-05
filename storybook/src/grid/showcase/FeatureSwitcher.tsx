@@ -82,19 +82,24 @@ const fromFieldValue = (feature: IShowcaseFeature, value: unknown): boolean | st
 }
 
 /** Switches the showcase grid's features on and off, a preset at a time or one by one in a panel. */
-export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
-    const [isPanelOpen, setIsPanelOpen] = React.useState(false)
-    const features = props.groups.flatMap(group => group.features)
+/** Every feature as a preset sets it: off unless the preset has it, and on in its first option when it has options. */
+export const getPresetValues = (groups: IShowcaseFeatureGroup[], presets: IShowcasePreset[], preset: IShowcasePreset): IShowcaseFeatureValues => {
+    const features = groups.flatMap(group => group.features)
     //a preset may switch on features no group shows, and picking another one switches them off again
-    const featureKeys = [...new Set([...features.map(feature => feature.key), ...props.presets.flatMap(preset => preset.features)])]
-
-    const getPresetValues = (preset: IShowcasePreset): IShowcaseFeatureValues => Object.fromEntries(featureKeys.map(key => {
+    const featureKeys = [...new Set([...features.map(feature => feature.key), ...presets.flatMap(candidate => candidate.features)])]
+    return Object.fromEntries(featureKeys.map(key => {
         const isOn = preset.features.includes(key)
         const options = features.find(feature => feature.key === key)?.options
         return [key, isOn && options ? options[0].key : isOn]
     }))
+}
 
-    const isActive = (preset: IShowcasePreset) => Object.entries(getPresetValues(preset)).every(([key, value]) => (props.values[key] ?? false) === value)
+export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
+    const [isPanelOpen, setIsPanelOpen] = React.useState(false)
+    const features = props.groups.flatMap(group => group.features)
+    const getValues = (preset: IShowcasePreset) => getPresetValues(props.groups, props.presets, preset)
+
+    const isActive = (preset: IShowcasePreset) => Object.entries(getValues(preset)).every(([key, value]) => (props.values[key] ?? false) === value)
 
     //recreated on open to load the current features
     const strategy = React.useMemo(() => new MemoryStrategy({
@@ -112,7 +117,7 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
 
     return <div className={styles.root}>
         <CommandBar
-            items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getPresetValues(preset)) }))}
+            items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getValues(preset)) }))}
             farItems={[{ key: 'features', text: 'Features', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
         <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} headerText='Features' onDismiss={() => setIsPanelOpen(false)}>
             <Form.Root strategy={strategy} onFieldValueChanged={onFieldValueChanged}>

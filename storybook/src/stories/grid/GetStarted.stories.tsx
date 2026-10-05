@@ -6,9 +6,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid is a data grid for viewing and editing records, built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It shows the records of any data provider from \`@talxis/client-libraries\`, edits each column with the control for its data type, and saves the changes back. Features such as sorting, filtering, grouping and selection are modules, so a grid has only the ones you add.
+Grid shows and edits the records of a data provider, built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. Every column gets the control for its data type, with validation and saving built in. Sorting, filtering, grouping, selection and the rest are [modules](?path=/docs/grid-modules--overview), so you include only what you need.
 
-The example below is a sales pipeline. Pick a preset, or open **Features** to change features one by one. *Closing deals* and *Business rules* add custom code on top to show how far the grid can be extended. Open **Code** to see and edit the source. Features marked *Enterprise* need an AG Grid Enterprise licence and may show its watermark here.
+Below is an example of a sales pipeline. Pick a preset or open **Features** to turn features on one by one, and open **Code** to read and edit the source. *Closing deals* adds custom code to show how the grid can be extended. *Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid shows a watermark.
 
 {{canvas: Overview}}
 
@@ -19,55 +19,34 @@ The example below is a sales pipeline. Pick a preset, or open **Features** to ch
 ## Your first grid
 
 \`\`\`tsx
-import { useMemo } from 'react'
-import { Grid, PcfContextProvider, createClientSideRowModelModule, createSortingModule } from '@talxis/base-controls'
+import { Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
-const createProvider = () => {
-    const provider = new MemoryDataProvider({
-        dataSource: [
-            { productid: 'desk', name: 'Standing desk', price: 640 },
-            { productid: 'chair', name: 'Ergonomic chair', price: 410 },
-        ],
-        metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
-    })
-    provider.setColumns([
-        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, metadata: { IsValidForGrid: true } },
-        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, metadata: { IsValidForGrid: true } },
-    ])
-    provider.refresh()
-    return provider
-}
+const products = new MemoryDataProvider({
+    dataSource: [
+        { productid: 'desk', name: 'Standing desk', price: 640 },
+        { productid: 'chair', name: 'Ergonomic chair', price: 410 },
+    ],
+    metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
+    columns: [
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency },
+    ],
+})
 
-export const ProductGrid = () => {
-    const provider = useMemo(createProvider, [])
-    return <PcfContextProvider>
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-            }} />
-    </PcfContextProvider>
-}
+export const ProductGrid = () => <PcfContextProvider>
+    <Grid.Root provider={products} modules={{ rowModel: createClientSideRowModelModule() }} />
+</PcfContextProvider>
 \`\`\`
 
-- \`provider\` holds the records and describes the columns. Any data provider from \`@talxis/client-libraries\` works. The grid does not load it: call \`refresh()\` yourself. What the grid reads from it is on [**Data**](?path=/docs/grid-get-started-data--overview).
-- \`modules\` lists the features the grid has. \`rowModel\` is the only one every grid needs; the rest are on [**Modules**](?path=/docs/grid-modules--overview).
-- \`PcfContextProvider\` is required: the grid reads the PCF context from it. Inside a PCF control, pass it your control's \`context\`; without one it builds a sample context.
-
-Before the first grid renders, also:
-
-- call \`initializeIcons()\` from \`@fluentui/react\` once, since the grid draws Fluent icons and registers none;
-- let your bundler handle CSS imports from \`node_modules\`, since the grid imports AG Grid's stylesheets;
-- wrap the grid in a \`ThemeProvider\` for your own colours, or it uses Fluent's default theme. See [**Appearance**](?path=/docs/grid-appearance--overview).
-
-Every prop and event of \`<Grid.Root />\` is listed on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
+- \`provider\` holds the records and columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`.
+- \`modules\` switch features on. Only \`rowModel\` is required. All modules are listed on [**Modules**](?path=/docs/grid-modules--overview).
+- \`PcfContextProvider\` must wrap the grid. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 `
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-get-started-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
-    { title: 'Editing that saves', iconName: 'Edit', href: '?path=/docs/grid-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
+    { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
     { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add row commands, and extend the header menus.' },
     { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, your own labels, and your own cells, headers and overlays.' },
