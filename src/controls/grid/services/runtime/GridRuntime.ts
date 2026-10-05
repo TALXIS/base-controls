@@ -185,6 +185,7 @@ export class GridRuntime implements IGridRuntime {
                 initialState: this._onGetProps().state,
                 enableGroupEdit: true,
                 reactiveCustomComponents: true,
+                animateRows: false,
                 getRowId: this._getRowId,
                 onGridReady: this._onGridReady,
                 onGridPreDestroyed: this._onGridPreDestroyed,
