@@ -114,6 +114,7 @@ export class GridControl implements IGridControl {
             Cell: { raw: this._cell },
             Provider: { raw: this._provider },
             Record: { raw: this._record },
+            Runtime: { raw: this._services.get('grid') },
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
             IsPrimaryColumn: { raw: !!this._cell.getSettings().isPrimary, type: DataTypes.TwoOptions },

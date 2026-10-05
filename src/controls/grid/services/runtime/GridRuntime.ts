@@ -8,7 +8,7 @@ import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
 import { IGridModule } from "../../modules";
-import { IGrid, IGridEventHandlers } from "../../interfaces";
+import { IGrid, IGridEventHandlers, IGridOpenRecordParams } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import { GridSettings } from "../settings";
@@ -73,6 +73,8 @@ export interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
+    /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
+    openRecord(params: IGridOpenRecordParams): void;
 }
 
 export class GridRuntime implements IGridRuntime {
@@ -170,6 +172,16 @@ export class GridRuntime implements IGridRuntime {
         //later options reach AG Grid through `refreshAgGridOptions`
         this._agGridProps ??= this._evaluateAgGridInitialOptions();
         return this._agGridProps;
+    }
+
+    public openRecord(params: IGridOpenRecordParams): void {
+        const onOpenRecord = this._onGetProps().onOpenRecord;
+        if (onOpenRecord) {
+            onOpenRecord(params);
+            return;
+        }
+        //a grouped row's provider has none of the root's interceptors
+        this._provider.openDatasetItem(params.reference, { columnName: params.columnName });
     }
 
     public destroy(): void {

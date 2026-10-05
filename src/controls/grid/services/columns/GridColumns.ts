@@ -293,7 +293,7 @@ export class GridColumns implements IGridColumns {
         const columnName = event.colDef.colId!;
         this.events.dispatchEvent('onCellDoubleClicked', record, columnName);
         if (this._settings.isNavigationEnabled() && !this._settings.isEditingEnabled()) {
-            record.getDataProvider().openDatasetItem(record.getNamedReference());
+            this._services.get('grid').openRecord({ record: record, reference: record.getNamedReference() });
         }
     }
 

@@ -1,4 +1,4 @@
-import { AggregationFunction, DataType, DataTypes, IColumn, IRawRecord, MemoryDataProvider, Operators } from '@talxis/client-libraries'
+import { AggregationFunction, DataType, DataTypes, IColumn, MemoryDataProvider, Operators } from '@talxis/client-libraries'
 
 export const SUPPORTED_AGGREGATIONS: AggregationFunction[] = ['sum', 'avg', 'max', 'min']
 
@@ -23,21 +23,9 @@ export interface IDocsProviderOptions {
     columns: IColumn[]
 }
 
-const FILE_KEYS = ['', '.filename', '.filesizeinbytes', '.mimetype', '.fileurl', '.thumbnailurl']
-
-class DocsMemoryDataProvider extends MemoryDataProvider {
-    //client-libraries' Record.toRawData drops file and image values when a record saves
-    public onRecordRawDataUpdate(recordId: string, newRawData: IRawRecord): void {
-        const previous = this.getRawRecord(recordId) ?? {}
-        const fileColumns = this.getColumns().filter(column => isFileType(column.dataType as DataType))
-        const keptFiles = Object.fromEntries(fileColumns.flatMap(column => FILE_KEYS.map(key => [column.name + key, previous[column.name + key]])))
-        super.onRecordRawDataUpdate(recordId, { ...newRawData, ...keptFiles })
-    }
-}
-
 /** An in-memory provider over a copy of the rows, every row on one page, not yet loaded. */
 export const createMemoryProvider = (options: IDocsProviderOptions): MemoryDataProvider => {
-    return new DocsMemoryDataProvider({
+    return new MemoryDataProvider({
         dataSource: options.rows.map(row => ({ ...row })),
         metadata: {
             PrimaryIdAttribute: options.primaryIdAttribute,

@@ -51,10 +51,6 @@ const ProductPanel = (props: IProductPanelProps) => {
 const GridExample = () => {
     const [productId, setProductId] = React.useState<string>()
 
-    React.useEffect(() => {
-        provider.setInterceptor('onOpenDatasetItem', reference => setProductId(reference.id.guid))
-    }, [])
-
     return <>
         <Grid.Root
             provider={provider}
@@ -62,6 +58,7 @@ const GridExample = () => {
             colDefs={{
                 name: { pinned: 'left', settings: { isPrimary: true } },
             }}
+            onOpenRecord={({ record }) => setProductId(record.getRecordId())}
             height='420px' />
         <ProductPanel product={productId ? provider.getRecordsMap()[productId] : undefined} onDismiss={() => setProductId(undefined)} />
     </>

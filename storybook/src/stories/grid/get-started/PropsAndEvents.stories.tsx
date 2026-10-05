@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { InvoiceLinesExample, TicketPreviewPaneExample, WatchEveryEventExample } from '../../../grid/examples/propsAndEventsExamples'
+import { FillContainerExample, InvoiceLinesExample, TicketPreviewPaneExample, WatchEveryEventExample } from '../../../grid/examples/propsAndEventsExamples'
 
 const DESCRIPTION = `
 Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the events it fires.
@@ -27,6 +27,7 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`state\` | \`GridState\`, from AG Grid | None | At mount | The AG Grid state the grid starts from. See *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview). |
+| \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
 | \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | See *onGridReady and onDestroyed* below. |
 | \`onDataLoaded\`, \`onRowClicked\` and the other events | Functions | None | Live | See *Events* below. |
 
@@ -34,15 +35,20 @@ A prop read at mount keeps the value the grid mounted with. To change one, rende
 
 ## Sizing
 
-Without \`height\`, the grid is as tall as its rows. It grows until its rows area holds \`maxVisibleRows\` rows of \`rowHeight\`, 630px by default, and then the rows scroll. The header and the totals row come on top of that, and a grid with no rows keeps a rows area of 135px for its *No records found.* message.
+**Without \`height\`**, the grid grows with its rows:
 
-With \`height\`, the grid is that tall and its rows scroll inside it, whatever \`maxVisibleRows\` says. \`'100%'\` fills a parent that has a height of its own.
+- The rows area grows up to \`maxVisibleRows\` × \`rowHeight\` (630px by default), then scrolls.
+- The header and the totals row are added on top.
+- With no rows, the rows area stays 135px tall for the *No records found.* message.
+- Taller rows use up the cap sooner, so fewer rows fit.
 
-The grid is never shorter than 220px, so \`height='150px'\` draws a grid 220px tall.
+**With \`height\`**, the grid is exactly that tall and its rows scroll inside it. \`maxVisibleRows\` is ignored. \`'100%'\` fills a parent that has its own height.
 
-The cap is \`maxVisibleRows\` times \`rowHeight\`, so fewer rows fit under it when some are taller: rows whose text wraps, rows \`rowSettings.onGetHeight\` makes taller, or rows the user drags taller.
+**In both cases**, the grid is at least 220px tall, so \`height='150px'\` still draws 220px.
 
 {{story: Invoice lines that grow}}
+
+{{story: Fill its container}}
 
 ## Events
 
@@ -112,6 +118,18 @@ export const InvoiceLinesThatGrow: Story = {
         docs: {
             description: {
                 story: `An invoice form's line items. The grid has no \`height\`, so it grows with its lines up to \`maxVisibleRows\` and then scrolls. Add lines until it scrolls, move the slider to change \`maxVisibleRows\` while the grid stays mounted, or remove lines to see the grid stay 220px tall however few it holds.`,
+            },
+        },
+    },
+}
+
+export const FillItsContainer: Story = {
+    name: 'Fill its container',
+    render: () => renderStory(<FillContainerExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `With \`height='100%'\`, the grid takes up its whole container and resizes with it. Move the slider to change the container's height.`,
             },
         },
     },

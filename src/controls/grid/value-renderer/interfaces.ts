@@ -1,7 +1,7 @@
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
 import { IAlignment } from "@utils";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import type { IGridCell } from "@controls/grid";
+import type { IGridCell, IGridRuntime } from "@controls/grid";
 import { IGridValueRendererComponents } from "./components";
 
 /** A file or an image, as a record holds one. */
@@ -40,6 +40,10 @@ export interface IGridValueRendererParameters extends IParameters {
     }
     Record: {
         raw: IRecord;
+    }
+    /** The grid the value is drawn in, which opens records. */
+    Runtime: {
+        raw: IGridRuntime;
     }
     PrefixIcon: IStringProperty;
     SuffixIcon: IStringProperty;

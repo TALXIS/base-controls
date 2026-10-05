@@ -82,7 +82,7 @@ const toRawRecord = ({ initials, color, contact, ...supplier }: typeof SUPPLIERS
     }
 }
 
-const createDirectory = (onOpen: (message: string) => void) => {
+const createDirectory = () => {
     const directory = new MemoryDataProvider({
         dataSource: SUPPLIERS.map(toRawRecord),
         metadata: { PrimaryIdAttribute: 'supplierid', PrimaryNameAttribute: 'name', LogicalName: 'supplier' },
@@ -108,17 +108,16 @@ const createDirectory = (onOpen: (message: string) => void) => {
         { name: 'certificate', displayName: 'ISO certificate', dataType: DataTypes.File, visualSizeFactor: 230 },
         { name: 'logo', displayName: 'Logo', dataType: DataTypes.Image, visualSizeFactor: 130 },
     ])
-    directory.setInterceptor('onOpenDatasetItem', reference => onOpen('Opening ' + reference.etn + ' ' + reference.name))
     return directory
 }
 
 const GridExample = () => {
     const [opened, setOpened] = React.useState('')
-    const directory = React.useMemo(() => createDirectory(setOpened), [])
+    const directory = React.useMemo(createDirectory, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
-        <Grid.Root provider={directory} modules={{ rowModel: createClientSideRowModelModule() }} enableEditing enableOptionSetColors height='360px' />
+        <Grid.Root provider={directory} modules={{ rowModel: createClientSideRowModelModule() }} enableEditing enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
     </Stack>
 }
 `

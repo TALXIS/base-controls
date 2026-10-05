@@ -1789,6 +1789,16 @@ interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
+    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
+    openRecord(params: IGridOpenRecordParams): void;
+}
+
+interface IGridOpenRecordParams {
+    record: IRecord;
+    /** The record to open: the row's own, or the one a lookup link points to. */
+    reference: ComponentFramework.EntityReference;
+    /** None for a double-click on the row. */
+    columnName?: string;
 }
 
 type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
@@ -2255,6 +2265,8 @@ interface IGridValueRendererParameters extends IParameters {
     Cell: { raw: IGridCell | undefined };
     /** Always the grid's own provider, also in a group row. */
     Provider: { raw: IDataProvider };
+    /** The grid the value is drawn in, which opens records. */
+    Runtime: { raw: IGridRuntime };
     Record: { raw: IRecord };
     PrefixIcon: { raw: string | null; type?: string };
     SuffixIcon: { raw: string | null; type?: string };
@@ -2830,6 +2842,8 @@ interface IGrid extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** Read once, at mount. */
     state?: GridState;
+    /** Replaces opening a record from the grid. */
+    onOpenRecord?: (params: IGridOpenRecordParams) => void;
     /** Fired once gridApi is among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;
     /** Fired before the grid tears down. */

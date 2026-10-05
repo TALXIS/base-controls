@@ -9,7 +9,7 @@ const DEFAULT_PLACEHOLDER = '---';
 
 /** A value, drawn by its column's data type, with every piece replaceable through `components`. */
 export const GridValueRenderer = (props: IGridValueRenderer) => {
-    const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, IsPrimaryColumn, IsMultiline, Column, Record } = props.parameters;
+    const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, IsPrimaryColumn, IsMultiline, Column, Record, Runtime } = props.parameters;
     const record = Record.raw;
     const column = Column.raw;
     const dataType = column?.dataType;
@@ -20,10 +20,6 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
     const isMultiline = !!IsMultiline?.raw;
     const styles = useMemo(() => getGridValueRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
     const components = { ...GridValueRendererComponents, ...props.components };
-
-    const openRecord = (reference?: ComponentFramework.EntityReference) => {
-        record.getDataProvider().openDatasetItem(reference ?? record.getNamedReference(), { columnName: column?.name });
-    };
 
     const renderValue = (): JSX.Element => {
         if (!formattedValue) {
@@ -50,7 +46,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
                 const references: ComponentFramework.EntityReference[] = Array.isArray(value) ? value : value ? [value] : [];
                 return components.onRenderLookup({
                     children: references.map((reference, index) => <Fragment key={reference.id?.guid ?? `${reference.name}-${index}`}>
-                        {components.onRenderLink({ text: reference.name, onClick: () => openRecord(reference), isMultiline: isMultiline })}
+                        {components.onRenderLink({ text: reference.name, onClick: () => Runtime.raw.openRecord({ record: record, reference: reference, columnName: column?.name }), isMultiline: isMultiline })}
                     </Fragment>),
                 });
             }
@@ -76,7 +72,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
         }
         //the primary column's value is the one that stands for the record itself
         return enableNavigation && IsPrimaryColumn?.raw
-            ? components.onRenderLink({ text: formattedValue, onClick: () => openRecord(), isMultiline: isMultiline })
+            ? components.onRenderLink({ text: formattedValue, onClick: () => Runtime.raw.openRecord({ record: record, reference: record.getNamedReference(), columnName: column?.name }), isMultiline: isMultiline })
             : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
     };
 

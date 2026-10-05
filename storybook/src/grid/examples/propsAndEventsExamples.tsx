@@ -54,6 +54,22 @@ const GridExample = () => {
 }
 `
 
+export const FILL_CONTAINER_CODE = `const styles = mergeStyleSets({
+    container: { border: '1px solid #edebe9', borderRadius: 4, overflow: 'hidden' },
+})
+
+const GridExample = () => {
+    const [containerHeight, setContainerHeight] = React.useState(360)
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
+        <div className={styles.container} style={{ height: containerHeight }}>
+            <Grid.Root provider={provider} modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
+        </div>
+    </Stack>
+}
+`
+
 export const WATCH_EVERY_EVENT_CODE = `interface ILogEntry {
     id: number
     time: string
@@ -179,6 +195,8 @@ const GridExample = () => {
 `
 
 export const InvoiceLinesExample = () => <GridExampleRunner seedCode={INVOICE_LINES_CODE} />
+
+export const FillContainerExample = () => <GridExampleRunner seedCode={FILL_CONTAINER_CODE} />
 
 export const WatchEveryEventExample = () => <GridExampleRunner seedCode={WATCH_EVERY_EVENT_CODE} dataset='tickets' />
 

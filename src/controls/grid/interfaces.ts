@@ -9,6 +9,14 @@ import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
+export interface IGridOpenRecordParams {
+    record: IRecord;
+    /** The record to open: the row's own, or the one a lookup link points to. */
+    reference: ComponentFramework.EntityReference;
+    /** None for a double-click on the row. */
+    columnName?: string;
+}
+
 export interface IGridEventHandlers {
     /** Fired once new data is in the grid. */
     onDataLoaded: () => void;
@@ -70,6 +78,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** AG Grid state for column order, widths and sorting; read at mount, then `gridApi`. */
     state?: GridState;
+    /** Replaces opening a record from the grid. */
+    onOpenRecord?: (params: IGridOpenRecordParams) => void;
     /** Fired once AG Grid is ready, with its api among the runtime's services. */
     onGridReady?: (runtime: IGridRuntime) => void;
     /** Fired before the grid tears down, while its api still answers. */

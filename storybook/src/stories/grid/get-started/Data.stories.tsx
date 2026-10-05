@@ -161,7 +161,7 @@ export const EveryDataTypeInOneGrid: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A supplier directory with a column of each data type in the table below, except language and time zone, with \`enableEditing\` and \`enableOptionSetColors\`. Double-click a cell to open its editor, or click a Supplier or a Contact: an \`onOpenDatasetItem\` interceptor says what the link opens. Contact is read-only because a lookup's editor searches Dataverse, and this page has none.`,
+                story: `A supplier directory with a column of each data type in the table below, with \`enableEditing\` and \`enableOptionSetColors\`. Double-click a cell to open its editor, or click a Supplier or a Contact: \`onOpenRecord\` says what the link opens. Contact is read-only because a lookup's editor currently only works in an Xrm environment with a \`FetchXmlDataProvider\`.`,
             },
         },
     },

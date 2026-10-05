@@ -54,7 +54,7 @@ Every column of the provider becomes a column of the grid, drawn and edited by i
 ## Links to the record
 
 - \`settings.isPrimary: true\` draws a column's value as a link to its record. It defaults to the provider column's \`isPrimary\`; the provider's primary name column is no link until you set it.
-- A click on the link, or a double-click on a cell while editing is off, calls \`provider.openDatasetItem()\`, and the provider decides what opening a record does. Change it with \`provider.setInterceptor('onOpenDatasetItem', (reference, defaultAction) => ...)\`: \`reference\` is \`{ id: { guid }, name, etn }\`, and \`defaultAction(reference)\` opens the record the provider's way.
+- A click on the link, or a double-click on a cell while editing is off, opens the record through \`provider.openDatasetItem()\`. To do something else, pass \`onOpenRecord\` to \`<Grid.Root />\`: it gets \`{ record, reference, columnName }\` and replaces opening. Call \`provider.openDatasetItem(reference)\` in it to open the record after all.
 - With \`enableNavigation={false}\` the value is plain text and a double-click opens nothing ([**Props and events**](?path=/docs/grid-get-started-props-and-events--overview)).
 
 {{story: Work out the stock value}}
@@ -202,7 +202,7 @@ export const OpenAProductFromItsName: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A shop assistant looks a product up: \`settings.isPrimary\` draws Product as a link, and \`provider.setInterceptor('onOpenDatasetItem')\` opens the product's details in a panel. Click a product's name, or double-click its row.`,
+                story: `A shop assistant looks a product up: \`settings.isPrimary\` draws Product as a link, and \`onOpenRecord\` opens the product's details in a panel. Click a product's name, or double-click its row.`,
             },
         },
     },
