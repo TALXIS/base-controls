@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import {
-    HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample,
+    AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample,
 } from '../../grid/examples/columnsExamples'
 
 const DESCRIPTION = `
@@ -11,7 +11,7 @@ Every provider column becomes a grid column. \`colDefs\` changes them and adds y
 
 ## Changing a column
 
-\`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key plus the grid's \`settings\` (see *Reference*).
+\`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key plus the grid's \`settings\`.
 
 \`\`\`tsx
 <Grid.Root
@@ -52,7 +52,7 @@ A column's width comes from its \`visualSizeFactor\`, or \`initialWidth\` in \`c
 Add a column by giving \`colDefs\` a key that isn't a provider column, then work its value out from the record:
 
 - \`valueGetter\` returns the value. Copying uses it too.
-- \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\` and \`Container\` as the example below does. See [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview) for both.
+- \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\` and \`Container\` as the example below does. See [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) for both.
 - Read the record with \`useGridCell()\` inside the cell, so the value updates when the record changes.
 - The column is placed last and keeps its \`initialWidth\`. It has no menu or editor, and isn't saved with the layout.
 - Group and totals rows draw it too, so draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`.
@@ -81,7 +81,7 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 
 {{story: Flag low stock in the header}}
 
-## Long text
+## Multiline content
 
 - Multiline text and text area columns wrap, up to six lines. The full text is in the tooltip.
 - Users can drag a row taller by the grip on a cell's bottom edge.
@@ -89,7 +89,13 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 
 {{story: Read long notes}}
 
-## Remembering the layout
+To size rows to the text instead, set AG Grid's \`autoHeight: true\` in \`colDefs\`: each row grows to fit the column's text, still up to six lines.
+
+{{story: Fit rows to their notes}}
+
+## Remembering the layout (WIP)
+
+> **Work in progress.** How the layout is remembered will change along with the grid's \`state\`.
 
 \`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated (\`visualSizeFactor\` and \`order\`).
 
@@ -98,57 +104,10 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 - Don't use the \`state\` prop for this: the grid lays the columns out again from the provider.
 
 {{story: Remember the layout}}
-
-## Reference
-
-### \`settings\`
-
-| Key | Default | What it does |
-|---|---|---|
-| \`alignment\` | \`'right'\` for numbers and currency, else \`'left'\` | \`'left'\`, \`'center'\` or \`'right'\`. |
-| \`isPrimary\` | the column's \`isPrimary\` | Draws the value as a link to the record. |
-| \`isLocked\` | from \`metadata.IsValidForUpdate\` | Editing module. Locks the whole column. See [**Editing**](?path=/docs/grid-modules-editing--overview). |
-| \`isRequired\` | from \`metadata.RequiredLevel\` | Editing module. Draws \`*\` after the name. |
-| \`widthOffset\` | | Pixels added to the width, not saved. |
-| \`cell\` | | Cell settings, below. |
-| \`header\` | | Header settings, below. |
-
-### \`settings.cell\`
-
-Callbacks get \`{ record }\` and also run for group and totals rows.
-
-| Key | What it does |
-|---|---|
-| \`oneClickEdit\` | Editing module. The input is drawn in the cell, with no editor. |
-| \`isRowResizable\` | Wraps text and shows the row grip. On for long text columns. |
-| \`onGetCommands(result)\` | Cell commands. |
-| \`onGetTheme(theme)\` | Colours the cell. See [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`onGetLock(result)\` | Editing module. Set \`result.isLocked\`. |
-| \`onGetValidation(result)\` | Set \`result.error\` and \`result.errorMessage\`. |
-| \`onGetLoading(result)\` | Set \`result.isLoading\` to show a shimmer. |
-| \`onGetControlParameters(parameters)\` | Changes what the cell's control gets. |
-
-### \`settings.header\`
-
-| Key | What it does |
-|---|---|
-| \`onGetTheme(theme)\` | Colours the header. |
-| \`onGetAdornments(adornments)\` | Draws beside the name. |
-| \`onGetMenuSections(sections)\` | Adds or removes menu sections. |
-| \`onGetMenuItems(items)\` | Changes the final menu items. |
-
-Module sections and items, by key:
-
-| Module | Section | Items |
-|---|---|---|
-| Sorting | \`sorting\` | \`sort_asc\`, \`sort_desc\`, \`clear\` |
-| Filtering | \`filtering\` | \`filter\`, \`clearFilter\` |
-| Grouping | \`grouping\` | \`group\` |
-| Totals | \`aggregation\` | \`none\`, \`sum\`, \`avg\`, \`min\`, \`max\`, \`count\`, \`countcolumn\` |
 `
 
 const meta = {
-    title: 'Grid/Columns',
+    title: 'Grid/Columns/Overview',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -230,6 +189,18 @@ export const ReadLongNotes: Story = {
         docs: {
             description: {
                 story: `Notes wrap and can be dragged taller; Next step stays on one line with \`isRowResizable: false\`.`,
+            },
+        },
+    },
+}
+
+export const FitRowsToTheirNotes: Story = {
+    name: 'Fit rows to their notes',
+    render: () => renderStory(<AutoHeightExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `\`autoHeight: true\` on Notes makes every row as tall as its note, up to six lines.`,
             },
         },
     },

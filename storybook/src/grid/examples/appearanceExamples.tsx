@@ -55,6 +55,7 @@ const escalatedTicketsModule: IGridModule = {
                 return
             }
             theme.colors.background = ESCALATED
+            //exported by @talxis/base-controls
             theme.colors.text = getTextColorForBackground(ESCALATED)
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
@@ -72,6 +73,21 @@ const GridExample = () => <Grid.Root
         escalated: { settings: { cell: { oneClickEdit: true } } },
     }}
     height='440px' />
+`
+
+export const THEME_EDIT_CODE = `const MONOSPACE = 'Consolas, "Courier New", monospace'
+
+const toMonospace = (theme: ITheme) => {
+    theme.fonts.medium = { ...theme.fonts.medium, fontFamily: MONOSPACE }
+}
+
+const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+    colDefs={{
+        ticketnumber: { settings: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
+    }}
+    height='420px' />
 `
 
 export const DENSITY_CODE = `const DENSITIES = [
@@ -108,62 +124,73 @@ const GridExample = () => {
 }
 `
 
-export const HEADER_COLOURS_CODE = `const COMMERCIAL = '#deecf9'
-const WAREHOUSE = '#dff6dd'
+export const HEADER_COLOURS_CODE = `const CHANGED = '#fff4ce'
+const INVALID = '#fde7e9'
 
-const withHeaderColour = (background: string): IGridColDef => ({
-    settings: {
-        header: {
-            onGetTheme: theme => {
-                theme.colors.background = background
-                theme.colors.text = getTextColorForBackground(background)
-            },
-        },
-    },
-})
-
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule(),
-    }}
-    colDefs={{
-        price: withHeaderColour(COMMERCIAL),
-        instock: withHeaderColour(WAREHOUSE),
-        reorderlevel: withHeaderColour(WAREHOUSE),
-        lastrestocked: withHeaderColour(WAREHOUSE),
-    }}
-    height='440px' />
-`
-
-export const BRAND_THEME_CODE = `const THEMES = {
-    light: ThemeGenerator.generate({ primary: '#03787c', background: '#ffffff', text: '#242424' }),
-    dark: ThemeGenerator.generate({ primary: '#4bc4c8', background: '#1f1f1f', text: '#f5f5f5' }),
+const getHeaderColour = (columnName: string) => {
+    const entries = provider.getRecords()
+    if (entries.some(entry => entry.getColumnInfo(columnName).error)) {
+        return INVALID
+    }
+    if (entries.some(entry => entry.isDirty(columnName))) {
+        return CHANGED
+    }
+    return undefined
 }
 
-const styles = mergeStyleSets({
-    surface: { padding: 12, borderRadius: 8 },
-})
+const validateHours = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+    const hours = Number(record.getValue('hours') ?? 0)
+    if (hours < 0.25 || hours > 12) {
+        result.error = true
+        result.errorMessage = 'Log between 0.25 and 12 hours.'
+    }
+}
+
+const reviewModule: IGridModule = {
+    onRegister: runtime => {
+        const headers = runtime.services.get('columns').headers
+        headers.registerColumnHeaderTheme((theme, header) => {
+            const column = header.getColumn()
+            const background = column && getHeaderColour(column.name)
+            if (!background) {
+                return
+            }
+            theme.colors.background = background
+            //exported by @talxis/base-controls
+            theme.colors.text = getTextColorForBackground(background)
+        })
+        //a header draws again after a load, not when a value changes
+        const redraw = () => headers.render()
+        provider.addEventListener('onRecordColumnValueChanged', redraw)
+        provider.addEventListener('onAfterSaved', redraw)
+        runtime.events.addEventListener('onDestroyed', () => {
+            provider.removeEventListener('onRecordColumnValueChanged', redraw)
+            provider.removeEventListener('onAfterSaved', redraw)
+        })
+    },
+}
 
 const GridExample = () => {
-    const [isDark, setIsDark] = React.useState(false)
+    const runtime = React.useRef<IGridRuntime>()
 
-    return <Stack tokens={{ childrenGap: 12 }}>
-        <Toggle inlineLabel label='Dark mode' checked={isDark} onChange={(_, checked) => setIsDark(!!checked)} />
-        <ThemeProvider theme={isDark ? THEMES.dark : THEMES.light} className={styles.surface}>
-            {/* cells and headers read the theme at mount */}
-            <Grid.Root
-                key={isDark ? 'dark' : 'light'}
-                provider={provider}
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                }}
-                enableOptionSetColors
-                height='420px' />
-        </ThemeProvider>
+    const discard = () => {
+        provider.clearChanges()
+        runtime.current?.services.get('columns').headers.render()
+    }
+
+    const commands: ICommandBarItemProps[] = [
+        { key: 'save', text: 'Save', iconProps: { iconName: 'Save' }, onClick: () => { provider.save() } },
+        { key: 'discard', text: 'Discard', iconProps: { iconName: 'Undo' }, onClick: discard },
+    ]
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <CommandBar items={commands} />
+        <Grid.Root
+            provider={provider}
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
+            colDefs={{ hours: { settings: { cell: { onGetValidation: validateHours } } } }}
+            onGridReady={gridRuntime => runtime.current = gridRuntime}
+            height='420px' />
     </Stack>
 }
 `
@@ -256,11 +283,12 @@ export const SpotBreachesExample = () => <GridExampleRunner seedCode={BREACH_DEA
 
 export const EscalatedTicketsExample = () => <GridExampleRunner seedCode={ESCALATED_TICKETS_CODE} dataset='tickets' />
 
+export const ThemeEditExample = () => <GridExampleRunner seedCode={THEME_EDIT_CODE} dataset='tickets' />
+
 export const DensityExample = () => <GridExampleRunner seedCode={DENSITY_CODE} dataset='products' />
 
-export const HeaderColoursExample = () => <GridExampleRunner seedCode={HEADER_COLOURS_CODE} dataset='products' />
+export const HeaderColoursExample = () => <GridExampleRunner seedCode={HEADER_COLOURS_CODE} dataset='timesheets' />
 
-export const BrandThemeExample = () => <GridExampleRunner seedCode={BRAND_THEME_CODE} dataset='deals' />
 
 const CZECH_COLUMN_NAMES: { [columnName: string]: string } = {
     description: 'Popis práce',

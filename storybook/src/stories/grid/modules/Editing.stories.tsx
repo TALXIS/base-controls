@@ -70,7 +70,7 @@ An editable grid adds a save status column, 40px wide and pinned at the start of
 - a green check for 2 seconds once it saved;
 - a red icon once it was refused, until the user dismisses it or the record saves again. Clicking it opens a callout that lists each error under its column's header name.
 
-With row selection on, the status is drawn in the row's checkbox cell instead: see [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it. Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or replace its parts as shown on [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview).
+With row selection on, the status is drawn in the row's checkbox cell instead: see [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it. Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or replace its parts as shown on [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview).
 
 ## Validation
 
@@ -102,7 +102,7 @@ A server can refuse a save the browser allowed. A provider reports that as \`{ s
 - A refused record keeps its values and stays unsaved, ready to be saved again.
 - Errors from the server appear only in the callout. A cell outlines only what fails validation in the browser.
 - A provider holds one interceptor per name: a second \`setInterceptor('onRecordSave', ...)\` replaces the first.
-- The callout's title and button are the \`recordSaveErrorTitle\` (\`Your changes were not saved\`) and \`recordSaveErrorDismiss\` (\`Dismiss\`) labels. Every label is listed on [**Appearance**](?path=/docs/grid-appearance--overview).
+- The callout's title and button are the \`recordSaveErrorTitle\` (\`Your changes were not saved\`) and \`recordSaveErrorDismiss\` (\`Dismiss\`) labels. Every label is listed on [**Localization**](?path=/docs/grid-localization-overview--overview).
 
 ## Locks
 

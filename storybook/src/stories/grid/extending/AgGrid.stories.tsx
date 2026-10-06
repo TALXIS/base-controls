@@ -64,7 +64,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 - Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`.
 - What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and the grid lays the widths out again when its columns change or it switches between filling its width and scrolling. A value you write with \`node.setDataValue\` never reaches the record: use \`record.setValue\`.
 - Set an option through a hook rather than \`gridApi.setGridOption\` when a hook also sets it: the hook's value replaces yours whenever it changes.
-- Read what you want to keep from the api in \`onDestroyed\`, while it still answers: see [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). Column widths and order are kept on the provider's columns instead: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview).
+- Read what you want to keep from the api in \`onDestroyed\`, while it still answers: see [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). Column widths and order are kept on the provider's columns instead: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 {{story: Jump to the newest ticket}}
 

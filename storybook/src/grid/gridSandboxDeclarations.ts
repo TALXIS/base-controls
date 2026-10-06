@@ -3,6 +3,10 @@ export const gridSandboxDeclarations = `
 declare const React: typeof import('react');
 declare const dayjs: typeof import('dayjs');
 declare const confetti: typeof import('canvas-confetti');
+/** Sanitizes HTML before it is drawn, from dompurify. */
+declare const DOMPurify: typeof import('dompurify').default;
+/** react-simple-wysiwyg's HTML editor, with its toolbar. */
+declare const DefaultEditor: typeof import('react-simple-wysiwyg').DefaultEditor;
 type Dayjs = import('dayjs').Dayjs;
 
 /** What React's types say about JSX, for an editor that cannot load them. */

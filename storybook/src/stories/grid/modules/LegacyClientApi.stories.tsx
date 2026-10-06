@@ -86,7 +86,7 @@ When a notification shows:
 - Not while the cell is open in an editor, and not while the cell is loading.
 - Buttons that do not fit the cell move into its **…** menu by themselves.
 - The expression runs each time a highlighted cell draws, so keep it cheap.
-- A custom \`cellRenderer\` shows them only if it draws \`Grid.Cell.Commands\`: see [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview).
+- A custom \`cellRenderer\` shows them only if it draws \`Grid.Cell.Commands\`: see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview).
 
 ## With the rest of the grid
 

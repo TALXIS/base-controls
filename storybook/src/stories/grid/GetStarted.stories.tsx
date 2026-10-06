@@ -55,7 +55,7 @@ const EXPLORE: IExploreCard[] = [
     { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-get-started-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
     { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-modules-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
-    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
+    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns-overview--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
     { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, your own labels, and your own cells, headers and overlays.' },
     { title: 'Built to extend', iconName: 'Plug', href: '?path=/docs/grid-extending--overview', text: 'Hooks into what the grid draws and decides, modules of your own, and AG Grid underneath when you need it.' },
 ]

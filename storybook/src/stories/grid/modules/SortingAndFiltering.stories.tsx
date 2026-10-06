@@ -25,13 +25,13 @@ A column's callout sets one condition, and the conditions of all filtered column
 | Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`settings.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns--overview).
+The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`settings.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## Open the grid sorted and filtered
 
 {{story: Open on what matters}}
 
-The provider holds the sort and the filter, and both modules read them from it. Set them with \`provider.setSorting([{ name, sortDirection }])\` and \`provider.setFiltering({ filterOperator, conditions: [{ attributeName, conditionOperator, value }] })\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Later on, set them again and call \`refresh()\`. The grid's \`state\` prop does not carry the sort: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview).
+The provider holds the sort and the filter, and both modules read them from it. Set them with \`provider.setSorting([{ name, sortDirection }])\` and \`provider.setFiltering({ filterOperator, conditions: [{ attributeName, conditionOperator, value }] })\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Later on, set them again and call \`refresh()\`. The grid's \`state\` prop does not carry the sort: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 | Field | What goes in it |
 |---|---|
@@ -96,7 +96,7 @@ Reach them with \`runtime.services.get('sorting')\` and \`runtime.services.get('
 
 ## Labels
 
-Pass any of these keys as the module's \`labels\`. They are read once, at mount, and the grid's own \`labels\` prop does not cover them; localization as a whole is on [**Appearance**](?path=/docs/grid-appearance--overview).
+Pass any of these keys as the module's \`labels\`. They are read once, at mount, and the grid's own \`labels\` prop does not cover them; localization as a whole is on [**Localization**](?path=/docs/grid-localization-overview--overview).
 
 | \`createSortingModule({ labels })\` | Default | Where it shows |
 |---|---|---|
@@ -117,7 +117,7 @@ Inside the callout, the operator names follow the user's language, and the *Appl
 
 ## Components
 
-Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview).
+Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview).
 
 | \`createSortingModule({ components })\` | Replaces |
 |---|---|

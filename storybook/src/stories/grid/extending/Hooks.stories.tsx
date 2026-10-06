@@ -39,7 +39,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Assign new tickets to yourself}}
 
-- Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Cell commands* on [**Columns**](?path=/docs/grid-columns--overview).
+- Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Cell commands* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 - For commands that only one column offers, \`settings.cell.onGetCommands\` in \`colDefs\` does the same, after the hooks.
 
 {{story: Placeholders for missing values}}
@@ -75,19 +75,19 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 - The hook is handed the definitions built so far: one per provider column that is not hidden, with the column's name as \`colId\`; the save status column of an editable grid; and what the hooks that ran before it added, such as the checkbox column at \`GRID_MODULE_PRIORITY.rowSelection\`. Change entries, push new ones, splice them out or reorder them.
 - It runs when the grid is ready and on every load of the provider, so a change to what it reads shows after \`provider.refresh()\`.
 - At the default priority it runs before the modules, which can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module, and \`colDefs\` still runs after that.
-- A column a hook adds gets the grid's header and an empty cell, as a column added through \`colDefs\` does: see [**Columns**](?path=/docs/grid-columns--overview).
+- A column a hook adds gets the grid's header and an empty cell, as a column added through \`colDefs\` does: see [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## Headers
 
 {{story: Copy a column's values}}
 
-- A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
+- A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
 - \`registerColumnMenuItems\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
 - \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getSettings()\`, \`getAlignment()\`, \`isLocked()\`, \`isRequired()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
 
 {{story: Show the currency in the header}}
 
-- An adornment is \`{ key, placement, title?, onRender? }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview).
+- An adornment is \`{ key, placement, title?, onRender? }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 - The modules add the sort arrow, the filter funnel and the total's title after the name, and the group icon before it. At the default priority, yours come before theirs on the same side.
 - A header's colours come from \`registerColumnHeaderTheme\`: see [**Appearance**](?path=/docs/grid-appearance--overview).
 `

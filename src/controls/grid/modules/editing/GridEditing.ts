@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { CellEditingStartedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi, RowClassParams, RowClassRules } from "@ag-grid-community/core";
+import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi, RowClassParams, RowClassRules } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IGridServiceLocator } from "../../services";
@@ -103,7 +103,7 @@ export class GridEditing implements IGridEditing {
             gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
             //an editor AG Grid opens is an edit too
             gridApi.addEventListener('cellEditingStarted', this._onCellEditingStarted);
-            gridApi.addEventListener('cellEditingStopped', () => this._setEditedCell(undefined));
+            gridApi.addEventListener('cellEditingStopped', this._onCellEditingStopped);
             gridApi.addEventListener('cellEditRequest', this._onCellEditRequest);
             gridApi.addEventListener('modelUpdated', () => this._syncRecordLockColumnVisibility());
             this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
@@ -382,6 +382,14 @@ export class GridEditing implements IGridEditing {
         }
         this._setEditedCell(undefined);
     }
+
+    private _onCellEditingStopped = (event: CellEditingStoppedEvent<IRecord>): void => {
+        this._setEditedCell(undefined);
+        //AG Grid does not measure an auto height row while its cell is edited
+        if (event.colDef.autoHeight) {
+            event.api.redrawRows({ rowNodes: [event.node] });
+        }
+    };
 
     private _onCellEditingStarted = (event: CellEditingStartedEvent<IRecord>): void => {
         if (event.data) {

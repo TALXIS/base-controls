@@ -17,7 +17,7 @@ Grouping gathers the rows under a group row for each value of a column, level by
 - A group row shows its value, a chevron and how many records it holds in the column of its level, the group's totals in the columns that have one, and nothing elsewhere. Every cell of a group row is locked.
 - Ungrouping a column from its menu also removes its total.
 - While anything is grouped, record rows take the grid's plain background: zebra stripes disappear, and so does the background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets. How to keep yours is under *The order theme decisions run in* on [**Appearance**](?path=/docs/grid-appearance--overview).
-- A \`colDefs\` entry can undo what grouping and totals set on a column: see *Changing a column* on [**Columns**](?path=/docs/grid-columns--overview).
+- A \`colDefs\` entry can undo what grouping and totals set on a column: see *Changing a column* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## Preset grouping and totals
 
@@ -138,7 +138,7 @@ Reach them with \`runtime.services.get('grouping')\` and \`runtime.services.get(
 
 ## Labels
 
-Pass any of these keys as the module's \`labels\`. The grid's own \`labels\` prop does not cover them; localization as a whole is on [**Appearance**](?path=/docs/grid-appearance--overview). Keep the \`{{...}}\` placeholders in a translation.
+Pass any of these keys as the module's \`labels\`. The grid's own \`labels\` prop does not cover them; localization as a whole is on [**Localization**](?path=/docs/grid-localization-overview--overview). Keep the \`{{...}}\` placeholders in a translation.
 
 | \`createGroupingModule({ labels })\` | Default | Where it shows |
 |---|---|---|
@@ -163,7 +163,7 @@ A function's label is its menu item, the caption above the figure in the totals 
 
 ## Components
 
-Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview).
+Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview).
 
 | \`createGroupingModule({ components })\` | Replaces |
 |---|---|

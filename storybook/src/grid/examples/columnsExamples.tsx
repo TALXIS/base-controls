@@ -196,8 +196,8 @@ const GridExample = () => {
 export const HEADER_CODE = `const isLowStock = (product: IRecord) => Number(product.getValue('instock') ?? 0) < Number(product.getValue('reorderlevel') ?? 0)
 
 const QUICK_FILTERS = [
-    { key: 'outOfStock', text: 'Out of stock', operator: Operators.Equal, value: '0' },
-    { key: 'runningLow', text: 'Fewer than 10 left', operator: Operators.LessThan, value: '10' },
+    { key: 'outOfStock', text: 'Out of stock', iconName: 'Blocked', operator: Operators.Equal, value: '0' },
+    { key: 'runningLow', text: 'Fewer than 10 left', iconName: 'Warning', operator: Operators.LessThan, value: '10' },
 ]
 
 const styles = mergeStyleSets({
@@ -236,8 +236,8 @@ const GridExample = () => {
                                 key: 'quickFilters',
                                 title: 'Quick filters',
                                 items: [
-                                    ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
-                                    { key: 'showAll', text: 'Show all products', disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
+                                    ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
+                                    { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
                                 ],
                             })
                         },
@@ -256,6 +256,15 @@ export const LONG_NOTES_CODE = `const GridExample = () => <Grid.Root
     modules={{ rowModel: createClientSideRowModelModule() }}
     colDefs={{
         nextstep: { settings: { cell: { isRowResizable: false } } },
+    }}
+    height='480px' />
+`
+
+export const AUTO_HEIGHT_CODE = `const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{ rowModel: createClientSideRowModelModule() }}
+    colDefs={{
+        notes: { autoHeight: true },
     }}
     height='480px' />
 `
@@ -321,5 +330,7 @@ export const RowCommandsExample = () => <GridExampleRunner seedCode={ROW_COMMAND
 export const HeaderExample = () => <GridExampleRunner seedCode={HEADER_CODE} dataset='products' />
 
 export const LongNotesExample = () => <GridExampleRunner seedCode={LONG_NOTES_CODE} onCreateProvider={createNotesProvider} />
+
+export const AutoHeightExample = () => <GridExampleRunner seedCode={AUTO_HEIGHT_CODE} onCreateProvider={createNotesProvider} />
 
 export const RememberLayoutExample = () => <GridExampleRunner seedCode={REMEMBER_LAYOUT_CODE} dataset='products' />

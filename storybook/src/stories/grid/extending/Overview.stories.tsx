@@ -100,7 +100,7 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 | The runtime | \`registerAgGridInitialOptions\` | The AG Grid options read once, when AG Grid is created | \`result: { options }\` | |
 | The runtime | \`registerStyles\` | Styles of the grid's root element, after the grid's own: push an \`IStyle\` | \`result: { styles }\`, \`theme\` | |
 
-*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns--overview). The cell and header colour hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
+*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns-overview--overview). The cell and header colour hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
 
 ## Priorities
 
