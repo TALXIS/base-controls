@@ -1,9 +1,9 @@
 import { CellCommands } from "./components/cells/commands/CellCommands";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellControl } from "./components/cells/control/CellControl";
+import { CellColumnControl } from "./components/cells/column-control/CellColumnControl";
 import { CellEmptyRenderer } from "./components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { CellField } from "./components/cells/field/CellField";
-import { CellFieldRenderer } from "./components/cells/field-cell-renderer/CellFieldRenderer";
 import { CellLegacyNestedControl } from "./components/cells/legacy-nested-control-renderer/CellLegacyNestedControl";
 import { CellLoading } from "./components/cells/loading/CellLoading";
 import { CellNestedRoot } from "./components/cells/nested-react-root/CellNestedRoot";
@@ -34,10 +34,8 @@ import { GridRoot } from "./Grid";
 
 /** Everything a cell is drawn from. */
 export interface IGridCellNamespace {
-    /** A cell holding something other than a record's value: `colDef.cellRenderer`. */
+    /** The grid's cell; wrap it in `Field` to bind it to a record's column. */
     Renderer: typeof CellRenderer;
-    /** A cell of a record's column, drawing what that column holds. */
-    FieldRenderer: typeof CellFieldRenderer;
     /** A cell with nothing drawn in it, for a column that holds no value. */
     EmptyRenderer: typeof CellEmptyRenderer;
     /** What makes everything inside it one cell. */
@@ -50,8 +48,10 @@ export interface IGridCellNamespace {
     Loading: typeof CellLoading;
     /** What the cell says when the record refuses the value. */
     FieldError: typeof CellFieldError;
-    /** What draws the value, where the cell is bound to a field. */
+    /** The room the value is drawn in; whatever is inside it keeps the cell's layout. */
     Control: typeof CellControl;
+    /** Decides what the column draws for the cell's value, and draws it. */
+    ColumnControl: typeof CellColumnControl;
     /** What the cell offers to do. */
     Commands: typeof CellCommands;
     /** What a row is dragged taller by, around the cell that is dragged. */
@@ -130,7 +130,6 @@ export const Grid: IGridNamespace = {
     Root: GridRoot,
     Cell: {
         Renderer: CellRenderer,
-        FieldRenderer: CellFieldRenderer,
         EmptyRenderer: CellEmptyRenderer,
         Root: CellRoot,
         Theme: CellTheme,
@@ -138,6 +137,7 @@ export const Grid: IGridNamespace = {
         Loading: CellLoading,
         FieldError: CellFieldError,
         Control: CellControl,
+        ColumnControl: CellColumnControl,
         Commands: CellCommands,
         ResizeGrip: CellResizeGrip,
         Field: CellField,

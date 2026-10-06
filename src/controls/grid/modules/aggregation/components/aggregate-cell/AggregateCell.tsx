@@ -9,8 +9,9 @@ import { CellTheme } from "../../../../components/cells/theme/CellTheme";
 import { CellContainer } from "../../../../components/cells/container/CellContainer";
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellControl } from "../../../../components/cells/control/CellControl";
+import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
-import { CellControlComponents } from "../../../../components/cells/control/components";
+import { CellColumnControlComponents } from "../../../../components/cells/column-control/components";
 import { useGridService } from "../../../../useGridService";
 
 //a total reads from the right whichever way the column it totals reads
@@ -26,7 +27,7 @@ export const AggregateCell = (props: IAggregateCellProps) => {
     //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
     const components = aggregation.components.aggregateCell ?? {};
-    const onRenderControl = components.control?.onRenderControl ?? CellControlComponents.onRenderControl;
+    const onRenderControl = components.columnControl?.onRenderControl ?? CellColumnControlComponents.onRenderControl;
     //the selector draws this only for a group row, so the record is there
     const record = props.data!;
 
@@ -39,7 +40,9 @@ export const AggregateCell = (props: IAggregateCellProps) => {
             <CellTheme theme={props.theme}>
                 <CellContainer components={components.container}>
                     <CellLoading components={components.loading}>
-                        <CellControl components={{ ...components.control, onRenderControl: onRenderRightAligned }} />
+                        <CellControl components={components.control}>
+                            <CellColumnControl components={{ onRenderControl: onRenderRightAligned }} />
+                        </CellControl>
                         <CellCommands components={components.commands} />
                     </CellLoading>
                 </CellContainer>

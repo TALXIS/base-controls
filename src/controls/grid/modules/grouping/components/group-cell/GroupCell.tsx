@@ -9,6 +9,7 @@ import { CellTheme } from "../../../../components/cells/theme/CellTheme";
 import { CellContainer } from "../../../../components/cells/container/CellContainer";
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellControl } from "../../../../components/cells/control/CellControl";
+import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
 import { useGridService } from "../../../../useGridService";
 import { GroupCount } from "../group-count/GroupCount";
@@ -43,7 +44,9 @@ export const GroupCell = (props: IGroupCellProps) => {
                 <CellContainer components={components.container}>
                     <CellLoading components={components.loading}>
                         {isExpandable && <GroupingUi.Toggle isExpanded={!!node.expanded} onToggle={() => grouping.toggleGroup(node)} components={components.toggle} />}
-                        <CellControl components={components.control} />
+                        <CellControl components={components.control}>
+                            <CellColumnControl components={components.columnControl} />
+                        </CellControl>
                         {isExpandable && <GroupCount components={components.count} />}
                         <CellCommands components={components.commands} />
                     </CellLoading>

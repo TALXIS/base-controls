@@ -8,11 +8,10 @@ export const WIN_CHANCE_CODE = `const STAGE_COLORS: { [stage: number]: string } 
 const isClosed = (deal: IRecord) => Number(deal.getValue('stage')) >= 4
 
 const styles = mergeStyleSets({
-    //takes the place of Grid.Cell.Control, so it grows and shrinks like it
-    chance: { display: 'flex', alignItems: 'center', gap: 10, flex: '1 1 auto', minWidth: 0, padding: '0 12px' },
+    chance: { display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px' },
     ring: { flexShrink: 0, transform: 'rotate(-90deg)' },
-    percent: { flexShrink: 0, fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
-    verdict: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: 12, opacity: 0.7 },
+    percent: { fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
+    verdict: { fontSize: 12, opacity: 0.7 },
 })
 
 const getVerdict = (chance: number) => chance >= 80 ? 'Strong' : chance >= 50 ? 'Likely' : chance >= 25 ? 'Possible' : 'Long shot'
@@ -44,7 +43,9 @@ const WinChanceCell = (props: IGridCellParams) => <Grid.Cell.Field record={props
             <Grid.Cell.Container>
                 <Grid.Cell.Loading>
                     <CellLockIcon />
-                    <WinChance />
+                    <Grid.Cell.Control>
+                        <WinChance />
+                    </Grid.Cell.Control>
                     <Grid.Cell.Commands />
                     <Grid.Cell.FieldError />
                 </Grid.Cell.Loading>
@@ -378,17 +379,21 @@ const RichTextInput = () => {
 }
 
 const HTML_RENDERER: IEditingCellRendererComponents = {
-    control: { onRenderControl: () => <HtmlValue /> },
+    columnControl: { onRenderControl: () => <HtmlValue /> },
 }
 
 const HTML_EDITOR: IEditingCellEditorComponents = {
-    control: { onRenderControl: () => <RichTextInput /> },
+    columnControl: { onRenderControl: () => <RichTextInput /> },
 }
 
 //the editing module is on, so the cells come from EditingCell
-const HtmlCell = (props: IGridCellParams) => <EditingCell.FieldRenderer {...props} components={HTML_RENDERER} />
+const HtmlCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
+    <EditingCell.Renderer {...props} components={HTML_RENDERER} />
+</Grid.Cell.Field>
 
-const HtmlEditor = (props: IGridCellParams) => <EditingCell.FieldEditor {...props} components={HTML_EDITOR} />
+const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
+    <EditingCell.Editor {...props} components={HTML_EDITOR} />
+</Grid.Cell.Field>
 
 const GridExample = () => <Grid.Root
     provider={provider}
@@ -419,6 +424,7 @@ const DESCRIPTIONS: { [name: string]: string } = {
 
 const createDescriptionsProvider = () => {
     const columns = PRODUCT_COLUMNS.filter(column => ['photo', 'name', 'price', 'instock'].includes(column.name))
+        .map(column => column.name === 'photo' ? { ...column, visualSizeFactor: 150 } : column)
     const provider = createMemoryProvider({
         primaryIdAttribute: 'docs_productid',
         primaryNameAttribute: 'name',

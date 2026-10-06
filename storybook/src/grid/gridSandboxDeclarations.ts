@@ -1288,7 +1288,7 @@ interface IGridColDef {
     headerComponent?: (props: IColumnHeaderParams) => JSX.Element | null;
     /** Grid.ColumnHeader.Renderer reads theme and components from it. */
     headerComponentParams?: IColumnHeaderRendererOptions & { [param: string]: any };
-    /** Defaults to Grid.Cell.FieldRenderer, or Grid.Cell.EmptyRenderer for an added column. */
+    /** Defaults to the grid's cell bound to the column, or Grid.Cell.EmptyRenderer for an added column. */
     cellRenderer?: (props: IGridCellParams) => JSX.Element | null;
     /** The grid's cell renderers read theme and components from it. */
     cellRendererParams?: { theme?: ITheme; components?: ICellRendererComponents } & { [param: string]: any };
@@ -2314,7 +2314,7 @@ declare const GridValueRenderer: (props: IGridValueRenderer) => JSX.Element;
 
 declare const OptionSetRenderer: (props: IOptionSetRendererProps) => JSX.Element;
 
-interface ICellControlComponents extends ICellUiControlComponents {
+interface ICellColumnControlComponents {
     /** What draws the value, handed the default as defaultRender. */
     onRenderControl: (props: IGridValueRenderer, defaultRender: (props: IGridValueRenderer) => JSX.Element | null) => JSX.Element | null;
 }
@@ -2324,7 +2324,8 @@ interface ICellComponents {
     resizeGrip?: Partial<ICellUiResizeGripComponents>;
     container?: Partial<ICellUiContainerComponents>;
     loading?: Partial<ICellUiLoadingComponents>;
-    control?: Partial<ICellControlComponents>;
+    control?: Partial<ICellUiControlComponents>;
+    columnControl?: Partial<ICellColumnControlComponents>;
 }
 
 /** The replaceable pieces of a cell, by the part they belong to. */
@@ -2349,14 +2350,12 @@ interface ICellRendererProps extends ICellRendererParams {
     components?: ICellRendererComponents;
 }
 
-interface ICellFieldRendererProps extends ICellRendererProps {}
 
 interface IEditingCellRendererProps extends ICellRendererParams {
     theme?: ITheme;
     components?: IEditingCellRendererComponents;
 }
 
-interface IEditingCellFieldRendererProps extends IEditingCellRendererProps {}
 
 /** The replaceable pieces of the editing module's editor. */
 interface IEditingCellEditorComponents extends ICellComponents {}
@@ -2366,7 +2365,6 @@ interface IEditingCellEditorProps extends ICellRendererParams {
     components?: IEditingCellEditorComponents;
 }
 
-interface IEditingCellFieldEditorProps extends IEditingCellEditorProps {}
 
 interface ICellEmptyRendererProps extends ICellRendererParams {
     theme?: ITheme;
@@ -2404,7 +2402,12 @@ interface ICellFieldErrorProps {
 }
 
 interface ICellControlProps {
-    components?: Partial<ICellControlComponents>;
+    components?: Partial<ICellUiControlComponents>;
+    children?: React.ReactNode;
+}
+
+interface ICellColumnControlProps {
+    components?: Partial<ICellColumnControlComponents>;
 }
 
 interface ICellCommandsProps {
@@ -2438,10 +2441,8 @@ interface ICellLegacyNestedControlProps {
 
 /** Everything a cell is drawn from. */
 interface IGridCellNamespace {
-    /** A cell drawing what the column's cellRenderer draws. */
+    /** The grid's cell; wrap it in Grid.Cell.Field to bind it to a record's column. */
     Renderer: (props: ICellRendererProps) => JSX.Element;
-    /** A cell of a record's column, drawing what that column holds. */
-    FieldRenderer: (props: ICellFieldRendererProps) => JSX.Element;
     /** A cell with no value in it, for a column that holds none. */
     EmptyRenderer: (props: ICellEmptyRendererProps) => JSX.Element;
     /** useGridCell reads the cell it creates. */
@@ -2453,8 +2454,10 @@ interface IGridCellNamespace {
     Loading: (props: ICellLoadingProps) => JSX.Element;
     /** What the cell says when the record refuses the value. */
     FieldError: (props: ICellFieldErrorProps) => JSX.Element;
-    /** What draws the value, where the cell is bound to a field. */
-    Control: (props: ICellControlProps) => JSX.Element;
+    /** The room the value is drawn in; whatever is inside it keeps the cell's layout. */
+    Control: (props: ICellControlProps) => JSX.Element | null;
+    /** Decides what the column draws for the cell's value: its control, a PCF control or onRenderControl. */
+    ColumnControl: (props: ICellColumnControlProps) => JSX.Element;
     /** Shown while the row is hovered, focused or selected. */
     Commands: (props: ICellCommandsProps) => JSX.Element | null;
     /** Has to be drawn around Grid.Cell.Container. */
@@ -3234,10 +3237,8 @@ declare function createClipboardModule(options?: IGridClipboardOptions): IGridMo
 declare const EditingCell: {
     /** A cell that also says when it is locked for its record. */
     Renderer: (props: IEditingCellRendererProps) => JSX.Element;
-    FieldRenderer: (props: IEditingCellFieldRendererProps) => JSX.Element;
     /** The cell while it is being edited. */
     Editor: (props: IEditingCellEditorProps) => JSX.Element;
-    FieldEditor: (props: IEditingCellFieldEditorProps) => JSX.Element;
     /** Grid.Cell.Root for a cell that takes input as an editor or a one-click column. */
     Root: (props: IEditingCellRootProps) => JSX.Element;
 };

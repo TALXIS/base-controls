@@ -2,6 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { ITheme } from "@theme";
 import { CellContainer } from "../../../../components/cells/container/CellContainer";
 import { CellControl } from "../../../../components/cells/control/CellControl";
+import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../../../../components/cells/theme/CellTheme";
@@ -20,7 +21,9 @@ export const CellEditor = (props: ICellEditorProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
-            <CellControl components={components.control} />
+            <CellControl components={components.control}>
+                <CellColumnControl components={components.columnControl} />
+            </CellControl>
         </CellLoading>
     </CellContainer>;
 

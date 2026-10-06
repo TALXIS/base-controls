@@ -170,14 +170,14 @@ Each module's \`components\` option replaces what it draws, by piece. How to wri
 | \`groupingIcon.onRenderIcon\` | The icon before a grouped column's name |
 | \`groupCell.toggle.onRenderContainer\`, \`onRenderButton\` | The chevron on a group row. The button's props carry \`isExpanded\`. |
 | \`groupCell.count.onRenderCount\` | The record count after the group's value |
-| \`groupCell.container\`, \`loading\`, \`control\`, \`commands\` | The group cell's frame, shimmer, value and commands, as in any cell |
+| \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | The group cell's frame, shimmer, value and commands, as in any cell |
 | \`expansionHeader.expandCollapse.onRenderContainer\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\` | The + and − in the expansion column's header |
 
 | \`createAggregationModule({ components })\` | Replaces |
 |---|---|
 | \`totalCell.totalValue.onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | A total in the totals row: its caption and its figure |
 | \`totalCell.container\`, \`loading\`, \`commands\` | The totals cell's frame, shimmer and commands |
-| \`aggregateCell.container\`, \`loading\`, \`control\`, \`commands\` | A total in a group row |
+| \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | A total in a group row |
 
 The group selection alert and the error for an oversized group open through the PCF context's \`navigation\` dialogs, so no component replaces them.
 `

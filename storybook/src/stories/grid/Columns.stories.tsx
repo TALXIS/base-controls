@@ -52,7 +52,7 @@ A column's width comes from its \`visualSizeFactor\`, or \`initialWidth\` in \`c
 Add a column by giving \`colDefs\` a key that isn't a provider column, then work its value out from the record:
 
 - \`valueGetter\` returns the value. Copying uses it too.
-- \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\` and \`Container\` as the example below does. See [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) for both.
+- \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\`, \`Container\` and \`Control\` as the example below does. See [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) for both.
 - Read the record with \`useGridCell()\` inside the cell, so the value updates when the record changes.
 - The column is placed last and keeps its \`initialWidth\`. It has no menu or editor, and isn't saved with the layout.
 - Group and totals rows draw it too, so draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`.

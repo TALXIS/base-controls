@@ -1,12 +1,12 @@
 //the ready-made cells first, the pieces they are built from below
 export * from './cell-renderer';
-export * from './field-cell-renderer';
 export * from './empty-cell-renderer';
 export * from './root';
 export * from './theme';
 export * from './container';
 export * from './field';
 export * from './control';
+export * from './column-control';
 export * from './field-error';
 export * from './commands';
 export * from './loading';

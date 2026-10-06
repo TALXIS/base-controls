@@ -3,6 +3,7 @@ import { ITheme } from "@theme";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
 import { CellContainer } from "../../../../components/cells/container/CellContainer";
 import { CellControl } from "../../../../components/cells/control/CellControl";
+import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellFieldError } from "../../../../components/cells/field-error/CellFieldError";
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellTheme } from "../../../../components/cells/theme/CellTheme";
@@ -24,7 +25,9 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
             <CellLockIcon components={components.lockIcon} />
-            <CellControl components={components.control} />
+            <CellControl components={components.control}>
+                <CellColumnControl components={components.columnControl} />
+            </CellControl>
             <CellCommands components={components.commands} />
             <CellFieldError components={components.fieldError} />
         </CellLoading>

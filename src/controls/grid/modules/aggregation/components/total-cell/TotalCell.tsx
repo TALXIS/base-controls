@@ -29,7 +29,9 @@ export const TotalCell = (props: ITotalCellProps) => {
             <CellTheme theme={props.theme}>
                 <CellContainer components={components.container}>
                     <CellLoading components={components.loading}>
-                        <CellControl components={{ onRenderControl: () => <TotalValue components={components.totalValue} /> }} />
+                        <CellControl>
+                            <TotalValue components={components.totalValue} />
+                        </CellControl>
                         <CellCommands components={components.commands} />
                     </CellLoading>
                 </CellContainer>

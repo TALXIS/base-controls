@@ -38,19 +38,21 @@ const JsonValue = (props: { value: unknown }) => {
 }
 
 /** A payload drawn as what it holds rather than as the string it arrived in. */
-const PayloadCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props} components={{
-    control: {
-        onRenderControl: controlProps => {
-            const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
-            if (typeof payload !== 'string') {
-                return null
-            }
-            return <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 4, padding: '6px 9px', fontSize: 12, overflow: 'hidden' }}>
-                {parseJson(payload)}
-            </span>
+const PayloadCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
+    <Grid.Cell.Renderer {...props} components={{
+        columnControl: {
+            onRenderControl: controlProps => {
+                const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
+                if (typeof payload !== 'string') {
+                    return null
+                }
+                return <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 4, padding: '6px 9px', fontSize: 12, overflow: 'hidden' }}>
+                    {parseJson(payload)}
+                </span>
+            },
         },
-    },
-}} />
+    }} />
+</Grid.Cell.Field>
 
 /** What the payload holds, or the string as it stands where it is no JSON. */
 const parseJson = (payload: string): JSX.Element => {
@@ -178,7 +180,9 @@ const SummaryCell = (props: IGridCellParams) => {
     return <Grid.Cell.Root {...props}>
         <Grid.Cell.Theme>
             <Grid.Cell.Container>
-                <RecordSummary record={props.data} />
+                <Grid.Cell.Control>
+                    <RecordSummary record={props.data} />
+                </Grid.Cell.Control>
             </Grid.Cell.Container>
         </Grid.Cell.Theme>
     </Grid.Cell.Root>

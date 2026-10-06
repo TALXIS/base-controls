@@ -83,7 +83,9 @@ const StoredCell = (props: IGridCellParams) => {
     return <Grid.Cell.Root {...props}>
         <Grid.Cell.Theme>
             <Grid.Cell.Container>
-                <ValuePills values={getStoredValues(props.data)} />
+                <Grid.Cell.Control>
+                    <ValuePills values={getStoredValues(props.data)} />
+                </Grid.Cell.Control>
             </Grid.Cell.Container>
         </Grid.Cell.Theme>
     </Grid.Cell.Root>

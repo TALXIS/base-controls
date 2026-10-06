@@ -1,5 +1,5 @@
-import { ICellUiCommandsComponents, ICellUiContainerComponents, ICellUiFieldErrorComponents, ICellUiLoadingComponents, ICellUiResizeGripComponents } from "../ui";
-import { ICellControlComponents } from "../control/components";
+import { ICellUiCommandsComponents, ICellUiContainerComponents, ICellUiControlComponents, ICellUiFieldErrorComponents, ICellUiLoadingComponents, ICellUiResizeGripComponents } from "../ui";
+import { ICellColumnControlComponents } from "../column-control/components";
 
 /** The pieces every cell is built from, drawn whether it is being edited or not. */
 export interface ICellComponents {
@@ -9,8 +9,10 @@ export interface ICellComponents {
     container?: Partial<ICellUiContainerComponents>;
     /** What is drawn while the cell waits. */
     loading?: Partial<ICellUiLoadingComponents>;
-    /** What draws the cell's value, or takes the input while it is being edited. */
-    control?: Partial<ICellControlComponents>;
+    /** The room the cell's value is drawn in. */
+    control?: Partial<ICellUiControlComponents>;
+    /** What the column draws for the cell's value, or the input while it is being edited. */
+    columnControl?: Partial<ICellColumnControlComponents>;
 }
 
 /** The replaceable pieces of a cell, by the part they belong to. */

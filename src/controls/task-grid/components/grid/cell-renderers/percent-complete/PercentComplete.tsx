@@ -12,7 +12,9 @@ export const PercentComplete = (props: IGridCellParams) => {
     const styles = React.useMemo(() => getPercentCompleteStyles(), []);
     
     if (props.data.getColumnInfo(props.colDef!.colId!).ui.isLoading()) {
-        return <GridBase.Cell.FieldRenderer {...props} />
+        return <GridBase.Cell.Field record={props.data} name={props.colDef!.colId!}>
+            <GridBase.Cell.Renderer {...props} />
+        </GridBase.Cell.Field>
     }
     return <div className={styles.root}>
         <ProgressIndicator

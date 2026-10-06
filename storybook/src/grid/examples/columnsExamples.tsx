@@ -106,7 +106,7 @@ const GridExample = () => {
 export const STOCK_VALUE_CODE = `const getStockValue = (product: IRecord) => Number(product.getValue('price') ?? 0) * Number(product.getValue('instock') ?? 0)
 
 const styles = mergeStyleSets({
-    value: { flex: 1, padding: '0 9px' },
+    value: { padding: '0 9px' },
 })
 
 //drawn again by Grid.Cell.Root whenever the product changes
@@ -119,7 +119,9 @@ const StockValue = () => {
 const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
     <Grid.Cell.Theme>
         <Grid.Cell.Container>
-            <StockValue />
+            <Grid.Cell.Control>
+                <StockValue />
+            </Grid.Cell.Control>
         </Grid.Cell.Container>
     </Grid.Cell.Theme>
 </Grid.Cell.Root>

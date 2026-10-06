@@ -6,7 +6,7 @@ import { PcfContext } from "@utils/adapters/pcf-context/context";
 import { GridServicesContext } from "../../../context";
 import { GridCellContext, GridCellRevisionContext } from "../root/context";
 import { GridFieldContext } from "../field/context";
-import { GridControlContext } from "../control/context";
+import { GridControlContext } from "../column-control/context";
 import { getNestedReactRootStyles } from "./styles";
 
 export interface ICellNestedRootProps {

@@ -3,6 +3,7 @@ import { ITheme } from "@theme";
 import { CellCommands } from "../commands/CellCommands";
 import { CellContainer } from "../container/CellContainer";
 import { CellControl } from "../control/CellControl";
+import { CellColumnControl } from "../column-control/CellColumnControl";
 import { CellFieldError } from "../field-error/CellFieldError";
 import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
@@ -22,7 +23,9 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
-            <CellControl components={components.control} />
+            <CellControl components={components.control}>
+                <CellColumnControl components={components.columnControl} />
+            </CellControl>
             <CellCommands components={components.commands} />
             <CellFieldError components={components.fieldError} />
         </CellLoading>
