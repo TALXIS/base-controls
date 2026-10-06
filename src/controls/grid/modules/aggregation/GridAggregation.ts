@@ -89,13 +89,13 @@ export class GridAggregation implements IGridAggregation {
         this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').registerCellLoadingHook(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('rows').registerRowHeightHook(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').registerCellLoading(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('rows').registerRowHeight(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
         //listed in the column menu after grouping
-        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
-        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
     }
 
     /** The total row, created if the dataset now carries an aggregation. */

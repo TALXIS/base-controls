@@ -19,7 +19,7 @@ export interface IGridValidation {
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerValidationHook(hook: GridValidationHook, priority?: number): () => void;
+    registerValidation(hook: GridValidationHook, priority?: number): () => void;
 }
 
 export class GridValidation implements IGridValidation {
@@ -47,7 +47,7 @@ export class GridValidation implements IGridValidation {
         return result;
     }
 
-    public registerValidationHook(hook: GridValidationHook, priority?: number): () => void {
+    public registerValidation(hook: GridValidationHook, priority?: number): () => void {
         const unregister = this._hooks.register(hook, priority);
         this._hasHooks = true;
         this._syncValidatedColumns();

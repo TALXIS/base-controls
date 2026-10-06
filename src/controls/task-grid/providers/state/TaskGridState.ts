@@ -54,7 +54,7 @@ export interface ITaskGridStateProvider {
      *
      * @param priority Ascending — a lower number runs earlier. Defaults to `0`.
      */
-    registerCaptureHook: (hook: TaskGridStateCaptureHook, priority?: number) => void;
+    registerCapture: (hook: TaskGridStateCaptureHook, priority?: number) => void;
     /**
      * Runs every capture hook over the metadata. Called where a view's state is captured — the control on
      * teardown, and the user-queries module when it saves a personal view.
@@ -91,12 +91,12 @@ export class TaskGridState implements ITaskGridStateProvider {
     public module<TState extends object>(key: string, scope: IModuleStateScope): IModuleState<TState> {
         const moduleState = createModuleState<TState>({ state: this._state, key, scope });
         if (scope === 'view') {
-            this.registerCaptureHook(metadata => setModuleSlice(metadata, key, moduleState.get()));
+            this.registerCapture(metadata => setModuleSlice(metadata, key, moduleState.get()));
         }
         return moduleState;
     }
 
-    public registerCaptureHook(hook: TaskGridStateCaptureHook, priority?: number): void {
+    public registerCapture(hook: TaskGridStateCaptureHook, priority?: number): void {
         this._captureHooks.register(hook, priority);
     }
 

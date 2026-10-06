@@ -26,7 +26,7 @@ const HIGH = 1
 
 export const urgentTicketsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
+        runtime.services.get('cells').registerCellTheme((theme, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
                 theme.colors.text = '#a4262c'
             }
@@ -104,7 +104,7 @@ declare module '@talxis/base-controls' {
 
 ## Drawing inside the grid
 
-\`runtime.services.get('surfaces').registerSurfaceHook(hook, priority?)\` adds something to what the grid draws inside its own element, after the rows. The hook pushes \`{ key, onRender }\` onto the list, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show.
+\`runtime.services.get('surfaces').registerSurface(hook, priority?)\` adds something to what the grid draws inside its own element, after the rows. The hook pushes \`{ key, onRender }\` onto the list, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show.
 
 - Surfaces are drawn in ascending priority. The built-in ones are the filter callout (\`'filterCallout'\`), the dialog grouping opens when a selection would load too many groups (\`'groupSelectionLimit'\`), and the legacy client API's notification callout (\`'notificationCallout'\`).
 - A surface is inside the grid's React tree, so its components can call \`useGridService\`, and they are drawn in the grid's theme.
@@ -134,7 +134,7 @@ export const AnUnsavedChangesBar: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A buyer updates prices and stock across the catalogue, then saves once. The module registers an \`unsavedChanges\` service with \`getCount()\` and \`subscribe()\`, follows the provider's \`onRecordColumnValueChanged\`, \`onAfterRecordSaved\` and \`onNewDataLoaded\`, and draws a bar through \`registerSurfaceHook\` whose component reads the service with \`useGridService\`. Change a few prices: the bar counts the products, Save all saves them, and Discard puts the old values back.`,
+                story: `A buyer updates prices and stock across the catalogue, then saves once. The module registers an \`unsavedChanges\` service with \`getCount()\` and \`subscribe()\`, follows the provider's \`onRecordColumnValueChanged\`, \`onAfterRecordSaved\` and \`onNewDataLoaded\`, and draws a bar through \`registerSurface\` whose component reads the service with \`useGridService\`. Change a few prices: the bar counts the products, Save all saves them, and Discard puts the old values back.`,
             },
         },
     },

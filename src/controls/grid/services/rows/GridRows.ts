@@ -20,7 +20,7 @@ export type GridRowHeightHook = (result: IGridRowHeight, params: { record: IReco
 
 /** What the caller decides for each row, after the row-level hooks. */
 export interface IGridRowSettings {
-    /** How tall a row is, after `registerRowHeightHook`. */
+    /** How tall a row is, after `registerRowHeight`. */
     onGetHeight?: GridRowHeightHook;
 }
 
@@ -37,7 +37,7 @@ export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
+    registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
     /** Sets how tall the record's row is, over what the hooks decide. */
     setRowHeight(record: IRecord, height: number): void;
 }
@@ -64,7 +64,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
     }
 
-    public registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void {
+    public registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void {
         return this._rowHeightHooks.register(hook, priority);
     }
 

@@ -50,7 +50,7 @@ const unsavedChangesModule: IGridModule = {
             },
         }
         runtime.services.register('unsavedChanges', () => unsavedChanges)
-        runtime.services.get('surfaces').registerSurfaceHook(surfaces => {
+        runtime.services.get('surfaces').registerSurface(surfaces => {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
 

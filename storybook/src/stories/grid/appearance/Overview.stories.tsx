@@ -9,7 +9,7 @@ The grid draws in your theme. On top of it you can colour cells and headers by w
 
 ## Colour cells by their data
 
-A column colours its own cells with \`settings.cell.onGetTheme(theme, { record })\`. To colour cells across columns, such as a whole row, register a theme hook in a module with \`runtime.services.get('cells').registerCellThemeHook(hook, priority)\`. Both are handed the same \`theme\` builder.
+A column colours its own cells with \`settings.cell.onGetTheme(theme, { record })\`. To colour cells across columns, such as a whole row, register a theme hook in a module with \`runtime.services.get('cells').registerCellTheme(hook, priority)\`. Both are handed the same \`theme\` builder.
 
 {{story: Spot tickets about to breach}}
 
@@ -33,7 +33,7 @@ Each cell starts from the grid's theme, and everything below gets its say in thi
 | Step | What | What it sets |
 |---|---|---|
 | 1 | The row: with \`enableZebra\` on, every other row takes \`palette.neutralLighterAlt\` | \`background\` |
-| 2 | \`registerCellThemeHook\` hooks, by ascending priority. The default priority is \`0\`. | Anything |
+| 2 | \`registerCellTheme\` hooks, by ascending priority. The default priority is \`0\`. | Anything |
 | | the legacy client API module, at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\` (0), ahead of your hooks at \`0\`: the colours of \`ui.setCustomFormattingExpression\` | \`primary\`, \`background\`, \`text\` |
 | | the grouping module, at \`GRID_MODULE_PRIORITY.grouping\` (60), while the rows are grouped: record rows go back to the plain background, group rows are shaded and bold | \`background\` |
 | | the aggregation module, at \`GRID_MODULE_PRIORITY.aggregation\` (70): the totals row is shaded and bold | \`background\` |
@@ -43,7 +43,7 @@ A hook at the default priority therefore loses its background while the rows are
 
 ## Colour column headers
 
-A column colours its header with \`settings.header.onGetTheme(theme)\`, which takes the same \`theme\` builder. It runs after the hooks registered with \`runtime.services.get('columns').headers.registerColumnHeaderThemeHook(hook, priority)\`, which colour every header.
+A column colours its header with \`settings.header.onGetTheme(theme)\`, which takes the same \`theme\` builder. It runs after the hooks registered with \`runtime.services.get('columns').headers.registerColumnHeaderTheme(hook, priority)\`, which colour every header.
 
 {{story: Colour-coded column headers}}
 
@@ -143,7 +143,7 @@ export const TintEscalatedTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets stand out across their whole row through a small module's \`registerCellThemeHook\`, registered at \`GRID_MODULE_PRIORITY.grouping + 1\` so the tint survives grouping, with its text colour from \`getTextColorForBackground\`. Turn on *Escalated* for another ticket and its row turns red, then group by *Status* from its column menu (grouping is AG Grid Enterprise).`,
+                story: `Escalated tickets stand out across their whole row through a small module's \`registerCellTheme\`, registered at \`GRID_MODULE_PRIORITY.grouping + 1\` so the tint survives grouping, with its text colour from \`getTextColorForBackground\`. Turn on *Escalated* for another ticket and its row turns red, then group by *Status* from its column menu (grouping is AG Grid Enterprise).`,
             },
         },
     },

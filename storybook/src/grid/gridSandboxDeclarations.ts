@@ -1377,29 +1377,29 @@ interface IGridColumnCellSettings {
     oneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Runs after registerCellCommandsHook. */
+    /** Runs after registerCellCommands. */
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
-    /** Runs after every registerCellThemeHook. */
+    /** Runs after every registerCellTheme. */
     onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Runs after the cell-level registerLockHook hooks. */
+    /** Runs after the cell-level registerLock hooks. */
     onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
-    /** Runs after registerCellLoadingHook. */
+    /** Runs after registerCellLoading. */
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
-    /** Runs after registerValidationHook. */
+    /** Runs after registerValidation. */
     onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
-    /** Runs after registerControlParametersHook. */
+    /** Runs after registerControlParameters. */
     onGetControlParameters?: (parameters: IParameters, params: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
 interface IGridColumnHeaderSettings {
-    /** Runs after registerColumnHeaderThemeHook. */
+    /** Runs after registerColumnHeaderTheme. */
     onGetTheme?: (theme: ThemeBuilder) => void;
-    /** Runs after registerColumnHeaderAdornmentsHook. */
+    /** Runs after registerColumnHeaderAdornments. */
     onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Runs after registerColumnMenuSectionHook. */
+    /** Runs after registerColumnMenuSection. */
     onGetMenuSections?: (sections: IColumnMenuSection[]) => void;
-    /** Runs after registerColumnMenuItemsHook. */
+    /** Runs after registerColumnMenuItems. */
     onGetMenuItems?: (items: IContextualMenuItem[]) => void;
 }
 
@@ -1479,11 +1479,11 @@ interface IGridColumnHeaders {
     /** Redraws every header, for state their columns do not hold. */
     render(): void;
     /** The built-in modules add their sections at GRID_MODULE_PRIORITY. */
-    registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
+    registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /** Runs on the menu the sections became. */
-    registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
-    registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
-    registerColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+    registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
+    registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
+    registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
     getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[];
     /** The header of one column, as the parts drawing it read it. */
@@ -1505,7 +1505,7 @@ interface IGridColumns {
     readonly events: IEventEmitter<IGridColumnsEvents>;
     readonly headers: IGridColumnHeaders;
     /** Runs on every column build, before the colDefs prop. */
-    registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void;
     getColumnDefinitions(): IGridColDef[];
 }
 
@@ -1633,14 +1633,14 @@ interface IGridCells {
     /** The cell drawing this field, where one is on screen. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
     /** Which control draws a cell. */
-    registerControlHook(hook: GridControlHook, priority?: number): () => void;
+    registerControl(hook: GridControlHook, priority?: number): () => void;
     /** The parameters the control drawing a cell is handed. */
-    registerControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
+    registerControlParameters(hook: GridControlParametersHook, priority?: number): () => void;
     /** Below GRID_MODULE_PRIORITY.grouping, a background is lost while grouped. */
-    registerCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
-    registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
+    registerCellTheme(hook: GridCellThemeHook, priority?: number): () => void;
+    registerCellLoading(hook: GridCellLoadingHook, priority?: number): () => void;
     /** Commands show while the row is hovered, focused or selected. */
-    registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
+    registerCellCommands(hook: GridCellCommandsHook, priority?: number): () => void;
     createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
     /** Registers a cell as rendered. */
     addCell(cell: IGridCell): void;
@@ -1691,7 +1691,7 @@ interface IGridRowSettings {
 interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     /** Whether the row is hovered, focused or selected. */
     isHighlighted(record: IRecord): boolean;
-    registerRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
+    registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
     /** Sets the row's height over what the hooks decide. */
     setRowHeight(record: IRecord, height: number): void;
 }
@@ -1701,7 +1701,7 @@ type GridLockHook = (result: IGridLock, context: IGridLockContext) => void;
 interface IGridLocks {
     get(context?: IGridLockContext): IGridLockResult;
     /** A context with a record and no columnName asks about the whole row. */
-    registerLockHook(hook: GridLockHook, priority?: number): () => void;
+    registerLock(hook: GridLockHook, priority?: number): () => void;
 }
 
 type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
@@ -1709,7 +1709,7 @@ type GridValidationHook = (result: IFieldValidationResult, params: { record: IRe
 interface IGridValidation {
     get(params: { record: IRecord; columnName: string }): IFieldValidationResult;
     /** An error blocks the record's save. */
-    registerValidationHook(hook: GridValidationHook, priority?: number): () => void;
+    registerValidation(hook: GridValidationHook, priority?: number): () => void;
 }
 
 interface IGridSettings {
@@ -1737,7 +1737,7 @@ interface IGridSurface {
 type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
 interface IGridSurfaces {
-    registerSurfaceHook(hook: GridSurfacesHook, priority?: number): () => void;
+    registerSurface(hook: GridSurfacesHook, priority?: number): () => void;
     getSurfaces(): IGridSurface[];
 }
 
@@ -1880,7 +1880,7 @@ interface IGridFiltering {
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
     /** A hook over the parameters the filter callout's operator and value controls are handed. */
-    registerFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
     getFilterControlParameters(parameters: IParameters, params: { column: IColumn; control: GridFilterControl; index: number }): IParameters;
     readonly components: IGridFilteringComponents;
 }

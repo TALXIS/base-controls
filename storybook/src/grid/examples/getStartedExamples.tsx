@@ -167,7 +167,7 @@ const VALUE_TINTS = ['#f3faf3', '#dff6dd', '#bfe8bc']
 /** An icon before overdue and due close dates. */
 const statusIcons: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerControlParametersHook((parameters, { record, columnName }) => {
+        runtime.services.get('cells').registerControlParameters((parameters, { record, columnName }) => {
             const value = getShownValue(runtime, record, columnName)
             const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
             if (state) {
@@ -181,7 +181,7 @@ const statusIcons: IGridModule = {
 const colourRules: IGridModule = {
     onRegister: runtime => {
         //after grouping, which repaints every row while the deals are grouped
-        runtime.services.get('cells').registerCellThemeHook((theme, { record, columnName }) => {
+        runtime.services.get('cells').registerCellTheme((theme, { record, columnName }) => {
             const value = getShownValue(runtime, record, columnName)
             if (value == null || isClosed(record)) {
                 return
@@ -200,7 +200,7 @@ const colourRules: IGridModule = {
 /** What the colours and icons in Close date mean. */
 const headerExtras: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('columns').headers.registerColumnHeaderAdornmentsHook((adornments, header) => {
+        runtime.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
             const legend = LEGENDS[header.getColumn()?.name ?? '']
             if (legend) {
                 adornments.push({ key: 'legend', placement: 'suffix', title: legend, onRender: () => <Icon iconName='Info' /> })
@@ -218,7 +218,7 @@ const overdueActions: IGridModule = {
     onRegister: runtime => {
         //the field saves the deal while auto-save is on
         const pushBack = (deal: IRecord, days: number) => runtime.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
-        runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
+        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'closedate' || !isOverdue(record) || getShownValue(runtime, record, columnName) == null) {
                 return
             }
@@ -252,7 +252,7 @@ const quickViews: IGridModule = {
             deals.setFiltering(conditions ? { filterOperator: Type.And.Value, conditions } : null)
             deals.refresh()
         }
-        runtime.services.get('columns').headers.registerColumnMenuSectionHook((sections, header) => {
+        runtime.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
             const views = QUICK_VIEWS[header.getColumn()?.name ?? '']
             if (!views) {
                 return
@@ -312,7 +312,7 @@ const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel i
 /** An Open in a form command beside every deal's name. */
 const openInForm: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
+        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'name' || isSummaryRow(record)) {
                 return
             }
@@ -495,7 +495,7 @@ const dealCommands: IGridModule = {
             const rect = button?.getBoundingClientRect()
             return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
         }
-        runtime.services.get('cells').registerCellCommandsHook((result, { record, columnName }) => {
+        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
@@ -509,7 +509,7 @@ const dealCommands: IGridModule = {
 const closedDealColours: IGridModule = {
     onRegister: runtime => {
         //after grouping, which repaints every row while the deals are grouped
-        runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
+        runtime.services.get('cells').registerCellTheme((theme, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }

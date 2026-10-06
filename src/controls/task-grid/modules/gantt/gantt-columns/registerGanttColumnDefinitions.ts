@@ -10,7 +10,7 @@ import { IGanttServiceLocator } from "../services";
  */
 export const registerGanttColumnDefinitions = (services: IGanttServiceLocator): void => {
     services.get('taskGridServices').whenAvailable('gridCustomizer', customizer => {
-        customizer.registerColumnDefinitionsHook(columnDefs => applyGanttColumnDefinitions(columnDefs, services));
+        customizer.registerColumnDefinitions(columnDefs => applyGanttColumnDefinitions(columnDefs, services));
     });
 };
 

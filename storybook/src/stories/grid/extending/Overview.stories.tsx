@@ -81,21 +81,21 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 
 | Service | Hook | What it decides | Handed | Then, last |
 |---|---|---|---|---|
-| \`cells\` | \`registerCellThemeHook\` | A cell's colours: set \`theme.colors\`, or change the built theme with \`theme.edit(key, edit)\` | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`settings.cell.onGetTheme\` |
-| \`cells\` | \`registerCellLoadingHook\` | Whether a cell draws a shimmer in place of its value: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`settings.cell.onGetLoading\` |
-| \`cells\` | \`registerCellCommandsHook\` | The commands a cell offers while its row is hovered, focused or selected: push to \`result.items\` or \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`settings.cell.onGetCommands\` |
-| \`cells\` | \`registerControlHook\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | |
-| \`cells\` | \`registerControlParametersHook\` | The parameters a cell's control is handed, such as \`Placeholder\` | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`settings.cell.onGetControlParameters\` |
-| \`rows\` | \`registerRowHeightHook\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\`. A height set with \`rows.setRowHeight\` wins over both. |
-| \`editing.locks\` | \`registerLockHook\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`settings.cell.onGetLock\` for a cell |
-| \`validation\` | \`registerValidationHook\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`settings.cell.onGetValidation\` |
-| \`columns\` | \`registerColumnDefinitionsHook\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries | \`columnDefs: IGridColDef[]\` | \`colDefs\` |
-| \`columns.headers\` | \`registerColumnMenuSectionHook\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`settings.header.onGetMenuSections\` |
-| \`columns.headers\` | \`registerColumnMenuItemsHook\` | The menu's items once the sections are laid out, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`settings.header.onGetMenuItems\` |
-| \`columns.headers\` | \`registerColumnHeaderAdornmentsHook\` | What a header draws before and after the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`settings.header.onGetAdornments\` |
-| \`columns.headers\` | \`registerColumnHeaderThemeHook\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`settings.header.onGetTheme\` |
-| \`surfaces\` | \`registerSurfaceHook\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | |
-| \`filtering\` | \`registerFilterControlParametersHook\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | |
+| \`cells\` | \`registerCellTheme\` | A cell's colours: set \`theme.colors\`, or change the built theme with \`theme.edit(key, edit)\` | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`settings.cell.onGetTheme\` |
+| \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer in place of its value: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`settings.cell.onGetLoading\` |
+| \`cells\` | \`registerCellCommands\` | The commands a cell offers while its row is hovered, focused or selected: push to \`result.items\` or \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`settings.cell.onGetCommands\` |
+| \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | |
+| \`cells\` | \`registerControlParameters\` | The parameters a cell's control is handed, such as \`Placeholder\` | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`settings.cell.onGetControlParameters\` |
+| \`rows\` | \`registerRowHeight\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\`. A height set with \`rows.setRowHeight\` wins over both. |
+| \`editing.locks\` | \`registerLock\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`settings.cell.onGetLock\` for a cell |
+| \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`settings.cell.onGetValidation\` |
+| \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries | \`columnDefs: IGridColDef[]\` | \`colDefs\` |
+| \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`settings.header.onGetMenuSections\` |
+| \`columns.headers\` | \`registerColumnMenuItems\` | The menu's items once the sections are laid out, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`settings.header.onGetMenuItems\` |
+| \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws before and after the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`settings.header.onGetAdornments\` |
+| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`settings.header.onGetTheme\` |
+| \`surfaces\` | \`registerSurface\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | |
+| \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | |
 | The runtime | \`registerAgGridOptions\` | The AG Grid options that can change at any time | \`result: { options }\` | |
 | The runtime | \`registerAgGridInitialOptions\` | The AG Grid options read once, when AG Grid is created | \`result: { options }\` | |
 | The runtime | \`registerStyles\` | Styles of the grid's root element, after the grid's own: push an \`IStyle\` | \`result: { styles }\`, \`theme\` | |

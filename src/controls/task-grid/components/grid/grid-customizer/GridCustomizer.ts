@@ -85,7 +85,7 @@ export interface IGridCustomizer {
      * Defaults to `0`, and hooks sharing a priority run in the order they were registered. A negative
      * priority orders a hook ahead of the default ones, never ahead of the strategy.
      */
-    registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void;
+    registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): void;
 }
 
 export interface IGridCustomizerParameters {
@@ -170,7 +170,7 @@ export class GridCustomizer implements IGridCustomizer {
         return this._services.find('gridCustomizerModule')?.strategy;
     }
 
-    public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void {
+    public registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): void {
         this._columnDefinitionsHooks.register(hook, priority);
     }
 

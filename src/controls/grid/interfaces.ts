@@ -83,9 +83,9 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     enableNavigation?: boolean;
     /** Whether option sets show their colours; read at mount, then control parameter hooks. */
     enableOptionSetColors?: boolean;
-    /** Whether every other row is shaded; read at mount, then through `registerCellThemeHook`. */
+    /** Whether every other row is shaded; read at mount, then through `registerCellTheme`. */
     enableZebra?: boolean;
-    /** How tall a row is, in pixels; read at mount, then through `registerRowHeightHook`. */
+    /** How tall a row is, in pixels; read at mount, then through `registerRowHeight`. */
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */
     maxVisibleRows?: number;

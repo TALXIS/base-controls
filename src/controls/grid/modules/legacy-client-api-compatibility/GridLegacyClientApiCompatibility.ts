@@ -42,14 +42,14 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
         this._services = parameters.services;
         const cells = parameters.services.get('cells');
-        parameters.services.get('surfaces').registerSurfaceHook(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
+        parameters.services.get('surfaces').registerSurface(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may register after this one
-        parameters.services.whenAvailable('editing', editing => editing.locks.registerLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
-        cells.registerCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerCellCommandsHook(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerControlHook(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerControlParametersHook(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
+        parameters.services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
+        cells.registerCellLoading(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
+        cells.registerCellTheme(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
+        cells.registerCellCommands(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
+        cells.registerControl(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
+        cells.registerControlParameters(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
         parameters.services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
         parameters.services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);

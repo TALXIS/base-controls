@@ -69,7 +69,7 @@ A view is a sort and a filter applied together. The column menus write to the sa
 - On an option set or a yes/no column, *Equals* and *Does not equal* take several options, and reach the provider as \`In\` and \`NotIn\` once more than one is picked. Leave \`In\` and \`NotIn\` out of their lists.
 - Dates are compared by day.
 
-\`filtering.registerFilterControlParametersHook(hook, priority?)\` changes the parameters the callout hands its controls, here a text box's \`Placeholder\`. The hook gets \`{ column, control, index }\`: \`control\` is \`'operator'\` for the operator picker and \`'value'\` for a value control, and \`index\` is \`0\`, or \`1\` for the second value of *Between*. It runs on every render of the callout, after the grid's own parameters: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout. Hooks run by ascending \`priority\`, and the call returns a function that unregisters the hook.
+\`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout hands its controls, here a text box's \`Placeholder\`. The hook gets \`{ column, control, index }\`: \`control\` is \`'operator'\` for the operator picker and \`'value'\` for a value control, and \`index\` is \`0\`, or \`1\` for the second value of *Between*. It runs on every render of the callout, after the grid's own parameters: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout. Hooks run by ascending \`priority\`, and the call returns a function that unregisters the hook.
 
 ## The sorting and filtering services
 
@@ -91,7 +91,7 @@ Reach them with \`runtime.services.get('sorting')\` and \`runtime.services.get('
 | \`isColumnFilterable(column)\` | Whether \`SupportedFilterConditionOperators\` holds an operator. |
 | \`isFiltered(column)\` | Whether a condition on the column is applied to the provider. |
 | \`removeColumnFilter(columnName, saveToDataset?)\` | With \`saveToDataset: true\`, takes the column's condition out of the provider's filter and reloads, as *Clear* does. Without it, only a condition not yet applied is dropped. |
-| \`registerFilterControlParametersHook(hook, priority?)\` | See above. |
+| \`registerFilterControlParameters(hook, priority?)\` | See above. |
 | \`events\` | \`onFilterOpened(columnName)\` and \`onFilterClosed()\`, which *Apply* fires too. No event says what was applied. |
 
 ## Labels
@@ -189,7 +189,7 @@ export const OfferOnlyTheFiltersThatMakeSense: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The support desk trims each filter to what the team uses: \`metadata.SupportedFilterConditionOperators\` narrows the operators of most columns, and *Time spent* gets none, so it cannot be filtered. A module of its own puts a hint in the text boxes through \`filtering.registerFilterControlParametersHook\`. Filter *Respond by* and pick *Between*, or filter *Subject* to see the hint.`,
+                story: `The support desk trims each filter to what the team uses: \`metadata.SupportedFilterConditionOperators\` narrows the operators of most columns, and *Time spent* gets none, so it cannot be filtered. A module of its own puts a hint in the text boxes through \`filtering.registerFilterControlParameters\`. Filter *Respond by* and pick *Between*, or filter *Subject* to see the hint.`,
             },
         },
     },

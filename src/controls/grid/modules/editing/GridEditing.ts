@@ -152,10 +152,10 @@ export class GridEditing implements IGridEditing {
 
     private _registerHooks(): void {
         const columns = this._services.get('columns');
-        columns.registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
+        columns.registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
         //after row selection has added its checkbox column
-        columns.registerColumnDefinitionsHook(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
-        columns.headers.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
+        columns.registerColumnDefinitions(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
+        columns.headers.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
         this._services.get('grid').registerAgGridOptions(result => {
             //AG Grid hands its own writes, such as a paste, over as `cellEditRequest`
             result.options.readOnlyEdit = true;

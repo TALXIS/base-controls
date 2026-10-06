@@ -67,7 +67,7 @@ export interface IGridFiltering {
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
     /** The parameters a filter control is handed: the ones it came with, the grid's defaults, then the hooks. */
     getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters;
     /** The parts of what this module draws, as the caller replaced them. */
@@ -88,7 +88,7 @@ export class GridFiltering implements IGridFiltering {
         this._registerHooks();
     }
 
-    public registerFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void {
+    public registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void {
         return this._filterControlParametersHooks.register(hook, priority);
     }
 
@@ -116,11 +116,11 @@ export class GridFiltering implements IGridFiltering {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.filtering);
         //the callout is a surface over the grid
-        gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {

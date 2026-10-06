@@ -61,13 +61,13 @@ export interface IGridColumnHeaders {
      *
      * @param priority Ascending: the modules sit at {@link GRID_MODULE_PRIORITY}.
      */
-    registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
+    registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /**
      * Registers a hook over the assembled menu, for what a section cannot express.
      *
      * @param priority Ascending among hooks that all run after the sections.
      */
-    registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
+    registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
     /** Everything the modules offer for a column, in order. */
     getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     /**
@@ -75,13 +75,13 @@ export interface IGridColumnHeaders {
      *
      * @param priority Ascending: a lower number runs earlier.
      */
-    registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
+    registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
     /**
      * Registers a hook over the theme a column header is drawn in.
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+    registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
     /** Run by the header in question. */
     applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void;
     /** Everything the modules draw for a column, in order. */
@@ -108,11 +108,11 @@ export class GridColumnHeaders implements IGridColumnHeaders {
         this.events.dispatchEvent('onRenderRequested');
     }
 
-    public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
+    public registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
         return this._menuSectionHooks.register(hook, priority);
     }
 
-    public registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void {
+    public registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void {
         return this._menuItemHooks.register(hook, priority);
     }
 
@@ -134,11 +134,11 @@ export class GridColumnHeaders implements IGridColumnHeaders {
         return items;
     }
 
-    public registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
+    public registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
         return this._adornmentHooks.register(hook, priority);
     }
 
-    public registerColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void {
+    public registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void {
         return this._themeHooks.register(hook, priority);
     }
 

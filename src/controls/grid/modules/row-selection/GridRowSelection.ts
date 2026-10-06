@@ -154,7 +154,7 @@ export class GridRowSelection implements IGridRowSelection {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
         gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
         gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.rowSelection);
     }

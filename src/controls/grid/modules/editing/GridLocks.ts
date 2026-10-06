@@ -11,14 +11,14 @@ declare module "../../services/columns/colDef" {
     interface IGridColumnCellSettings {
         /** Whether the control takes input where the cell stands, with no editor to open. */
         oneClickEdit?: boolean;
-        /** Decides whether a cell is locked, after the cell-level `registerLockHook` hooks. */
+        /** Decides whether a cell is locked, after the cell-level `registerLock` hooks. */
         onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     }
 }
 
 declare module "../../services/rows/GridRows" {
     interface IGridRowSettings {
-        /** Locks a record as a whole, after the record-level `registerLockHook` hooks. */
+        /** Locks a record as a whole, after the record-level `registerLock` hooks. */
         onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     }
 }
@@ -58,7 +58,7 @@ export interface IGridLocks {
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerLockHook(hook: GridLockHook, priority?: number): () => void;
+    registerLock(hook: GridLockHook, priority?: number): () => void;
 }
 
 export class GridLocks implements IGridLocks {
@@ -84,7 +84,7 @@ export class GridLocks implements IGridLocks {
         return { isLocked: false };
     }
 
-    public registerLockHook(hook: GridLockHook, priority?: number): () => void {
+    public registerLock(hook: GridLockHook, priority?: number): () => void {
         return this._hooks.register(hook, priority);
     }
 

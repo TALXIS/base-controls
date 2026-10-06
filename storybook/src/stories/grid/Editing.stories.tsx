@@ -83,7 +83,7 @@ A value that fails validation draws a red outline and an error icon in its cell,
 | Required | \`metadata.RequiredLevel\` \`1\` (SystemRequired) or \`2\` (ApplicationRequired) on the provider column | That the value is not empty. The header shows an asterisk while the editing module is on. |
 | Built-in checks | The column's data type and metadata | Single-line text against \`MaxLength\`, whole and decimal numbers against \`MinValue\` and \`MaxValue\`, that numbers, money and durations hold numbers, email, URL and date formats |
 | One column | \`settings.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column. It may read any column of the record. |
-| Every column | \`registerValidationHook(hook, priority?)\` on the \`validation\` service, from a module | Your rule for every column of every record. See [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
+| Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service, from a module | Your rule for every column of every record. See [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
 
 - Your rules run first: the hooks, then the column's \`onGetValidation\`, then the required and built-in checks. A rule can add an error; it cannot clear a built-in one.
 - Validation does not depend on editing: a read-only grid outlines invalid values too.
@@ -123,7 +123,7 @@ Locks decide what can be edited. There are four levels, checked in the order of 
 - Both run every time the grid asks, which is often: keep them fast and free of side effects.
 - A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: redraw the cells and headers (see *Redrawing* on [**Extending**](?path=/docs/grid-extending--overview)). A muted row only follows once a value of its record changes or the data reloads.
 - The lock column is \`RECORD_LOCK_COLUMN_KEY\` (\`'recordLock'\`); it is hidden until a loaded row is locked. A muted row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
-- A module locks columns, records and cells with \`editing.locks.registerLockHook\`: see [**Hooks**](?path=/docs/grid-extending-hooks--overview).
+- A module locks columns, records and cells with \`editing.locks.registerLock\`: see [**Hooks**](?path=/docs/grid-extending-hooks--overview).
 
 ### Inactive records
 

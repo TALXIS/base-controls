@@ -43,7 +43,7 @@ export interface IGridColumns {
      *
      * @param priority Ascending: a higher number gets the later word.
      */
-    registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void;
     /** The definitions the grid is to be given, after every module has had its say. */
     getColumnDefinitions(): ColDef<IRecord>[];
 }
@@ -65,7 +65,7 @@ export class GridColumns implements IGridColumns {
         return this._headers;
     }
 
-    public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void {
+    public registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void {
         return this._hooks.register(hook, priority);
     }
 

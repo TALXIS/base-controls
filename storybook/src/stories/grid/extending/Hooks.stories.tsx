@@ -82,14 +82,14 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 {{story: Copy a column's values}}
 
 - A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
-- \`registerColumnMenuItemsHook\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
+- \`registerColumnMenuItems\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
 - \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getSettings()\`, \`getAlignment()\`, \`isLocked()\`, \`isRequired()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
 
 {{story: Show the currency in the header}}
 
 - An adornment is \`{ key, placement, title?, onRender? }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview).
 - The modules add the sort arrow, the filter funnel and the total's title after the name, and the group icon before it. At the default priority, yours come before theirs on the same side.
-- A header's colours come from \`registerColumnHeaderThemeHook\`: see [**Appearance**](?path=/docs/grid-appearance--overview).
+- A header's colours come from \`registerColumnHeaderTheme\`: see [**Appearance**](?path=/docs/grid-appearance--overview).
 `
 
 const meta = {
@@ -114,7 +114,7 @@ export const LockTheCellsOfClosedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A won or lost deal keeps its numbers. \`editing.locks.registerLockHook\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Set a deal's Stage to Won: its numbers lock at once, and Stage stays open to reopen the deal.`,
+                story: `A won or lost deal keeps its numbers. \`editing.locks.registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Set a deal's Stage to Won: its numbers lock at once, and Stage stays open to reopen the deal.`,
             },
         },
     },
@@ -126,7 +126,7 @@ export const KeepADayUnderTenHours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Payroll caps a consultant's day at ten hours. \`registerValidationHook\` on the \`validation\` service adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the other entries when one of them changes. Anna Novak's Monday and Chloé Martin's Wednesday are already over: cut one entry's hours until the day is back to ten, and both entries of that day clear.`,
+                story: `Payroll caps a consultant's day at ten hours. \`registerValidation\` on the \`validation\` service adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the other entries when one of them changes. Anna Novak's Monday and Chloé Martin's Wednesday are already over: cut one entry's hours until the day is back to ten, and both entries of that day clear.`,
             },
         },
     },
@@ -138,7 +138,7 @@ export const RefreshPricesFromASupplier: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop takes its prices from a supplier's price list, which answers one product at a time. \`registerCellLoadingHook\` on the \`cells\` service draws a shimmer in each Price cell until that product's price is back. \`cells.render()\` shows the shimmers at once, and writing each new price redraws its row. Press Refresh prices.`,
+                story: `The shop takes its prices from a supplier's price list, which answers one product at a time. \`registerCellLoading\` on the \`cells\` service draws a shimmer in each Price cell until that product's price is back. \`cells.render()\` shows the shimmers at once, and writing each new price redraws its row. Press Refresh prices.`,
             },
         },
     },
@@ -150,7 +150,7 @@ export const AssignNewTicketsToYourself: Story = {
     parameters: {
         docs: {
             description: {
-                story: `New tickets have nobody on them yet. \`registerCellCommandsHook\` on the \`cells\` service offers Assign to me in the Assigned to cell of every unassigned ticket; it assigns the ticket, moves it to In progress and saves it. Hover a New ticket and pick Assign to me.`,
+                story: `New tickets have nobody on them yet. \`registerCellCommands\` on the \`cells\` service offers Assign to me in the Assigned to cell of every unassigned ticket; it assigns the ticket, moves it to In progress and saves it. Hover a New ticket and pick Assign to me.`,
             },
         },
     },
@@ -162,7 +162,7 @@ export const PlaceholdersForMissingValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An empty cell should say what is missing. \`registerControlParametersHook\` on the \`cells\` service hands the Assigned to and Customer cells a \`Placeholder\` in place of \`---\`, and their editors get it too. New tickets read Unassigned; clear a ticket's Customer to see No customer.`,
+                story: `An empty cell should say what is missing. \`registerControlParameters\` on the \`cells\` service hands the Assigned to and Customer cells a \`Placeholder\` in place of \`---\`, and their editors get it too. New tickets read Unassigned; clear a ticket's Customer to see No customer.`,
             },
         },
     },
@@ -174,7 +174,7 @@ export const TallerRowsForUrgentTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support desk wants its urgent tickets to stand out. \`registerRowHeightHook\` on the \`rows\` service makes every High priority row 64px tall, and \`resetRowHeights()\` makes AG Grid ask again when a priority changes. Change a ticket's Priority to High, or back to Normal.`,
+                story: `A support desk wants its urgent tickets to stand out. \`registerRowHeight\` on the \`rows\` service makes every High priority row 64px tall, and \`resetRowHeights()\` makes AG Grid ask again when a priority changes. Change a ticket's Priority to High, or back to Normal.`,
             },
         },
     },
@@ -186,7 +186,7 @@ export const ColumnsByRole: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Consultants log their hours without seeing what the client is billed. \`registerColumnDefinitionsHook\` on the \`columns\` service hides Hourly rate unless a project manager is signed in, and reads the role through a getter because the module is built once. Switch to Project manager: \`provider.refresh()\` reloads the provider, and the columns are built again with Hourly rate.`,
+                story: `Consultants log their hours without seeing what the client is billed. \`registerColumnDefinitions\` on the \`columns\` service hides Hourly rate unless a project manager is signed in, and reads the role through a getter because the module is built once. Switch to Project manager: \`provider.refresh()\` reloads the provider, and the columns are built again with Hourly rate.`,
             },
         },
     },
@@ -198,7 +198,7 @@ export const CopyAColumnsValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A sales lead pastes a column of the pipeline into an email. \`registerColumnMenuSectionHook\` on \`columns.headers\` adds a Column section with Copy column values to every column's menu, below Sorting and Filtering because it runs at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Filter Stage to Negotiate, then copy the Deal column from its menu.`,
+                story: `A sales lead pastes a column of the pipeline into an email. \`registerColumnMenuSection\` on \`columns.headers\` adds a Column section with Copy column values to every column's menu, below Sorting and Filtering because it runs at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Filter Stage to Negotiate, then copy the Deal column from its menu.`,
             },
         },
     },
@@ -210,7 +210,7 @@ export const ShowTheCurrencyInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop's prices are in US dollars, and the header says so. \`registerColumnHeaderAdornmentsHook\` on \`columns.headers\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Hover the Price header to read the tooltip, then sort by Price from its menu: USD stays ahead of the sort arrow.`,
+                story: `The shop's prices are in US dollars, and the header says so. \`registerColumnHeaderAdornments\` on \`columns.headers\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Hover the Price header to read the tooltip, then sort by Price from its menu: USD stays ahead of the sort arrow.`,
             },
         },
     },

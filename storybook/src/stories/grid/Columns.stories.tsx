@@ -82,7 +82,7 @@ A key of \`colDefs\` that names no provider column adds a column.
 - Push Fluent \`ICommandBarItemProps\` to \`result.items\` for buttons, and to \`result.overflowItems\` for the menu behind the overflow button. Buttons that do not fit the cell move into that menu too, so give each one a \`text\`; \`iconOnly: true\` draws just the icon, with the text as its tooltip.
 - Commands show while the row is hovered, focused or selected. They are worked out each time the cell draws them, so they can depend on the record.
 - In an added column with no \`cellRenderer\`, the commands are all the cell draws. In a provider column they sit after the value, or before it in a right-aligned column.
-- It runs after every \`registerCellCommandsHook\` ([**Hooks**](?path=/docs/grid-extending-hooks--overview)), and for group rows and the totals row too.
+- It runs after every \`registerCellCommands\` ([**Hooks**](?path=/docs/grid-extending-hooks--overview)), and for group rows and the totals row too.
 
 {{story: Flag low stock in the header}}
 

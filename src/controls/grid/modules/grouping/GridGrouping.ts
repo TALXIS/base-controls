@@ -130,14 +130,14 @@ export class GridGrouping implements IGridGrouping {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
-        cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
+        cells.registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may register after this one
-        this._gridServices.whenAvailable('editing', editing => editing.locks.registerLockHook(this._onLock, GRID_MODULE_PRIORITY.grouping));
+        this._gridServices.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping));
         //listed in the column menu after sorting and filtering
-        columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
-        columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('surfaces').registerSurfaceHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.whenAvailable('rowSelection', selection => selection.setInterceptor('onSelectRecords', this._onSelectRecords));
     }
 

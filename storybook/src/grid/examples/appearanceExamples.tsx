@@ -49,7 +49,7 @@ export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
 
 const escalatedTicketsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('cells').registerCellThemeHook((theme, { record }) => {
+        runtime.services.get('cells').registerCellTheme((theme, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') !== '1') {
                 return
