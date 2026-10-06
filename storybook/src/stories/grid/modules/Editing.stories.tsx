@@ -70,7 +70,7 @@ An editable grid adds a save status column, 40px wide and pinned at the start of
 - a green check for 2 seconds once it saved;
 - a red icon once it was refused, until the user dismisses it or the record saves again. Clicking it opens a callout that lists each error under its column's header name.
 
-With row selection on, the status is drawn in the row's checkbox cell instead: see [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it. Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or replace its parts as shown on [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview).
+With row selection on, the status is drawn in the row's checkbox cell instead: see [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it. Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or replace its parts as shown on [**Modules**](?path=/docs/grid-appearance-modules--overview).
 
 ## Validation
 

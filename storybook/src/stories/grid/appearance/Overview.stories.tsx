@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ThemeEditExample, DensityExample, EscalatedTicketsExample, HeaderColoursExample, SpotBreachesExample } from '../../../grid/examples/appearanceExamples'
 
 const DESCRIPTION = `
-The grid draws in your theme. On top of it you can colour cells and headers by what they hold and pick a density, zebra rows and option set colours. To translate what the grid shows, see [**Localization**](?path=/docs/grid-localization-overview--overview). To replace what the grid draws rather than recolour it, see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview), [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview) and [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview).
+The grid draws in your theme. On top of it you can colour cells and headers by what they hold and pick a density, zebra rows and option set colours. To translate what the grid shows, see [**Localization**](?path=/docs/grid-localization-overview--overview). To replace what the grid draws rather than recolour it, see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview), [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview), [**Overlays**](?path=/docs/grid-appearance-overlays--overview) and [**Modules**](?path=/docs/grid-appearance-modules--overview).
 
 ## Colour cells by their data
 

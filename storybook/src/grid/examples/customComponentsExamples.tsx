@@ -157,15 +157,21 @@ export const PIPELINE_HEADER_CODE = `const styles = mergeStyleSets({
     summary: { opacity: 0.7, whiteSpace: 'nowrap' },
 })
 
-const ColumnSummary = () => {
-    const header = useGridColumnHeader()
-    const { formatting } = usePcfContext()
-    const columnName = header.getColDef().colId!
-    const values = provider.getRecords().map(deal => Number(deal.getValue(columnName) ?? 0))
-    const total = values.reduce((sum, value) => sum + value, 0)
-    const summary = columnName === 'value' ? 'Total ' + formatting.formatCurrency(total) : 'Average ' + Math.round(total / Math.max(values.length, 1)) + ' %'
+//the extension the grid's total row is built on, here without drawing the row
+const totals = new TotalRow(provider)
+totals.addAggregation('value', 'sum')
+totals.addAggregation('probability', 'avg')
+totals.refresh()
 
-    return <Text variant='small' className={styles.summary}>{summary}</Text>
+const LABELS: { [aggregationFunction: string]: string } = { sum: 'Total', avg: 'Average' }
+
+const ColumnSummary = () => {
+    const aggregation = useGridColumnHeader().getColumn()?.aggregation
+    const total = aggregation && totals.getTotalRowRecord()?.getFormattedValue(aggregation.alias!)
+    if (!total) {
+        return null
+    }
+    return <Text variant='small' className={styles.summary}>{LABELS[aggregation.aggregationFunction]} {total}</Text>
 }
 
 const NameAndSummary = () => {
@@ -189,14 +195,28 @@ const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
     </Grid.ColumnHeader.Theme>
 </Grid.ColumnHeader.Root>
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-    colDefs={{
-        value: { headerComponent: SummaryHeader },
-        probability: { headerComponent: SummaryHeader },
-    }}
-    height='440px' />
+const GridExample = () => {
+    const runtime = React.useRef<IGridRuntime>()
+
+    //the totals load on their own, so the headers are redrawn once they arrive
+    React.useEffect(() => {
+        totals.getDataProvider().addEventListener('onLoading', isLoading => {
+            if (!isLoading) {
+                runtime.current?.services.get('columns').headers.render()
+            }
+        })
+    }, [])
+
+    return <Grid.Root
+        provider={provider}
+        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+        colDefs={{
+            value: { headerComponent: SummaryHeader },
+            probability: { headerComponent: SummaryHeader },
+        }}
+        onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+        height='440px' />
+}
 `
 
 export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {

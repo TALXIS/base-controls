@@ -785,6 +785,19 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
 declare const provider: IDataProvider;
 
 /** A new, unloaded provider over the 30 deals of a sales pipeline. */
+/** Works out a provider's totals in a provider of its own, as the grid's total row does. */
+declare class TotalRow {
+    constructor(provider: IDataProvider);
+    /** Null while there are no aggregations or no records, or while the totals load. */
+    getTotalRowRecord(): IRecord | null;
+    addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
+    removeAggregation(alias: string): void;
+    /** The provider the totals are loaded into. */
+    getDataProvider(): IDataProvider;
+    refresh(): Promise<IRecord[]>;
+    destroy(): void;
+}
+
 declare function createDealsProvider(): MemoryDataProvider;
 /** A new, unloaded provider over a consulting team's 24 timesheet entries of last week. */
 declare function createTimesheetsProvider(): MemoryDataProvider;

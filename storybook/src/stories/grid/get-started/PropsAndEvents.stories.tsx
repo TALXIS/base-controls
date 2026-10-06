@@ -20,7 +20,7 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows the grid grows to before it scrolls, while \`height\` is not set. See *Sizing* below. |
 | \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. See *Sizing* below. |
 | \`className\` | \`string\` | None | Live | Added to the grid's root element, beside its own classes. |
-| \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, loading and error rows, and save and lock cells. See [**Overlays and modules**](?path=/docs/grid-appearance-overlays-and-modules--overview). |
+| \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, and loading and error rows. See [**Overlays**](?path=/docs/grid-appearance-overlays--overview). |
 | \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Localization**](?path=/docs/grid-localization-overview--overview). |
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns-overview--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |

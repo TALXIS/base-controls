@@ -16,7 +16,7 @@ import {
     CommandBar, Form, MemoryStrategy, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
-import { DataProvider, DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
+import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { createDealsProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
@@ -98,6 +98,7 @@ export const GRID_SANDBOX_SCOPE = {
     createProductsProvider,
     DataProvider,
     MemoryDataProvider,
+    TotalRow,
     DataTypes,
     Operators,
     Type,

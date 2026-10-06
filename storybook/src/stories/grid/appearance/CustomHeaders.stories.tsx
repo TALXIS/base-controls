@@ -104,7 +104,7 @@ export const SumUpThePipelineInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Value and Probability are composed from the parts, with the column's total or average under the name inside \`Content\`. \`Suffix\` still draws the sort arrow and \`Menu\` still opens on click: sort either column from its header.`,
+                story: `Value and Probability are composed from the parts, with the column's total or average under the name inside \`Content\`. The totals come from \`TotalRow\` (from \`@talxis/client-libraries\`), the extension the grid's total row is built on. \`Suffix\` still draws the sort arrow and \`Menu\` still opens on click: sort either column from its header.`,
             },
         },
     },
