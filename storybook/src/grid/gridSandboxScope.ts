@@ -8,10 +8,10 @@ import {
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
-    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCheckbox, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, CellLockIcon, createFilteringModule,
+    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, CellLockIcon, createFilteringModule,
     createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule,
     DEFAULT_COLUMN_WIDTH, FilteringUi, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
-    GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell,
+    GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
     CommandBar, Form, MemoryStrategy, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
@@ -60,7 +60,9 @@ export const GRID_SANDBOX_SCOPE = {
     createClipboardModule,
     createEditingModule,
     EditingCell,
+    SelectionCell,
     SelectionCheckbox,
+    SelectionHeader,
     RecordSaveSelectionCell,
     RecordSaveIndicator,
     RecordSaveIndicatorCell,
@@ -77,6 +79,7 @@ export const GRID_SANDBOX_SCOPE = {
     GridValueRenderer,
     OptionSetRenderer,
     GroupCell,
+    GroupExpansionHeader,
     AggregateCell,
     TotalCell,
     GroupingUi,

@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { StockTotalsExample } from '../../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-The aggregation module draws each column's total in a row pinned under the rest, and in a group's row. To change how they look, pass \`components\` to \`createAggregationModule\`.
+The aggregation module draws each column's total in a row pinned under the rest, and in a group's row. To change how they look across the grid, pass \`components\` to \`createAggregationModule\`.
 
 \`\`\`tsx
 createAggregationModule({ components: { totalCell: { totalValue: { onRenderValue: props => <strong {...props} /> } } } })
@@ -20,6 +20,18 @@ createAggregationModule({ components: { totalCell: { totalValue: { onRenderValue
 | \`totalCell.totalValue\` | \`onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | A column's total and what it is, in the pinned row |
 | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | The rest of the total's cell |
 | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | A column's total in a group's row |
+
+## One column only
+
+The module picks the totals row's and a group's total cell through the column's \`cellRendererSelector\`, and leaves every other row to its \`cellRenderer\`. To draw one column's total your own way, set its \`cellRendererSelector\` in \`colDefs\` and reuse \`TotalCell\` or \`AggregateCell\`: their \`components\` prop is merged over the module's.
+
+\`\`\`tsx
+const StockTotalCell = (props: IGridCellParams) => <TotalCell {...props} components={TOTAL} />
+
+colDefs={{ instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined } }}
+\`\`\`
+
+Your selector replaces the module's for that column: return \`undefined\` for a row to leave it to the column's \`cellRenderer\`.
 
 {{story: Totals that read at a glance}}
 `

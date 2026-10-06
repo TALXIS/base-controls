@@ -171,7 +171,6 @@ Each module's \`components\` option replaces what it draws, by piece. How to wri
 | \`groupCell.toggle.onRenderContainer\`, \`onRenderButton\` | The chevron on a group row. The button's props carry \`isExpanded\`. |
 | \`groupCell.count.onRenderCount\` | The record count after the group's value |
 | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | The group cell's frame, shimmer, value and commands, as in any cell |
-| \`expansionHeader.expandCollapse.onRenderContainer\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\` | The + and − in the expansion column's header |
 
 | \`createAggregationModule({ components })\` | Replaces |
 |---|---|

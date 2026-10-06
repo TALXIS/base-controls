@@ -16,25 +16,14 @@ import { RecordLockIndicatorCell } from "./components/record-lock-indicator/Reco
 import { SELECTION_COLUMN_KEY } from "../row-selection/constants";
 import { RecordSaveSelectionCell } from "./components/record-save-selection-cell/RecordSaveSelectionCell";
 import { RecordSaveIndicatorCell } from "./components/record-save-indicator/RecordSaveIndicatorCell";
-import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "./components/field-cell-renderer/CellFieldRenderer";
-import type { IRecordLockIndicatorCellComponents } from "./components/record-lock-indicator/components";
-import type { IRecordSaveUiComponents } from "./components/record-save-indicator/ui";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
         editing: IGridEditing;
     }
-}
-
-/** The replaceable pieces of what the editing module draws, by the piece they belong to. */
-export interface IGridEditingComponents {
-    /** The cell a row reports its save in, on a grid with no checkbox column. */
-    recordSaveCell?: IRecordSaveUiComponents;
-    /** The cell a record locked as a whole shows its lock in. */
-    recordLockCell?: IRecordLockIndicatorCellComponents;
 }
 
 export interface IGridEditedCell {
@@ -50,7 +39,6 @@ export interface IGridEditingParameters {
     services: IGridServiceLocator;
     autoSave?: boolean;
     onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'];
-    components?: IGridEditingComponents;
 }
 
 /** Which cell the user is editing and the keys that start and end it. */
@@ -58,7 +46,6 @@ export interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
     /** Whether a column, a record's row or a cell is locked. */
     readonly locks: IGridLocks;
-    readonly components: IGridEditingComponents;
     /** Whether the user is editing this cell, in place or in the editor AG Grid opened. */
     isEditing(record: IRecord, columnName: string): boolean;
     /** Whether the user is editing this cell, counting an editor from the moment it is drawn. */
@@ -86,13 +73,11 @@ export class GridEditing implements IGridEditing {
     private _rowClassRules: RowClassRules<IRecord> = { [LOCKED_RECORD_ROW_CLASS]: params => this._isLockedRow(params) };
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
     public readonly locks: IGridLocks;
-    public readonly components: IGridEditingComponents;
 
     constructor(parameters: IGridEditingParameters) {
         this._services = parameters.services;
         this._isAutoSaveEnabled = !!parameters.autoSave;
         this.locks = new GridLocks({ services: this._services });
-        this.components = parameters.components ?? {};
         if (parameters.onEditedCellChanged) {
             this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
         }
@@ -197,7 +182,7 @@ export class GridEditing implements IGridEditing {
         if (!selectionColDef) {
             return;
         }
-        selectionColDef.cellRendererSelector = params => ({ component: params.node.rowPinned ? CellEmptyRenderer : RecordSaveSelectionCell });
+        selectionColDef.cellRenderer = RecordSaveSelectionCell;
         const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
         if (recordSaveColumnIndex !== -1) {
             columnDefs.splice(recordSaveColumnIndex, 1);
@@ -219,8 +204,7 @@ export class GridEditing implements IGridEditing {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            //a pinned row has no save of its own to report
-            cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : RecordSaveIndicatorCell }),
+            cellRenderer: RecordSaveIndicatorCell,
         };
     }
 
@@ -241,7 +225,7 @@ export class GridEditing implements IGridEditing {
             initialHide: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : RecordLockIndicatorCell }),
+            cellRenderer: RecordLockIndicatorCell,
         };
     }
 

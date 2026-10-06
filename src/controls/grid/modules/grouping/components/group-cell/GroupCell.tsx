@@ -14,10 +14,12 @@ import { CellCommands } from "../../../../components/cells/commands/CellCommands
 import { useGridService } from "../../../../useGridService";
 import { GroupCount } from "../group-count/GroupCount";
 import { GroupingUi } from "../ui";
+import { IGroupCellComponents } from "./components";
 
 export interface IGroupCellProps extends ICellRendererParams<IRecord> {
     /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
     theme?: ITheme;
+    components?: IGroupCellComponents;
 }
 
 /** What a group row draws in its grouped column: its value and its chevron. */
@@ -26,7 +28,7 @@ export const GroupCell = (props: IGroupCellProps) => {
     const grouping = useGridService('grouping')!;
     const node = props.node;
     const { rerender } = useRerender();
-    const components = grouping.components.groupCell ?? {};
+    const components = { ...grouping.components.groupCell, ...props.components };
 
     useEffect(() => {
         node.addEventListener('expandedChanged', rerender);

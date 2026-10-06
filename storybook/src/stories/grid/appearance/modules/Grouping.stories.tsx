@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { GroupBadgesExample } from '../../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-The grouping module draws an icon in the header of every column the rows are grouped by, the row standing for each group, and the header that opens and closes the groups a level at a time. To change how they look, pass \`components\` to \`createGroupingModule\`.
+The grouping module draws an icon in the header of every column the rows are grouped by, and the row standing for each group. To change how they look across the grid, pass \`components\` to \`createGroupingModule\`.
 
 \`\`\`tsx
 createGroupingModule({ components: { groupCell: { count: { onRenderCount: props => <Badge {...props} /> } } } })
@@ -21,7 +21,23 @@ createGroupingModule({ components: { groupCell: { count: { onRenderCount: props 
 | \`groupCell.toggle\` | \`onRenderContainer\`, \`onRenderButton\` | The chevron that opens and closes a group |
 | \`groupCell.count\` | \`onRenderCount\` | How many records the group holds |
 | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | The rest of the group's cell |
-| \`expansionHeader.expandCollapse\` | \`onRenderContainer\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\` | The header buttons that open and close a level |
+
+## One column only
+
+The module picks a group row's cell through the column's \`cellRendererSelector\`, and leaves every other row to its \`cellRenderer\`. To draw one column's group rows your own way, set its \`cellRendererSelector\` in \`colDefs\` and reuse \`GroupCell\`: its \`components\` prop is merged over the module's.
+
+\`\`\`tsx
+const CategoryGroupCell = (props: IGridCellParams) => <GroupCell {...props} components={GROUP_CELL} />
+
+//rows grouped by Category hold its value, and the records under them draw nothing
+const isGroupRow = (params: ICellRendererParams<IRecord>) => params.data?.getDataProvider().getSummarizationType() === 'grouping'
+
+colDefs={{ category: { cellRendererSelector: params => ({ component: isGroupRow(params) ? CategoryGroupCell : Grid.Cell.EmptyRenderer }) } }}
+\`\`\`
+
+Your selector replaces the module's for that column. Return \`undefined\` for a row to leave it to the column's \`cellRenderer\`; on a grouped column, draw its records empty, as the module does. The expansion column is the module's own, keyed \`GROUP_EXPANSION_COLUMN_KEY\`: set its \`headerComponent\` and reuse \`GroupExpansionHeader\`, whose \`expandCollapse\` takes \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\`.
+
+To mark one column's grouping icon, replace the header adornment keyed \`'grouping'\` in \`settings.header.onGetAdornments\`.
 
 {{story: Group sizes as badges}}
 `

@@ -1860,7 +1860,6 @@ interface IGridRowSelection {
     isSelectionColumn(columnName: string | undefined): boolean;
     getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     isRecordSelectionDisabled(record: IRecord): boolean;
-    readonly components: IGridRowSelectionComponents;
 }
 
 interface IGridSorting {
@@ -2799,6 +2798,7 @@ interface IRecordSaveIndicatorProps {
 
 interface IRecordSaveIndicatorCellProps extends ICellRendererParams {
     theme?: ITheme;
+    components?: IRecordSaveUiComponents;
 }
 
 /** The save status of the cell's record, or its children while there is none; from the editing module. */
@@ -2820,14 +2820,17 @@ interface IRecordLockIconProps {
 
 interface IRecordLockIndicatorCellProps extends ICellRendererParams {
     theme?: ITheme;
+    components?: IRecordLockIndicatorCellComponents;
 }
 
-/** The replaceable pieces of what the editing module draws. */
-interface IGridEditingComponents {
-    /** The cell a row reports its save in, on a grid with no checkbox column. */
-    recordSaveCell?: IRecordSaveUiComponents;
-    /** The cell a record locked as a whole shows its lock in. */
-    recordLockCell?: IRecordLockIndicatorCellComponents;
+/** A row's checkbox cell that also reports its save. */
+interface IRecordSaveSelectionCellComponents extends IRecordSaveUiComponents {
+    checkbox?: Partial<IRowSelectionUiCheckboxComponents>;
+}
+
+interface IRecordSaveSelectionCellProps extends ICellRendererParams<IRecord> {
+    theme?: ITheme;
+    components?: IRecordSaveSelectionCellComponents;
 }
 
 /** Replaces parts of what the grid draws over its rows. */
@@ -2935,15 +2938,17 @@ interface ISelectionHeaderComponents {
     headerCheckbox?: Partial<IRowSelectionUiHeaderCheckboxComponents>;
 }
 
-interface IGridRowSelectionComponents {
-    cell?: ISelectionCellComponents;
-    /** The header that selects every record. */
-    header?: ISelectionHeaderComponents;
+interface ISelectionCellProps extends ICellRendererParams<IRecord> {
+    theme?: ITheme;
+    components?: ISelectionCellComponents;
+}
+
+interface ISelectionHeaderProps extends IColumnHeaderParams {
+    components?: ISelectionHeaderComponents;
 }
 
 interface IRowSelectionModuleOptions {
     mode: 'single' | 'multiple';
-    components?: Partial<IGridRowSelectionComponents>;
     /** Called when the selected records change, with the ids now selected. */
     onSelectionChanged?: (selectedRecordIds: string[]) => void;
 }
@@ -3042,7 +3047,7 @@ interface IGroupingUiExpandCollapseComponents {
 }
 
 /** What a group row draws in the column it is grouped by. */
-interface IGroupCellComponents extends Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'commands'> {
+interface IGroupCellComponents extends Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'columnControl' | 'commands'> {
     /** The chevron that opens and closes the group. */
     toggle?: Partial<IGroupingUiToggleComponents>;
     /** How many records the group holds. */
@@ -3057,8 +3062,10 @@ interface IGridGroupingComponents {
     /** What a grouped column shows in its header, before the name. */
     groupingIcon?: Partial<IGridGroupingIconComponents>;
     groupCell?: IGroupCellComponents;
-    /** The header that opens and closes the groups a level at a time. */
-    expansionHeader?: IGroupExpansionHeaderComponents;
+}
+
+interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
+    components?: IGroupExpansionHeaderComponents;
 }
 
 interface IGroupingModuleOptions {
@@ -3089,7 +3096,7 @@ interface ITotalCellComponents extends Pick<ICellRendererComponents, 'container'
 }
 
 /** What a column that totals something draws in a group's row. */
-interface IAggregateCellComponents extends Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'commands'> {}
+interface IAggregateCellComponents extends Pick<ICellRendererComponents, 'container' | 'loading' | 'control' | 'columnControl' | 'commands'> {}
 
 interface IGridAggregationComponents {
     totalCell?: ITotalCellComponents;
@@ -3199,14 +3206,20 @@ declare const GridGroupingIconComponents: IGridGroupingIconComponents;
 
 interface IGroupCellProps extends ICellRendererParams<IRecord> {
     theme?: ITheme;
+    /** Merged over the module's groupCell. */
+    components?: IGroupCellComponents;
 }
 
 interface ITotalCellProps extends ICellRendererParams<IRecord> {
     theme?: ITheme;
+    /** Merged over the module's totalCell. */
+    components?: ITotalCellComponents;
 }
 
 interface IAggregateCellProps extends ICellRendererParams<IRecord> {
     theme?: ITheme;
+    /** Merged over the module's aggregateCell. */
+    components?: IAggregateCellComponents;
 }
 
 /** What a group row draws in the column it is grouped by. */
@@ -3215,6 +3228,8 @@ declare const GroupCell: (props: IGroupCellProps) => JSX.Element;
 declare const TotalCell: (props: ITotalCellProps) => JSX.Element;
 /** What a column that totals something draws in a group's row. */
 declare const AggregateCell: (props: IAggregateCellProps) => JSX.Element;
+/** The header of the column that opens and closes the groups a level at a time. */
+declare const GroupExpansionHeader: (props: IGroupExpansionHeaderProps) => JSX.Element;
 
 interface INotificationCardAction {
     key: string;
@@ -3271,15 +3286,19 @@ declare const EditingCell: {
 /** What says a cell is locked for its record; from the editing module. */
 declare const CellLockIcon: (props: ICellLockIconProps) => JSX.Element | null;
 /** The checkbox that selects the cell's record; from the row selection module. */
-declare const SelectionCheckbox: () => JSX.Element;
+declare const SelectionCheckbox: (props: { components?: Partial<IRowSelectionUiCheckboxComponents> }) => JSX.Element;
+/** A row's checkbox cell; from the row selection module. */
+declare const SelectionCell: (props: ISelectionCellProps) => JSX.Element;
+/** The checkbox column's header, which selects every record; from the row selection module. */
+declare const SelectionHeader: (props: ISelectionHeaderProps) => JSX.Element;
 /** The checkbox cell with the row's save status; from the editing module. */
-declare const RecordSaveSelectionCell: (props: ICellRendererParams<IRecord> & { theme?: ITheme }) => JSX.Element;
+declare const RecordSaveSelectionCell: (props: IRecordSaveSelectionCellProps) => JSX.Element;
 /** The lock drawn for a record locked as a whole, or nothing; from the editing module. */
 declare const RecordLockIcon: (props: IRecordLockIconProps) => JSX.Element | null;
 /** The cell a locked record's row shows its lock in; from the editing module. */
 declare const RecordLockIndicatorCell: (props: IRecordLockIndicatorCellProps) => JSX.Element;
 /** Lets the cells be edited, and saves each edit with autoSave. */
-declare function createEditingModule(options?: { autoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged']; components?: IGridEditingComponents }): IGridModule;
+declare function createEditingModule(options?: { autoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
 /** Lets a column be sorted from its menu, unless it sets disableSorting. */
 declare function createSortingModule(options?: ISortingModuleOptions): IGridModule;
 /** Lets a column with filter operators be filtered from its menu. */

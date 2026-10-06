@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { FilterIconExample } from '../../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-The filtering module draws an icon in the header of every filtered column, and the callout a column's filter is set in. To change how they look, pass \`components\` to \`createFilteringModule\`.
+The filtering module draws an icon in the header of every filtered column, and the callout a column's filter is set in. To change how they look across the grid, pass \`components\` to \`createFilteringModule\`.
 
 \`\`\`tsx
 createFilteringModule({ components: { filterIcon: { onRenderIcon: props => <Icon {...props} iconName='FilterSolid' /> } } })
@@ -19,6 +19,10 @@ createFilteringModule({ components: { filterIcon: { onRenderIcon: props => <Icon
 |---|---|---|
 | \`filterIcon\` | \`onRenderIcon\` | The icon of a filtered column |
 | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | The callout a filter is set in |
+
+## One column only
+
+The funnel is a header adornment keyed \`'filter'\`. To change it on one column, replace or remove that adornment in the column's \`settings.header.onGetAdornments\`, which runs after the modules have added theirs. The callout is one for the whole grid, so it has no per-column path.
 
 {{story: A filter that stands out}}
 `

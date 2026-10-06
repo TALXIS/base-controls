@@ -6,8 +6,11 @@ import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/co
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { IGridRowSelectionState } from "../../GridRowSelection";
 import { RowSelectionUi } from "../ui";
+import { ISelectionHeaderComponents } from "./components";
 
-export interface ISelectionHeaderProps extends IColumnHeaderParams { }
+export interface ISelectionHeaderProps extends IColumnHeaderParams {
+    components?: ISelectionHeaderComponents;
+}
 
 /** The header of the column the checkboxes live in: what selects every record, and clears them. */
 export const SelectionHeader = (props: ISelectionHeaderProps) => {
@@ -43,7 +46,7 @@ export const SelectionHeader = (props: ISelectionHeaderProps) => {
                 //drawn only in multiple mode and while there is something to select
                 isCheckboxVisible={selection.getMode() === 'multiple' && (provider.getSortedRecordIds().length > 0 || provider.isLoading())}
                 onChange={onChange}
-                components={selection.components.header?.headerCheckbox} />
+                components={props.components?.headerCheckbox} />
         </ColumnHeaderTheme>
     </ColumnHeaderRoot>;
 };

@@ -4,8 +4,11 @@ import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/co
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { GroupingUi } from "../ui";
+import { IGroupExpansionHeaderComponents } from "./components";
 
-export interface IGroupExpansionHeaderProps extends IColumnHeaderParams { }
+export interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
+    components?: IGroupExpansionHeaderComponents;
+}
 
 /** Opens and closes the groups a level at a time. */
 export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
@@ -30,7 +33,7 @@ export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
                 canCollapse={expandedLevel >= 0}
                 onExpand={() => onStepLevel(1)}
                 onCollapse={() => onStepLevel(-1)}
-                components={grouping.components.expansionHeader?.expandCollapse} />
+                components={props.components?.expandCollapse} />
         </ColumnHeaderTheme>
     </ColumnHeaderRoot>;
 };

@@ -14,9 +14,11 @@ const Star = (props: ICheckboxProps) => <IconButton
     title={props.ariaLabel}
     onClick={event => props.onChange?.(event as React.MouseEvent<HTMLElement>, !props.checked)} />
 
-const COMPONENTS: IGridRowSelectionComponents = {
-    cell: { checkbox: { onRenderCheckbox: props => <Star {...props} /> } },
+const STAR: ISelectionCellComponents = {
+    checkbox: { onRenderCheckbox: props => <Star {...props} /> },
 }
+
+const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
 const GridExample = () => {
     const [starred, setStarred] = React.useState<string[]>([])
@@ -27,8 +29,9 @@ const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createClientSideRowModelModule(),
-                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred, components: COMPONENTS }),
+                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
             }}
+            colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
             height='400px' />
     </Stack>
 }

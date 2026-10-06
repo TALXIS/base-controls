@@ -3,7 +3,6 @@ import { EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors,
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
-import { IGridRowSelectionComponents } from "./moduleComponents";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
 import { IGridStyles } from "../../services/runtime";
@@ -60,8 +59,6 @@ export interface IGridRowSelection {
     getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     /** Whether a record refuses selection at all. */
     isRecordSelectionDisabled(record: IRecord): boolean;
-    /** The parts of what this module draws, as the caller replaced them. */
-    readonly components: IGridRowSelectionComponents;
 }
 
 export class GridRowSelection implements IGridRowSelection {
@@ -139,10 +136,6 @@ export class GridRowSelection implements IGridRowSelection {
         const provider = record.getDataProvider();
         //a group selects every record under it
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
-    }
-
-    public get components(): IGridRowSelectionComponents {
-        return this._services.get('components');
     }
 
     private _registerEvents(parameters: IGridRowSelectionParameters): void {

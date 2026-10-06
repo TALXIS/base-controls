@@ -327,22 +327,22 @@ export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
     return <Text {...props}>{product.getFormattedValue('name')}: {props.children}</Text>
 }
 
-const COMPONENTS: IGridEditingComponents = {
-    recordSaveCell: {
-        indicator: {
-            onRenderButton: ({ state, ...props }) => <ActionButton {...props} text={state === 'failed' ? 'Not saved' : 'Saved'} />,
-        },
-        errorCallout: {
-            onRenderTitle: props => <SaveErrorTitle {...props} />,
-        },
+const SAVE_STATUS: IRecordSaveUiComponents = {
+    indicator: {
+        onRenderButton: ({ state, ...props }) => <ActionButton {...props} text={state === 'failed' ? 'Not saved' : 'Saved'} />,
+    },
+    errorCallout: {
+        onRenderTitle: props => <SaveErrorTitle {...props} />,
     },
 }
 
+const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
+
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true, components: COMPONENTS }) }}
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
     colDefs={{
-        [RECORD_SAVE_COLUMN_KEY]: { width: 112 },
+        [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
     }}
     height='440px' />
 `

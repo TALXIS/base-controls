@@ -1,6 +1,5 @@
 import { Icon, IIconProps } from "@fluentui/react";
 import type { IGroupCellComponents } from "./components/group-cell/components";
-import type { IGroupExpansionHeaderComponents } from "./components/group-expansion-header/components";
 
 /** The replaceable pieces of the icon a grouped column shows in its header. */
 export interface IGridGroupingIconComponents {
@@ -18,6 +17,4 @@ export interface IGridGroupingComponents {
     groupingIcon?: Partial<IGridGroupingIconComponents>;
     /** What the row standing for a group draws in the column it is grouped by. */
     groupCell?: IGroupCellComponents;
-    /** The header that opens and closes the groups a level at a time. */
-    expansionHeader?: IGroupExpansionHeaderComponents;
 }

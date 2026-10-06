@@ -13,6 +13,7 @@ import { CellColumnControl } from "../../../../components/cells/column-control/C
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
 import { CellColumnControlComponents } from "../../../../components/cells/column-control/components";
 import { useGridService } from "../../../../useGridService";
+import { IAggregateCellComponents } from "./components";
 
 //a total reads from the right whichever way the column it totals reads
 const RIGHT_ALIGNED: { raw: IAlignment } = { raw: 'right' };
@@ -20,13 +21,14 @@ const RIGHT_ALIGNED: { raw: IAlignment } = { raw: 'right' };
 export interface IAggregateCellProps extends ICellRendererParams<IRecord> {
     /** The seed the cell's theme is generated from, in place of the grid's own striped by row. */
     theme?: ITheme;
+    components?: IAggregateCellComponents;
 }
 
 /** What a column that totals something draws in a group's row: what that group adds up to. */
 export const AggregateCell = (props: IAggregateCellProps) => {
     //the aggregation module is registered wherever this cell draws
     const aggregation = useGridService('aggregation')!;
-    const components = aggregation.components.aggregateCell ?? {};
+    const components = { ...aggregation.components.aggregateCell, ...props.components };
     const onRenderControl = components.columnControl?.onRenderControl ?? CellColumnControlComponents.onRenderControl;
     //the selector draws this only for a group row, so the record is there
     const record = props.data!;

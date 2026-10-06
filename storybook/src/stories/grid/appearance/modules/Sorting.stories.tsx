@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { SortArrowsExample } from '../../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-The sorting module draws an arrow in the header of every sorted column. To change how it looks, pass \`components\` to \`createSortingModule\`.
+The sorting module draws an arrow in the header of every sorted column. To change how it looks across the grid, pass \`components\` to \`createSortingModule\`.
 
 \`\`\`tsx
 createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} /> } } })
@@ -18,6 +18,10 @@ createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...
 | Key | Parts | What it draws |
 |---|---|---|
 | \`sortIcon\` | \`onRenderIcon\` | The arrow of a sorted column, handed \`descending\` |
+
+## One column only
+
+The arrow is a header adornment keyed \`'sort'\`. To change it on one column, replace or remove that adornment in the column's \`settings.header.onGetAdornments\`, which runs after the modules have added theirs.
 
 {{story: Arrows of your own}}
 `
