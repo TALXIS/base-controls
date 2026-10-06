@@ -2,12 +2,9 @@ import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderK
 import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry, IAlignment } from "@utils";
-import { CellFieldEditor } from "../../components/cells/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
-import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
-import { RecordSaveIndicatorCell } from "../../components/record-save-indicator/RecordSaveIndicatorCell";
 import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
@@ -21,7 +18,6 @@ export const DEFAULT_COLUMN_WIDTH = 200;
 const MIN_COLUMN_WIDTH = 40;
 
 /** The key the save column takes. */
-export const RECORD_SAVE_COLUMN_KEY = 'recordSaveStatus';
 
 /** A hook over the column definitions the grid is about to be given. */
 export type GridColumnDefinitionsHook = (columnDefs: ColDef<IRecord>[]) => void;
@@ -75,10 +71,6 @@ export class GridColumns implements IGridColumns {
 
     public getColumnDefinitions(): ColDef<IRecord>[] {
         const columnDefs = this._provider.getColumns().filter(column => !column.isHidden).map(column => this._getColumnDefinition(column));
-        const recordSaveColumn = this._getRecordSaveColumnDefinition();
-        if (recordSaveColumn) {
-            columnDefs.unshift(recordSaveColumn);
-        }
         const own = new Set(columnDefs);
         this._hooks.apply(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
@@ -107,63 +99,8 @@ export class GridColumns implements IGridColumns {
         columnDef.cellRenderer ??= CellEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
-        columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
-    }
-
-    /** The column a row reports its save in, where one is wanted. */
-    private _getRecordSaveColumnDefinition(): ColDef<IRecord> | undefined {
-        if (!this._settings.isEditingEnabled()) {
-            return undefined;
-        }
-        return {
-            colId: RECORD_SAVE_COLUMN_KEY,
-            headerName: '',
-            width: 40,
-            lockPinned: true,
-            lockPosition: 'left',
-            resizable: false,
-            sortable: false,
-            pinned: 'left',
-            suppressSizeToFit: true,
-            suppressMovable: true,
-            valueGetter: () => null,
-            valueFormatter: () => '',
-            //a pinned row has no save of its own to report
-            cellRendererSelector: params => ({ component: params.node.rowPinned ? CellEmptyRenderer : RecordSaveIndicatorCell }),
-        };
-    }
-
-    /** Whether the values in this column are locked for good. */
-    private _isColumnLocked(column: IColumn): boolean {
-        return !column.metadata?.IsValidForUpdate;
-    }
-
-    /** Whether a value is demanded before the record may be saved. */
-    private _isColumnRequired(column: IColumn): boolean {
-        if (!this._settings.isEditingEnabled()) {
-            return false;
-        }
-        switch (column.metadata?.RequiredLevel) {
-            case RequiredLevelEnum.SystemRequired:
-            case RequiredLevelEnum.ApplicationRequired: {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-
-    private _hasEditor(column: IColumn): boolean {
-        switch (true) {
-            case !this._settings.isEditingEnabled():
-            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
-            case column.dataType === DataTypes.File:
-            case column.dataType === DataTypes.Image: {
-                return false;
-            }
-        }
-        return true;
+        const editing = this._services.find('editing');
+        columnDef.editable ??= !!columnDef.cellEditor && !!editing && ((params: EditableCallbackParams<IRecord>) => editing.isEditorAvailable(params.data, params.colDef));
     }
 
     private _getAlignment(column: IColumn): IAlignment {
@@ -189,34 +126,15 @@ export class GridColumns implements IGridColumns {
             lockPinned: true,
             autoHeaderHeight: true,
             settings: this._getColumnSettings(column),
-            editable: this._getEditorAvailability(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeaderRenderer,
             cellRenderer: CellFieldRenderer,
-            cellEditor: CellFieldEditor,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),
         };
-    }
-
-    /** What AG Grid asks before opening an editor. */
-    private _getEditorAvailability(column: IColumn): ColDef<IRecord>['editable'] {
-        if (!this._hasEditor(column)) {
-            return false;
-        }
-        return (params) => this._isEditorAvailable(params.data, params.colDef);
-    }
-
-    /** Whether an editor may be opened over this cell. */
-    private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
-        //a one-click column takes input where its cell stands
-        if (colDef.settings?.cell?.oneClickEdit) {
-            return false;
-        }
-        return !!record && !this._services.get('locks').get({ record: record, columnName: colDef.colId }).isLocked;
     }
 
     //merged a level deep so an entry can change one setting, or one callback, and keep the rest
@@ -233,8 +151,6 @@ export class GridColumns implements IGridColumns {
     private _getColumnSettings(column: IColumn): IGridColumnSettings {
         return {
             alignment: this._getAlignment(column),
-            isLocked: this._isColumnLocked(column),
-            isRequired: this._isColumnRequired(column),
             isPrimary: !!column.isPrimary,
             cell: { isRowResizable: this._isLongText(column) },
         };
@@ -292,7 +208,7 @@ export class GridColumns implements IGridColumns {
         }
         const columnName = event.colDef.colId!;
         this.events.dispatchEvent('onCellDoubleClicked', record, columnName);
-        if (this._settings.isNavigationEnabled() && !this._settings.isEditingEnabled()) {
+        if (this._settings.isNavigationEnabled() && !this._services.find('editing')) {
             this._services.get('grid').openRecord({ record: record, reference: record.getNamedReference() });
         }
     }

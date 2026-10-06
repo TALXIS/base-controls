@@ -16,7 +16,7 @@ import {
 } from "@fluentui/react"
 import { DataProvider, DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react"
-import { createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid } from "@talxis/base-controls"
+import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid } from "@talxis/base-controls"
 import { DatasetControl as DatasetControlUtil } from "@talxis/base-controls"
 import { usePcfContext } from "@talxis/base-controls"
 import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls"
@@ -766,8 +766,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                         modules={{
                             rowModel: createClientSideRowModelModule(),
                             rowSelection: createRowSelectionModule({ mode: "multiple" }),
+                            editing: controlProps.parameters.EnableEditing?.raw === true ? createEditingModule() : undefined,
                         }}
-                        enableEditing={controlProps.parameters.EnableEditing?.raw === true}
                         enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
                         enableZebra={controlProps.parameters.EnableZebra?.raw !== false}
                         rowHeight={controlProps.parameters.RowHeight?.raw ?? undefined}

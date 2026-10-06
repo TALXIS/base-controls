@@ -3,6 +3,8 @@ export const GRID_MODULE_PRIORITY = {
     //what a legacy script set is the default every other module builds on
     legacyClientApiCompatibility: 0,
     rowModel: 10,
+    //its save column is first; with row selection it draws the save status in the checkbox column
+    editing: 15,
     //its checkbox column is the first column
     rowSelection: 20,
     cellSelection: 30,

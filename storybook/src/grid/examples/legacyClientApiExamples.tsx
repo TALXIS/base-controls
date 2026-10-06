@@ -142,12 +142,11 @@ const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createClientSideRowModelModule(),
+                editing: createEditingModule({ autoSave: true }),
                 legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
                 custom: [stockScript],
             }}
             colDefs={{ discontinued: { settings: { cell: { oneClickEdit: true } } } }}
-            enableEditing
-            enableAutoSave
             height='420px' />
     </Stack>
 }
@@ -172,11 +171,10 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{
         rowModel: createClientSideRowModelModule(),
+        editing: createEditingModule({ autoSave: true }),
         legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
         custom: [triageScript],
     }}
-    enableEditing
-    enableAutoSave
     enableOptionSetColors
     height='400px' />
 `

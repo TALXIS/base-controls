@@ -1,7 +1,7 @@
 import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
-import { DataProvider, EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
-import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
+import { EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
+import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { IGridRowSelectionComponents } from "./moduleComponents";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -110,7 +110,7 @@ export class GridRowSelection implements IGridRowSelection {
     }
 
     public isSelectionColumn(columnName: string | undefined): boolean {
-        return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;
+        return columnName === SELECTION_COLUMN_KEY;
     }
 
     public getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState {
@@ -150,10 +150,6 @@ export class GridRowSelection implements IGridRowSelection {
 
     /** Adds the column the checkboxes live in. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
-        if (recordSaveColumnIndex !== -1) {
-            columnDefs.splice(recordSaveColumnIndex, 1);
-        }
         columnDefs.unshift(getSelectionColumnDefinition());
     };
 
@@ -210,7 +206,7 @@ export class GridRowSelection implements IGridRowSelection {
 
     /** Draws the checkboxes again. */
     private _refreshSelectionColumn(): void {
-        this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
+        this._gridApi.refreshCells({ columns: [SELECTION_COLUMN_KEY], force: true });
     }
 
     private _onModelUpdated = (): void => {

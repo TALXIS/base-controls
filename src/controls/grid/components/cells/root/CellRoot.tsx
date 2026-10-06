@@ -4,7 +4,6 @@ import { IRecordEvents } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";
-import { IGridEditedCell, IGridEditingEvents } from "../../../services/editing";
 import { IGridCellEvents } from "../../../services/cells";
 import { GridCellContext, GridCellRevisionContext } from "./context";
 import { useGridField } from "../field/context";
@@ -13,8 +12,8 @@ import { useGridField } from "../field/context";
 const RECORD_EVENTS: (keyof IRecordEvents)[] = ['onFieldValueChanged', 'onAfterSaved'];
 
 export interface ICellRootProps extends ICellRendererParams {
-    /** Whether this is the cell AG Grid opened over the one that was there. */
-    isEditor?: boolean;
+    /** Whether the cell's control takes input instead of showing the value. */
+    takesInput?: boolean;
     children?: React.ReactNode;
 }
 
@@ -22,18 +21,12 @@ export interface ICellRootProps extends ICellRendererParams {
 export const CellRoot = (props: ICellRootProps) => {
     const { data: record, children } = props;
     const cells = useGridService('cells');
-    const editing = cells.editing;
     const parentCell = useContext(GridCellContext);
     const field = useGridField();
     const colDef = props.colDef!;
-    //editors and one-click columns take input
-    const takesInput = !!props.isEditor || !!colDef.settings?.cell?.oneClickEdit;
+    const takesInput = !!props.takesInput;
     const cell = useMemo(() => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell, field: field }),[cells, record, colDef, props.node, takesInput, props.eGridCell, field]);
     const { rerender: redraw, revision } = useRerender();
-
-    const isThisCell = (edited: IGridEditedCell | undefined) => {
-        return edited?.recordId === record.getRecordId() && edited?.columnName === cell.getColumnName();
-    }
 
     //any field can decide what another cell of the row draws
     useEventEmitter<IRecordEvents>(record, RECORD_EVENTS, () => {
@@ -41,13 +34,6 @@ export const CellRoot = (props: ICellRootProps) => {
     });
 
     useEventEmitter<IGridCellEvents>(cell.events, 'onRenderRequested', redraw);
-
-    //both sides of the change redraw: `AutoFocus` is whether this cell is edited
-    useEventEmitter<IGridEditingEvents>(editing.events, 'onEditedCellChanged', (previous, next) => {
-        if (isThisCell(previous) || isThisCell(next)) {
-            redraw();
-        }
-    });
 
     useLayoutEffect(() => {
         cells.addCell(cell);

@@ -64,13 +64,13 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{
         rowModel: createClientSideRowModelModule(),
+        editing: createEditingModule(),
         grouping: createGroupingModule(),
         custom: [escalatedTicketsModule],
     }}
     colDefs={{
         escalated: { settings: { cell: { oneClickEdit: true } } },
     }}
-    enableEditing
     height='440px' />
 `
 
@@ -232,6 +232,7 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{
         rowModel: createClientSideRowModelModule(),
+        editing: createEditingModule(),
         sorting: czechSorting,
         filtering: czechFiltering,
         grouping: czechGrouping,
@@ -248,7 +249,6 @@ const GridExample = () => <Grid.Root
             }
         },
     }}
-    enableEditing
     height='460px' />
 `
 

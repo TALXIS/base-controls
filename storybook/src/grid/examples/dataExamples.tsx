@@ -117,7 +117,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
-        <Grid.Root provider={directory} modules={{ rowModel: createClientSideRowModelModule() }} enableEditing enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
+        <Grid.Root provider={directory} modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
     </Stack>
 }
 `
@@ -148,7 +148,7 @@ export const REQUIRED_AND_READ_ONLY_CODE = `const createStockCount = () => {
 
 const GridExample = () => {
     const stockCount = React.useMemo(createStockCount, [])
-    return <Grid.Root provider={stockCount} modules={{ rowModel: createClientSideRowModelModule() }} enableEditing enableAutoSave height='420px' />
+    return <Grid.Root provider={stockCount} modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }} height='420px' />
 }
 `
 

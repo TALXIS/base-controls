@@ -11,9 +11,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <Grid.Root
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            enableEditing
-            enableAutoSave
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
             onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
             height='420px' />
@@ -49,8 +47,7 @@ const GridExample = () => {
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <Grid.Root
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            enableEditing
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
             onRecordValueChanged={countChanged}
             onAfterSaved={countChanged}
             height='400px' />
@@ -87,13 +84,11 @@ const GridExample = () => {
 
     return <Grid.Root
         provider={timesheets}
-        modules={{ rowModel: createClientSideRowModelModule() }}
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
         colDefs={{
             hours: { settings: { cell: { onGetValidation: validateHours } } },
             comment: { settings: { cell: { onGetValidation: validateComment } } },
         }}
-        enableEditing
-        enableAutoSave
         height='420px' />
 }
 `
@@ -111,9 +106,7 @@ const GridExample = () => {
         <Grid.Root
             key={isWeekClosed ? 'closed' : 'open'}
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            enableEditing={!isWeekClosed}
-            enableAutoSave
+            modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
             rowSettings={{
                 onGetLock: (result, { record }) => {
                     if (Number(record.getValue('status')) === APPROVED) {
@@ -177,9 +170,7 @@ const GridExample = () => {
 
     return <Grid.Root
         provider={timesheets}
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        enableEditing
-        enableAutoSave
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
         height='420px' />
 }
 `
@@ -198,10 +189,8 @@ const GridExample = () => {
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <Grid.Root
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             colDefs={{ billable: { settings: { cell: { oneClickEdit: true } } } }}
-            enableEditing
-            enableAutoSave
             onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
             height='420px' />
     </Stack>

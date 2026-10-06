@@ -51,10 +51,10 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | \`labels\` | The grid's strings, with \`labels\` applied: \`getLocalizedString(key)\`. |
 | \`theme\` | The Fluent theme the grid mounted in. |
 | \`pcfContext\` | The PCF context the grid mounted with. |
-| \`cells\` | Every cell on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, the cell hooks, \`events\`, and \`editing\`, which has \`isEditing(record, columnName)\`, \`start(cell)\`, \`finish(cell)\` and \`events\`. |
+| \`cells\` | Every cell on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, the cell hooks and \`events\`. |
 | \`rows\` | The rows: \`isHighlighted(record)\`, true while the row is hovered, focused or selected; \`setRowHeight(record, height)\`; the row height hook; and the row events. |
 | \`columns\` | The column definitions: \`getColumnDefinitions()\`, which builds them from the provider's columns with every hook and \`colDefs\` applied; the column definitions hook; \`events\`; and \`headers\`, which has \`render()\` and the header hooks. |
-| \`locks\` | \`get({ record?, columnName? })\` answers \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'grid'\`, \`'column'\`, \`'record'\` or \`'cell'\`; and the lock hook. The levels are on [**Editing**](?path=/docs/grid-editing--overview). |
+| \`editing\` | With the editing module only. \`isEditing(record, columnName)\`, \`start(cell)\`, \`finish(cell)\`, \`isAutoSaveEnabled()\`, \`events\`, and \`locks\`: \`locks.get({ record?, columnName? })\` answers \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`; and the lock hook. The levels are on [**Editing**](?path=/docs/grid-editing--overview). |
 | \`validation\` | \`get({ record, columnName })\` answers what the validation hooks and the column's \`onGetValidation\` decide, as an \`IFieldValidationResult\`, without the built-in checks; and the validation hook. |
 | \`keyboard\` | \`onKeyDown(handler)\` calls \`handler\` for every key pressed inside the grid, before AG Grid and the focused control see it, and returns a function that stops it. \`getKeyBeingPressed()\` is the \`KeyboardEvent\` of the key held down, if any. |
 | \`surfaces\` | What modules draw inside the grid: the surface hook, and \`getSurfaces()\`. |
@@ -86,7 +86,7 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 | \`cells\` | \`registerControlHook\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | |
 | \`cells\` | \`registerControlParametersHook\` | The parameters a cell's control is handed, such as \`Placeholder\` | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`settings.cell.onGetControlParameters\` |
 | \`rows\` | \`registerRowHeightHook\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\`. A height set with \`rows.setRowHeight\` wins over both. |
-| \`locks\` | \`registerLockHook\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`settings.cell.onGetLock\` for a cell |
+| \`editing.locks\` | \`registerLockHook\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`settings.cell.onGetLock\` for a cell |
 | \`validation\` | \`registerValidationHook\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`settings.cell.onGetValidation\` |
 | \`columns\` | \`registerColumnDefinitionsHook\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries | \`columnDefs: IGridColDef[]\` | \`colDefs\` |
 | \`columns.headers\` | \`registerColumnMenuSectionHook\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`settings.header.onGetMenuSections\` |
@@ -132,7 +132,7 @@ Services tell you what happens through events. Subscribe with \`addEventListener
 | \`rows\` | \`onRowClicked\` | \`record\` | A row with a record is clicked, group rows and the totals row included. |
 | \`rows\` | \`onHighlightedRowsChanged\` | None | The hovered, focused or selected rows change. |
 | \`cells.events\` | \`onFocusedCellChanged\` | \`record?\`, \`columnName?\` | A cell takes focus, or the focus leaves the rows. |
-| \`cells.editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each \`{ recordId, columnName }\` | An editor opens or closes, or the user steps into or out of a one-click cell. |
+| \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each \`{ recordId, columnName }\` | An editor opens or closes, or the user steps into or out of a one-click cell. |
 | \`columns.events\` | \`onCellDoubleClicked\` | \`record\`, \`columnName\` | A cell of a provider column is double-clicked, whether or not the record then opens. |
 | \`columns.events\` | \`onColumnsChanged\` | \`columns: IColumn[]\` | The user resized or moved a column, and the provider holds the result. |
 | \`rowSelection.events\` | \`onSelectionChanged\` | \`selectedRecordIds: string[]\` | The selection changes. See [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
@@ -142,7 +142,7 @@ Services tell you what happens through events. Subscribe with \`addEventListener
 | \`columns.headers.events\`, and \`events\` of each \`IGridCell\` | \`onRenderRequested\` | None | Their \`render()\` was called. The grid's own parts draw again on it. |
 | \`events\` of each \`IGridColumnHeader\` | \`onMenuVisibilityChanged\` | \`isOpen\` | The header's \`openMenu()\` or \`closeMenu()\` was called, as a click on the header does. |
 
-- Most of these also reach \`<Grid.Root />\` as props, listed with the order they fire in on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). The service events suit a module, which has no props.
+- The grid's own events also reach \`<Grid.Root />\` as props, and a module's through its options, listed with the order they fire in on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). The service events suit a module, which has no props.
 - No event fires when sorting, filters, grouping or totals change. Sorting, filters and grouping reload the provider, so follow \`onDataLoaded\` and read the provider.
 - The provider has events of its own, such as \`onRecordColumnValueChanged\`, \`onAfterRecordSaved\` and \`onNewDataLoaded\`: \`runtime.services.get('provider').addEventListener(...)\`. Remove them on \`onDestroyed\`: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 - \`keyboard.onKeyDown(handler)\` is not an event: it returns the function that stops it.

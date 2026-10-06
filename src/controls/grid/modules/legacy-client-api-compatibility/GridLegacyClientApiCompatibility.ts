@@ -5,7 +5,7 @@ import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/sty
 import { merge } from "merge-anything";
 import { getTextColorForBackground, ThemeGenerator } from "@theme";
 import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../services/cells";
-import type { GridLockHook } from "../../services/locks";
+import type { GridLockHook } from "../editing/GridLocks";
 import type { IGridSurface } from "../../services/surfaces";
 import type { IGridServiceLocator } from "../../services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -43,7 +43,8 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         this._services = parameters.services;
         const cells = parameters.services.get('cells');
         parameters.services.get('surfaces').registerSurfaceHook(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
-        parameters.services.get('locks').registerLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
+        //locks come with the editing module, which may register after this one
+        parameters.services.whenAvailable('editing', editing => editing.locks.registerLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
         cells.registerCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellCommandsHook(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);

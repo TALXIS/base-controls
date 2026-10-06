@@ -114,7 +114,7 @@ export const LockTheCellsOfClosedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A won or lost deal keeps its numbers. \`registerLockHook\` on the \`locks\` service, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Set a deal's Stage to Won: its numbers lock at once, and Stage stays open to reopen the deal.`,
+                story: `A won or lost deal keeps its numbers. \`editing.locks.registerLockHook\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Set a deal's Stage to Won: its numbers lock at once, and Stage stays open to reopen the deal.`,
             },
         },
     },

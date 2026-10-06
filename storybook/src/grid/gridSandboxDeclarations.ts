@@ -735,8 +735,6 @@ interface DataProvider extends IDataProvider {}
 /** DataProvider.CONST holds the ids the grid and the providers reserve. */
 declare abstract class DataProvider {
     static CONST: {
-        /** The id of the row selection's checkbox column. */
-        CHECKBOX_COLUMN_KEY: string;
         KEY_SPLITTER: string;
         /** What a group row's record id starts with. */
         GROUP_PREFIX: string;
@@ -1360,7 +1358,7 @@ interface IGridLock {
     isLocked: boolean;
 }
 
-type IGridLockLevel = 'grid' | 'column' | 'record' | 'cell';
+type IGridLockLevel = 'column' | 'record' | 'cell';
 
 /** Nothing for the grid, a column, a record's row, or both for a cell. */
 interface IGridLockContext {
@@ -1458,7 +1456,6 @@ interface IGridColumnHeader {
     getSettings(): IGridColumnSettings;
     getAlignment(): IAlignment;
     isRequired(): boolean;
-    isLocked(): boolean;
     getName(): string;
     /** The name, with the adornments' titles in parentheses. */
     getTitle(): string;
@@ -1542,10 +1539,17 @@ interface IGridEditingEvents {
 /** Which cell the user is editing. */
 interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
+    /** Whether a column, a record's row or a cell is locked. */
+    readonly locks: IGridLocks;
     isEditing(record: IRecord, columnName: string): boolean;
+    /** Counts an editor from the moment it is drawn. */
+    isBeingEdited(cell: IGridCell): boolean;
+    isEditorAvailable(record: IRecord | undefined, colDef: IGridColDef): boolean;
     start(cell: IGridCell): void;
     /** Ends the edit, giving the focus back to the cell. */
     finish(cell: IGridCell): void;
+    /** Whether an edit saves its record straight away. */
+    isAutoSaveEnabled(): boolean;
 }
 
 interface IGridCellEvents {
@@ -1605,7 +1609,8 @@ interface IGridCell {
     getNode(): IRowNode<IRecord> | undefined;
     getTheme(): IGridCellTheme;
     isLoading(): boolean;
-    hasOneClickEdit(): boolean;
+    /** Whether the cell's control takes input instead of showing the value. */
+    takesInput(): boolean;
     getSettings(): IGridColumnSettings;
     getAlignment(): IAlignment;
     isBeingEdited(): boolean;
@@ -1622,7 +1627,6 @@ interface IGridCell {
 
 interface IGridCells {
     readonly events: IEventEmitter<IGridCellsEvents>;
-    readonly editing: IGridEditing;
     /** Redraws every cell, for state their records do not hold. */
     render(): void;
     getCells(): IGridCell[];
@@ -1709,10 +1713,8 @@ interface IGridValidation {
 }
 
 interface IGridSettings {
-    isEditingEnabled(): boolean;
     isNavigationEnabled(): boolean;
     isZebraEnabled(): boolean;
-    isAutoSaveEnabled(): boolean;
     areOptionSetColorsEnabled(): boolean;
     getDefaultRowHeight(): number;
     getMaxVisibleRows(): number;
@@ -1915,6 +1917,8 @@ interface IGridAggregation {
 
 /** The services only there once something registers them. */
 interface IGridOptionalServiceMap {
+    /** There with the editing module. */
+    editing: IGridEditing;
     /** The grid's own element. */
     gridRoot: HTMLElement;
     /** AG Grid's own api, there once the grid is ready. */
@@ -1931,7 +1935,6 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
     rows: IGridRows;
-    locks: IGridLocks;
     validation: IGridValidation;
     provider: IDataProvider;
     pcfContext: ComponentFramework.Context<any, any>;
@@ -2007,6 +2010,7 @@ interface IGridModules {
     license?: IGridModule;
     rowSelection?: IGridModule;
     cellSelection?: IGridModule;
+    editing?: IGridModule;
     sorting?: IGridModule;
     filtering?: IGridModule;
     grouping?: IGridModule;
@@ -2021,6 +2025,7 @@ interface IGridModules {
 declare const GRID_MODULE_PRIORITY: {
     readonly legacyClientApiCompatibility: 0;
     readonly rowModel: 10;
+    readonly editing: 15;
     readonly rowSelection: 20;
     readonly cellSelection: 30;
     readonly sorting: 40;
@@ -2032,6 +2037,8 @@ declare const GRID_MODULE_PRIORITY: {
 
 /** The id of the column a record locked as a whole shows its lock in. */
 declare const RECORD_LOCK_COLUMN_KEY: 'recordLock';
+/** The id of the row selection's checkbox column. */
+declare const SELECTION_COLUMN_KEY: '__checkbox__virtual';
 /** The id of the column a row reports its save in. */
 declare const RECORD_SAVE_COLUMN_KEY: 'recordSaveStatus';
 /** The class on the row of a record locked as a whole. */
@@ -2298,8 +2305,8 @@ interface ICellControlComponents extends ICellUiControlComponents {
     onRenderControl: (props: IGridValueRenderer, defaultRender: (props: IGridValueRenderer) => JSX.Element | null) => JSX.Element | null;
 }
 
-/** The replaceable pieces of a cell being edited, by the part they belong to. */
-interface ICellEditorComponents {
+/** The replaceable pieces of a cell, drawn whether it is being edited or not. */
+interface ICellComponents {
     resizeGrip?: Partial<ICellUiResizeGripComponents>;
     container?: Partial<ICellUiContainerComponents>;
     loading?: Partial<ICellUiLoadingComponents>;
@@ -2307,9 +2314,13 @@ interface ICellEditorComponents {
 }
 
 /** The replaceable pieces of a cell, by the part they belong to. */
-interface ICellRendererComponents extends ICellEditorComponents {
+interface ICellRendererComponents extends ICellComponents {
     fieldError?: Partial<ICellUiFieldErrorComponents>;
     commands?: Partial<ICellUiCommandsComponents>;
+}
+
+/** The replaceable pieces of the editing module's cell; it also draws the lock. */
+interface IEditingCellRendererComponents extends ICellRendererComponents {
     lockIcon?: Partial<ICellUiLockIconComponents>;
 }
 
@@ -2326,12 +2337,22 @@ interface ICellRendererProps extends ICellRendererParams {
 
 interface ICellFieldRendererProps extends ICellRendererProps {}
 
-interface ICellEditorProps extends ICellRendererParams {
+interface IEditingCellRendererProps extends ICellRendererParams {
     theme?: ITheme;
-    components?: ICellEditorComponents;
+    components?: IEditingCellRendererComponents;
 }
 
-interface ICellFieldEditorProps extends ICellEditorProps {}
+interface IEditingCellFieldRendererProps extends IEditingCellRendererProps {}
+
+/** The replaceable pieces of the editing module's editor. */
+interface IEditingCellEditorComponents extends ICellComponents {}
+
+interface IEditingCellEditorProps extends ICellRendererParams {
+    theme?: ITheme;
+    components?: IEditingCellEditorComponents;
+}
+
+interface IEditingCellFieldEditorProps extends IEditingCellEditorProps {}
 
 interface ICellEmptyRendererProps extends ICellRendererParams {
     theme?: ITheme;
@@ -2339,9 +2360,14 @@ interface ICellEmptyRendererProps extends ICellRendererParams {
 }
 
 interface ICellRootProps extends ICellRendererParams {
+    /** Whether the cell's control takes input instead of showing the value. */
+    takesInput?: boolean;
+    children?: React.ReactNode;
+}
+
+interface IEditingCellRootProps extends Omit<ICellRootProps, 'takesInput'> {
     /** Whether this is the editor AG Grid opened over the cell. */
     isEditor?: boolean;
-    children?: React.ReactNode;
 }
 
 interface ICellThemeProps {
@@ -2404,10 +2430,6 @@ interface IGridCellNamespace {
     FieldRenderer: (props: ICellFieldRendererProps) => JSX.Element;
     /** A cell with no value in it, for a column that holds none. */
     EmptyRenderer: (props: ICellEmptyRendererProps) => JSX.Element;
-    /** A cell while it is being edited. */
-    Editor: (props: ICellEditorProps) => JSX.Element;
-    /** A record's column while it is being edited. */
-    FieldEditor: (props: ICellFieldEditorProps) => JSX.Element;
     /** useGridCell reads the cell it creates. */
     Root: (props: ICellRootProps) => JSX.Element;
     Theme: (props: ICellThemeProps) => JSX.Element;
@@ -2421,8 +2443,6 @@ interface IGridCellNamespace {
     Control: (props: ICellControlProps) => JSX.Element;
     /** Shown while the row is hovered, focused or selected. */
     Commands: (props: ICellCommandsProps) => JSX.Element | null;
-    /** What says the cell is locked for its record. */
-    LockIcon: (props: ICellLockIconProps) => JSX.Element | null;
     /** Has to be drawn around Grid.Cell.Container. */
     ResizeGrip: (props: ICellResizeGripProps) => JSX.Element;
     /** Binds what is inside it to one record's column, for useGridField. */
@@ -2457,8 +2477,6 @@ interface IColumnHeaderUiPrefixComponents {
 
 interface IColumnHeaderUiSuffixComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-    /** Grid.Cell.Ui.LockIcon by default. */
-    onRenderLockIcon: (props: ICellUiLockIconProps) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiMenuComponents {
@@ -2493,9 +2511,6 @@ interface IColumnHeaderUiPrefixProps {
 }
 
 interface IColumnHeaderUiSuffixProps {
-    isLocked?: boolean;
-    lockMessage?: string;
-    /** Drawn before the lock icon. */
     children?: React.ReactNode;
     components?: Partial<IColumnHeaderUiSuffixComponents>;
 }
@@ -2753,14 +2768,12 @@ interface IRecordSaveIndicatorCellProps extends ICellRendererParams {
     theme?: ITheme;
 }
 
-/** What a row says about its last save. */
-interface IGridRecordSaveNamespace {
-    /** The save status of the cell's record. */
-    Indicator: (props: IRecordSaveIndicatorProps) => JSX.Element;
-    /** The cell a row reports its save in, on a grid with no checkbox column. */
-    Cell: (props: IRecordSaveIndicatorCellProps) => JSX.Element;
-    Ui: IRecordSaveUi;
-}
+/** The save status of the cell's record, or its children while there is none; from the editing module. */
+declare const RecordSaveIndicator: (props: IRecordSaveIndicatorProps) => JSX.Element;
+/** The cell a row reports its save in, on a grid with no checkbox column; from the editing module. */
+declare const RecordSaveIndicatorCell: (props: IRecordSaveIndicatorCellProps) => JSX.Element;
+/** What draws a save status without knowing which record; from the editing module. */
+declare const RecordSaveUi: IRecordSaveUi;
 
 /** The replaceable pieces of the lock cell, by the part they belong to. */
 interface IRecordLockIndicatorCellComponents {
@@ -2776,12 +2789,12 @@ interface IRecordLockIndicatorCellProps extends ICellRendererParams {
     theme?: ITheme;
 }
 
-/** What says a record is locked as a whole. */
-interface IGridRecordLockNamespace {
-    /** The lock drawn for a record locked as a whole, or nothing. */
-    Icon: (props: IRecordLockIconProps) => JSX.Element | null;
-    /** The cell a locked record's row shows its lock in. */
-    Cell: (props: IRecordLockIndicatorCellProps) => JSX.Element;
+/** The replaceable pieces of what the editing module draws. */
+interface IGridEditingComponents {
+    /** The cell a row reports its save in, on a grid with no checkbox column. */
+    recordSaveCell?: IRecordSaveUiComponents;
+    /** The cell a record locked as a whole shows its lock in. */
+    recordLockCell?: IRecordLockIndicatorCellComponents;
 }
 
 /** Replaces parts of what the grid draws itself. */
@@ -2790,10 +2803,6 @@ interface IGridComponents {
     emptyRecordsOverlay?: Partial<IOverlayUiEmptyRecordsComponents>;
     rowLoading?: Partial<IRowUiLoadingComponents>;
     rowError?: Partial<IRowUiErrorComponents>;
-    /** The cell a row reports its save in, on a grid with no checkbox column. */
-    recordSaveCell?: IRecordSaveUiComponents;
-    /** The cell a record locked as a whole shows its lock in. */
-    recordLockCell?: IRecordLockIndicatorCellComponents;
 }
 
 /** What happens inside the grid, for a consumer to react to. */
@@ -2807,8 +2816,6 @@ interface IGridEventHandlers {
     /** Fired once provider.save() has saved every record. */
     onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
     onError: (message: string, details?: any) => void;
-    /** Fired when an editor opens or closes. */
-    onEditedCellChanged: (cell: IGridEditedCell | undefined) => void;
     /** Fired whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
     onRowClicked: (record: IRecord) => void;
@@ -2822,16 +2829,12 @@ interface IGrid extends Partial<IGridEventHandlers> {
     provider: IDataProvider;
     /** Read once, at mount. */
     modules: IGridModules;
-    /** Read once, at mount. */
-    enableEditing?: boolean;
     /** True by default and read once, at mount. */
     enableNavigation?: boolean;
     /** Read once, at mount. */
     enableOptionSetColors?: boolean;
     /** True by default and read once, at mount. */
     enableZebra?: boolean;
-    /** Read on every edit. */
-    enableAutoSave?: boolean;
     /** 42 pixels by default and read once, at mount. */
     rowHeight?: number;
     /** 15 by default. */
@@ -2863,8 +2866,6 @@ interface IGridNamespace {
     ColumnHeader: IGridColumnHeaderNamespace;
     Overlay: IGridOverlayNamespace;
     Row: IGridRowNamespace;
-    RecordSave: IGridRecordSaveNamespace;
-    RecordLock: IGridRecordLockNamespace;
 }
 
 declare const Grid: IGridNamespace;
@@ -2882,7 +2883,8 @@ interface IRowSelectionUiHeaderCheckboxComponents {
 }
 
 /** The checkbox cell, also showing a row's save status. */
-interface ISelectionCellComponents extends IRecordSaveUiComponents {
+interface ISelectionCellComponents {
+    container?: Partial<ICellUiContainerComponents>;
     checkbox?: Partial<IRowSelectionUiCheckboxComponents>;
 }
 
@@ -3214,6 +3216,29 @@ declare function createRowSelectionModule(options: IRowSelectionModuleOptions): 
 declare function createCellSelectionModule(options?: IGridCellSelectionOptions): IGridModule;
 /** AG Grid Enterprise copying, with no paste into records. */
 declare function createClipboardModule(options?: IGridClipboardOptions): IGridModule;
+/** The cells the editing module draws its columns with, named like those in Grid.Cell. */
+declare const EditingCell: {
+    /** A cell that also says when it is locked for its record. */
+    Renderer: (props: IEditingCellRendererProps) => JSX.Element;
+    FieldRenderer: (props: IEditingCellFieldRendererProps) => JSX.Element;
+    /** The cell while it is being edited. */
+    Editor: (props: IEditingCellEditorProps) => JSX.Element;
+    FieldEditor: (props: IEditingCellFieldEditorProps) => JSX.Element;
+    /** Grid.Cell.Root for a cell that takes input as an editor or a one-click column. */
+    Root: (props: IEditingCellRootProps) => JSX.Element;
+};
+/** What says a cell is locked for its record; from the editing module. */
+declare const CellLockIcon: (props: ICellLockIconProps) => JSX.Element | null;
+/** The checkbox that selects the cell's record; from the row selection module. */
+declare const SelectionCheckbox: () => JSX.Element;
+/** The checkbox cell with the row's save status; from the editing module. */
+declare const RecordSaveSelectionCell: (props: ICellRendererParams<IRecord> & { theme?: ITheme }) => JSX.Element;
+/** The lock drawn for a record locked as a whole, or nothing; from the editing module. */
+declare const RecordLockIcon: (props: IRecordLockIconProps) => JSX.Element | null;
+/** The cell a locked record's row shows its lock in; from the editing module. */
+declare const RecordLockIndicatorCell: (props: IRecordLockIndicatorCellProps) => JSX.Element;
+/** Lets the cells be edited, and saves each edit with autoSave. */
+declare function createEditingModule(options?: { autoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged']; components?: IGridEditingComponents }): IGridModule;
 /** Lets a column be sorted from its menu, unless it sets disableSorting. */
 declare function createSortingModule(options?: ISortingModuleOptions): IGridModule;
 /** Lets a column with filter operators be filtered from its menu. */

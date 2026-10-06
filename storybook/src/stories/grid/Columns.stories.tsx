@@ -32,7 +32,7 @@ Every column of the provider becomes a column of the grid, drawn and edited by i
 - **\`colDefs\` has the last word.** It is applied after every module: \`pinned: null\` unpins a column that grouping pinned, and \`sortable: false\` takes Sorting out of a column's menu.
 - **\`colDefs\` is read whenever the grid builds its columns**: when the grid is ready, and after every load of the provider. A changed \`colDefs\` shows after the next \`provider.refresh()\`, or when you remount the grid with a new \`key\`. The callbacks in it are the ones from the last build, so read state that changes through a ref, not through a closure over React state.
 - **Leave a provider column's \`cellRendererSelector\` alone** while grouping or totals are on: those modules draw group rows and the totals row through it, and an entry that sets one replaces theirs. Change how the cells look through \`cellRenderer\` instead. A \`valueGetter\` or \`valueFormatter\` of your own also replaces the value the totals and group rows copy.
-- **The grid's own columns have keys too**, so \`colDefs\` can reach them: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (the save status and the record lock, with editing on), \`DataProvider.CONST.CHECKBOX_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (while grouped).
+- **The grid's own columns have keys too**, so \`colDefs\` can reach them: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (the save status and the record lock, with editing on), \`SELECTION_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (while grouped).
 
 ### Pinning
 
@@ -125,7 +125,7 @@ Do not restore a layout through the \`state\` prop. It is AG Grid's \`initialSta
 | Key | Default | What it does |
 |---|---|---|
 | \`alignment\` | \`'right'\` for whole numbers, decimals and currency, \`'left'\` for the rest | Which edge the cells' values and commands and the header's name sit against: \`'left'\`, \`'center'\` or \`'right'\`. |
-| \`isLocked\` | \`true\` when the column's \`metadata.IsValidForUpdate\` is \`false\` | Locks every cell of the column for good: no lock hook can unlock it. With editing on, the header shows a lock. \`false\` unlocks a column the metadata locks. See [**Editing**](?path=/docs/grid-editing--overview). |
+| \`isLocked\` | With the editing module, \`true\` when the column's \`metadata.IsValidForUpdate\` is \`false\` | Locks every cell of the column for good: no lock hook can unlock it. With editing on, the header shows a lock. \`false\` unlocks a column the metadata locks. See [**Editing**](?path=/docs/grid-editing--overview). |
 | \`isPrimary\` | the provider column's \`isPrimary\` | Draws the value as a link that opens the record. |
 | \`isRequired\` | \`true\` with editing on and \`metadata.RequiredLevel\` 1 or 2 | Draws the red \`*\` after the header's name, and nothing more: what makes a value required is on [**Editing**](?path=/docs/grid-editing--overview). |
 | \`widthOffset\` | none; grouping adds 80 to a grouped column | Pixels added to a provider column's width and never written to its \`visualSizeFactor\`. |

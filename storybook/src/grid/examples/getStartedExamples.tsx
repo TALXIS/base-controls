@@ -358,9 +358,12 @@ const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME
 
 export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
-    editing: () => ({ enableEditing: true, colDefs: { recurring: { settings: { cell: { oneClickEdit: true } } } } }),
+    editing: ({ switches }) => ({
+        modules: { editing: createEditingModule({ autoSave: !!switches.autoSave }) },
+        colDefs: { recurring: { settings: { cell: { oneClickEdit: true } } } },
+    }),
+    //saving itself is the editing module's autoSave option, read above
     autoSave: ({ toasts }) => ({
-        enableAutoSave: true,
         onAfterRecordSaved: result => {
             if (!result.success) {
                 toasts.dispatchToast(<Toast>

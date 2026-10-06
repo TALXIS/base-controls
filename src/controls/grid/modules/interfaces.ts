@@ -17,6 +17,8 @@ export interface IGridModules {
     rowSelection?: IGridModule;
     /** Highlighting cells by dragging across them: {@link createCellSelectionModule}. */
     cellSelection?: IGridModule;
+    /** Editing the cells, and saving what is edited: {@link createEditingModule}. */
+    editing?: IGridModule;
     /** Sorting by a column: {@link createSortingModule}. */
     sorting?: IGridModule;
     /** Filtering by a column: {@link createFilteringModule}. */

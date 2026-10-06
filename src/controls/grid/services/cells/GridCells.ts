@@ -6,7 +6,6 @@ import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
-import { GridEditing, IGridEditing } from "../editing";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -56,8 +55,6 @@ export interface IGridCellsParameters {
 /** Every cell the grid has on screen. */
 export interface IGridCells {
     readonly events: IEventEmitter<IGridCellsEvents>;
-    /** Which cell the user is editing. */
-    readonly editing: IGridEditing;
     /** A cell of this grid. */
     createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
     /** Registers a cell as rendered. */
@@ -131,18 +128,12 @@ export class GridCells implements IGridCells {
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
     public readonly events: IEventEmitter<IGridCellsEvents> = new EventEmitter<IGridCellsEvents>();
-    private _editing: IGridEditing;
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
-        this._editing = new GridEditing({ services: parameters.services });
         this._services.whenAvailable('gridApi', gridApi => {
             gridApi.addEventListener('cellFocused', this._onCellFocused);
         });
-    }
-
-    public get editing(): IGridEditing {
-        return this._editing;
     }
 
     public createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell {

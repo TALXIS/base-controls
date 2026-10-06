@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
 import { IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -351,11 +351,12 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     }, [provider])
 
     //remounted on every change: modules are read once, which is the contract this story holds to
-    const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
+    const key = `${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
         rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
+        editing: props.enableEditing ? createEditingModule({ autoSave: props.enableAutoSave }) : undefined,
         clipboard: props.clipboard ? createClipboardModule() : undefined,
         legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
@@ -373,8 +374,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             modules={modules}
             colDefs={SCRATCH_COL_DEFS}
             height='100%'
-            enableEditing={props.enableEditing}
-            enableAutoSave={props.enableAutoSave}
             enableNavigation={props.enableNavigation}
             enableZebra={props.enableZebra}
             enableOptionSetColors={props.enableOptionSetColors}

@@ -16,7 +16,7 @@ import { IGridRowModelGrouping } from "../row-model/interfaces";
 import { IGridSurface } from "../../services/surfaces";
 import { IGridRowSelectionInterceptors } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { GridLockHook } from "../../services/locks";
+import { GridLockHook } from "../editing/GridLocks";
 
 /** The chevron and the count a group row draws beside the value. */
 const GROUPED_COLUMN_WIDTH_OFFSET = 80;
@@ -125,7 +125,8 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('locks').registerLockHook(this._onLock, GRID_MODULE_PRIORITY.grouping);
+        //locks come with the editing module, which may register after this one
+        this._gridServices.whenAvailable('editing', editing => editing.locks.registerLockHook(this._onLock, GRID_MODULE_PRIORITY.grouping));
         //listed in the column menu after sorting and filtering
         columnHeaders.registerColumnMenuSectionHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);

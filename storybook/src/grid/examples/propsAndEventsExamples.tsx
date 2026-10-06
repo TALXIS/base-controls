@@ -115,11 +115,10 @@ const GridExample = () => {
         <div className={styles.layout}>
             <div className={styles.grid}>
                 <Grid.Root
-                    key={mountCount}
+                    //the modules are read at mount, so auto-save mounts the grid again
+                    key={mountCount + String(isAutoSaveOn)}
                     provider={provider}
-                    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-                    enableEditing
-                    enableAutoSave={isAutoSaveOn}
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
                     height='440px'
                     onGridReady={() => log('onGridReady')}
                     onDestroyed={() => log('onDestroyed')}
@@ -130,7 +129,6 @@ const GridExample = () => {
                     onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
                     onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
                     onError={message => log('onError', message)}
-                    onEditedCellChanged={cell => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none')}
                     onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
                     onRowClicked={record => log('onRowClicked', ticketOf(record))}
                     onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}

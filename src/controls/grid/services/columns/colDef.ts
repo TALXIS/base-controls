@@ -5,21 +5,16 @@ import type { ThemeBuilder } from "@theme";
 import type { IContextualMenuItem } from "@fluentui/react";
 import type { IParameters } from "@interfaces";
 import type { IGridCellCommands, IGridCellLoading } from "../cells";
-import type { IGridLock } from "../locks";
 import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-header";
 
 /** What a column decides for each of its cells, after the cell hooks. */
 export interface IGridColumnCellSettings {
-    /** Whether the control takes input where the cell stands, with no editor to open. */
-    oneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
     /** Changes the commands a cell offers, after `registerCellCommandsHook`. */
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
     /** Changes a cell's theme, after `registerCellThemeHook`. */
     onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Decides whether a cell is locked, after the cell-level `registerLockHook` hooks. */
-    onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     /** Decides whether a cell shows it is loading, after `registerCellLoadingHook`. */
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
     /** Decides whether a record's value is valid, after `registerValidationHook`. */
@@ -44,8 +39,6 @@ export interface IGridColumnHeaderSettings {
 export interface IGridColumnSettings {
     /** Which edge the value reads from. */
     alignment?: IAlignment;
-    /** Whether what the cells hold is locked for good. */
-    isLocked?: boolean;
     /** Whether the column's value stands for the record, drawn as a link to it. */
     isPrimary?: boolean;
     /** Whether a value is demanded before the record may be saved. */

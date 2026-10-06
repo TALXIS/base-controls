@@ -41,7 +41,7 @@ Every expression takes the column's logical name first. Some are answered by the
 
 | Expression | With the module | Without it |
 |---|---|---|
-| \`setDisabledExpression(column, () => boolean)\` | \`true\` locks the cell and shows its lock icon, in a grid with \`enableEditing\`. \`false\` cannot open what the grid, the column or the record locks: see *With the rest of the grid*. | Ignored |
+| \`setDisabledExpression(column, () => boolean)\` | \`true\` locks the cell and shows its lock icon, in a grid with the editing module. \`false\` cannot open what the grid, the column or the record locks: see *With the rest of the grid*. | Ignored |
 | \`ui.setNotificationsExpression(column, () => IAddControlNotificationOptions[])\` | Buttons in the cell: see *Notifications*. | Ignored |
 | \`ui.setCustomFormattingExpression(column, cellTheme => ({ backgroundColor?, textColor?, primaryColor? }))\` | Colours the cell. A new background without a text or primary colour gets a readable one. \`cellTheme\` is a Fluent theme of the cell's current colours, and \`undefined\` leaves the cell as it is. \`className\` and \`themeOverride\` are ignored. | Ignored |
 | \`ui.setLoadingExpression(column, () => boolean)\` | \`true\` draws a shimmer in place of the cell's value, lock icon, notifications and error. | Ignored |
@@ -92,7 +92,7 @@ When a notification shows:
 
 - Every hook the module registers runs at priority 0, \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, before every other built-in module. A hook of yours at the default priority runs after the module's, and a column's \`settings.cell\` callbacks run after both. The module's lock and loading hooks set the answer rather than add to it, so they overrule a hook with a negative priority. Priorities are on [**Extending**](?path=/docs/grid-extending--overview).
 - The grid's validation replaces a script's \`setValidationExpression\`. A column with \`settings.cell.onGetValidation\`, or every column once a \`registerValidationHook\` is registered, gets the grid's own validation expression on every record, and the script's never runs. Move such a check into the grid's validation.
-- A disabled expression cannot open a grid without \`enableEditing\`, a column locked by its metadata or by \`settings.isLocked\`, or a record locked as a whole.
+- A disabled expression cannot open a grid without the editing module, a column locked by its metadata or by \`settings.isLocked\`, or a record locked as a whole.
 - With the module on, \`settings: { isLocked: false }\` in \`colDefs\` no longer opens a column whose metadata has \`IsValidForUpdate: false\`: the module still locks its cells. To open them, also return \`false\` from a \`setDisabledExpression\` on that column, or unlock them in \`settings.cell.onGetLock\`.
 - While rows are grouped, the grouping module repaints record cells with the grid's background after this module runs. A script's background colour is lost, but the text colour picked to contrast with it stays.
 - Group rows and the totals row are records too, and can carry expressions. Guard a script with \`record.getDataProvider().getSummarizationType() !== 'none'\`: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).

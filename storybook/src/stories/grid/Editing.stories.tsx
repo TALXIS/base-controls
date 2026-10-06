@@ -5,13 +5,15 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { CheckHoursExample, FreezeApprovedExample, LogHoursExample, ReviewChangesExample, ServerRefusesExample, TickBillableExample } from '../../grid/examples/editingExamples'
 
 const DESCRIPTION = `
-Turn on \`enableEditing\` and users change values right in the grid. Each column is edited with its data type's own control, values are checked as they are entered, every save reports back on its row, and you decide what stays locked. Every example on this page is a team lead correcting last week's timesheets.
+Add the editing module and users change values right in the grid. Each column is edited with its data type's own control, values are checked as they are entered, every save reports back on its row, and you decide what stays locked. Every example on this page is a team lead correcting last week's timesheets.
 
 ## Turn editing on
 
-\`enableEditing\` (default \`false\`) opens the grid for editing. It is read at mount: to switch it, give the grid a new \`key\`. Each column is then editable unless its metadata has \`IsValidForUpdate: false\`; what the provider fills in when you leave it out is on [**Data**](?path=/docs/grid-get-started-data--overview). While editing is on, a double click opens the cell's editor rather than the record.
+\`modules={{ editing: createEditingModule() }}\` opens the grid for editing. Without it the grid is read-only. Modules are read at mount: to switch editing on or off, give the grid a new \`key\`. Each column is then editable unless its metadata has \`IsValidForUpdate: false\`; what the provider fills in when you leave it out is on [**Data**](?path=/docs/grid-get-started-data--overview). While editing is on, a double click opens the cell's editor rather than the record.
 
-\`enableAutoSave\` (default \`false\`) saves a record each time one of its values is committed. It is read live, so you can switch it without a remount.
+\`createEditingModule({ autoSave: true })\` saves a record each time one of its values is committed. Like the module, it is read at mount.
+
+\`createEditingModule({ onEditedCellChanged: (previous, next) => ... })\` tells you when an editor opens or closes, or the user steps into or out of a one-click cell. Each cell is \`{ recordId, columnName }\`, or \`undefined\`.
 
 {{story: Log hours with auto-save}}
 
@@ -27,7 +29,7 @@ A value reaches the record when the cell's control commits it:
 
 - Escape closes the editor and keeps what was typed. It is not an undo: \`record.clearChanges()\` is.
 - Closing an editor without changing the value commits nothing.
-- With \`enableAutoSave\`, each commit calls \`record.save()\` straight away. Saves are not batched, and a value that fails validation is sent to \`save()\` too, which refuses it.
+- With \`autoSave\`, each commit calls \`record.save()\` straight away. Saves are not batched, and a value that fails validation is sent to \`save()\` too, which refuses it.
 - Only a value committed in a cell saves itself. \`record.setValue()\` from your own code changes the record and saves nothing.
 
 ## Saving
@@ -78,7 +80,7 @@ A value that fails validation draws a red outline and an error icon in its cell,
 
 | Source | Where it is set | What it checks |
 |---|---|---|
-| Required | \`metadata.RequiredLevel\` \`1\` (SystemRequired) or \`2\` (ApplicationRequired) on the provider column | That the value is not empty. The header shows an asterisk while \`enableEditing\` is on. |
+| Required | \`metadata.RequiredLevel\` \`1\` (SystemRequired) or \`2\` (ApplicationRequired) on the provider column | That the value is not empty. The header shows an asterisk while the editing module is on. |
 | Built-in checks | The column's data type and metadata | Single-line text against \`MaxLength\`, whole and decimal numbers against \`MinValue\` and \`MaxValue\`, that numbers, money and durations hold numbers, email, URL and date formats |
 | One column | \`settings.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column. It may read any column of the record. |
 | Every column | \`registerValidationHook(hook, priority?)\` on the \`validation\` service, from a module | Your rule for every column of every record. See [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
@@ -110,7 +112,7 @@ Locks decide what can be edited. There are four levels, checked in the order of 
 
 | Level | Locked by | Drawn as | Label |
 |---|---|---|---|
-| Grid | \`enableEditing\` off | Nothing: no save status column, no lock icons, no muted rows | None |
+| Grid | No editing module | Nothing: no save status column, no lock icons, no muted rows | None |
 | Column | \`settings.isLocked: true\`, which a column starts with when its metadata has \`IsValidForUpdate: false\`; or a lock hook asked about \`{ columnName }\` | A lock in the header | \`columnLocked\`: This column cannot be edited. |
 | Record | \`rowSettings.onGetLock\`, a lock hook asked about \`{ record }\`, or a record the provider reports inactive | A muted row, and a lock in a column pinned at the start of the row | \`recordLocked\`: This record cannot be edited. |
 | Cell | \`settings.cell.onGetLock\` in \`colDefs\`, or a lock hook asked about \`{ record, columnName }\` | A lock icon in the cell | \`valueLocked\`: This value cannot be edited. |
@@ -121,7 +123,7 @@ Locks decide what can be edited. There are four levels, checked in the order of 
 - Both run every time the grid asks, which is often: keep them fast and free of side effects.
 - A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: redraw the cells and headers (see *Redrawing* on [**Extending**](?path=/docs/grid-extending--overview)). A muted row only follows once a value of its record changes or the data reloads.
 - The lock column is \`RECORD_LOCK_COLUMN_KEY\` (\`'recordLock'\`); it is hidden until a loaded row is locked. A muted row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
-- A module locks columns, records and cells with \`registerLockHook\` on the \`locks\` service: see [**Hooks**](?path=/docs/grid-extending-hooks--overview).
+- A module locks columns, records and cells with \`editing.locks.registerLockHook\`: see [**Hooks**](?path=/docs/grid-extending-hooks--overview).
 
 ### Inactive records
 
@@ -184,7 +186,7 @@ export const LogHoursWithAutoSave: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Correct an entry's hours and it saves as you leave the cell: \`enableEditing\` with \`enableAutoSave\`, and a status line fed by \`onBeforeRecordSaved\` and \`onAfterRecordSaved\`. Watch the column at the start of the row: a spinner while the entry saves (the docs provider answers after a moment, as a server would), then a check for two seconds.`,
+                story: `Correct an entry's hours and it saves as you leave the cell: \`createEditingModule({ autoSave: true })\`, and a status line fed by \`onBeforeRecordSaved\` and \`onAfterRecordSaved\`. Watch the column at the start of the row: a spinner while the entry saves (the docs provider answers after a moment, as a server would), then a check for two seconds.`,
             },
         },
     },
@@ -232,7 +234,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Approved entries are locked as a whole by \`rowSettings.onGetLock\`, Hourly rate is locked by \`settings.cell.onGetLock\` wherever the work is not billable, and Employee is locked for good by \`settings.isLocked\`, each with its own tooltip from \`labels\`. Hover the locks, approve a Submitted entry to watch it freeze, then close the week to remount the grid with \`enableEditing\` off.`,
+                story: `Approved entries are locked as a whole by \`rowSettings.onGetLock\`, Hourly rate is locked by \`settings.cell.onGetLock\` wherever the work is not billable, and Employee is locked for good by \`settings.isLocked\`, each with its own tooltip from \`labels\`. Hover the locks, approve a Submitted entry to watch it freeze, then close the week to remount the grid without the editing module.`,
             },
         },
     },

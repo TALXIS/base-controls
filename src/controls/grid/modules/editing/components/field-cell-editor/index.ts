@@ -1,2 +1,2 @@
-//published through the namespace.
+//published through `EditingCell`.
 export type { ICellFieldEditorProps } from './CellFieldEditor';

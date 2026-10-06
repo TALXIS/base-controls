@@ -10,19 +10,17 @@ const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValu
 
 const closedDealsModule: IGridModule = {
     onRegister: runtime => {
-        runtime.services.get('locks').registerLockHook((result, { record, columnName }) => {
+        runtime.services.whenAvailable('editing', editing => editing.locks.registerLockHook((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }
-        })
+        }))
     },
 }
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [closedDealsModule] }}
-    enableEditing
-    enableAutoSave
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
     enableOptionSetColors
     labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
     height='420px' />
@@ -61,9 +59,7 @@ const dayLimitModule: IGridModule = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [dayLimitModule] }}
-    enableEditing
-    enableAutoSave
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
     height='440px' />
 `
 
@@ -146,9 +142,7 @@ const urgentRowsModule: IGridModule = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [urgentRowsModule] }}
-    enableEditing
-    enableAutoSave
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
     enableOptionSetColors
     height='440px' />
 `
@@ -302,9 +296,7 @@ const placeholdersModule: IGridModule = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [placeholdersModule] }}
-    enableEditing
-    enableAutoSave
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
     height='440px' />
 `
 

@@ -1,4 +1,4 @@
-import { ICellUiContainerComponents, ICellUiLockIconComponents } from "../cells/ui";
+import { ICellUiContainerComponents, ICellUiLockIconComponents } from "../../../../components/cells/ui";
 
 /** The replaceable pieces of the lock cell, by the part they belong to. */
 export interface IRecordLockIndicatorCellComponents {

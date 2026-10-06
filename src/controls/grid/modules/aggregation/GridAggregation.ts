@@ -291,9 +291,7 @@ export class GridAggregation implements IGridAggregation {
     };
 
     private _onAfterRecordSaved = (): void => {
-        if (this._gridServices.get('settings').isAutoSaveEnabled()) {
-            this._totalRow?.refresh();
-        }
+        this._totalRow?.refresh();
     };
 
     //the provider outlives the grid

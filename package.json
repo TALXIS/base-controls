@@ -61,7 +61,7 @@
     "webpack": "^5.68.0"
   },
   "scripts": {
-    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js",
+    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js && node ./scripts/unwrap-dts-augmentations.mjs",
     "yalc": "npm run build && yalc publish --sig",
     "storybook": "npm --prefix ./storybook run storybook",
     "build-storybook": "npm --prefix ./storybook run build-storybook"

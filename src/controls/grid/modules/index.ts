@@ -4,6 +4,7 @@ export * from './row-model';
 export * from './license';
 export * from './clipboard';
 export * from './row-selection';
+export * from './editing';
 export * from './cell-selection';
 export * from './sorting';
 export * from './filtering';

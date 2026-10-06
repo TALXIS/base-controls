@@ -49,8 +49,8 @@ export interface IGridCell {
     getTheme(): IGridCellTheme;
     /** Whether this cell is waiting on something. */
     isLoading(): boolean;
-    /** Whether the cell's control is drawn in the cell itself, with no editor to open. */
-    hasOneClickEdit(): boolean;
+    /** Whether the cell's control takes input instead of showing the value. */
+    takesInput(): boolean;
     /** What the column this cell is in says its cells are. */
     getSettings(): IGridColumnSettings;
     /** Which edge this cell reads from. */
@@ -134,8 +134,8 @@ export class GridCell implements IGridCell {
         return result.isLoading;
     }
 
-    public hasOneClickEdit(): boolean {
-        return !!this.getSettings().cell?.oneClickEdit;
+    public takesInput(): boolean {
+        return this._takesInput;
     }
 
     public getSettings(): IGridColumnSettings {
@@ -147,19 +147,15 @@ export class GridCell implements IGridCell {
     }
 
     public isBeingEdited(): boolean {
-        //an editor was opened because the user asked to type here
-        if (this._takesInput && !this.hasOneClickEdit()) {
-            return true;
-        }
-        return this._editing.isEditing(this._record, this.getColumnName());
+        return !!this._editing?.isBeingEdited(this);
     }
 
     public startEditing(): void {
-        this._editing.start(this);
+        this._editing?.start(this);
     }
 
     public finishEditing(): void {
-        this._editing.finish(this);
+        this._editing?.finish(this);
     }
 
     public getField(): IGridField | undefined {
@@ -171,7 +167,8 @@ export class GridCell implements IGridCell {
     }
 
     public isLocked(): boolean {
-        return this._services.get('locks').get({ record: this._record, columnName: this.getColumnName() }).isLocked;
+        //a grid without the editing module is read-only
+        return this._services.find('editing')?.locks.get({ record: this._record, columnName: this.getColumnName() }).isLocked ?? true;
     }
 
     public getCommands(): IGridCellCommands {
@@ -185,7 +182,8 @@ export class GridCell implements IGridCell {
         return this._services.get('cells');
     }
 
+    //a grid without the editing module edits nothing
     private get _editing() {
-        return this._cells.editing;
+        return this._services.find('editing');
     }
 }

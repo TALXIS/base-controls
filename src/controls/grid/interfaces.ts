@@ -4,7 +4,6 @@ import { IGridModules } from "./modules";
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
-import type { IGridEditedCell } from "./services/editing";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
 
@@ -32,8 +31,6 @@ export interface IGridEventHandlers {
     onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
     /** Fired when the provider reports an error. */
     onError: (message: string, details?: any) => void;
-    /** Fired when an editor opens or closes, with the cell now edited if any. */
-    onEditedCellChanged: (cell: IGridEditedCell | undefined) => void;
     /** Fired when a record's cell is double-clicked, whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
     /** Fired when a row with a record is clicked. */
@@ -49,16 +46,12 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     provider: IDataProvider;
     /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
-    /** Whether cells may be edited; read at mount, then `registerLockHook`. */
-    enableEditing?: boolean;
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;
     /** Whether option sets show their colours; read at mount, then control parameter hooks. */
     enableOptionSetColors?: boolean;
     /** Whether every other row is shaded; read at mount, then through `registerCellThemeHook`. */
     enableZebra?: boolean;
-    /** Whether an edit saves itself. */
-    enableAutoSave?: boolean;
     /** How tall a row is, in pixels; read at mount, then through `registerRowHeightHook`. */
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */

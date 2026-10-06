@@ -13,8 +13,6 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 |---|---|---|---|---|
 | \`provider\` | \`IDataProvider\` | Required | At mount | The records, the columns and the paging. See [**Data**](?path=/docs/grid-get-started-data--overview). |
 | \`modules\` | \`IGridModules\` | Required | At mount | The features the grid has. \`rowModel\` is the one every grid needs. See [**Modules**](?path=/docs/grid-modules--overview). |
-| \`enableEditing\` | \`boolean\` | \`false\` | At mount | Lets the user edit every column but those whose \`metadata.IsValidForUpdate\` is \`false\`. See [**Editing**](?path=/docs/grid-editing--overview). |
-| \`enableAutoSave\` | \`boolean\` | \`false\` | Live | Saves a record each time one of its cells takes a value from the user. See [**Editing**](?path=/docs/grid-editing--overview). |
 | \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. See *Data types* on [**Data**](?path=/docs/grid-get-started-data--overview). |
 | \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. See [**Appearance**](?path=/docs/grid-appearance--overview). |
@@ -52,7 +50,7 @@ A prop read at mount keeps the value the grid mounted with. To change one, rende
 
 ## Events
 
-Every event is a prop. The grid calls the callback you passed last, so a callback can read your component's state without a remount.
+Every event of the grid itself is a prop; a module's events come in through its options, such as \`createEditingModule({ onEditedCellChanged })\`. The grid calls the callback you passed last, so a callback can read your component's state without a remount.
 
 | Event | Arguments | When it fires |
 |---|---|---|
@@ -63,7 +61,6 @@ Every event is a prop. The grid calls the callback you passed last, so a callbac
 | \`onAfterRecordSaved\` | \`result: IRecordSaveOperationResult\`: \`{ recordId, success, fields, errors? }\` | Once for every record that saves: on auto-save, on \`record.save()\`, and for each record of \`provider.save()\`. A save refused because a value is not valid fires it too, with \`success: false\` and the \`errors\`. |
 | \`onAfterSaved\` | \`results: IRecordSaveOperationResult[]\` | Only after \`provider.save()\`, once every record in it has finished. Auto-save never fires it. |
 | \`onError\` | \`message: string\`, \`details?: any\` | When the provider reports an error, such as a load that failed. |
-| \`onEditedCellChanged\` | \`cell: { recordId, columnName }\` or \`undefined\` | When an editor opens or closes, and when the user steps into or out of a one-click cell. |
 | \`onCellDoubleClicked\` | \`record: IRecord\`, \`columnName: string\` | When the user double-clicks a cell of a provider column, whether or not the record then opens. Group rows and the totals row fire it too. |
 | \`onRowClicked\` | \`record: IRecord\` | When the user clicks a row. Group rows and the totals row fire it too. With the row selection module, a click on the checkbox, on a cell's commands, or a plain click on a group row does not. |
 | \`onFocusedCellChanged\` | \`record?: IRecord\`, \`columnName?: string\` | Each time a cell takes focus, even one that already had it. Both are \`undefined\` when the focus lands outside the rows. |

@@ -66,7 +66,7 @@ Whether the groups' records load with the list or as each group opens depends on
 
 - It appears while any column has a total and the list has a record, and it is always pinned at the bottom.
 - It is worked out by a query of its own over the whole list as filtered and searched, not just the page the grid shows.
-- It shows saved data. It updates on each load of the provider, after \`provider.save()\`, and with \`enableAutoSave\` after each record saves, but not while a value is being edited.
+- It shows saved data. It updates on each load of the provider, after \`provider.save()\`, and with the editing module's \`autoSave\` after each record saves, but not while a value is being edited.
 - It shimmers while the totals are worked out, and shows the error across its width if that fails.
 - Each column's menu has a *Totals* section with *None* and the functions the column supports, unless \`allowUserAggregation\` is \`false\`.
 
@@ -92,7 +92,7 @@ const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }
     }
 }
 
-<Grid.Root provider={timesheets} modules={modules} enableEditing rowSettings={{ onGetLock: lockSubmittedEntries }} />
+<Grid.Root provider={timesheets} modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
 \`\`\`
 
 These rows hold their values under aliases of their own, such as \`status_group\` and \`hours_sum\`, so \`record.getValue('status')\` reads \`null\` on them. A rule that acts on an empty or unmatched value acts on them too: without the guard, this lock would also lock every group row and the totals row.

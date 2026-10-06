@@ -26,8 +26,8 @@ Each column says what draws its cells in its column definition, which you change
 
 | Key | Default | What it is for |
 |---|---|---|
-| \`cellRenderer\` | \`Grid.Cell.FieldRenderer\` for a provider column, \`Grid.Cell.EmptyRenderer\` for a column you add | A cell of your own |
-| \`cellEditor\` | \`Grid.Cell.FieldEditor\` for a provider column, none for a column you add, which then cannot be edited | An editor of your own |
+| \`cellRenderer\` | \`Grid.Cell.FieldRenderer\` for a provider column, \`EditingCell.FieldRenderer\` with the editing module, which replaces whatever an earlier module set, \`Grid.Cell.EmptyRenderer\` for a column you add | A cell of your own |
+| \`cellEditor\` | \`EditingCell.FieldEditor\` for a provider column with the editing module, which replaces whatever an earlier module set, none for a column you add, which then cannot be edited | An editor of your own |
 | \`cellRendererParams\` | | \`{ theme, components }\` for the default cell, with no component of your own |
 | \`cellEditorParams\` | | The same for the default editor |
 
@@ -40,7 +40,7 @@ Each column says what draws its cells in its column definition, which you change
 | \`container\` | \`onRenderContainer\` | Every cell |
 | \`loading\` | \`onRenderShimmer\` | Every cell |
 | \`control\` | \`onRenderContainer\`, \`onRenderControl(props, defaultRender)\` | Renderers and editors |
-| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | \`Renderer\`, \`FieldRenderer\` |
+| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | \`EditingCell.Renderer\`, \`EditingCell.FieldRenderer\` |
 | \`commands\` | \`onRenderContainer\`, \`onRenderCommandBar\` | \`Renderer\`, \`FieldRenderer\`, \`EmptyRenderer\` |
 | \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` | \`Renderer\`, \`FieldRenderer\` |
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | Every cell of a column with the row resize grip |
@@ -49,22 +49,23 @@ Each column says what draws its cells in its column definition, which you change
 
 ### The parts of a cell
 
-\`Grid.Cell.FieldRenderer\` is \`Grid.Cell.Field\` around \`Grid.Cell.Renderer\`, which is \`Root\` > \`Theme\` > [\`ResizeGrip\`] > \`Container\` > \`Loading\` > \`LockIcon\`, \`Control\`, \`Commands\` and \`FieldError\`. Build a cell of your own from the same parts:
+\`Grid.Cell.FieldRenderer\` is \`Grid.Cell.Field\` around \`Grid.Cell.Renderer\`, which is \`Root\` > \`Theme\` > [\`ResizeGrip\`] > \`Container\` > \`Loading\` > \`Control\`, \`Commands\` and \`FieldError\`. The editing module's \`EditingCell.FieldRenderer\` adds \`CellLockIcon\` before \`Control\`. Build a cell of your own from the same parts:
 
 | Part | What it is |
 |---|---|
 | \`Grid.Cell.Root\` | Makes everything inside it one cell, and draws it again whenever its record changes. Spread the cell's props into it. |
+| \`EditingCell.Root\` | \`Grid.Cell.Root\` for a cell that can be edited: it takes input as an editor (\`isEditor\`) or a one-click column, and draws again as editing starts and ends. Exported by the editing module. |
 | \`Grid.Cell.Field\` | Binds what is inside it to one column of one record: \`record\` and \`name\`. It can bind a column you add to a provider column's value. |
 | \`Grid.Cell.Theme\` | Works out the cell's theme, from zebra rows to \`onGetTheme\`, and paints the cell in it. \`theme\` replaces the grid's theme as the start. |
 | \`Grid.Cell.Container\` | The cell's surface. The hover, selection, focus and range highlights are drawn on it. |
 | \`Grid.Cell.Loading\` | Draws a shimmer in place of what it wraps while the cell is loading. |
 | \`Grid.Cell.Control\` | The value, or the input while the cell takes one. |
-| \`Grid.Cell.LockIcon\` | The lock of a single locked value. |
+| \`CellLockIcon\` | The lock of a single locked value; exported by the editing module. |
 | \`Grid.Cell.Commands\` | The cell's commands, while the row is hovered, focused or selected. |
 | \`Grid.Cell.FieldError\` | The red outline and error icon of an invalid value. |
 | \`Grid.Cell.ResizeGrip\` | The grip a row is dragged taller by. |
-| \`Grid.Cell.Renderer\`, \`Grid.Cell.Editor\` | A whole cell, and a whole editor (\`Container\` > \`Loading\` > \`Control\`), not bound to a field. |
-| \`Grid.Cell.FieldEditor\` | \`Grid.Cell.Field\` around \`Grid.Cell.Editor\`. |
+| \`Grid.Cell.Renderer\` | A whole cell (\`Container\` > \`Loading\` > \`Control\`), not bound to a field. |
+| \`EditingCell.Editor\`, \`EditingCell.FieldEditor\` | A whole editor, and the same around \`Grid.Cell.Field\`. |
 | \`Grid.Cell.EmptyRenderer\` | A cell with no value: \`Container\` > \`Loading\` > \`Commands\`. |
 | \`Grid.Cell.NestedRoot\` | Draws its children in a React root of their own, so their key handlers run before AG Grid's. Only the grid's own contexts, the PCF context and the theme reach inside it. |
 | \`Grid.Cell.Ui\` | \`Container\`, \`Control\`, \`Loading\`, \`LockIcon\`, \`Commands\`, \`FieldError\`, \`ResizeGrip\`: the same pieces, drawn from props alone, for the grid's look outside a cell. |
@@ -90,7 +91,7 @@ A column's header is its definition's \`headerComponent\`, \`Grid.ColumnHeader.R
 | \`content\` | \`onRenderContainer\` | What holds the name and the required marker |
 | \`label\` | \`onRenderText\` | The column's name |
 | \`requiredMarker\` | \`onRenderText\` | The \`*\` of a column that needs a value |
-| \`suffix\` | \`onRenderContainer\`, \`onRenderLockIcon\` | What is drawn after the name, the sort and filter icons and the column's lock included |
+| \`suffix\` | \`onRenderContainer\` | What the modules draw after the name: the sort and filter icons, and the editing module's column lock |
 | \`menu\` | \`onRenderContextualMenu\` | The menu the header opens |
 
 \`Grid.ColumnHeader.Renderer\` is \`Root\` > \`Theme\` > \`Container\` > (\`Prefix\`, \`Content\` > (\`Label\`, \`RequiredMarker\`), \`Suffix\`), with \`Menu\` beside \`Container\`. Each part from \`Container\` on takes the \`components\` of its own piece, and \`Grid.ColumnHeader.Root\` comes first in a header of your own. \`Grid.ColumnHeader.Ui\` holds the same pieces, drawn from props alone.
@@ -121,7 +122,7 @@ These go in \`components\` on \`<Grid.Root />\`:
 
 {{story: Save status your way}}
 
-An editable grid reports each row's saves in a column of its own, and shows a lock at the start of a row locked as a whole (see [**Editing**](?path=/docs/grid-editing--overview)). Their parts go in \`components\` on \`<Grid.Root />\`:
+An editable grid reports each row's saves in a column of its own, and shows a lock at the start of a row locked as a whole (see [**Editing**](?path=/docs/grid-editing--overview)). Their parts go in \`createEditingModule({ components })\`:
 
 | Key | Part | Pieces |
 |---|---|---|
@@ -131,9 +132,9 @@ An editable grid reports each row's saves in a column of its own, and shows a lo
 | \`recordLockCell\` | \`container\` | \`onRenderContainer\` |
 | | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` |
 
-- With row selection on, the save status is drawn in the row's checkbox cell instead, and \`recordSaveCell\` is not used: pass the same parts to \`createRowSelectionModule({ components: { cell } })\`.
+- With row selection on, the editing module draws the save status in the row's checkbox cell instead, with the same \`recordSaveCell\` parts.
 - The save and lock cells are cells too, so \`useGridCell()\` works in their parts and in the error callout.
-- The grid's own cells are \`Grid.RecordSave.Cell\` and \`Grid.RecordLock.Cell\`. To draw the status or the lock in a cell of your own, use \`Grid.RecordSave.Indicator\`, which draws its children while there is nothing to report, and \`Grid.RecordLock.Icon\`, both inside \`Grid.Cell.Root\`. \`Grid.RecordSave.Ui\` holds the indicator and the callout drawn from props alone.
+- The editing module's cells are \`RecordSaveIndicatorCell\` and \`RecordLockIndicatorCell\`. To draw the status or the lock in a cell of your own, use \`RecordSaveIndicator\`, which draws its children while there is nothing to report, and \`RecordLockIcon\`, both inside \`Grid.Cell.Root\`. \`RecordSaveUi\` holds the indicator and the callout drawn from props alone.
 
 ## Module parts
 
@@ -166,8 +167,8 @@ Three hooks read the cell, field or header a part of yours is drawn in, and draw
 | \`useGridField()\` | The field: \`getRecord()\`, \`getColumn()\`, \`getValue()\`, \`getFormattedValue()\`, \`isValid()\` and \`setValue(value)\`, or \`undefined\` with no field bound | \`Grid.Cell.Field\`, which \`FieldRenderer\` and \`FieldEditor\` include |
 | \`useGridColumnHeader()\` | The header: \`getName()\`, \`getTitle()\`, \`getColumn()\`, \`getColDef()\`, \`getSettings()\`, \`getAlignment()\`, \`isRequired()\`, \`isLocked()\`, \`getElement()\`, \`openMenu()\`, \`closeMenu()\` | \`Grid.ColumnHeader.Root\`; it throws anywhere else |
 
-- \`field.setValue(value)\` is how a part of yours changes a value: it writes to the record and saves it when \`enableAutoSave\` is on. \`record.setValue()\` only writes.
-- \`header.getColumn()\` is \`undefined\` for a column you add. \`header.isLocked()\` is \`true\` for every column of a grid that cannot be edited, while the header's lock icon shows only for a column locked as such.
+- \`field.setValue(value)\` is how a part of yours changes a value: it writes to the record and saves it when the editing module's \`autoSave\` is on. \`record.setValue()\` only writes.
+- \`header.getColumn()\` is \`undefined\` for a column you add.
 `
 
 const meta = {
@@ -252,7 +253,7 @@ export const SaveStatusYourWay: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Price changes go to a pricing service that refuses a price over $1,000 without a manager's approval: \`components.recordSaveCell\` turns the save status into a labelled button in a wider save status column, and names the product in the title of the failed-save callout. Set a price above 1,000, then click *Not saved*.`,
+                story: `Price changes go to a pricing service that refuses a price over $1,000 without a manager's approval: \`createEditingModule({ components: { recordSaveCell } })\` turns the save status into a labelled button in a wider save status column, and names the product in the title of the failed-save callout. Set a price above 1,000, then click *Not saved*.`,
             },
         },
     },

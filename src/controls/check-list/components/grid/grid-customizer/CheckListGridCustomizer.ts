@@ -1,7 +1,8 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } from "@ag-grid-community/core";
 import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
-import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { DataTypes, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
+import { SELECTION_COLUMN_KEY } from "@controls/grid/modules/row-selection/constants";
 import { CompletionCell } from "../completion-cell";
 import { DeleteCell } from "../delete-cell";
 import { COMPLETED_CLASS_NAME, COMPLETION_COLUMN_NAME, CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME, REORDERING_CLASS_NAME } from "../constants";
@@ -181,7 +182,7 @@ export class CheckListGridCustomizer {
         //the grid adds a checkbox column whenever selection or editing is on, and editing is on here.
         //A checklist selects nothing, so the column only ever showed the per-row save status - dropped
         //rather than left as an empty gutter
-        const definitions = columnDefs.filter(colDef => (colDef.colId ?? colDef.field) !== DatasetConstants.CHECKBOX_COLUMN_KEY);
+        const definitions = columnDefs.filter(colDef => (colDef.colId ?? colDef.field) !== SELECTION_COLUMN_KEY);
         this._markCompletedNameCells(definitions);
         this._injectCompletionColumn(definitions);
         this._injectDeleteColumn(definitions);

@@ -35,12 +35,10 @@ const StockCell = (props: IGridCellParams) => <Grid.Cell.FieldRenderer {...props
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
     colDefs={{
         instock: { cellRenderer: StockCell, initialWidth: 180 },
     }}
-    enableEditing
-    enableAutoSave
     height='440px' />
 `
 
@@ -158,7 +156,7 @@ export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
     return <Text {...props}>{product.getFormattedValue('name')}: {props.children}</Text>
 }
 
-const COMPONENTS: IGridComponents = {
+const COMPONENTS: IGridEditingComponents = {
     recordSaveCell: {
         indicator: {
             onRenderButton: ({ state, ...props }) => <ActionButton {...props} text={state === 'failed' ? 'Not saved' : 'Saved'} />,
@@ -171,13 +169,10 @@ const COMPONENTS: IGridComponents = {
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true, components: COMPONENTS }) }}
     colDefs={{
         [RECORD_SAVE_COLUMN_KEY]: { width: 112 },
     }}
-    components={COMPONENTS}
-    enableEditing
-    enableAutoSave
     height='440px' />
 `
 

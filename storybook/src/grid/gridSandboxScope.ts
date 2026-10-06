@@ -6,11 +6,11 @@ import {
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
-    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createFilteringModule,
+    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCheckbox, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, CellLockIcon, createFilteringModule,
     createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule,
     DEFAULT_COLUMN_WIDTH, FilteringUi, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell,
-    GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY,
+    GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
     CommandBar, Form, MemoryStrategy, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
@@ -44,6 +44,7 @@ export const GRID_SANDBOX_SCOPE = {
     GRID_GROUPING_LABELS,
     GRID_AGGREGATION_LABELS,
     RECORD_LOCK_COLUMN_KEY,
+    SELECTION_COLUMN_KEY,
     RECORD_SAVE_COLUMN_KEY,
     LOCKED_RECORD_ROW_CLASS,
     GROUP_EXPANSION_COLUMN_KEY,
@@ -53,6 +54,16 @@ export const GRID_SANDBOX_SCOPE = {
     createRowSelectionModule,
     createCellSelectionModule,
     createClipboardModule,
+    createEditingModule,
+    EditingCell,
+    SelectionCheckbox,
+    RecordSaveSelectionCell,
+    RecordSaveIndicator,
+    RecordSaveIndicatorCell,
+    RecordSaveUi,
+    RecordLockIcon,
+    RecordLockIndicatorCell,
+    CellLockIcon,
     createSortingModule,
     createFilteringModule,
     createGroupingModule,

@@ -1,9 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ITheme } from "@theme";
-import { useGridComponents } from "../../context";
-import { CellRoot } from "../cells/root/CellRoot";
-import { CellTheme } from "../cells/theme/CellTheme";
-import { CellContainer } from "../cells/container/CellContainer";
+import { useGridService } from "../../../../useGridService";
+import { CellRoot } from "../../../../components/cells/root/CellRoot";
+import { CellTheme } from "../../../../components/cells/theme/CellTheme";
+import { CellContainer } from "../../../../components/cells/container/CellContainer";
 import { RecordLockIcon } from "./record-lock-icon/RecordLockIcon";
 
 export interface IRecordLockIndicatorCellProps extends ICellRendererParams {
@@ -13,7 +13,7 @@ export interface IRecordLockIndicatorCellProps extends ICellRendererParams {
 
 /** The cell a row says in that its record is locked as a whole. */
 export const RecordLockIndicatorCell = (props: IRecordLockIndicatorCellProps) => {
-    const components = useGridComponents().recordLockCell ?? {};
+    const components = useGridService('editing')?.components.recordLockCell ?? {};
 
     return <CellRoot {...props}>
         <CellTheme theme={props.theme}>

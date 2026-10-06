@@ -13,7 +13,6 @@ import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
-import { GridLocks } from "../locks";
 import { GridValidation } from "../validation";
 import { GridColumns } from "../columns";
 import { GridCells } from "../cells";
@@ -21,7 +20,6 @@ import { GridFields } from "../fields";
 import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
-import { GridLockedRecords } from "../locked-records";
 import { GridSurfaces } from "../surfaces";
 
 /** What AG Grid reads once, when it is created. */
@@ -107,7 +105,6 @@ export class GridRuntime implements IGridRuntime {
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });
         const rows = new GridRows({ services: this._services });
-        const locks = new GridLocks({ services: this._services });
         const validation = new GridValidation({ services: this._services });
         const keyboard = new GridKeyboard({ services: this._services });
         const surfaces = new GridSurfaces();
@@ -118,13 +115,10 @@ export class GridRuntime implements IGridRuntime {
         this._services.register('columns', () => columns);
         this._services.register('cells', () => cells);
         this._services.register('rows', () => rows);
-        this._services.register('locks', () => locks);
         this._services.register('validation', () => validation);
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
         this._services.register('fields', () => fields);
-        //built once and never looked up
-        new GridLockedRecords({ services: this._services });
 
         const { custom = [], ...builtIns } = onGetProps().modules;
         const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);
@@ -219,8 +213,6 @@ export class GridRuntime implements IGridRuntime {
                 suppressDragLeaveHidesColumns: true,
                 enterNavigatesVertically: true,
                 enterNavigatesVerticallyAfterEdit: true,
-                //AG Grid hands its own writes over as `cellEditRequest`
-                readOnlyEdit: true,
                 columnDefs: this._columnDefs,
             },
         };

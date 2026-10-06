@@ -21,7 +21,7 @@ The module adds a checkbox column, pinned first. Its options:
 |---|---|---|
 | \`mode\` | required | \`'multiple'\` lets any number of rows be selected, \`'single'\` one at a time. To offer no selection, leave the module out. |
 | \`onSelectionChanged\` | | Called with the ids of the selected records every time the selection changes. |
-| \`components\` | | Your own row checkbox, header checkbox and save status: see [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview). |
+| \`components\` | | Your own row checkbox and header checkbox: see [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview). |
 
 The options are read once, when the grid mounts, so the \`onSelectionChanged\` the grid mounted with runs for its whole life. Pass a state setter, as the examples here do, or read anything that changes through a ref.
 
@@ -62,7 +62,7 @@ To get from an id to its record, use \`provider.getRecordsMap()[id]\`, which als
 
 ### The save status in the checkbox cell
 
-With row selection on, a row's save status is drawn in its checkbox cell, in place of the checkbox while there is one, so an editable grid has no save status column of its own. After a failed save the checkbox stays hidden until the red icon is dismissed. What the status shows is on [**Editing**](?path=/docs/grid-editing--overview); **Approve** a few timesheets above to see it.
+With row selection on, the editing module draws a row's save status in its checkbox cell, in place of the checkbox while there is one, so an editable grid has no save status column of its own. After a failed save the checkbox stays hidden until the red icon is dismissed. What the status shows is on [**Editing**](?path=/docs/grid-editing--overview); **Approve** a few timesheets above to see it.
 
 ### The rowSelection service
 
@@ -135,7 +135,7 @@ In an editable grid, Ctrl+V pastes into the focused cell, or into the highlighte
 
 - Locked cells, and columns drawn with \`oneClickEdit\`, are skipped.
 - Text is read the way the grid shows it, as typing it into the cell would read it: numbers and money in the user's number format, durations such as *2 hours*, dates in the user's date format, option sets and two options by their labels, and several option set labels separated by \`;\`. A lookup takes the record of that name, when exactly one record of that name is already in the column's loaded values. Text a column cannot take, and files and images, leave the cell as it was.
-- Values are validated like any other edit, and with \`enableAutoSave\` each changed record saves once after the paste.
+- Values are validated like any other edit, and with the editing module's \`autoSave\` each changed record saves once after the paste.
 `
 
 const meta = {

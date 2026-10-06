@@ -9,7 +9,6 @@ import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
 import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
-import { CellLockIcon } from "../lock-icon/CellLockIcon";
 import { ICellRendererComponents } from "./components";
 
 export interface ICellRendererProps extends ICellRendererParams {
@@ -23,7 +22,6 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
-            <CellLockIcon components={components.lockIcon} />
             <CellControl components={components.control} />
             <CellCommands components={components.commands} />
             <CellFieldError components={components.fieldError} />

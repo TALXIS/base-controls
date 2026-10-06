@@ -2,7 +2,7 @@ import { Dialog } from "@ui";
 import * as React from "react"
 import { getViewManagerDialogStyles } from "./styles";
 import { DatasetControl as DatasetControlRenderer } from '@controls/dataset-control';
-import { createServerSideRowModelModule, Grid } from '@controls/grid';
+import { createEditingModule, createServerSideRowModelModule, Grid } from '@controls/grid';
 import { getClassNames } from "@utils";
 import { ViewManager } from "./ViewManager";
 import { useDatasetControl, useLocalizationService, useRootElementId } from "@controls/task-grid/context";
@@ -64,10 +64,11 @@ export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
                 }}
                 onGetControlComponent={(controlProps) => <Grid.Root
                     provider={controlProps.parameters.Grid.getDataProvider()}
-                    modules={{ rowModel: createServerSideRowModelModule() }}
-                    enableEditing={controlProps.parameters.EnableEditing?.raw === true}
+                    modules={{
+                        rowModel: createServerSideRowModelModule(),
+                        editing: controlProps.parameters.EnableEditing?.raw === true ? createEditingModule({ autoSave: controlProps.parameters.EnableAutoSave?.raw === true }) : undefined,
+                    }}
                     enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
-                    enableAutoSave={controlProps.parameters.EnableAutoSave?.raw === true}
                 />}
              />
     </Dialog>

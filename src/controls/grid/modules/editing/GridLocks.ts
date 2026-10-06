@@ -3,10 +3,30 @@ import { IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
-/** The level that locks something. */
-export type IGridLockLevel = 'grid' | 'column' | 'record' | 'cell';
+declare module "../../services/columns/colDef" {
+    interface IGridColumnSettings {
+        /** Whether what the cells hold is locked for good. */
+        isLocked?: boolean;
+    }
+    interface IGridColumnCellSettings {
+        /** Whether the control takes input where the cell stands, with no editor to open. */
+        oneClickEdit?: boolean;
+        /** Decides whether a cell is locked, after the cell-level `registerLockHook` hooks. */
+        onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
+    }
+}
 
-/** What is asked about: nothing for the grid, a column, a record's row, or both for a cell. */
+declare module "../../services/rows/GridRows" {
+    interface IGridRowSettings {
+        /** Locks a record as a whole, after the record-level `registerLockHook` hooks. */
+        onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
+    }
+}
+
+/** The level that locks something. */
+export type IGridLockLevel = 'column' | 'record' | 'cell';
+
+/** What is asked about: a column, a record's row, or both for a cell. */
 export interface IGridLockContext {
     record?: IRecord;
     columnName?: string;
@@ -29,7 +49,7 @@ export interface IGridLocksParameters {
     services: IGridServiceLocator;
 }
 
-/** Whether the grid, a column, a record's row or a cell is locked. */
+/** Whether a column, a record's row or a cell is locked. */
 export interface IGridLocks {
     /** Whether what the context names is locked, and at which level. */
     get(context?: IGridLockContext): IGridLockResult;
@@ -51,9 +71,6 @@ export class GridLocks implements IGridLocks {
 
     public get(context: IGridLockContext = {}): IGridLockResult {
         const { record, columnName } = context;
-        if (!this._services.get('settings').isEditingEnabled()) {
-            return { isLocked: true, lockedBy: 'grid' };
-        }
         const colDef = columnName ? this._getColDef(columnName) : undefined;
         if (columnName && this._isColumnLocked(columnName, colDef)) {
             return { isLocked: true, lockedBy: 'column' };

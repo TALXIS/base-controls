@@ -10,14 +10,10 @@ export interface IGridSettingsParameters {
 
 /** What the caller asked the grid to be. */
 export interface IGridSettings {
-    /** Whether a cell may be edited in place. */
-    isEditingEnabled(): boolean;
     /** Whether a double click on a row opens the record it stands for. */
     isNavigationEnabled(): boolean;
     /** Whether every other row takes a background of its own. */
     isZebraEnabled(): boolean;
-    /** Whether an edit saves itself. */
-    isAutoSaveEnabled(): boolean;
     /** Whether an option set's own colour is used for its cells. */
     areOptionSetColorsEnabled(): boolean;
     /** How tall a row is, in pixels. */
@@ -40,20 +36,12 @@ export class GridSettings implements IGridSettings {
         this._mountProps = { ...parameters.onGetProps() };
     }
 
-    public isEditingEnabled(): boolean {
-        return this._mountProps.enableEditing === true;
-    }
-
     public isNavigationEnabled(): boolean {
         return this._mountProps.enableNavigation !== false;
     }
 
     public isZebraEnabled(): boolean {
         return this._mountProps.enableZebra !== false;
-    }
-
-    public isAutoSaveEnabled(): boolean {
-        return this._getProps().enableAutoSave === true;
     }
 
     public areOptionSetColorsEnabled(): boolean {

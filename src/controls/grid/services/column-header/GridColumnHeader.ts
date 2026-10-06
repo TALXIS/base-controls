@@ -38,8 +38,6 @@ export interface IGridColumnHeader {
     getAlignment(): IAlignment;
     /** Whether the column asks for a value. */
     isRequired(): boolean;
-    /** Whether what the column holds may be changed. */
-    isLocked(): boolean;
     getName(): string;
     /** The header's tooltip: the name plus the adornments' titles in parentheses. */
     getTitle(): string;
@@ -95,10 +93,6 @@ export class GridColumnHeader implements IGridColumnHeader {
 
     public isRequired(): boolean {
         return !!this.getSettings().isRequired;
-    }
-
-    public isLocked(): boolean {
-        return this._services.get('locks').get({ columnName: this.getColDef().colId! }).isLocked;
     }
 
     public getName(): string {

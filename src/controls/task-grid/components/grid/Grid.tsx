@@ -1,5 +1,5 @@
 import * as React from "react"
-import { createAggregationModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createLegacyClientApiCompatibilityModule, createRowSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
+import { createAggregationModule, createEditingModule, createGroupingModule, createLicenseModule, createFilteringModule, createSortingModule, createLegacyClientApiCompatibilityModule, createRowSelectionModule, createClientSideRowModelModule, Grid as GridBase, IGridModules } from "@controls/grid"
 import { IDatasetControlProps } from "@controls/dataset-control/interfaces";
 import { useAgGridLicenseKey, useServices, useTaskDataProvider } from "@controls/task-grid/context";
 import { GridCustomizer } from "./grid-customizer/GridCustomizer";
@@ -23,6 +23,7 @@ export const Grid = (props: IControlProps) => {
             rowModel: createClientSideRowModelModule(),
             //`'none'` is not a mode: a grid that should not offer selection is one with no selection module
             rowSelection: selectionMode === 'none' ? undefined : createRowSelectionModule({ mode: selectionMode }),
+            editing: parameters.EnableEditing?.raw === true ? createEditingModule({ autoSave: parameters.EnableAutoSave?.raw === true }) : undefined,
             legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
             sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
             filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
@@ -35,9 +36,7 @@ export const Grid = (props: IControlProps) => {
     return <GridBase.Root
         provider={parameters.Grid.getDataProvider()}
         modules={modules}
-        enableEditing={parameters.EnableEditing?.raw === true}
         enableNavigation={parameters.EnableNavigation?.raw !== false}
-        enableAutoSave={parameters.EnableAutoSave?.raw === true}
         enableZebra={parameters.EnableZebra?.raw !== false}
         enableOptionSetColors={parameters.EnableOptionSetColors?.raw === true}
         rowHeight={parameters.RowHeight?.raw ?? undefined}

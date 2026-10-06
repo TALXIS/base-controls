@@ -11,11 +11,11 @@ import type { IGridColumns } from "../services/columns";
 import type { IGridCells } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
 import type { IGridRows } from "../services/rows";
-import type { IGridLocks } from "../services/locks";
 import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
 import type { IGridRowSelection } from "../modules/row-selection/GridRowSelection";
+import type { IGridEditing } from "../modules/editing/GridEditing";
 import type { IGridSorting } from "../modules/sorting/GridSorting";
 import type { IGridFiltering } from "../modules/filtering/GridFiltering";
 import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
@@ -23,6 +23,8 @@ import type { IGridGrouping } from "../modules/grouping/GridGrouping";
 
 /** The services only there once whatever registers them is; a custom module declares its own here. */
 export interface IGridOptionalServiceMap {
+    /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
+    editing: IGridEditing;
     /** The grid's own element. */
     gridRoot: HTMLElement;
     /** AG Grid's own api, a last resort for what the grid's hooks cannot express. */
@@ -45,8 +47,6 @@ export interface IGridServiceMap extends IGridOptionalServiceMap {
     settings: IGridSettings;
     /** What is true of a row as a whole. */
     rows: IGridRows;
-    /** Whether the grid, a column, a record's row or a cell is locked. */
-    locks: IGridLocks;
     /** What the grid says about the values its records hold. */
     validation: IGridValidation;
     /** Where the records, the columns and the paging come from. */

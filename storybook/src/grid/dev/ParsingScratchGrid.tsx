@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, Grid, IGrid, IGridCellParams, IGridModules, PcfContextProvider } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGrid, IGridCellParams, IGridModules, PcfContextProvider } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -101,11 +101,12 @@ const COL_DEFS: NonNullable<IGrid['colDefs']> = {
     },
 }
 
-const MODULES: IGridModules = {
+const createModules = (autoSave: boolean): IGridModules => ({
     rowModel: createClientSideRowModelModule(),
+    editing: createEditingModule({ autoSave }),
     clipboard: createClipboardModule(),
     cellSelection: createCellSelectionModule(),
-}
+})
 
 export interface IParsingScratchGridProps {
     enableAutoSave: boolean
@@ -163,12 +164,10 @@ const ParsingGrid = (props: IParsingScratchGridProps & { culture: string, langua
         <LastChange change={change} />
         <Grid.Root
             provider={provider}
-            modules={MODULES}
+            modules={createModules(props.enableAutoSave)}
             colDefs={COL_DEFS}
             height='100%'
-            enableEditing
-            enableNavigation
-            enableAutoSave={props.enableAutoSave} />
+            enableNavigation />
     </PcfContextProvider>
 }
 

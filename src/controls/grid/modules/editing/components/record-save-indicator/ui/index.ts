@@ -1,4 +1,4 @@
-import { ICellUiContainerComponents } from '../../cells/ui';
+import { ICellUiContainerComponents } from '../../../../../components/cells/ui';
 import { IRecordSaveUiIndicatorComponents, RecordSaveUiIndicator } from './indicator';
 import { IRecordSaveUiErrorCalloutComponents, RecordSaveUiErrorCallout } from './error-callout';
 

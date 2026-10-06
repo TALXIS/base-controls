@@ -1,4 +1,4 @@
-import { ICellUiCommandsComponents, ICellUiContainerComponents, ICellUiFieldErrorComponents, ICellUiLoadingComponents, ICellUiLockIconComponents, ICellUiResizeGripComponents } from "../ui";
+import { ICellUiCommandsComponents, ICellUiContainerComponents, ICellUiFieldErrorComponents, ICellUiLoadingComponents, ICellUiResizeGripComponents } from "../ui";
 import { ICellControlComponents } from "../control/components";
 
 /** The pieces every cell is built from, drawn whether it is being edited or not. */
@@ -19,6 +19,4 @@ export interface ICellRendererComponents extends ICellComponents {
     fieldError?: Partial<ICellUiFieldErrorComponents>;
     /** What the cell offers to do. */
     commands?: Partial<ICellUiCommandsComponents>;
-    /** What says the cell is locked for its record. */
-    lockIcon?: Partial<ICellUiLockIconComponents>;
 }

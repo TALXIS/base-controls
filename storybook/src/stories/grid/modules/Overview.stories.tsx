@@ -12,6 +12,7 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 | Key | Factory | What it adds | AG Grid Enterprise | Details |
 |---|---|---|---|---|
 | \`rowModel\` | \`createClientSideRowModelModule()\` or \`createServerSideRowModelModule()\` | How the grid gets its rows. **Required.** | The server-side one | *Row models*, below |
+| \`editing\` | \`createEditingModule({ autoSave })\` | Editing cells in place, a save status column, locks and, with \`autoSave\`, saving each edit | | [**Editing**](?path=/docs/grid-editing--overview) |
 | \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
 | \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells by dragging across them | Yes | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
 | \`clipboard\` | \`createClipboardModule()\` | Copying a cell, or the highlighted blocks, with Ctrl+C | Yes | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
@@ -39,6 +40,8 @@ Whether a column can be sorted, filtered, grouped or totalled is up to its metad
 \`\`\`
 
 An entry set to \`undefined\` is the same as one left out.
+
+A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\` or \`createEditingModule({ onEditedCellChanged })\`, not through props of \`<Grid.Root />\`.
 
 \`modules\`, and every option you pass to a factory, are read once, when the grid mounts. A new \`modules\` object, or a changed option such as \`onSelectionChanged\`, is not picked up later. To switch a module on or off, or to change its options, give the grid a new \`key\` so that it mounts again:
 

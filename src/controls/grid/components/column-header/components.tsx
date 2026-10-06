@@ -15,7 +15,7 @@ export interface IColumnHeaderRendererComponents {
     label?: Partial<IColumnHeaderUiLabelComponents>;
     /** What says the column asks for a value. */
     requiredMarker?: Partial<IColumnHeaderUiRequiredMarkerComponents>;
-    /** What is drawn after the name, the lock icon included. */
+    /** What is drawn after the name. */
     suffix?: Partial<IColumnHeaderUiSuffixComponents>;
     /** The menu the header opens. */
     menu?: Partial<IColumnHeaderUiMenuComponents>;

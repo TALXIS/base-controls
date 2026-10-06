@@ -1,12 +1,12 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ITheme } from "@theme";
-import { CellContainer } from "../container/CellContainer";
-import { CellControl } from "../control/CellControl";
-import { CellLoading } from "../loading/CellLoading";
+import { CellContainer } from "../../../../components/cells/container/CellContainer";
+import { CellControl } from "../../../../components/cells/control/CellControl";
+import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
-import { CellTheme } from "../theme/CellTheme";
-import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
-import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
+import { CellTheme } from "../../../../components/cells/theme/CellTheme";
+import { CellResizeGrip } from "../../../../components/cells/resize-grip/CellResizeGrip";
+import { hasResizeGrip } from "../../../../components/cells/resize-grip/hasResizeGrip";
 import { ICellEditorComponents } from "./components";
 
 export interface ICellEditorProps extends ICellRendererParams {

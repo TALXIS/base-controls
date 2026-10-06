@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsGroupOpenByDefaultParams, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@controls/task-grid/providers/task";
-import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GridExpansionSync } from "../grid-expansion-sync";
 import { GroupCell } from "../group-cell";
@@ -17,6 +17,7 @@ import { CHECKLIST_COLUMN_NAME } from "@controls/task-grid/modules/checklist/Che
 import type { ITaskGridCellProps, ITaskGridComponents } from "@controls/task-grid/components/components";
 import type { IDependenciesCellRendererProps } from "@controls/task-grid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 import type { GridColumnDefinitionsHook } from "@controls/grid/services/columns";
+import { SELECTION_COLUMN_KEY } from "@controls/grid/modules/row-selection/constants";
 
 /** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
@@ -244,7 +245,7 @@ export class GridCustomizer implements IGridCustomizer {
                     colDef.pinned = 'left';
                     break;
                 }
-                case DatasetConstants.CHECKBOX_COLUMN_KEY: {
+                case SELECTION_COLUMN_KEY: {
                     colDef.lockPosition = true;
                     break;
                 }
@@ -358,7 +359,7 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _getColumnPriority(col: ColDef): number {
-        if (col.colId === DatasetConstants.CHECKBOX_COLUMN_KEY) return 0;
+        if (col.colId === SELECTION_COLUMN_KEY) return 0;
         if (col.colId === ADD_TASK_COLUMN_NAME) return 1;
         if (col.field === this._nativeColumns.subject) return 2;
         return 3;

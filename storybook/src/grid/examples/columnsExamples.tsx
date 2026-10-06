@@ -89,7 +89,7 @@ const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
 
 const GridExample = () => <Grid.Root
     provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
+    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
     colDefs={{
         stockvalue: {
             headerName: 'Stock value',
@@ -100,7 +100,6 @@ const GridExample = () => <Grid.Root
             settings: { alignment: 'right' },
         },
     }}
-    enableEditing
     height='440px' />
 `
 
@@ -130,7 +129,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <Grid.Root
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             colDefs={{
                 actions: {
                     headerName: '',
@@ -151,7 +150,6 @@ const GridExample = () => {
                     },
                 },
             }}
-            enableAutoSave
             onGridReady={gridRuntime => runtime.current = gridRuntime}
             height='440px' />
     </Stack>
@@ -185,7 +183,7 @@ const GridExample = () => {
 
     return <Grid.Root
         provider={provider}
-        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
         colDefs={{
             instock: {
                 settings: {
@@ -212,8 +210,6 @@ const GridExample = () => {
         }}
         onGridReady={gridRuntime => { runtime.current = gridRuntime }}
         onRecordValueChanged={redrawHeaders}
-        enableEditing
-        enableAutoSave
         height='440px' />
 }
 `

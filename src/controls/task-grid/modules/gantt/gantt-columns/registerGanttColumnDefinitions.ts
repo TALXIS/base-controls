@@ -1,4 +1,4 @@
-import { DatasetConstants } from "@talxis/client-libraries";
+import { SELECTION_COLUMN_KEY } from "@controls/grid/modules/row-selection/constants";
 import { ColDef } from "@controls/task-grid/components/grid";
 import { IGanttServiceLocator } from "../services";
 
@@ -21,7 +21,7 @@ const applyGanttColumnDefinitions = (columnDefs: ColDef[], services: IGanttServi
         if (colDef.colId === subjectColumnName) {
             colDef.pinned = undefined;
         }
-        if (colDef.colId === DatasetConstants.CHECKBOX_COLUMN_KEY) {
+        if (colDef.colId === SELECTION_COLUMN_KEY) {
             colDef.lockPosition = true;
         }
         //every row is one chart row, so a row that grows to fit its content would break the mirroring

@@ -1,5 +1,5 @@
 import { CellEditor, ICellEditorProps } from "../cell-editor/CellEditor";
-import { CellField } from "../field/CellField";
+import { CellField } from "../../../../components/cells/field/CellField";
 
 export interface ICellFieldEditorProps extends ICellEditorProps { }
 

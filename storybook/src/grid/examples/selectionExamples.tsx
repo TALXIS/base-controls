@@ -38,11 +38,11 @@ const GridExample = () => {
             provider={provider}
             modules={{
                 rowModel: createClientSideRowModelModule(),
+                editing: createEditingModule({ autoSave: true }),
                 rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
                 sorting: createSortingModule(),
             }}
             enableOptionSetColors
-            enableAutoSave
             onGridReady={gridRuntime => runtime.current = gridRuntime}
             height='440px' />
     </Stack>

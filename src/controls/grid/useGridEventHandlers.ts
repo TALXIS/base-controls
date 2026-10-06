@@ -2,7 +2,6 @@ import { IColumn, IDataProviderEventListeners, IRecord, IRecordSaveOperationResu
 import { useEventEmitter } from "@hooks";
 import { IGrid } from "./interfaces";
 import { IGridRuntime, IGridRuntimeEvents } from "./services/runtime";
-import { IGridEditedCell, IGridEditingEvents } from "./services/editing";
 import { IGridColumnsEvents } from "./services/columns";
 import { IGridRowsEvents } from "./services/rows";
 import { IGridCellsEvents } from "./services/cells";
@@ -19,7 +18,6 @@ export const useGridEventHandlers = (runtime: IGridRuntime, props: IGrid) => {
     useEventEmitter<IDataProviderEventListeners>(provider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onAfterRecordSaved?.(result));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onAfterSaved', (results: IRecordSaveOperationResult[]) => props.onAfterSaved?.(results));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onError', (message: string, details?: any) => props.onError?.(message, details));
-    useEventEmitter<IGridEditingEvents>(runtime.services.get('cells').editing.events, 'onEditedCellChanged', (_previous: IGridEditedCell | undefined, next: IGridEditedCell | undefined) => props.onEditedCellChanged?.(next));
     useEventEmitter<IGridColumnsEvents>(columns.events, 'onCellDoubleClicked', (record: IRecord, columnName: string) => props.onCellDoubleClicked?.(record, columnName));
     useEventEmitter<IGridColumnsEvents>(columns.events, 'onColumnsChanged', (columnsAfter: IColumn[]) => props.onColumnsChanged?.(columnsAfter));
     useEventEmitter<IGridRowsEvents>(rows, 'onRowClicked', (record: IRecord) => props.onRowClicked?.(record));
