@@ -7,5 +7,5 @@ export const EmptyRecordsOverlay = () => {
     const labels = useGridService('labels');
     const components = useGridComponents();
 
-    return <OverlayUi.EmptyRecords message={labels.getLocalizedString('noRecordsFound')} components={components.emptyRecordsOverlay} />;
+    return <OverlayUi.EmptyRecords message={labels.getLocalizedString('noRecordsFound')} components={components.overlays?.emptyRecords} />;
 };

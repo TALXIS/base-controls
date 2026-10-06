@@ -220,12 +220,14 @@ const GridExample = () => {
 `
 
 export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
-    emptyRecordsOverlay: {
-        onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' />,
-        onRenderText: props => <Stack horizontalAlign='center' tokens={{ childrenGap: 4 }}>
-            <Text {...props} variant='large' />
-            <Text>Import your supplier's price list to start selling.</Text>
-        </Stack>,
+    overlays: {
+        emptyRecords: {
+            onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' />,
+            onRenderText: props => <Stack horizontalAlign='center' tokens={{ childrenGap: 4 }}>
+                <Text {...props} variant='large' />
+                <Text>Import your supplier's price list to start selling.</Text>
+            </Stack>,
+        },
     },
 }
 
@@ -244,24 +246,24 @@ export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({
 })
 
 const COMPONENTS: IGridComponents = {
-    loadingOverlay: {
-        onRenderContainer: props => <div {...props} className={styles.card} />,
-        onRenderSpinner: () => <>
-            <Icon iconName='DeliveryTruck' className={styles.truck} />
-            <ProgressIndicator className={styles.progress} />
-        </>,
+    overlays: {
+        loading: {
+            onRenderContainer: props => <div {...props} className={styles.card} />,
+            onRenderSpinner: () => <>
+                <Icon iconName='DeliveryTruck' className={styles.truck} />
+                <ProgressIndicator className={styles.progress} />
+            </>,
+        },
     },
 }
 
-const GridExample = () => <Stack horizontalAlign='start' tokens={{ childrenGap: 8 }}>
-    <DefaultButton iconProps={{ iconName: 'Refresh' }} text='Check stock again' onClick={() => provider.refresh()} />
-    <Stack.Item align='stretch'>
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            components={COMPONENTS}
-            height='400px' />
-    </Stack.Item>
+const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
+    <CommandBar items={[{ key: 'refresh', text: 'Check stock again', iconProps: { iconName: 'Refresh' }, onClick: () => { provider.refresh() } }]} />
+    <Grid.Root
+        provider={provider}
+        modules={{ rowModel: createClientSideRowModelModule() }}
+        components={COMPONENTS}
+        height='400px' />
 </Stack>
 `
 
@@ -270,11 +272,43 @@ export const LOADING_ROWS_CODE = `const styles = mergeStyleSets({
 })
 
 const COMPONENTS: IGridComponents = {
-    rowLoading: {
-        onRenderShimmer: () => <div className={styles.loadingRow}>
-            <Spinner />
-            <span>Fetching this category's products from the warehouse…</span>
-        </div>,
+    rows: {
+        loading: {
+            onRenderShimmer: () => <div className={styles.loadingRow}>
+                <Spinner />
+                <span>Fetching this category's products from the warehouse…</span>
+            </div>,
+        },
+    },
+}
+
+const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{
+        rowModel: createServerSideRowModelModule(),
+        grouping: createGroupingModule(),
+    }}
+    components={COMPONENTS}
+    height='420px' />
+`
+
+export const ERROR_ROWS_CODE = `const RetryMessageBar = (props: IMessageBarProps) => {
+    const gridApi = useGridService('gridApi')
+
+    return <MessageBar
+        {...props}
+        messageBarType={MessageBarType.warning}
+        isMultiline={false}
+        actions={<MessageBarButton text='Try again' onClick={() => gridApi?.retryServerSideLoads()} />}>
+        The warehouse didn't answer for this category.
+    </MessageBar>
+}
+
+const COMPONENTS: IGridComponents = {
+    rows: {
+        error: {
+            onRenderMessageBar: props => <RetryMessageBar {...props} />,
+        },
     },
 }
 
@@ -313,43 +347,6 @@ const GridExample = () => <Grid.Root
     height='440px' />
 `
 
-export const MODULE_ICONS_CODE = `const styles = mergeStyleSets({
-    icon: { color: '#0078d4' },
-    count: { marginLeft: 4, padding: '0 8px', borderRadius: 10, background: '#edebe9', fontSize: 12, lineHeight: '18px' },
-})
-
-//the part is handed the count as text in brackets
-const ProductCount = (props: { className?: string }) => {
-    const cell = useGridCell()
-    const count = useGridService('grouping')?.getGroupedCount(cell.getRecord(), cell.getColumnName())
-    return <span className={props.className}><span className={styles.count}>{count}</span></span>
-}
-
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule({
-            components: {
-                sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} iconName={descending ? 'CaretDownSolid8' : 'CaretUpSolid8'} className={styles.icon} /> },
-            },
-        }),
-        filtering: createFilteringModule({
-            components: {
-                filterIcon: { onRenderIcon: props => <Icon {...props} iconName='FilterSolid' className={styles.icon} /> },
-            },
-        }),
-        grouping: createGroupingModule({
-            defaultExpandedLevel: 0,
-            components: {
-                groupingIcon: { onRenderIcon: props => <Icon {...props} className={styles.icon} /> },
-                groupCell: { count: { onRenderCount: props => <ProductCount className={props.className} /> } },
-            },
-        }),
-    }}
-    height='460px' />
-`
-
 const WAREHOUSE_DELAY = 2500
 const GROUP_DELAY = 2000
 
@@ -365,9 +362,24 @@ class WarehouseProductsProvider extends MemoryDataProvider {
     }
 }
 
-const createWarehouseProvider = (groupByCategory: boolean) => {
+//stands in for a warehouse that drops the first category asked for, and answers once asked again
+class FlakyWarehouseProvider extends WarehouseProductsProvider {
+    public hasFailed = false
+
+    public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
+        const warehouse = this.getTopLevelDataProvider() as FlakyWarehouseProvider
+        if (this.getParentDataProvider() && !warehouse.hasFailed) {
+            warehouse.hasFailed = true
+            await new Promise(resolve => window.setTimeout(resolve, GROUP_DELAY))
+            throw new Error('The warehouse did not answer.')
+        }
+        return super.getDataAsync(...parameters)
+    }
+}
+
+const createWarehouseProvider = (groupByCategory: boolean, isFlaky = false) => {
     const products = createProductsProvider()
-    const provider = new WarehouseProductsProvider({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
+    const provider = new (isFlaky ? FlakyWarehouseProvider : WarehouseProductsProvider)({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
     provider.setColumns(products.getColumns())
     provider.getPaging().setPageSize(products.getDataSource().length)
     if (groupByCategory) {
@@ -397,14 +409,6 @@ const createPricingProvider = () => {
         }
         return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'price', message: "A price over $1,000 needs the category manager's approval." }] }
     })
-    return provider
-}
-
-const createSortedCatalogue = () => {
-    const provider = createProductsProvider()
-    provider.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
-    provider.setSorting([{ name: 'price', sortDirection: 1 }])
-    provider.refresh()
     return provider
 }
 
@@ -521,6 +525,7 @@ export const WarehouseLoadingExample = () => <GridExampleRunner seedCode={WAREHO
 
 export const LoadingRowsExample = () => <GridExampleRunner seedCode={LOADING_ROWS_CODE} onCreateProvider={() => createWarehouseProvider(true)} />
 
+export const ErrorRowsExample = () => <GridExampleRunner seedCode={ERROR_ROWS_CODE} onCreateProvider={() => createWarehouseProvider(true, true)} />
+
 export const SaveStatusExample = () => <GridExampleRunner seedCode={SAVE_STATUS_CODE} onCreateProvider={createPricingProvider} />
 
-export const ModuleIconsExample = () => <GridExampleRunner seedCode={MODULE_ICONS_CODE} onCreateProvider={createSortedCatalogue} />

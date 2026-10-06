@@ -12,5 +12,5 @@ export interface IRowErrorProps extends ICellRendererParams<IRecord> {
 export const RowError = (props: IRowErrorProps) => {
     const components = useGridComponents();
 
-    return <RowUi.Error message={props.errorMessage} components={components.rowError} />;
+    return <RowUi.Error message={props.errorMessage} components={components.rows?.error} />;
 };

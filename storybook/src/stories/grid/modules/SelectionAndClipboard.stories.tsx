@@ -21,7 +21,7 @@ The module adds a checkbox column, pinned first. Its options:
 |---|---|---|
 | \`mode\` | required | \`'multiple'\` lets any number of rows be selected, \`'single'\` one at a time. To offer no selection, leave the module out. |
 | \`onSelectionChanged\` | | Called with the ids of the selected records every time the selection changes. |
-| \`components\` | | Your own row checkbox and header checkbox: see [**Modules**](?path=/docs/grid-appearance-modules--overview). |
+| \`components\` | | Your own row checkbox and header checkbox: see [**Row selection**](?path=/docs/grid-appearance-modules-row-selection--overview). |
 
 The options are read once, when the grid mounts, so the \`onSelectionChanged\` the grid mounted with runs for its whole life. Pass a state setter, as the examples here do, or read anything that changes through a ref.
 

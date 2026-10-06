@@ -33,6 +33,7 @@ declare const Label: typeof import('@fluentui/react').Label;
 declare const Link: typeof import('@fluentui/react').Link;
 declare const mergeStyleSets: typeof import('@fluentui/react').mergeStyleSets;
 declare const MessageBar: typeof import('@fluentui/react').MessageBar;
+declare const MessageBarButton: typeof import('@fluentui/react').MessageBarButton;
 declare const MessageBarType: typeof import('@fluentui/react').MessageBarType;
 declare const Panel: typeof import('@fluentui/react').Panel;
 declare const PanelType: typeof import('@fluentui/react').PanelType;
@@ -1032,6 +1033,8 @@ interface GridState {
 /** AG Grid's own api, a last resort beside the grid's hooks. */
 interface GridApi {
     getGridId(): string;
+    /** Loads again the server-side rows that failed to load. */
+    retryServerSideLoads(): void;
     isDestroyed(): boolean;
     getGridOption(key: string): any;
     setGridOption(key: string, value: any): void;
@@ -2680,9 +2683,9 @@ interface IOverlayUi {
 
 /** What the grid draws over its rows. */
 interface IGridOverlayNamespace {
-    /** Its parts are replaced through components.loadingOverlay. */
+    /** Its parts are replaced through components.overlays.loading. */
     Loading: () => JSX.Element;
-    /** Its parts are replaced through components.emptyRecordsOverlay. */
+    /** Its parts are replaced through components.overlays.emptyRecords. */
     EmptyRecords: () => JSX.Element;
     Ui: IOverlayUi;
 }
@@ -2715,9 +2718,9 @@ interface IRowErrorProps extends ICellRendererParams<IRecord> {
 
 /** What the grid draws across a whole row. */
 interface IGridRowNamespace {
-    /** Its parts are replaced through components.rowLoading. */
+    /** Its parts are replaced through components.rows.loading. */
     Loading: (props: ILoadingCellRendererParams<IRecord>) => JSX.Element;
-    /** Its parts are replaced through components.rowError. */
+    /** Its parts are replaced through components.rows.error. */
     Error: (props: IRowErrorProps) => JSX.Element;
     Ui: IRowUi;
 }
@@ -2827,12 +2830,22 @@ interface IGridEditingComponents {
     recordLockCell?: IRecordLockIndicatorCellComponents;
 }
 
+/** Replaces parts of what the grid draws over its rows. */
+interface IGridOverlayComponents {
+    loading?: Partial<IOverlayUiLoadingComponents>;
+    emptyRecords?: Partial<IOverlayUiEmptyRecordsComponents>;
+}
+
+/** Replaces parts of the rows the grid draws in place of records. */
+interface IGridRowComponents {
+    loading?: Partial<IRowUiLoadingComponents>;
+    error?: Partial<IRowUiErrorComponents>;
+}
+
 /** Replaces parts of what the grid draws itself. */
 interface IGridComponents {
-    loadingOverlay?: Partial<IOverlayUiLoadingComponents>;
-    emptyRecordsOverlay?: Partial<IOverlayUiEmptyRecordsComponents>;
-    rowLoading?: Partial<IRowUiLoadingComponents>;
-    rowError?: Partial<IRowUiErrorComponents>;
+    overlays?: IGridOverlayComponents;
+    rows?: IGridRowComponents;
 }
 
 /** What happens inside the grid, for a consumer to react to. */

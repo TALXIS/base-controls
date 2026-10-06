@@ -94,9 +94,9 @@ export interface IGridColumnHeaderNamespace {
 
 /** What the grid draws over its rows. */
 export interface IGridOverlayNamespace {
-    /** What the grid shows while it loads, its parts set through `components.loadingOverlay`. */
+    /** What the grid shows while it loads, its parts set through `components.overlays.loading`. */
     Loading: typeof LoadingOverlay;
-    /** What the grid shows while it has no rows, its parts set through `components.emptyRecordsOverlay`. */
+    /** What the grid shows while it has no rows, its parts set through `components.overlays.emptyRecords`. */
     EmptyRecords: typeof EmptyRecordsOverlay;
     /** What draws an overlay without knowing why it is shown. */
     Ui: IOverlayUi;
@@ -104,9 +104,9 @@ export interface IGridOverlayNamespace {
 
 /** What the grid draws across a whole row. */
 export interface IGridRowNamespace {
-    /** What a row shows while its records load, its parts set through `components.rowLoading`. */
+    /** What a row shows while its records load, its parts set through `components.rows.loading`. */
     Loading: typeof RowLoading;
-    /** A row standing in for records that failed, its parts set through `components.rowError`. */
+    /** A row standing in for records that failed, its parts set through `components.rows.error`. */
     Error: typeof RowError;
     /** What draws a full-width row without knowing which row. */
     Ui: IRowUi;

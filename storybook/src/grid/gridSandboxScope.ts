@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti'
 import DOMPurify from 'dompurify'
 import { DefaultEditor } from 'react-simple-wysiwyg'
 import {
-    ActionButton, Checkbox, ChoiceGroup, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarType, Panel, PanelType,
+    ActionButton, Checkbox, ChoiceGroup, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, Panel, PanelType,
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
@@ -115,6 +115,7 @@ export const GRID_SANDBOX_SCOPE = {
     Link,
     mergeStyleSets,
     MessageBar,
+    MessageBarButton,
     MessageBarType,
     Panel,
     PanelType,

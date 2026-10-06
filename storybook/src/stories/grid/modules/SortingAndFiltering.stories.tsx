@@ -117,7 +117,7 @@ Inside the callout, the operator names follow the user's language, and the *Appl
 
 ## Components
 
-Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Modules**](?path=/docs/grid-appearance-modules--overview).
+Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview) and [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview).
 
 | \`createSortingModule({ components })\` | Replaces |
 |---|---|

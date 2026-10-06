@@ -129,7 +129,7 @@ const preview: Preview = {
             'Columns',
             ['Overview'],
             'Appearance',
-            ['Overview', 'Custom cells', 'Custom headers', 'Overlays', 'Modules'],
+            ['Overview', 'Custom cells', 'Custom headers', 'Custom overlays', 'Custom rows', 'Modules', ['Editing', 'Row selection', 'Sorting', 'Filtering', 'Grouping', 'Totals']],
             'Localization',
             ['Overview'],
             'Extending',

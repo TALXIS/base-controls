@@ -13,8 +13,8 @@ export const RowLoading = (props: IRowLoadingProps) => {
     const parentRecord: IRecord | undefined = props.node.parent?.data;
 
     if (!props.node.failedLoad) {
-        return <RowUi.Loading components={components.rowLoading} />;
+        return <RowUi.Loading components={components.rows?.loading} />;
     }
     const failedProvider = parentRecord ? parentRecord.getDataProvider().getGroupedRecordDataProvider(parentRecord.getRecordId())! : provider;
-    return <RowUi.Error message={failedProvider.getErrorMessage()} components={components.rowError} />;
+    return <RowUi.Error message={failedProvider.getErrorMessage()} components={components.rows?.error} />;
 };

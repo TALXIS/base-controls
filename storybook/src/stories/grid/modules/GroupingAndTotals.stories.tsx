@@ -163,7 +163,7 @@ A function's label is its menu item, the caption above the figure in the totals 
 
 ## Components
 
-Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Modules**](?path=/docs/grid-appearance-modules--overview).
+Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Grouping**](?path=/docs/grid-appearance-modules-grouping--overview) and [**Totals**](?path=/docs/grid-appearance-modules-totals--overview).
 
 | \`createGroupingModule({ components })\` | Replaces |
 |---|---|
