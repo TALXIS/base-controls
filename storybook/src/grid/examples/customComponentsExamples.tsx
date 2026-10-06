@@ -152,6 +152,53 @@ const GridExample = () => <Grid.Root
     height='440px' />
 `
 
+export const PIPELINE_HEADER_CODE = `const styles = mergeStyleSets({
+    stack: { minWidth: 0 },
+    summary: { opacity: 0.7, whiteSpace: 'nowrap' },
+})
+
+const ColumnSummary = () => {
+    const header = useGridColumnHeader()
+    const { formatting } = usePcfContext()
+    const columnName = header.getColDef().colId!
+    const values = provider.getRecords().map(deal => Number(deal.getValue(columnName) ?? 0))
+    const total = values.reduce((sum, value) => sum + value, 0)
+    const summary = columnName === 'value' ? 'Total ' + formatting.formatCurrency(total) : 'Average ' + Math.round(total / Math.max(values.length, 1)) + ' %'
+
+    return <Text variant='small' className={styles.summary}>{summary}</Text>
+}
+
+const NameAndSummary = () => {
+    const header = useGridColumnHeader()
+    return <Stack className={styles.stack} horizontalAlign={header.getAlignment() === 'right' ? 'end' : 'start'}>
+        <Grid.ColumnHeader.Label />
+        <ColumnSummary />
+    </Stack>
+}
+
+const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Root {...props}>
+    <Grid.ColumnHeader.Theme>
+        <Grid.ColumnHeader.Container>
+            <Grid.ColumnHeader.Prefix />
+            <Grid.ColumnHeader.Content>
+                <NameAndSummary />
+            </Grid.ColumnHeader.Content>
+            <Grid.ColumnHeader.Suffix />
+        </Grid.ColumnHeader.Container>
+        <Grid.ColumnHeader.Menu />
+    </Grid.ColumnHeader.Theme>
+</Grid.ColumnHeader.Root>
+
+const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+    colDefs={{
+        value: { headerComponent: SummaryHeader },
+        probability: { headerComponent: SummaryHeader },
+    }}
+    height='440px' />
+`
+
 export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     emptyRecordsOverlay: {
         onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' />,
@@ -445,6 +492,8 @@ export const WinChanceExample = () => <GridExampleRunner seedCode={WIN_CHANCE_CO
 export const RichTextExample = () => <GridExampleRunner seedCode={RICH_TEXT_CODE} onCreateProvider={createDescriptionsProvider} />
 
 export const HeaderCaptionExample = () => <GridExampleRunner seedCode={HEADER_CAPTION_CODE} dataset='products' />
+
+export const PipelineHeaderExample = () => <GridExampleRunner seedCode={PIPELINE_HEADER_CODE} dataset='deals' />
 
 export const EmptyCatalogueExample = () => <GridExampleRunner seedCode={EMPTY_CATALOGUE_CODE} onCreateProvider={createEmptyCatalogue} />
 
