@@ -1,6 +1,5 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IStyle, ITheme, mergeStyleSets } from "@fluentui/react";
 import { CELL_CONTAINER_CLASS_NAME } from "./components/cells/ui/container/styles";
-import { LOCKED_RECORD_ROW_CLASS } from "./modules/editing";
 
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
@@ -25,9 +24,9 @@ const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
     };
 };
 
-export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: number = 42, maxVisibleRows: number = 15) => {
+export const getGridStyles = (theme: ITheme, moduleStyles: IStyle[], height?: string | null, rowHeight: number = 42, maxVisibleRows: number = 15) => {
     return mergeStyleSets({
-        gridRoot: {
+        gridRoot: [{
             //the "no records" overlay is centred over the whole grid, pinned rows included
             minHeight: 220,
             display: 'flex',
@@ -41,11 +40,7 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--ag-border-color': theme.semanticColors.menuDivider,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
                 //the states are drawn as overlays below
-                '--ag-selected-row-background-color': 'transparent',
                 '--ag-row-hover-color': 'transparent',
-                '--ag-range-selection-background-color': 'transparent',
-                '--ag-range-selection-border-color': theme.palette.themePrimary,
-                '--ag-range-selection-highlight-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
                 '--ag-input-focus-border-color': theme.semanticColors.inputFocusBorderAlt,
                 '--ag-cell-horizontal-padding': 0,
                 //no separator between cells and no box around the grid
@@ -70,28 +65,11 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 overflow: 'hidden',
                 borderWidth: 0,
             },
-            //`!important` beats AG Grid's more specific focus border selector
-            '.ag-cell.ag-cell-inline-editing': {
-                borderWidth: '0 !important',
-            },
             //AG Grid borders the focused cell itself while no range claims it
             '.ag-cell.ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-context-menu-open .ag-cell.ag-cell-focus:not(.ag-cell-range-selected)': {
                 borderWidth: 0,
             },
-            //AG Grid gives every child of a cell's wrapper the height of a row.
-            '.ag-cell.ag-cell-inline-editing .ag-cell-wrapper > *': {
-                height: '100%',
-            },
             //every state the grid draws on a cell is an overlay over the cell's body.
-            //a record locked as a whole is dimmed as one row, over its cells
-            [`.ag-row.${LOCKED_RECORD_ROW_CLASS}::after`]: {
-                content: '""',
-                position: 'absolute',
-                inset: 0,
-                pointerEvents: 'none',
-                backgroundColor: theme.semanticColors.disabledBackground,
-                opacity: 0.3,
-            },
             [`.${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 content: '""',
                 position: 'absolute',
@@ -105,31 +83,12 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--talxis-cell-outline-left': '0px',
                 boxShadow: `inset 0 var(--talxis-cell-outline-top) 0 0 var(--talxis-cell-outline-color), inset calc(-1 * var(--talxis-cell-outline-right)) 0 0 0 var(--talxis-cell-outline-color), inset 0 calc(-1 * var(--talxis-cell-outline-bottom)) 0 0 var(--talxis-cell-outline-color), inset var(--talxis-cell-outline-left) 0 0 0 var(--talxis-cell-outline-color)`,
             },
-            //`ag-cell-range-selected` as well as the edge class
-            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-top .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-top': '1px' },
-            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-right .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-right': '1px' },
-            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-bottom .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-bottom': '1px' },
-            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-left .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-left': '1px' },
-            //a range of one cell is outlined the whole way round.
-            [`.ag-cell-range-single-cell .${CELL_CONTAINER_CLASS_NAME}::after`]: {
-                '--talxis-cell-outline-top': '1px',
-                '--talxis-cell-outline-right': '1px',
-                '--talxis-cell-outline-bottom': '1px',
-                '--talxis-cell-outline-left': '1px',
-            },
             //the grid's own text colour, whatever colour a cell's text is
             [`.ag-row-hover .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: `color-mix(in srgb, ${theme.semanticColors.bodyText}, transparent 92%)`,
             },
-            //in the grid's accent
-            [`.ag-row-selected .${CELL_CONTAINER_CLASS_NAME}::after`]: {
-                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 80%)`,
-            },
-            [`.ag-cell-range-selected:not(.ag-cell-focus) .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell-range-single-cell .${CELL_CONTAINER_CLASS_NAME}::after`]: {
-                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
-            },
-            //the focused cell is outlined in the colour of a focused input
-            [`.ag-cell-focus .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+            //the focused cell is outlined in the colour of a focused input, over what the modules highlight
+            [`.ag-cell.ag-cell-focus .${CELL_CONTAINER_CLASS_NAME}::after`]: {
                 backgroundColor: 'transparent',
                 '--talxis-cell-outline-color': theme.semanticColors.inputFocusBorderAlt,
                 '--talxis-cell-outline-top': '1px',
@@ -137,22 +96,14 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--talxis-cell-outline-bottom': '1px',
                 '--talxis-cell-outline-left': '1px',
             },
-            //the flash after a copy or a value change
-            [`.ag-cell.ag-cell-highlight .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell.ag-cell-data-changed .${CELL_CONTAINER_CLASS_NAME}::after`]: {
-                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 55%)`,
-            },
             '.ag-cell-wrapper:has([data-is-loading="true"])': {
                 height: '100%'
             },
             '.ag-overlay-loading-wrapper': {
                 backdropFilter: 'blur(1px)'
             },
-            '.ag-floating-bottom .ag-row-pinned': {
-                borderTop: `1px solid ${theme.semanticColors.menuDivider}`,
-                borderBottom: 'none',
-            },
             //the grid is either as tall as it was told to be, or as tall as its rows
             ...(height ? { height: height } : getAutoHeightStyles(rowHeight, maxVisibleRows))
-        }
+        }, ...moduleStyles],
     })
 };

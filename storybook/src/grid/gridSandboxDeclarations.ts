@@ -1775,6 +1775,13 @@ interface IGridAgGridInitialOptions {
 }
 
 type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
+
+/** What the grid's root element is styled with, on top of the grid's own styles. */
+interface IGridStyles {
+    styles: import('@fluentui/react').IStyle[];
+}
+
+type GridStylesHook = (result: IGridStyles, theme: ITheme) => void;
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
 interface IGridRuntimeEvents {
@@ -1792,6 +1799,9 @@ interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
+    /** A later style wins where the selectors are equally specific. */
+    registerStyles(hook: GridStylesHook, priority?: number): () => void;
+    getStyles(theme: ITheme): import('@fluentui/react').IStyle[];
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
 }

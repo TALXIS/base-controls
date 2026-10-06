@@ -5,6 +5,9 @@ import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { IGridRowSelectionComponents } from "./moduleComponents";
 import { GRID_MODULE_PRIORITY } from "../priorities";
+import { ITheme } from "@theme";
+import { IGridStyles } from "../../services/runtime";
+import { getGridRowSelectionStyles } from "./styles";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 
 /** How a row's checkbox reads: its own state, or its children's. */
@@ -146,7 +149,12 @@ export class GridRowSelection implements IGridRowSelection {
         const gridServices = this._services.get('gridServices');
         gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
         gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.rowSelection);
     }
+
+    private _onStyles = (result: IGridStyles, theme: ITheme): void => {
+        result.styles.push(getGridRowSelectionStyles(theme));
+    };
 
     /** Adds the column the checkboxes live in. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

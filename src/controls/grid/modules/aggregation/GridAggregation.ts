@@ -15,6 +15,9 @@ import { AggregateCell } from "./components/aggregate-cell/AggregateCell";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
+import { ITheme } from "@theme";
+import { IGridStyles } from "../../services/runtime";
+import { getGridAggregationStyles } from "./styles";
 
 /** What the row stands in as until the totals are worked out. */
 const PENDING_RECORD_ID = '__total__pending';
@@ -69,10 +72,15 @@ export class GridAggregation implements IGridAggregation {
         this._registerHooks();
     }
 
+    private _onStyles = (result: IGridStyles, theme: ITheme): void => {
+        result.styles.push(getGridAggregationStyles(theme));
+    };
+
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
         this._gridServices.get('columns').registerColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('cells').registerCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
