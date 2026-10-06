@@ -134,7 +134,7 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
         <CommandBar
             items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getValues(preset)) }))}
             farItems={[{ key: 'features', text: 'Features & Modules', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
-        <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} headerText='Features & Modules' onDismiss={() => setIsPanelOpen(false)}>
+        <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} onDismiss={() => setIsPanelOpen(false)}>
             <Form.Root strategy={strategy} onFieldValueChanged={onFieldValueChanged}>
                 <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
                     <Form.Tab id='core' label='Core'>

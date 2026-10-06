@@ -803,7 +803,6 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
             isOpen={selectedColumn !== null}
             onDismiss={closePanel}
             type={PanelType.medium}
-            headerText={selectedColumn ? (selectedColumn.displayName || selectedColumn.name) : ""}
         >
             {selectedColumn && (
                 <div className={styles.panelSection}>

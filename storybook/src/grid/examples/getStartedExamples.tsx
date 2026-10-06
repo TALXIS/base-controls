@@ -305,7 +305,7 @@ const DealForm = (props: { deal: IRecord }) => {
     </Form.Root>
 }
 
-const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} type={PanelType.medium} headerText={props.deal?.getFormattedValue('name') ?? ''} isLightDismiss onDismiss={props.onDismiss}>
+const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} type={PanelType.medium} isLightDismiss onDismiss={props.onDismiss}>
     {props.deal && <DealForm key={props.deal.getRecordId()} deal={props.deal} />}
 </Panel>
 

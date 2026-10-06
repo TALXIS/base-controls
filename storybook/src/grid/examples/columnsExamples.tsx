@@ -25,13 +25,36 @@ const GridExample = () => {
 }
 `
 
-export const PRODUCT_LINK_CODE = `const DETAILS = ['photo', 'sku', 'category', 'price', 'instock', 'supplier', 'lastrestocked', 'producturl']
+export const PRODUCT_LINK_CODE = `const SECTIONS = [
+    { label: 'General', columnNames: ['photo', 'name', 'sku', 'category', 'discontinued'] },
+    { label: 'Price and stock', columnNames: ['price', 'instock', 'reorderlevel', 'lastrestocked'] },
+    { label: 'Supply', columnNames: ['supplier', 'producturl'] },
+]
 
-const createProductStrategy = (product: IRecord) => new MemoryStrategy({
-    onGetColumns: () => provider.getColumns(),
-    onGetData: () => ({ ...product.getRawData() }),
-    onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
+const styles = mergeStyleSets({
+    photo: { width: 96, height: 96, borderRadius: 12, objectFit: 'cover', border: '1px solid #edebe9' },
 })
+
+interface IProductPhotoProps {
+    product: IRecord
+}
+
+//a photo reads better as a picture than as a file field
+const ProductPhoto = (props: IProductPhotoProps) => <img className={styles.photo} src={props.product.getValue('photo')?.thumbnailUrl} alt={props.product.getFormattedValue('name') ?? ''} />
+
+//the ribbon's save writes the changes into the record the grid shows
+const createProductStrategy = (product: IRecord) => {
+    const strategy = new MemoryStrategy({
+        onGetColumns: () => provider.getColumns(),
+        onGetData: () => ({ ...product.getRawData() }),
+        onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
+    })
+    strategy.onSave = async ({ updatedData }) => {
+        Object.entries(updatedData).forEach(([columnName, value]) => product.setValue(columnName, value))
+        return product.save()
+    }
+    return strategy
+}
 
 interface IProductFormProps {
     product: IRecord
@@ -39,20 +62,18 @@ interface IProductFormProps {
 
 const ProductForm = (props: IProductFormProps) => {
     const strategy = React.useMemo(() => createProductStrategy(props.product), [props.product])
-    //every change is saved into the record the grid shows
-    const saveChange = async (columnName: string, value: unknown) => {
-        props.product.setValue(columnName, value)
-        await props.product.save()
-    }
 
-    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName, value) => { saveChange(columnName, value) }}>
-        <Form.Section label='Details' layout={{ lg: 1 }} cellLabelPosition='Top'>
-            {DETAILS.map(columnName => <Form.Field key={columnName} name={columnName}>
-                <Form.Cell>
-                    <Form.Control />
-                </Form.Cell>
+    return <Form.Root strategy={strategy}>
+        <Form.Notifications />
+        <Form.Ribbon />
+        {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: 2 }} cellLabelPosition='Top'>
+            {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
+                {columnName === 'photo'
+                    //an explicit undefined label hides the column's name
+                    ? <Form.Cell label={undefined} colspan={2}><ProductPhoto product={props.product} /></Form.Cell>
+                    : <Form.Cell><Form.Control /></Form.Cell>}
             </Form.Field>)}
-        </Form.Section>
+        </Form.Section>)}
     </Form.Root>
 }
 
@@ -61,7 +82,7 @@ interface IProductPanelProps {
     onDismiss: () => void
 }
 
-const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.product} isLightDismiss type={PanelType.medium} headerText={props.product?.getFormattedValue('name') ?? ''} closeButtonAriaLabel='Close' onDismiss={props.onDismiss}>
+const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.product} isLightDismiss type={PanelType.medium} closeButtonAriaLabel='Close' onDismiss={props.onDismiss}>
     {props.product && <ProductForm key={props.product.getRecordId()} product={props.product} />}
 </Panel>
 
@@ -84,8 +105,6 @@ const GridExample = () => {
 
 export const STOCK_VALUE_CODE = `const getStockValue = (product: IRecord) => Number(product.getValue('price') ?? 0) * Number(product.getValue('instock') ?? 0)
 
-const formatMoney = (amount: number) => amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-
 const styles = mergeStyleSets({
     value: { flex: 1, padding: '0 9px' },
 })
@@ -93,7 +112,8 @@ const styles = mergeStyleSets({
 //drawn again by Grid.Cell.Root whenever the product changes
 const StockValue = () => {
     const cell = useGridCell()
-    return <span className={styles.value} style={{ textAlign: cell.getAlignment() }}>{formatMoney(getStockValue(cell.getRecord()))}</span>
+    const { formatting } = usePcfContext()
+    return <span className={styles.value} style={{ textAlign: cell.getAlignment() }}>{formatting.formatCurrency(getStockValue(cell.getRecord()))}</span>
 }
 
 const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>

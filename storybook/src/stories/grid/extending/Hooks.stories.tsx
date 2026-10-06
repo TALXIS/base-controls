@@ -39,7 +39,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Assign new tickets to yourself}}
 
-- Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Row commands* on [**Columns**](?path=/docs/grid-columns--overview).
+- Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Cell commands* on [**Columns**](?path=/docs/grid-columns--overview).
 - For commands that only one column offers, \`settings.cell.onGetCommands\` in \`colDefs\` does the same, after the hooks.
 
 {{story: Placeholders for missing values}}

@@ -9,8 +9,6 @@ import {
 const DESCRIPTION = `
 Every provider column becomes a grid column. \`colDefs\` changes them and adds your own. The examples use an office furniture shop's products.
 
-{{story: Keep key columns in view}}
-
 ## Changing a column
 
 \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key plus the grid's \`settings\` (see *Reference*).
@@ -39,36 +37,36 @@ Every provider column becomes a grid column. \`colDefs\` changes them and adds y
 
 A column's width comes from its \`visualSizeFactor\`, or \`initialWidth\` in \`colDefs\`. Columns stretch to fill the grid; cap one with \`maxWidth\`.
 
-{{story: Open a product from its name}}
+{{story: Keep key columns in view}}
 
-## Links to the record
+## Navigation
 
 - \`settings.isPrimary: true\` draws the value as a link to its record.
 - Clicking it, or double-clicking a row without editing, opens the record. Pass \`onOpenRecord\` to \`<Grid.Root />\` to do something else.
 - \`enableNavigation={false}\` turns links and opening off.
 
+{{story: Open a product from its name}}
+
+## Calculated columns
+
+Add a column by giving \`colDefs\` a key that isn't a provider column, then work its value out from the record:
+
+- \`valueGetter\` returns the value. Copying uses it too.
+- \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\` and \`Container\` as the example below does. See [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview) for both.
+- Read the record with \`useGridCell()\` inside the cell, so the value updates when the record changes.
+- The column is placed last and keeps its \`initialWidth\`. It has no menu or editor, and isn't saved with the layout.
+- Group and totals rows draw it too, so draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`.
+
 {{story: Work out the stock value}}
 
-## Columns of your own
-
-Any \`colDefs\` key that is not a provider column adds a column.
-
-- Give it a \`cellRenderer\` built from \`Grid.Cell.Root\`, \`Theme\` and \`Container\` so it looks like the rest (see [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview)).
-- Read the record through \`useGridCell()\` in a component inside \`Grid.Cell.Root\`, so it redraws when the record changes.
-- Add a \`valueGetter\` if the column should be copied.
-- It is placed last and keeps its \`initialWidth\`. It has no menu, editor or saved layout unless you give it one.
-- Group and totals rows draw it too. Draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`.
-
-{{story: Reorder from the row}}
-
-## Row commands
+## Cell commands
 
 \`settings.cell.onGetCommands(result, { record })\` adds commands to the column's cells.
 
 - Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
 - Commands show while the row is hovered, focused or selected, and are worked out each time, so they can depend on the record.
 
-{{story: Flag low stock in the header}}
+{{story: Reorder from the row}}
 
 ## The header
 
@@ -81,7 +79,7 @@ Clicking a header opens its menu. \`settings.header\` adds to it:
 
 The menu is worked out when it opens; adornments when the header draws. Call \`runtime.services.get('columns').headers.render()\` after a change the header should reflect.
 
-{{story: Read long notes}}
+{{story: Flag low stock in the header}}
 
 ## Long text
 
@@ -89,7 +87,7 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 - Users can drag a row taller by the grip on a cell's bottom edge.
 - \`settings.cell.isRowResizable\` turns this on or off for any column.
 
-{{story: Remember the layout}}
+{{story: Read long notes}}
 
 ## Remembering the layout
 
@@ -98,6 +96,8 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 - Save each column's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before the provider's first \`refresh()\`.
 - Columns added through \`colDefs\` are not included.
 - Don't use the \`state\` prop for this: the grid lays the columns out again from the provider.
+
+{{story: Remember the layout}}
 
 ## Reference
 
@@ -121,7 +121,7 @@ Callbacks get \`{ record }\` and also run for group and totals rows.
 |---|---|
 | \`oneClickEdit\` | Editing module. The input is drawn in the cell, with no editor. |
 | \`isRowResizable\` | Wraps text and shows the row grip. On for long text columns. |
-| \`onGetCommands(result)\` | Row commands. |
+| \`onGetCommands(result)\` | Cell commands. |
 | \`onGetTheme(theme)\` | Colours the cell. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`onGetLock(result)\` | Editing module. Set \`result.isLocked\`. |
 | \`onGetValidation(result)\` | Set \`result.error\` and \`result.errorMessage\`. |
@@ -181,7 +181,7 @@ export const OpenAProductFromItsName: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`settings.isPrimary\` makes Product a link, and \`onOpenRecord\` opens the product in a form in a panel, where changes are saved. Click a name.`,
+                story: `\`settings.isPrimary\` makes Product a link, and \`onOpenRecord\` opens the product in a form in a panel, saved from its ribbon. Click a name.`,
             },
         },
     },
@@ -193,7 +193,7 @@ export const WorkOutTheStockValue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An added column multiplies Price by In stock. Change either and it follows.`,
+                story: `Stock value is calculated as Price × In stock. Change either and it follows.`,
             },
         },
     },

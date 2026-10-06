@@ -30,46 +30,43 @@ export const PRODUCT_COLUMNS: IColumn[] = [
 ]
 
 const PRODUCTS = [
-    { name: 'Standing desk', category: 1, price: 640, instock: 14, reorderlevel: 5, supplier: 'Woodgrove Furniture' },
-    { name: 'Corner desk', category: 1, price: 520, instock: 3, reorderlevel: 4, supplier: 'Woodgrove Furniture' },
-    { name: 'Ergonomic chair', category: 2, price: 410, instock: 22, reorderlevel: 10, supplier: 'Contoso Seating' },
-    { name: 'Meeting chair', category: 2, price: 150, instock: 0, reorderlevel: 12, supplier: 'Contoso Seating' },
-    { name: 'Desk lamp', category: 3, price: 45, instock: 61, reorderlevel: 20, supplier: 'Litware Lighting' },
-    { name: 'Floor lamp', category: 3, price: 120, instock: 7, reorderlevel: 8, supplier: 'Litware Lighting' },
-    { name: 'Filing cabinet', category: 4, price: 230, instock: 9, reorderlevel: 4, supplier: 'Fabrikam Office' },
-    { name: 'Bookshelf', category: 4, price: 180, instock: 2, reorderlevel: 3, supplier: 'Fabrikam Office' },
-    { name: 'Monitor arm', category: 5, price: 85, instock: 38, reorderlevel: 15, supplier: 'Proseware' },
-    { name: 'Cable tray', category: 5, price: 25, instock: 120, reorderlevel: 40, supplier: 'Proseware' },
-    { name: 'Footrest', category: 5, price: 35, instock: 11, reorderlevel: 10, supplier: 'Proseware' },
-    { name: 'Pedestal drawer', category: 4, price: 210, instock: 16, reorderlevel: 6, supplier: 'Fabrikam Office' },
-    { name: 'Bar stool', category: 2, price: 95, instock: 4, reorderlevel: 6, supplier: 'Contoso Seating' },
-    { name: 'Pendant light', category: 3, price: 160, instock: 13, reorderlevel: 5, supplier: 'Litware Lighting' },
-    { name: 'Conference table', category: 1, price: 1450, instock: 1, reorderlevel: 1, supplier: 'Woodgrove Furniture' },
-    { name: 'Whiteboard', category: 5, price: 140, instock: 0, reorderlevel: 3, supplier: 'Proseware' },
+    { name: 'Standing desk', category: 1, price: 640, instock: 14, reorderlevel: 5, supplier: 'Woodgrove Furniture', photoId: '1623177623442-979c1e42c255' },
+    { name: 'Corner desk', category: 1, price: 520, instock: 3, reorderlevel: 4, supplier: 'Woodgrove Furniture', photoId: '1702471896913-97a7e7f59745' },
+    { name: 'Ergonomic chair', category: 2, price: 410, instock: 22, reorderlevel: 10, supplier: 'Contoso Seating', photoId: '1688578735427-994ecdea3ea4' },
+    { name: 'Meeting chair', category: 2, price: 150, instock: 0, reorderlevel: 12, supplier: 'Contoso Seating', photoId: '1592078615290-033ee584e267' },
+    { name: 'Desk lamp', category: 3, price: 45, instock: 61, reorderlevel: 20, supplier: 'Litware Lighting', photoId: '1621447980929-6638614633c8' },
+    { name: 'Floor lamp', category: 3, price: 120, instock: 7, reorderlevel: 8, supplier: 'Litware Lighting', photoId: '1507473885765-e6ed057f782c' },
+    { name: 'Filing cabinet', category: 4, price: 230, instock: 9, reorderlevel: 4, supplier: 'Fabrikam Office', photoId: '1569235186275-626cb53b83ce' },
+    { name: 'Bookshelf', category: 4, price: 180, instock: 2, reorderlevel: 3, supplier: 'Fabrikam Office', photoId: '1593430980369-68efc5a5eb34' },
+    { name: 'Monitor arm', category: 5, price: 85, instock: 38, reorderlevel: 15, supplier: 'Proseware', photoId: '1666771410333-3457e9603dd4' },
+    { name: 'Cable tray', category: 5, price: 25, instock: 120, reorderlevel: 40, supplier: 'Proseware', photoId: '1683322499436-f4383dd59f5a' },
+    { name: 'Footrest', category: 5, price: 35, instock: 11, reorderlevel: 10, supplier: 'Proseware', photoId: '1708994021081-ba6825eaae89' },
+    { name: 'Pedestal drawer', category: 4, price: 210, instock: 16, reorderlevel: 6, supplier: 'Fabrikam Office', photoId: '1591129841117-3adfd313e34f' },
+    { name: 'Bar stool', category: 2, price: 95, instock: 4, reorderlevel: 6, supplier: 'Contoso Seating', photoId: '1503602642458-232111445657' },
+    { name: 'Pendant light', category: 3, price: 160, instock: 13, reorderlevel: 5, supplier: 'Litware Lighting', photoId: '1540932239986-30128078f3c5' },
+    { name: 'Conference table', category: 1, price: 1450, instock: 1, reorderlevel: 1, supplier: 'Woodgrove Furniture', photoId: '1571624436279-b272aff752b5' },
+    { name: 'Whiteboard', category: 5, price: 140, instock: 0, reorderlevel: 3, supplier: 'Proseware', photoId: '1532622785990-d2c36a76f5a6' },
 ]
 
-//a tile with the product's initial stands in for a photo
-const createPhoto = (name: string, color: string) => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="12" fill="${color}"/><text x="32" y="42" font-family="Segoe UI, sans-serif" font-size="28" font-weight="600" text-anchor="middle" fill="#ffffff">${name[0]}</text></svg>`
-    return btoa(svg)
-}
+//photos from Unsplash, cropped to a square by its image service
+const getPhotoUrl = (photoId: string, size: number) => `https://images.unsplash.com/photo-${photoId}?w=${size}&h=${size}&fit=crop&auto=format`
 
 export const PRODUCT_ROWS: IRawRecord[] = PRODUCTS.map((product, index) => {
-    const color = CATEGORY_OPTIONS.find(option => option.Value === product.category)!.Color
-    const photo = createPhoto(product.name, color)
+    const { photoId, ...values } = product
+    const photo = getPhotoUrl(photoId, 640)
     const slug = product.name.toLowerCase().replace(/[^a-z]+/g, '-')
     return {
         docs_productid: `product-${index + 1}`,
-        ...product,
+        ...values,
         sku: `${CATEGORY_OPTIONS[product.category - 1].Label.slice(0, 3).toUpperCase()}-${String(100 + index * 7)}`,
         lastrestocked: dayjs().startOf('day').subtract(3 + index * 4, 'day').toISOString(),
         discontinued: index === 7 || index === 12,
         producturl: `https://shop.example/products/${slug}`,
         photo,
-        'photo.filename': `${slug}.svg`,
-        'photo.filesizeinbytes': photo.length,
-        'photo.mimetype': 'image/svg+xml',
-        'photo.thumbnailurl': `data:image/svg+xml;base64,${photo}`,
+        'photo.filename': `${slug}.jpg`,
+        'photo.mimetype': 'image/jpeg',
+        'photo.fileurl': photo,
+        'photo.thumbnailurl': getPhotoUrl(photoId, 192),
     }
 })
 

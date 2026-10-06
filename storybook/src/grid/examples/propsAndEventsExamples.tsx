@@ -210,7 +210,7 @@ const GridExample = () => {
                 ? <TicketForm key={ticket.getRecordId()} ticket={ticket} />
                 : <span>Click a ticket, or move through the queue with the arrow keys.</span>}
         </div>
-        <Panel isOpen={!!openedTicket} type={PanelType.medium} headerText={openedTicket?.getFormattedValue('title') ?? ''} isLightDismiss onDismiss={() => setOpenedTicket(undefined)}>
+        <Panel isOpen={!!openedTicket} type={PanelType.medium} isLightDismiss onDismiss={() => setOpenedTicket(undefined)}>
             {openedTicket && <TicketForm ticket={openedTicket} columnsPerSection={2} />}
         </Panel>
     </div>
