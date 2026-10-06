@@ -8,6 +8,13 @@ import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from ".
 import { IGridSortingServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** Sorting the grid by a column. */
+        sorting: IGridSorting;
+    }
+}
+
 export interface IGridSortingParameters {
     /** This module's own locator. */
     services: IGridSortingServiceLocator;

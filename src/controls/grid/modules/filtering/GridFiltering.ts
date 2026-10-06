@@ -12,6 +12,13 @@ import { IGridFilteringServiceLocator } from "./services";
 import { IGridSurface } from "../../services/surfaces";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** Filtering the grid by a column. */
+        filtering: IGridFiltering;
+    }
+}
+
 /** What changed about the filter a column header has open. */
 export interface IGridFilteringEvents {
     /** A column's filter was opened. */

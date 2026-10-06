@@ -22,6 +22,13 @@ import { CellFieldRenderer } from "./components/field-cell-renderer/CellFieldRen
 import type { IRecordLockIndicatorCellComponents } from "./components/record-lock-indicator/components";
 import type { IRecordSaveUiComponents } from "./components/record-save-indicator/ui";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
+        editing: IGridEditing;
+    }
+}
+
 /** The replaceable pieces of what the editing module draws, by the piece they belong to. */
 export interface IGridEditingComponents {
     /** The cell a row reports its save in, on a grid with no checkbox column. */

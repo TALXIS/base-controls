@@ -92,14 +92,14 @@ export interface IUnsavedChanges {
 }
 
 declare module '@talxis/base-controls' {
-    interface IGridOptionalServiceMap {
+    interface IGridModuleServiceMap {
         unsavedChanges: IUnsavedChanges
     }
 }
 \`\`\`
 
 - The file has to import or export something, as this one exports \`IUnsavedChanges\`. In a file that does neither, \`declare module\` replaces the package's types instead of adding to them.
-- A key in \`IGridOptionalServiceMap\` is one a grid may not have, so \`find\` and \`useGridService\` answer \`IUnsavedChanges | undefined\`, and \`get\` throws in a grid without your module.
+- A key in \`IGridModuleServiceMap\` is one a grid may not have, so \`find\` and \`useGridService\` answer \`IUnsavedChanges | undefined\`, and \`get\` throws in a grid without your module.
 - The live example uses \`declare global\` in place of \`declare module\`, because the docs editor declares the grid's types globally.
 
 ## Drawing inside the grid

@@ -37,7 +37,7 @@ Inside anything the grid draws, such as a custom cell, a header part, an overlay
 | Call | Returns |
 |---|---|
 | \`get(key)\` | The service. It throws when nothing registered one, so use it for the services every grid has. |
-| \`find(key)\` | The service, or \`undefined\`. Use it for the optional services, such as a module's, which may be off. |
+| \`find(key)\` | The service, or \`undefined\`. Use it for a module's service, which may be off, and for \`gridApi\` and \`gridRoot\` before the grid is mounted. |
 | \`whenAvailable(key, callback)\` | Nothing. It calls \`callback\` with the service as soon as there is one: straight away when it is there, or the moment something registers it. It calls back at most once, and never for a service nobody registers. |
 | \`register(key, resolve)\` | Nothing. It registers a service, or replaces the one under that key: see *A service of your own* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 

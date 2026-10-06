@@ -1925,14 +1925,10 @@ interface IGridAggregation {
     getAggregateValueColumnName(record: IRecord, columnName: string): string;
 }
 
-/** The services only there once something registers them. */
-interface IGridOptionalServiceMap {
+/** The services the modules register, each there only with its module. */
+interface IGridModuleServiceMap {
     /** There with the editing module. */
     editing: IGridEditing;
-    /** The grid's own element. */
-    gridRoot: HTMLElement;
-    /** AG Grid's own api, there once the grid is ready. */
-    gridApi: GridApi;
     aggregation: IGridAggregation;
     grouping: IGridGrouping;
     filtering: IGridFiltering;
@@ -1941,7 +1937,11 @@ interface IGridOptionalServiceMap {
 }
 
 /** Everything the grid is made of. */
-interface IGridServiceMap extends IGridOptionalServiceMap {
+interface IGridServiceMap extends IGridModuleServiceMap {
+    /** The grid's own element, there once it is mounted. */
+    gridRoot: HTMLElement;
+    /** AG Grid's own api, there once the grid is ready. */
+    gridApi: GridApi;
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
     rows: IGridRows;
@@ -1962,12 +1962,12 @@ interface IGridServiceMap extends IGridOptionalServiceMap {
     grid: IGridRuntime;
 }
 
-type IOptionalGridService = keyof IGridOptionalServiceMap;
+type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'gridApi';
 
 type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
 
 /** Reads a grid service from inside something the grid draws. */
-declare function useGridService<TKey extends keyof IGridServiceMap>(key: TKey): TKey extends IOptionalGridService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey];
+declare function useGridService<TKey extends keyof IGridServiceMap>(key: TKey): TKey extends IGridDeferredService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey];
 
 /** Throws outside Grid.Cell.Root. */
 declare function useGridCell(): IGridCell;

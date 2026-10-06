@@ -19,6 +19,13 @@ import { ITheme } from "@theme";
 import { IGridStyles } from "../../services/runtime";
 import { getGridAggregationStyles } from "./styles";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** The totals under the rows. */
+        aggregation: IGridAggregation;
+    }
+}
+
 /** What the row stands in as until the totals are worked out. */
 const PENDING_RECORD_ID = '__total__pending';
 

@@ -14,35 +14,16 @@ import type { IGridRows } from "../services/rows";
 import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
-import type { IGridRowSelection } from "../modules/row-selection/GridRowSelection";
-import type { IGridEditing } from "../modules/editing/GridEditing";
-import type { IGridSorting } from "../modules/sorting/GridSorting";
-import type { IGridFiltering } from "../modules/filtering/GridFiltering";
-import type { IGridAggregation } from "../modules/aggregation/GridAggregation";
-import type { IGridGrouping } from "../modules/grouping/GridGrouping";
 
-/** The services only there once whatever registers them is; a custom module declares its own here. */
-export interface IGridOptionalServiceMap {
-    /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
-    editing: IGridEditing;
-    /** The grid's own element. */
-    gridRoot: HTMLElement;
-    /** AG Grid's own api, a last resort for what the grid's hooks cannot express. */
-    gridApi: GridApi<IRecord>;
-    /** The totals under the rows. */
-    aggregation: IGridAggregation;
-    /** Grouping the rows by a column. */
-    grouping: IGridGrouping;
-    /** Filtering the grid by a column. */
-    filtering: IGridFiltering;
-    /** Sorting the grid by a column. */
-    sorting: IGridSorting;
-    /** Which records are selected. */
-    rowSelection: IGridRowSelection;
-}
+/** The services the modules register; a module adds its own by augmenting this. */
+export interface IGridModuleServiceMap { }
 
 /** Everything the grid is made of. */
-export interface IGridServiceMap extends IGridOptionalServiceMap {
+export interface IGridServiceMap extends IGridModuleServiceMap {
+    /** The grid's own element, there once it is mounted. */
+    gridRoot: HTMLElement;
+    /** AG Grid's own api, there once AG Grid is ready; a last resort for what the hooks cannot express. */
+    gridApi: GridApi<IRecord>;
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
     /** What is true of a row as a whole. */
@@ -73,8 +54,8 @@ export interface IGridServiceMap extends IGridOptionalServiceMap {
     grid: IGridRuntime;
 }
 
-/** The services that are only there when whatever registers them is. */
-export type IOptionalGridService = keyof IGridOptionalServiceMap;
+/** The services a grid may be without, or have only once it is mounted. */
+export type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'gridApi';
 
 /** Where the grid's parts find each other. */
 export type IGridServiceLocator = IServiceLocator<IGridServiceMap>;

@@ -18,6 +18,13 @@ import { IGridRowSelectionInterceptors } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { GridLockHook } from "../editing/GridLocks";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** Grouping the rows by a column. */
+        grouping: IGridGrouping;
+    }
+}
+
 /** The chevron and the count a group row draws beside the value. */
 const GROUPED_COLUMN_WIDTH_OFFSET = 80;
 

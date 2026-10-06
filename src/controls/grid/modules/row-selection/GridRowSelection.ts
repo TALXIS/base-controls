@@ -10,6 +10,13 @@ import { IGridStyles } from "../../services/runtime";
 import { getGridRowSelectionStyles } from "./styles";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 
+declare module "../../services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** Which records are selected. */
+        rowSelection: IGridRowSelection;
+    }
+}
+
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 

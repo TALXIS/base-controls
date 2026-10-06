@@ -7,7 +7,7 @@ export const UNSAVED_CHANGES_BAR_CODE = `interface IUnsavedChanges {
 }
 
 declare global {
-    interface IGridOptionalServiceMap {
+    interface IGridModuleServiceMap {
         unsavedChanges: IUnsavedChanges
     }
 }

@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { IGridServiceMap, IOptionalGridService } from "./services";
+import { IGridDeferredService, IGridServiceMap } from "./services";
 import { GridServicesContext } from "./context";
 
 /** Reads one of the grid's services by name. */
 export const useGridService = <TKey extends keyof IGridServiceMap>(key: TKey):
-    TKey extends IOptionalGridService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey] => {
+    TKey extends IGridDeferredService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey] => {
     const services = useContext(GridServicesContext);
     const [service, setService] = useState(() => services.find(key));
 
