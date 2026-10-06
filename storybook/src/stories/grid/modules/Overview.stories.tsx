@@ -12,7 +12,7 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 | Key | Factory | What it adds | AG Grid Enterprise | Details |
 |---|---|---|---|---|
 | \`rowModel\` | \`createClientSideRowModelModule()\` or \`createServerSideRowModelModule()\` | How the grid gets its rows. **Required.** | The server-side one | *Row models*, below |
-| \`editing\` | \`createEditingModule({ autoSave })\` | Editing cells in place, a save status column, locks and, with \`autoSave\`, saving each edit | | [**Editing**](?path=/docs/grid-editing--overview) |
+| \`editing\` | \`createEditingModule({ autoSave })\` | Editing cells in place, a save status column, locks and, with \`autoSave\`, saving each edit | | [**Editing**](?path=/docs/grid-modules-editing--overview) |
 | \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
 | \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells by dragging across them | Yes | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
 | \`clipboard\` | \`createClipboardModule()\` | Copying a cell, or the highlighted blocks, with Ctrl+C | Yes | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |

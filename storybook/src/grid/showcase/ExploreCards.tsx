@@ -55,7 +55,7 @@ export interface IExploreCard {
     title: string
     text: string
     iconName: string
-    /** A Storybook path, such as `?path=/docs/grid-editing--overview`. */
+    /** A Storybook path, such as `?path=/docs/grid-modules-editing--overview`. */
     href: string
 }
 

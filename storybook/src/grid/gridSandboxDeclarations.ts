@@ -1342,7 +1342,7 @@ interface IGridColDef {
 }
 
 /** New values for a column, or a function of the column as built. */
-type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef) => Partial<IGridColDef>);
+type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef | null) => Partial<IGridColDef>);
 
 interface IGridCellLoading {
     isLoading: boolean;

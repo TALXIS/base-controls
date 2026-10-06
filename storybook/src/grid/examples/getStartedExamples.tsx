@@ -579,6 +579,8 @@ const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY
 
 //the deal's name stays in view while nothing is grouped, which the grid checks on every load
 const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
+    //the grid shades every other row unless told not to
+    enableZebra: false,
     colDefs: { name: () => deals.grouping.getGroupBys().length > 0 ? {} : { pinned: 'left' } },
 })
 
@@ -650,6 +652,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
     },
     {
         title: 'Look',
+        isCore: true,
         features: [
             { key: 'optionSetColors', label: 'Option set colours', hint: 'Stage and Products are drawn as tags in their own colours.' },
             { key: 'zebra', label: 'Zebra rows', hint: 'Every other row is shaded, except while the deals are grouped.' },

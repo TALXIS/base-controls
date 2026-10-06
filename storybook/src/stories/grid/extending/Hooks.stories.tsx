@@ -23,14 +23,14 @@ One lock hook answers for three levels. The context it is handed says which one 
 | A record's row | \`{ record }\` |
 | A cell | \`{ record, columnName }\` |
 
-Check the context before you read it. A hook that reads \`record\` without checking for it fails when the grid asks about a column, and a hook that ignores the context locks every column and every row. The levels, the order they are checked in, how each is drawn and their labels are on [**Editing**](?path=/docs/grid-editing--overview).
+Check the context before you read it. A hook that reads \`record\` without checking for it fails when the grid asks about a column, and a hook that ignores the context locks every column and every row. The levels, the order they are checked in, how each is drawn and their labels are on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 ## Validation
 
 {{story: Keep a day under ten hours}}
 
 - The hook runs for every column of every record, so check \`columnName\` first.
-- An error it sets outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/grid-editing--overview).
+- An error it sets outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview).
 - A rule that reads other records gives them a new answer whenever one of them changes, so redraw the cells with \`cells.render()\`, as this module does.
 
 ## Cells

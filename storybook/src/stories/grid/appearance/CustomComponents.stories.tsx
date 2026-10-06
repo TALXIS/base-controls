@@ -122,7 +122,7 @@ These go in \`components\` on \`<Grid.Root />\`:
 
 {{story: Save status your way}}
 
-An editable grid reports each row's saves in a column of its own, and shows a lock at the start of a row locked as a whole (see [**Editing**](?path=/docs/grid-editing--overview)). Their parts go in \`createEditingModule({ components })\`:
+An editable grid reports each row's saves in a column of its own, and shows a lock at the start of a row locked as a whole (see [**Editing**](?path=/docs/grid-modules-editing--overview)). Their parts go in \`createEditingModule({ components })\`:
 
 | Key | Part | Pieces |
 |---|---|---|

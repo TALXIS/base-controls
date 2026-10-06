@@ -25,28 +25,45 @@ const GridExample = () => {
 }
 `
 
-export const PRODUCT_LINK_CODE = `const DETAILS = ['sku', 'category', 'price', 'instock', 'supplier', 'lastrestocked']
+export const PRODUCT_LINK_CODE = `const DETAILS = ['photo', 'sku', 'category', 'price', 'instock', 'supplier', 'lastrestocked', 'producturl']
+
+const createProductStrategy = (product: IRecord) => new MemoryStrategy({
+    onGetColumns: () => provider.getColumns(),
+    onGetData: () => ({ ...product.getRawData() }),
+    onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
+})
+
+interface IProductFormProps {
+    product: IRecord
+}
+
+const ProductForm = (props: IProductFormProps) => {
+    const strategy = React.useMemo(() => createProductStrategy(props.product), [props.product])
+    //every change is saved into the record the grid shows
+    const saveChange = async (columnName: string, value: unknown) => {
+        props.product.setValue(columnName, value)
+        await props.product.save()
+    }
+
+    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName, value) => { saveChange(columnName, value) }}>
+        <Form.Section label='Details' layout={{ lg: 1 }} cellLabelPosition='Top'>
+            {DETAILS.map(columnName => <Form.Field key={columnName} name={columnName}>
+                <Form.Cell>
+                    <Form.Control />
+                </Form.Cell>
+            </Form.Field>)}
+        </Form.Section>
+    </Form.Root>
+}
 
 interface IProductPanelProps {
     product?: IRecord
     onDismiss: () => void
 }
 
-const ProductPanel = (props: IProductPanelProps) => {
-    const { product } = props
-    const columns = provider.getColumnsMap()
-
-    return <Panel isOpen={!!product} isLightDismiss type={PanelType.smallFixedFar} headerText={product?.getFormattedValue('name') ?? ''} closeButtonAriaLabel='Close' onDismiss={props.onDismiss}>
-        {product && <Stack tokens={{ childrenGap: 12 }}>
-            <img src={product.getValue('photo')?.thumbnailUrl} alt='' width={64} height={64} />
-            {DETAILS.map(name => <div key={name}>
-                <Label>{columns[name].displayName}</Label>
-                <Text>{product.getFormattedValue(name)}</Text>
-            </div>)}
-            <Link href={product.getValue('producturl')} target='_blank'>Open the product page</Link>
-        </Stack>}
-    </Panel>
-}
+const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.product} isLightDismiss type={PanelType.medium} headerText={props.product?.getFormattedValue('name') ?? ''} closeButtonAriaLabel='Close' onDismiss={props.onDismiss}>
+    {props.product && <ProductForm key={props.product.getRecordId()} product={props.product} />}
+</Panel>
 
 const GridExample = () => {
     const [productId, setProductId] = React.useState<string>()

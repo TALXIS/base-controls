@@ -88,7 +88,7 @@ The grid takes Fluent's theme from the nearest \`ThemeProvider\`, or Fluent's de
 | \`recordSaveErrorTitle\` | Your changes were not saved | The title of the callout that a failed save's icon opens |
 | \`recordSaveErrorDismiss\` | Dismiss | The button in that callout that clears the failure |
 
-Which lock shows where is on [**Editing**](?path=/docs/grid-editing--overview).
+Which lock shows where is on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 ### Localizing everything
 

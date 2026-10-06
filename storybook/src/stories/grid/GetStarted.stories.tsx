@@ -6,9 +6,16 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid shows and edits the records of a data provider, built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. Every column gets the control for its data type, with validation and saving built in. Sorting, filtering, grouping, selection and the rest are [modules](?path=/docs/grid-modules--overview), so you include only what you need.
+Grid displays the records of a data provider and is built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. Each column renders its values with the control for its data type and highlights invalid ones. Beyond that, the grid is made of modules, so you add only the features you need, such as:
 
-Below is an example of a sales pipeline. Pick a preset or open **Features** to turn features on one by one, and open **Code** to read and edit the source. *Closing deals* adds custom code to show how the grid can be extended. *Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid shows a watermark.
+- **Editing**: change values in place, save them, and lock what should stay as it is.
+- **Selection**: select rows, or drag across cells and copy them.
+- **Sorting and filtering**: right from the column header.
+- **Grouping and totals**: group rows by a column and sum up its values.
+
+See [**Modules**](?path=/docs/grid-modules--overview) for the list of all modules.
+
+Below is an example of a sales pipeline. Pick a preset or open **Features & Modules** to turn them on one by one, and open **Code** to read and edit the source. *Closing deals* adds custom code to show how the grid can be extended. *Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid shows a watermark.
 
 {{canvas: Overview}}
 
@@ -46,7 +53,7 @@ export const ProductGrid = () => <PcfContextProvider>
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-get-started-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
-    { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
+    { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-modules-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
     { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add row commands, and extend the header menus.' },
     { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, your own labels, and your own cells, headers and overlays.' },

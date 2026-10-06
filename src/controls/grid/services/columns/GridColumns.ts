@@ -81,8 +81,9 @@ export class GridColumns implements IGridColumns {
     private _applyColDefs = (columnDefs: ColDef<IRecord>[]): void => {
         for (const [colId, override] of Object.entries(this._settings.getColDefs())) {
             const index = columnDefs.findIndex(columnDef => columnDef.colId === colId);
-            const base: ColDef<IRecord> = index === -1 ? { colId } : columnDefs[index];
-            const changes = typeof override === 'function' ? override(base) : override;
+            const existing = index === -1 ? null : columnDefs[index];
+            const changes = typeof override === 'function' ? override(existing) : override;
+            const base: ColDef<IRecord> = existing ?? { colId };
             const merged = { ...base, ...changes, colId, settings: this._mergeSettings(base.settings, changes.settings) };
             if (index === -1) {
                 columnDefs.push(merged);

@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { gridDocsPage } from '../../grid/gridDocsPage'
-import { CheckHoursExample, FreezeApprovedExample, LogHoursExample, ReviewChangesExample, ServerRefusesExample, TickBillableExample } from '../../grid/examples/editingExamples'
+import { renderStory } from '../../form/storyHelpers'
+import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { CheckHoursExample, FreezeApprovedExample, LogHoursExample, ReviewChangesExample, ServerRefusesExample, TickBillableExample } from '../../../grid/examples/editingExamples'
 
 const DESCRIPTION = `
 Add the editing module and users change values right in the grid. Each column is edited with its data type's own control, values are checked as they are entered, every save reports back on its row, and you decide what stays locked. Every example on this page is a team lead correcting last week's timesheets.
@@ -165,7 +165,7 @@ const rowSettings: IGridRowSettings = {
 `
 
 const meta = {
-    title: 'Grid/Editing',
+    title: 'Grid/Modules/Editing',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

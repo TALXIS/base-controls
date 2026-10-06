@@ -124,9 +124,8 @@ const preview: Preview = {
           [
             'Get started',
             ['Overview', 'Data', 'Props and events'],
-            'Editing',
             'Modules',
-            ['Overview', 'Selection and clipboard', 'Sorting and filtering', 'Grouping and totals', 'Legacy client API'],
+            ['Overview', 'Editing', 'Selection and clipboard', 'Sorting and filtering', 'Grouping and totals', 'Legacy client API'],
             'Columns',
             'Appearance',
             ['Overview', 'Custom Components'],

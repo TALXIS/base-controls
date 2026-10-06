@@ -62,7 +62,7 @@ To get from an id to its record, use \`provider.getRecordsMap()[id]\`, which als
 
 ### The save status in the checkbox cell
 
-With row selection on, the editing module draws a row's save status in its checkbox cell, in place of the checkbox while there is one, so an editable grid has no save status column of its own. After a failed save the checkbox stays hidden until the red icon is dismissed. What the status shows is on [**Editing**](?path=/docs/grid-editing--overview); **Approve** a few timesheets above to see it.
+With row selection on, the editing module draws a row's save status in its checkbox cell, in place of the checkbox while there is one, so an editable grid has no save status column of its own. After a failed save the checkbox stays hidden until the red icon is dismissed. What the status shows is on [**Editing**](?path=/docs/grid-modules-editing--overview); **Approve** a few timesheets above to see it.
 
 ### The rowSelection service
 

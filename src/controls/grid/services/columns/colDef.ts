@@ -54,8 +54,8 @@ export interface IGridColumnSettings {
 /** A column of the grid: AG Grid's definition, with the grid's own `settings`. */
 export type IGridColDef = ColDef<IRecord>;
 
-/** A change to a column: its new values, or a function of the column as the grid and modules built it. */
-export type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef) => Partial<IGridColDef>);
+/** A change to a column: its new values, or a function of the column as built, `null` for a column it adds. */
+export type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef | null) => Partial<IGridColDef>);
 
 declare module "@ag-grid-community/core" {
     interface ColDef<TData = any, TValue = any> {

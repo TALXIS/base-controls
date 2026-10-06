@@ -2,6 +2,7 @@ import React from 'react'
 import { mergeStyleSets, Panel, PanelType, Text } from '@fluentui/react'
 import { CommandBar, Form, MemoryStrategy } from '@talxis/base-controls'
 import { DataTypes, IColumn } from '@talxis/client-libraries'
+import { RequiredLevelEnum } from '@talxis/client-metadata'
 import { metadataFor } from '../data/metadata'
 
 const styles = mergeStyleSets({
@@ -34,6 +35,8 @@ export interface IShowcaseFeature {
 
 export interface IShowcaseFeatureGroup {
     title: string
+    /** Shown under Core rather than Modules: a prop of the grid, not a module. */
+    isCore?: boolean
     features: IShowcaseFeature[]
 }
 
@@ -78,7 +81,8 @@ const fromFieldValue = (feature: IShowcaseFeature, value: unknown): boolean | st
     if (feature.options) {
         return feature.options[Number(value ?? OFF) - 1]?.key ?? false
     }
-    return !!value
+    //a two-options control hands its value over as '1' or '0'
+    return value === true || Number(value) === 1
 }
 
 /** Switches the showcase grid's features on and off, a preset at a time or one by one in a panel. */
@@ -96,6 +100,7 @@ export const getPresetValues = (groups: IShowcaseFeatureGroup[], presets: IShowc
 
 export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
     const [isPanelOpen, setIsPanelOpen] = React.useState(false)
+    const [activeTab, setActiveTab] = React.useState('core')
     const features = props.groups.flatMap(group => group.features)
     const getValues = (preset: IShowcasePreset) => getPresetValues(props.groups, props.presets, preset)
 
@@ -115,22 +120,30 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
         }
     }
 
+    const renderGroup = (group: IShowcaseFeatureGroup) => <Form.Section key={group.title} label={group.title} layout={{ lg: 1 }}>
+        {group.features.map(feature => <Form.Field key={feature.key} name={feature.key}>
+            {/* the recommended mark flags what needs an Enterprise licence */}
+            <Form.Cell requiredLevel={feature.isEnterprise ? RequiredLevelEnum.Recommended : undefined}>
+                <Form.Control />
+                <Text variant='small' className={styles.hint}>{feature.isEnterprise ? feature.hint + ' Needs an AG Grid Enterprise licence.' : feature.hint}</Text>
+            </Form.Cell>
+        </Form.Field>)}
+    </Form.Section>
+
     return <div className={styles.root}>
         <CommandBar
             items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getValues(preset)) }))}
-            farItems={[{ key: 'features', text: 'Features', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
-        <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} headerText='Features' onDismiss={() => setIsPanelOpen(false)}>
+            farItems={[{ key: 'features', text: 'Features & Modules', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
+        <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} headerText='Features & Modules' onDismiss={() => setIsPanelOpen(false)}>
             <Form.Root strategy={strategy} onFieldValueChanged={onFieldValueChanged}>
-                <Form.Column>
-                    {props.groups.map(group => <Form.Section key={group.title} label={group.title} layout={{ lg: 1 }}>
-                        {group.features.map(feature => <Form.Field key={feature.key} name={feature.key}>
-                            <Form.Cell>
-                                <Form.Control />
-                                <Text variant='small' className={styles.hint}>{feature.isEnterprise ? feature.hint + ' Needs an AG Grid Enterprise licence.' : feature.hint}</Text>
-                            </Form.Cell>
-                        </Form.Field>)}
-                    </Form.Section>)}
-                </Form.Column>
+                <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+                    <Form.Tab id='core' label='Core'>
+                        <Form.Column>{props.groups.filter(group => group.isCore).map(renderGroup)}</Form.Column>
+                    </Form.Tab>
+                    <Form.Tab id='modules' label='Modules'>
+                        <Form.Column>{props.groups.filter(group => !group.isCore).map(renderGroup)}</Form.Column>
+                    </Form.Tab>
+                </Form.Tabs>
             </Form.Root>
         </Panel>
     </div>

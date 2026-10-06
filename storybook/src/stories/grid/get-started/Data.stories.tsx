@@ -80,8 +80,6 @@ Links need \`enableNavigation\`, which is on by default. An empty value is shown
 | File | \`<column>\` plus \`<column>.filename\`, \`.fileurl\`, \`.filesizeinbytes\`, \`.mimetype\` | \`{ fileName, fileUrl, fileSize, mimeType }\` |
 | Image | Base64 content in \`<column>\` plus \`<column>.filename\`, \`.mimetype\`, \`.thumbnailurl\` | \`{ fileName, fileContent, thumbnailUrl, fileUrl, mimeType }\` |
 
-Compare option sets and two options as strings, such as \`record.getValue('billable') === '1'\`. \`'0'\` is truthy.
-
 `
 
 const meta = {

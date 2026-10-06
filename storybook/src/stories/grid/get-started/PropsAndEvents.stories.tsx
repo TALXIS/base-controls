@@ -23,7 +23,7 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, loading and error rows, and save and lock cells. See [**Custom Components**](?path=/docs/grid-appearance-custom-components--overview). |
 | \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns--overview). |
-| \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
+| \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`state\` | \`GridState\`, from AG Grid | None | At mount | The AG Grid state the grid starts from. See *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview). |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
 | \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |

@@ -56,7 +56,7 @@ Every expression takes the column's logical name first. Some are answered by the
 | \`setCurrencySymbolExpression(column, () => string)\` | The symbol a money cell shows. | The same |
 | \`ui.setCustomControlComponentExpression\` | Not read by the grid. | Not read |
 
-How validation and locks work in general is on [**Editing**](?path=/docs/grid-editing--overview).
+How validation and locks work in general is on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 ## Notifications
 
