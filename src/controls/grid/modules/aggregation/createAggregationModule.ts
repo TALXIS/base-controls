@@ -1,5 +1,5 @@
 import { LocalizationService, ServiceLocator } from "@utils";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GRID_AGGREGATION_LABELS, IGridAggregationLabels } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { GridAggregation } from "./GridAggregation";

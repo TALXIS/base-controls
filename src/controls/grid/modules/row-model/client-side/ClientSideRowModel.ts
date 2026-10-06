@@ -1,7 +1,7 @@
 import { GridApi, IsGroupOpenByDefaultParams } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../interfaces";
+import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../services/row-model";
 import { ClientSideRowModelGrouping } from "./ClientSideRowModelGrouping";
 import { IGridAgGridOptions } from "../../../services/runtime";
 import { GRID_MODULE_PRIORITY } from "../../priorities";

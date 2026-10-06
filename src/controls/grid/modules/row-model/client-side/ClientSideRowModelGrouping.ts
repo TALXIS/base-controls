@@ -1,7 +1,7 @@
 import { GridApi, IRowNode } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
-import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../interfaces";
+import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../../../services/row-model";
 import { IGridAgGridOptions } from "../../../services/runtime";
 
 export interface IClientSideRowModelGroupingParameters extends IGridRowModelGroupingParameters {

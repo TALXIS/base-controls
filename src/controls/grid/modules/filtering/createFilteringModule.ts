@@ -1,5 +1,5 @@
 import { LocalizationService, ServiceLocator } from "@utils";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GRID_FILTERING_LABELS, IGridFilteringLabels } from "./labels";
 import { GridFiltering } from "./GridFiltering";
 import { IGridFilteringServiceMap } from "./services";

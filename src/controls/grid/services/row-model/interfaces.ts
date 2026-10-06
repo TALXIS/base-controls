@@ -1,6 +1,6 @@
 import type { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import type { IRecord } from "@talxis/client-libraries";
-import type { IGridAgGridOptions } from "../../services/runtime";
+import type { IGridAgGridOptions } from "../runtime";
 
 /** Which of AG Grid's row models a grid runs on. */
 export type IGridRowModelType = 'clientSide' | 'serverSide';

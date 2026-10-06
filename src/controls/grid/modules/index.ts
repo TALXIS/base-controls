@@ -1,4 +1,3 @@
-export * from './interfaces';
 export * from './priorities';
 export * from './row-model';
 export * from './license';

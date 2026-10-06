@@ -1,4 +1,4 @@
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GridEditing, IGridEditingComponents, IGridEditingEvents } from "./GridEditing";
 
 export interface IEditingModuleOptions {

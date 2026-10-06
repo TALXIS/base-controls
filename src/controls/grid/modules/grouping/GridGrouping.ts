@@ -12,7 +12,7 @@ import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefi
 import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GroupCell } from "./components/group-cell/GroupCell";
 import { GroupSelectionLimitDialog } from "./components/group-selection-limit-dialog/GroupSelectionLimitDialog";
-import { IGridRowModelGrouping } from "../row-model/interfaces";
+import { IGridRowModelGrouping } from "../../services/row-model";
 import { IGridSurface } from "../../services/surfaces";
 import { IGridRowSelectionInterceptors } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";

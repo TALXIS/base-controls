@@ -1,5 +1,5 @@
 import { ServerSideRowModelModule as AgServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
-import { IGridModule } from "../../interfaces";
+import { IGridModule } from "../../../interfaces";
 import { ServerSideRowModel } from "./ServerSideRowModel";
 
 /** Builds the row-model module that reads a level at a time through a datasource. */

@@ -1,7 +1,7 @@
 import { RangeSelectionModule } from "@ag-grid-enterprise/range-selection";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GridCellSelection } from "./GridCellSelection";
 
 /** The cell-range options AG Grid takes, as a caller may set them. */

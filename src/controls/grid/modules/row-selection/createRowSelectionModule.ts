@@ -1,5 +1,5 @@
 import { ServiceLocator } from "@utils";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GridRowSelection } from "./GridRowSelection";
 import { IGridRowSelectionServiceMap } from "./services";
 import { IGridRowSelectionComponents } from "./moduleComponents";

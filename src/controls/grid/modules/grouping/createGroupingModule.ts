@@ -1,6 +1,6 @@
 import { LocalizationService, ServiceLocator } from "@utils";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
 import { GridGrouping } from "./GridGrouping";

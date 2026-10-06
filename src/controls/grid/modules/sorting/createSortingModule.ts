@@ -1,5 +1,5 @@
 import { LocalizationService, ServiceLocator } from "@utils";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 import { GRID_SORTING_LABELS, IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
 import { GridSorting } from "./GridSorting";

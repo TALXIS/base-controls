@@ -1,5 +1,5 @@
 import { LicenseManager } from "@ag-grid-enterprise/core";
-import { IGridModule } from "../interfaces";
+import { IGridModule } from "../../interfaces";
 
 export interface ILicenseModuleOptions {
     /** The AG Grid enterprise key, as your host supplies it. */

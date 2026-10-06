@@ -8,6 +8,7 @@ export * from './services/surfaces';
 export * from './services/rows';
 export * from './services/validation';
 export * from './services/runtime';
+export * from './services/row-model';
 export * from './services/fields';
 export * from './interfaces';
 export * from './labels';

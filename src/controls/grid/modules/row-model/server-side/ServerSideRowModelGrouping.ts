@@ -1,6 +1,6 @@
 import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../interfaces";
+import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../../../services/row-model";
 
 /** Grouping where a level is asked for when it is opened. */
 export class ServerSideRowModelGrouping implements IGridRowModelGrouping {

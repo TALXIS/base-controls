@@ -6,7 +6,7 @@ import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
 import type { IGridRuntime } from "../services/runtime";
-import type { IGridRowModel } from "../modules/row-model/interfaces";
+import type { IGridRowModel } from "./row-model";
 import type { IGridColumns } from "../services/columns";
 import type { IGridCells } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
