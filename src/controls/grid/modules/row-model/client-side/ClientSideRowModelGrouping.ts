@@ -24,6 +24,8 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         this._onRowsLoaded = parameters.onRowsLoaded;
         this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
         this._isTree = this._getIsTree();
+        //`getDataPath` is `@initial`
+        this._services.get('grid').registerAgGridInitialOptions(result => result.options.getDataPath = getRecordPath);
         //ahead of the grid's refresh on the same event
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
@@ -110,7 +112,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
 }
 
 /** The ancestry `treeData` builds a record's place in the hierarchy from. */
-export const getRecordPath = (record: IRecord): string[] => {
+const getRecordPath = (record: IRecord): string[] => {
     const path: string[] = [];
     let provider: IDataProvider | null = record.getDataProvider();
     while (provider?.getParentRecordId()) {

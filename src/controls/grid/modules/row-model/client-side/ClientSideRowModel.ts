@@ -2,7 +2,7 @@ import { GridApi, IsGroupOpenByDefaultParams } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../services/row-model";
-import { ClientSideRowModelGrouping, getRecordPath } from "./ClientSideRowModelGrouping";
+import { ClientSideRowModelGrouping } from "./ClientSideRowModelGrouping";
 import { IGridAgGridOptions } from "../../../services/runtime";
 import { GRID_MODULE_PRIORITY } from "../../priorities";
 
@@ -20,8 +20,6 @@ export class ClientSideRowModel implements IGridRowModel {
 
     constructor(parameters: IClientSideRowModelParameters) {
         this._services = parameters.services;
-        //`getDataPath` is `@initial`
-        this._services.get('grid').registerAgGridInitialOptions(result => result.options.getDataPath = getRecordPath, GRID_MODULE_PRIORITY.rowModel);
         this._services.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
