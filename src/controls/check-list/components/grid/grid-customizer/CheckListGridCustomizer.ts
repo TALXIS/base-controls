@@ -1,5 +1,5 @@
-import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } from "@ag-grid-community/core";
-import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
+import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } from "ag-grid-community";
+import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "ag-grid-community";
 import { DataTypes, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { SELECTION_COLUMN_KEY } from "@controls/grid/modules/row-selection/constants";
@@ -468,10 +468,7 @@ export class CheckListGridCustomizer {
         }
     }
 
-    /**
-     * Every rendered row's elements, keyed by record id. A row is drawn once per column container — the
-     * pinned ones carry the checkbox and the delete button — so all of them have to move together.
-     */
+    /** Every rendered row's elements, keyed by record id. */
     private _getRenderedRowElements(): Map<string, HTMLElement[]> {
         const elementsByRecordId = new Map<string, HTMLElement[]>();
         if (!this._gridRoot) {
@@ -609,7 +606,7 @@ export class CheckListGridCustomizer {
         }
         //startEditingCell focuses the cell in turn, so without this the two would call each other for ever
         const isEditing = this._gridApi.getEditingCells().some(cell =>
-            cell.rowPinned === 'bottom' && cell.column.getColId() === colKey);
+            cell.rowPinned === 'bottom' && cell.colId === colKey);
         if (isEditing) {
             return;
         }

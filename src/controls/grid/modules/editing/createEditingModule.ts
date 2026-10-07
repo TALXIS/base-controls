@@ -1,3 +1,4 @@
+import { CustomEditorModule, RowStyleModule } from "ag-grid-community";
 import { IGridModule } from "../../interfaces";
 import { GridEditing, IGridEditingEvents } from "./GridEditing";
 
@@ -10,6 +11,7 @@ export interface IEditingModuleOptions {
 
 /** Builds the module that lets the grid's cells be edited. */
 export const createEditingModule = (options?: IEditingModuleOptions): IGridModule => ({
+    agGridModules: [CustomEditorModule, RowStyleModule],
     onRegister: ({ services }) => {
         const editing = new GridEditing({ services, autoSave: options?.autoSave, onEditedCellChanged: options?.onEditedCellChanged });
         services.register('editing', () => editing);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { AgGridReact } from "@ag-grid-community/react";
+import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 import { useTheme } from "@fluentui/react";
 import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
@@ -7,8 +7,8 @@ import { IGrid } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
-import "@ag-grid-community/styles/ag-grid.css";
-import "@ag-grid-community/styles/ag-theme-balham.css";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-balham.css";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
@@ -59,7 +59,7 @@ export const GridRoot = (props: IGrid) => {
                 applyTo='none'
                 ref={onGridRootRef}
                 className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
-                <AgGridReact<IRecord> {...runtime.getAgGridProps()} />
+                <AgGridReact<IRecord> theme="legacy" {...runtime.getAgGridProps()} />
                 <Surfaces />
             </ThemeProvider>
         </GridComponentsContext.Provider>

@@ -1,4 +1,4 @@
-import type { ColDef } from "@ag-grid-community/core";
+import type { ColDef } from "ag-grid-community";
 import type { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@utils";
 import type { ThemeBuilder } from "@theme";
@@ -8,7 +8,7 @@ import type { IGridCellCommands, IGridCellLoading } from "../cells";
 import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-header";
 
 /** What a column decides for each of its cells, after the cell hooks. */
-export interface IGridColumnCellSettings {
+export interface IGridColumnCellContext {
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
     /** Changes the commands a cell offers, after `registerCellCommands`. */
@@ -24,7 +24,7 @@ export interface IGridColumnCellSettings {
 }
 
 /** What a column decides for its header, after the header hooks. */
-export interface IGridColumnHeaderSettings {
+export interface IGridColumnHeaderContext {
     /** Changes the header's theme, after `registerColumnHeaderTheme`. */
     onGetTheme?: (theme: ThemeBuilder) => void;
     /** Adds what the header draws beside its name, after `registerColumnHeaderAdornments`. */
@@ -36,7 +36,7 @@ export interface IGridColumnHeaderSettings {
 }
 
 /** What the grid's own column is, whatever its cells are bound to. */
-export interface IGridColumnSettings {
+export interface IGridColumnContext {
     /** Which edge the value reads from. */
     alignment?: IAlignment;
     /** Whether the column's value stands for the record, drawn as a link to it. */
@@ -46,20 +46,21 @@ export interface IGridColumnSettings {
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
     /** How each of the column's cells behaves. */
-    cell?: IGridColumnCellSettings;
+    cell?: IGridColumnCellContext;
     /** Callbacks for the column's header. */
-    header?: IGridColumnHeaderSettings;
+    header?: IGridColumnHeaderContext;
+    /** Your own options for the column, read back with `getColumnContext`. */
+    [key: string]: unknown;
 }
 
-/** A column of the grid: AG Grid's definition, with the grid's own `settings`. */
-export type IGridColDef = ColDef<IRecord>;
+/** A column of the grid: AG Grid's definition, with the grid's own `context`. */
+export type IGridColDef = Omit<ColDef<IRecord>, 'context'> & {
+    /** What the grid's cells and header read about this column, and your own options beside them. */
+    context?: IGridColumnContext;
+};
 
 /** A change to a column: its new values, or a function of the column as built, `null` for a column it adds. */
 export type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef | null) => Partial<IGridColDef>);
 
-declare module "@ag-grid-community/core" {
-    interface ColDef<TData = any, TValue = any> {
-        /** What the grid's cells and header read about this column. */
-        settings?: IGridColumnSettings;
-    }
-}
+/** What a column definition carries in its `context`. */
+export const getColumnContext = (colDef: ColDef | null | undefined): IGridColumnContext => colDef?.context ?? {};

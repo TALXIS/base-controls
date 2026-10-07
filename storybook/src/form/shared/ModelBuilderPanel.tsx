@@ -2,10 +2,10 @@ import Editor from "@monaco-editor/react"
 import {
     ActionButton,
     CommandBar,
+    DefaultButton,
     IconButton,
     MessageBar,
     MessageBarType,
-    Panel,
     PanelType,
     SpinButton,
     Stack,
@@ -16,7 +16,7 @@ import {
 } from "@fluentui/react"
 import { DataProvider, DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react"
-import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid } from "@talxis/base-controls"
+import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid, Panel } from "@talxis/base-controls"
 import { DatasetControl as DatasetControlUtil } from "@talxis/base-controls"
 import { usePcfContext } from "@talxis/base-controls"
 import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls"
@@ -801,8 +801,10 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
 
         <Panel
             isOpen={selectedColumn !== null}
+            headerText={selectedColumn?.displayName || 'New field'}
             onDismiss={closePanel}
             type={PanelType.medium}
+            onRenderFooterContent={() => <DefaultButton text="Close" onClick={closePanel} />}
         >
             {selectedColumn && (
                 <div className={styles.panelSection}>

@@ -1,3 +1,4 @@
+import { PinnedRowModule } from "ag-grid-community";
 import { LocalizationService, ServiceLocator } from "@utils";
 import { IGridModule } from "../../interfaces";
 import { GRID_AGGREGATION_LABELS, IGridAggregationLabels } from "./labels";
@@ -16,6 +17,7 @@ export interface IAggregationModuleOptions {
 
 /** Builds the module that shows totals in a row pinned under the rest. */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
+    agGridModules: [PinnedRowModule],
     onRegister: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();

@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi, RowClassParams, RowClassRules } from "@ag-grid-community/core";
+import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi, RowClassParams, RowClassRules } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IGridServiceLocator } from "../../services";
@@ -18,6 +18,7 @@ import { RecordSaveSelectionCell } from "./components/record-save-selection-cell
 import { RecordSaveIndicatorCell } from "./components/record-save-indicator/RecordSaveIndicatorCell";
 import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor";
 import { CellFieldRenderer } from "./components/field-cell-renderer/CellFieldRenderer";
+import { getColumnContext } from "../../services/columns/colDef";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
@@ -168,9 +169,9 @@ export class GridEditing implements IGridEditing {
             colDef.cellRenderer = CellFieldRenderer;
             colDef.cellEditor = CellFieldEditor;
             colDef.editable = this._hasEditor(column) && ((params: EditableCallbackParams<IRecord>) => this.isEditorAvailable(params.data, params.colDef));
-            colDef.settings = { ...colDef.settings, isLocked: colDef.settings?.isLocked ?? !column.metadata?.IsValidForUpdate };
+            colDef.context = { ...colDef.context, isLocked: colDef.context?.isLocked ?? !column.metadata?.IsValidForUpdate };
             if (this._isColumnRequired(column)) {
-                colDef.settings = { ...colDef.settings, isRequired: true };
+                colDef.context = { ...colDef.context, isRequired: true };
             }
         }
         columnDefs.unshift(this._getRecordSaveColumnDefinition(), this._getRecordLockColumnDefinition());
@@ -340,7 +341,7 @@ export class GridEditing implements IGridEditing {
     }
 
     private _isOneClickEdit(colDef: ColDef<IRecord>): boolean {
-        return !!colDef.settings?.cell?.oneClickEdit;
+        return !!getColumnContext(colDef).cell?.oneClickEdit;
     }
 
     private _isColumnRequired(column: IColumn): boolean {
@@ -452,7 +453,7 @@ export class GridEditing implements IGridEditing {
 
     private _isEditorOpen(gridApi: GridApi<IRecord>, cell: IGridCell): boolean {
         return gridApi.getEditingCells().some(editing => editing.rowIndex === cell.getNode()?.rowIndex
-            && editing.column.getColId() === cell.getColumnName());
+            && editing.colId === cell.getColumnName());
     }
 
     //deferred: focus set during an editor's teardown is lost to the document
@@ -466,8 +467,8 @@ export class GridEditing implements IGridEditing {
             gridApi.ensureIndexVisible(targetIndex);
             gridApi.setFocusedCell(targetIndex, cell.getColumnName());
             //a range does not follow the focus
-            if (gridApi.getGridOption('enableRangeSelection')) {
-                gridApi.clearRangeSelection();
+            if (gridApi.getGridOption('cellSelection')) {
+                gridApi.clearCellSelection();
                 gridApi.addCellRange({ rowStartIndex: targetIndex, rowEndIndex: targetIndex, columns: [cell.getColumnName()] });
             }
         });

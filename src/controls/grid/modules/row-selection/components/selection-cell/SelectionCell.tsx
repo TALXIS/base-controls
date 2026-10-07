@@ -1,4 +1,4 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { CellRoot } from "../../../../components/cells/root/CellRoot";

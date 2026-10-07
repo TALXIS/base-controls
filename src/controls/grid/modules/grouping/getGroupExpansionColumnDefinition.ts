@@ -1,4 +1,4 @@
-import { ColDef } from "@ag-grid-community/core";
+import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { GroupExpansionHeader } from "./components/group-expansion-header/GroupExpansionHeader";
 

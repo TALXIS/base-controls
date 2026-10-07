@@ -45,7 +45,7 @@ export class GridCellTheme implements IGridCellTheme {
         //before the hooks so a hook gets the last word
         builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
         this._cells.applyCellThemeHooks(builder, { record, columnName: this._cell.getColumnName() });
-        this._cell.getSettings().cell?.onGetTheme?.(builder, { record });
+        this._cell.getContext().cell?.onGetTheme?.(builder, { record });
         return builder.getTheme();
     }
 

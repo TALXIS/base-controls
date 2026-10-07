@@ -56,7 +56,7 @@
     "rollup-plugin-postcss": "^4.0.1",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-visualizer": "^5.12.0",
-    "typescript": "^4.5.2",
+    "typescript": "^5.9.3",
     "web-vitals": "^2.1.4",
     "webpack": "^5.68.0"
   },
@@ -79,15 +79,6 @@
     ]
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "31.3.2",
-    "@ag-grid-community/core": "31.3.2",
-    "@ag-grid-community/react": "31.3.2",
-    "@ag-grid-community/styles": "31.3.2",
-    "@ag-grid-enterprise/clipboard": "31.3.2",
-    "@ag-grid-enterprise/core": "31.3.2",
-    "@ag-grid-enterprise/range-selection": "31.3.2",
-    "@ag-grid-enterprise/row-grouping": "31.3.2",
-    "@ag-grid-enterprise/server-side-row-model": "31.3.2",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
@@ -97,6 +88,9 @@
     "@talxis/client-libraries": "file:../INT0014/src/SDK/ClientLibraries",
     "@talxis/client-metadata": "^0.0.7",
     "@vis.gl/react-google-maps": "^1.7.1",
+    "ag-grid-community": "36.2.0",
+    "ag-grid-enterprise": "36.2.0",
+    "ag-grid-react": "36.2.0",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "debounce": "^2.2.0",
@@ -119,5 +113,10 @@
     "@fluentui/react": "<=8.121.5",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
+  },
+  "overrides": {
+    "rollup-plugin-dts": {
+      "typescript": "$typescript"
+    }
   }
 }

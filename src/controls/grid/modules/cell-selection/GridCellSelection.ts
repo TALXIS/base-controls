@@ -28,7 +28,7 @@ export class GridCellSelection {
     }
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
-        result.options = { ...result.options, enableRangeSelection: true, ...this._options };
+        result.options.cellSelection = this._options ?? true;
     };
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {

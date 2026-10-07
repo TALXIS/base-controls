@@ -1,4 +1,4 @@
-import { GridState, Module } from "@ag-grid-community/core";
+import { GridState, Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";

@@ -1,5 +1,5 @@
 import { useContext, useLayoutEffect, useMemo } from "react";
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { IRecordEvents } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";

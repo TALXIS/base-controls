@@ -3,6 +3,10 @@ import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
 import { PcfContextProvider, ThemeGenerator, ThemeProvider } from '@talxis/base-controls';
+import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
+
+//names any AG Grid module a grid uses but the library does not register
+ModuleRegistry.registerModules([ValidationModule]);
 
 //the theme every story is drawn in: a control takes what is above it, and this is what is above them.
 //Teams light: its brand purple, its surface and its foreground

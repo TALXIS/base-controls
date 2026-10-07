@@ -1,6 +1,6 @@
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
-import { CellFocusedEvent } from "@ag-grid-community/core";
+import { CellFocusedEvent } from "ag-grid-community";
 import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";

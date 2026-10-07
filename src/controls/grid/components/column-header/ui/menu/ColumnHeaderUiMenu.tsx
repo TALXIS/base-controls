@@ -33,8 +33,8 @@ const preventDismissOnEvent = (e: Event | React.MouseEvent<Element, MouseEvent> 
         return false;
     }
     const target = e.target as HTMLElement;
-    //check for vertical scroll
-    if (target?.classList?.contains('ag-body-viewport') || target?.classList?.contains('ag-body-vertical-scroll-viewport')) {
+    //the grid's viewport scrolls the rows under the header, which stays put
+    if (target?.classList?.contains('ag-grid-viewport') || target?.classList?.contains('ag-body-vertical-scroll-viewport')) {
         return true;
     }
     //ios outputs horizontal scroll if focused in callout btn.

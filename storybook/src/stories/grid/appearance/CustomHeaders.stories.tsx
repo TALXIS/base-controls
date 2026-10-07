@@ -47,7 +47,7 @@ Each part brings one piece of the grid's behaviour, so your header keeps what yo
 | Part | What it brings |
 |---|---|
 | \`Root\` | Makes it a column's header. Required, and outermost. |
-| \`Theme\` | The header's colours, from \`settings.header.onGetTheme\` and theme hooks. |
+| \`Theme\` | The header's colours, from \`context.header.onGetTheme\` and theme hooks. |
 | \`Container\` | The button the header is: hover, focus, alignment, and a click that opens the menu. |
 | \`Prefix\` | The icons drawn before the name. |
 | \`Content\` | What holds the name and the required marker. |
@@ -63,7 +63,7 @@ Each part brings one piece of the grid's behaviour, so your header keeps what yo
 
 | Hook | Returns |
 |---|---|
-| \`useGridColumnHeader()\` | The header: its name and title, column, settings, alignment, \`isRequired()\`, \`getAdornments()\`, \`openMenu()\` and \`closeMenu()\` |
+| \`useGridColumnHeader()\` | The header: its name and title, column, context, alignment, \`isRequired()\`, \`getAdornments()\`, \`openMenu()\` and \`closeMenu()\` |
 
 Call it in a component inside \`Root\`.
 

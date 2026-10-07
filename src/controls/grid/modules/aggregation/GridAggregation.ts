@@ -1,4 +1,4 @@
-import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "@ag-grid-community/core";
+import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
@@ -341,6 +341,8 @@ export class GridAggregation implements IGridAggregation {
         if (totalRow && !this._isTotalRowSubscribed) {
             this._isTotalRowSubscribed = true;
             totalRow.getDataProvider().addEventListener('onLoading', () => this._setPinnedRowData());
+            //the pinned node is reused by its id
+            totalRow.getDataProvider().addEventListener('onNewDataLoaded', () => this._setPinnedRowData());
             totalRow.getDataProvider().addEventListener('onError', () => this._setPinnedRowData());
         }
         this._setPinnedRowData();

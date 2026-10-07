@@ -82,7 +82,7 @@ const GridExample = () => {
                 headerName: 'Win chance',
                 cellRenderer: WinChanceCell,
                 initialWidth: 220,
-                settings: {
+                context: {
                     alignment: 'left',
                     cell: {
                         onGetLoading: (result, { record }) => {

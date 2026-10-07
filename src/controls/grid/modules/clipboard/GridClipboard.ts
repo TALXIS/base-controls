@@ -27,9 +27,8 @@ export class GridClipboard {
         grid.registerStyles(this._onStyles, GRID_MODULE_PRIORITY.clipboard);
     }
 
-    //by default a copy is one cell or one highlighted block, not the row selection
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
-        result.options = { ...result.options, suppressCopyRowsToClipboard: true, ...this._options };
+        result.options = { ...result.options, ...this._options };
     };
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {

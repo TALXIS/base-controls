@@ -1,4 +1,4 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 
 /** What AG Grid hands whatever renders a cell. */

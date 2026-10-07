@@ -1,4 +1,4 @@
-import { ColDef } from "@ag-grid-community/core";
+import { ColDef } from "ag-grid-community";
 import { IContextualMenuItem } from "@fluentui/react";
 import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";

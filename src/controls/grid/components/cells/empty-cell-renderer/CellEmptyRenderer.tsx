@@ -5,7 +5,7 @@ import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
 import { hasResizeGrip } from "../resize-grip/hasResizeGrip";
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { ITheme } from "@theme";
 import { ICellRendererComponents } from "../cell-renderer/components";
 

@@ -1,4 +1,4 @@
-import type { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
+import type { ColDef, GridApi, IRowNode } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGridAgGridOptions } from "../runtime";
 

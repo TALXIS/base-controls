@@ -1,4 +1,4 @@
-import { GridApi, IRowNode, RowGroupOpenedEvent } from "@ag-grid-community/core";
+import { GridApi, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { ITaskExpansionDelta, ITaskExpansionProvider } from "@controls/task-grid/providers/expansion";

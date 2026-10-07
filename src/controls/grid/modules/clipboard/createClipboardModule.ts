@@ -1,5 +1,5 @@
-import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
-import { AgGridReactProps } from "@ag-grid-community/react";
+import { ClipboardModule } from "ag-grid-enterprise";
+import { AgGridReactProps } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridModule } from "../../interfaces";
 import { GridClipboard } from "./GridClipboard";
@@ -9,8 +9,6 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
     | 'clipboardDelimiter'
     | 'copyHeadersToClipboard'
     | 'copyGroupHeadersToClipboard'
-    | 'suppressCopyRowsToClipboard'
-    | 'suppressCopySingleCellRanges'
     | 'suppressCutToClipboard'
     | 'suppressClipboardPaste'
     | 'suppressClipboardApi'

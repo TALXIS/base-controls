@@ -1,4 +1,4 @@
-import { ILoadingCellRendererParams } from "@ag-grid-community/core";
+import { ILoadingCellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { useGridService } from "../../../useGridService";
 import { useGridComponents } from "../../../context";

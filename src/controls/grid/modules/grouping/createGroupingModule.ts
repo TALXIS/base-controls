@@ -1,5 +1,5 @@
 import { LocalizationService, ServiceLocator } from "@utils";
-import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
+import { RowGroupingModule, TreeDataModule } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
 import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
@@ -25,7 +25,7 @@ export interface IGroupingModuleOptions {
 
 /** Builds the module that groups the rows by a column. */
 export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGridModule => ({
-    agGridModules: [RowGroupingModule],
+    agGridModules: [RowGroupingModule, TreeDataModule],
     onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });

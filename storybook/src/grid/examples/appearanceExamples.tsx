@@ -28,7 +28,7 @@ const GridExample = () => <Grid.Root
     }}
     colDefs={{
         duedate: {
-            settings: {
+            context: {
                 cell: {
                     onGetTheme: (theme, { record }) => {
                         const urgency = getUrgency(record)
@@ -70,7 +70,7 @@ const GridExample = () => <Grid.Root
         custom: [escalatedTicketsModule],
     }}
     colDefs={{
-        escalated: { settings: { cell: { oneClickEdit: true } } },
+        escalated: { context: { cell: { oneClickEdit: true } } },
     }}
     height='440px' />
 `
@@ -85,7 +85,7 @@ const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
     colDefs={{
-        ticketnumber: { settings: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
+        ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
     }}
     height='420px' />
 `
@@ -188,7 +188,7 @@ const GridExample = () => {
         <Grid.Root
             provider={provider}
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
-            colDefs={{ hours: { settings: { cell: { onGetValidation: validateHours } } } }}
+            colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
             onGridReady={gridRuntime => runtime.current = gridRuntime}
             height='420px' />
     </Stack>
@@ -267,7 +267,7 @@ const GridExample = () => <Grid.Root
     }}
     labels={CZECH_LABELS}
     colDefs={{
-        employee: { settings: { isLocked: true } },
+        employee: { context: { isLocked: true } },
     }}
     rowSettings={{
         onGetLock: (result, { record }) => {

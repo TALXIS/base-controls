@@ -305,7 +305,7 @@ const DealForm = (props: { deal: IRecord }) => {
     </Form.Root>
 }
 
-const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} type={PanelType.medium} isLightDismiss onDismiss={props.onDismiss}>
+const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} headerText={props.deal?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={props.onDismiss} onRenderFooterContent={() => <DefaultButton text='Close' onClick={props.onDismiss} />}>
     {props.deal && <DealForm key={props.deal.getRecordId()} deal={props.deal} />}
 </Panel>
 
@@ -360,7 +360,7 @@ export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
     editing: ({ switches }) => ({
         modules: { editing: createEditingModule({ autoSave: !!switches.autoSave }) },
-        colDefs: { recurring: { settings: { cell: { oneClickEdit: true } } } },
+        colDefs: { recurring: { context: { cell: { oneClickEdit: true } } } },
     }),
     //saving itself is the editing module's autoSave option, read above
     autoSave: ({ toasts }) => ({

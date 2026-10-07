@@ -25,7 +25,7 @@ A column's callout sets one condition, and the conditions of all filtered column
 | Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`settings.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns-overview--overview).
+The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## Open the grid sorted and filtered
 
@@ -128,7 +128,7 @@ Each module's \`components\` option replaces what it draws, by piece. How to wri
 | \`filterIcon.onRenderIcon\` | The funnel after a filtered column's name. |
 | \`filterCallout.onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | The callout's frame. The operator picker and the value controls inside take their parameters from the hook above, and the *Apply* and *Clear* buttons cannot be changed. |
 
-To hide the arrow or the funnel on one column, remove the header adornment keyed \`'sort'\` or \`'filter'\` in \`settings.header.onGetAdornments\`.
+To hide the arrow or the funnel on one column, remove the header adornment keyed \`'sort'\` or \`'filter'\` in \`context.header.onGetAdornments\`.
 `
 
 const meta = {

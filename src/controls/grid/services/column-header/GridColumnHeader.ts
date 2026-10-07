@@ -1,9 +1,9 @@
-import { ColDef, Column } from "@ag-grid-community/core";
+import { ColDef, Column } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
 import { IContextualMenuItem } from "@fluentui/react";
 import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
-import { IGridColumnSettings } from "../columns";
+import { getColumnContext, IGridColumnContext } from "../columns";
 import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
 import { IColumnHeaderAdornment } from "./GridColumnHeaders";
 
@@ -33,7 +33,7 @@ export interface IGridColumnHeader {
     /** The provider's column for this one, if it has one. */
     getColumn(): IColumn | undefined;
     /** What the column says its cells and its header are. */
-    getSettings(): IGridColumnSettings;
+    getContext(): IGridColumnContext;
     /** Which edge the column reads from. */
     getAlignment(): IAlignment;
     /** Whether the column asks for a value. */
@@ -83,16 +83,16 @@ export class GridColumnHeader implements IGridColumnHeader {
         return this._services.get('provider').getColumnsMap()[this.getColDef().colId!];
     }
 
-    public getSettings(): IGridColumnSettings {
-        return this.getColDef().settings ?? {};
+    public getContext(): IGridColumnContext {
+        return getColumnContext(this.getColDef());
     }
 
     public getAlignment(): IAlignment {
-        return this.getSettings().alignment ?? 'left';
+        return this.getContext().alignment ?? 'left';
     }
 
     public isRequired(): boolean {
-        return !!this.getSettings().isRequired;
+        return !!this.getContext().isRequired;
     }
 
     public getName(): string {

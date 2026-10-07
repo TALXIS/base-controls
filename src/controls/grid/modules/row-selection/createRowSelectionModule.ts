@@ -1,3 +1,4 @@
+import { RowSelectionModule } from "ag-grid-community";
 import { ServiceLocator } from "@utils";
 import { IGridModule } from "../../interfaces";
 import { GridRowSelection } from "./GridRowSelection";
@@ -12,6 +13,7 @@ export interface IRowSelectionModuleOptions {
 
 /** Builds the module that lets rows be selected. */
 export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IGridModule => ({
+    agGridModules: [RowSelectionModule],
     onRegister: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridRowSelectionServiceMap>();
         services.register('gridServices', () => gridServices);

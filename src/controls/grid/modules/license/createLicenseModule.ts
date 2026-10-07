@@ -1,4 +1,4 @@
-import { LicenseManager } from "@ag-grid-enterprise/core";
+import { LicenseManager } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
 
 export interface ILicenseModuleOptions {

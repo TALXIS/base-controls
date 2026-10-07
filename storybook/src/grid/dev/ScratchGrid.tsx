@@ -257,9 +257,9 @@ const validateEstimate = (result: IFieldValidationResult, { record }: { record: 
 /** The columns the story adds or changes, beyond what the provider holds. */
 const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = {
     //a grouped status stays where grouping pins it
-    status: colDef => ({ pinned: colDef?.pinned ?? 'right', settings: { ...colDef?.settings, alignment: 'right' } }),
+    status: colDef => ({ pinned: colDef?.pinned ?? 'right', context: { ...colDef?.context, alignment: 'right' } }),
     //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
-    estimate: { settings: { cell: { onGetValidation: validateEstimate } } },
+    estimate: { context: { cell: { onGetValidation: validateEstimate } } },
     [PAYLOAD_COLUMN]: { cellRenderer: PayloadCell, headerComponent: PayloadHeader },
     [SUMMARY_COLUMN]: { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
 }

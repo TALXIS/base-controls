@@ -86,8 +86,8 @@ const GridExample = () => {
         provider={timesheets}
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
         colDefs={{
-            hours: { settings: { cell: { onGetValidation: validateHours } } },
-            comment: { settings: { cell: { onGetValidation: validateComment } } },
+            hours: { context: { cell: { onGetValidation: validateHours } } },
+            comment: { context: { cell: { onGetValidation: validateComment } } },
         }}
         height='420px' />
 }
@@ -115,9 +115,9 @@ const GridExample = () => {
                 },
             }}
             colDefs={{
-                employee: { settings: { isLocked: true } },
+                employee: { context: { isLocked: true } },
                 rate: {
-                    settings: {
+                    context: {
                         cell: {
                             onGetLock: (result, { record }) => {
                                 if (!isBillable(record)) {
@@ -190,7 +190,7 @@ const GridExample = () => {
         <Grid.Root
             provider={provider}
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            colDefs={{ billable: { settings: { cell: { oneClickEdit: true } } } }}
+            colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
             onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
             height='420px' />
     </Stack>

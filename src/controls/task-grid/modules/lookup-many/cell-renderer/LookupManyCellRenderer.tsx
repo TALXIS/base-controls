@@ -1,7 +1,7 @@
 import { useDatasetControl, useTaskDataProvider } from "@controls/task-grid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { IGridCellParams } from "@controls/grid";
+import { getColumnContext, IGridCellParams } from "@controls/grid";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@controls/task-grid/modules/lookup-many/components";
 import { useTheme } from "@fluentui/react";
 import { ThemeProvider } from "@utils";
@@ -40,7 +40,7 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
     //asked of the column and the record rather than of a cell: this is the column's `cellRenderer`, so
     //there is no `Grid.Cell.Root` above it and no cell to ask
-    const isEditable = props.colDef!.settings?.isLocked === false && record.getColumnInfo(column.name).security.editable;
+    const isEditable = getColumnContext(props.colDef).isLocked === false && record.getColumnInfo(column.name).security.editable;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);

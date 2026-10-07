@@ -1,4 +1,4 @@
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { ITheme } from "@theme";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
 import { CellContainer } from "../../../../components/cells/container/CellContainer";

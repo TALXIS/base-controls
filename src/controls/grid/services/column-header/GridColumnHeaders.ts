@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { Column } from "@ag-grid-community/core";
+import { Column } from "ag-grid-community";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { HookRegistry } from "@utils";
@@ -119,7 +119,7 @@ export class GridColumnHeaders implements IGridColumnHeaders {
     public getMenuItems(header: IGridColumnHeader): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
         this._menuSectionHooks.apply(sections, header);
-        header.getSettings().header?.onGetMenuSections?.(sections);
+        header.getContext().header?.onGetMenuSections?.(sections);
         const items = sections
             .filter(section => section.items.length > 0)
             .flatMap(section => [{
@@ -130,7 +130,7 @@ export class GridColumnHeaders implements IGridColumnHeaders {
                 onRenderIcon: () => null,
             }, ...section.items]);
         this._menuItemHooks.apply(items, header);
-        header.getSettings().header?.onGetMenuItems?.(items);
+        header.getContext().header?.onGetMenuItems?.(items);
         return items;
     }
 
@@ -144,13 +144,13 @@ export class GridColumnHeaders implements IGridColumnHeaders {
 
     public applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void {
         this._themeHooks.apply(theme, header);
-        header.getSettings().header?.onGetTheme?.(theme);
+        header.getContext().header?.onGetTheme?.(theme);
     }
 
     public getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[] {
         const adornments: IColumnHeaderAdornment[] = [];
         this._adornmentHooks.apply(adornments, header);
-        header.getSettings().header?.onGetAdornments?.(adornments);
+        header.getContext().header?.onGetAdornments?.(adornments);
         return adornments;
     }
 }

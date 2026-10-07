@@ -1,5 +1,5 @@
 import { IPcfContext } from "@interfaces";
-import type { GridApi } from "@ag-grid-community/core";
+import type { GridApi } from "ag-grid-community";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator } from "@utils";

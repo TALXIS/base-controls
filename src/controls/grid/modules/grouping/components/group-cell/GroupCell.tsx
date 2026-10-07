@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { ITheme } from "@theme";

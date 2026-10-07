@@ -76,7 +76,7 @@ Each part brings one piece of the grid's behaviour, so your cell keeps what you 
 
 | Hook | Returns |
 |---|---|
-| \`useGridCell()\` | The cell: its record, column, settings, \`isLocked()\`, \`isLoading()\`, \`isBeingEdited()\` and \`render()\` |
+| \`useGridCell()\` | The cell: its record, column, context, \`isLocked()\`, \`isLoading()\`, \`isBeingEdited()\` and \`render()\` |
 | \`useGridField()\` | The field: its value, formatted value, \`isValid()\` and \`setValue(value)\`, which saves with the editing module's \`autoSave\` |
 
 Call them in a component inside the cell, so it redraws when a value changes.

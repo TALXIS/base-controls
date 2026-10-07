@@ -1,14 +1,15 @@
-import { ColDef } from "@ag-grid-community/core";
+import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
+import { getColumnContext } from "../../services/columns/colDef";
 
 declare module "../../services/columns/colDef" {
-    interface IGridColumnSettings {
+    interface IGridColumnContext {
         /** Whether what the cells hold is locked for good. */
         isLocked?: boolean;
     }
-    interface IGridColumnCellSettings {
+    interface IGridColumnCellContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
         oneClickEdit?: boolean;
         /** Decides whether a cell is locked, after the cell-level `registerLock` hooks. */
@@ -90,7 +91,7 @@ export class GridLocks implements IGridLocks {
 
     //a column set as locked is final, no hook can open it
     private _isColumnLocked(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
-        return colDef?.settings?.isLocked === true || this._applyHooks(false, { columnName });
+        return getColumnContext(colDef).isLocked === true || this._applyHooks(false, { columnName });
     }
 
     private _isRecordLocked(record: IRecord): boolean {
@@ -103,7 +104,7 @@ export class GridLocks implements IGridLocks {
     private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         const result: IGridLock = { isLocked: false };
         this._hooks.apply(result, { record, columnName });
-        colDef?.settings?.cell?.onGetLock?.(result, { record });
+        getColumnContext(colDef).cell?.onGetLock?.(result, { record });
         return result.isLocked;
     }
 

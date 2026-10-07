@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { JumpToNewestTicketExample, RearrangeColumnsExample } from '../../../grid/examples/agGridExamples'
 
 const DESCRIPTION = `
-The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a> 31.3.2. For what no hook covers, a module can set AG Grid's options itself, and your code can call AG Grid's api once the grid is ready. Reach for them last: the grid sets many of AG Grid's options itself, and what you change through AG Grid's api is not written back to the provider.
+The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a> 36.2.0. For what no hook covers, a module can set AG Grid's options itself, and your code can call AG Grid's api once the grid is ready. Reach for them last: the grid sets many of AG Grid's options itself, and what you change through AG Grid's api is not written back to the provider.
 
 ## AG Grid's options
 
@@ -36,14 +36,15 @@ export const screenReaderModule: IGridModule = {
 
 | Options | Set by |
 |---|---|
-| \`rowModelType\`, \`getRowId\`, \`onGridReady\`, \`onGridPreDestroyed\`, \`rowHeight\`, \`initialState\`, \`reactiveCustomComponents\`, \`enableGroupEdit\`, \`loadingOverlayComponent\`, \`noRowsOverlayComponent\` | The grid, when AG Grid is created |
+| \`rowModelType\`, \`getRowId\`, \`onGridReady\`, \`onGridPreDestroyed\`, \`rowHeight\`, \`initialState\`, \`enableGroupEdit\`, \`loadingOverlayComponent\`, \`noRowsOverlayComponent\` | The grid, when AG Grid is created |
 | \`columnDefs\` | The grid, from the column definitions hooks and \`colDefs\` |
 | \`loadingCellRenderer\` | The grid, for rows whose records are still loading |
+| \`loading\` | The grid, for its loading overlay |
 | \`getRowHeight\` | The \`rows\` service, from the row height hooks and \`rowSettings.onGetHeight\` |
 | \`rowClassRules\` | The grid, for the muted rows of records locked as a whole |
 | \`rowData\`, \`isGroupOpenByDefault\`, \`treeData\`, \`getDataPath\`, \`serverSideDatasource\`, \`isServerSideGroupOpenByDefault\` | The row model module |
 | \`rowSelection\` | The row selection module |
-| \`enableRangeSelection\` | The cell selection module |
+| \`cellSelection\` | The cell selection module |
 | \`groupDisplayType\` | The grouping module |
 | \`pinnedBottomRowData\`, \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`fullWidthCellRendererParams\` | The aggregation module, for the totals row |
 
@@ -70,10 +71,10 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 ## AG Grid modules
 
-\`agGridModules\` lists the AG Grid modules a module of yours needs, such as CSV export:
+The grid registers only the AG Grid modules its own modules use. \`agGridModules\` lists the ones a module of yours needs, such as CSV export:
 
 \`\`\`tsx
-import { CsvExportModule } from '@ag-grid-community/csv-export'
+import { CsvExportModule } from 'ag-grid-community'
 import { IGridModule, IGridRuntime } from '@talxis/base-controls'
 
 export const csvExportModule: IGridModule = {
@@ -84,7 +85,7 @@ export const exportQueue = (runtime: IGridRuntime) => runtime.services.find('gri
 \`\`\`
 
 - The grid registers them with AG Grid as it mounts, before AG Grid is created.
-- They must be the same version as the grid's AG Grid: \`npm install @ag-grid-community/csv-export@31.3.2\`.
+- Import them from the grid's own \`ag-grid-community\` and \`ag-grid-enterprise\`, so they match its AG Grid version.
 - AG Grid registers modules for the whole page: once one grid has registered a module, every grid on the page has it. AG Grid Enterprise modules need a licence: see [**Modules**](?path=/docs/grid-modules--overview).
 - CSV export writes the values as the cells format them, such as an option's label.
 `

@@ -1,11 +1,11 @@
-import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
+import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
 import { EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
-import { IGridStyles } from "../../services/runtime";
+import { IGridAgGridOptions, IGridStyles } from "../../services/runtime";
 import { getGridRowSelectionStyles } from "./styles";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 
@@ -148,9 +148,21 @@ export class GridRowSelection implements IGridRowSelection {
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
         gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
-        gridServices.get('grid').registerAgGridOptions(result => result.options.rowSelection = this._mode, GRID_MODULE_PRIORITY.rowSelection);
+        //last, so it reaches the columns the caller's `colDefs` add or replace
+        gridServices.get('columns').registerColumnDefinitions(this._onGateClickSelection, Number.MAX_SAFE_INTEGER);
+        gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowSelection);
         gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.rowSelection);
     }
+
+    //the checkboxes are drawn by the selection column, not by AG Grid
+    private _onAgGridOptions = (result: IGridAgGridOptions): void => {
+        result.options.rowSelection = {
+            mode: this._mode === 'single' ? 'singleRow' : 'multiRow',
+            checkboxes: false,
+            headerCheckbox: false,
+            enableClickSelection: true,
+        };
+    };
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {
         result.styles.push(getGridRowSelectionStyles(theme));
@@ -161,37 +173,43 @@ export class GridRowSelection implements IGridRowSelection {
         columnDefs.unshift(getSelectionColumnDefinition());
     };
 
+    /** Keeps the clicks that mean something else from reaching AG Grid's row-click selection. */
+    private _onGateClickSelection = (columnDefs: ColDef<IRecord>[]): void => {
+        for (const columnDef of columnDefs) {
+            const suppressMouseEventHandling = columnDef.cellRendererParams?.suppressMouseEventHandling;
+            columnDef.cellRendererParams = {
+                ...columnDef.cellRendererParams,
+                suppressMouseEventHandling: (params: SuppressMouseEventHandlingParams<IRecord>) =>
+                    !!suppressMouseEventHandling?.(params) || this._isClickSelectionSuppressed(params),
+            };
+        }
+    };
+
+    //the checkbox, a cell's commands and a plain click on a group row bypass AG Grid's selection
+    private _isClickSelectionSuppressed(params: SuppressMouseEventHandlingParams<IRecord>): boolean {
+        const event = params.event as MouseEvent;
+        if (event.type !== 'click') {
+            return false;
+        }
+        const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS_NAME}`);
+        const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
+        const isGroupRow = !!this._services.get('gridServices').find('grouping')?.isGroupRow(params.node);
+        return this.isSelectionColumn(params.column?.getColId()) || isCommand || (isGroupRow && !hasModifier);
+    }
+
     private _onDestroyed = (): void => {
         this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
-        this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);
     };
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
-        this._services.get('gridServices').whenAvailable('gridRoot',
-            gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
         //the host's persisted selection, restored once its rows are in
         this._pendingRestoreRecordIds = this._provider.getSelectedRecordIds();
         if (this._pendingRestoreRecordIds.length) {
             this._gridApi.addEventListener('modelUpdated', this._onModelUpdated);
         }
     }
-
-    /** Decides what may reach AG Grid's own row-click selection, before it gets the chance. */
-    private _onCaptureClick = (event: Event): void => {
-        const target = event.target as HTMLElement;
-        const rowId = target.closest?.('[row-id]')?.getAttribute('row-id');
-        const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
-        const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
-        //the checkbox, a cell's commands and a plain click on a group row bypass AG Grid's selection
-        const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
-        const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
-        const isCommand = !!target.closest?.(`.${CELL_COMMANDS_CLASS_NAME}`);
-        if (this.isSelectionColumn(colId ?? undefined) || isCommand || (isGroupRow && !hasModifier)) {
-            _.stopPropagationForAgGrid(event);
-        }
-    };
 
     private _onGridSelectionChanged = (event: SelectionChangedEvent<IRecord>): void => {
         //the source is the only fence there is

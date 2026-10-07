@@ -1,4 +1,4 @@
-import { IServerSideDatasource, IServerSideGetRowsParams } from "@ag-grid-community/core";
+import { IServerSideDatasource, IServerSideGetRowsParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 
@@ -26,17 +26,17 @@ export class ServerSideDatasource implements IServerSideDatasource {
                 params.fail();
             }
             else {
-                params.success({
-                    rowData: records,
-                    rowCount: records.length
-                })
+                params.success(getBlock(records, params));
             }
         }
         else {
-            params.success({
-                rowData: records,
-                rowCount: records.length
-            })
+            params.success(getBlock(records, params));
         }
     }
 }
+
+//AG Grid builds a node for every row it is handed
+const getBlock = (records: IRecord[], params: IServerSideGetRowsParams) => ({
+    rowData: records.slice(params.request.startRow ?? 0, params.request.endRow ?? records.length),
+    rowCount: records.length,
+});

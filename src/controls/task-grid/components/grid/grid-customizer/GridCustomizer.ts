@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsGroupOpenByDefaultParams, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
+import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsGroupOpenByDefaultParams, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "ag-grid-community";
 import { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import { IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
@@ -257,7 +257,7 @@ export class GridCustomizer implements IGridCustomizer {
                     //a task's checklist is not a value on the task, so there is nothing to edit: no
                     //editor to open, and nothing a cell could change either
                     colDef.editable = false;
-                    colDef.settings = { ...colDef.settings, isLocked: true };
+                    colDef.context = { ...colDef.context, isLocked: true };
                     break;
                 }
                 case PREDECESSORS_COLUMN_NAME:
@@ -270,7 +270,7 @@ export class GridCustomizer implements IGridCustomizer {
                     //a task's dependencies are not a value on the task, so there is nothing to edit: no
                     //editor to open, and nothing a cell could change either
                     colDef.editable = false;
-                    colDef.settings = { ...colDef.settings, isLocked: true };
+                    colDef.context = { ...colDef.context, isLocked: true };
                     break;
                 }
             }

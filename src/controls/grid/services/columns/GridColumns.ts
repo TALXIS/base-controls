@@ -1,11 +1,11 @@
-import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry, IAlignment } from "@utils";
 import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/CellFieldRenderer";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
-import { IGridColumnSettings } from "./colDef";
+import { IGridColumnContext } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
@@ -84,7 +84,7 @@ export class GridColumns implements IGridColumns {
             const existing = index === -1 ? null : columnDefs[index];
             const changes = typeof override === 'function' ? override(existing) : override;
             const base: ColDef<IRecord> = existing ?? { colId };
-            const merged = { ...base, ...changes, colId, settings: this._mergeSettings(base.settings, changes.settings) };
+            const merged = { ...base, ...changes, colId, context: this._mergeContext(base.context, changes.context) };
             if (index === -1) {
                 columnDefs.push(merged);
             }
@@ -126,7 +126,7 @@ export class GridColumns implements IGridColumns {
             minWidth: MIN_COLUMN_WIDTH,
             lockPinned: true,
             autoHeaderHeight: true,
-            settings: this._getColumnSettings(column),
+            context: this._getColumnContext(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
@@ -139,7 +139,7 @@ export class GridColumns implements IGridColumns {
     }
 
     //merged a level deep so an entry can change one setting, or one callback, and keep the rest
-    private _mergeSettings(base: IGridColumnSettings = {}, override: IGridColumnSettings = {}): IGridColumnSettings {
+    private _mergeContext(base: IGridColumnContext = {}, override: IGridColumnContext = {}): IGridColumnContext {
         return {
             ...base,
             ...override,
@@ -149,7 +149,7 @@ export class GridColumns implements IGridColumns {
     }
 
     /** What the grid's cells and header read about this column. */
-    private _getColumnSettings(column: IColumn): IGridColumnSettings {
+    private _getColumnContext(column: IColumn): IGridColumnContext {
         return {
             alignment: this._getAlignment(column),
             isPrimary: !!column.isPrimary,

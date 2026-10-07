@@ -40,7 +40,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 {{story: Assign new tickets to yourself}}
 
 - Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Cell commands* on [**Columns**](?path=/docs/grid-columns-overview--overview).
-- For commands that only one column offers, \`settings.cell.onGetCommands\` in \`colDefs\` does the same, after the hooks.
+- For commands that only one column offers, \`context.cell.onGetCommands\` in \`colDefs\` does the same, after the hooks.
 
 {{story: Placeholders for missing values}}
 
@@ -58,7 +58,7 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 
 - \`takesInput\` is \`true\` for an editor and for a one-click cell. Those are drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`.
 - The value renderer reads the value from the record, so changing \`value\` here shows nothing. To change what a value reads as, use \`record.expressions.setFormattedValueExpression\`.
-- For one column, \`settings.cell.onGetControlParameters\` in \`colDefs\` does the same, after the hooks.
+- For one column, \`context.cell.onGetControlParameters\` in \`colDefs\` does the same, after the hooks.
 
 ## Rows
 
@@ -83,7 +83,7 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 
 - A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
 - \`registerColumnMenuItems\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
-- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getSettings()\`, \`getAlignment()\`, \`isLocked()\`, \`isRequired()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
+- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getContext()\`, \`getAlignment()\`, \`isLocked()\`, \`isRequired()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
 
 {{story: Show the currency in the header}}
 

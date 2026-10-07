@@ -82,12 +82,12 @@ A value that fails validation draws a red outline and an error icon in its cell,
 |---|---|---|
 | Required | \`metadata.RequiredLevel\` \`1\` (SystemRequired) or \`2\` (ApplicationRequired) on the provider column | That the value is not empty. The header shows an asterisk while the editing module is on. |
 | Built-in checks | The column's data type and metadata | Single-line text against \`MaxLength\`, whole and decimal numbers against \`MinValue\` and \`MaxValue\`, that numbers, money and durations hold numbers, email, URL and date formats |
-| One column | \`settings.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column. It may read any column of the record. |
+| One column | \`context.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column. It may read any column of the record. |
 | Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service, from a module | Your rule for every column of every record. See [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
 
 - Your rules run first: the hooks, then the column's \`onGetValidation\`, then the required and built-in checks. A rule can add an error; it cannot clear a built-in one.
 - Validation does not depend on editing: a read-only grid outlines invalid values too.
-- \`settings.isRequired\` only draws the asterisk; it validates nothing. \`record.expressions.setRequiredLevelExpression\` changes the required check for one record, not the asterisk.
+- \`context.isRequired\` only draws the asterisk; it validates nothing. \`record.expressions.setRequiredLevelExpression\` changes the required check for one record, not the asterisk.
 - Your rules are set on the provider's records, so they gate every save, a \`provider.save()\` from outside the grid included. They replace a \`record.expressions.setValidationExpression\` of your own on the same column.
 - Your rules run for group rows and the totals row as well: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
@@ -113,13 +113,13 @@ Locks decide what can be edited. There are four levels, checked in the order of 
 | Level | Locked by | Drawn as | Label |
 |---|---|---|---|
 | Grid | No editing module | Nothing: no save status column, no lock icons, no muted rows | None |
-| Column | \`settings.isLocked: true\`, which a column starts with when its metadata has \`IsValidForUpdate: false\`; or a lock hook asked about \`{ columnName }\` | A lock in the header | \`columnLocked\`: This column cannot be edited. |
+| Column | \`context.isLocked: true\`, which a column starts with when its metadata has \`IsValidForUpdate: false\`; or a lock hook asked about \`{ columnName }\` | A lock in the header | \`columnLocked\`: This column cannot be edited. |
 | Record | \`rowSettings.onGetLock\`, a lock hook asked about \`{ record }\`, or a record the provider reports inactive | A muted row, and a lock in a column pinned at the start of the row | \`recordLocked\`: This record cannot be edited. |
-| Cell | \`settings.cell.onGetLock\` in \`colDefs\`, or a lock hook asked about \`{ record, columnName }\` | A lock icon in the cell | \`valueLocked\`: This value cannot be edited. |
+| Cell | \`context.cell.onGetLock\` in \`colDefs\`, or a lock hook asked about \`{ record, columnName }\` | A lock icon in the cell | \`valueLocked\`: This value cannot be edited. |
 
-- \`settings.isLocked: true\` is final: no hook reopens the column. To open a column its metadata locks, give it \`settings: { isLocked: false }\` in \`colDefs\` (with the legacy client API module on, see [**Legacy client API**](?path=/docs/grid-modules-legacy-client-api--overview)).
+- \`context.isLocked: true\` is final: no hook reopens the column. To open a column its metadata locks, give it \`context: { isLocked: false }\` in \`colDefs\` (with the legacy client API module on, see [**Legacy client API**](?path=/docs/grid-modules-legacy-client-api--overview)).
 - \`rowSettings.onGetLock(result, { record })\` runs after the record-level lock hooks, with \`result.isLocked\` starting as \`!record.isActive()\`. It has the last word, so it can also unlock.
-- \`settings.cell.onGetLock(result, { record })\` runs after the cell-level lock hooks, and only for a cell whose grid, column and record are open.
+- \`context.cell.onGetLock(result, { record })\` runs after the cell-level lock hooks, and only for a cell whose grid, column and record are open.
 - Both run every time the grid asks, which is often: keep them fast and free of side effects.
 - A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: redraw the cells and headers (see *Redrawing* on [**Extending**](?path=/docs/grid-extending--overview)). A muted row only follows once a value of its record changes or the data reloads.
 - The lock column is \`RECORD_LOCK_COLUMN_KEY\` (\`'recordLock'\`); it is hidden until a loaded row is locked. A muted row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
@@ -149,7 +149,7 @@ const rowSettings: IGridRowSettings = {
 
 ## Edit in place
 
-\`settings.cell.oneClickEdit\` draws the column's editing control in the cell itself, so no editor opens: a two-options column becomes a switch you click, or a coloured option picker while \`enableOptionSetColors\` is on and its options have colours. With the cell focused, F2 or typing a character steps into its control, and Escape steps out. A locked cell, and every cell while editing is off, draws its control disabled. A column the provider marks \`oneClickEdit: true\` starts with it on, and grouping turns it off on the columns it groups by.
+\`context.cell.oneClickEdit\` draws the column's editing control in the cell itself, so no editor opens: a two-options column becomes a switch you click, or a coloured option picker while \`enableOptionSetColors\` is on and its options have colours. With the cell focused, F2 or typing a character steps into its control, and Escape steps out. A locked cell, and every cell while editing is off, draws its control disabled. A column the provider marks \`oneClickEdit: true\` starts with it on, and grouping turns it off on the columns it groups by.
 
 {{story: Tick billable in place}}
 
@@ -210,7 +210,7 @@ export const CheckHoursAsTheyAreEntered: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Hours must lie between 0.25 and 12 and a rejected entry needs a comment, both checked by \`settings.cell.onGetValidation\`; Work done is required through its column's \`metadata.RequiredLevel\`, so its header shows an asterisk. Enter 14 hours, empty a Work done cell, or reject a Submitted entry that has no comment: the offending cell turns red, the save is refused, and the red icon at the start of the row says why.`,
+                story: `Hours must lie between 0.25 and 12 and a rejected entry needs a comment, both checked by \`context.cell.onGetValidation\`; Work done is required through its column's \`metadata.RequiredLevel\`, so its header shows an asterisk. Enter 14 hours, empty a Work done cell, or reject a Submitted entry that has no comment: the offending cell turns red, the save is refused, and the red icon at the start of the row says why.`,
             },
         },
     },
@@ -234,7 +234,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Approved entries are locked as a whole by \`rowSettings.onGetLock\`, Hourly rate is locked by \`settings.cell.onGetLock\` wherever the work is not billable, and Employee is locked for good by \`settings.isLocked\`, each with its own tooltip from \`labels\`. Hover the locks, approve a Submitted entry to watch it freeze, then close the week to remount the grid without the editing module.`,
+                story: `Approved entries are locked as a whole by \`rowSettings.onGetLock\`, Hourly rate is locked by \`context.cell.onGetLock\` wherever the work is not billable, and Employee is locked for good by \`context.isLocked\`, each with its own tooltip from \`labels\`. Hover the locks, approve a Submitted entry to watch it freeze, then close the week to remount the grid without the editing module.`,
             },
         },
     },
@@ -246,7 +246,7 @@ export const TickBillableInPlace: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Billable is a switch right in its cell through \`settings.cell.oneClickEdit\`: one click changes it and auto-save saves it, with no editor in between. Switch a billable entry off and watch the amount to invoice drop.`,
+                story: `Billable is a switch right in its cell through \`context.cell.oneClickEdit\`: one click changes it and auto-save saves it, with no editor in between. Switch a billable entry off and watch the amount to invoice drop.`,
             },
         },
     },

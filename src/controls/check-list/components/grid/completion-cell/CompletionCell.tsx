@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { Checkbox } from "@fluentui/react";
 import { IRecord, IRecordEvents } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";

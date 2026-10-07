@@ -1,4 +1,4 @@
-import { GridApi, IRowNode } from "@ag-grid-community/core";
+import { GridApi, IRowNode } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../../../services/row-model";
@@ -33,29 +33,27 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         }
     }
 
-    /** Neither option is `@initial`, so grouping can turn the hierarchy on and off. */
+    /** `treeData` is not `@initial`, so grouping can turn the hierarchy on and off. */
     public onAgGridOptions(result: IGridAgGridOptions): void {
-        //the path first: AG Grid reads it the moment tree data is switched on
-        result.options.getDataPath = this._isTree ? getRecordPath : undefined;
         result.options.treeData = this._isTree;
     }
 
     /** Nothing: `rowGroup` would have AG Grid regroup the tree it was handed. */
     public onApplyColumnDefinition(): void { }
 
-    /** Written onto the nodes and drawn in one pass. */
+    /** Opens and closes the groups through AG Grid, which holds the expanded state. */
     public onApplyExpandedLevel(gridApi: GridApi<IRecord>): void {
         const changedNodes: IRowNode<IRecord>[] = [];
         gridApi.forEachNode(node => {
-            const expanded = this.isGroupOpenByDefault(node);
-            if (node.allChildrenCount && node.expanded !== expanded) {
-                node.expanded = expanded;
+            if (node.allChildrenCount && node.expanded !== this.isGroupOpenByDefault(node)) {
                 changedNodes.push(node);
             }
         });
+        for (const node of changedNodes) {
+            node.setExpanded(!node.expanded);
+        }
+        //rebuilds the displayed rows now rather than on the next animation frame
         gridApi.onGroupExpandedOrCollapsed();
-        //a direct write skips the `expandedChanged` a chevron redraws on
-        gridApi.refreshCells({ rowNodes: changedNodes, force: true });
     }
 
     public onExpansionChanged(): void { }
@@ -87,10 +85,23 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         }
         const loadToken = ++this._loadToken;
         await loadGroupedRecords(this._provider.getRecords());
-        if (loadToken !== this._loadToken || !this._services.find('gridApi')) {
+        const gridApi = this._services.find('gridApi');
+        if (loadToken !== this._loadToken || !gridApi) {
             return;
         }
         this._onRowsLoaded();
+        this._redrawGroupRows(gridApi);
+    }
+
+    //AG Grid turns a drawn leaf into a group without telling its row
+    private _redrawGroupRows(gridApi: GridApi<IRecord>): void {
+        const groupNodes: IRowNode<IRecord>[] = [];
+        gridApi.forEachNode(node => {
+            if (node.allChildrenCount) {
+                groupNodes.push(node);
+            }
+        });
+        gridApi.redrawRows({ rowNodes: groupNodes });
     }
 
     private get _provider(): IDataProvider {
@@ -99,7 +110,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
 }
 
 /** The ancestry `treeData` builds a record's place in the hierarchy from. */
-const getRecordPath = (record: IRecord): string[] => {
+export const getRecordPath = (record: IRecord): string[] => {
     const path: string[] = [];
     let provider: IDataProvider | null = record.getDataProvider();
     while (provider?.getParentRecordId()) {

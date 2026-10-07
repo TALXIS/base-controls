@@ -9,7 +9,7 @@ export const getCheckListGridStyles = (theme: ITheme) => {
             //exemption rather than growing a border the grid's own checkbox never had.
             //`.ag-cell` is in the selector to outrank that rule: both carry !important and would
             //otherwise tie on specificity, which the later-registered stylesheet wins
-            [`.ag-pinned-left-cols-container .ag-cell.ag-cell-last-left-pinned[col-id="${COMPLETION_COLUMN_NAME}"]`]: {
+            [`.ag-grid-pinned-left-cells .ag-cell.ag-cell-last-left-pinned[col-id="${COMPLETION_COLUMN_NAME}"]`]: {
                 borderRight: 'none !important'
             },
             //a finished item reads as struck through. Set on the cell rather than on the text inside it,

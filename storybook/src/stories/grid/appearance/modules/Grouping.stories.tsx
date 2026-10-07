@@ -37,7 +37,7 @@ colDefs={{ category: { cellRendererSelector: params => ({ component: isGroupRow(
 
 Your selector replaces the module's for that column. Return \`undefined\` for a row to leave it to the column's \`cellRenderer\`; on a grouped column, draw its records empty, as the module does. The expansion column is the module's own, keyed \`GROUP_EXPANSION_COLUMN_KEY\`: set its \`headerComponent\` and reuse \`GroupExpansionHeader\`, whose \`expandCollapse\` takes \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\`.
 
-To mark one column's grouping icon, replace the header adornment keyed \`'grouping'\` in \`settings.header.onGetAdornments\`.
+To mark one column's grouping icon, replace the header adornment keyed \`'grouping'\` in \`context.header.onGetAdornments\`.
 
 {{story: Group sizes as badges}}
 `

@@ -1,7 +1,8 @@
-import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "@ag-grid-community/core";
+import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { DEFAULT_COLUMN_WIDTH } from "../columns/GridColumns";
+import { getColumnContext } from "../columns/colDef";
 
 export interface IGridColumnLayoutParameters {
     services: IGridServiceLocator;
@@ -65,7 +66,7 @@ export class GridColumnLayout {
         const colDef = column.getColDef();
         //what the user dragged to, else what the definition sets
         const width = this._draggedWidths.get(column.getColId()) ?? colDef.width ?? colDef.initialWidth ?? DEFAULT_COLUMN_WIDTH;
-        return width + (colDef.settings?.widthOffset ?? 0);
+        return width + (getColumnContext(colDef).widthOffset ?? 0);
     }
 
     private _onColumnResized = (event: ColumnResizedEvent<IRecord>): void => {
@@ -74,7 +75,7 @@ export class GridColumnLayout {
             return;
         }
         const resizedColumnName = event.column.getColId();
-        const width = event.column.getActualWidth() - (event.column.getColDef().settings?.widthOffset ?? 0);
+        const width = event.column.getActualWidth() - (getColumnContext(event.column.getColDef()).widthOffset ?? 0);
         this._draggedWidths.set(resizedColumnName, width);
         this._writeColumns(column => column.name === resizedColumnName
             ? { ...column, visualSizeFactor: width }

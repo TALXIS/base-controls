@@ -94,7 +94,7 @@ export class GridControl implements IGridControl {
 
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
-        this._cell.getSettings().cell?.onGetControlParameters?.(parameters, { record: this._record });
+        this._cell.getContext().cell?.onGetControlParameters?.(parameters, { record: this._record });
         return parameters;
     }
 
@@ -117,7 +117,7 @@ export class GridControl implements IGridControl {
             Runtime: { raw: this._services.get('grid') },
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
-            IsPrimaryColumn: { raw: !!this._cell.getSettings().isPrimary, type: DataTypes.TwoOptions },
+            IsPrimaryColumn: { raw: !!this._cell.getContext().isPrimary, type: DataTypes.TwoOptions },
             //wrapped wherever the row can grow to show it
             IsMultiline: { raw: hasResizeGrip(this._cell.getColDef()), type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },

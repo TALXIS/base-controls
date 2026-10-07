@@ -9,7 +9,7 @@ The grid draws in your theme. On top of it you can colour cells and headers by w
 
 ## Colour cells by their data
 
-A column colours its cells with \`settings.cell.onGetTheme(theme, { record })\`. To colour across columns, such as a whole row, register \`runtime.services.get('cells').registerCellTheme(hook, priority)\` in a module. Both get the same \`theme\`.
+A column colours its cells with \`context.cell.onGetTheme(theme, { record })\`. To colour across columns, such as a whole row, register \`runtime.services.get('cells').registerCellTheme(hook, priority)\` in a module. Both get the same \`theme\`.
 
 ### How it works
 
@@ -24,7 +24,7 @@ Several things can colour the same cell. They run in this order, and the last on
 
 1. Zebra rows shade every other row.
 2. Theme hooks from modules (\`registerCellTheme\`), lowest priority first. Built-in modules use them too: grouping shades group rows, and totals shade the totals row.
-3. The column's own \`settings.cell.onGetTheme\`.
+3. The column's own \`context.cell.onGetTheme\`.
 
 Grouping and totals run late, so a hook at the default priority loses its colour while the rows are grouped. To keep it, register the hook at \`GRID_MODULE_PRIORITY.grouping + 1\`, as the escalated tickets example does, or use \`onGetTheme\` on the column.
 
@@ -40,7 +40,7 @@ Grouping and totals run late, so a hook at the default priority loses its colour
 
 ## Colour column headers
 
-A column colours its header with \`settings.header.onGetTheme(theme)\`. To colour any header, register \`runtime.services.get('columns').headers.registerColumnHeaderTheme(hook, priority)\` in a module; \`onGetTheme\` runs after it.
+A column colours its header with \`context.header.onGetTheme(theme)\`. To colour any header, register \`runtime.services.get('columns').headers.registerColumnHeaderTheme(hook, priority)\` in a module; \`onGetTheme\` runs after it.
 
 - Everything in the header takes the colours: the name, the required marker and the module icons. Its menu keeps the grid's theme.
 - Headers redraw after every load. If the colour depends on something else, call \`runtime.services.get('columns').headers.render()\` when it changes.
@@ -82,7 +82,7 @@ export const SpotTicketsAboutToBreach: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support lead spots tickets close to their response deadline: \`settings.cell.onGetTheme\` on *Respond by* turns the cell red once the deadline has passed and amber when less than a day is left, and leaves resolved tickets alone. Sort by *Respond by* to bring the urgent ones together.`,
+                story: `A support lead spots tickets close to their response deadline: \`context.cell.onGetTheme\` on *Respond by* turns the cell red once the deadline has passed and amber when less than a day is left, and leaves resolved tickets alone. Sort by *Respond by* to bring the urgent ones together.`,
             },
         },
     },

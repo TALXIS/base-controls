@@ -45,7 +45,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const editColumnsModel = useMemo(() => datasetControl.editColumns, []);
     const columns = props.onFilterVisibleColumns?.(editColumnsModel.getColumns()) ?? editColumnsModel.getColumns();
     const sensor = useSensor(PointerSensor);
-    const scrollableContainerRef = useRef<HTMLDivElement>(null);
+    const headerRef = useRef<HTMLDivElement>(null);
     const { isLoading, showScopeSelector = true } = props;
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
@@ -58,7 +58,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
         remountColumnSelector();
         setOpenColumnSelectorOnMount(true);
     });
-    useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnAdded', () => scrollableContainerRef.current?.scrollTo({ top: 0 }));
+    useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnAdded', () => headerRef.current?.scrollIntoView({ block: 'nearest' }));
 
     useEffect(() => {
         props.onGetRef?.({
@@ -85,14 +85,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             headerText={getTitle()}
             isOpen={true}
             onDismiss={onDismiss}
-            styles={{
-                footer: styles.panelFooter,
-                commands: styles.panelCommands,
-                scrollableContent: styles.panelScrollableContent,
-                content: styles.panelContent,
-                headerText: styles.headerText
-            }}
-            isFooterAtBottom
+           
             onRenderFooterContent={() => {
                 return <div className={styles.panelFooterButtons}>
                     <PrimaryButton
@@ -114,38 +107,34 @@ export const EditColumns = (props: IEditColumnsProps) => {
             {isLoading && <Overlay className={styles.loadingOverlay}>
                 <Spinner />
             </Overlay>}
-            <div className={styles.header}>
+            <div ref={headerRef} className={styles.header}>
                 <components.CommandBar items={[]} />
-                <div className={styles.selectors}>
-                    {showScopeSelector && (
-                        <div className={styles.selector}>
-                            <Label>{labels["column-source"]()}</Label>
-                            <ScopeSelector />
-                        </div>
-                    )}
-                    <div style={{height: 38}} className={styles.selector}>
-                        {!shouldRemountColumnSelector && <ColumnSelector
-                            openMenuOnMount={openColumnSelectorOnMount} />}
+                {showScopeSelector && (
+                    <div>
+                        <Label>{labels["column-source"]()}</Label>
+                        <ScopeSelector />
                     </div>
+                )}
+                <div style={{height: 38}}>
+                    {!shouldRemountColumnSelector && <ColumnSelector
+                        openMenuOnMount={openColumnSelectorOnMount} />}
                 </div>
             </div>
-            <div ref={scrollableContainerRef} className={styles.scrollableContainer}>
-                <DndContext
-                    sensors={[sensor]}
-                    onDragEnd={(e) => editColumnsModel.moveColumn(e.active.id.toString(), e.over?.id.toString() ?? '')}
-                    modifiers={[restrictToVerticalAxis]}
-                >
-                    <SortableContext
-                        strategy={verticalListSortingStrategy}
-                        items={editColumnsModel.getColumns()}>
-                        <div className={styles.sortableItemsWrapper}>
-                            {columns.filter(col => !col.isHidden).map(col => {
-                                return <SortableItem key={col.name} column={col} />
-                            })}
-                        </div>
-                    </SortableContext>
-                </DndContext>
-            </div>
+            <DndContext
+                sensors={[sensor]}
+                onDragEnd={(e) => editColumnsModel.moveColumn(e.active.id.toString(), e.over?.id.toString() ?? '')}
+                modifiers={[restrictToVerticalAxis]}
+            >
+                <SortableContext
+                    strategy={verticalListSortingStrategy}
+                    items={editColumnsModel.getColumns()}>
+                    <div className={styles.sortableItemsWrapper}>
+                        {columns.filter(col => !col.isHidden).map(col => {
+                            return <SortableItem key={col.name} column={col} />
+                        })}
+                    </div>
+                </SortableContext>
+            </DndContext>
         </Panel>
     </EditColumnsContext.Provider>
 }

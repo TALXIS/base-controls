@@ -46,9 +46,9 @@ export class GanttScrollSync {
     private _getGridViewport(): HTMLElement {
         const controlId = this._services.get('taskGridServices').get('datasetControl').getControlId();
         const rootElement = document.getElementById(`${controlId}-root`);
-        const viewport = rootElement?.querySelector('.ag-body-viewport');
+        const viewport = rootElement?.querySelector('.ag-grid-viewport');
         if (!(viewport instanceof HTMLElement)) {
-            throw new Error('AgGrid vertical viewport not found');
+            throw new Error('AgGrid viewport not found');
         }
 
         return viewport;

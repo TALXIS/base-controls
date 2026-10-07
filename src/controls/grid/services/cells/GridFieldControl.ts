@@ -96,6 +96,6 @@ export class GridFieldControl implements IGridFieldControl {
     }
 
     private _isPrimary(): boolean {
-        return !!this._cell.getSettings().isPrimary;
+        return !!this._cell.getContext().isPrimary;
     }
 }

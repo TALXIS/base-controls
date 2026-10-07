@@ -1,4 +1,4 @@
-import { GridApi, IsServerSideGroupOpenByDefaultParams } from "@ag-grid-community/core";
+import { GridApi, IsServerSideGroupOpenByDefaultParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../../services";
 import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../services/row-model";
@@ -24,11 +24,9 @@ export class ServerSideRowModel implements IGridRowModel {
         this._services.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
+    //AG Grid keeps what is open across the purge, by row id
     public refresh(): void {
-        const gridApi = this._services.get('gridApi');
-        //captured first because the purge drops what is open
-        this._grouping?.captureExpandedIds(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
-        gridApi.refreshServerSide({ purge: true });
+        this._services.get('gridApi').refreshServerSide({ purge: true });
     }
 
     public createGrouping(parameters: IGridRowModelGroupingParameters): ServerSideRowModelGrouping {

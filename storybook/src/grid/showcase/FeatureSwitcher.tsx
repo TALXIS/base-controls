@@ -1,6 +1,6 @@
 import React from 'react'
-import { mergeStyleSets, Panel, PanelType, Text } from '@fluentui/react'
-import { CommandBar, Form, MemoryStrategy } from '@talxis/base-controls'
+import { DefaultButton, mergeStyleSets, PanelType, Text } from '@fluentui/react'
+import { CommandBar, Form, MemoryStrategy, Panel } from '@talxis/base-controls'
 import { DataTypes, IColumn } from '@talxis/client-libraries'
 import { RequiredLevelEnum } from '@talxis/client-metadata'
 import { metadataFor } from '../data/metadata'
@@ -134,7 +134,7 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
         <CommandBar
             items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getValues(preset)) }))}
             farItems={[{ key: 'features', text: 'Features & Modules', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
-        <Panel isOpen={isPanelOpen} isLightDismiss type={PanelType.medium} onDismiss={() => setIsPanelOpen(false)}>
+        <Panel isOpen={isPanelOpen} headerText='Features & Modules' isLightDismiss type={PanelType.medium} onDismiss={() => setIsPanelOpen(false)} onRenderFooterContent={() => <DefaultButton text='Close' onClick={() => setIsPanelOpen(false)} />}>
             <Form.Root strategy={strategy} onFieldValueChanged={onFieldValueChanged}>
                 <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
                     <Form.Tab id='core' label='Core'>

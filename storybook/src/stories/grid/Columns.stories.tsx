@@ -11,20 +11,20 @@ Every provider column becomes a grid column. \`colDefs\` changes them and adds y
 
 ## Changing a column
 
-\`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key plus the grid's \`settings\`.
+\`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key. Its \`context\` holds what the grid reads about the column, and any keys of your own beside them, which \`getColumnContext(colDef)\` reads back.
 
 \`\`\`tsx
 <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
     colDefs={{
-        name: { pinned: 'left', settings: { isPrimary: true } },
+        name: { pinned: 'left', context: { isPrimary: true } },
         price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
         stockvalue: { headerName: 'Stock value', initialWidth: 130, cellRenderer: StockValueCell },
     }} />
 \`\`\`
 
-- An entry for an existing column is merged over it, including \`settings\`, \`settings.cell\` and \`settings.header\`, so you change only what you set. Any other key adds a column at the end.
+- An entry for an existing column is merged over it, including \`context\`, \`context.cell\` and \`context.header\`, so you change only what you set. Any other key adds a column at the end.
 - A function entry gets the column as built (\`null\` for an added one) and returns what to change.
 - \`colDefs\` is applied after every module, so it has the last word.
 - The grid's own columns are reachable by their keys: \`RECORD_SAVE_COLUMN_KEY\`, \`RECORD_LOCK_COLUMN_KEY\`, \`SELECTION_COLUMN_KEY\` and \`GROUP_EXPANSION_COLUMN_KEY\`.
@@ -41,7 +41,7 @@ A column's width comes from its \`visualSizeFactor\`, or \`initialWidth\` in \`c
 
 ## Navigation
 
-- \`settings.isPrimary: true\` draws the value as a link to its record.
+- \`context.isPrimary: true\` draws the value as a link to its record.
 - Clicking it, or double-clicking a row without editing, opens the record. Pass \`onOpenRecord\` to \`<Grid.Root />\` to do something else.
 - \`enableNavigation={false}\` turns links and opening off.
 
@@ -61,7 +61,7 @@ Add a column by giving \`colDefs\` a key that isn't a provider column, then work
 
 ## Cell commands
 
-\`settings.cell.onGetCommands(result, { record })\` adds commands to the column's cells.
+\`context.cell.onGetCommands(result, { record })\` adds commands to the column's cells.
 
 - Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
 - Commands show while the row is hovered, focused or selected, and are worked out each time, so they can depend on the record.
@@ -70,7 +70,7 @@ Add a column by giving \`colDefs\` a key that isn't a provider column, then work
 
 ## The header
 
-Clicking a header opens its menu. \`settings.header\` adds to it:
+Clicking a header opens its menu. \`context.header\` adds to it:
 
 - \`onGetAdornments(adornments)\`: push \`{ key, placement: 'prefix' | 'suffix', title?, onRender? }\` to draw beside the name.
 - \`onGetMenuSections(sections)\`: push \`{ key, title, items }\`, or remove a module's section by key.
@@ -85,7 +85,7 @@ The menu is worked out when it opens; adornments when the header draws. Call \`r
 
 - Multiline text and text area columns wrap, up to six lines. The full text is in the tooltip.
 - Users can drag a row taller by the grip on a cell's bottom edge.
-- \`settings.cell.isRowResizable\` turns this on or off for any column.
+- \`context.cell.isRowResizable\` turns this on or off for any column.
 
 {{story: Read long notes}}
 
@@ -140,7 +140,7 @@ export const OpenAProductFromItsName: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`settings.isPrimary\` makes Product a link, and \`onOpenRecord\` opens the product in a form in a panel, saved from its ribbon. Click a name.`,
+                story: `\`context.isPrimary\` makes Product a link, and \`onOpenRecord\` opens the product in a form in a panel, saved from its ribbon. Click a name.`,
             },
         },
     },

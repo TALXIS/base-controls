@@ -22,7 +22,7 @@ createFilteringModule({ components: { filterIcon: { onRenderIcon: props => <Icon
 
 ## One column only
 
-The funnel is a header adornment keyed \`'filter'\`. To change it on one column, replace or remove that adornment in the column's \`settings.header.onGetAdornments\`, which runs after the modules have added theirs. The callout is one for the whole grid, so it has no per-column path.
+The funnel is a header adornment keyed \`'filter'\`. To change it on one column, replace or remove that adornment in the column's \`context.header.onGetAdornments\`, which runs after the modules have added theirs. The callout is one for the whole grid, so it has no per-column path.
 
 {{story: A filter that stands out}}
 `

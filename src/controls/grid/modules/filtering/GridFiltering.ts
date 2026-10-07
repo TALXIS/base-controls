@@ -1,5 +1,4 @@
 import { createElement } from "react";
-import { ColDef } from "@ag-grid-community/core";
 import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, DataTypes, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { HookRegistry, ILocalizationService } from "@utils";
@@ -116,7 +115,6 @@ export class GridFiltering implements IGridFiltering {
 
     private _registerHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.filtering);
         //the callout is a surface over the grid
         gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
         gridServices.get('columns').headers.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
@@ -182,17 +180,6 @@ export class GridFiltering implements IGridFiltering {
         this._openTarget = undefined;
         this.events.dispatchEvent('onFilterClosed');
     }
-
-    /** Puts `filter` on the definitions. */
-    private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        for (const colDef of columnDefs) {
-            const columnName = colDef.colId ?? colDef.field;
-            const column = columnName ? this._provider.getColumnsMap()[columnName] : undefined;
-            if (column) {
-                colDef.filter = this.isColumnFilterable(column);
-            }
-        }
-    };
 
     /** What a column's menu offers: opening the filter, and clearing it. */
     private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {

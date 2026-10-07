@@ -1,7 +1,8 @@
-import { ColDef, GridApi } from "@ag-grid-community/core";
+import { ColDef, GridApi } from "ag-grid-community";
 import { IDataProvider, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
+import { getColumnContext } from "../columns/colDef";
 
 /** A hook over whether a record's value in a column is valid. */
 export type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
@@ -43,7 +44,7 @@ export class GridValidation implements IGridValidation {
             return result;
         }
         this._hooks.apply(result, params);
-        this._getColDef(params.columnName)?.settings?.cell?.onGetValidation?.(result, { record: params.record });
+        getColumnContext(this._getColDef(params.columnName)).cell?.onGetValidation?.(result, { record: params.record });
         return result;
     }
 
@@ -84,7 +85,7 @@ export class GridValidation implements IGridValidation {
     private _getValidatedColumnNames(): string[] {
         if (!this._hasHooks) {
             const colDefs = (this._services.find('gridApi')?.getColumnDefs() ?? []) as ColDef<IRecord>[];
-            return colDefs.filter(colDef => colDef.colId && colDef.settings?.cell?.onGetValidation).map(colDef => colDef.colId!);
+            return colDefs.filter(colDef => colDef.colId && getColumnContext(colDef).cell?.onGetValidation).map(colDef => colDef.colId!);
         }
         return this._provider.getColumns().map(column => column.name);
     }

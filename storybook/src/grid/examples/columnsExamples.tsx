@@ -82,7 +82,7 @@ interface IProductPanelProps {
     onDismiss: () => void
 }
 
-const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.product} isLightDismiss type={PanelType.medium} closeButtonAriaLabel='Close' onDismiss={props.onDismiss}>
+const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.product} headerText={props.product?.getValue('name')} isLightDismiss type={PanelType.medium} closeButtonAriaLabel='Close' onDismiss={props.onDismiss} onRenderFooterContent={() => <DefaultButton text='Close' onClick={props.onDismiss} />}>
     {props.product && <ProductForm key={props.product.getRecordId()} product={props.product} />}
 </Panel>
 
@@ -94,7 +94,7 @@ const GridExample = () => {
             provider={provider}
             modules={{ rowModel: createClientSideRowModelModule() }}
             colDefs={{
-                name: { pinned: 'left', settings: { isPrimary: true } },
+                name: { pinned: 'left', context: { isPrimary: true } },
             }}
             onOpenRecord={({ record }) => setProductId(record.getRecordId())}
             height='420px' />
@@ -136,7 +136,7 @@ const GridExample = () => <Grid.Root
             initialWidth: 130,
             cellRenderer: StockValueCell,
             valueGetter: params => params.data ? getStockValue(params.data) : null,
-            settings: { alignment: 'right' },
+            context: { alignment: 'right' },
         },
     }}
     height='440px' />
@@ -174,7 +174,7 @@ const GridExample = () => {
                     headerName: '',
                     pinned: 'right',
                     initialWidth: 96,
-                    settings: {
+                    context: {
                         cell: {
                             onGetCommands: (result, { record }) => {
                                 if (isLowStock(record) && !isDiscontinued(record)) {
@@ -225,7 +225,7 @@ const GridExample = () => {
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
         colDefs={{
             instock: {
-                settings: {
+                context: {
                     header: {
                         onGetAdornments: adornments => {
                             const lowStock = provider.getRecords().filter(isLowStock).length
@@ -257,7 +257,7 @@ export const LONG_NOTES_CODE = `const GridExample = () => <Grid.Root
     provider={provider}
     modules={{ rowModel: createClientSideRowModelModule() }}
     colDefs={{
-        nextstep: { settings: { cell: { isRowResizable: false } } },
+        nextstep: { context: { cell: { isRowResizable: false } } },
     }}
     height='480px' />
 `

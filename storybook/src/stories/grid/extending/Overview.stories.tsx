@@ -81,19 +81,19 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 
 | Service | Hook | What it decides | Handed | Then, last |
 |---|---|---|---|---|
-| \`cells\` | \`registerCellTheme\` | A cell's colours: set \`theme.colors\`, or change the built theme with \`theme.edit(key, edit)\` | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`settings.cell.onGetTheme\` |
-| \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer in place of its value: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`settings.cell.onGetLoading\` |
-| \`cells\` | \`registerCellCommands\` | The commands a cell offers while its row is hovered, focused or selected: push to \`result.items\` or \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`settings.cell.onGetCommands\` |
+| \`cells\` | \`registerCellTheme\` | A cell's colours: set \`theme.colors\`, or change the built theme with \`theme.edit(key, edit)\` | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
+| \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer in place of its value: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`context.cell.onGetLoading\` |
+| \`cells\` | \`registerCellCommands\` | The commands a cell offers while its row is hovered, focused or selected: push to \`result.items\` or \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`context.cell.onGetCommands\` |
 | \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | |
-| \`cells\` | \`registerControlParameters\` | The parameters a cell's control is handed, such as \`Placeholder\` | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`settings.cell.onGetControlParameters\` |
+| \`cells\` | \`registerControlParameters\` | The parameters a cell's control is handed, such as \`Placeholder\` | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`context.cell.onGetControlParameters\` |
 | \`rows\` | \`registerRowHeight\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\`. A height set with \`rows.setRowHeight\` wins over both. |
-| \`editing.locks\` | \`registerLock\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`settings.cell.onGetLock\` for a cell |
-| \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`settings.cell.onGetValidation\` |
+| \`editing.locks\` | \`registerLock\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`context.cell.onGetLock\` for a cell |
+| \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`context.cell.onGetValidation\` |
 | \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries | \`columnDefs: IGridColDef[]\` | \`colDefs\` |
-| \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`settings.header.onGetMenuSections\` |
-| \`columns.headers\` | \`registerColumnMenuItems\` | The menu's items once the sections are laid out, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`settings.header.onGetMenuItems\` |
-| \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws before and after the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`settings.header.onGetAdornments\` |
-| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`settings.header.onGetTheme\` |
+| \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`context.header.onGetMenuSections\` |
+| \`columns.headers\` | \`registerColumnMenuItems\` | The menu's items once the sections are laid out, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`context.header.onGetMenuItems\` |
+| \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws before and after the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`context.header.onGetAdornments\` |
+| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`context.header.onGetTheme\` |
 | \`surfaces\` | \`registerSurface\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | |
 | \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | |
 | The runtime | \`registerAgGridOptions\` | The AG Grid options that can change at any time | \`result: { options }\` | |
@@ -118,7 +118,7 @@ Hooks of one kind run in ascending priority: a lower number runs first, so a hig
 | \`rowSelection\` | \`20\` | Column definitions: the checkbox column; AG Grid options: \`rowSelection\` |
 | \`cellSelection\` | \`30\` | AG Grid options |
 | \`sorting\` | \`40\` | Column definitions: \`sortable\`; menu section; adornment |
-| \`filtering\` | \`50\` | Column definitions: \`filter\`; menu section; adornment; surface |
+| \`filtering\` | \`50\` | Menu section; adornment; surface |
 | \`grouping\` | \`60\` | Column definitions: grouped columns first and pinned; cell theme; lock; menu section; adornment; surface; AG Grid options |
 | \`aggregation\` | \`70\` | Column definitions; cell theme, loading and row height of the totals; menu section; adornment; AG Grid options: the totals row |
 | \`clipboard\` | \`80\` | AG Grid options |

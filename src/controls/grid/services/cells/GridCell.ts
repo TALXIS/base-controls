@@ -1,8 +1,8 @@
-import { ColDef, IRowNode } from "@ag-grid-community/core";
+import { ColDef, IRowNode } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
-import { IGridColumnSettings } from "../columns/colDef";
+import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme, IGridCellTheme } from "./GridCellTheme";
 import { IGridField } from "../fields";
@@ -52,7 +52,7 @@ export interface IGridCell {
     /** Whether the cell's control takes input instead of showing the value. */
     takesInput(): boolean;
     /** What the column this cell is in says its cells are. */
-    getSettings(): IGridColumnSettings;
+    getContext(): IGridColumnContext;
     /** Which edge this cell reads from. */
     getAlignment(): IAlignment;
     /** Whether the user is editing this cell. */
@@ -130,7 +130,7 @@ export class GridCell implements IGridCell {
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getSettings().cell?.onGetLoading?.(result, { record: this._record });
+        this.getContext().cell?.onGetLoading?.(result, { record: this._record });
         return result.isLoading;
     }
 
@@ -138,12 +138,12 @@ export class GridCell implements IGridCell {
         return this._takesInput;
     }
 
-    public getSettings(): IGridColumnSettings {
-        return this._colDef.settings ?? {};
+    public getContext(): IGridColumnContext {
+        return getColumnContext(this._colDef);
     }
 
     public getAlignment(): IAlignment {
-        return this.getSettings().alignment ?? 'left';
+        return this.getContext().alignment ?? 'left';
     }
 
     public isBeingEdited(): boolean {
@@ -174,7 +174,7 @@ export class GridCell implements IGridCell {
     public getCommands(): IGridCellCommands {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getSettings().cell?.onGetCommands?.(result, { record: this._record });
+        this.getContext().cell?.onGetCommands?.(result, { record: this._record });
         return result;
     }
 

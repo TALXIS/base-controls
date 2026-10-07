@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ICellRendererParams } from "@ag-grid-community/core";
+import { ICellRendererParams } from "ag-grid-community";
 import { IconButton, useTheme } from "@fluentui/react";
 import { IRecord } from "@talxis/client-libraries";
 import { getDeleteCellStyles } from "./styles";

@@ -16,7 +16,7 @@ export const getGanttViewStyles = (theme: ITheme) => {
             '.ag-body-horizontal-scroll': {
                 position: 'relative !important'
             },
-            '.ag-body-viewport': {
+            '.ag-grid-viewport': {
                 overscrollBehavior: 'none !important'
             },
             '.ag-body-vertical-scroll': {

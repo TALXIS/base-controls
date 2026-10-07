@@ -146,7 +146,7 @@ const GridExample = () => {
                 legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
                 custom: [stockScript],
             }}
-            colDefs={{ discontinued: { settings: { cell: { oneClickEdit: true } } } }}
+            colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
             height='420px' />
     </Stack>
 }

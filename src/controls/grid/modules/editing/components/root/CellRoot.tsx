@@ -4,6 +4,7 @@ import { useGridService } from "../../../../useGridService";
 import { CellRoot as GridCellRoot, ICellRootProps as IGridCellRootProps } from "../../../../components/cells/root/CellRoot";
 import { GridCellContext } from "../../../../components/cells/root/context";
 import { IGridEditedCell, IGridEditingEvents } from "../../GridEditing";
+import { getColumnContext } from "../../../../services/columns/colDef";
 
 export interface ICellRootProps extends Omit<IGridCellRootProps, 'takesInput'> {
     /** Whether this is the cell AG Grid opened over the one that was there. */
@@ -29,7 +30,7 @@ const EditedCellRedraw = () => {
 /** A cell that can be edited: an editor, or a one-click column taking input where it stands. */
 export const CellRoot = (props: ICellRootProps) => {
     const { isEditor, children, ...rootProps } = props;
-    const takesInput = !!isEditor || !!props.colDef?.settings?.cell?.oneClickEdit;
+    const takesInput = !!isEditor || !!getColumnContext(props.colDef).cell?.oneClickEdit;
 
     return <GridCellRoot {...rootProps} takesInput={takesInput}>
         <EditedCellRedraw />

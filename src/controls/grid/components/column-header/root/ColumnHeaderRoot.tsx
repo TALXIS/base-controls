@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Column } from "@ag-grid-community/core";
+import { Column } from "ag-grid-community";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";

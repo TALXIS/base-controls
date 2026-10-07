@@ -109,10 +109,8 @@ Drag across cells to highlight them, or extend a block from the focused cell wit
 
 | \`createCellSelectionModule\` | Default | What it does |
 |---|---|---|
-| \`suppressMultiRangeSelection\` | \`false\` | \`true\` keeps one block at a time. |
-| \`enableRangeHandle\` | \`false\` | \`true\` draws a handle on the block's corner that resizes it by dragging. |
-| \`enableFillHandle\` | \`false\` | \`true\` draws a handle that copies the block's values into the cells it is dragged over, in an editable grid. |
-| \`fillHandleDirection\` | \`'xy'\` | Which way the fill handle drags: \`'x'\`, \`'y'\` or \`'xy'\`. |
+| \`suppressMultiRanges\` | \`false\` | \`true\` keeps one block at a time. |
+| \`handle\` | none | \`{ mode: 'range' }\` draws a handle on the block's corner that resizes it by dragging. \`{ mode: 'fill' }\` draws a handle that copies the block's values into the cells it is dragged over, in an editable grid; its \`direction\` is \`'x'\`, \`'y'\` or \`'xy'\` (the default). |
 
 ### Copying
 
@@ -121,8 +119,6 @@ Drag across cells to highlight them, or extend a block from the focused cell wit
 | \`createClipboardModule\` | Default | What it does |
 |---|---|---|
 | \`copyHeadersToClipboard\` | \`false\` | \`true\` copies the column headers as the first line. |
-| \`suppressCopyRowsToClipboard\` | \`true\` | \`false\` copies the selected rows, with all their columns, when no block is highlighted. |
-| \`suppressCopySingleCellRanges\` | \`false\` | \`true\` ignores a block of one cell, which is what a click highlights while \`cellSelection\` is on. With \`suppressCopyRowsToClipboard: false\`, Ctrl+C after a click then copies the selected rows. |
 | \`clipboardDelimiter\` | a tab | What goes between cells. |
 | \`processCellForClipboard\` | | What a cell copies as. \`params.value\` is the stored value and \`params.formatValue(value)\` formats one, so \`params => params.value\` copies a price as the plain number \`640\`. |
 | \`processHeaderForClipboard\` | | What a header copies as. |

@@ -35,7 +35,7 @@ declare const mergeStyleSets: typeof import('@fluentui/react').mergeStyleSets;
 declare const MessageBar: typeof import('@fluentui/react').MessageBar;
 declare const MessageBarButton: typeof import('@fluentui/react').MessageBarButton;
 declare const MessageBarType: typeof import('@fluentui/react').MessageBarType;
-declare const Panel: typeof import('@fluentui/react').Panel;
+declare const Panel: typeof import('@talxis/base-controls').Panel;
 declare const PanelType: typeof import('@fluentui/react').PanelType;
 declare const PrimaryButton: typeof import('@fluentui/react').PrimaryButton;
 declare const ProgressIndicator: typeof import('@fluentui/react').ProgressIndicator;
@@ -1079,15 +1079,14 @@ interface GridApi {
     onRowHeightChanged(): void;
     resetRowHeights(): void;
     getState(): GridState;
-    showLoadingOverlay(): void;
     showNoRowsOverlay(): void;
     hideOverlay(): void;
     startEditingCell(params: { rowIndex: number; colKey: string | Column; rowPinned?: 'top' | 'bottom' | null; key?: string }): void;
     stopEditing(cancel?: boolean): void;
-    getEditingCells(): CellPosition[];
+    getEditingCells(): { rowIndex: number; rowPinned: 'top' | 'bottom' | null | undefined; colId: string }[];
     getCellRanges(): CellRange[] | null;
     addCellRange(params: { rowStartIndex: number | null; rowEndIndex: number | null; columnStart?: string | Column; columnEnd?: string | Column; columns?: (string | Column)[] }): void;
-    clearRangeSelection(): void;
+    clearCellSelection(): void;
     copyToClipboard(params?: { includeHeaders?: boolean; includeGroupHeaders?: boolean }): void;
     copySelectedRangeToClipboard(params?: { includeHeaders?: boolean; includeGroupHeaders?: boolean }): void;
     expandAll(): void;
@@ -1262,8 +1261,7 @@ interface GridOptions<TData = any> {
     rowClassRules?: { [cssClassName: string]: ((params: RowClassParams<TData>) => boolean) | string };
     getRowClass?: (params: RowClassParams<TData>) => string | string[] | undefined;
     getRowStyle?: (params: RowClassParams<TData>) => { [cssProperty: string]: string | number } | undefined;
-    rowSelection?: 'single' | 'multiple';
-    suppressRowClickSelection?: boolean;
+    rowSelection?: { mode: 'singleRow' | 'multiRow'; checkboxes?: boolean; headerCheckbox?: boolean; enableClickSelection?: boolean | 'enableDeselection' | 'enableSelection'; copySelectedRows?: boolean };
     animateRows?: boolean;
     enableCellTextSelection?: boolean;
     ensureDomOrder?: boolean;
@@ -1279,7 +1277,8 @@ interface GridOptions<TData = any> {
     suppressDragLeaveHidesColumns?: boolean;
     pinnedTopRowData?: any[];
     pinnedBottomRowData?: any[];
-    enableRangeSelection?: boolean;
+    cellSelection?: boolean | IGridCellSelectionOptions;
+    loading?: boolean;
     domLayout?: 'normal' | 'autoHeight' | 'print';
     rowBuffer?: number;
     context?: any;
@@ -1357,8 +1356,8 @@ interface IGridColDef {
     onCellClicked?: (event: CellEvent<IRecord>) => void;
     onCellDoubleClicked?: (event: CellEvent<IRecord>) => void;
     onCellContextMenu?: (event: CellEvent<IRecord>) => void;
-    /** What the grid's cells and header read about this column. */
-    settings?: IGridColumnSettings;
+    /** What the grid's cells and header read about this column, and your own options beside them. */
+    context?: IGridColumnContext;
 }
 
 /** New values for a column, or a function of the column as built. */
@@ -1392,7 +1391,7 @@ interface IGridLockResult {
 }
 
 /** What a column decides for each of its cells, after the cell hooks. */
-interface IGridColumnCellSettings {
+interface IGridColumnCellContext {
     /** Whether the cell takes input in place without opening an editor. */
     oneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
@@ -1412,7 +1411,7 @@ interface IGridColumnCellSettings {
 }
 
 /** What a column decides for its header, after the header hooks. */
-interface IGridColumnHeaderSettings {
+interface IGridColumnHeaderContext {
     /** Runs after registerColumnHeaderTheme. */
     onGetTheme?: (theme: ThemeBuilder) => void;
     /** Runs after registerColumnHeaderAdornments. */
@@ -1423,7 +1422,7 @@ interface IGridColumnHeaderSettings {
     onGetMenuItems?: (items: IContextualMenuItem[]) => void;
 }
 
-interface IGridColumnSettings {
+interface IGridColumnContext {
     alignment?: IAlignment;
     /** No hook can unlock a column locked here. */
     isLocked?: boolean;
@@ -1433,9 +1432,14 @@ interface IGridColumnSettings {
     isRequired?: boolean;
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
-    cell?: IGridColumnCellSettings;
-    header?: IGridColumnHeaderSettings;
+    cell?: IGridColumnCellContext;
+    header?: IGridColumnHeaderContext;
+    /** Your own options for the column, read back with \`getColumnContext\`. */
+    [key: string]: unknown;
 }
+
+/** The settings a column definition carries in its \`context\`. */
+declare function getColumnContext(colDef: IGridColDef | null | undefined): IGridColumnContext;
 
 /** Something a module draws in a column header beside its name. */
 interface IColumnHeaderAdornment {
@@ -1473,7 +1477,7 @@ interface IGridColumnHeader {
     getColDef(): IGridColDef;
     /** The provider's column, if there is one. */
     getColumn(): IColumn | undefined;
-    getSettings(): IGridColumnSettings;
+    getContext(): IGridColumnContext;
     getAlignment(): IAlignment;
     isRequired(): boolean;
     getName(): string;
@@ -1631,7 +1635,7 @@ interface IGridCell {
     isLoading(): boolean;
     /** Whether the cell's control takes input instead of showing the value. */
     takesInput(): boolean;
-    getSettings(): IGridColumnSettings;
+    getContext(): IGridColumnContext;
     getAlignment(): IAlignment;
     isBeingEdited(): boolean;
     /** The user stepped into the control this cell draws. */
@@ -2954,21 +2958,16 @@ interface IRowSelectionModuleOptions {
 }
 
 interface IGridCellSelectionOptions {
-    suppressMultiRangeSelection?: boolean;
-    enableRangeHandle?: boolean;
+    suppressMultiRanges?: boolean;
     /** The fill handle does not change records. */
-    enableFillHandle?: boolean;
-    fillHandleDirection?: 'x' | 'y' | 'xy';
-    suppressClearOnFillReduction?: boolean;
+    handle?: { mode: 'range' } | { mode: 'fill'; direction?: 'x' | 'y' | 'xy'; suppressClearOnFillReduction?: boolean };
+    enableHeaderHighlight?: boolean;
 }
 
 interface IGridClipboardOptions {
     clipboardDelimiter?: string;
     copyHeadersToClipboard?: boolean;
     copyGroupHeadersToClipboard?: boolean;
-    /** True by default. */
-    suppressCopyRowsToClipboard?: boolean;
-    suppressCopySingleCellRanges?: boolean;
     suppressCutToClipboard?: boolean;
     suppressClipboardPaste?: boolean;
     suppressClipboardApi?: boolean;

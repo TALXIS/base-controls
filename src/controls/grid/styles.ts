@@ -4,6 +4,9 @@ import { CELL_CONTAINER_CLASS_NAME } from "./components/cells/ui/container/style
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
 
+/** What the viewport holds besides its rows, from the variables AG Grid sets on it. */
+const VIEWPORT_CHROME_HEIGHT = 'var(--ag-internal-header-rows-height, 0px) + var(--ag-internal-top-rows-height, 0px) + var(--ag-internal-bottom-rows-height, 0px)';
+
 /** Sizes the grid to its rows, up to `maxVisibleRows`, without anything having to measure it. */
 const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
     return {
@@ -13,13 +16,11 @@ const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
         '.ag-root-wrapper-body.ag-layout-normal': {
             height: 'auto'
         },
-        //the viewport is what scrolls
-        '.ag-body, .ag-body-viewport': {
-            maxHeight: rowHeight * maxVisibleRows
-        },
-        '.ag-body-viewport': {
+        //the viewport is what scrolls, and it holds the header and the pinned rows
+        '.ag-grid-viewport': {
+            maxHeight: `calc(${rowHeight * maxVisibleRows}px + ${VIEWPORT_CHROME_HEIGHT})`,
             //never past the cap: a min-height beats a max-height
-            minHeight: Math.min(EMPTY_ROWS_AREA_HEIGHT, rowHeight * maxVisibleRows)
+            minHeight: `calc(${Math.min(EMPTY_ROWS_AREA_HEIGHT, rowHeight * maxVisibleRows)}px + ${VIEWPORT_CHROME_HEIGHT})`
         }
     };
 };
@@ -49,10 +50,10 @@ export const getGridStyles = (theme: ITheme, moduleStyles: IStyle[], height?: st
                 '--ag-borders-critical': 'none',
                 borderBottom: `1px solid ${theme.semanticColors.menuDivider}`
             },
-            '.ag-body': {
+            '.ag-grid-scrolling-rows': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`
             },
-            '.ag-center-cols-container': {
+            '.ag-grid-scrolling-container': {
                 minWidth: '100%',
             },
             '.ag-header-cell': {

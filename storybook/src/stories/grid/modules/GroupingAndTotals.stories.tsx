@@ -72,7 +72,7 @@ Whether the groups' records load with the list or as each group opens depends on
 
 ## Group rows and the totals row are records too
 
-A group row and the totals row are records (\`IRecord\`) like any other, and the grid asks about them everything it asks about a record: the \`rowSettings\` callbacks, every \`settings.cell\` callback, the cell, lock, validation and command hooks, legacy client API notifications, and events such as \`onRowClicked\` and \`onCellDoubleClicked\`. Tell them apart by their provider's summarization type:
+A group row and the totals row are records (\`IRecord\`) like any other, and the grid asks about them everything it asks about a record: the \`rowSettings\` callbacks, every \`context.cell\` callback, the cell, lock, validation and command hooks, legacy client API notifications, and events such as \`onRowClicked\` and \`onCellDoubleClicked\`. Tell them apart by their provider's summarization type:
 
 | \`record.getDataProvider().getSummarizationType()\` | The row |
 |---|---|

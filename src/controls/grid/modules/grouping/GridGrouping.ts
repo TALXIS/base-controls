@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { ColDef, IRowNode } from "@ag-grid-community/core";
+import { ColDef, IRowNode } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
@@ -295,7 +295,7 @@ export class GridGrouping implements IGridGrouping {
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             //a group's value is not edited in place
-            colDef.settings = { ...colDef.settings, cell: { ...colDef.settings?.cell, oneClickEdit: false }, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
+            colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, oneClickEdit: false }, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }

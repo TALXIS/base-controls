@@ -1,4 +1,4 @@
-import { IRowDragItem } from "@ag-grid-community/core";
+import { CellStyleModule, CustomEditorModule, IRowDragItem, PinnedRowModule, RowDragModule } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridModule } from "@controls/grid";
 import { ICheckListDatasetControl } from "../../CheckListDatasetControl";
@@ -12,6 +12,7 @@ export const createCheckListGridModule = (datasetControl: ICheckListDatasetContr
         return record?.getFormattedValue(datasetControl.getFieldMapping().name) ?? '';
     };
     return {
+        agGridModules: [RowDragModule, CellStyleModule, PinnedRowModule, CustomEditorModule],
         onRegister: runtime => {
             runtime.registerAgGridInitialOptions(result => {
                 result.options.rowDragText = rowDragText;

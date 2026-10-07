@@ -1,6 +1,6 @@
 import { IPcfContext } from "@interfaces";
-import { ColDef, GetRowIdParams, GridReadyEvent, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry } from "@ag-grid-community/core";
-import { AgGridReactProps } from "@ag-grid-community/react";
+import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, ScrollApiModule } from "ag-grid-community";
+import { AgGridReactProps } from "ag-grid-react";
 import { IStyle } from "@fluentui/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
@@ -21,6 +21,9 @@ import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces } from "../surfaces";
+
+/** The AG Grid modules every grid needs, whichever modules it runs. */
+const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, ScrollApiModule, RenderApiModule, GridStateModule, ColumnAutoSizeModule, RowAutoHeightModule];
 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
@@ -143,7 +146,7 @@ export class GridRuntime implements IGridRuntime {
             module.onRegister?.(this);
         }
         //before AG Grid is constructed on this same render
-        ModuleRegistry.registerModules(modules.flatMap(module => module.agGridModules ?? []));
+        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
         //after the modules so their api and provider listeners run first
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
@@ -220,7 +223,6 @@ export class GridRuntime implements IGridRuntime {
                 rowHeight: this._services.get('settings').getDefaultRowHeight(),
                 initialState: this._onGetProps().state,
                 enableGroupEdit: true,
-                reactiveCustomComponents: true,
                 animateRows: false,
                 getRowId: this._getRowId,
                 onGridReady: this._onGridReady,
