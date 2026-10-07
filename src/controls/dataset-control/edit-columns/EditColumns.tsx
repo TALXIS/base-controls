@@ -17,6 +17,7 @@ import { EditColumnsContext } from "./useEditColumns";
 import { IComponents } from "./components";
 import { components as defaultComponents } from "./components";
 import { IColumn } from "@talxis/client-libraries";
+import { Grid } from "@controls/grid";
 
 export interface IEditColumnsRef {
     remountColumnSelector: () => void;
@@ -138,4 +139,3 @@ export const EditColumns = (props: IEditColumnsProps) => {
         </Panel>
     </EditColumnsContext.Provider>
 }
-
