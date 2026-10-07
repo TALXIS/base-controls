@@ -198,7 +198,7 @@ export class GridRuntime implements IGridRuntime {
                 rowHeight: this._services.get('settings').getDefaultRowHeight(),
                 initialState: this._onGetProps().state,
                 enableGroupEdit: true,
-                animateRows: true,
+                animateRows: false,
                 getRowId: this._getRowId,
                 onGridReady: this._onGridReady,
                 onGridPreDestroyed: this._onGridPreDestroyed,

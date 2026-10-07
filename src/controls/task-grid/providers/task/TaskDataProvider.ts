@@ -543,6 +543,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public getPaging() {
         const paging = super.getPaging();
+        //the base constructor reads paging before this class has a tree
+        if (!this._taskTree) {
+            return paging;
+        }
         paging.totalResultCount = this._taskTree.view.getCount()
         paging.pageSize = this._taskTree.view.getCount();
         return paging;
