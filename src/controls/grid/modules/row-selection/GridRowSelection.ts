@@ -4,9 +4,7 @@ import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { ITheme } from "@theme";
-import { IGridAgGridOptions, IGridStyles } from "../../services/runtime";
-import { getGridRowSelectionStyles } from "./styles";
+import { IGridAgGridOptions } from "../../services/runtime";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 
 declare module "../../services/interfaces" {
@@ -151,7 +149,6 @@ export class GridRowSelection implements IGridRowSelection {
         //last, so it reaches the columns the caller's `colDefs` add or replace
         gridServices.get('columns').registerColumnDefinitions(this._onGateClickSelection, Number.MAX_SAFE_INTEGER);
         gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowSelection);
-        gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.rowSelection);
     }
 
     //the checkboxes are drawn by the selection column, not by AG Grid
@@ -162,10 +159,6 @@ export class GridRowSelection implements IGridRowSelection {
             headerCheckbox: false,
             enableClickSelection: true,
         };
-    };
-
-    private _onStyles = (result: IGridStyles, theme: ITheme): void => {
-        result.styles.push(getGridRowSelectionStyles(theme));
     };
 
     /** Adds the column the checkboxes live in. */

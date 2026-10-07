@@ -1,7 +1,6 @@
 import { IPcfContext } from "@interfaces";
 import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, ScrollApiModule } from "ag-grid-community";
 import { AgGridReactProps } from "ag-grid-react";
-import { IStyle } from "@fluentui/react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
@@ -21,6 +20,7 @@ import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces } from "../surfaces";
+import { GridTheme } from "../theme";
 
 /** The AG Grid modules every grid needs, whichever modules it runs. */
 const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, ScrollApiModule, RenderApiModule, GridStateModule, ColumnAutoSizeModule, RowAutoHeightModule];
@@ -35,14 +35,6 @@ export interface IGridAgGridInitialOptions {
 export interface IGridAgGridOptions {
     options: ManagedGridOptions<IRecord>;
 }
-
-/** What the grid's root element is styled with, on top of the grid's own styles. */
-export interface IGridStyles {
-    styles: IStyle[];
-}
-
-/** A hook over the styles of the grid's root element, handed the theme the grid is drawn in. */
-export type GridStylesHook = (result: IGridStyles, theme: ITheme) => void;
 
 export interface IGridRuntimeEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
     /** Fired when the grid is torn down. */
@@ -82,14 +74,6 @@ export interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
-    /**
-     * Registers a hook over the styles of the grid's root element, read whenever the theme changes.
-     *
-     * @param priority Ascending: a later style wins where the selectors are equally specific.
-     */
-    registerStyles(hook: GridStylesHook, priority?: number): () => void;
-    /** What the style hooks add to the grid's own styles. */
-    getStyles(theme: ITheme): IStyle[];
     /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
 }
@@ -99,7 +83,6 @@ export class GridRuntime implements IGridRuntime {
     private _onGetProps: () => IGrid;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
-    private _stylesHooks = new HookRegistry<GridStylesHook>();
     private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
@@ -121,6 +104,8 @@ export class GridRuntime implements IGridRuntime {
         const provider = onGetProps().provider;
         this._services.register('provider', () => provider);
         this._services.register('theme', () => theme);
+        const gridTheme = new GridTheme({ theme, rowHeight: settings.getDefaultRowHeight() });
+        this._services.register('gridTheme', () => gridTheme);
         //constructed once since a resolver runs on every lookup
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });
@@ -161,16 +146,6 @@ export class GridRuntime implements IGridRuntime {
 
     public registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void {
         return this._agGridOptionsHooks.register(hook, priority);
-    }
-
-    public registerStyles(hook: GridStylesHook, priority?: number): () => void {
-        return this._stylesHooks.register(hook, priority);
-    }
-
-    public getStyles(theme: ITheme): IStyle[] {
-        const result: IGridStyles = { styles: [] };
-        this._stylesHooks.apply(result, theme);
-        return result.styles;
     }
 
     public refreshAgGridOptions(): void {
@@ -242,6 +217,8 @@ export class GridRuntime implements IGridRuntime {
                 suppressDragLeaveHidesColumns: true,
                 enterNavigatesVertically: true,
                 enterNavigatesVerticallyAfterEdit: true,
+                //a grid with no height grows with its rows up to the theme's cap
+                domLayout: this._services.get('settings').getHeight() ? 'normal' : 'autoHeight',
                 columnDefs: this._columnDefs,
             },
         };

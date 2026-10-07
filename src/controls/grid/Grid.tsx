@@ -7,8 +7,6 @@ import { IGrid } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-balham.css";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
@@ -33,7 +31,8 @@ export const GridRoot = (props: IGrid) => {
     const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const maxVisibleRows = settings.getMaxVisibleRows();
-    const styles = useMemo(() => getGridStyles(theme, runtime.getStyles(theme), props.height, rowHeight, maxVisibleRows), [theme, props.height, rowHeight, maxVisibleRows]);
+    const height = settings.getHeight();
+    const styles = useMemo(() => getGridStyles(runtime.services.get('gridTheme').getStyles(), height, rowHeight, maxVisibleRows), [height, rowHeight, maxVisibleRows]);
 
     const components = props.components ?? NO_COMPONENTS;
 
@@ -45,6 +44,9 @@ export const GridRoot = (props: IGrid) => {
             runtime.services.register('gridRoot', () => gridRoot);
         }
     }, [runtime]);
+
+    //`domLayout` follows whether the grid has a height
+    useEffect(() => runtime.refreshAgGridOptions(), [height]);
 
     //AG Grid's teardown and its `onDestroyed` run before this cleanup
     useEffect(() => () => runtime.destroy(), []);
@@ -58,8 +60,8 @@ export const GridRoot = (props: IGrid) => {
                 surfaceTheme={theme}
                 applyTo='none'
                 ref={onGridRootRef}
-                className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
-                <AgGridReact<IRecord> theme="legacy" {...runtime.getAgGridProps()} />
+                className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot])}>
+                <AgGridReact<IRecord> theme={runtime.services.get('gridTheme').getAgTheme()} {...runtime.getAgGridProps()} />
                 <Surfaces />
             </ThemeProvider>
         </GridComponentsContext.Provider>

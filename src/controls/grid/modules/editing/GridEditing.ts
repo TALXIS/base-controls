@@ -8,7 +8,7 @@ import { IColumnHeaderAdornment, IGridColumnHeader } from "../../services/column
 import { CellUi } from "../../components/cells/ui";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
-import { IGridStyles } from "../../services/runtime";
+import { IGridStyles } from "../../services/theme";
 import { GridLocks, IGridLocks } from "./GridLocks";
 import { getGridEditingStyles } from "./styles";
 import { LOCKED_RECORD_ROW_CLASS, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY } from "./constants";
@@ -147,7 +147,7 @@ export class GridEditing implements IGridEditing {
             result.options.readOnlyEdit = true;
             result.options.rowClassRules = this._rowClassRules;
         }, GRID_MODULE_PRIORITY.editing);
-        this._services.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.editing);
+        this._services.get('gridTheme').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.editing);
     }
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {

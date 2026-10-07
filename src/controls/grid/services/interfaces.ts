@@ -14,6 +14,7 @@ import type { IGridRows } from "../services/rows";
 import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
+import type { IGridTheme } from "../services/theme";
 
 /** The services the modules register; a module adds its own by augmenting this. */
 export interface IGridModuleServiceMap { }
@@ -38,6 +39,8 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
     labels: ILocalizationService<IGridLabels>;
     /** The theme the control was given. */
     theme: ITheme;
+    /** The AG Grid theme made from it, and the hooks modules edit it through. */
+    gridTheme: IGridTheme;
     /** The column definitions and the hooks modules add to them through. */
     columns: IGridColumns;
     /** What a cell shows and the hooks modules add to it through. */

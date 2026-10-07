@@ -16,8 +16,7 @@ import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from ".
 import { IGridAggregationServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
-import { IGridStyles } from "../../services/runtime";
-import { getGridAggregationStyles } from "./styles";
+import { IGridAgTheme } from "../../services/theme";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
@@ -79,15 +78,15 @@ export class GridAggregation implements IGridAggregation {
         this._registerHooks();
     }
 
-    private _onStyles = (result: IGridStyles, theme: ITheme): void => {
-        result.styles.push(getGridAggregationStyles(theme));
+    private _onTheme = (result: IGridAgTheme, theme: ITheme): void => {
+        result.theme = result.theme.withParams({ pinnedRowBorder: { color: theme.semanticColors.bodyDivider } });
     };
 
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _registerHooks(): void {
         const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('grid').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('gridTheme').registerTheme(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
         this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('cells').registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);

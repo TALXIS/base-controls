@@ -380,12 +380,11 @@ export const SPREADSHEET: { [feature: string]: IFeature } = {
 }
 `
 
-const PIPELINE_REVIEW = `import { findDeal } from './deals'
-import type { IFeature, IFeatureSwitches, IToasts } from './features'
+const PIPELINE_REVIEW = `import type { IFeature, IFeatureSwitches } from './features'
 
 export const PIPELINE_REVIEW: { [feature: string]: IFeature } = {
-    rowSelection: ({ deals, switches, toasts, formatting }) => ({
-        modules: { rowSelection: createRowSelectionModule({ mode: switches.rowSelection || 'multiple', onSelectionChanged: selectedIds => showSelectionTotal(deals, selectedIds, toasts, formatting) }) },
+    rowSelection: ({ switches }) => ({
+        modules: { rowSelection: createRowSelectionModule({ mode: switches.rowSelection || 'multiple' }) },
     }),
     grouping: () => ({ modules: { grouping: createGroupingModule() } }),
     aggregation: () => ({ modules: { aggregation: createAggregationModule() } }),
@@ -416,49 +415,6 @@ export const useStageGrouping = (deals: IDataProvider, switches: IFeatureSwitche
         }
         deals.refresh()
     }, [switches.grouping, switches.aggregation, isReviewed])
-}
-
-const SELECTION_TOAST = 'selectionTotal'
-
-//whether the total is on screen, to update it rather than raise it again
-let isSelectionTotalShown = false
-
-/** Adds up the value of the selected deals in a toast that stays while any are selected. */
-const showSelectionTotal = (deals: IDataProvider, selectedIds: string[], toasts: IToasts, formatting: IFormatting) => {
-    const selected = selectedIds.map(recordId => findDeal(deals, recordId)).filter(Boolean)
-    if (!selected.length) {
-        toasts.dismissToast(SELECTION_TOAST)
-        return
-    }
-    const value = selected.reduce((total, deal) => total + Number(deal.getValue('value') ?? 0), 0)
-    const content = <Toast>
-        <ToastTitle>{selected.length} selected</ToastTitle>
-        <ToastBody>Worth {formatting.formatCurrency(value)} together.</ToastBody>
-    </Toast>
-    if (isSelectionTotalShown) {
-        toasts.updateToast({ toastId: SELECTION_TOAST, content })
-        return
-    }
-    isSelectionTotalShown = true
-    toasts.dispatchToast(content, {
-        toastId: SELECTION_TOAST,
-        intent: 'info',
-        timeout: -1,
-        onStatusChange: (_, data) => {
-            if (data.status === 'unmounted') {
-                isSelectionTotalShown = false
-            }
-        },
-    })
-}
-
-/** Takes the selection total away when rows can no longer be selected. */
-export const useSelectionTotal = (toasts: IToasts, isSelectable: boolean) => {
-    React.useEffect(() => {
-        if (!isSelectable) {
-            toasts.dismissToast(SELECTION_TOAST)
-        }
-    }, [isSelectable])
 }
 `
 
@@ -535,7 +491,7 @@ export const CLOSING_DEALS: { [feature: string]: IFeature } = {
 
 const FEATURES = `import { AT_A_GLANCE } from './atAGlance'
 import { CLOSING_DEALS } from './closingDeals'
-import { PIPELINE_REVIEW, useSelectionTotal, useStageGrouping } from './pipelineReview'
+import { PIPELINE_REVIEW, useStageGrouping } from './pipelineReview'
 import { READ_ONLY_LIST } from './readOnlyList'
 import { SPREADSHEET } from './spreadsheet'
 
@@ -567,7 +523,6 @@ export interface IFeatureContext {
     deals: IDataProvider
     switches: IFeatureSwitches
     toasts: IToasts
-    formatting: IFormatting
     /** The deal open in a form, if any. */
     openedDeal?: IRecord
     onOpenDeal: (deal?: IRecord) => void
@@ -596,11 +551,9 @@ const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => (
 
 export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches): IFeatureProps => {
     const toasts = useToastController(TOASTER_ID)
-    const { formatting } = usePcfContext()
     const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
     useStageGrouping(deals, switches)
-    useSelectionTotal(toasts, !!switches.rowSelection)
-    const context: IFeatureContext = { deals, switches, toasts, formatting, openedDeal, onOpenDeal: setOpenedDeal }
+    const context: IFeatureContext = { deals, switches, toasts, openedDeal, onOpenDeal: setOpenedDeal }
     return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(deals))
 }
 
@@ -636,7 +589,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
     {
         title: 'Selection',
         features: [
-            { key: 'rowSelection', label: 'Rows', hint: 'Tick a few deals: the bar above the grid adds up their value.', options: [{ key: 'multiple', label: 'Multiple' }, { key: 'single', label: 'Single' }] },
+            { key: 'rowSelection', label: 'Rows', hint: 'Tick deals to select them.', options: [{ key: 'multiple', label: 'Multiple' }, { key: 'single', label: 'Single' }] },
             { key: 'cellSelection', isEnterprise: true, label: 'Cell ranges', hint: 'Drag across a block of cells to highlight it, as in a spreadsheet.' },
             { key: 'clipboard', isEnterprise: true, label: 'Copy', hint: 'Press Ctrl+C on a cell, or on a highlighted range with Cell ranges on, and paste it into a spreadsheet. With Editing on, Ctrl+V pastes back into the grid.' },
         ],
@@ -665,7 +618,7 @@ const PRESETS: IShowcasePreset[] = [
     { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints that read the pipeline for you.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews', 'dealForm'] },
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
     { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
-    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals to add up their value.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },
+    { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },
 ]
 
 //what the example adds through its own code, each in a use case of its own

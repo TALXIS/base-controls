@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-/** What the grid's own styles hang a cell's state overlays off. */
+/** The class every cell's body carries. */
 export const CELL_CONTAINER_CLASS_NAME = 'talxis__baseControl__GridCellBody';
 
 export const getCellUiContainerStyles = (theme: ITheme) => mergeStyleSets({
@@ -10,12 +10,12 @@ export const getCellUiContainerStyles = (theme: ITheme) => mergeStyleSets({
         height: '100%',
         display: 'flex',
         alignItems: 'center',
-        //what a `ThemeProvider` paints on the element it is given
-        backgroundColor: theme.semanticColors.bodyBackground,
         color: theme.semanticColors.bodyText,
         fontFamily: theme.fonts.medium.fontFamily,
         fontSize: theme.fonts.medium.fontSize,
         fontWeight: theme.fonts.medium.fontWeight,
+        //AG Grid sets the row height as the cell's line height
+        lineHeight: 'normal',
         MozOsxFontSmoothing: theme.fonts.medium.MozOsxFontSmoothing,
         WebkitFontSmoothing: theme.fonts.medium.WebkitFontSmoothing,
     },

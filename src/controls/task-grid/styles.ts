@@ -24,9 +24,6 @@ export const getDatasetControlStyles = (theme: ITheme) => {
                 top: 1,
                 outline: `1px solid ${theme.semanticColors.inputFocusBorderAlt}`
             },
-            '.ag-cell-auto-height': {
-                backgroundColor: theme.semanticColors.bodyBackground
-            },
             //an option fills the cell it is in rather than shrinking to its label
             '[class^="optionsRoot"] > *': {
                 maxWidth: '100%',

@@ -20,6 +20,8 @@ export interface IGridSettings {
     getDefaultRowHeight(): number;
     /** How many rows the grid grows to fit before it scrolls instead. */
     getMaxVisibleRows(): number;
+    /** How tall the grid is, as a CSS length, or `undefined` while it grows with its rows. */
+    getHeight(): string | undefined;
     /** The caller's changes to the columns, by id, read on every build. */
     getColDefs(): NonNullable<IGrid['colDefs']>;
     /** The caller's per-row callbacks, read on every ask. */
@@ -54,6 +56,10 @@ export class GridSettings implements IGridSettings {
 
     public getMaxVisibleRows(): number {
         return this._getProps().maxVisibleRows ?? DEFAULT_MAX_VISIBLE_ROWS;
+    }
+
+    public getHeight(): string | undefined {
+        return this._getProps().height ?? undefined;
     }
 
     public getColDefs(): NonNullable<IGrid['colDefs']> {

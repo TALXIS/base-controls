@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
-import { IAlignment } from "@utils";
+import { getClassNames, IAlignment } from "@utils";
 import { CellUiFieldErrorComponents, ICellUiFieldErrorComponents } from "./components";
-import { getCellUiFieldErrorStyles } from "./styles";
+import { FIELD_ERROR_OUTLINE_CLASS_NAME, getCellUiFieldErrorStyles } from "./styles";
 
 export interface ICellUiFieldErrorProps {
     /** What is wrong with the value, in the record's words. */
@@ -23,7 +23,7 @@ export const CellUiFieldError = (props: ICellUiFieldErrorProps) => {
         return null;
     }
     return <>
-        {components.onRenderOutline({ className: styles.outline, 'aria-hidden': true })}
+        {components.onRenderOutline({ className: getClassNames([FIELD_ERROR_OUTLINE_CLASS_NAME, styles.outline]), 'aria-hidden': true })}
         {/* `TooltipHost` is styled by `hostClassName`, not `className` */}
         {components.onRenderTooltip({
             content: message,

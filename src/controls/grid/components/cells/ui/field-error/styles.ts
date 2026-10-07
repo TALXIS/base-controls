@@ -1,6 +1,9 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
+/** The class the outline of an invalid cell carries. */
+export const FIELD_ERROR_OUTLINE_CLASS_NAME = 'talxis__baseControl__GridCellFieldErrorOutline';
+
 export const getCellUiFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
     outline: {
         position: 'absolute',
