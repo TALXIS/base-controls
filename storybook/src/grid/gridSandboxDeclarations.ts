@@ -1989,6 +1989,17 @@ interface IGridModuleServiceMap {
     rowSelection: IGridRowSelection;
 }
 
+/** Everything the grid keeps for its next mount, keyed by the part that wrote it. */
+type IGridState = { [key: string]: unknown };
+
+/** A keyed store each part of the grid reads its own entry from and writes it back to. */
+interface IGridStateStorage {
+    get<TValue>(key: string): TValue | undefined;
+    set<TValue>(key: string, value: TValue): void;
+    /** Every entry, to keep for the next mount. */
+    getAll(): IGridState;
+}
+
 /** Everything the grid is made of. */
 interface IGridServiceMap extends IGridModuleServiceMap {
     /** The grid's own element, there once it is mounted. */
@@ -1997,6 +2008,8 @@ interface IGridServiceMap extends IGridModuleServiceMap {
     gridApi: GridApi;
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
+    /** What the grid's parts keep for the next mount. */
+    state: IGridStateStorage;
     rows: IGridRows;
     validation: IGridValidation;
     provider: IDataProvider;
@@ -2923,9 +2936,9 @@ interface IGrid extends Partial<IGridEventHandlers> {
     /** Applied by id on every column build, after every module's hook. */
     colDefs?: { [colId: string]: IGridColDefOverride };
     /** Read whenever the grid asks. */
+    /** Where the user was, read at mount and written in place. */
+    state?: IGridState;
     rowSettings?: IGridRowSettings;
-    /** Read once, at mount. */
-    state?: GridState;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
     /** Fired once gridApi is among the runtime's services. */

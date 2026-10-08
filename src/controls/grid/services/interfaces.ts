@@ -15,6 +15,7 @@ import type { IGridValidation } from "../services/validation";
 import type { IGridSurfaces } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
 import type { IGridTheme } from "../services/theme";
+import type { IGridStateStorage } from "../services/state";
 
 /** The services the modules register; a module adds its own by augmenting this. */
 export interface IGridModuleServiceMap { }
@@ -27,6 +28,8 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
     gridApi: GridApi<IRecord>;
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
+    /** What the grid's parts keep for the next mount. */
+    state: IGridStateStorage;
     /** What is true of a row as a whole. */
     rows: IGridRows;
     /** What the grid says about the values its records hold. */

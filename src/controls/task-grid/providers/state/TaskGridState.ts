@@ -1,3 +1,4 @@
+import type { IGridState } from "@controls/grid";
 import { HookRegistry } from "@utils";
 import { ISavedQuery, ISavedQueryMetadata } from "../saved-query";
 import { IModuleState, IModuleStateScope, createModuleState, setModuleSlice } from "./moduleState";
@@ -27,8 +28,8 @@ export type TaskGridStateCaptureHook = (metadata: Partial<ISavedQueryMetadata>) 
 export interface ITaskGridState {
     /** The view to open on. Ours, through {@link ITaskGridStateProvider}. */
     savedQuery?: Partial<ISavedQuery> & { id: string; linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[] };
-    /** The grid layer's slice: what ag-grid restores as its `initialState`. `GridRuntime` owns its shape. */
-    AgGridState?: unknown;
+    /** The grid layer's slice: where the user was scrolled, which groups were open, which cell had focus. */
+    GridState?: IGridState;
     /** The generic dataset control's slice. Written on the PCF entry path, never here. */
     DatasetControlState?: unknown;
     /** What modules keep for the session rather than for the view. See {@link ITaskGridStateProvider.module}. */
@@ -85,7 +86,7 @@ export class TaskGridState implements ITaskGridStateProvider {
     }
 
     public clearGridState(): void {
-        delete this._state.AgGridState;
+        delete this._state.GridState;
     }
 
     public module<TState extends object>(key: string, scope: IModuleStateScope): IModuleState<TState> {

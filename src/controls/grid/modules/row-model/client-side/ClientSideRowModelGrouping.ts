@@ -43,23 +43,6 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     /** Nothing: `rowGroup` would have AG Grid regroup the tree it was handed. */
     public onApplyColumnDefinition(): void { }
 
-    /** Opens and closes the groups through AG Grid, which holds the expanded state. */
-    public onApplyExpandedLevel(gridApi: GridApi<IRecord>): void {
-        const changedNodes: IRowNode<IRecord>[] = [];
-        gridApi.forEachNode(node => {
-            if (node.allChildrenCount && node.expanded !== this.isGroupOpenByDefault(node)) {
-                changedNodes.push(node);
-            }
-        });
-        for (const node of changedNodes) {
-            node.setExpanded(!node.expanded);
-        }
-        //rebuilds the displayed rows now rather than on the next animation frame
-        gridApi.onGroupExpandedOrCollapsed();
-    }
-
-    public onExpansionChanged(): void { }
-
     /** Every record the tree holds, as far as the child providers have been fetched. */
     public getRows(): IRecord[] {
         return flattenGroupedRecords(this._provider.getRecords());

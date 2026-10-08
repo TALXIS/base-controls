@@ -29,8 +29,4 @@ export interface IGridRowModelGrouping {
     onAgGridOptions: (result: IGridAgGridOptions) => void;
     /** What a data column needs for this row model, grouped or not. */
     onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
-    /** Opens and closes the groups to what `isGroupOpenByDefault` now says. */
-    onApplyExpandedLevel: (gridApi: GridApi<IRecord>) => void;
-    /** Lets what the user or a level opened outrank what a reload restored. */
-    onExpansionChanged: () => void;
 }

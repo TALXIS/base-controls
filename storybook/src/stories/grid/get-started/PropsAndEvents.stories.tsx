@@ -23,13 +23,13 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, and loading and error rows. See [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview) and [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview). |
 | \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Localization**](?path=/docs/grid-localization-overview--overview). |
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns-overview--overview). |
+| \`state\` | \`IGridState\` | None | At mount, then written in place | Where the user was scrolled, which groups were open and which cell had focus. See [**State**](?path=/docs/grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
-| \`state\` | \`GridState\`, from AG Grid | None | At mount | The AG Grid state the grid starts from. See *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview). |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
 | \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |
 | \`onDataLoaded\`, \`onRowClicked\` and the other events | Functions | None | Live | See *Events* below. |
 
-A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without its scroll position, its focus or the save status of its rows.
+A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without the save status of its rows, and without its scroll position, open groups and focus unless you pass the same \`state\`.
 
 ## Sizing
 

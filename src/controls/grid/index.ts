@@ -18,3 +18,4 @@ export * from './inline-ribbon';
 export * from './services';
 export * from './services/columns';
 export * from './services/theme';
+export * from './services/state';

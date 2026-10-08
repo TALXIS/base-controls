@@ -132,6 +132,8 @@ const preview: Preview = {
             ['Overview', 'Editing', 'Selection and clipboard', 'Sorting and filtering', 'Grouping and totals', 'Legacy client API'],
             'Columns',
             ['Overview'],
+            'State',
+            ['Overview'],
             'Appearance',
             ['Overview', 'Custom cells', 'Custom headers', 'Custom overlays', 'Custom rows', 'Modules', ['Editing', 'Row selection', 'Sorting', 'Filtering', 'Grouping', 'Totals']],
             'Localization',

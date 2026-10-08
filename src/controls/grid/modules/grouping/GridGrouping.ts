@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { ColDef, IRowNode } from "ag-grid-community";
+import { ColDef, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
@@ -33,6 +33,14 @@ const CHILD_LIMIT = 5000;
 
 /** How many groups load their records at the same time while a selection waits for them. */
 const CONCURRENT_GROUP_LOADS = 5;
+
+const GROUPING_STATE_KEY = 'grouping';
+
+interface IGroupingState {
+    expandedLevel: number;
+    /** Groups the user opened (`true`) or closed (`false`) against the level, by row id. */
+    toggledGroups: { [rowId: string]: boolean };
+}
 
 export interface IGridGroupingEvents {
     onGroupSelectionLimitDialogChanged: () => void;
@@ -97,7 +105,8 @@ export class GridGrouping implements IGridGrouping {
     private _rowModelGrouping?: IGridRowModelGrouping;
     /** How many levels of groups are open. */
     private _expandedLevel: number;
-    private _hasUserExpanded: boolean = false;
+    //what the user opened or closed against the level, by row id
+    private _toggledGroups = new Map<string, boolean>();
     private _hasReportedChildLimit = false;
     private _isGroupSelectionLimitDialogOpen: boolean = false;
     public readonly events: IEventEmitter<IGridGroupingEvents> = new EventEmitter<IGridGroupingEvents>();
@@ -113,12 +122,15 @@ export class GridGrouping implements IGridGrouping {
         } = parameters.settings ?? {};
         
         this._settings = { allowUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
-        this._expandedLevel = defaultExpandedLevel;
+        const state = this._gridServices.get('state').get<IGroupingState>(GROUPING_STATE_KEY);
+        this._expandedLevel = state?.expandedLevel ?? defaultExpandedLevel;
+        this._toggledGroups = new Map(Object.entries(state?.toggledGroups ?? {}));
         this._grouping = new Grouping(this._provider);
         //overrides the provider's nested default
         this._provider.setProperty('groupingType', this._settings.type);
         this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
         this._gridServices.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        this._gridServices.whenAvailable('gridApi', gridApi => gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
@@ -211,7 +223,7 @@ export class GridGrouping implements IGridGrouping {
     }
 
     public isGroupRow(node: IRowNode<IRecord>): boolean {
-        return !!node.data?.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX);
+        return !!node.data && isGroupRecord(node.data);
     }
 
     public getGroupedValueColumnName(record: IRecord, columnName: string): string {
@@ -257,19 +269,34 @@ export class GridGrouping implements IGridGrouping {
 
     public setExpandedLevel(level: number): void {
         this._expandedLevel = Math.min(Math.max(level, -1), this.getDeepestLevel());
-        this._rowModelGrouping?.onExpansionChanged();
-        this._hasUserExpanded = false;
-        const gridApi = this._gridServices.find('gridApi');
-        if (!gridApi) {
-            return;
-        }
-        this._rowModelGrouping?.onApplyExpandedLevel(gridApi);
+        this._toggledGroups.clear();
+        this._saveState();
+        this._gridServices.find('gridApi')?.resetRowGroupExpansion();
     }
 
     public toggleGroup(node: IRowNode<IRecord>): void {
-        node.setExpanded(!node.expanded);
-        this._rowModelGrouping?.onExpansionChanged();
-        this._hasUserExpanded = true;
+        this._gridServices.get('gridApi').setRowNodeExpanded(node, !node.expanded);
+    }
+
+    private _onRowGroupOpened = (event: RowGroupOpenedEvent<IRecord>): void => {
+        const rowId = event.node.id;
+        if (!rowId) {
+            return;
+        }
+        if (event.expanded === this._isOpenAtLevel(event.node)) {
+            this._toggledGroups.delete(rowId);
+        }
+        else {
+            this._toggledGroups.set(rowId, event.expanded);
+        }
+        this._saveState();
+    };
+
+    private _saveState(): void {
+        this._gridServices.get('state').set<IGroupingState>(GROUPING_STATE_KEY, {
+            expandedLevel: this._expandedLevel,
+            toggledGroups: Object.fromEntries(this._toggledGroups),
+        });
     }
 
     public toggleColumnGroup(columnName: string): void {
@@ -322,7 +349,7 @@ export class GridGrouping implements IGridGrouping {
         if (this._provider.grouping.getGroupBys().length === 0) {
             return;
         }
-        if (params.record.getDataProvider().getSummarizationType() === 'grouping') {
+        if (isGroupRecord(params.record)) {
             theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
             theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
             return;
@@ -331,11 +358,10 @@ export class GridGrouping implements IGridGrouping {
         theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
     };
 
-
     /** A group row holds no record's value to edit. */
     //per cell: locking the group record would draw its row muted
     private _onLock: GridLockHook = (result, { record, columnName }) => {
-        if (!record || !columnName || !record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX)) {
+        if (!record || !columnName || !isGroupRecord(record)) {
             return;
         }
         result.isLocked = true;
@@ -398,7 +424,6 @@ export class GridGrouping implements IGridGrouping {
         });
     };
 
-
     /** What a row draws in a column while the grid is grouped: the group's value, or nothing. */
     private _applyGroupRowRenderer(colDef: ColDef<IRecord>, column: IColumn): void {
         const cellRendererSelector = colDef.cellRendererSelector;
@@ -420,7 +445,11 @@ export class GridGrouping implements IGridGrouping {
         return record ? record.getFormattedValue(this.getGroupedValueColumnName(record, columnName)) ?? '' : '';
     }
 
-    private _isGroupOpenByDefault = (node: IRowNode<IRecord>): boolean => !this._hasUserExpanded && node.level <= this._expandedLevel;
+    private _isGroupOpenByDefault = (node: IRowNode<IRecord>): boolean => (node.id ? this._toggledGroups.get(node.id) : undefined) ?? this._isOpenAtLevel(node);
+
+    private _isOpenAtLevel(node: IRowNode<IRecord>): boolean {
+        return node.level <= this._expandedLevel;
+    }
 
     public get components(): IGridGroupingComponents {
         return this._services.get('components');
@@ -441,14 +470,15 @@ export class GridGrouping implements IGridGrouping {
     private get _gridTheme() {
         return this._gridServices.get('theme');
     }
-
-
 }
+
+//a record's summarization type is its provider's, which a record loaded before grouping shares
+const isGroupRecord = (record: IRecord): boolean => record.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX);
 
 /** A group whose own records have not been loaded yet. */
 const isUnloadedGroup = (record: IRecord | undefined): record is IRecord =>
     !!record
-    && record.getSummarizationType() === 'grouping'
+    && isGroupRecord(record)
     && !record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId())?.getRecords().length;
 
 /** Loads a group's own records, or none where the load fails. */

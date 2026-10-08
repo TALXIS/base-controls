@@ -42,6 +42,7 @@ export const Grid = (props: IControlProps) => {
         rowHeight={parameters.RowHeight?.raw ?? undefined}
         maxVisibleRows={parameters.MaxVisibleRows?.raw ?? undefined}
         height={parameters.Height?.raw ?? undefined}
-        state={props.state?.AgGridState}
+        //written in place, so the slice outlives a remount
+        state={props.state ? (props.state.GridState ??= {}) : undefined}
     />
 }

@@ -93,15 +93,13 @@ To size rows to the text instead, set AG Grid's \`autoHeight: true\` in \`colDef
 
 {{story: Fit rows to their notes}}
 
-## Remembering the layout (WIP)
-
-> **Work in progress.** How the layout is remembered will change along with the grid's \`state\`.
+## Remembering the layout
 
 \`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated (\`visualSizeFactor\` and \`order\`).
 
 - Save each column's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before the provider's first \`refresh()\`.
 - Columns added through \`colDefs\` are not included.
-- Don't use the \`state\` prop for this: the grid lays the columns out again from the provider.
+- Where the user was scrolled, which groups were open and which cell had focus are kept in the \`state\` prop: see [**State**](?path=/docs/grid-state--overview).
 
 {{story: Remember the layout}}
 `

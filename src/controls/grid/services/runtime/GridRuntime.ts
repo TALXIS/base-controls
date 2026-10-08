@@ -21,6 +21,8 @@ import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces } from "../surfaces";
 import { GridTheme } from "../theme";
+import { GridStateStorage } from "../state";
+import { GridViewport } from "../viewport";
 
 /** The AG Grid modules every grid needs, whichever modules it runs. */
 const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, ScrollApiModule, RenderApiModule, GridStateModule, ColumnAutoSizeModule, RowAutoHeightModule];
@@ -100,6 +102,8 @@ export class GridRuntime implements IGridRuntime {
         const settings = new GridSettings({ onGetProps });
         this._services.register('labels', () => labels);
         this._services.register('settings', () => settings);
+        const state = new GridStateStorage({ state: onGetProps().state });
+        this._services.register('state', () => state);
         this._services.register('pcfContext', () => pcfContext);
         const provider = onGetProps().provider;
         this._services.register('provider', () => provider);
@@ -114,9 +118,10 @@ export class GridRuntime implements IGridRuntime {
         const keyboard = new GridKeyboard({ services: this._services });
         const surfaces = new GridSurfaces();
         const fields = new GridFields({ services: this._services });
-        //both wire themselves to the api and the provider
+        //all three wire themselves to the api and the provider
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });
+        new GridViewport({ services: this._services });
         this._services.register('columns', () => columns);
         this._services.register('cells', () => cells);
         this._services.register('rows', () => rows);
@@ -196,7 +201,6 @@ export class GridRuntime implements IGridRuntime {
             options: {
                 rowModelType: this._services.get('rowModel').type,
                 rowHeight: this._services.get('settings').getDefaultRowHeight(),
-                initialState: this._onGetProps().state,
                 enableGroupEdit: true,
                 animateRows: false,
                 getRowId: this._getRowId,
@@ -244,19 +248,8 @@ export class GridRuntime implements IGridRuntime {
         this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
         this._services.get('rowModel').refresh();
-        this._scrollToTop();
         this.events.dispatchEvent('onDataLoaded');
     };
-
-
-    /** Back to the first row after a load. */
-    private _scrollToTop(): void {
-        const gridApi = this._services.find('gridApi');
-        if (!gridApi || this._provider.isLoading() || this._provider.getSortedRecordIds().length === 0) {
-            return;
-        }
-        gridApi.ensureIndexVisible(0, 'top');
-    }
 
     private _getRowId = (params: GetRowIdParams<IRecord>): string => `${params.data.getRecordId()}`;
 

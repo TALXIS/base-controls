@@ -1,4 +1,4 @@
-import { GridState, Module } from "ag-grid-community";
+import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
@@ -6,6 +6,7 @@ import type { IGridRuntime } from "./services/runtime";
 import type { IGridServiceMap } from "./services/interfaces";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
+import type { IGridState } from "./services/state";
 
 /** An optional feature a grid can be given. */
 export interface IGridModule<TServices extends IGridServiceMap = IGridServiceMap> {
@@ -101,10 +102,10 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     labels?: Partial<IGridLabels>;
     /** Changes or adds columns by id, after every module's hook has run. */
     colDefs?: { [colId: string]: IGridColDefOverride };
+    /** Where the user was, read at mount and written in place. */
+    state?: IGridState;
     /** Callbacks the grid runs for each row, read whenever it asks. */
     rowSettings?: IGridRowSettings;
-    /** AG Grid state for column order, widths and sorting; read at mount, then `gridApi`. */
-    state?: GridState;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
     /** Fired once AG Grid is ready, with its api among the runtime's services. */

@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { IGridState, getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -449,8 +449,12 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         provider.refresh()
     }, [provider])
 
+    //where the user was, kept across the remounts below
+    const stateRef = React.useRef<IGridState>({})
+    const [mountCount, setMountCount] = React.useState(0)
+
     //remounted on every change: modules are read once, which is the contract this story holds to
-    const key = `${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}-${props.heatmap}`
+    const key = `${mountCount}-${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}-${props.heatmap}`
     const modules = React.useMemo<IGridModules>(() => ({
         rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
@@ -468,6 +472,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
         <Grid.Root
             key={key}
             provider={provider}
@@ -478,6 +483,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             enableZebra={props.enableZebra}
             enableOptionSetColors={props.enableOptionSetColors}
             rowHeight={props.rowHeight}
-            onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi') }} />
+            state={stateRef.current}
+            onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
     </div>
 }
