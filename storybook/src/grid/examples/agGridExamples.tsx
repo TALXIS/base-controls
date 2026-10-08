@@ -41,7 +41,10 @@ const GridExample = () => {
 }
 `
 
-export const JUMP_TO_NEWEST_TICKET_CODE = `const isNewer = (ticket: IRecord, other: IRecord) => dayjs(ticket.getValue('createdon')).isAfter(other.getValue('createdon'))
+export const JUMP_TO_NEWEST_TICKET_CODE = `//\`flashCells\` needs an AG Grid module the grid does not register itself
+const highlightChangesModule: IGridModule = { agGridModules: [HighlightChangesModule] }
+
+const isNewer = (ticket: IRecord, other: IRecord) => dayjs(ticket.getValue('createdon')).isAfter(other.getValue('createdon'))
 
 const getNewestTicket = (tickets: IRecord[]) => tickets.reduce<IRecord | undefined>((newest, ticket) => !newest || isNewer(ticket, newest) ? ticket : newest, undefined)
 
@@ -58,7 +61,8 @@ const GridExample = () => {
             return
         }
         gridApi.ensureNodeVisible(node, 'middle')
-        gridApi.flashCells({ rowNodes: [node] })
+        //the grid draws the row it scrolled to a frame later
+        requestAnimationFrame(() => requestAnimationFrame(() => gridApi.flashCells({ rowNodes: [node] })))
     }
 
     const commands: ICommandBarItemProps[] = [
@@ -70,7 +74,7 @@ const GridExample = () => {
         <CommandBar items={commands} />
         <Grid.Root
             provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
             enableOptionSetColors
             onGridReady={runtime => { runtimeRef.current = runtime }}
             height='400px' />

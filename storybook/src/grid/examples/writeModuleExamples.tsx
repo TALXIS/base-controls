@@ -6,6 +6,7 @@ export const UNSAVED_CHANGES_BAR_CODE = `interface IUnsavedChanges {
     subscribe(listener: (count: number) => void): () => void
 }
 
+//in your project: declare module '@talxis/base-controls'
 declare global {
     interface IGridModuleServiceMap {
         unsavedChanges: IUnsavedChanges

@@ -6,6 +6,7 @@ import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
+import { getRowNode } from "../rows/getRowNode";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -201,7 +202,7 @@ export class GridCells implements IGridCells {
     }
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
-        const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
+        const record = getRowNode(event.api, event.rowIndex, event.rowPinned)?.data;
         const columnName = typeof event.column === 'string' ? event.column : event.column?.getColId();
         this.events.dispatchEvent('onFocusedCellChanged', record, record ? columnName : undefined);
     };

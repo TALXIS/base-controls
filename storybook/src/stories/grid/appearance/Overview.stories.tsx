@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { ThemeEditExample, DensityExample, EscalatedTicketsExample, HeaderColoursExample, SpotBreachesExample } from '../../../grid/examples/appearanceExamples'
+import { ColumnLinesExample, ThemeEditExample, DensityExample, EscalatedTicketsExample, HeaderColoursExample, SpotBreachesExample } from '../../../grid/examples/appearanceExamples'
 
 const DESCRIPTION = `
 The grid draws in your theme. On top of it you can colour cells and headers by what they hold and pick a density, zebra rows and option set colours. To translate what the grid shows, see [**Localization**](?path=/docs/grid-localization-overview--overview). To replace what the grid draws rather than recolour it, see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview), [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview), [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview), [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview) and how modules draw their pieces: [**Editing**](?path=/docs/grid-appearance-modules-editing--overview), [**Row selection**](?path=/docs/grid-appearance-modules-row-selection--overview), [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview), [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview), [**Grouping**](?path=/docs/grid-appearance-modules-grouping--overview) and [**Totals**](?path=/docs/grid-appearance-modules-totals--overview).
@@ -47,6 +47,31 @@ A column colours its header with \`context.header.onGetTheme(theme)\`. To colour
 
 {{story: Show which columns need a review}}
 
+## The AG Grid theme
+
+Under the cells, AG Grid draws the grid itself: the row lines, hover and selection, the focus and range borders, and its popups. The grid builds that AG Grid theme from your Fluent theme as it mounts:
+
+| AG Grid parameter | From the Fluent theme |
+|---|---|
+| \`accentColor\`, \`rangeSelectionBorderColor\` | \`palette.themePrimary\` |
+| \`backgroundColor\`, \`foregroundColor\` | \`semanticColors.bodyBackground\`, \`bodyText\` |
+| \`rowBorder\`, \`headerRowBorder\` | \`semanticColors.bodyDivider\` |
+| \`rowHoverColor\` | \`bodyText\` at 5% |
+| \`selectedRowBackgroundColor\`, \`rangeSelectionBackgroundColor\` | \`themePrimary\` at 20% and 15% |
+| \`fontFamily\`, \`fontSize\` | \`fonts.medium\` |
+| \`borderRadius\`, \`popupShadow\` | \`effects.roundedCorner2\`, \`elevation16\` |
+
+- There are no lines between columns and no frame round the grid, and the header is as tall as a row.
+- Hover, selection and ranges are see-through and drawn over the cells, so they show over coloured cells too.
+- Cells and headers paint their own colours from the theme hooks above, so colour them there rather than through AG Grid's parameters.
+
+To change the AG Grid theme, register a hook with \`registerTheme(hook, priority?)\` on the \`gridTheme\` service, in a module. It is handed \`{ theme }\` and the Fluent theme. AG Grid themes don't change in place, so replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a>.
+
+- Like the Fluent theme it is built from, it is read at mount: see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
+- For anything no parameter covers, \`registerStyles(hook, priority?)\` on the same service adds Fluent \`IStyle\` rules to the grid's root element: push them to \`result.styles\`.
+
+{{story: Lines between columns}}
+
 ## Density, zebra rows and option set colours
 
 | Prop | Default | What it does |
@@ -55,7 +80,7 @@ A column colours its header with \`context.header.onGetTheme(theme)\`. To colour
 | \`enableZebra\` | \`true\` | Shades every other row. |
 | \`enableOptionSetColors\` | \`false\` | Draws option set and two-options values as tags in their option's colour. |
 
-All three are read at mount, so give the grid a new \`key\` to change them.
+All three are read at mount: see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
 
 {{story: Compact or comfortable}}
 `
@@ -107,6 +132,18 @@ export const TicketNumbersInAFixedWidthFont: Story = {
         docs: {
             description: {
                 story: `\`theme.edit\` swaps the Ticket column's font for a monospace one, keyed \`'monospace'\` so every cell shares one theme. Double-click a ticket number: the editor uses the font too.`,
+            },
+        },
+    },
+}
+
+export const LinesBetweenColumns: Story = {
+    name: 'Lines between columns',
+    render: () => renderStory(<ColumnLinesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A product list that reads like a spreadsheet: a module's \`registerTheme\` adds \`columnBorder\`, \`headerColumnBorder\` and \`wrapperBorder\` in the Fluent divider colour, and a taller header. Change \`headerHeight\` in the code.`,
             },
         },
     },

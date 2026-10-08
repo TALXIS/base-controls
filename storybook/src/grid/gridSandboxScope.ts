@@ -2,13 +2,14 @@ import React from 'react'
 import dayjs from 'dayjs'
 import confetti from 'canvas-confetti'
 import DOMPurify from 'dompurify'
+import { HighlightChangesModule } from 'ag-grid-community'
 import { DefaultEditor } from 'react-simple-wysiwyg'
 import {
     ActionButton, Checkbox, ChoiceGroup, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
-    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, CellLockIcon, createFilteringModule,
+    AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, createFilteringModule,
     createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule,
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
@@ -17,7 +18,8 @@ import {
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { createDealsProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider } from './data'
+import { CheckList, CHECK_LIST_LABELS } from '@talxis/base-controls'
+import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
 export const GRID_SANDBOX_SCOPE = {
@@ -25,6 +27,7 @@ export const GRID_SANDBOX_SCOPE = {
     dayjs,
     confetti,
     DOMPurify,
+    HighlightChangesModule,
     DefaultEditor,
     Grid,
     useGridService,
@@ -70,7 +73,6 @@ export const GRID_SANDBOX_SCOPE = {
     RecordSaveUi,
     RecordLockIcon,
     RecordLockIndicatorCell,
-    CellLockIcon,
     createSortingModule,
     createFilteringModule,
     createGroupingModule,
@@ -100,6 +102,9 @@ export const GRID_SANDBOX_SCOPE = {
     createTimesheetsProvider,
     createTicketsProvider,
     createProductsProvider,
+    createLaunchPlanProvider,
+    CheckList,
+    CHECK_LIST_LABELS,
     DataProvider,
     MemoryDataProvider,
     TotalRow,

@@ -142,7 +142,7 @@ const preview: Preview = {
           ],
           'Map',
           'Checklist',
-          ['Get started', 'Reacting to changes', 'Dev'],
+          ['Get started', 'Customization', 'Saving changes', 'Dev'],
           'Providers',
         ],
       },

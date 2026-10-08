@@ -1,6 +1,6 @@
-import { useGridService } from "../../../../useGridService";
-import { useGridCell } from "../../../../components/cells/root/context";
-import { CellUi, ICellUiLockIconComponents } from "../../../../components/cells/ui";
+import { useGridService } from "../../../useGridService";
+import { useGridCell } from "../root/context";
+import { CellUi, ICellUiLockIconComponents } from "../ui";
 
 export interface ICellLockIconProps {
     components?: Partial<ICellUiLockIconComponents>;

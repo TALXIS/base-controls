@@ -8,6 +8,7 @@ export * from './field';
 export * from './control';
 export * from './column-control';
 export * from './field-error';
+export * from './lock-icon';
 export * from './commands';
 export * from './loading';
 export * from './resize-grip';

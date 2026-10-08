@@ -6,6 +6,7 @@ import { CellControl } from "../control/CellControl";
 import { CellColumnControl } from "../column-control/CellColumnControl";
 import { CellFieldError } from "../field-error/CellFieldError";
 import { CellLoading } from "../loading/CellLoading";
+import { CellLockIcon } from "../lock-icon/CellLockIcon";
 import { CellRoot } from "../root/CellRoot";
 import { CellTheme } from "../theme/CellTheme";
 import { CellResizeGrip } from "../resize-grip/CellResizeGrip";
@@ -23,6 +24,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const components = props.components ?? {};
     const content = <CellContainer components={components.container}>
         <CellLoading components={components.loading}>
+            <CellLockIcon components={components.lockIcon} />
             <CellControl components={components.control}>
                 <CellColumnControl components={components.columnControl} />
             </CellControl>

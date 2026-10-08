@@ -1,6 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { IGridDeferredService, IGridServiceMap } from "./services";
+import { IGridDeferredService, IGridServiceLocator, IGridServiceMap } from "./services";
 import { GridServicesContext } from "./context";
+
+/** The grid's services, typed with a module's own map to reach what that module adds. */
+export const useGridServices = <TServices extends IGridServiceMap = IGridServiceMap>(): IGridServiceLocator<TServices> => {
+    return useContext(GridServicesContext) as IGridServiceLocator<TServices>;
+};
 
 /** Reads one of the grid's services by name. */
 export const useGridService = <TKey extends keyof IGridServiceMap>(key: TKey):

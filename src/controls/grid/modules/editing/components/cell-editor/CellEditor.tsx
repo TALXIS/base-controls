@@ -4,7 +4,7 @@ import { CellContainer } from "../../../../components/cells/container/CellContai
 import { CellControl } from "../../../../components/cells/control/CellControl";
 import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
-import { CellRoot } from "../root/CellRoot";
+import { CellRoot } from "../../../../components/cells/root/CellRoot";
 import { CellTheme } from "../../../../components/cells/theme/CellTheme";
 import { CellResizeGrip } from "../../../../components/cells/resize-grip/CellResizeGrip";
 import { hasResizeGrip } from "../../../../components/cells/resize-grip/hasResizeGrip";
@@ -27,7 +27,7 @@ export const CellEditor = (props: ICellEditorProps) => {
         </CellLoading>
     </CellContainer>;
 
-    return <CellRoot {...props} isEditor>
+    return <CellRoot {...props} takesInput>
         <CellTheme theme={props.theme}>
             {hasResizeGrip(props.colDef)
                 ? <CellResizeGrip components={components.resizeGrip}>{content}</CellResizeGrip>

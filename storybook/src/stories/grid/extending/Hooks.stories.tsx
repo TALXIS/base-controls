@@ -23,7 +23,7 @@ One lock hook answers for three levels. The context it is handed says which one 
 | A record's row | \`{ record }\` |
 | A cell | \`{ record, columnName }\` |
 
-Check the context before you read it. A hook that reads \`record\` without checking for it fails when the grid asks about a column, and a hook that ignores the context locks every column and every row. The levels, the order they are checked in, how each is drawn and their labels are on [**Editing**](?path=/docs/grid-modules-editing--overview).
+Check the context before you read it. A hook that reads \`record\` without checking for it fails when the grid asks about a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 ## Validation
 
@@ -72,7 +72,8 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 
 {{story: Columns by role}}
 
-- The hook is handed the definitions built so far: one per provider column that is not hidden, with the column's name as \`colId\`; the save status column of an editable grid; and what the hooks that ran before it added, such as the checkbox column at \`GRID_MODULE_PRIORITY.rowSelection\`. Change entries, push new ones, splice them out or reorder them.
+- The hook is handed the definitions built so far: one per provider column that is not hidden, with the column's name as \`colId\`, and what the hooks that ran before it added, such as the save and lock columns at \`GRID_MODULE_PRIORITY.editing\` and the checkbox column at \`GRID_MODULE_PRIORITY.rowSelection\`. Change entries, push new ones, splice them out or reorder them.
+- Read a definition's \`context\` with \`getColumnContext(colDef)\`.
 - It runs when the grid is ready and on every load of the provider, so a change to what it reads shows after \`provider.refresh()\`.
 - At the default priority it runs before the modules, which can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module, and \`colDefs\` still runs after that.
 - A column a hook adds gets the grid's header and an empty cell, as a column added through \`colDefs\` does: see [**Columns**](?path=/docs/grid-columns-overview--overview).
@@ -83,7 +84,7 @@ The parameters hook changes what a cell's control is handed. Each parameter is a
 
 - A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
 - \`registerColumnMenuItems\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
-- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getContext()\`, \`getAlignment()\`, \`isLocked()\`, \`isRequired()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
+- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\`, \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
 
 {{story: Show the currency in the header}}
 
@@ -126,7 +127,7 @@ export const KeepADayUnderTenHours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Payroll caps a consultant's day at ten hours. \`registerValidation\` on the \`validation\` service adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the other entries when one of them changes. Anna Novak's Monday and Chloé Martin's Wednesday are already over: cut one entry's hours until the day is back to ten, and both entries of that day clear.`,
+                story: `Payroll caps a consultant's day at ten hours. \`registerValidation\` on the \`validation\` service adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the day's other entries. Anna Novak's Monday is already over: cut one of its entries until the day is back to ten.`,
             },
         },
     },
@@ -138,7 +139,7 @@ export const RefreshPricesFromASupplier: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop takes its prices from a supplier's price list, which answers one product at a time. \`registerCellLoading\` on the \`cells\` service draws a shimmer in each Price cell until that product's price is back. \`cells.render()\` shows the shimmers at once, and writing each new price redraws its row. Press Refresh prices.`,
+                story: `The shop takes its prices from a supplier's price list, which answers one product at a time. \`registerCellLoading\` on the \`cells\` service draws a shimmer in each Price cell until that product's price is back, and \`cells.render()\` shows the shimmers at once. Press *Refresh prices*.`,
             },
         },
     },
@@ -150,7 +151,7 @@ export const AssignNewTicketsToYourself: Story = {
     parameters: {
         docs: {
             description: {
-                story: `New tickets have nobody on them yet. \`registerCellCommands\` on the \`cells\` service offers Assign to me in the Assigned to cell of every unassigned ticket; it assigns the ticket, moves it to In progress and saves it. Hover a New ticket and pick Assign to me.`,
+                story: `New tickets have nobody on them yet. \`registerCellCommands\` on the \`cells\` service offers *Assign to me* in the Assigned to cell of every unassigned ticket. Hover a New ticket and pick *Assign to me*.`,
             },
         },
     },
@@ -186,7 +187,7 @@ export const ColumnsByRole: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Consultants log their hours without seeing what the client is billed. \`registerColumnDefinitions\` on the \`columns\` service hides Hourly rate unless a project manager is signed in, and reads the role through a getter because the module is built once. Switch to Project manager: \`provider.refresh()\` reloads the provider, and the columns are built again with Hourly rate.`,
+                story: `Consultants log their hours without seeing what the client is billed. \`registerColumnDefinitions\` on the \`columns\` service hides Hourly rate unless a project manager is signed in. Switch to Project manager: \`provider.refresh()\` builds the columns again, with Hourly rate.`,
             },
         },
     },
@@ -198,7 +199,7 @@ export const CopyAColumnsValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A sales lead pastes a column of the pipeline into an email. \`registerColumnMenuSection\` on \`columns.headers\` adds a Column section with Copy column values to every column's menu, below Sorting and Filtering because it runs at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Filter Stage to Negotiate, then copy the Deal column from its menu.`,
+                story: `A sales lead pastes a column of the pipeline into an email. \`registerColumnMenuSection\` on \`columns.headers\` adds a Column section with *Copy column values* to every column's menu, below the modules' sections because it runs at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Copy the Deal column from its menu.`,
             },
         },
     },
@@ -210,7 +211,7 @@ export const ShowTheCurrencyInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop's prices are in US dollars, and the header says so. \`registerColumnHeaderAdornments\` on \`columns.headers\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Hover the Price header to read the tooltip, then sort by Price from its menu: USD stays ahead of the sort arrow.`,
+                story: `The shop's prices are in US dollars, and the header says so. \`registerColumnHeaderAdornments\` on \`columns.headers\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Hover the Price header, then sort by it: USD stays ahead of the arrow.`,
             },
         },
     },

@@ -3,14 +3,15 @@ import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@ta
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
 import type { IGridRuntime } from "./services/runtime";
+import type { IGridServiceMap } from "./services/interfaces";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
 
 /** An optional feature a grid can be given. */
-export interface IGridModule {
+export interface IGridModule<TServices extends IGridServiceMap = IGridServiceMap> {
     agGridModules?: Module[];
     /** Registers what the module contributes to the grid. */
-    onRegister?: (runtime: IGridRuntime) => void;
+    onRegister?(runtime: IGridRuntime<TServices>): void;
 }
 
 /** The modules a grid was given. */

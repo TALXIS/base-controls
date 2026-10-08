@@ -6,6 +6,7 @@ import { CellEmptyRenderer } from "./components/cells/empty-cell-renderer/CellEm
 import { CellField } from "./components/cells/field/CellField";
 import { CellLegacyNestedControl } from "./components/cells/legacy-nested-control-renderer/CellLegacyNestedControl";
 import { CellLoading } from "./components/cells/loading/CellLoading";
+import { CellLockIcon } from "./components/cells/lock-icon/CellLockIcon";
 import { CellNestedRoot } from "./components/cells/nested-react-root/CellNestedRoot";
 import { CellRenderer } from "./components/cells/cell-renderer/CellRenderer";
 import { CellResizeGrip } from "./components/cells/resize-grip/CellResizeGrip";
@@ -48,6 +49,8 @@ export interface IGridCellNamespace {
     Loading: typeof CellLoading;
     /** What the cell says when the record refuses the value. */
     FieldError: typeof CellFieldError;
+    /** What says the cell is locked for its record; nothing without the editing module. */
+    LockIcon: typeof CellLockIcon;
     /** The room the value is drawn in; whatever is inside it keeps the cell's layout. */
     Control: typeof CellControl;
     /** Decides what the column draws for the cell's value, and draws it. */
@@ -136,6 +139,7 @@ export const Grid: IGridNamespace = {
         Container: CellContainer,
         Loading: CellLoading,
         FieldError: CellFieldError,
+        LockIcon: CellLockIcon,
         Control: CellControl,
         ColumnControl: CellColumnControl,
         Commands: CellCommands,

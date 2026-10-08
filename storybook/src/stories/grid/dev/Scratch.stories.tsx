@@ -37,7 +37,7 @@ export const Playground: Story = {
         clipboard: true,
         cellSelection: true,
         enableEditing: true,
-        rowHeight: 42,
+        rowHeight: 28,
         enableAutoSave: true,
         enableNavigation: true,
         enableZebra: true,
@@ -47,6 +47,7 @@ export const Playground: Story = {
         grouping: true,
         aggregation: true,
         selectableRows: 'multiple',
+        heatmap: true,
     },
     argTypes: {
         rowModel: { control: 'inline-radio', options: ['serverSide', 'clientSide'] },

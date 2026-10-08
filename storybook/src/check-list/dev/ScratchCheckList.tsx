@@ -1,18 +1,14 @@
 import React from 'react'
-import { CheckList, ICheckListApi, ICheckListFieldMapping, ICheckListInitializeResult } from '@talxis/base-controls'
+import { CheckList, ICheckListFieldMapping, IGridRuntime } from '@talxis/base-controls'
 import { PcfContextProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
-import { COLUMNS, COMPLETED_COL, DATA_SOURCE, NAME_COL, PRIMARY_ID, STACK_RANK_COL } from './scratchCheckListData'
+import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
 const FIELD_MAPPING: ICheckListFieldMapping = {
-    id: PRIMARY_ID,
     name: NAME_COL,
     stackRank: STACK_RANK_COL,
     completed: COMPLETED_COL,
 }
-
-//long enough to actually see the skeleton the checklist shows while this is pending
-const INITIALIZE_DELAY_MS = 1000
 
 interface IEventLogEntry {
     event: string
@@ -20,9 +16,8 @@ interface IEventLogEntry {
 }
 
 /**
- * The scratch harness for the `CheckList` control: the rows, their columns and the field mapping over
- * them, with every event a consumer can subscribe to logged above it. Edit this file to try things
- * against the control.
+ * The scratch harness for the `CheckList` control over an in-memory provider, with every change it makes
+ * logged above it. Edit this file to try things against the control.
  */
 export const ScratchCheckList = () => {
     const [entries, setEntries] = React.useState<IEventLogEntry[]>([])
@@ -30,6 +25,12 @@ export const ScratchCheckList = () => {
 
     const log = React.useCallback((event: string, detail: string = '') => {
         setEntries(entries => [...entries, { event, detail }])
+    }, [])
+
+    const provider = React.useMemo(() => {
+        const provider = createScratchCheckListProvider()
+        provider.onDeleted = recordIds => log('onRecordsDelete', recordIds.join(', '))
+        return provider
     }, [])
 
     //oldest first, so the newest line is the one worth keeping in view
@@ -40,26 +41,17 @@ export const ScratchCheckList = () => {
         }
     }, [entries])
 
-    const onInitialize = React.useCallback(async (): Promise<ICheckListInitializeResult> => {
-        await new Promise(resolve => setTimeout(resolve, INITIALIZE_DELAY_MS))
-        return {
-            data: DATA_SOURCE,
-            columns: COLUMNS,
-            fieldMapping: FIELD_MAPPING,
-        }
-    }, [])
-
-    //parked on window so the api can be poked at from the browser console while using the list
-    const onReady = React.useCallback((api: ICheckListApi) => {
-        (window as any).checkListApi = api
-        log('onReady', `${api.getData().length} items`)
+    //parked on window so the provider and the runtime can be poked at from the browser console
+    const onGridReady = React.useCallback((runtime: IGridRuntime) => {
+        Object.assign(window, { checkListProvider: provider, checkListRuntime: runtime })
+        log('onGridReady', `${provider.getRecords().length} items`)
     }, [])
 
     return (
         <PcfContextProvider>
             <Stack tokens={{ childrenGap: 8 }}>
                 <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
-                    <Text variant="small">Every event a consumer can subscribe to</Text>
+                    <Text variant="small">Every change the checklist makes</Text>
                     <Link onClick={() => setEntries([])}>Clear</Link>
                 </Stack>
                 <div
@@ -86,15 +78,12 @@ export const ScratchCheckList = () => {
                     ))}
                 </div>
                 <CheckList
-                    onInitialize={onInitialize}
-                    onReady={onReady}
-                    onItemCreated={item => log('onItemCreated', `${item[NAME_COL]} · ${item[PRIMARY_ID]}`)}
-                    onItemDeleted={itemId => log('onItemDeleted', itemId)}
-                    onItemMoved={itemId => log('onItemMoved', itemId)}
-                    onItemCompletionChanged={(itemId, isCompleted) => log('onItemCompletionChanged', `${itemId} · ${isCompleted}`)}
-                    onItemSaved={result => log('onItemSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
-                    onDataChanged={items => log('onDataChanged', `${items.length} items`)}
-                    onError={(error, message) => log('onError', message)} />
+                    provider={provider}
+                    fieldMapping={FIELD_MAPPING}
+                    onGridReady={onGridReady}
+                    onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
+                    onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
+                    onError={message => log('onError', message)} />
             </Stack>
         </PcfContextProvider>
     )

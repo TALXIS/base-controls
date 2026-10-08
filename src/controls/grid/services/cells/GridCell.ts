@@ -135,7 +135,8 @@ export class GridCell implements IGridCell {
     }
 
     public takesInput(): boolean {
-        return this._takesInput;
+        //a one-click column takes input where its cell stands
+        return this._takesInput || (!!this._editing && !!this.getContext().cell?.oneClickEdit);
     }
 
     public getContext(): IGridColumnContext {
@@ -163,7 +164,7 @@ export class GridCell implements IGridCell {
     }
 
     public createControl(): IGridControl {
-        return new GridControl({ services: this._services, cell: this, field: this._field, takesInput: this._takesInput });
+        return new GridControl({ services: this._services, cell: this, field: this._field, takesInput: this.takesInput() });
     }
 
     public isLocked(): boolean {

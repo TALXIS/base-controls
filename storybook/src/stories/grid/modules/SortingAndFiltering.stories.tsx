@@ -5,7 +5,11 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { OpenOnWhatMattersExample, SavedViewsExample, TailoredFiltersExample, TriageQueueExample } from '../../../grid/examples/sortingFilteringExamples'
 
 const DESCRIPTION = `
-Sorting and filtering let users order a long list and narrow it down from each column's menu. Both are modules you add to \`modules\`, neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
+Sorting and filtering let users order a long list and narrow it down from each column's menu. Neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
+
+\`\`\`tsx
+modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), filtering: createFilteringModule() }}
+\`\`\`
 
 {{story: Triage the support queue}}
 
@@ -25,13 +29,13 @@ A column's callout sets one condition, and the conditions of all filtered column
 | Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). \`colDefs\` has no say over filtering: \`filter: false\` leaves *Filter By* in the menu. To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`, on [**Columns**](?path=/docs/grid-columns-overview--overview).
+The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`: see *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## Open the grid sorted and filtered
 
 {{story: Open on what matters}}
 
-The provider holds the sort and the filter, and both modules read them from it. Set them with \`provider.setSorting([{ name, sortDirection }])\` and \`provider.setFiltering({ filterOperator, conditions: [{ attributeName, conditionOperator, value }] })\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Later on, set them again and call \`refresh()\`. The grid's \`state\` prop does not carry the sort: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
+The provider holds the sort and the filter, and both modules read them from it. Set them with \`provider.setSorting([{ name, sortDirection }])\` and \`provider.setFiltering({ filterOperator, conditions: [{ attributeName, conditionOperator, value }] })\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Later on, set them again and call \`refresh()\`. The grid's \`state\` prop does not carry the sort.
 
 | Field | What goes in it |
 |---|---|
@@ -43,7 +47,7 @@ The provider holds the sort and the filter, and both modules read them from it. 
 
 \`provider.setFiltering(null)\` and \`provider.setSorting([])\` clear them. An option set value given as a number filters the rows, but the callout then opens with nothing picked.
 
-The first time someone applies or clears a column filter, the module rebuilds the provider's filter from the conditions on its columns and requires all of them. An OR becomes an AND, and nested filters and conditions on anything that is not a column are dropped, so keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
+Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required: an OR becomes an AND, and nested filters or conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
 ## Saved views
 
@@ -69,11 +73,15 @@ A view is a sort and a filter applied together. The column menus write to the sa
 - On an option set or a yes/no column, *Equals* and *Does not equal* take several options, and reach the provider as \`In\` and \`NotIn\` once more than one is picked. Leave \`In\` and \`NotIn\` out of their lists.
 - Dates are compared by day.
 
-\`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout hands its controls, here a text box's \`Placeholder\`. The hook gets \`{ column, control, index }\`: \`control\` is \`'operator'\` for the operator picker and \`'value'\` for a value control, and \`index\` is \`0\`, or \`1\` for the second value of *Between*. It runs on every render of the callout, after the grid's own parameters: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout. Hooks run by ascending \`priority\`, and the call returns a function that unregisters the hook.
+\`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout hands its controls, here a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`:
+
+- \`control\` is \`'operator'\` for the operator picker and \`'value'\` for a value control.
+- \`index\` is \`0\`, or \`1\` for the second value of *Between*.
+- It runs after the grid's own parameters, so it can change them too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
 
 ## The sorting and filtering services
 
-Reach them with \`runtime.services.get('sorting')\` and \`runtime.services.get('filtering')\` from \`onGridReady\` or a module of your own, or with \`useGridService\` inside anything the grid draws. \`services.get\` throws when the grid has no such module, and \`services.find\` returns \`undefined\`.
+\`runtime.services.find('sorting')\` and \`find('filtering')\` in a module or from \`onGridReady\`, or \`useGridService\` in a part the grid draws. Both are \`undefined\` without the module.
 
 | \`sorting\` | What it does |
 |---|---|
@@ -96,7 +104,7 @@ Reach them with \`runtime.services.get('sorting')\` and \`runtime.services.get('
 
 ## Labels
 
-Pass any of these keys as the module's \`labels\`. They are read once, at mount, and the grid's own \`labels\` prop does not cover them; localization as a whole is on [**Localization**](?path=/docs/grid-localization-overview--overview).
+Pass any of these keys as the module's \`labels\`, read at mount. The grid's own \`labels\` prop does not cover them: see [**Localization**](?path=/docs/grid-localization-overview--overview).
 
 | \`createSortingModule({ labels })\` | Default | Where it shows |
 |---|---|---|
@@ -117,18 +125,7 @@ Inside the callout, the operator names follow the user's language, and the *Appl
 
 ## Components
 
-Each module's \`components\` option replaces what it draws, by piece. How to write a replacement is on [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview) and [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview).
-
-| \`createSortingModule({ components })\` | Replaces |
-|---|---|
-| \`sortIcon.onRenderIcon\` | The arrow after a sorted column's name. Its props carry \`descending\` and the \`iconName\` (\`SortUp\` or \`SortDown\`). |
-
-| \`createFilteringModule({ components })\` | Replaces |
-|---|---|
-| \`filterIcon.onRenderIcon\` | The funnel after a filtered column's name. |
-| \`filterCallout.onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | The callout's frame. The operator picker and the value controls inside take their parameters from the hook above, and the *Apply* and *Clear* buttons cannot be changed. |
-
-To hide the arrow or the funnel on one column, remove the header adornment keyed \`'sort'\` or \`'filter'\` in \`context.header.onGetAdornments\`.
+Each module's \`components\` option replaces the arrow, the funnel and the callout's frame: see [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview) and [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview) under *Appearance → Modules*.
 `
 
 const meta = {
@@ -153,7 +150,7 @@ export const TriageTheSupportQueue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support lead works through this week's tickets. \`createSortingModule()\` and \`createFilteringModule()\` put a *Sorting* and a *Filtering* section in every column's menu. Filter *Status* to New and In progress, sort by *Customer*, then Shift+click *Sort older to newer* under *Opened* to order each customer's tickets by age.`,
+                story: `This week's support tickets: \`createSortingModule()\` and \`createFilteringModule()\` put a *Sorting* and a *Filtering* section in every column's menu. Filter *Status* to New, sort by *Customer*, then Shift+click *Sort older to newer* under *Opened*.`,
             },
         },
     },
@@ -165,7 +162,7 @@ export const OpenOnWhatMatters: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The support queue opens on the tickets still to resolve: unassigned ones first, then each agent's by how soon they are due. The snippet calls \`provider.setSorting\` and \`provider.setFiltering\` on its own provider before \`refresh()\`. Open the *Status* or *Assigned to* menu to see the preset.`,
+                story: `The queue opens on the tickets still to resolve, unassigned first: \`provider.setSorting\` and \`provider.setFiltering\` are called before \`refresh()\`. Open the *Status* or *Assigned to* menu to see the preset.`,
             },
         },
     },
@@ -177,7 +174,7 @@ export const SwitchBetweenSavedViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The support desk keeps a few views of its queue. Each button applies a sort and a filter through \`provider.setSorting\` and \`provider.setFiltering\`, then calls \`refresh()\`. On *Open tickets*, filter *Priority* to High from its menu: your filter joins the view's, and the next view you pick replaces both.`,
+                story: `Each button applies a sort and a filter through \`provider.setSorting\` and \`provider.setFiltering\`, then calls \`refresh()\`. On *Open tickets*, filter *Priority* to High: your filter joins the view's, and the next view replaces both.`,
             },
         },
     },
@@ -189,7 +186,7 @@ export const OfferOnlyTheFiltersThatMakeSense: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The support desk trims each filter to what the team uses: \`metadata.SupportedFilterConditionOperators\` narrows the operators of most columns, and *Time spent* gets none, so it cannot be filtered. A module of its own puts a hint in the text boxes through \`filtering.registerFilterControlParameters\`. Filter *Respond by* and pick *Between*, or filter *Subject* to see the hint.`,
+                story: `\`metadata.SupportedFilterConditionOperators\` narrows each column's operators, and *Time spent* gets none, so it cannot be filtered. A module puts a hint in the text boxes through \`filtering.registerFilterControlParameters\`. Filter *Subject* to see the hint.`,
             },
         },
     },

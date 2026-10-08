@@ -761,6 +761,8 @@ declare abstract class DataProvider {
     };
     constructor(args: any);
     abstract onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
+    /** Deletes the records from wherever the provider keeps them; deleteRecords calls it. */
+    abstract onRecordsDelete(recordIds: string[]): Promise<{ success: boolean; results: IRecordDeleteOperationResult[] }>;
     abstract onIsRecordActive(recordId: string): boolean;
     abstract onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: IOpenDatasetItemContext): void;
     abstract getDataAsync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): Promise<IRetrievedData | Error>;
@@ -776,6 +778,8 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
     setMetadata(metadata: IMemoryProviderEntityMetadata): void;
     /** Succeeds for every dirty field. */
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
+    /** Removes the records from the data source. */
+    onRecordsDelete(recordIds: string[]): Promise<{ success: boolean; results: IRecordDeleteOperationResult[] }>;
     onIsRecordActive(recordId: string): boolean;
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference): void;
     getDataAsync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): Promise<IRetrievedData>;
@@ -806,6 +810,8 @@ declare function createTimesheetsProvider(): MemoryDataProvider;
 declare function createTicketsProvider(): MemoryDataProvider;
 /** A new, unloaded provider over an office furniture shop's 16 products. */
 declare function createProductsProvider(): MemoryDataProvider;
+/** A new, unloaded provider over a product launch's checklist of 6 items: name, completed, stackrank, priority, owner, duedate and estimate, a duration in minutes that is totalled. */
+declare function createLaunchPlanProvider(): MemoryDataProvider;
 
 interface Sorting {
     /** Sorts the provider by one column from its next refresh. */
@@ -1079,8 +1085,6 @@ interface GridApi {
     onRowHeightChanged(): void;
     resetRowHeights(): void;
     getState(): GridState;
-    showNoRowsOverlay(): void;
-    hideOverlay(): void;
     startEditingCell(params: { rowIndex: number; colKey: string | Column; rowPinned?: 'top' | 'bottom' | null; key?: string }): void;
     stopEditing(cancel?: boolean): void;
     getEditingCells(): { rowIndex: number; rowPinned: 'top' | 'bottom' | null | undefined; colId: string }[];
@@ -1278,7 +1282,9 @@ interface GridOptions<TData = any> {
     pinnedTopRowData?: any[];
     pinnedBottomRowData?: any[];
     cellSelection?: boolean | IGridCellSelectionOptions;
-    loading?: boolean;
+    activeOverlay?: any;
+    suppressOverlays?: ('loading' | 'noRows' | 'noMatchingRows' | 'exporting')[];
+    theme?: AgGridTheme | 'legacy';
     domLayout?: 'normal' | 'autoHeight' | 'print';
     rowBuffer?: number;
     context?: any;
@@ -1691,6 +1697,8 @@ interface IGridCellParameters {
     takesInput?: boolean;
     /** The element AG Grid draws the cell in. */
     element?: HTMLElement;
+    /** The field the cell draws, where it draws one. */
+    field?: IGridField;
 }
 
 interface IGridRowsEvents {
@@ -1707,7 +1715,7 @@ type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; nod
 
 /** What the caller decides for each row, after the row-level hooks. */
 interface IGridRowSettings {
-    /** Locks a record as a whole, drawn as a muted row. */
+    /** Locks a record as a whole, drawn as a dimmed row. */
     onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     onGetHeight?: GridRowHeightHook;
 }
@@ -1742,6 +1750,8 @@ interface IGridSettings {
     areOptionSetColorsEnabled(): boolean;
     getDefaultRowHeight(): number;
     getMaxVisibleRows(): number;
+    /** How tall the grid is, as a CSS length, or undefined while it grows with its rows. */
+    getHeight(): string | undefined;
     getColDefs(): { [colId: string]: IGridColDefOverride };
     getRowSettings(): IGridRowSettings;
 }
@@ -1805,7 +1815,30 @@ interface IGridStyles {
     styles: import('@fluentui/react').IStyle[];
 }
 
-type GridStylesHook = (result: IGridStyles, theme: ITheme) => void;
+type GridStylesHook = (result: IGridStyles, fluentTheme: ITheme) => void;
+
+/** An AG Grid theme from its Theming API; themes don't change in place. */
+interface AgGridTheme {
+    /** A copy of the theme with these parameters set. */
+    withParams(params: { [param: string]: unknown }, mode?: string): AgGridTheme;
+}
+
+/** The AG Grid theme a hook edits; replace it. */
+interface IGridAgTheme {
+    theme: AgGridTheme;
+}
+
+type GridThemeHook = (result: IGridAgTheme, fluentTheme: ITheme) => void;
+
+/** The AG Grid theme the grid is drawn in, and the styles of its root element. */
+interface IGridTheme {
+    /** A hook over the AG Grid theme, read at mount. */
+    registerTheme(hook: GridThemeHook, priority?: number): () => void;
+    getAgTheme(): AgGridTheme;
+    /** A later style wins where the selectors are equally specific. */
+    registerStyles(hook: GridStylesHook, priority?: number): () => void;
+    getStyles(): import('@fluentui/react').IStyle[];
+}
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
 interface IGridRuntimeEvents {
@@ -1823,9 +1856,6 @@ interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
-    /** A later style wins where the selectors are equally specific. */
-    registerStyles(hook: GridStylesHook, priority?: number): () => void;
-    getStyles(theme: ITheme): import('@fluentui/react').IStyle[];
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
 }
@@ -1970,11 +2000,13 @@ interface IGridServiceMap extends IGridModuleServiceMap {
     rows: IGridRows;
     validation: IGridValidation;
     provider: IDataProvider;
-    pcfContext: ComponentFramework.Context<any, any>;
+    pcfContext: IPcfContext;
     /** Every string the grid renders, resolved. */
     labels: ILocalizationService<IGridLabels>;
     /** The theme the grid was given. */
     theme: ITheme;
+    /** The AG Grid theme made from it, and the root element's styles. */
+    gridTheme: IGridTheme;
     columns: IGridColumns;
     cells: IGridCells;
     keyboard: IGridKeyboard;
@@ -2055,6 +2087,9 @@ interface IGridModules {
 }
 
 /** A hook's priority defaults to 0. */
+/** AG Grid's module behind gridApi.flashCells. */
+declare const HighlightChangesModule: unknown;
+
 declare const GRID_MODULE_PRIORITY: {
     readonly legacyClientApiCompatibility: 0;
     readonly rowModel: 10;
@@ -2324,6 +2359,8 @@ interface IGridValueRendererParameters extends IParameters {
 interface IGridValueRenderer {
     context: ComponentFramework.Context<any>;
     parameters: IGridValueRendererParameters;
+    /** Put on the element the value is drawn in, alongside its own class. */
+    className?: string;
     components?: Partial<IGridValueRendererComponents>;
     onNotifyOutputChanged?: (outputs: { [key: string]: any }) => void;
 }
@@ -2351,10 +2388,7 @@ interface ICellComponents {
 interface ICellRendererComponents extends ICellComponents {
     fieldError?: Partial<ICellUiFieldErrorComponents>;
     commands?: Partial<ICellUiCommandsComponents>;
-}
-
-/** The replaceable pieces of the editing module's cell; it also draws the lock. */
-interface IEditingCellRendererComponents extends ICellRendererComponents {
+    /** What says the cell is locked for its record; drawn only with the editing module. */
     lockIcon?: Partial<ICellUiLockIconComponents>;
 }
 
@@ -2367,12 +2401,6 @@ interface ICellRendererProps extends ICellRendererParams {
     /** The seed the cell's theme is generated from. */
     theme?: ITheme;
     components?: ICellRendererComponents;
-}
-
-
-interface IEditingCellRendererProps extends ICellRendererParams {
-    theme?: ITheme;
-    components?: IEditingCellRendererComponents;
 }
 
 
@@ -2394,11 +2422,6 @@ interface ICellRootProps extends ICellRendererParams {
     /** Whether the cell's control takes input instead of showing the value. */
     takesInput?: boolean;
     children?: React.ReactNode;
-}
-
-interface IEditingCellRootProps extends Omit<ICellRootProps, 'takesInput'> {
-    /** Whether this is the editor AG Grid opened over the cell. */
-    isEditor?: boolean;
 }
 
 interface ICellThemeProps {
@@ -2473,6 +2496,8 @@ interface IGridCellNamespace {
     Loading: (props: ICellLoadingProps) => JSX.Element;
     /** What the cell says when the record refuses the value. */
     FieldError: (props: ICellFieldErrorProps) => JSX.Element;
+    /** What says the cell is locked for its record; nothing without the editing module. */
+    LockIcon: (props: ICellLockIconProps) => JSX.Element | null;
     /** The room the value is drawn in; whatever is inside it keeps the cell's layout. */
     Control: (props: ICellControlProps) => JSX.Element | null;
     /** Decides what the column draws for the cell's value: its control, a PCF control or onRenderControl. */
@@ -3273,17 +3298,11 @@ declare function createRowSelectionModule(options: IRowSelectionModuleOptions): 
 declare function createCellSelectionModule(options?: IGridCellSelectionOptions): IGridModule;
 /** AG Grid Enterprise copying, with no paste into records. */
 declare function createClipboardModule(options?: IGridClipboardOptions): IGridModule;
-/** The cells the editing module draws its columns with, named like those in Grid.Cell. */
+/** The cells the editing module draws its columns with. */
 declare const EditingCell: {
-    /** A cell that also says when it is locked for its record. */
-    Renderer: (props: IEditingCellRendererProps) => JSX.Element;
     /** The cell while it is being edited. */
     Editor: (props: IEditingCellEditorProps) => JSX.Element;
-    /** Grid.Cell.Root for a cell that takes input as an editor or a one-click column. */
-    Root: (props: IEditingCellRootProps) => JSX.Element;
 };
-/** What says a cell is locked for its record; from the editing module. */
-declare const CellLockIcon: (props: ICellLockIconProps) => JSX.Element | null;
 /** The checkbox that selects the cell's record; from the row selection module. */
 declare const SelectionCheckbox: (props: { components?: Partial<IRowSelectionUiCheckboxComponents> }) => JSX.Element;
 /** A row's checkbox cell; from the row selection module. */
@@ -3308,4 +3327,39 @@ declare function createGroupingModule(options?: IGroupingModuleOptions): IGridMo
 declare function createAggregationModule(options?: IAggregationModuleOptions): IGridModule;
 /** Carries what legacy scripts set on records' fields into the cells. */
 declare function createLegacyClientApiCompatibilityModule(): IGridModule;
+/** Which of the provider's columns carry the label, the order and the completion state. */
+interface ICheckListFieldMapping {
+    /** Column holding the item's label. */
+    name: string;
+    /** Column the list is ordered by, hidden from the grid. */
+    stackRank: string;
+    /** Boolean column the item's completion is stored in, drawn as the checkbox column. */
+    completed: string;
+}
+
+/** The strings a checklist draws on top of the grid's own. */
+interface ICheckListLabels {
+    newItemPlaceholder: string;
+    markItemFinished: string;
+    deleteItem: string;
+    'confirmDialog.deleteItem.text': string;
+}
+
+declare const CHECK_LIST_LABELS: ICheckListLabels;
+
+/** The grid modules that work with a checklist; the others reorder or hide rows, or block dragging. */
+type ICheckListModules = Pick<IGridModules, 'license' | 'editing' | 'rowSelection' | 'clipboard' | 'aggregation' | 'legacyClientApiCompatibility' | 'custom'>;
+
+interface ICheckListProps extends Omit<IGrid, 'modules' | 'labels'> {
+    /** Read once, at mount. */
+    fieldMapping: ICheckListFieldMapping;
+    /** Merged over an auto-saving editing module; editing: undefined makes the list read-only. Read once, at mount. */
+    modules?: ICheckListModules;
+    /** The grid's strings and the checklist's own. Read once, at mount. */
+    labels?: Partial<IGridLabels & ICheckListLabels>;
+}
+
+/** A grid over the provider's records as a checklist. */
+declare const CheckList: (props: ICheckListProps) => JSX.Element;
+
 `

@@ -16,7 +16,7 @@ Client scripts written against the dataset client API flag the records that need
     }} />
 \`\`\`
 
-The module takes no options and needs no AG Grid Enterprise licence. Like every module, it is read once, at mount: see [**Modules**](?path=/docs/grid-modules--overview).
+The module takes no options and needs no AG Grid Enterprise licence.
 
 {{story: Recommend next steps on tickets}}
 
@@ -27,7 +27,7 @@ An expression is set on one record for one column, and setting it again replaces
 - on \`provider.getRecords()\`, for the records already loaded;
 - on the provider's \`onRecordLoaded\` event, for every record loaded or saved after that.
 
-The provider outlives the grid, so remove the listener on the runtime's \`onDestroyed\` event. Run the script from a module of your own in \`modules.custom\`, as every example on this page does: its \`onRegister\` runs before the first row is drawn. See [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). An expression for a column the provider does not have is ignored, with a console warning.
+Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener on the runtime's \`onDestroyed\` event: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). An expression for a column the provider does not have is ignored, with a console warning.
 
 An expression that reads only its own record's values redraws when they change. One that reads anything else, such as the time, another record or a flag of your own, does not: call \`provider.requestRender()\` once that changes, as the stock sync below does.
 
@@ -46,7 +46,7 @@ Every expression takes the column's logical name first. Some are answered by the
 | \`ui.setCustomFormattingExpression(column, cellTheme => ({ backgroundColor?, textColor?, primaryColor? }))\` | Colours the cell. A new background without a text or primary colour gets a readable one. \`cellTheme\` is a Fluent theme of the cell's current colours, and \`undefined\` leaves the cell as it is. \`className\` and \`themeOverride\` are ignored. | Ignored |
 | \`ui.setLoadingExpression(column, () => boolean)\` | \`true\` draws a shimmer in place of the cell's value, lock icon, notifications and error. | Ignored |
 | \`ui.setControlParametersExpression(column, parameters => parameters)\` | Adds to or overrides the parameters the cell's control gets, such as \`Placeholder\`, both while it shows the value and while it is edited. It cannot remove one. | Ignored |
-| \`ui.setCustomControlsExpression(column, controls => controls)\` | Picks the control that draws or edits the cell, merged over the grid's own: the first one returned whose \`appliesTo\` is \`'both'\`, or \`'editor'\` while the cell takes input (one-click columns included) and \`'renderer'\` otherwise. The list you get starts with the grid's own control, which applies to both, so put yours first. An empty list falls back to the column's \`controls\`. | Ignored |
+| \`ui.setCustomControlsExpression(column, controls => controls)\` | Picks the control that draws or edits the cell: the first one returned whose \`appliesTo\` matches (\`'renderer'\`, \`'editor'\` or \`'both'\`). The list starts with the grid's own control, so put yours first. An empty list falls back to the column's \`controls\`. | Ignored |
 | \`IColumn.controls\` | Custom controls for the whole column, used where no expression returns any. | Ignored |
 | \`provider.requestRender()\` | Redraws every cell and column header. | Redraws nothing in the grid |
 | \`setValidationExpression(column, () => IFieldValidationResult)\` | Marks the cell invalid with the message and refuses the save. | The same |
@@ -69,7 +69,7 @@ Each notification an expression returns is an \`IAddControlNotificationOptions\`
 | \`text\` | The button's label, and the title of the callout. |
 | \`messages\` | Required. The first message is the callout's text; the others are not shown. |
 | \`actions\` | What the user can do about it: \`{ message, iconName, actions }\`, where \`message\` is the label and \`actions\` are the callbacks that run. |
-| \`buttonProps\` | Spread onto the button, a Fluent \`ICommandBarItemProps\`. \`iconOnly: true\` draws the icon alone, with \`text\` as its tooltip. Style it through \`buttonStyles\`. An \`iconProps\` here replaces the icon \`iconName\` gives. Its \`onClick\` runs before the grid's own. |
+| \`buttonProps\` | Spread onto the button, a Fluent \`ICommandBarItemProps\`: \`iconOnly: true\` draws the icon alone, \`buttonStyles\` styles it, and its \`onClick\` runs before the grid's own. |
 | \`buttonProps.renderedInOverflow\` | \`true\` puts the notification in the cell's **…** menu. |
 | \`notificationLevel\` | Optional and ignored: \`'ERROR'\` and \`'RECOMMENDATION'\` look the same. |
 
@@ -90,12 +90,12 @@ When a notification shows:
 
 ## With the rest of the grid
 
-- Every hook the module registers runs at priority 0, \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, before every other built-in module. A hook of yours at the default priority runs after the module's, and a column's \`context.cell\` callbacks run after both. The module's lock and loading hooks set the answer rather than add to it, so they overrule a hook with a negative priority. Priorities are on [**Extending**](?path=/docs/grid-extending--overview).
+- The module runs first, before every other built-in module and your hooks, and its lock, loading and colour answers replace what ran before it: see *Priorities* on [**Extending**](?path=/docs/grid-extending--overview).
 - The grid's validation replaces a script's \`setValidationExpression\`. A column with \`context.cell.onGetValidation\`, or every column once a \`registerValidation\` is registered, gets the grid's own validation expression on every record, and the script's never runs. Move such a check into the grid's validation.
 - A disabled expression cannot open a grid without the editing module, a column locked by its metadata or by \`context.isLocked\`, or a record locked as a whole.
 - With the module on, \`context: { isLocked: false }\` in \`colDefs\` no longer opens a column whose metadata has \`IsValidForUpdate: false\`: the module still locks its cells. To open them, also return \`false\` from a \`setDisabledExpression\` on that column, or unlock them in \`context.cell.onGetLock\`.
 - While rows are grouped, the grouping module repaints record cells with the grid's background after this module runs. A script's background colour is lost, but the text colour picked to contrast with it stays.
-- Group rows and the totals row are records too, and can carry expressions. Guard a script with \`record.getDataProvider().getSummarizationType() !== 'none'\`: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+- Group rows and the totals row are records too, and can carry expressions: see *Group rows and the totals row are records too* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 `
 
 const meta = {
@@ -120,7 +120,7 @@ export const RecommendNextStepsOnTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support desk's script tells agents what to do about each ticket, through \`ui.setNotificationsExpression\` on the Subject column. Hover an overdue ticket and click *Overdue* for three ways out; the *Assign to me* icon on an unassigned ticket acts at once, and an escalated ticket keeps its notification under **…**.`,
+                story: `A script tells agents what to do about each ticket, through \`ui.setNotificationsExpression\` on the Subject column. Hover an overdue ticket and click *Overdue*; the *Assign to me* icon on an unassigned ticket acts at once.`,
             },
         },
     },
@@ -132,7 +132,7 @@ export const ColoursLocksAndLoadingFromScripts: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An inventory script colours In stock with \`ui.setCustomFormattingExpression\` (amber at or below the reorder level, red when sold out), locks the price, stock, reorder level and supplier of discontinued products with \`setDisabledExpression\`, and shimmers In stock during a sync with \`ui.setLoadingExpression\` and \`provider.requestRender()\`. Bookshelf and Bar stool start locked: turn another product's Discontinued on to lock it too, or press **Sync stock**.`,
+                story: `An inventory script colours In stock with \`ui.setCustomFormattingExpression\`, locks discontinued products with \`setDisabledExpression\`, and shimmers In stock during a sync with \`ui.setLoadingExpression\` and \`provider.requestRender()\`. Turn a product's Discontinued on, or press *Sync stock*.`,
             },
         },
     },
@@ -144,7 +144,7 @@ export const SayWhyAValueIsEmpty: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A triage script gives an empty Assigned to a placeholder that says why, through \`ui.setControlParametersExpression\`. New tickets read *Waiting for triage*. Set one's Status to *In progress* and it reads *Unassigned*; so does a ticket in progress once you clear its Assigned to.`,
+                story: `A triage script gives an empty Assigned to a placeholder that says why, through \`ui.setControlParametersExpression\`. New tickets read *Waiting for triage*; set one's Status to *In progress* and it reads *Unassigned*.`,
             },
         },
     },

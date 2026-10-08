@@ -17,8 +17,8 @@ import { SELECTION_COLUMN_KEY } from "../row-selection/constants";
 import { RecordSaveSelectionCell } from "./components/record-save-selection-cell/RecordSaveSelectionCell";
 import { RecordSaveIndicatorCell } from "./components/record-save-indicator/RecordSaveIndicatorCell";
 import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor";
-import { CellFieldRenderer } from "./components/field-cell-renderer/CellFieldRenderer";
 import { getColumnContext } from "../../services/columns/colDef";
+import { getRowNode } from "../../services/rows/getRowNode";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
@@ -166,7 +166,6 @@ export class GridEditing implements IGridEditing {
             if (!column) {
                 continue;
             }
-            colDef.cellRenderer = CellFieldRenderer;
             colDef.cellEditor = CellFieldEditor;
             colDef.editable = this._hasEditor(column) && ((params: EditableCallbackParams<IRecord>) => this.isEditorAvailable(params.data, params.colDef));
             colDef.context = { ...colDef.context, isLocked: colDef.context?.isLocked ?? !column.metadata?.IsValidForUpdate };
@@ -361,7 +360,7 @@ export class GridEditing implements IGridEditing {
             return;
         }
         const columnName = typeof event.column === 'string' ? event.column : event.column?.getColId();
-        const record = event.rowIndex !== null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
+        const record = getRowNode(event.api, event.rowIndex, event.rowPinned)?.data;
         if (record && columnName && this.isEditing(record, columnName)) {
             return;
         }
@@ -447,7 +446,7 @@ export class GridEditing implements IGridEditing {
         if (!gridApi || !focusedCell) {
             return undefined;
         }
-        const record = gridApi.getDisplayedRowAtIndex(focusedCell.rowIndex)?.data;
+        const record = getRowNode(gridApi, focusedCell.rowIndex, focusedCell.rowPinned)?.data;
         return record ? this._cells.getCell(record, focusedCell.column.getColId()) : undefined;
     }
 

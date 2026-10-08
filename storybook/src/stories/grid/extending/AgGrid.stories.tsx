@@ -32,23 +32,13 @@ export const screenReaderModule: IGridModule = {
 
 - \`refreshAgGridOptions()\` compares each option with what AG Grid was last handed, by reference. A hook that builds a new object or function every time it runs hands it to AG Grid again on every refresh, so create functions and objects once, outside the hook, and read what changes inside them.
 - \`refreshAgGridOptions()\` does not build the column definitions again. Column definitions hooks and \`colDefs\` run when the provider loads, so call \`provider.refresh()\` for those.
-- Some options belong to the grid. Leave them alone, or the feature that sets them stops working:
-
-| Options | Set by |
-|---|---|
-| \`rowModelType\`, \`getRowId\`, \`onGridReady\`, \`onGridPreDestroyed\`, \`rowHeight\`, \`initialState\`, \`enableGroupEdit\`, \`loadingOverlayComponent\`, \`noRowsOverlayComponent\` | The grid, when AG Grid is created |
-| \`columnDefs\` | The grid, from the column definitions hooks and \`colDefs\` |
-| \`loadingCellRenderer\` | The grid, for rows whose records are still loading |
-| \`loading\` | The grid, for its loading overlay |
-| \`getRowHeight\` | The \`rows\` service, from the row height hooks and \`rowSettings.onGetHeight\` |
-| \`rowClassRules\` | The grid, for the muted rows of records locked as a whole |
-| \`rowData\`, \`isGroupOpenByDefault\`, \`treeData\`, \`getDataPath\`, \`serverSideDatasource\`, \`isServerSideGroupOpenByDefault\` | The row model module |
-| \`rowSelection\` | The row selection module |
-| \`cellSelection\` | The cell selection module |
-| \`groupDisplayType\` | The grouping module |
-| \`pinnedBottomRowData\`, \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`fullWidthCellRendererParams\` | The aggregation module, for the totals row |
-
-The grid's other defaults are \`animateRows: false\`, \`suppressDragLeaveHidesColumns: true\`, \`enterNavigatesVertically: true\` and \`enterNavigatesVerticallyAfterEdit: true\`, and an option hook may change them.
+- Some options belong to the grid or its modules. Leave these alone, or the feature that sets them stops working:
+    - The rows and their ids: \`rowModelType\`, \`rowData\`, \`serverSideDatasource\`, \`getRowId\`, \`treeData\`, \`getDataPath\`.
+    - The columns and their sizes: \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`. Use the column definitions hooks, \`colDefs\`, the row height hooks and the \`height\` prop.
+    - What the modules switch on: \`rowSelection\`, \`cellSelection\`, \`readOnlyEdit\`, \`rowClassRules\`, \`pinnedBottomRowData\` and the full-width row options.
+    - The overlays: \`activeOverlay\`, \`suppressOverlays\` and the overlay components. Use \`components.overlays\`: see [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview).
+    - The look: \`theme\`. Use \`registerTheme\`: see *The AG Grid theme* on [**Appearance**](?path=/docs/grid-appearance--overview).
+- The grid also sets \`animateRows: true\`, \`suppressDragLeaveHidesColumns: true\`, \`enterNavigatesVertically: true\` and \`enterNavigatesVerticallyAfterEdit: true\`. An option hook may change these.
 
 {{story: Rearrange columns on request}}
 
@@ -65,7 +55,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 - Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`.
 - What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and the grid lays the widths out again when its columns change or it switches between filling its width and scrolling. A value you write with \`node.setDataValue\` never reaches the record: use \`record.setValue\`.
 - Set an option through a hook rather than \`gridApi.setGridOption\` when a hook also sets it: the hook's value replaces yours whenever it changes.
-- Read what you want to keep from the api in \`onDestroyed\`, while it still answers: see [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). Column widths and order are kept on the provider's columns instead: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
+- Read what you want to keep from the api in \`onDestroyed\`, while it still answers: see [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). Column widths and order are kept on the provider's columns instead.
 
 {{story: Jump to the newest ticket}}
 
@@ -86,7 +76,8 @@ export const exportQueue = (runtime: IGridRuntime) => runtime.services.find('gri
 
 - The grid registers them with AG Grid as it mounts, before AG Grid is created.
 - Import them from the grid's own \`ag-grid-community\` and \`ag-grid-enterprise\`, so they match its AG Grid version.
-- AG Grid registers modules for the whole page: once one grid has registered a module, every grid on the page has it. AG Grid Enterprise modules need a licence: see [**Modules**](?path=/docs/grid-modules--overview).
+- AG Grid registers modules for the whole page: once one grid has registered a module, every grid on the page has it. An api call whose module no grid registered does nothing but log an AG Grid error.
+- AG Grid Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/grid-modules--overview).
 - CSV export writes the values as the cells format them, such as an option's label.
 `
 
@@ -112,7 +103,7 @@ export const RearrangeColumnsOnRequest: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop's staff kept dragging columns out of place, so the layout stays locked until someone asks to rearrange it. An option hook sets AG Grid's \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` hands AG Grid the new value when the switch flips. Turn on Rearrange columns and drag a header to a new place: \`onColumnsChanged\` lists the order the provider now holds. Turn it off, and the headers stay put.`,
+                story: `The shop keeps its columns in place until someone asks to rearrange them. An option hook sets AG Grid's \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` hands AG Grid the new value. Turn on *Rearrange columns* and drag a header: \`onColumnsChanged\` lists the order the provider now holds.`,
             },
         },
     },
@@ -124,7 +115,7 @@ export const JumpToTheNewestTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The desk works its queue by Respond by, so a new ticket lands wherever its deadline puts it. The toolbar keeps the runtime from \`onGridReady\` and calls the \`gridApi\` service: \`autoSizeAllColumns()\` fits the columns to their content, and \`ensureNodeVisible()\` with \`flashCells()\` scrolls to the newest ticket and flashes its row. Press Jump to the newest ticket.`,
+                story: `The queue is sorted by *Respond by*, so a new ticket lands wherever its deadline puts it. The toolbar keeps the runtime from \`onGridReady\` and calls the \`gridApi\` service: \`autoSizeAllColumns()\` fits the columns, and \`ensureNodeVisible()\` with \`flashCells()\` scrolls to the newest ticket and flashes it. \`flashCells\` needs AG Grid's \`HighlightChangesModule\`, so a module lists it in \`agGridModules\`. Press *Jump to the newest ticket*.`,
             },
         },
     },

@@ -294,9 +294,10 @@ export class GridAggregation implements IGridAggregation {
         //a view change can bring in an aggregated column
         this._provider.addEventListener('onFirstDataLoaded', this._syncTotalRow);
         this._provider.addEventListener('onNewDataLoaded', this._syncTotalRow);
-        //a save changes what the totals are over
+        //a save or a delete changes what the totals are over
         this._provider.addEventListener('onAfterSaved', this._onAfterSaved);
         this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._provider.addEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted);
         this._syncTotalRow();
     }
 
@@ -308,12 +309,17 @@ export class GridAggregation implements IGridAggregation {
         this._totalRow?.refresh();
     };
 
+    private _onAfterRecordsDeleted = (): void => {
+        this._totalRow?.refresh();
+    };
+
     //the provider outlives the grid
     private _onDestroyed = (): void => {
         this._provider.removeEventListener('onFirstDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onNewDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onAfterSaved', this._onAfterSaved);
         this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._provider.removeEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted);
         this._totalRow?.destroy();
     };
 
@@ -355,8 +361,9 @@ export class GridAggregation implements IGridAggregation {
         }
         const totalRecord = this._getTotalRecord();
         if (totalRecord === this._totalRecord) {
-            //a pinned node is not keyed by the record's id
-            const node = gridApi.getPinnedBottomRow(0);
+            //a pinned node is not keyed by the record's id, and other modules pin rows too
+            const node = Array.from({ length: gridApi.getPinnedBottomRowCount() }, (_, index) => gridApi.getPinnedBottomRow(index))
+                .find(pinnedNode => !!totalRecord && pinnedNode?.data === totalRecord);
             if (node) {
                 gridApi.refreshCells({ rowNodes: [node], force: true });
             }

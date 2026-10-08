@@ -60,5 +60,5 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
 /** The services a grid may be without, or have only once it is mounted. */
 export type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'gridApi';
 
-/** Where the grid's parts find each other. */
-export type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
+/** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
+export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceLocator<TServices>;

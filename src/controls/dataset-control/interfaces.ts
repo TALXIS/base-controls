@@ -29,8 +29,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
  * What a dataset control is given.
  *
  * These stay PCF-shaped properties because a manifest binds them. The `Grid` they configure takes plain
- * props of its own, so a control that renders one maps the two — see the grid wrappers under `TaskGrid`
- * and `CheckList`.
+ * props of its own, so a control that renders one maps the two — see the grid wrapper under `TaskGrid`.
  */
 export interface IDatasetControlParameters extends IParameters {
     Grid: IDataset;

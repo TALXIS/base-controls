@@ -25,12 +25,11 @@ Either way it keeps what the grid gives every cell: themes, validation errors, l
 
 Render the grid's cell and pass \`components\`:
 
-| | Core | Editing module on |
-|---|---|---|
-| Renderer | \`Grid.Cell.Renderer\` | \`EditingCell.Renderer\` |
-| Editor | | \`EditingCell.Editor\` |
+| | Component |
+|---|---|
+| Renderer | \`Grid.Cell.Renderer\`, with the editing module on or off |
+| Editor | \`EditingCell.Editor\`, with the editing module |
 
-- **With the editing module on, use \`EditingCell\`.** Its cells draw the lock and know when they are edited; the core ones don't.
 - **To bind the cell to its column's value**, wrap it in \`Grid.Cell.Field\`. It then draws the value with its formatting and validation, and \`useGridField()\` works inside it. Leave it out for a column you add.
 
 | Key | Parts |
@@ -42,9 +41,10 @@ Render the grid's cell and pass \`components\`:
 | \`commands\` | \`onRenderContainer\`, \`onRenderCommandBar\` |
 | \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` |
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` |
-| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` (\`EditingCell.Renderer\` only) |
+| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` (drawn only with the editing module) |
 
 - \`onRenderControl\` gets the default as \`defaultRender\`, so you can fall back to it for some records.
+- \`onRenderOutline\` must keep the \`className\` it is handed: the grid hides the focus border of an invalid cell by it.
 - Every key is optional: what you leave out keeps its default.
 - A part is called, not mounted, so it can't use hooks itself. Return a component that does.
 - Define \`components\` outside your component, so the cell does not redraw on every render.
@@ -58,16 +58,16 @@ Each part brings one piece of the grid's behaviour, so your cell keeps what you 
 | Part | What it brings |
 |---|---|
 | \`Field\` | Binds the cell to a record's column, for \`useGridField()\`. Leave it out for a column you add. |
-| \`Root\` | Makes it a cell and redraws it when the record changes. Required. With the editing module, use \`EditingCell.Root\`, and \`isEditor\` in an editor. |
+| \`Root\` | Makes it a cell and redraws it when the record changes. Required. In an editor, pass \`takesInput\`. |
 | \`Theme\` | The cell's colours: zebra rows and colour rules. |
 | \`ResizeGrip\` | The grip a row is dragged taller by. |
-| \`Container\` | Hover, selection and focus. |
+| \`Container\` | Fills the cell in the theme's font and text colour. |
 | \`Loading\` | The shimmer while the record loads, in place of what it wraps. |
 | \`Control\` | The room the value is drawn in. The commands, error icon and lock keep to its edge. |
 | \`ColumnControl\` | Decides what the column draws for the value, and draws it: the grid's value renderer, a PCF control the column names, or your \`onRenderControl\`. Goes inside \`Control\`. |
 | \`Commands\` | The column's \`onGetCommands\`, shown while the row is hovered. |
 | \`FieldError\` | The validation outline and its message. |
-| \`CellLockIcon\` | The lock, from the editing module. Goes inside \`Loading\`, before the value. |
+| \`LockIcon\` | The lock of a cell locked for its record; nothing without the editing module. Goes inside \`Loading\`, before the value. |
 
 - Keep this order; any part you leave out is simply not drawn.
 - To draw a value of your own, put it inside \`Control\` in place of \`ColumnControl\`. It fills the room the value would, and every other part keeps its place.
@@ -106,7 +106,7 @@ export const EditDescriptionsAsRichText: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Reuses the grid's cells inside \`Grid.Cell.Field\`: \`EditingCell.Renderer\` draws the HTML description (sanitized with DOMPurify) and \`EditingCell.Editor\` edits it in a rich text editor (react-simple-wysiwyg), both through \`columnControl.onRenderControl\`. Double-click a description to try bold, lists and links; the row grows to fit with \`autoHeight\`.`,
+                story: `Reuses the grid's cells inside \`Grid.Cell.Field\`: \`Grid.Cell.Renderer\` draws the HTML description (sanitized with DOMPurify) and \`EditingCell.Editor\` edits it in a rich text editor (react-simple-wysiwyg), both through \`columnControl.onRenderControl\`. Double-click a description to try bold, lists and links; the row grows to fit with \`autoHeight\`.`,
             },
         },
     },
@@ -118,7 +118,7 @@ export const ForecastTheWinChance: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Win chance is composed from the parts, with a ring gauge inside \`Control\` in place of \`ColumnControl\`, and the grid's features still reach it: zebra rows through \`Theme\`, a Forecast command on hover through \`Commands\`, a shimmer while it forecasts through \`Loading\`, the lock on won and lost deals through \`CellLockIcon\`, and an outline for a chance over 100 through \`FieldError\`. Double-click a chance to edit it with the grid's own editor.`,
+                story: `Win chance is composed from the parts, with a ring gauge inside \`Control\` in place of \`ColumnControl\`, and the grid's features still reach it: zebra rows through \`Theme\`, a Forecast command on hover through \`Commands\`, a shimmer while it forecasts through \`Loading\`, the lock on won and lost deals through \`LockIcon\`, and an outline for a chance over 100 through \`FieldError\`. Double-click a chance to edit it with the grid's own editor.`,
             },
         },
     },

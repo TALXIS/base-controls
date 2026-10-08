@@ -5,6 +5,7 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";
 import { useGridService } from "../../../useGridService";
 import { IGridCellEvents } from "../../../services/cells";
+import type { IGridEditedCell, IGridEditingEvents } from "../../../modules/editing/GridEditing";
 import { GridCellContext, GridCellRevisionContext } from "./context";
 import { useGridField } from "../field/context";
 
@@ -27,6 +28,8 @@ export const CellRoot = (props: ICellRootProps) => {
     const takesInput = !!props.takesInput;
     const cell = useMemo(() => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell, field: field }),[cells, record, colDef, props.node, takesInput, props.eGridCell, field]);
     const { rerender: redraw, revision } = useRerender();
+    const editing = useGridService('editing');
+    const isThisCell = (editedCell: IGridEditedCell | undefined) => editedCell?.recordId === record.getRecordId() && editedCell?.columnName === colDef.colId;
 
     //any field can decide what another cell of the row draws
     useEventEmitter<IRecordEvents>(record, RECORD_EVENTS, () => {
@@ -34,6 +37,13 @@ export const CellRoot = (props: ICellRootProps) => {
     });
 
     useEventEmitter<IGridCellEvents>(cell.events, 'onRenderRequested', redraw);
+
+    //whether a cell is edited decides what it draws
+    useEventEmitter<IGridEditingEvents>(editing?.events, 'onEditedCellChanged', (previous, next) => {
+        if (isThisCell(previous) || isThisCell(next)) {
+            redraw();
+        }
+    });
 
     useLayoutEffect(() => {
         cells.addCell(cell);

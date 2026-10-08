@@ -1,10 +1,103 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
-import { IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
 const PAYLOAD_COLUMN = 'payload'
+
+const NUMBER_TYPES = new Set<string>([DataTypes.WholeNone, DataTypes.Decimal, DataTypes.Currency, DataTypes.WholeDuration])
+
+/** A colour from hue (0-360), saturation and lightness (0-100), as hex. */
+const hslToHex = (hue: number, saturation: number, lightness: number): string => {
+    const s = saturation / 100
+    const l = lightness / 100
+    const channel = (n: number) => {
+        const k = (n + hue / 30) % 12
+        const value = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1))
+        return Math.round(value * 255).toString(16).padStart(2, '0')
+    }
+    return `#${channel(0)}${channel(8)}${channel(4)}`
+}
+
+const hashText = (text: string): number => [...text].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0)
+
+/** Every data column takes input where its cell stands, with no editor to open. */
+const oneClickEditModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('columns').registerColumnDefinitions(columnDefs => {
+            const columnsMap = runtime.services.get('provider').getColumnsMap()
+            for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId!])) {
+                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, oneClickEdit: true } }
+            }
+        })
+    },
+}
+
+/** Tints every record cell: numbers from green to red across their column's range, any other value by what it is. */
+const heatmapModule: IGridModule = {
+    onRegister: runtime => {
+        const provider = runtime.services.get('provider')
+        const cells = runtime.services.get('cells')
+        let ranges = new Map<string, { min: number; max: number }>()
+
+        const getRange = (columnName: string) => {
+            let range = ranges.get(columnName)
+            if (!range) {
+                const values = provider.getRecords().map(record => Number(record.getValue(columnName))).filter(Number.isFinite)
+                range = { min: Math.min(...values), max: Math.max(...values) }
+                ranges.set(columnName, range)
+            }
+            return range
+        }
+
+        const getColor = (record: IRecord, columnName: string, dataType: string | undefined): string => {
+            //a column the grid adds, such as the checkbox column, holds no value of its own
+            if (!dataType) {
+                return hslToHex(210, 25, 92)
+            }
+            const value = record.getValue(columnName)
+            if (NUMBER_TYPES.has(dataType)) {
+                const { min, max } = getRange(columnName)
+                const number = Number(value)
+                if (value === null || value === undefined || !Number.isFinite(number)) {
+                    return hslToHex(0, 0, 94)
+                }
+                const ratio = max > min ? (number - min) / (max - min) : 0.5
+                return hslToHex(120 - 120 * ratio, 70, 80)
+            }
+            //not every data type formats to a string
+            const text = String(record.getFormattedValue(columnName) ?? '')
+            return text ? hslToHex(Math.abs(hashText(text)) % 360, 65, 90) : hslToHex(0, 0, 94)
+        }
+
+        //an edited number can move its column's range
+        const onValueChanged = () => {
+            ranges = new Map()
+            cells.render()
+        }
+        const onDataLoaded = () => {
+            ranges = new Map()
+        }
+        provider.addEventListener('onRecordColumnValueChanged', onValueChanged)
+        provider.addEventListener('onNewDataLoaded', onDataLoaded)
+        runtime.events.addEventListener('onDestroyed', () => {
+            provider.removeEventListener('onRecordColumnValueChanged', onValueChanged)
+            provider.removeEventListener('onNewDataLoaded', onDataLoaded)
+        })
+
+        //after the grouping and totals hooks, which reset backgrounds
+        cells.registerCellTheme((theme, { record, columnName }) => {
+            const dataType = provider.getColumnsMap()[columnName]?.dataType
+            if (record.getSummarizationType() !== 'none') {
+                return
+            }
+            const color = getColor(record, columnName, dataType)
+            theme.colors.background = color
+            theme.colors.text = getTextColorForBackground(color)
+        }, GRID_MODULE_PRIORITY.aggregation + 1)
+    },
+}
 
 /** What a JSON value is drawn in, by what it is. */
 const JSON_COLORS: { [type: string]: string } = {
@@ -282,6 +375,8 @@ export interface IScratchGridProps {
     selectableRows: 'none' | 'single' | 'multiple'
     /** How many rows the in-memory provider holds. */
     rowCount?: number
+    /** Tints every record cell by its value through the cell theme hook. */
+    heatmap?: boolean
 }
 
 /** Notifications a legacy script would set on the Name cell. */
@@ -355,7 +450,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     }, [provider])
 
     //remounted on every change: modules are read once, which is the contract this story holds to
-    const key = `${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
+    const key = `${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}-${props.heatmap}`
     const modules = React.useMemo<IGridModules>(() => ({
         rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
@@ -369,6 +464,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
         grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
+        custom: [oneClickEditModule, ...(props.heatmap ? [heatmapModule] : [])],
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

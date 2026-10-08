@@ -11,7 +11,7 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 
 | Key | Factory | What it adds | AG Grid Enterprise | Details |
 |---|---|---|---|---|
-| \`rowModel\` | \`createClientSideRowModelModule()\` or \`createServerSideRowModelModule()\` | How the grid gets its rows. **Required.** | The server-side one | *Row models*, below |
+| \`rowModel\` | \`createClientSideRowModelModule()\` or \`createServerSideRowModelModule()\` | How the grid gets its rows. **Required.** | Server-side only | *Row models*, below |
 | \`editing\` | \`createEditingModule({ autoSave })\` | Editing cells in place, a save status column, locks and, with \`autoSave\`, saving each edit | | [**Editing**](?path=/docs/grid-modules-editing--overview) |
 | \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
 | \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells by dragging across them | Yes | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
@@ -24,7 +24,8 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 | \`license\` | \`createLicenseModule({ key })\` | Your AG Grid Enterprise licence | | *AG Grid Enterprise and the licence*, below |
 | \`custom\` | An array of \`IGridModule\` | Modules of your own | | [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) |
 
-Whether a column can be sorted, filtered, grouped or totalled is up to its metadata: see [**Data**](?path=/docs/grid-get-started-data--overview). Sorting, filtering, grouping and aggregation take \`labels\` for the text they draw, and they and row selection take \`components\` for the parts they draw; each module's page lists them.
+- Which columns a module offers its feature on comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\`. See [**Data**](?path=/docs/grid-get-started-data--overview).
+- Sorting, filtering, grouping and aggregation take \`labels\` for their text and \`components\` for the parts they draw: see [**Localization**](?path=/docs/grid-localization-overview--overview) and the *Appearance → Modules* pages. The editing and row selection modules draw columns of their own, changed through \`colDefs\`.
 
 ## Turning modules on
 
@@ -43,7 +44,7 @@ An entry set to \`undefined\` is the same as one left out.
 
 A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\` or \`createEditingModule({ onEditedCellChanged })\`, not through props of \`<Grid.Root />\`.
 
-\`modules\`, and every option you pass to a factory, are read once, when the grid mounts. A new \`modules\` object, or a changed option such as \`onSelectionChanged\`, is not picked up later. To switch a module on or off, or to change its options, give the grid a new \`key\` so that it mounts again:
+\`modules\`, and every option you pass to a factory, are read once, when the grid mounts (see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview)). To switch a module on or off, or to change its options, give the grid a new \`key\`:
 
 \`\`\`tsx
 interface IOrdersGridProps {
@@ -60,9 +61,7 @@ const OrdersGrid = (props: IOrdersGridProps) => <Grid.Root
     }} />
 \`\`\`
 
-A new mount loses the scroll position, the focus and any save status a row is showing. What the provider holds stays: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too: when grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\`, then call \`provider.refresh()\` (see *Preset grouping and totals* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview)).
-
-As the grid mounts, the modules register in the order of the object's keys, then the \`custom\` modules in array order, so a module of your own finds every built-in module's service already there. Which module has the last word when two change the same thing is set by priorities, not by this order: see \`GRID_MODULE_PRIORITY\` on [**Extending**](?path=/docs/grid-extending--overview).
+What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too: when grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\`, then call \`provider.refresh()\`.
 
 ## AG Grid Enterprise and the licence
 
@@ -83,9 +82,7 @@ const licenseKey = context.parameters.LicenseKey.raw
 
 - \`key\` is required, so leave the module out while there is no key, as above. Outside a PCF control, read the key from your app's configuration, such as an environment value set at build time.
 - The key is set for the whole page: once one grid has registered it, every grid on the page is licensed.
-- Without a licence, a grid with an Enterprise module makes AG Grid log a licence message to the browser console and, on any host other than \`localhost\` and \`127.0.0.1\`, draw a watermark over the grid. AG Grid registers modules for the whole page, so once any grid has used an Enterprise module, every grid on the page does the same, Community-only grids included.
-
-These docs have no licence, so once an example with an Enterprise module has run, the grids on the published docs show the watermark.
+- Without a licence, a grid with an Enterprise module makes AG Grid log a licence message to the browser console and, on any host other than \`localhost\` and \`127.0.0.1\`, draw a watermark over the grid. Since AG Grid registers modules for the whole page, every grid on the page then shows it, Community-only grids included.
 
 ## Row models
 
@@ -125,7 +122,7 @@ export const OpenTicketGroupsOnDemand: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support lead works the queue grouped by customer, against a service where every request takes a moment: \`createClientSideRowModelModule()\` fetches every customer's tickets as soon as the list loads, and \`createServerSideRowModelModule()\` fetches a customer's tickets when you open it. Pick a row model above the grid, open a few customers and watch the count of customers fetched.`,
+                story: `A support queue grouped by customer, against a slow service. The client-side row model fetches every customer's tickets as the list loads; the server-side one fetches a customer's tickets when you open it. Pick a row model, open a few customers and watch the count of fetches (AG Grid Enterprise).`,
             },
         },
     },

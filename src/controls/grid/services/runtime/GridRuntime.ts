@@ -57,9 +57,9 @@ export interface IGridRuntimeParameters {
 }
 
 /** The running grid with its services and AG Grid options. */
-export interface IGridRuntime {
+export interface IGridRuntime<TServices extends IGridServiceMap = IGridServiceMap> {
     readonly events: IEventEmitter<IGridRuntimeEvents>;
-    readonly services: IGridServiceLocator;
+    readonly services: IGridServiceLocator<TServices>;
     /**
      * Registers a hook over the options AG Grid reads only once, when it is created.
      *

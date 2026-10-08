@@ -2,6 +2,7 @@ import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowN
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
+import { getRowNode } from "./getRowNode";
 
 export interface IGridRowsEvents {
     /** Fired when the rows the user is at change. */
@@ -101,7 +102,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     }
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
-        const record = event.rowIndex != null ? event.api.getDisplayedRowAtIndex(event.rowIndex)?.data : undefined;
+        const record = getRowNode(event.api, event.rowIndex, event.rowPinned)?.data;
         this._setHighlightedRow('focused', record?.getRecordId());
     };
 

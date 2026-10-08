@@ -124,6 +124,30 @@ const GridExample = () => {
 }
 `
 
+export const COLUMN_LINES_CODE = `//lines between the columns and a frame round the grid
+const columnLinesModule: IGridModule = {
+    onRegister: runtime => {
+        runtime.services.get('gridTheme').registerTheme((result, fluentTheme) => {
+            const line = { color: fluentTheme.semanticColors.bodyDivider }
+            result.theme = result.theme.withParams({
+                columnBorder: line,
+                headerColumnBorder: line,
+                wrapperBorder: line,
+                headerHeight: 48,
+            })
+        })
+    },
+}
+
+const GridExample = () => <Grid.Root
+    provider={provider}
+    modules={{
+        rowModel: createClientSideRowModelModule(),
+        custom: [columnLinesModule],
+    }}
+    height='360px' />
+`
+
 export const HEADER_COLOURS_CODE = `const CHANGED = '#fff4ce'
 const INVALID = '#fde7e9'
 
@@ -286,6 +310,8 @@ export const EscalatedTicketsExample = () => <GridExampleRunner seedCode={ESCALA
 export const ThemeEditExample = () => <GridExampleRunner seedCode={THEME_EDIT_CODE} dataset='tickets' />
 
 export const DensityExample = () => <GridExampleRunner seedCode={DENSITY_CODE} dataset='products' />
+
+export const ColumnLinesExample = () => <GridExampleRunner seedCode={COLUMN_LINES_CODE} dataset='products' />
 
 export const HeaderColoursExample = () => <GridExampleRunner seedCode={HEADER_COLOURS_CODE} dataset='timesheets' />
 

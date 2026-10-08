@@ -55,7 +55,7 @@ Add a column by giving \`colDefs\` a key that isn't a provider column, then work
 - \`cellRenderer\` draws the cell. Use \`Grid.Cell.Renderer\` and replace what it draws through \`components\`, or build your own cell from \`Grid.Cell.Root\`, \`Theme\`, \`Container\` and \`Control\` as the example below does. See [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) for both.
 - Read the record with \`useGridCell()\` inside the cell, so the value updates when the record changes.
 - The column is placed last and keeps its \`initialWidth\`. It has no menu or editor, and isn't saved with the layout.
-- Group and totals rows draw it too, so draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`.
+- Group and totals rows draw it too, so draw nothing when \`record.getDataProvider().getSummarizationType() !== 'none'\`: see *Group rows and the totals row are records too* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
 {{story: Work out the stock value}}
 

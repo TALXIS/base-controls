@@ -1,4 +1,4 @@
-import { DataTypes, IColumn, IRawRecord } from '@talxis/client-libraries'
+import { DataTypes, IColumn, IRawRecord, IRecordDeleteOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
 
 export const PRIMARY_ID = 'mem_checklistitemid'
 export const NAME_COL = 'name'
@@ -12,7 +12,6 @@ export const COLUMNS: IColumn[] = [
         displayName: 'Item',
         visualSizeFactor: 320,
         metadata: {
-            //an item with no name is not an item, and this is the column the new-record row commits on
             RequiredLevel: 1,
         },
     },
@@ -23,8 +22,8 @@ export const COLUMNS: IColumn[] = [
         visualSizeFactor: 140,
         metadata: {
             OptionSet: [
-                { Value: 1, Label: 'Yes' },
-                { Value: 0, Label: 'No' },
+                { Value: 1, Label: 'Yes', Color: '' },
+                { Value: 0, Label: 'No', Color: '' },
             ],
         },
     },
@@ -46,3 +45,19 @@ export const DATA_SOURCE: IRawRecord[] = [
     { [PRIMARY_ID]: 'item-3', [NAME_COL]: 'Render the CheckList', [COMPLETED_COL]: false, [STACK_RANK_COL]: '0|300000:' },
 ]
 
+
+/** Reports deletes, which reach the provider and fire no event. */
+export class ScratchCheckListProvider extends MemoryDataProvider {
+    public onDeleted?: (recordIds: string[]) => void
+
+    public async onRecordsDelete(recordIds: string[]): Promise<{ success: boolean, results: IRecordDeleteOperationResult[] }> {
+        this.onDeleted?.(recordIds)
+        return super.onRecordsDelete(recordIds)
+    }
+}
+
+export const createScratchCheckListProvider = () => new ScratchCheckListProvider({
+    dataSource: DATA_SOURCE.map(row => ({ ...row })),
+    metadata: { PrimaryIdAttribute: PRIMARY_ID, PrimaryNameAttribute: NAME_COL },
+    columns: COLUMNS,
+})

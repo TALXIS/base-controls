@@ -36,13 +36,12 @@ const WinChance = () => {
     </div>
 }
 
-//the editing module is on, so the root comes from EditingCell
 const WinChanceCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
-    <EditingCell.Root {...props}>
+    <Grid.Cell.Root {...props}>
         <Grid.Cell.Theme>
             <Grid.Cell.Container>
                 <Grid.Cell.Loading>
-                    <CellLockIcon />
+                    <Grid.Cell.LockIcon />
                     <Grid.Cell.Control>
                         <WinChance />
                     </Grid.Cell.Control>
@@ -51,7 +50,7 @@ const WinChanceCell = (props: IGridCellParams) => <Grid.Cell.Field record={props
                 </Grid.Cell.Loading>
             </Grid.Cell.Container>
         </Grid.Cell.Theme>
-    </EditingCell.Root>
+    </Grid.Cell.Root>
 </Grid.Cell.Field>
 
 const FORECAST_DELAY = 1200
@@ -449,7 +448,7 @@ const RichTextInput = () => {
     </div>
 }
 
-const HTML_RENDERER: IEditingCellRendererComponents = {
+const HTML_RENDERER: ICellRendererComponents = {
     columnControl: { onRenderControl: () => <HtmlValue /> },
 }
 
@@ -457,9 +456,8 @@ const HTML_EDITOR: IEditingCellEditorComponents = {
     columnControl: { onRenderControl: () => <RichTextInput /> },
 }
 
-//the editing module is on, so the cells come from EditingCell
 const HtmlCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
-    <EditingCell.Renderer {...props} components={HTML_RENDERER} />
+    <Grid.Cell.Renderer {...props} components={HTML_RENDERER} />
 </Grid.Cell.Field>
 
 const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>

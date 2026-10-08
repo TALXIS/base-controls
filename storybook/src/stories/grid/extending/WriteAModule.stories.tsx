@@ -42,8 +42,8 @@ export const TicketQueue = (props: { provider: IDataProvider }) => <Grid.Root
     }} />
 \`\`\`
 
-- \`modules\` is read once, as the grid mounts. Build a module once, as a constant or in \`useMemo\`, and mount the grid again with a new \`key\` to swap it.
-- Yours register after the built-in ones, so their services, such as \`runtime.services.find('rowSelection')\`, already answer in your \`onRegister\`: see [**Modules**](?path=/docs/grid-modules--overview).
+- Build a module once, as a constant or in \`useMemo\`. \`modules\` is read at mount: see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
+- Yours register after the built-in ones, so their services, such as \`runtime.services.find('rowSelection')\`, already answer in your \`onRegister\`.
 - \`onRegister\` runs before AG Grid exists: reach its api with \`runtime.services.whenAvailable('gridApi', gridApi => ...)\`. It also runs while \`<Grid.Root />\` renders for the first time, so it must not set React state.
 - Take what the module works on from \`runtime.services\`, such as \`runtime.services.get('provider')\`, rather than from outside, and it works in any grid.
 - A module that needs options, or state of your app, is a function that builds one: \`createCopyColumnModule(onCopied)\`. Read state that changes through a getter or a ref, since the module is built once. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
@@ -100,7 +100,6 @@ declare module '@talxis/base-controls' {
 
 - The file has to import or export something, as this one exports \`IUnsavedChanges\`. In a file that does neither, \`declare module\` replaces the package's types instead of adding to them.
 - A key in \`IGridModuleServiceMap\` is one a grid may not have, so \`find\` and \`useGridService\` answer \`IUnsavedChanges | undefined\`, and \`get\` throws in a grid without your module.
-- The live example uses \`declare global\` in place of \`declare module\`, because the docs editor declares the grid's types globally.
 
 ## Drawing inside the grid
 
@@ -134,7 +133,7 @@ export const AnUnsavedChangesBar: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A buyer updates prices and stock across the catalogue, then saves once. The module registers an \`unsavedChanges\` service with \`getCount()\` and \`subscribe()\`, follows the provider's \`onRecordColumnValueChanged\`, \`onAfterRecordSaved\` and \`onNewDataLoaded\`, and draws a bar through \`registerSurface\` whose component reads the service with \`useGridService\`. Change a few prices: the bar counts the products, Save all saves them, and Discard puts the old values back.`,
+                story: `A buyer updates prices across the catalogue, then saves once. The module registers an \`unsavedChanges\` service, follows the provider's save events, and draws a bar through \`registerSurface\` that reads the service with \`useGridService\`. Change a few prices, then press *Save all* or *Discard*.`,
             },
         },
     },

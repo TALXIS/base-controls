@@ -22,7 +22,7 @@ Each mounted grid has one runtime, an \`IGridRuntime\`. You are handed it in thr
 | \`services\` | Every part of the grid, by key. See *Services* below. |
 | \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
-| \`registerStyles\`, \`getStyles\` | Styles a module adds to the grid's root element, such as the colour of a state it introduces. |
+| \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
 
 Inside anything the grid draws, such as a custom cell, a header part, an overlay or a surface, read a service with \`useGridService(key)\`:
 
@@ -48,14 +48,16 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | Key | What it is |
 |---|---|
 | \`provider\` | The provider the grid mounted with. |
-| \`settings\` | The props with their defaults applied. \`isEditingEnabled()\`, \`isNavigationEnabled()\`, \`isZebraEnabled()\`, \`areOptionSetColorsEnabled()\` and \`getDefaultRowHeight()\` answer as the grid mounted; \`isAutoSaveEnabled()\`, \`getMaxVisibleRows()\`, \`getColDefs()\` and \`getRowSettings()\` answer with the current props. |
+| \`settings\` | The props with their defaults applied. \`isNavigationEnabled()\`, \`isZebraEnabled()\`, \`areOptionSetColorsEnabled()\` and \`getDefaultRowHeight()\` answer as the grid mounted; \`getMaxVisibleRows()\`, \`getHeight()\`, \`getColDefs()\` and \`getRowSettings()\` answer with the current props. |
 | \`labels\` | The grid's strings, with \`labels\` applied: \`getLocalizedString(key)\`. |
 | \`theme\` | The Fluent theme the grid mounted in. |
+| \`gridTheme\` | The AG Grid theme made from it, and the root element's styles: \`registerTheme\`, \`registerStyles\`. See *The AG Grid theme* on [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`pcfContext\` | The PCF context the grid mounted with. |
 | \`cells\` | Every cell on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, the cell hooks and \`events\`. |
 | \`rows\` | The rows: \`isHighlighted(record)\`, true while the row is hovered, focused or selected; \`setRowHeight(record, height)\`; the row height hook; and the row events. |
 | \`columns\` | The column definitions: \`getColumnDefinitions()\`, which builds them from the provider's columns with every hook and \`colDefs\` applied; the column definitions hook; \`events\`; and \`headers\`, which has \`render()\` and the header hooks. |
-| \`editing\` | With the editing module only. \`isEditing(record, columnName)\`, \`start(cell)\`, \`finish(cell)\`, \`isAutoSaveEnabled()\`, \`events\`, and \`locks\`: \`locks.get({ record?, columnName? })\` answers \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`; and the lock hook. The levels are on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`fields\` | One column of one record: \`get(record, columnName)\` hands an \`IGridField\` with \`getValue()\`, \`getFormattedValue()\`, \`isValid()\` and \`setValue(value)\`, which saves the record when auto-save is on. |
+| \`editing\` | With the editing module only. \`isEditing(record, columnName)\`, \`isEditorAvailable(record, colDef)\`, \`start(cell)\`, \`finish(cell)\`, \`isAutoSaveEnabled()\`, \`events\`, and \`locks\`: \`locks.get({ record?, columnName? })\` answers \`{ isLocked, lockedBy? }\`. See *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
 | \`validation\` | \`get({ record, columnName })\` answers what the validation hooks and the column's \`onGetValidation\` decide, as an \`IFieldValidationResult\`, without the built-in checks; and the validation hook. |
 | \`keyboard\` | \`onKeyDown(handler)\` calls \`handler\` for every key pressed inside the grid, before AG Grid and the focused control see it, and returns a function that stops it. \`getKeyBeingPressed()\` is the \`KeyboardEvent\` of the key held down, if any. |
 | \`surfaces\` | What modules draw inside the grid: the surface hook, and \`getSurfaces()\`. |
@@ -68,11 +70,9 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 |---|---|---|
 | \`gridRoot\` | The grid's root element | Once it is mounted |
 | \`gridApi\` | AG Grid's \`GridApi\` | Once AG Grid is ready. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
-| \`rowSelection\` | \`getMode()\`, \`selectRecords(provider, recordIds)\`, \`toggleRecord(record)\`, \`setInterceptor('onSelectRecords', interceptor)\` and \`events\` | With \`modules.rowSelection\`. See [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
-| \`sorting\` | \`sortColumn(columnName, descending?, appendToExisting?)\`, \`clearColumnSorting(columnName)\`, \`isSorted(column)\` and more | With \`modules.sorting\`. See [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
-| \`filtering\` | \`openFilter(columnName, target?)\`, \`closeFilter()\`, \`removeColumnFilter(columnName, saveToDataset?)\`, the filter control parameters hook, and \`events\` | With \`modules.filtering\`. See [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
-| \`grouping\` | \`toggleColumnGroup(columnName)\`, \`setExpandedLevel(level)\`, \`events\` and more | With \`modules.grouping\`. See [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
-| \`aggregation\` | \`addAggregation(columnName, aggregationFunction)\`, \`removeAggregation(alias)\` and more | With \`modules.aggregation\`. See [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
+| \`rowSelection\` | The selection | With \`modules.rowSelection\`. Members on [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
+| \`sorting\`, \`filtering\` | The sorting and the filters | With \`modules.sorting\` and \`modules.filtering\`. Members on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
+| \`grouping\`, \`aggregation\` | The grouping and the totals | With \`modules.grouping\` and \`modules.aggregation\`. Members on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
 | Your own | Whatever your module registers | With your module in \`modules.custom\`. See [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 
 ## Hooks
@@ -89,7 +89,7 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 | \`rows\` | \`registerRowHeight\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\`. A height set with \`rows.setRowHeight\` wins over both. |
 | \`editing.locks\` | \`registerLock\` | Whether a column, a record's row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\` for a row, \`context.cell.onGetLock\` for a cell |
 | \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\` and \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`context.cell.onGetValidation\` |
-| \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries | \`columnDefs: IGridColDef[]\` | \`colDefs\` |
+| \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid is handed: change, add, remove or reorder the entries. Read a definition's \`context\` with \`getColumnContext(colDef)\`. | \`columnDefs: ColDef<IRecord>[]\` | \`colDefs\` |
 | \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu, each a heading and its items | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`context.header.onGetMenuSections\` |
 | \`columns.headers\` | \`registerColumnMenuItems\` | The menu's items once the sections are laid out, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`context.header.onGetMenuItems\` |
 | \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws before and after the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`context.header.onGetAdornments\` |
@@ -98,29 +98,30 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 | \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | |
 | The runtime | \`registerAgGridOptions\` | The AG Grid options that can change at any time | \`result: { options }\` | |
 | The runtime | \`registerAgGridInitialOptions\` | The AG Grid options read once, when AG Grid is created | \`result: { options }\` | |
-| The runtime | \`registerStyles\` | Styles of the grid's root element, after the grid's own: push an \`IStyle\` | \`result: { styles }\`, \`theme\` | |
+| \`gridTheme\` | \`registerTheme\` | The AG Grid theme: replace \`result.theme\`, for example with \`result.theme.withParams({ ... })\` | \`result: IGridAgTheme\`, \`fluentTheme\` | |
+| \`gridTheme\` | \`registerStyles\` | Styles of the grid's root element, after the grid's own: push an \`IStyle\` | \`result: IGridStyles\`, \`fluentTheme\` | |
 
-*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns-overview--overview). The cell and header colour hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
+*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns-overview--overview). The colour and theme hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
 
 ## Priorities
 
 Hooks of one kind run in ascending priority: a lower number runs first, so a higher one has the later word. Hooks with the same priority run in the order they were registered, and the built-in modules register before yours.
 
 - The default is \`0\`. That runs before every built-in module except the legacy client API module, which also runs at \`0\` and registers first. A built-in module that sets the same thing later overwrites what your hook set.
-- To act after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`: \`GRID_MODULE_PRIORITY.grouping + 1\`, for example, for a cell background that grouping would otherwise paint over. A negative priority runs before the legacy client API module.
+- To act after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`. For which module paints which colour, see *Which colour wins* on [**Appearance**](?path=/docs/grid-appearance--overview). A negative priority runs before the legacy client API module.
 - Whatever the priority, the column's and the row's own callbacks run after the hooks, and \`colDefs\` after every column definitions hook.
-- The grid's own hooks, such as the lock column it adds to an editable grid, run at \`0\` and register before every module.
 
 | \`GRID_MODULE_PRIORITY\` key | Value | Hooks the module registers |
 |---|---|---|
 | \`legacyClientApiCompatibility\` | \`0\` | Cell theme, loading, commands, control and control parameters; lock; surface |
 | \`rowModel\` | \`10\` | AG Grid options: the rows |
+| \`editing\` | \`15\` | Column definitions: the save and lock columns, \`isLocked\` and \`isRequired\`; adornment; AG Grid options; root styles |
 | \`rowSelection\` | \`20\` | Column definitions: the checkbox column; AG Grid options: \`rowSelection\` |
 | \`cellSelection\` | \`30\` | AG Grid options |
 | \`sorting\` | \`40\` | Column definitions: \`sortable\`; menu section; adornment |
 | \`filtering\` | \`50\` | Menu section; adornment; surface |
 | \`grouping\` | \`60\` | Column definitions: grouped columns first and pinned; cell theme; lock; menu section; adornment; surface; AG Grid options |
-| \`aggregation\` | \`70\` | Column definitions; cell theme, loading and row height of the totals; menu section; adornment; AG Grid options: the totals row |
+| \`aggregation\` | \`70\` | Column definitions; cell theme, loading and row height of the totals; menu section; adornment; AG Grid options and theme: the totals row |
 | \`clipboard\` | \`80\` | AG Grid options |
 
 ## Events
@@ -141,8 +142,7 @@ Services tell you what happens through events. Subscribe with \`addEventListener
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
 | \`grouping.events\` | \`onGroupSelectionLimitDialogChanged\` | None | The dialog that refuses a selection of too many groups opens or closes. |
-| \`columns.headers.events\`, and \`events\` of each \`IGridCell\` | \`onRenderRequested\` | None | Their \`render()\` was called. The grid's own parts draw again on it. |
-| \`events\` of each \`IGridColumnHeader\` | \`onMenuVisibilityChanged\` | \`isOpen\` | The header's \`openMenu()\` or \`closeMenu()\` was called, as a click on the header does. |
+| \`events\` of each \`IGridColumnHeader\` | \`onMenuVisibilityChanged\` | \`isOpen\` | The header's menu opens or closes. |
 
 - The grid's own events also reach \`<Grid.Root />\` as props, and a module's through its options, listed with the order they fire in on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). The service events suit a module, which has no props.
 - No event fires when sorting, filters, grouping or totals change. Sorting, filters and grouping reload the provider, so follow \`onDataLoaded\` and read the provider.
@@ -156,13 +156,13 @@ The grid asks your hooks for their answers when it draws; nothing tells it that 
 | What the hook decides | When the grid asks | After a change, call |
 |---|---|---|
 | A cell's colours, loading, commands, control or parameters; a cell's lock and validation | Each time the cell draws | \`runtime.services.get('cells').render()\` for every cell on screen, or \`render()\` on one cell: \`cells.getCell(record, columnName)\`, or \`useGridCell()\` inside it |
-| A record's lock | Each time the grid checks one of its cells. The muted row is worked out once per record, and again when one of its values changes or the provider reloads. | \`cells.render()\`. The muted row follows on the record's next change or the next load. |
+| A record's lock | Each time the grid checks one of its cells; the dimmed row when one of the record's values changes or the provider reloads | \`cells.render()\`. The dimmed row follows on the record's next change or the next load. |
 | A column's lock, a header's adornments or colours | Each time the header draws | \`runtime.services.get('columns').headers.render()\` |
 | A column's menu | Each time the menu opens | Nothing |
 | A row's height | When AG Grid lays the row out | \`resetRowHeights()\` on the \`gridApi\` service |
 | The column definitions | When the grid is ready, then on every load of the provider | \`provider.refresh()\` |
 | AG Grid options | When AG Grid is ready, on every load, and on \`refreshAgGridOptions()\` | \`runtime.refreshAgGridOptions()\` |
-| AG Grid's initial options | Once, when AG Grid is created | A new \`key\` on \`<Grid.Root />\` |
+| AG Grid's initial options, the AG Grid theme, root styles | Once, when the grid mounts | A new \`key\` on \`<Grid.Root />\` |
 | Surfaces | Each time \`<Grid.Root />\` renders | Nothing: a surface's component follows its own state |
 
 \`cells.getCell\` finds only cells on screen. A cell that scrolls into view draws with the current answers anyway.

@@ -1,5 +1,6 @@
 import { Fragment, useMemo } from "react";
 import { DataTypes } from "@talxis/client-libraries";
+import { getClassNames } from "@utils";
 import { GridValueRendererComponents } from "./components";
 import { getSelectedOptions } from "./components/option-set-renderer";
 import { IFileValue, IGridValueRenderer } from "./interfaces";
@@ -76,7 +77,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
             : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
     };
 
-    return <div className={styles.gridValueRendererRoot}>
+    return <div className={getClassNames([styles.gridValueRendererRoot, props.className])}>
         {PrefixIcon?.raw && components.onRenderPrefixIcon({ iconName: PrefixIcon.raw })}
         {renderValue()}
         {SuffixIcon?.raw && components.onRenderSuffixIcon({ iconName: SuffixIcon.raw })}

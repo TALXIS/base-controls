@@ -1,20 +1,24 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
-import { Grid, IGrid } from '@talxis/base-controls'
+import { CheckList as CheckListBase, Grid, ICheckListProps, IGrid } from '@talxis/base-controls'
 import { GRID_SANDBOX_SCOPE } from './gridSandboxScope'
 
 const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider']
 
 type ISandboxScope = typeof GRID_SANDBOX_SCOPE
 
-//the snippet's own Grid.Root tells the runner which provider it draws
+//the snippet's own Grid.Root or CheckList tells the runner which provider it draws
 const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISandboxScope => {
     const Root = (props: IGrid) => {
         React.useEffect(() => onProviderRendered(props.provider), [props.provider])
         return <Grid.Root {...props} />
     }
-    return { ...GRID_SANDBOX_SCOPE, Grid: { ...Grid, Root: Root as typeof Grid.Root } }
+    const CheckList = (props: ICheckListProps) => {
+        React.useEffect(() => onProviderRendered(props.provider), [props.provider])
+        return <CheckListBase {...props} />
+    }
+    return { ...GRID_SANDBOX_SCOPE, Grid: { ...Grid, Root: Root as typeof Grid.Root }, CheckList }
 }
 
 /** One file of a live example; the first is the one that defines `GridExample`. */

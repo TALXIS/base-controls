@@ -1,166 +1,68 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
-import { BasicCheckListExample } from '../../check-list/BasicCheckListExample'
-import { docsPageWithExample } from '../docsPageWithExample'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { LaunchPlanExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
-Checklist renders a collection of records as a list you can work: rename an item inline, tick it off, drag it to reorder, add one at the bottom, delete one. Every change is saved as it is made.
+CheckList presents the records of a data provider as a to-do list. Users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. It is built on [**Grid**](?path=/docs/grid-get-started--overview): it accepts every \`Grid.Root\` prop, so its columns, cells and events are configured as in any grid.
 
-The list below is real. Flip **Code** to see what renders it, and edit it — the list keeps its items across an edit, so you can add a few and then change the code around them.
+{{story: A launch plan}}
 
-## What you get
-
-- A list ordered by a rank you store, reordered by dragging, without reindexing every item.
-- A checkbox column that marks an item finished, and strikes its text through.
-- A row at the bottom that adds an item as soon as you type into it.
-- A delete button per item, with a confirmation.
-- Inline editing on every column you show, saved per edit.
-
-## Render it
-
-The control takes no data source — you hand it the records themselves:
+## Usage
 
 \`\`\`tsx
-import { CheckList } from '@talxis/base-controls'
-import { PcfContextProvider } from '@talxis/base-controls'
+import { CheckList, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
-export const MyCheckListPage = () => (
-    <PcfContextProvider>
-        <CheckList onInitialize={onInitialize} />
-    </PcfContextProvider>
-)
-\`\`\`
-
-The checklist reads the \`ComponentFramework.Context\` — navigation, formatting, confirmation dialogs — off \`PcfContextProvider\`, so render it inside one. Pass your host's context to the provider; without one it builds a sample context.
-
-## \`onInitialize\`
-
-Called once, and the checklist shows a skeleton until it resolves. Return the items, their columns and the mapping over them:
-
-\`\`\`ts
-const onInitialize = async () => ({
-    data: await fetchItems(),
-    columns: [
-        { name: 'name', dataType: 'SingleLine.Text', displayName: 'Item' },
-        { name: 'completed', dataType: 'TwoOptions' },
-        { name: 'stackrank', dataType: 'SingleLine.Text' },
+const launchPlan = new MemoryDataProvider({
+    dataSource: [
+        { itemid: '1', name: 'Sketch the layout', completed: true, stackrank: '0|100000:' },
+        { itemid: '2', name: 'Ship the first version', completed: false, stackrank: '0|200000:' },
     ],
-    fieldMapping: {
-        id: 'itemid',
-        name: 'name',
-        stackRank: 'stackrank',
-        completed: 'completed',
-    },
+    metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'launchitem' },
+    columns: [
+        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText },
+        { name: 'completed', displayName: 'Done', dataType: DataTypes.TwoOptions },
+        { name: 'stackrank', displayName: 'Rank', dataType: DataTypes.SingleLineText },
+    ],
 })
+
+const FIELD_MAPPING: ICheckListFieldMapping = { name: 'name', stackRank: 'stackrank', completed: 'completed' }
+
+export const LaunchPlan = () => <PcfContextProvider>
+    <CheckList provider={launchPlan} fieldMapping={FIELD_MAPPING} />
+</PcfContextProvider>
 \`\`\`
 
-| Key | Description |
-|-----|-------------|
-| \`data\` | The items, as raw records — plain objects keyed by column name. |
-| \`columns\` | Their columns. Every column the field mapping points at has to be here. |
-| \`fieldMapping\` | Which of those columns carry the id, the label, the order and the completion state. |
+- \`provider\` holds the items. Leave its first load to the checklist, which orders it by \`stackRank\` before loading. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
+- \`fieldMapping\` names the columns that hold an item's name, position and state. See *Field mapping* below.
+- \`PcfContextProvider\` must wrap the checklist. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 
-Everything you pass is copied, so the checklist never writes to your arrays.
+## Field mapping
 
-### The field mapping
+| Field | Column | Role |
+|---|---|---|
+| \`name\` | Text | The item's name. A new item is added once a name is typed in the bottom row, and a finished item's name is struck through. |
+| \`stackRank\` | Text holding a lexorank string, such as \`'0\\|100000:'\` | The item's position. The list is sorted by it, and a drag writes a new rank between the item's neighbours. Hidden. |
+| \`completed\` | \`TwoOptions\` | Whether the item is finished, shown as the checkbox column. |
 
-| Field | What it points at |
-|-------|-------------------|
-| \`id\` | The column each item is identified by. |
-| \`name\` | The item's label. The one mapped column that stays visible, and the one the new-item row types into. It sits wherever you list it in \`columns\`. |
-| \`stackRank\` | A text column holding a lexorank string. The list is ordered by it, and dragging an item writes a new one. Hidden. |
-| \`completed\` | A \`TwoOptions\` column. Hidden — the checkbox column is what shows and changes it. |
+The provider's other columns are shown and edited as in any grid, such as *Priority*, *Owner*, *Due* and *Estimate* above. See [**Columns**](?path=/docs/grid-columns-overview--overview).
 
-### Extra columns
+## Props
 
-\`columns\` is not limited to the mapped four. Anything else you put there becomes its own column, in the order you listed it, editable like the rest — an option set renders as a coloured pill with a picker:
+\`CheckList\` accepts every prop of \`Grid.Root\`, listed on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). These differ:
 
-\`\`\`ts
-columns: [...columns, {
-    name: 'priority',
-    dataType: 'OptionSet',
-    displayName: 'Priority',
-    metadata: {
-        OptionSet: [
-            { Value: 0, Label: 'Low', Color: '#69797e' },
-            { Value: 1, Label: 'Normal', Color: '#0f6cbd' },
-            { Value: 2, Label: 'High', Color: '#a4262c' },
-        ],
-    },
-}]
-\`\`\`
+| Prop | Default | Description |
+|---|---|---|
+| \`fieldMapping\` | Required | The columns the checklist works with. See *Field mapping* above. |
+| \`modules\` | Editing with auto-save | The grid's modules, merged over the default. Pass \`editing\` to replace it, or \`editing: undefined\` for a read-only list. Some grid modules are incompatible: see *Configure the grid* on [**Customization**](?path=/docs/checklist-customization--overview). |
+| \`labels\` | English | The grid's strings and the checklist's own. See *Labels* on [**Customization**](?path=/docs/checklist-customization--overview). |
+| \`enableZebra\` | \`false\` | Shades every other row. |
+| \`enableOptionSetColors\` | \`true\` | Draws options that have a colour as tags. |
 
-That is the \`Priority\` column in the example above. Delete it from the array in the **Code** window and it disappears; the values stay in the records either way.
-
-### Validation
-
-A column can carry validation, and the checklist enforces it on every edit. Mark one required through its metadata:
-
-\`\`\`ts
-{
-    name: 'name',
-    dataType: 'SingleLine.Text',
-    displayName: 'Item',
-    metadata: {
-        //1 or 2 - anything else is not required
-        RequiredLevel: 1,
-    },
-}
-\`\`\`
-
-That is the \`Item\` column in the example above: clear one and the cell reports it, and the item does not save. A failed edit raises \`onItemSaved\` with \`success: false\` and the offending fields in \`errors\`, and raises **no** \`onDataChanged\` — nothing stuck, so the item keeps the value it last saved with. See [**Reacting to changes**](?path=/story/checklist-reacting-to-changes--overview).
-
-The row that adds an item is exempt: an empty new-item row is not an item yet, so it is not drawn as one somebody got wrong. It still refuses to commit until you have typed a name.
-
-## \`<CheckList />\` props
-
-| Prop | Required | Description |
-|------|:--------:|-------------|
-| \`onInitialize\` | ✅ | Returns the items, their columns and the field mapping. |
-| \`height?\` | — | A fixed height such as \`'400px'\`, or \`'100%'\` to fill its container. Left unset, the list is as tall as its items. |
-| \`maxVisibleRows?\` | — | How many items to grow to before scrolling instead. Ignored when \`height\` is set. Defaults to \`15\`. |
-| \`rowHeight?\` | — | Height of one item's row, in pixels. Defaults to \`42\`. |
-| \`enableEditing?\` | — | Whether items can be changed. Defaults to \`true\`. |
-| \`enableZebra?\` | — | Whether rows alternate their background. Defaults to \`false\`. |
-| \`enableOptionSetColors?\` | — | Whether option-set values render as coloured pills. Defaults to \`true\`. |
-| \`enableNavigation?\` | — | Whether the primary column's value is a link that opens the record. Defaults to \`true\`. |
-| \`labels?\` | — | Any subset of the UI strings. See below. |
-| \`controlId?\` | — | A stable id for the control. Defaults to a generated one. |
-| \`licenseKey?\` | — | AG Grid enterprise license key, when your host has one. |
-| \`onReady?\` | — | \`(api)\` — the imperative handle. See [**Reacting to changes**](?path=/story/checklist-reacting-to-changes--overview). |
-| event props | — | One per change the list makes. See [**Reacting to changes**](?path=/story/checklist-reacting-to-changes--overview). |
-
-\`enableEditing={false}\` covers more than the cell editors: a read-only checklist also drops the new-item row, the delete button and the dragging, and its checkboxes report without changing anything.
-
-Sorting, filtering, selection and the auto-save are not props. The list's order is the rank you store, so sorting would fight the dragging; nothing renders a filter or a selection UI; and without the auto-save an edited item would silently revert.
-
-## Labels
-
-Every string the checklist renders can be replaced. Supply any subset; the rest keep their English defaults.
-
-\`\`\`tsx
-<CheckList
-    onInitialize={onInitialize}
-    labels={{
-        newItemPlaceholder: 'Add a step…',
-        markItemFinished: 'Mark as done',
-        deleteItem: 'Remove',
-        'confirmDialog.deleteItem.text': 'Remove this step?',
-    }} />
-\`\`\`
-
-| Key | Default | Where it shows |
-|-----|---------|----------------|
-| \`newItemPlaceholder\` | Add an item... | In the bottom row while it is empty. |
-| \`markItemFinished\` | Mark as finished | Names the checkbox column, which has no header. |
-| \`deleteItem\` | Delete | Tooltip on an item's delete button. |
-| \`confirmDialog.deleteItem.text\` | Are you sure you want to delete this item? | The confirmation before a delete. |
-
-## Where to go next
-
-- [**Reacting to changes**](?path=/story/checklist-reacting-to-changes--overview) — every event the list raises, and the api \`onReady\` hands over.
-                `
+\`fieldMapping\`, \`modules\` and \`labels\` are read once, at mount.
+`
 
 const meta = {
     title: 'Checklist/Get started',
@@ -168,23 +70,17 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: docsPageWithExample(DESCRIPTION),
-            story: {
-                inline: true,
-            },
-            canvas: {
-                sourceState: 'none',
-                additionalActions: [],
-            },
+            page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
 } satisfies Meta
 
 export default meta
-
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => renderStory(<BasicCheckListExample />),
+export const ALaunchPlan: Story = {
+    name: 'A launch plan',
+    render: () => renderStory(<LaunchPlanExample />),
 }
