@@ -6,7 +6,6 @@ import type { IGridRuntime } from "./services/runtime";
 import type { IGridServiceMap } from "./services/interfaces";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
-import type { IGridState } from "./services/state";
 
 /** An optional feature a grid can be given. */
 export interface IGridModule<TServices extends IGridServiceMap = IGridServiceMap> {
@@ -76,9 +75,8 @@ export interface IGridEventHandlers {
     onColumnsChanged: (columns: IColumn[]) => void;
 }
 
+/** The grid reads its provider from `DataProviderContext`, once, at mount. */
 export interface IGrid extends Partial<IGridEventHandlers> {
-    /** Where the records, the columns and the paging come from; read once, at mount. */
-    provider: IDataProvider;
     /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
     /** Whether a double click on a row opens its record; read once, at mount. */
@@ -91,7 +89,7 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */
     maxVisibleRows?: number;
-    /** How tall the grid is, as a CSS length. */
+    /** How tall the grid is, as a CSS length, unless a DatasetControl around it has a height. */
     height?: string;
     /** Put on the grid's own element, alongside its own classes. */
     className?: string;
@@ -102,8 +100,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     labels?: Partial<IGridLabels>;
     /** Changes or adds columns by id, after every module's hook has run. */
     colDefs?: { [colId: string]: IGridColDefOverride };
-    /** Where the user was, read at mount and written in place. */
-    state?: IGridState;
+    /** The key the grid's state is kept under, per view inside a DatasetControl. */
+    stateKey?: string;
     /** Callbacks the grid runs for each row, read whenever it asks. */
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */

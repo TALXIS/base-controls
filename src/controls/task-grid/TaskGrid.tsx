@@ -1,72 +1,43 @@
-import { useEventEmitter } from "@hooks/useEventEmitter"
-import { useIsMounted } from "@hooks/useIsMounted";
-import { IDatasetControlEvents } from "@utils/dataset-control";
-import { useRef } from "react";
 import * as React from "react";
-import { AgGridLicenseKeyContext, RootElementIdContext, ServicesContext, TaskGridComponentsContext } from "./context";
-import { DatasetControl as DatasetControlRenderer } from "@controls/dataset-control";
-import { useTheme } from "@fluentui/react";
-import { getDatasetControlStyles } from "./styles";
-import { Grid } from "./components/grid";
-import type { IDatasetControlProps } from "@controls/dataset-control/interfaces";
-import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
-import { IDeletedUserQueriesResult } from "./providers/saved-query";
-import { ITemplateDataProviderEvents } from "./providers/template";
-import { ITaskGridLabels } from "./labels";
-import { TASK_GRID_LABELS } from "./labels";
-import { TaskGridDatasetControlFactory } from "./TaskGridDatasetControlFactory";
-import { ITaskGridState } from "./providers/state";
-import type { ITaskGridServiceLocator } from "./services";
-import { Header } from "./components/header/Header";
-import { ITaskGridComponents, TaskGridComponents } from "./components/components";
-import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
+import { IRawRecord } from "@talxis/client-libraries";
 import { LocalizationService, usePcfContext } from "@utils";
+import type { IGrid, IGridLabels } from "@controls/grid";
+import { DatasetControl, IDatasetControlRuntime } from "@controls/dataset-control";
+import { GridOptionsContext, ITaskGridGridOptions, TaskGridComponentsContext, TaskGridRuntimeContext, useTaskGridRuntime } from "./context";
+import { getTaskGridStyles } from "./styles";
+import { Grid } from "./components/grid";
+import { CommandBar } from "./components/header/command-bar";
+import { ViewSwitcher } from "./components/header/view-switcher";
+import { ITaskGridComponents, TaskGridComponents } from "./components/components";
+import { IDeleteTasksResult, IOpenDatasetItemsResult } from "./providers/task";
+import { IDeletedUserQueriesResult } from "./providers/saved-query";
+import { ITaskGridLabels, TASK_GRID_LABELS } from "./labels";
+import { ITaskGridDescriptor } from "./interfaces";
+import { ITaskGridRuntime, TaskGridRuntime } from "./runtime";
 import { useTaskGridEvents } from "./useTaskGridEvents";
-import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { ITaskGridFeature, ITaskGridFeatures, ITaskGridModules } from "./modules/interfaces";
 
-/** Props for {@link TaskGrid}. */
-export interface ITaskGridProps {
-    /** Supplies every strategy and module the grid runs on. See {@link ITaskGridDescriptor}. */
+/** Props for {@link TaskGrid}: the shared grid's own, less what the task grid owns, and the task grid's. */
+export interface ITaskGridProps extends Omit<IGrid, 'modules' | 'stateKey' | 'height' | 'labels' | 'components' | 'onError' | 'onOpenRecord' | 'onDestroyed'> {
+    /** Supplies the tasks, the views and the task strategy. See {@link ITaskGridDescriptor}. */
     descriptor: ITaskGridDescriptor;
-    /** Overrides for any subset of the UI strings. See {@link ITaskGridLabels}. */
-    labels?: Partial<ITaskGridLabels>;
+    /** Grid modules, merged over multi-row selection and, with task editing on, auto-saving editing; read once, at mount. */
+    modules?: ITaskGridModules;
+    /** The task grid's own features; read once, at mount. */
+    features?: ITaskGridFeatures;
+    /** The key the task grid keeps its state under, per view, in the state store. */
+    stateKey?: string;
+    /** `'100%'` fills the parent; the content's height when left out. */
+    height?: string;
+    /** Overrides for any subset of the grid's and the task grid's strings. */
+    labels?: Partial<IGridLabels & ITaskGridLabels>;
     /** Overrides for any subset of the replaceable components. See {@link ITaskGridComponents}. */
     components?: Partial<ITaskGridComponents>;
-    /**
-     * Called with the grid's service locator once mounted, and again on every remount — the grid rebuilds
-     * everything when a view changes or a record is saved. The way in to everything imperative: the task
-     * provider and its `taskEvents`, the saved queries, the control, the selection, every registered
-     * module.
-     *
-     * The records are already loaded by then — the control's factory awaits the first load, so the grid
-     * mounts on data rather than filling in afterwards.
-     *
-     * ```ts
-     * onReady={services => {
-     *     services.get('taskDataProvider').refresh()
-     *     services.get('datasetControl').getSelectedRecordIds()
-     * }}
-     * ```
-     */
-    onReady?: (services: ITaskGridServiceLocator) => void;
-    /**
-     * Called before the grid is torn down — on unmount, and on every remount. Every provider still holds
-     * its data, so this is where anything worth keeping is read off them.
-     *
-     * Nothing in the grid persists anything for you; this is the seam.
-     *
-     * ```ts
-     * onBeforeDestroy={services => {
-     *     records = services.get('taskDataProvider').getRawData()
-     *     userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? []
-     * }}
-     * ```
-     */
-    onBeforeDestroy?: (services: ITaskGridServiceLocator) => void;
-    /**
-     * Called for every error the grid reports — task operations, saved queries and templates alike.
-     * The grid still shows its own error dialog; this is for logging or a notification of your own.
-     */
+    /** Called once, after the first view loaded. */
+    onReady?: (runtime: ITaskGridRuntime) => void;
+    /** Called before the task grid goes, while every provider still holds its data. */
+    onDestroyed?: (runtime: ITaskGridRuntime) => void;
+    /** Called for every error the task grid reports, beside its own error dialog. */
     onError?: (error: any, message: string) => void;
     /** Called before tasks are created. */
     onBeforeTasksCreated?: (parentTaskId?: string) => void;
@@ -91,10 +62,6 @@ export interface ITaskGridProps {
     onBeforeDatasetItemsOpened?: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
     /** Called after an open completed, with whatever the strategy returned. */
     onDatasetItemsOpened?: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean, result: IOpenDatasetItemsResult | null) => void;
-    /** Called before a record is saved. */
-    onBeforeRecordSaved?: (record: IRecord) => void;
-    /** Called after a record was saved, with the fields that were written. */
-    onRecordSaved?: (result: IRecordSaveOperationResult) => void;
     /** Called before a personal view is created, with the name the user typed. */
     onBeforeUserQueryCreated?: (queryName: string) => void;
     /** Called after a personal view was created, with its id — or `null` when the user cancelled. */
@@ -113,130 +80,101 @@ export interface ITaskGridProps {
     onTemplateCreated?: (record: IRawRecord | null) => void;
 }
 
-interface IInternalTaskGridProps extends ITaskGridProps {
-    datasetControl: ITaskGridDatasetControl;
-    onRemountRequested: () => void;
-}
-
-/**
- * A hierarchical task grid. Everything it reads and writes comes from the descriptor, so this component
- * takes no data of its own.
- *
- * Reads the PCF context off `PcfContextProvider`, so render it inside one.
- *
- * Builds a control instance from the descriptor, showing the skeleton until it resolves, and rebuilds it
- * whenever the grid asks for a remount — a view change or a record save.
- */
+/** A hierarchical task grid over the descriptor's tasks and views; render it inside a `PcfContextProvider`. */
 export const TaskGrid = (props: ITaskGridProps) => {
-    const { descriptor } = props;
-    const stateRef = useRef<ITaskGridState>({});
-    const components = { ...TaskGridComponents, ...props.components };
-    //read through a ref by the components service: the merge above runs on every render
-    const componentsRef = useRef(components);
-    componentsRef.current = components;
+    const propsRef = React.useRef(props);
+    propsRef.current = props;
     const pcfContext = usePcfContext();
-    const pcfContextRef = useRef(pcfContext);
+    const pcfContextRef = React.useRef(pcfContext);
     pcfContextRef.current = pcfContext;
-    const localizationService = React.useMemo(() => new LocalizationService({ ...TASK_GRID_LABELS, ...props.labels }), []);
+    const options = React.useMemo(() => getGridOptions(props), []);
+    const runtime = React.useMemo(() => new TaskGridRuntime({
+        descriptor: props.descriptor,
+        features: options.features,
+        labels: new LocalizationService({ ...TASK_GRID_LABELS, ...props.labels }),
+        onGetPcfContext: () => pcfContextRef.current,
+    }), []);
+    const components = { ...TaskGridComponents, ...props.components };
+    const { onRenderCommandBar, overlays, rows, ...datasetControlComponents } = components;
+    const styles = React.useMemo(() => getTaskGridStyles(), []);
 
-    const [instanceState, setInstanceState] = React.useState<{
-        instance: ITaskGridDatasetControl;
-        remountKey: number;
-    } | null>(null);
-
-    const isMounted = useIsMounted();
-
-    const createDatasetControlInstance = async () => {
-        setInstanceState(null);
-        const instance = await TaskGridDatasetControlFactory.createInstance({
-            taskGridDescriptor: descriptor,
-            localizationService,
-            state: stateRef.current,
-            onGetPcfContext: () => pcfContextRef.current!,
-        });
-        //the factory awaits the descriptor's dependencies, the views and the first data load, so the grid
-        //can be gone by the time it resolves. A control that never renders is never handed to the dataset
-        //control renderer, and that renderer's unmount is the only thing that destroys one - so it is
-        //destroyed here instead, otherwise its providers and their listeners outlive the grid
-        if (!isMounted()) {
-            instance.destroy();
-            return;
-        }
-        //registered here because this is where the components are merged, and before the state is set,
-        //which is what renders the grid that asks for them
-        instance.getServices().register('components', () => componentsRef.current);
-        setInstanceState(prev => ({ instance, remountKey: (prev?.remountKey ?? 0) + 1 }));
+    const onReady = (datasetControl: IDatasetControlRuntime) => {
+        runtime.attach(datasetControl);
+        const onFirstLoaded = () => {
+            datasetControl.events.removeEventListener('onLoaded', onFirstLoaded);
+            propsRef.current.onReady?.(runtime);
+        };
+        datasetControl.events.addEventListener('onLoaded', onFirstLoaded);
     };
 
-    React.useEffect(() => {
-        createDatasetControlInstance();
-    }, []);
+    const onDestroyed = () => {
+        propsRef.current.onDestroyed?.(runtime);
+        runtime.destroy();
+    };
 
-    if (!instanceState) {
-        return components.onRenderSkeleton({
-            height: descriptor.onGetHeight?.() ?? '400px'
-        })
-    }
-
-    return (
-        <AgGridLicenseKeyContext.Provider value={descriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
+    return <TaskGridRuntimeContext.Provider value={runtime}>
+        <GridOptionsContext.Provider value={options}>
             <TaskGridComponentsContext.Provider value={components}>
-                <InternalTaskGridDatasetControl
-                    key={instanceState.remountKey}
-                    {...props}
-                    datasetControl={instanceState.instance}
-                    onRemountRequested={createDatasetControlInstance}
-                />
+                <DatasetControl
+                    stateKey={props.stateKey}
+                    height={props.height}
+                    className={styles.taskGrid}
+                    components={datasetControlComponents}
+                    onLoad={parameters => runtime.load(parameters)}
+                    onReady={onReady}
+                    onDestroyed={onDestroyed}>
+                    <TaskGridEvents {...props} />
+                    <TaskGridHeader />
+                    <DatasetControl.Notifications />
+                    <DatasetControl.Body>
+                        <TaskGridBody />
+                    </DatasetControl.Body>
+                </DatasetControl>
             </TaskGridComponentsContext.Provider>
-        </AgGridLicenseKeyContext.Provider>
-    );
-}
-const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
-    const { datasetControl, onRemountRequested, descriptor } = props;
-    const theme = useTheme();
-    const styles = React.useMemo(() => getDatasetControlStyles(theme), [theme]);
-    const provider = datasetControl.getDataset().getDataProvider() as ITaskDataProvider;
-    const rootElementId = `${datasetControl.getControlId()}-root`;
+        </GridOptionsContext.Provider>
+    </TaskGridRuntimeContext.Provider>;
+};
 
-    useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRemountRequested', onRemountRequested);
-    useTaskGridEvents(props, datasetControl, provider);
+const TaskGridEvents = (props: ITaskGridProps) => {
+    useTaskGridEvents(props);
+    return null;
+};
 
-    //the gantt module renders the grid itself, beside its timeline - so it replaces the control
-    //component rather than wrapping it
-    const gantt = datasetControl.getServices().find('ganttModule');
-    const renderControlComponent: IDatasetControlProps['onGetControlComponent'] = (controlProps) => {
-        return gantt
-            ? gantt.services.get('components').onRenderView(controlProps)
-            : <Grid {...controlProps} />;
+const TaskGridHeader = () => {
+    const runtime = useTaskGridRuntime();
+    const gantt = runtime.services.find('ganttModule');
+    const customColumns = runtime.services.find('customColumnsModule');
+    return <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            {runtime.isViewSwitcherEnabled() && <ViewSwitcher />}
+            {gantt?.services.get('components').onRenderZoomSlider()}
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            <CommandBar />
+            {runtime.isEditColumnsEnabled() && <DatasetControl.EditColumns
+                enableScopeSelector={runtime.isEditColumnsScopeSelectorEnabled()}
+                components={customColumns?.components.editColumns} />}
+            {runtime.isQuickFindEnabled() && <DatasetControl.QuickFind />}
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>;
+};
+
+const TaskGridBody = () => {
+    const gantt = useTaskGridRuntime().services.find('ganttModule');
+    return gantt ? gantt.services.get('components').onRenderView() : <Grid />;
+};
+
+const getGridOptions = (props: ITaskGridProps): ITaskGridGridOptions => {
+    const {
+        descriptor, modules = {}, features = {}, stateKey, height, components, onReady, onDestroyed, onError, onBeforeTasksCreated, onTasksCreated,
+        onBeforeTasksDeleted, onTasksDeleted, onBeforeTaskMoved, onTaskMoved, onTaskDataUpdated, onRecordTreeUpdated, onBeforeDatasetItemsOpened,
+        onDatasetItemsOpened, onBeforeUserQueryCreated, onUserQueryCreated, onBeforeUserQueryUpdated, onUserQueryUpdated, onBeforeUserQueriesDeleted,
+        onUserQueriesDeleted, onBeforeTemplateCreated, onTemplateCreated, ...gridProps
+    } = props;
+    const { userQueries, templates, customColumns, lookupMany, dependencies, checklist, gantt, project, custom = [] } = features;
+    return {
+        gridProps: { ...gridProps, components: { overlays: components?.overlays, rows: components?.rows } },
+        modules,
+        features: [customColumns, userQueries, templates, project, lookupMany, dependencies, checklist, gantt, ...custom].filter((feature): feature is ITaskGridFeature => !!feature),
     };
-
-    React.useEffect(() => {
-        //no refresh here: the factory awaited the first load, so the records are already in
-        props.onReady?.(datasetControl.getServices());
-    }, []);
-
-    //one context for everything the grid was built with; the hooks read what they need off it
-    return <ServicesContext.Provider value={datasetControl.getServices()}>
-        <RootElementIdContext.Provider value={rootElementId}>
-                    <DatasetControlRenderer
-                        onGetDatasetControlInstance={() => datasetControl}
-                        onGetControlComponent={renderControlComponent}
-                        onOverrideComponentProps={(props) => {
-                            return {
-                                ...props,
-                                onRender: (props, defaultRender) => {
-                                    return defaultRender({
-                                        ...props,
-                                        container: {
-                                            ...props.container,
-                                            id: rootElementId,
-                                            className: `${props.container.className} ${styles.datasetControlRoot}`
-                                        },
-                                        onRenderHeader: (props, defaultRender) => <Header headerProps={props} defaultRender={defaultRender} />
-                                    })
-                                }
-                            }
-                        }} />
-        </RootElementIdContext.Provider>
-    </ServicesContext.Provider>
-}
+};

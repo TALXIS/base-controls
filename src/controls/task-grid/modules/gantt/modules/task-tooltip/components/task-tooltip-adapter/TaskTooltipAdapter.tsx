@@ -1,5 +1,5 @@
 import { Task } from 'gantt-trial';
-import { useServices, useTaskDataProvider } from '@controls/task-grid/context';
+import { useTaskGridRuntime, useTaskDataProvider } from '@controls/task-grid/context';
 import { useGanttServices } from '../../../../context';
 import { useGanttTaskTooltipComponents } from '../../context';
 
@@ -22,7 +22,7 @@ export const TaskTooltipAdapter = (props: ITaskTooltipAdapterProps) => {
     const components = useGanttTaskTooltipComponents();
     const taskDataProvider = useTaskDataProvider();
     const services = useGanttServices();
-    const taskGridServices = useServices();
+    const taskGridServices = useTaskGridRuntime().services;
     const formatting = taskGridServices.get('pcfContext').formatting;
     const nativeColumns = taskGridServices.get('nativeColumns');
     const ganttColumns = services.get('fieldMapping');

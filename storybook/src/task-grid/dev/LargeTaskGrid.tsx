@@ -26,9 +26,7 @@ export const LargeTaskGrid = (props: ILargeTaskGridProps) => {
     const { count, seed } = props
     const [generatedInMs, setGeneratedInMs] = React.useState<number>()
 
-    const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
-        //fills whatever the story gives it, so a big dataset is measured at full viewport height
-        height: '100%',
+    const { descriptor, modules, features } = React.useMemo(() => createMemoryTaskGridDescriptor({
         onGetRecords: async () => {
             const startedAt = performance.now()
             const records = generateTasks({ count, seed })
@@ -44,7 +42,8 @@ export const LargeTaskGrid = (props: ILargeTaskGridProps) => {
                 {generatedInMs !== undefined && ` · built in ${Math.round(generatedInMs)} ms`}
                 {seed !== undefined && ` · seed ${seed}`}
             </Text>
-            <TaskGrid descriptor={descriptor} />
+            {/* fills whatever the story gives it, so a big dataset is measured at full viewport height */}
+            <TaskGrid descriptor={descriptor} modules={modules} features={features} height='100%' enableNavigation />
         </Stack>
     )
 }

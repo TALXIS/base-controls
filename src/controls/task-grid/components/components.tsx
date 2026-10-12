@@ -1,43 +1,14 @@
-import * as React from "react";
-import { ISkeletonProps, Skeleton } from "@controls/dataset-control/skeleton";
-import { ICommandBarProps } from "@legacy";
-import { CommandBar } from "./header/command-bar";
-import type { IGridCellParams } from "@controls/grid";
+import type { IGridComponents } from "@controls/grid";
+import type { IDatasetControlComponents } from "@controls/dataset-control";
+import { IRibbonUiComponents, RibbonUiComponents } from "@controls/ribbon";
 
-/**
- * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus the
- * `record`, `value` and `isCellEditor` the grid injects through `cellRendererParams` /
- * `cellEditorParams`.
- */
-export type ITaskGridCellProps = IGridCellParams;
-
-/** The replaceable parts of the grid's UI. Override any subset through `ITaskGridProps.components`. */
-export interface ITaskGridComponents {
-    /** The loading placeholder shown until the control instance resolves. */
-    onRenderSkeleton: (props: ISkeletonProps) => JSX.Element;
-    /** The ribbon above the grid. */
-    onRenderCommandBar: (props: ICommandBarProps) => JSX.Element;
-    /**
-     * Wraps the cell renderer of every data column. `defaultRender` renders whatever the grid would
-     * otherwise have used for that column — the base cell, the group cell, `PercentComplete`, the
-     * lookup-many renderer, or a component assigned by `IGridCustomizerStrategy`.
-     *
-     * Switch on `props.colDef?.colId` and delegate the rest to `defaultRender`. Not called for the
-     * checkbox and add-task columns, whose props do not carry a record.
-     */
-    onRenderCellRenderer: (props: ITaskGridCellProps, defaultRender: (props: ITaskGridCellProps) => React.ReactElement) => React.ReactElement;
-    /**
-     * The same contract as {@link ITaskGridComponents.onRenderCellRenderer}, for the cell editor.
-     * Only fires on editable columns — lookup-many columns edit inside their picker, so they never
-     * reach an editor.
-     */
-    onRenderCellEditor: (props: ITaskGridCellProps, defaultRender: (props: ITaskGridCellProps) => React.ReactElement) => React.ReactElement;
+/** The replaceable parts of the task grid: the DatasetControl's, the grid's and the command bar. */
+export interface ITaskGridComponents extends IDatasetControlComponents, IGridComponents {
+    /** The command bar in the header; its `items` are the task grid's commands. */
+    onRenderCommandBar: IRibbonUiComponents['onRenderCommandBar'];
 }
 
 /** The defaults for {@link ITaskGridComponents}. */
 export const TaskGridComponents: ITaskGridComponents = {
-    onRenderSkeleton: (props) => <Skeleton {...props} />,
-    onRenderCommandBar: (props) => <CommandBar {...props} />,
-    onRenderCellRenderer: (props, defaultRender) => defaultRender(props),
-    onRenderCellEditor: (props, defaultRender) => defaultRender(props)
-}
+    onRenderCommandBar: RibbonUiComponents.onRenderCommandBar,
+};

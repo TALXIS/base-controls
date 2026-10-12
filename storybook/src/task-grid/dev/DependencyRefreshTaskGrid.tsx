@@ -1,7 +1,7 @@
 import React from 'react'
 import { DefaultButton, initializeIcons, PrimaryButton, Stack, Text } from '@fluentui/react'
 import { createDependenciesModule, MemoryTaskDependencyStrategy, TaskGrid } from '@talxis/base-controls'
-import type { IDependenciesProvider, ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls'
+import type { ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls'
 import { createMemoryTaskGridDescriptor } from '../memoryDescriptor'
 import { PARENT_ID_COL, PRIMARY_ID, TASK_DEPENDENCIES, TASKS } from '../memoryTaskData'
 
@@ -49,7 +49,7 @@ const subjectOf = (taskId: string) => SUBJECT_BY_TASK_ID.get(taskId) ?? taskId
  * The point of the story is the *far endpoint*. Linking `PREDECESSOR_TASK_ID → SUCCESSOR_TASK_ID` and then
  * refreshing **only the successor** changes two rows: the successor gained a predecessor, and the
  * predecessor gained a successor without ever being asked about. `onAfterDependenciesRefreshed` reports
- * both, and `DependenciesCellRenderer` repaints both — watch the second epic's *Successors* cell.
+ * both, and the dependency cells repaint both — watch the second epic's *Successors* cell.
  *
  * The two deletes test `MemoryTaskDependencyStrategy` instead. Nothing here refreshes anything: the
  * strategy hears `onAfterTasksDeleted` through the locator, splices the rows that pointed at the task out
@@ -57,33 +57,28 @@ const subjectOf = (taskId: string) => SUBJECT_BY_TASK_ID.get(taskId) ?? taskId
  * are the proof — they clear without their own row being touched.
  */
 export const DependencyRefreshTaskGrid = () => {
-    const providerRef = React.useRef<IDependenciesProvider>()
     const fixtureRef = React.useRef<ITaskDependency[]>()
     const servicesRef = React.useRef<ITaskGridServiceLocator>()
     const [deletedTaskIds, setDeletedTaskIds] = React.useState<string[]>([])
 
-    const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
-        //the module list still drives which columns the views carry, so the dependency columns show up
-        modules: ['dependencies'],
-        onGetModuleOverrides: (data) => ({
-            onGetDependenciesModule: ({ services }) => {
+    const { descriptor, modules, features } = React.useMemo(() => {
+        //the feature list still drives which columns the views carry, so the dependency columns show up
+        const { descriptor, modules, features, data } = createMemoryTaskGridDescriptor({ features: ['dependencies'] })
+        const dependencies = createDependenciesModule({
+            onCreateStrategy: ({ services }) => {
                 //the very array the strategy reads, so a button below can add to it and have the next
-                //refresh pick the change up — the same trick the built-in registration uses for views
+                //refresh pick the change up
                 fixtureRef.current = data.dependencies
                 //the locator the module is built against, so the delete buttons can reach the task side
                 servicesRef.current = services
-                const module = createDependenciesModule({
-                    strategy: new MemoryTaskDependencyStrategy({ dependencies: data.dependencies, services }),
-                    services,
-                })
-                providerRef.current = module.provider
-                return module
+                return new MemoryTaskDependencyStrategy({ dependencies: data.dependencies, services })
             },
-        }),
-    }), [])
+        })
+        return { descriptor, modules, features: { ...features, dependencies } }
+    }, [])
 
     //refreshes the successor alone on purpose: whether the predecessor's row updates is the whole question
-    const refreshSuccessorOnly = () => providerRef.current?.refresh([SUCCESSOR_TASK_ID])
+    const refreshSuccessorOnly = () => servicesRef.current?.get('dependenciesModule').provider.refresh([SUCCESSOR_TASK_ID])
 
     const link = () => {
         const dependencies = fixtureRef.current
@@ -150,7 +145,7 @@ export const DependencyRefreshTaskGrid = () => {
                 {FIXTURE_NEIGHBOUR_IDS.map(subjectOf).join(', ')}
                 {FIXTURE_PARENT_SUBJECT && <> — expand <em>{FIXTURE_PARENT_SUBJECT}</em> to see them</>}. Reload the story to start over.
             </Text>
-            <TaskGrid descriptor={descriptor} />
+            <TaskGrid descriptor={descriptor} modules={modules} features={features} height='600px' enableNavigation />
         </Stack>
     )
 }

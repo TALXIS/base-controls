@@ -1,4 +1,4 @@
-import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClickedEvent, RowHeightParams } from "ag-grid-community";
+import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClassParams, RowClassRules, RowClickedEvent, RowHeightParams } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
@@ -18,6 +18,9 @@ export interface IGridRowHeight {
 
 /** A hook over how tall a row is. */
 export type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; node: IRowNode<IRecord> }) => void;
+
+/** Whether a row with a record takes a class. */
+export type GridRowClassRule = (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean;
 
 /** What the caller decides for each row, after the row-level hooks. */
 export interface IGridRowSettings {
@@ -41,6 +44,10 @@ export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
     /** Sets how tall the record's row is, over what the hooks decide. */
     setRowHeight(record: IRecord, height: number): void;
+    /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
+    registerRowClass(className: string, rule: GridRowClassRule): () => void;
+    /** Runs the class rules over the records' rows again. */
+    refreshRowClasses(records: IRecord[]): void;
 }
 
 export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows {
@@ -51,12 +58,18 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     private _rowHeightHooks = new HookRegistry<GridRowHeightHook>();
     //a node's own height is lost once AG Grid asks `getRowHeight` again
     private _setHeights = new Map<string, number>();
+    private _rowClassRuleMap = new Map<string, GridRowClassRule>();
+    //one object, so the options are not handed to AG Grid again on every refresh
+    private _rowClassRules: RowClassRules<IRecord> = {};
 
     constructor(parameters: IGridRowsParameters) {
         super();
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').registerAgGridOptions(result => result.options.getRowHeight = this._getRowHeight);
+        this._services.get('grid').registerAgGridOptions(result => {
+            result.options.getRowHeight = this._getRowHeight;
+            result.options.rowClassRules = this._rowClassRules;
+        });
         this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
@@ -75,6 +88,39 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         const gridApi = this._services.get('gridApi');
         gridApi.getRowNode(recordId)?.setRowHeight(height);
         gridApi.onRowHeightChanged();
+    }
+
+    public registerRowClass(className: string, rule: GridRowClassRule): () => void {
+        this._rowClassRuleMap.set(className, rule);
+        this._onRowClassRulesChanged();
+        return () => {
+            if (this._rowClassRuleMap.get(className) === rule) {
+                this._rowClassRuleMap.delete(className);
+                this._onRowClassRulesChanged();
+            }
+        };
+    }
+
+    //AG Grid runs the class rules again on a row's data update, never on a cell refresh
+    public refreshRowClasses(records: IRecord[]): void {
+        const gridApi = this._services.find('gridApi');
+        if (!gridApi) {
+            return;
+        }
+        for (const record of records) {
+            const node = gridApi.getRowNode(record.getRecordId());
+            if (node?.data) {
+                node.updateData(node.data);
+            }
+        }
+    }
+
+    private _onRowClassRulesChanged(): void {
+        this._rowClassRules = {};
+        for (const [className, rule] of this._rowClassRuleMap) {
+            this._rowClassRules[className] = (params: RowClassParams<IRecord>) => !params.node.rowPinned && !!params.data && rule({ record: params.data, node: params.node });
+        }
+        this._services.get('grid').refreshAgGridOptions();
     }
 
     private _getRowHeight = (params: RowHeightParams<IRecord>): number | undefined => {

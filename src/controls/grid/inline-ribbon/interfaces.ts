@@ -1,6 +1,6 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IControl } from "@interfaces/context";
-import { IRibbonComponentProps } from "@controls/dataset-control/ribbon/interfaces";
+import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
 import { IStringProperty } from "@interfaces";
 import { IAlignment } from "@utils";
 

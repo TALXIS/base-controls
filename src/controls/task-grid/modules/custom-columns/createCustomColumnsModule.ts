@@ -1,16 +1,15 @@
 import { CustomColumnsDataProvider, ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
-import { ICustomColumnsComponents, ICustomColumnsModule } from "../interfaces";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ICustomColumnsComponents, ITaskGridFeature } from "../interfaces";
 import { CustomColumnsComponents } from "./moduleComponents";
-import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Options for {@link createCustomColumnsModule}. */
 export interface ICustomColumnsModuleOptions {
     /**
-     * Where column definitions and values are stored. Pass `TalxisCustomColumnsStrategy`, or your own.
+     * Returns where column definitions and values are stored: `TalxisCustomColumnsStrategy`, or your
+     * own. Called once per mount.
      */
-    strategy: ICustomColumnsStrategy;
-    /** The locator the builder was handed. The provider reaches the task side through it. */
-    services: ITaskGridServiceLocator;
+    onCreateStrategy: (params: ITaskGridFactoryParams) => ICustomColumnsStrategy;
     /** Show the "Create Custom Column" command. Defaults to `false`. */
     enableCustomColumnCreation?: boolean;
     /** Show the per-column edit command. Defaults to `false`. */
@@ -24,27 +23,27 @@ export interface ICustomColumnsModuleOptions {
 /**
  * Builds the custom-columns module: you supply the strategy, this brings the UI.
  *
- * Assign it to a `modules` key — `modules.onGetCustomColumnsModule` on a shipped descriptor, or
- * `onGetModules` on a descriptor of your own. The grid registers it as `customColumnsModule`.
+ * Pass it as `features.customColumns`. The grid registers it as `customColumnsModule`.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetCustomColumnsModule: ({ services, entityName }) => createCustomColumnsModule({
- *         strategy: new TalxisCustomColumnsStrategy({ entityName, services }),
- *         services,
+ * features={{
+ *     customColumns: createCustomColumnsModule({
+ *         onCreateStrategy: ({ services }) => new TalxisCustomColumnsStrategy({ entityName, services }),
  *         enableCustomColumnCreation: true,
  *     }),
- * }
+ * }}
  * ```
  */
-export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions): ICustomColumnsModule => {
-    const provider = new CustomColumnsDataProvider({ strategy: options.strategy, services: options.services });
-    return {
-        provider: provider,
-        components: { ...CustomColumnsComponents, ...options.components },
-        enableCustomColumnCreation: options.enableCustomColumnCreation,
-        enableCustomColumnEditing: options.enableCustomColumnEditing,
-        enableCustomColumnDeletion: options.enableCustomColumnDeletion,
-    };
-};
+export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = new CustomColumnsDataProvider({ strategy: options.onCreateStrategy({ services }), services });
+        services.register('customColumnsModule', () => ({
+            provider: provider,
+            components: { ...CustomColumnsComponents, ...options.components },
+            enableCustomColumnCreation: options.enableCustomColumnCreation,
+            enableCustomColumnEditing: options.enableCustomColumnEditing,
+            enableCustomColumnDeletion: options.enableCustomColumnDeletion,
+        }));
+    },
+});

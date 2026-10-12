@@ -17,7 +17,7 @@ const meta = {
             description: {
                 component: `
 Four strategies ship pre-configured for the TALXIS models. Each one is the generic Dataverse strategy with
-the schema already filled in, so on that platform you register the module and pass the locator — there is no
+the schema already filled in, so on that platform you pass the module and hand the strategy the locator — there is no
 table, attribute or option-set value left to state.
 
 They are ordinary strategies: use one, three, or none. Everything on this page sits on top of
@@ -26,20 +26,20 @@ and the FetchXML come from.
 
 | Strategy | Module | Needs |
 |---|---|---|
-| \`TalxisUserQueryStrategy\` | \`onGetUserQueriesModule\` | \`talxis_userquery\` |
-| \`TalxisTaskDependencyStrategy\` | \`onGetDependenciesModule\` | \`talxis_taskdependency\` |
-| \`TalxisChecklistStrategy\` | \`onGetChecklistModule\` | a \`talxis_checklist\` column on the task table |
-| \`TalxisCustomColumnsStrategy\` | \`onGetCustomColumnsModule\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\` |
+| \`TalxisUserQueryStrategy\` | \`userQueries\` | \`talxis_userquery\` |
+| \`TalxisTaskDependencyStrategy\` | \`dependencies\` | \`talxis_taskdependency\` |
+| \`TalxisChecklistStrategy\` | \`checklist\` | a \`talxis_checklist\` column on the task table |
+| \`TalxisCustomColumnsStrategy\` | \`customColumns\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\` |
 
-> Register a module whose table is **not** deployed and the grid stays on its loading skeleton: the read
+> Pass a module whose table is **not** deployed and the grid stays on its loading skeleton: the read
 > happens before the first provider is created, outside the grid's error handling. If a table is missing,
-> leave its builder out.
+> leave its module out.
 
 ## All four at once
 
 \`\`\`ts
 import {
-    DataverseTaskGridDescriptor,
+    DataverseTaskGridDescriptor, TaskGrid,
     createUserQueryModule, TalxisUserQueryStrategy,
     createDependenciesModule, TalxisTaskDependencyStrategy,
     createChecklistModule, TalxisChecklistStrategy,
@@ -47,38 +47,39 @@ import {
 } from '@talxis/base-controls'
 
 const descriptor = new DataverseTaskGridDescriptor({
-    height: '600px',
     onInitialize: async () => ({
         baseFetchXml: myFetchXml,
         fieldMapping: FIELD_MAPPING,
         systemQueries: [allTasksView],
         userId: userId,
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
-        modules: {
-            onGetUserQueriesModule: ({ services, entityName, recordId, userId }) => createUserQueryModule({
-                strategy: new TalxisUserQueryStrategy({ services, entityName, recordId, ownerId: userId }),
-                services,
-                enableQueryManager: true,
-            }),
-            onGetDependenciesModule: ({ services }) => createDependenciesModule({
-                strategy: new TalxisTaskDependencyStrategy({ services }),
-                services,
-            }),
-            onGetChecklistModule: ({ services }) => createChecklistModule({
-                strategy: new TalxisChecklistStrategy({ services }),
-                services,
-            }),
-            onGetCustomColumnsModule: ({ services, entityName, recordId }) => createCustomColumnsModule({
-                strategy: new TalxisCustomColumnsStrategy({ services, entityName, recordId }),
-                services,
-                enableCustomColumnCreation: true,
-            }),
-        },
     }),
 })
+
+//what onInitialize resolved, read once the grid loads
+const getContext = () => descriptor.getStrategyContext()
+
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
+        onCreateStrategy: ({ services }) => new TalxisUserQueryStrategy({ services, entityName: getContext().entityName, recordId: getContext().recordId, ownerId: getContext().userId }),
+        enableQueryManager: true,
+    }),
+    dependencies: createDependenciesModule({
+        onCreateStrategy: ({ services }) => new TalxisTaskDependencyStrategy({ services }),
+    }),
+    checklist: createChecklistModule({
+        onCreateStrategy: ({ services }) => new TalxisChecklistStrategy({ services }),
+    }),
+    customColumns: createCustomColumnsModule({
+        onCreateStrategy: ({ services }) => new TalxisCustomColumnsStrategy({ services, entityName: getContext().entityName, recordId: getContext().recordId }),
+        enableCustomColumnCreation: true,
+    }),
+}
+
+<TaskGrid descriptor={descriptor} features={features} height='600px' />
 \`\`\`
 
-Each builder is handed the slice of context its strategy needs — \`entityName\` comes from your FetchXML,
+\`getStrategyContext()\` holds what the strategies need — \`entityName\` comes from your FetchXML,
 \`recordId\` from \`projectRecord\`, \`userId\` from the parameter of the same name.
 
 ## Personal views
@@ -88,7 +89,7 @@ filters and sorting serialized into \`talxis_layoutjson\`.
 
 | Parameter | Required | Description |
 |---|:--------:|---|
-| \`services\` | ✅ | The locator the builder was handed. |
+| \`services\` | ✅ | The locator \`onCreateStrategy\` was handed. |
 | \`entityName\` | ✅ | Written as \`talxis_returnedtypecode\`, so views are scoped to the task table. |
 | \`recordId?\` | — | Scopes views to a parent record (\`talxis_recordid\`). Omit and only unscoped views are returned. |
 | \`ownerId?\` | — | Filters by \`ownerid\`. Omit and views are shared across the environment. |
@@ -135,7 +136,7 @@ cell stays blank. The **Checklist** column the module creates shows \`done/total
 
 | Parameter | Required | Description |
 |---|:--------:|---|
-| \`services\` | ✅ | The locator the builder was handed. |
+| \`services\` | ✅ | The locator \`onCreateStrategy\` was handed. |
 | \`entityName\` | ✅ | The entity whose attribute definitions are read. |
 | \`recordId?\` | — | Scopes definitions to a parent record. |
 | \`navigationPropertyName?\` | — | Only to disambiguate. The strategy finds the relationship itself when Dataverse reports exactly one between the two tables. |

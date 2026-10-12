@@ -3,23 +3,21 @@ import { Dialog } from "@ui";
 import { TextField } from "@controls/fields/text-field";
 import { usePcfContext } from "@utils";
 import * as React from "react";
-import { withButtonLoading } from '@legacy';
-import { useLocalizationService, useServices } from "@controls/task-grid/context";
+import { useTaskDataProvider, useTaskGridLabels, useTaskGridRuntime } from "@controls/task-grid/context";
 import { useEventEmitter } from "@hooks";
-import { IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../../interfaces";
+import { IUserQueryDataProviderEvents } from "../../interfaces";
 
 /** Props for {@link CreateViewDialog}. */
 interface ICreateViewDialog {
     onDismiss: () => void;
 }
 
-const SaveButton = withButtonLoading(PrimaryButton);
-
 /** The *Save as new view* dialog: captures the grid's current columns, filters and sorting into a new view. */
 export const CreateViewDialog = (props: ICreateViewDialog) => {
-    const localizationService = useLocalizationService();
+    const localizationService = useTaskGridLabels();
     const context = usePcfContext();
-    const services = useServices();
+    const services = useTaskGridRuntime().services;
+    const provider = useTaskDataProvider();
     const savedQueryDataProvider = services.get('savedQueryDataProvider');
     const currentQuery = savedQueryDataProvider.getCurrentQuery();
     const userQueryProvider = services.get('userQueriesModule').provider;
@@ -37,13 +35,8 @@ export const CreateViewDialog = (props: ICreateViewDialog) => {
         setErrorMessage(errorMessage ?? '');
     });
 
-    const onSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        userQueryProvider.create({
-            name: name,
-            description: description,
-            currentQuery: currentQuery,
-            provider: services.get('taskDataProvider')
-        });
+    const onSave = () => {
+        userQueryProvider.create({ name, description, currentQuery, provider });
     }
 
     return <Dialog
@@ -90,9 +83,8 @@ export const CreateViewDialog = (props: ICreateViewDialog) => {
                 }
             }} />
         <DialogFooter>
-            <SaveButton
-                isLoading={isSaving}
-                disabled={name.length === 0}
+            <PrimaryButton
+                disabled={name.length === 0 || isSaving}
                 text={localizationService.getLocalizedString('save')}
                 onClick={onSave} />
             <DefaultButton

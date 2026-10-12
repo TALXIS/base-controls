@@ -1,8 +1,7 @@
-import * as React from "react";
 import { ICustomColumnsComponents } from "../interfaces";
-import { EditColumns } from "./edit-columns/EditColumns";
+import { CustomColumnsEditColumnsComponents } from "./edit-columns";
 
 /** The defaults for {@link ICustomColumnsComponents}. */
 export const CustomColumnsComponents: ICustomColumnsComponents = {
-    onRenderEditColumns: (props) => <EditColumns {...props} />,
+    editColumns: CustomColumnsEditColumnsComponents,
 };

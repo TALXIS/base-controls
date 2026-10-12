@@ -4,7 +4,7 @@ export const getThemeProviderStyles = (theme: ITheme) => {
     const { semanticColors, fonts } = theme;
     return mergeStyleSets({
         //what `ThemeProvider` paints its element in
-        root: {
+        themeProvider: {
             color: semanticColors.bodyText,
             background: semanticColors.bodyBackground,
             fontFamily: fonts.medium.fontFamily,

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { SelectInstance } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { useLocalizationService } from '@controls/task-grid/context';
+import { useTaskGridLabels } from '@controls/task-grid/context';
 import { MultiValueContainer } from './components/multi-value-container/MultiValueContainer';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { MultiValueLabel } from './components/multi-value-label/MultiValueLabel';
@@ -28,7 +28,7 @@ export interface IMultRecordSelectorRef {
 /** A multi-record picker over an `IDataProvider`, used by lookup-many cells. */
 export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
     const { dataProvider, onSelectionChange, selectedRecords = [], container } = props;
-    const localizationService = useLocalizationService();
+    const localizationService = useTaskGridLabels();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
     const ref = React.useRef<SelectInstance>(null);
     //a counter: a key has to be a string or a number

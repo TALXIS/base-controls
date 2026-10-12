@@ -18,7 +18,7 @@ The grid below is real. It runs on the in-memory strategy, so everything you do 
 
 ## Render it
 
-The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, the single object you hand to the grid. The descriptor also decides which optional features exist, by listing the [**modules**](?path=/story/task-grid-modules--overview) it runs with:
+The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, the single object you hand to the grid. Which optional features exist is decided by the [**features**](?path=/story/task-grid-modules--overview) you pass beside it:
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
@@ -26,22 +26,29 @@ import { PcfContextProvider } from '@talxis/base-controls'
 
 export const MyTaskGridPage = () => (
     <PcfContextProvider>
-        <TaskGrid descriptor={descriptor} />
+        <TaskGrid descriptor={descriptor} features={features} height='600px' />
     </PcfContextProvider>
 )
 \`\`\`
 
 The grid reads the \`ComponentFramework.Context\` — navigation, formatting, error dialogs — off \`PcfContextProvider\`, so render it inside one. Pass your host's context to the provider; without one it builds a sample context.
 
+Task Grid is a [**DatasetControl**](?path=/docs/datasetcontrol-get-started-overview--overview) with a task tree inside: the header, the loading skeleton, the error with its retry and the view switching are the DatasetControl's, and so is the state it keeps.
+
 ### \`<TaskGrid />\` props
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
-| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract. |
-| \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
-| \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
-| \`onReady?\` | — | \`(services)\` — the grid's service locator, and with it everything imperative. See [**Reacting to the grid**](#reacting-to-the-grid). |
-| \`onBeforeDestroy?\` | — | \`(services)\` — called before teardown, while every provider still holds its data. |
+| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract. |
+| \`features?\` | — | The task grid's own features: personal views, templates, dependencies and the rest. See [**Modules**](?path=/story/task-grid-modules--overview). Read once, at mount. |
+| \`modules?\` | — | Grid modules that work with a task grid: sorting, filtering, clipboard, your own. Read once, at mount. |
+| \`height?\` | — | \`'100%'\` fills the parent; the content's height when left out. |
+| \`stateKey?\` | — | Keeps what the user did in each view — columns, sorting, filters, expanded rows — under this key. See [**State**](#state). |
+| \`labels?\` | — | Partial \`ITaskGridLabels\` and \`IGridLabels\`. Any key you supply replaces the English default. |
+| \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton, the error message, the command bar, or the grid's overlays and rows. |
+| Grid props | — | \`colDefs\`, \`rowSettings\`, \`rowHeight\`, \`enableNavigation\`, the Grid's events and the rest. See [**Customizations → Grid options**](?path=/story/task-grid-customizations-grid-options--overview). |
+| \`onReady?\` | — | \`(runtime)\` — once, after the first view loaded. The way to everything imperative. See [**Reacting to the grid**](#reacting-to-the-grid). |
+| \`onDestroyed?\` | — | \`(runtime)\` — before the grid goes, while every provider still holds its data. |
 | \`onError?\` | — | \`(error, message)\` for every error the grid reports — tasks, views and templates alike. It still shows its own dialog. |
 | event props | — | One per grid event, listed below. |
 
@@ -52,37 +59,44 @@ Every event the grid raises is a prop, so nothing needs a strategy or the impera
 | Area | Props |
 |---|---|
 | Tasks | \`onBeforeTasksCreated\`, \`onTasksCreated\`, \`onBeforeTasksDeleted\`, \`onTasksDeleted\`, \`onBeforeTaskMoved\`, \`onTaskMoved\` |
-| Data | \`onTaskDataUpdated\`, \`onRecordTreeUpdated\`, \`onBeforeRecordSaved\`, \`onRecordSaved\` |
+| Data | \`onTaskDataUpdated\`, \`onRecordTreeUpdated\` |
 | Opening records | \`onBeforeDatasetItemsOpened\`, \`onDatasetItemsOpened\` |
 | Personal views | \`onBeforeUserQueryCreated\`, \`onUserQueryCreated\`, \`onBeforeUserQueryUpdated\`, \`onUserQueryUpdated\`, \`onBeforeUserQueriesDeleted\`, \`onUserQueriesDeleted\` |
 | Templates | \`onBeforeTemplateCreated\`, \`onTemplateCreated\` |
 | Errors | \`onError\`, which fans in the task, view and template errors |
+| Records and cells | the Grid's own: \`onRecordValueChanged\`, \`onBeforeRecordSaved\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … — see [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
 
 Anything that can be cancelled reports it: a "created" or "updated" view prop receives \`null\` when the user closed the dialog, \`onTasksDeleted\` receives the per-task result, and \`onTaskMoved\` receives the changed records — or \`null\` when the task did not move, because the drop was refused or the strategy cancelled. The template props only fire when templates are enabled.
 
 \`\`\`tsx
 <TaskGrid
     descriptor={descriptor}
-    onRecordSaved={result => console.info('saved', result.recordId, result.fields)}
+    onAfterRecordSaved={result => console.info('saved', result.recordId, result.fields)}
     onTasksDeleted={result => refreshMyKpis()}
     onError={(error, message) => logger.error(message, error)}
 />
 \`\`\`
 
-For anything the events cannot express — reloading, reading the selection, switching a view — take the locator. \`onReady\` hands you the same \`ITaskGridServiceLocator\` the grid runs on, so every provider, the control and every registered module are one \`get\` away:
+For anything the events cannot express — reloading, reading the selection, switching a view — take the runtime. \`onReady\` hands it over once the first view has loaded, and \`useTaskGridRuntime()\` returns it in anything the grid draws:
 
 \`\`\`tsx
-onReady={services => {
-    //everything imperative: reload, read the selection, switch the view
-    services.get('taskDataProvider').refresh()
-    services.get('datasetControl').getSelectedRecordIds()
-    services.get('datasetControl').changeSavedQuery(queryId)
+onReady={runtime => {
+    runtime.switchView(queryId)
+    runtime.toggleFlatList(true)
+    //every provider and registered feature
+    runtime.services.get('taskDataProvider').getSelectedRecordIds()
 }}
 \`\`\`
 
-One thing to keep in mind: the grid **rebuilds everything** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time with a fresh locator, and anything you stored from a previous one goes stale. The records are already loaded when it fires; the control is not handed over until its first load has finished.
+Every view gets a task provider of its own, so reach \`taskDataProvider\` when you use it rather than keeping it. The runtime, the features and the views themselves stay for as long as the grid is mounted.
 
-Its counterpart is \`onBeforeDestroy\`, which fires just before a teardown while every provider still holds its data — the place to read anything you want to keep. See [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
+Its counterpart is \`onDestroyed\`, which fires before the grid goes while every provider still holds its data — the place to read anything you want to keep. See [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
+
+## State
+
+With a \`stateKey\`, the grid keeps each view as the user left it: the columns, sorting, filters, search and selection, the rows they expanded, the hierarchy toggle, and what the features keep, like the Gantt's zoom. Switch away and back, or unmount and mount again, and the view comes back the same.
+
+It is kept in the state store of the nearest [**StateProvider**](?path=/docs/providers-stateprovider--overview), which says how long it lives and where it is saved. Without a \`stateKey\`, nothing is kept.
 
 ## Pick a descriptor
 
@@ -96,7 +110,6 @@ Records live in your own process: task CRUD, views, templates, dependencies and 
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
 const descriptor = new MemoryTaskGridDescriptor({
-    height: '600px',
     onInitialize: async () => ({
         records: [
             { taskid: '1', subject: 'Website redesign', parentid: null, stackrank: '0|100000:', statecode: 0 },
@@ -120,7 +133,6 @@ Tasks are Dataverse rows and the grid should behave like a model-driven subgrid:
 import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 
 const descriptor = new DataverseTaskGridDescriptor({
-    height: '600px',
     onInitialize: async () => ({
         baseFetchXml: '<fetch><entity name="talxis_projecttask">…</entity></fetch>',
         fieldMapping: {
@@ -140,8 +152,8 @@ const descriptor = new DataverseTaskGridDescriptor({
 
 - [**Descriptors → Anatomy**](?path=/story/task-grid-descriptors-anatomy--overview) — what a descriptor must supply, what is optional, and how the grid's services fit together.
 - [**Memory**](?path=/story/task-grid-descriptors-memory--overview) / [**Dataverse**](?path=/story/task-grid-descriptors-dataverse--overview) — every parameter of the descriptor you picked. [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview) if you are on TALXIS.
-- [**Modules**](?path=/story/task-grid-modules--overview) — what a module is, the seven that ship, and how registering one turns a feature on. A live grid per module.
-- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, and replaceable components.
+- [**Modules**](?path=/story/task-grid-modules--overview) — the features that ship, how passing one turns it on, and the grid modules beside them. A live grid per feature.
+- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, replaceable components, and the Grid's own options.
 - [**Extending**](?path=/story/task-grid-extending--overview) — reusing a shipped strategy, changing one behaviour, or writing your own.
                 `
 

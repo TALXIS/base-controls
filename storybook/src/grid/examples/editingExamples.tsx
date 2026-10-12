@@ -9,12 +9,13 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{status}</MessageBar>
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
-            onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
+                onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -45,12 +46,13 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-            onRecordValueChanged={countChanged}
-            onAfterSaved={countChanged}
-            height='400px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+                onRecordValueChanged={countChanged}
+                onAfterSaved={countChanged}
+                height='400px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -82,14 +84,15 @@ const validateComment = (result: IFieldValidationResult, { record }: { record: I
 const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
-    return <Grid.Root
-        provider={timesheets}
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-        colDefs={{
-            hours: { context: { cell: { onGetValidation: validateHours } } },
-            comment: { context: { cell: { onGetValidation: validateComment } } },
-        }}
-        height='420px' />
+    return <DataProviderContextProvider provider={timesheets}>
+        <Grid.Root
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            colDefs={{
+                hours: { context: { cell: { onGetValidation: validateHours } } },
+                comment: { context: { cell: { onGetValidation: validateComment } } },
+            }}
+            height='420px' />
+    </DataProviderContextProvider>
 }
 `
 
@@ -103,37 +106,38 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
-        <Grid.Root
-            key={isWeekClosed ? 'closed' : 'open'}
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
-            rowSettings={{
-                onGetLock: (result, { record }) => {
-                    if (Number(record.getValue('status')) === APPROVED) {
-                        result.isLocked = true
-                    }
-                },
-            }}
-            colDefs={{
-                employee: { context: { isLocked: true } },
-                rate: {
-                    context: {
-                        cell: {
-                            onGetLock: (result, { record }) => {
-                                if (!isBillable(record)) {
-                                    result.isLocked = true
-                                }
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                key={isWeekClosed ? 'closed' : 'open'}
+                modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
+                rowSettings={{
+                    onGetLock: (result, { record }) => {
+                        if (Number(record.getValue('status')) === APPROVED) {
+                            result.isLocked = true
+                        }
+                    },
+                }}
+                colDefs={{
+                    employee: { context: { isLocked: true } },
+                    rate: {
+                        context: {
+                            cell: {
+                                onGetLock: (result, { record }) => {
+                                    if (!isBillable(record)) {
+                                        result.isLocked = true
+                                    }
+                                },
                             },
                         },
                     },
-                },
-            }}
-            labels={{
-                columnLocked: 'An entry stays with the employee who logged it.',
-                recordLocked: 'Approved entries cannot be changed.',
-                valueLocked: 'Only billable work has an hourly rate.',
-            }}
-            height='440px' />
+                }}
+                labels={{
+                    columnLocked: 'An entry stays with the employee who logged it.',
+                    recordLocked: 'Approved entries cannot be changed.',
+                    valueLocked: 'Only billable work has an hourly rate.',
+                }}
+                height='440px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -168,10 +172,11 @@ const createTimesheets = () => {
 const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
-    return <Grid.Root
-        provider={timesheets}
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-        height='420px' />
+    return <DataProviderContextProvider provider={timesheets}>
+        <Grid.Root
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            height='420px' />
+    </DataProviderContextProvider>
 }
 `
 
@@ -187,12 +192,13 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
-            onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
+                onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `

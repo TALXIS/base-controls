@@ -1,7 +1,7 @@
 import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
-import { IDatasetControlParameters, IDatasetControlProps } from "@controls";
-import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
+import { IDatasetControlParameters, IDatasetControlProps } from "@legacy/dataset-control/interfaces";
+import { DatasetControl, IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
 import { PcfContextFactory } from "@utils/adapters/pcf-context/factory";
 import { IPcfContext } from "@interfaces";
 

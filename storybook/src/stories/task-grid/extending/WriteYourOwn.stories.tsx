@@ -38,10 +38,10 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onRecordSave(record)\` | ✅ | Persist an edited record. Return which fields you wrote. |
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
-| \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount — for releasing whatever the strategy holds. To *keep* data, use the grid's \`onBeforeDestroy\` prop instead: it covers every provider, not just this one. |
+| \`onDestroy?()\` | — | Called just before the view's provider is torn down — when another view loads, and on unmount — while its data is still readable. Every view gets a strategy of its own, so this is where the strategy hands back the records or releases what it holds. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\` — see [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
+Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you return from \`createTemplateModule\`'s \`onCreateProvider\` — see [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
 
 ### \`onInitialize\` is your setup hook
 
@@ -163,7 +163,7 @@ public onCreateSavedQueryStrategy({ services }: ITaskGridFactoryParams): ISavedQ
 }
 \`\`\`
 
-Personal views are optional and live behind \`onGetModules\` — see [**Modules**](?path=/story/task-grid-modules--overview). Implement \`IUserQueryStrategy\` only if you have somewhere to persist them, then hand it to \`createUserQueryModule\`, which brings the view manager and the save dialogs with it. Omit the key and the feature is off, with no stubs to write:
+Personal views are optional and are a module passed to \`TaskGrid\` — see [**Modules**](?path=/story/task-grid-modules--overview). Implement \`IUserQueryStrategy\` only if you have somewhere to persist them, then hand it to \`createUserQueryModule\`, which brings the view manager and the save dialogs with it. Leave the module out and the feature is off, with no stubs to write:
 
 | Method | Description |
 |---|---|
@@ -199,24 +199,23 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
         return { onGetSystemQueries: async () => this._config.systemQueries }
     }
 
-    //optional: omit it and the grid shows system views only
-    public onGetModules({ services }: ITaskGridFactoryParams): ITaskGridModules {
-        return {
-            userQueries: createUserQueryModule({
-                strategy: new MyUserQueryStrategy(),
-                services,
-                enableSaveAsNewQuery: true,
-            }),
-        }
-    }
-
     public onGetGridParameters(): ITaskGridParameters {
         return { enableTaskEditing: true, enableRowDragging: true }
     }
 }
+
+//optional: leave it out and the grid shows system views only
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
+        onCreateStrategy: () => new MyUserQueryStrategy(),
+        enableSaveAsNewQuery: true,
+    }),
+}
+
+<TaskGrid descriptor={new MyTaskGridDescriptor()} features={features} />
 \`\`\`
 
-\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Extending → Services**](?path=/story/task-grid-extending--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a feature registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Extending → Services**](?path=/story/task-grid-extending--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 

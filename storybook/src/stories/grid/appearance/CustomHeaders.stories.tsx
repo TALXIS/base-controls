@@ -8,10 +8,11 @@ const DESCRIPTION = `
 Every column draws its header with the grid's own header: the column's name, its required marker, the icons modules add, and a menu that opens on click. When a column needs something else, give it a header of your own: set \`headerComponent\` in \`colDefs\`.
 
 \`\`\`tsx
-<Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={{ price: { headerComponent: CaptionedHeader } }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule() }}
+        colDefs={{ price: { headerComponent: CaptionedHeader } }} />
+</DataProviderContextProvider>
 \`\`\`
 
 You build that header one of two ways:

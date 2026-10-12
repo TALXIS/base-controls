@@ -67,10 +67,11 @@ const unsavedChangesModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [unsavedChangesModule] }}
-    maxVisibleRows={9} />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [unsavedChangesModule] }}
+        maxVisibleRows={9} />
+</DataProviderContextProvider>
 `
 
 export const UnsavedChangesBarExample = () => <GridExampleRunner seedCode={UNSAVED_CHANGES_BAR_CODE} dataset='products' />

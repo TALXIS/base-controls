@@ -1,83 +1,58 @@
 import * as React from "react";
+import { useContextWithNullCheck, useDataProvider } from "@utils";
+import type { IGrid } from "@controls/grid";
 import { ITaskDataProvider } from "./providers/task";
-import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
-import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
-import { ILocalizationService, useContextWithNullCheck } from "@utils";
-import { ITaskGridServiceLocator } from "./services";
+import type { ITaskGridRuntime } from "./runtime";
+import type { ITaskGridFeature, ITaskGridModules } from "./modules/interfaces";
 
-/** Where every service the grid was built with is reached. */
-export const ServicesContext = React.createContext<ITaskGridServiceLocator | null>(null);
-ServicesContext.displayName = 'TaskGridServices';
+export const TaskGridRuntimeContext = React.createContext<ITaskGridRuntime | null>(null);
+TaskGridRuntimeContext.displayName = 'TaskGridRuntime';
 
-/** The resolved component overrides — the defaults merged with `ITaskGridProps.components`. */
+/** The resolved component overrides: the defaults merged with `ITaskGridProps.components`. */
 export const TaskGridComponentsContext = React.createContext<ITaskGridComponents>(TaskGridComponents);
 TaskGridComponentsContext.displayName = 'TaskGridComponents';
 
-/** DOM id of the grid's root element, for portals and scroll containers. */
-export const RootElementIdContext = React.createContext<string>('');
-RootElementIdContext.displayName = 'RootElementId';
+/** What the task grid renders the shared grid with, from its own props. */
+export interface ITaskGridGridOptions {
+    gridProps: Partial<IGrid>;
+    modules: ITaskGridModules;
+    /** In the order they register. */
+    features: ITaskGridFeature[];
+}
 
-/** The AG Grid license key from `ITaskGridParameters`, or `null` when none was supplied. */
-export const AgGridLicenseKeyContext = React.createContext<string | null>(null);
-AgGridLicenseKeyContext.displayName = 'AgGridLicenseKey';
+export const GridOptionsContext = React.createContext<ITaskGridGridOptions | null>(null);
+GridOptionsContext.displayName = 'TaskGridGridOptions';
 
 /**
- * Returns the grid's service locator — every provider, the descriptor, the PCF context, the labels.
- * Exported publicly as `useTaskGridServices`.
+ * Returns the task grid's runtime: its services, settings and view actions.
  * @throws Outside a `TaskGrid`.
  */
-export const useServices = () => {
-    return useContextWithNullCheck(ServicesContext);
-}
+export const useTaskGridRuntime = (): ITaskGridRuntime => {
+    return useContextWithNullCheck(TaskGridRuntimeContext);
+};
 
 /**
- * Returns the descriptor the grid was rendered with.
+ * Returns the localization service resolving every task grid label.
  * @throws Outside a `TaskGrid`.
  */
-export const useTaskGridDescriptor = () => {
-    return useServices().get('descriptor');
-}
+export const useTaskGridLabels = () => {
+    return useTaskGridRuntime().services.get('localizationService');
+};
 
-/**
- * Returns the localization service resolving every UI label. Exported publicly as `useTaskGridLabels`.
- * @throws Outside a `TaskGrid`.
- */
-export const useLocalizationService = () => {
-    return useServices().get('localizationService');
-}
-
-/**
- * Returns the DOM id of the grid's root element. Exported publicly as `useTaskGridRootElementId`.
- * Empty string outside a `TaskGrid`.
- */
-export const useRootElementId = () => {
-    return React.useContext(RootElementIdContext);
-}
-
-/**
- * Returns the control instance backing the current mount. Exported publicly as
- * `useTaskGridDatasetControl` — the way into the commands, the selection and the grid's feature flags.
- * @throws Outside a `TaskGrid`.
- */
-export const useDatasetControl = () => {
-    return useServices().get('datasetControl');
-}
-
-/** Returns the resolved component overrides. Falls back to the defaults outside a `TaskGrid`. */
+/** Returns the resolved component overrides; the defaults outside a `TaskGrid`. */
 export const useTaskGridComponents = () => {
     return React.useContext(TaskGridComponentsContext);
-}
+};
 
 /**
- * Returns the task data provider backing the current mount.
+ * Returns the tasks of the view shown.
  * @throws Outside a `TaskGrid`.
  */
-export const useTaskDataProvider = () => {
-    return useServices().get('taskDataProvider');
-}
+export const useTaskDataProvider = (): ITaskDataProvider => {
+    return useDataProvider() as ITaskDataProvider;
+};
 
-/** Returns the AG Grid license key, or `null` when none was supplied. */
-export const useAgGridLicenseKey = () => {
-    return React.useContext(AgGridLicenseKeyContext);
-}
+export const useGridOptions = () => {
+    return useContextWithNullCheck(GridOptionsContext);
+};

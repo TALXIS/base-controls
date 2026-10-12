@@ -131,7 +131,7 @@ export interface ISavedQueryDataProvider {
      * module's provider, so it never holds a second copy of the list.
      */
     getUserQueries: () => ISavedQuery[];
-    /** Returns the currently active saved query. Throws if `refresh` has not been called yet. */
+    /** Returns the currently active saved query. Throws if `setCurrentQuery` has not been called yet. */
     getCurrentQuery: () => ISavedQuery;
     /** Looks up a query by id across system and user queries. Throws if not found. */
     getSavedQuery(id: string): ISavedQuery;
@@ -143,8 +143,13 @@ export interface ISavedQueryDataProvider {
      * Defaults to `0`; hooks sharing a priority run in the order they were registered.
      */
     registerHook: (hook: SavedQueryHook, priority?: number) => void;
-    /** Fetches system and user queries and sets the initial active query. */
+    /** Fetches the system and user queries. */
     refresh: () => Promise<void>;
+    /**
+     * Makes a view the active one, or the default when it is not given or no longer exists: the first
+     * user query, else the first system query.
+     */
+    setCurrentQuery: (id?: string) => ISavedQuery;
     /** Releases the resources held by the provider. */
     destroy: () => void;
 }
@@ -171,12 +176,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     constructor(parameters: ISavedQueryDataProviderParameters) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
-    }
-
-    //the view the grid was left on, which a refresh opens on when it still exists. Read at call time: the
-    //state outlives this provider, and a remount builds a new one over the view the last one captured
-    private get _preferredQuery(): Partial<ISavedQuery> & { id: string } | undefined {
-        return this._services.get('taskGridState').getView();
     }
 
     //the personal-views provider, from the user-queries module. Absent means the feature is off: no *My views*, no save
@@ -208,7 +207,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
 
     public getCurrentQuery(): ISavedQuery {
         if (!this._currentQuery) {
-            throw new Error('Current query is not set. Make sure to call refresh() and wait for it to complete before accessing the current query.');
+            throw new Error('Current query is not set. Make sure to call setCurrentQuery() before accessing the current query.');
         }
         return this._currentQuery;
     }
@@ -236,7 +235,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             throw new Error('At least one system query is required');
         }
         this._includePathColumn(systemQueries[0].columns);
-        const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries;
 
         const systemQueryColumnEntries = systemQueries.flatMap(
@@ -251,23 +249,18 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             ...customColumnEntries
         ]);
 
-        const preferredQueryInAllQueries = allQueries.find(q => q.id === this._preferredQuery?.id);
-        this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
-        //preferred query might have some required columns missing
-        this._currentQuery = this._processQueries([{
-            ...this._currentQuery,
-            ...(preferredQueryInAllQueries ? this._preferredQuery : {}),
-        }])[0];
-        //last, so a hook sees the finished query, preferred-query overlay included
-        this._applyHooks(userQueries);
-    }
-
-    //the current query is a copy of whichever query it came from, with its own columns array, so it is hooked in its
-    //own right rather than through the one it was copied from.
-    private _applyHooks(userQueries: ISavedQuery[]): void {
-        for (const query of [...this._systemQueries, ...userQueries, this.getCurrentQuery()]) {
+        for (const query of [...systemQueries, ...userQueries]) {
             this._hooks.apply(query);
         }
+    }
+
+    public setCurrentQuery(id?: string): ISavedQuery {
+        const userQueries = this.getUserQueries();
+        const query = [...this._systemQueries, ...userQueries].find(query => query.id === id) ?? userQueries[0] ?? this._systemQueries[0];
+        //a copy with its own columns, so the view's provider never writes into the query
+        this._currentQuery = this._processQueries([{ ...query, columns: query.columns.map(copyColumn) }])[0];
+        this._hooks.apply(this._currentQuery);
+        return this._currentQuery;
     }
 
     private _processQueries(queries: ISavedQuery[]) {

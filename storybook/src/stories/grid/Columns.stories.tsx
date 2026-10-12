@@ -14,14 +14,15 @@ Every provider column becomes a grid column. \`colDefs\` changes them and adds y
 \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key. Its \`context\` holds what the grid reads about the column, and any keys of your own beside them, which \`getColumnContext(colDef)\` reads back.
 
 \`\`\`tsx
-<Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
-    colDefs={{
-        name: { pinned: 'left', context: { isPrimary: true } },
-        price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
-        stockvalue: { headerName: 'Stock value', initialWidth: 130, cellRenderer: StockValueCell },
-    }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule() }}
+        colDefs={{
+            name: { pinned: 'left', context: { isPrimary: true } },
+            price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
+            stockvalue: { headerName: 'Stock value', initialWidth: 130, cellRenderer: StockValueCell },
+        }} />
+</DataProviderContextProvider>
 \`\`\`
 
 - An entry for an existing column is merged over it, including \`context\`, \`context.cell\` and \`context.header\`, so you change only what you set. Any other key adds a column at the end.

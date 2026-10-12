@@ -1,2 +1,2 @@
 //the overlays are published through the namespace
-export type { IOverlayUi, IOverlayUiLoadingProps, IOverlayUiEmptyRecordsProps, IOverlayUiEmptyRecordsComponents, IOverlayUiLoadingComponents } from './ui';
+export type { IOverlayUi, IOverlayUiLoadingProps, IOverlayUiLoadingComponents } from './ui';

@@ -28,16 +28,15 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 |---|---|---|
 | Task CRUD, move, reparent | \`MemoryTaskStrategy\` | always |
 | System views | the descriptor, from \`systemQueries\` | always |
-| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`modules.onGetUserQueriesModule\` returns one |
-| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`modules.onGetTemplatesModule\` returns one |
-| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`modules.onGetLookupManyModule\` returns one |
-| Task dependencies, in both directions | \`MemoryTaskDependencyStrategy\`, wrapped by \`createDependenciesModule\` | \`modules.onGetDependenciesModule\` returns one |
-| Task checklists | \`MemoryChecklistStrategy\`, wrapped by \`createChecklistModule\` | \`modules.onGetChecklistModule\` returns one |
-| AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
+| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`features.userQueries\` is passed |
+| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`features.templates\` is passed |
+| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`features.lookupMany\` is passed |
+| Task dependencies, in both directions | \`MemoryTaskDependencyStrategy\`, wrapped by \`createDependenciesModule\` | \`features.dependencies\` is passed |
+| Task checklists | \`MemoryChecklistStrategy\`, wrapped by \`createChecklistModule\` | \`features.checklist\` is passed |
 
-Everything below the first two rows is a **module**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on and its builder options.
+Everything below the first two rows is a **feature**, passed to \`TaskGrid\` beside the descriptor. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on and its builder options.
 
-Both descriptors accept the same modules; what differs is which implementations ship. Memory brings one for every module except custom columns, which needs the TALXIS models. And \`onInitialize\` is async, so the records can come from a server — this is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
+Both descriptors accept the same features; what differs is which implementations ship. Memory brings one for every feature except custom columns, which needs the TALXIS models. And \`onInitialize\` is async, so the records can come from a server — this is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -56,11 +55,10 @@ This page is the setup: the data it needs, the field mapping and the parameters.
 
 ## Minimal setup
 
-Four things are required: the records, the entity metadata, the field mapping, and at least one view. \`onInitialize\` resolves all of it — and the task strategy and the feature modules with it. \`height\` is the only other constructor parameter, because the loading skeleton needs it before your data exists:
+Four things are required: the records, the entity metadata, the field mapping, and at least one view. \`onInitialize\` resolves all of it — and the task strategy with it:
 
 \`\`\`ts
 const descriptor = new MemoryTaskGridDescriptor({
-    height: '600px',
     onInitialize: async () => ({
         records: [
             { taskid: '1', subject: 'Website redesign', parentid: null, stackrank: '0|100000:', statecode: 0 },
@@ -113,8 +111,6 @@ onInitialize: async () => {
 }
 \`\`\`
 
-\`height\` sits outside the callback because the grid reads it to size the loading skeleton before your data has resolved.
-
 Because it is awaited before the first provider is created, a promise that never resolves here shows up as an indefinite skeleton with no error.
 
 ## Parameters
@@ -133,12 +129,9 @@ Also resolved by \`onInitialize\`, all optional:
 | Parameter | Description |
 |---|---|
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
-| \`modules\` | The feature modules, one \`onGetXModule\` builder per feature. See [**Modules**](?path=/story/task-grid-modules--overview); the memory-specific shape is \`IMemoryModules\`. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-The one constructor parameter that is *not* resolved by \`onInitialize\` is \`height\`.
-
-> **\`onInitialize\` runs on every remount**, and the \`onCreateTaskStrategy\` and \`modules\` it returns are rebuilt from whatever it just resolved. Nothing in the grid keeps your data between those calls — see [**Keeping data across remounts**](#keeping-data-across-remounts), which is the one thing to get right before shipping this descriptor.
+> **\`onInitialize\` runs on every mount**, and every strategy is rebuilt from whatever it just resolved. The tasks are carried from one view to the next, but nothing is kept beyond the mount — see [**Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview), which is the one thing to get right before shipping this descriptor.
 
 ### \`IMemoryEntitySource\`
 

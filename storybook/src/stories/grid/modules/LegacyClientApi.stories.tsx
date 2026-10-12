@@ -8,12 +8,13 @@ const DESCRIPTION = `
 Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column: \`record.expressions.setDisabledExpression\`, \`record.expressions.ui.setNotificationsExpression\` and the others listed below. The legacy client API compatibility module makes \`<Grid.Root />\` draw what they set, so those scripts keep working.
 
 \`\`\`tsx
-<Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-    }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
+        }} />
+</DataProviderContextProvider>
 \`\`\`
 
 The module takes no options and needs no AG Grid Enterprise licence.

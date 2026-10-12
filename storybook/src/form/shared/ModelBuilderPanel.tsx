@@ -14,21 +14,12 @@ import {
     getTheme,
     mergeStyleSets,
 } from "@fluentui/react"
-import { DataProvider, DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react"
-import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid, Panel } from "@talxis/base-controls"
-import { DatasetControl as DatasetControlUtil } from "@talxis/base-controls"
+import { DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, Panel } from "@talxis/base-controls"
 import { usePcfContext } from "@talxis/base-controls"
 import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls"
-import { ICommandBarItemProps } from "@talxis/base-controls"
-import type { IComponentProps as IDatasetControlRenderProps, IHeaderProps, IRibbonQuickFindWrapperProps } from "@talxis/base-controls"
-import type { IRibbonComponentProps } from "@talxis/base-controls"
-
-type TRibbonRenderProps = Parameters<IRibbonComponentProps["onRender"]>[0]
-type TRibbonDefaultRender = Parameters<IRibbonComponentProps["onRender"]>[1]
-type TOnRenderCommandBar = TRibbonRenderProps["onRenderCommandBar"]
-type TCommandBarProps = Parameters<TOnRenderCommandBar>[0]
-type TCommandBarDefaultRender = Parameters<TOnRenderCommandBar>[1]
+import type { ICommandBarItemProps } from "@fluentui/react"
 import { IModelOption, TSupportedModelDataType, createModelColumn, getModelTypeDefinition, modelTypeDefinitions } from "./modelDefinition"
 import { parseModelColumns, serializeModelColumns } from "./modelStore"
 import { baseEditorOptions } from "./monacoEditor"
@@ -442,31 +433,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         return ds
     }, [])
 
-    const datasetControl = useMemo(() => new DatasetControlUtil({
-        state: {},
-        controlId: "model-builder-fields",
-        onGetPcfContext: () => pcfContextRef.current,
-        onGetParameters: () => ({
-            Grid: dataset,
-            Height: { raw: "100%" },
-            RowHeight: { raw: 36 },
-            SelectableRows: { raw: "multiple" },
-            EnableEditing: { raw: false },
-            EnablePagination: { raw: false },
-            EnableFiltering: { raw: true },
-            EnableSorting: { raw: true },
-            EnableNavigation: { raw: true },
-            EnableQuickFind: { raw: true },
-            EnableCommandBar: { raw: true },
-            EnableRecordCount: { raw: false },
-            EnablePageSizeSwitcher: { raw: false },
-            EnableEditColumns: { raw: false },
-            EnableAutoSave: { raw: false },
-            EnableZebra: { raw: true },
-            EnableGroupedColumnsPinning: { raw: false },
-            DestroyDatasetOnUnmount: { raw: false },
-        }),
-    }), [dataset])
+    //the dataset outlives the control, which only shows it
+    const loadFields = useMemo(() => async () => ({ provider: dataset.getDataProvider() }), [dataset])
 
     useEffect(() => {
         dataset.setDataSource(columns.map(toDisplayRow))
@@ -700,13 +668,12 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         }
     }
 
-    const deleteFieldCommandBarItem: ICommandBarItemProps = {
-        key: "delete-field",
-        text: "Delete",
-        iconProps: { iconName: "Delete" },
-        onClick: () => {
-            void deleteSelectedFields()
-        },
+    //read off the provider: the ribbon reloads on the same selection event that updates the state
+    const loadFieldCommands = async (): Promise<IRibbonCommand[]> => {
+        if (dataset.getDataProvider().getSelectedRecordIds().length === 0) {
+            return []
+        }
+        return [{ id: "delete-field", label: "Delete", iconName: "Delete", onExecute: deleteSelectedFields }]
     }
 
     useEffect(() => {
@@ -759,43 +726,29 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
 
         {editorMode === "ui" && (
             <div className={styles.tableWrap}>
-                <DatasetControl
-                    onGetDatasetControlInstance={() => datasetControl}
-                    onGetControlComponent={(controlProps) => <Grid.Root
-                        provider={controlProps.parameters.Grid.getDataProvider()}
-                        modules={{
-                            rowModel: createClientSideRowModelModule(),
-                            rowSelection: createRowSelectionModule({ mode: "multiple" }),
-                            editing: controlProps.parameters.EnableEditing?.raw === true ? createEditingModule() : undefined,
-                        }}
-                        enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
-                        enableZebra={controlProps.parameters.EnableZebra?.raw !== false}
-                        rowHeight={controlProps.parameters.RowHeight?.raw ?? undefined}
-                        height={controlProps.parameters.Height?.raw ?? undefined}
-                    />}
-                    onOverrideComponentProps={() => ({
-                        onRender: (renderProps: IDatasetControlRenderProps, defaultRender: (props: IDatasetControlRenderProps) => ReactElement) => defaultRender({
-                            ...renderProps,
-                            onRenderHeader: (headerProps: IHeaderProps, defaultRenderHeader: (props: IHeaderProps) => ReactElement) => defaultRenderHeader({
-                                ...headerProps,
-                                onRenderRibbonQuickFindWrapper: (wrapperProps: IRibbonQuickFindWrapperProps, defaultRenderWrapper: (props: IRibbonQuickFindWrapperProps) => ReactElement) => defaultRenderWrapper({
-                                    ...wrapperProps,
-                                    onRenderRibbon: (ribbonProps: TRibbonRenderProps, defaultRenderRibbon: TRibbonDefaultRender) => defaultRenderRibbon({
-                                        ...ribbonProps,
-                                        onRenderCommandBar: (commandBarProps: TCommandBarProps, defaultRenderCommandBar: TCommandBarDefaultRender) => ribbonProps.onRenderCommandBar({
-                                            ...commandBarProps,
-                                            items: [
-                                                ...(commandBarProps.items ?? []).filter((item: ICommandBarItemProps) => item.key !== DataProvider.CONST.REFRESH_COMMAND_ID),
-                                                addFieldCommandBarItem,
-                                                ...(selectedRecordNames.length > 0 ? [deleteFieldCommandBarItem] : []),
-                                            ],
-                                        }, defaultRenderCommandBar),
-                                    }),
-                                }),
-                            }),
-                        }),
-                    })}
-                />
+                <DatasetControl onLoad={loadFields} destroyProviderOnUnmount={false} height="100%">
+                    <DatasetControl.Header>
+                        <DatasetControl.Header.Start>
+                            <DatasetControl.Ribbon
+                                onLoad={loadFieldCommands}
+                                components={{ onRenderCommandBar: props => <CommandBar {...props} items={[addFieldCommandBarItem, ...props.items]} /> }} />
+                        </DatasetControl.Header.Start>
+                        <DatasetControl.Header.End>
+                            <DatasetControl.QuickFind />
+                        </DatasetControl.Header.End>
+                    </DatasetControl.Header>
+                    <DatasetControl.Notifications />
+                    <DatasetControl.Body>
+                        <Grid.Root
+                            modules={{
+                                rowModel: createClientSideRowModelModule(),
+                                rowSelection: createRowSelectionModule({ mode: "multiple" }),
+                            }}
+                            enableNavigation
+                            enableZebra
+                            rowHeight={36} />
+                    </DatasetControl.Body>
+                </DatasetControl>
             </div>
         )}
 

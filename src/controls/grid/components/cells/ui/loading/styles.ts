@@ -7,6 +7,6 @@ export const getCellUiLoadingStyles = () => mergeStyleSets({
         paddingRight: 10,
     },
     shimmerWrapper: {
-        height: 10,
+        height: 8,
     },
 });

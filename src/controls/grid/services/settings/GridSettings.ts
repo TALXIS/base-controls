@@ -1,3 +1,4 @@
+import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGrid } from "../../interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;
@@ -6,6 +7,8 @@ const DEFAULT_MAX_VISIBLE_ROWS = 15;
 export interface IGridSettingsParameters {
     /** The current props: the mount-only ones are read once, the rest on demand. */
     onGetProps: () => IGrid;
+    /** The DatasetControl the grid is inside, if any. */
+    datasetControl?: IDatasetControlRuntime;
 }
 
 /** What the caller asked the grid to be. */
@@ -31,9 +34,11 @@ export interface IGridSettings {
 export class GridSettings implements IGridSettings {
     private _getProps: () => IGrid;
     private _mountProps: IGrid;
+    private _datasetControl?: IDatasetControlRuntime;
 
     constructor(parameters: IGridSettingsParameters) {
         this._getProps = parameters.onGetProps;
+        this._datasetControl = parameters.datasetControl;
         //taken once so a later value cannot reach only some cells
         this._mountProps = { ...parameters.onGetProps() };
     }
@@ -59,6 +64,10 @@ export class GridSettings implements IGridSettings {
     }
 
     public getHeight(): string | undefined {
+        //a DatasetControl with a height sizes the grid to its body
+        if (this._datasetControl?.getHeight()) {
+            return '100%';
+        }
         return this._getProps().height ?? undefined;
     }
 

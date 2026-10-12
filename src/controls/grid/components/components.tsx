@@ -1,4 +1,5 @@
-import type { IOverlayUiEmptyRecordsComponents, IOverlayUiLoadingComponents } from "./overlays/ui";
+import type { IEmptyRecordsUiComponents } from "@controls/dataset-control/components/ui/empty-records";
+import type { IOverlayUiLoadingComponents } from "./overlays/ui";
 import type { IRowUiErrorComponents, IRowUiLoadingComponents } from "./rows/ui";
 
 /** The replaceable pieces of what the grid draws over its rows. */
@@ -6,7 +7,7 @@ export interface IGridOverlayComponents {
     /** What the grid shows while it loads. */
     loading?: Partial<IOverlayUiLoadingComponents>;
     /** What the grid shows while it has no rows. */
-    emptyRecords?: Partial<IOverlayUiEmptyRecordsComponents>;
+    emptyRecords?: Partial<IEmptyRecordsUiComponents>;
 }
 
 /** The replaceable pieces of the rows the grid draws in place of records. */

@@ -94,7 +94,7 @@ export interface ITaskDataProviderStrategy {
      * Called when the provider needs to retrieve latest data for specific tasks to synchronize the grid with the server.
      */
     onGetRawRecords: (ids: string[]) => Promise<IRawRecord[]>;
-    /** Called once on first load. Must return the initial columns, raw task records, and entity metadata. */
+    /** Loads the columns, raw task records and entity metadata; again whenever a new column or link is asked for. */
     onInitialize: (provider: ITaskDataProvider) => Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any }>
     /** Returns all columns available for display in the grid (both native and custom). */
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
@@ -131,8 +131,8 @@ export interface ITaskDataProviderStrategy {
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
     /**
-     * Called just before the provider is torn down — on unmount, and on every remount. The provider's data
-     * is still readable, so this is the strategy's last chance to hand the current records to whoever
+     * Called just before the provider is torn down — when another view loads, and on unmount. The provider's
+     * data is still readable, so this is the strategy's last chance to hand the current records to whoever
      * keeps them.
      */
     onDestroy?: () => void;
@@ -209,7 +209,9 @@ export interface ITaskDataProvider extends IDataProvider {
  */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _services: ITaskGridServiceLocator;
-    private _hasDataBeenLoaded: boolean = false;
+    //what the strategy last loaded for; a refresh past either loads from it again
+    private _loadedColumnNames?: Set<string>;
+    private _loadedLinking?: string;
     private _taskTree: RecordTree;
     private _strategy: ITaskDataProviderStrategy;
     private _onFlatListEnabled: () => boolean;
@@ -601,12 +603,13 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             onIsFlatListEnabled: () => this._onFlatListEnabled(),
         });
     }
+    public async onPreload(): Promise<void> {
+        await this._loadDataFromStrategy();
+    }
+
     public async refresh(): Promise<IRecord[]> {
-        if (!this._hasDataBeenLoaded) {
+        if (this._isStrategyLoadRequired()) {
             await this._loadDataFromStrategy();
-            //we need to artificially wait in order for any sync outside stuff to finish (like loading grid  to register events)
-            await new Promise(resolve => setTimeout(resolve, 0));
-            this._hasDataBeenLoaded = true;
         }
         await super.refresh();
         return this.getAllRecords();
@@ -627,6 +630,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         }
     }
 
+    private _isStrategyLoadRequired(): boolean {
+        if (!this._loadedColumnNames) {
+            return true;
+        }
+        const hasNewColumn = this.getColumns().some(column => !column.isVirtual && !this._loadedColumnNames!.has(column.name));
+        return hasNewColumn || JSON.stringify(this.getLinking()) !== this._loadedLinking;
+    }
+
     private async _loadDataFromStrategy() {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
@@ -636,6 +647,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 this.setColumns(columns);
                 this.getPaging().setPageSize(rawData.length);
                 this.setEntityName(metadata.LogicalName);
+                this._loadedColumnNames = new Set(columns.map(column => column.name));
+                this._loadedLinking = JSON.stringify(this.getLinking());
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })

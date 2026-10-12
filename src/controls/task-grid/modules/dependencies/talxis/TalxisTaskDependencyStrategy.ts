@@ -1,5 +1,6 @@
 import { DataverseTaskDependencyStrategy, IDataverseTaskDependencyStrategyParams } from "../dataverse/DataverseTaskDependencyStrategy";
 import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import type { ITaskDataProvider } from "@controls/task-grid/providers/task";
 
 /**
  * The `talxis_taskdependency` table as {@link DataverseTaskDependencyStrategy} needs it described: the two
@@ -57,11 +58,10 @@ export class TalxisTaskDependencyStrategy extends DataverseTaskDependencyStrateg
     }
 
     //reloads a task's dependencies when its form closes. The form is where they are edited here, so what the grid holds
-    //for that task is stale the moment it is reopened. Waits for the task provider rather than resolving it: the grid
-    //builds its modules first, so there is nothing to reach at construction.
+    //for that task is stale the moment it is reopened.
     private _registerEventListeners(services: ITaskGridServiceLocator): void {
-        services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
-            taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {
+        services.whenAvailable('datasetControl', datasetControl => datasetControl.events.addEventListener('onLoaded', provider => {
+            (provider as ITaskDataProvider).taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {
                 //a lookup cell opens a related record, whose ids are not task ids
                 if (!isTaskEntity || entityReferences.length === 0) {
                     return;
@@ -72,6 +72,6 @@ export class TalxisTaskDependencyStrategy extends DataverseTaskDependencyStrateg
                 const taskIds = entityReferences.map(reference => reference.id.guid);
                 await services.get('dependenciesModule').provider.refresh(taskIds);
             });
-        });
+        }));
     }
 }

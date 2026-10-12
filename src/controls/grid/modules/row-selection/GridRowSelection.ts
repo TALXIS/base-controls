@@ -6,6 +6,7 @@ import { IGridRowSelectionServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridAgGridOptions } from "../../services/runtime";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
+import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/components/ui/toggle/styles";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
@@ -178,13 +179,13 @@ export class GridRowSelection implements IGridRowSelection {
         }
     };
 
-    //the checkbox, a cell's commands and a plain click on a group row bypass AG Grid's selection
+    //the checkbox, a cell's commands, a group's chevron and a plain click on a group row bypass AG Grid's selection
     private _isClickSelectionSuppressed(params: SuppressMouseEventHandlingParams<IRecord>): boolean {
         const event = params.event as MouseEvent;
         if (event.type !== 'click') {
             return false;
         }
-        const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS_NAME}`);
+        const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS_NAME}, .${GROUPING_TOGGLE_CLASS_NAME}`);
         const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
         const isGroupRow = !!this._services.get('gridServices').find('grouping')?.isGroupRow(params.node);
         return this.isSelectionColumn(params.column?.getColId()) || isCommand || (isGroupRow && !hasModifier);

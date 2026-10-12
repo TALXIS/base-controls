@@ -1,21 +1,18 @@
 import { IEventEmitter } from "@talxis/client-libraries";
 import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import type { IDataProvider } from "@talxis/client-libraries";
+import type { IGridModule, IGridModules } from "@controls/grid";
+import type { ITaskTreeServiceMap } from "@controls/task-grid/module";
 import type { ILookupManyDataProviderParameters } from "@controls/task-grid/interfaces";
 import { IDeletedUserQueriesResult, ISavedQuery } from "@controls/task-grid/providers/saved-query";
 import { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import { ITemplateDataProvider } from "@controls/task-grid/providers/template/TemplateDataProvider";
 import { ICustomColumnsDataProvider } from "@controls/task-grid/modules/custom-columns/CustomColumnsDataProvider";
 import type { IChecklistProvider } from "@controls/task-grid/modules/checklist/ChecklistProvider";
-import type { IChecklistCellRendererProps } from "@controls/task-grid/modules/checklist/cell-renderer/ChecklistCellRenderer";
 import type { IDependenciesProvider } from "@controls/task-grid/modules/dependencies/DependenciesProvider";
-import type { IDependenciesCellRendererProps } from "@controls/task-grid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
-import type { IEditColumnsProps } from "@controls/dataset-control/edit-columns/EditColumns";
-import type { IGridCustomizerStrategy } from "@controls/task-grid/components/grid/grid-customizer/GridCustomizer";
-import type { IGridCellParams } from "@controls/grid";
-import type { ICommandBarItemProps } from "@legacy";
+import type { ICommandBarItemProps } from "@fluentui/react";
+import type { IEditColumnsComponents } from "@controls/dataset-control";
 import type { IGanttServiceLocator } from "@controls/task-grid/modules/gantt/services";
-import type { IGanttViewProps } from "@controls/task-grid/modules/gantt/gantt-view/GanttView";
 import type { IProjectProvider, ProjectData } from "@controls/task-grid/modules/project";
 
 /** Lifecycle events for the personal-views operations. */
@@ -122,8 +119,8 @@ export interface ITemplateModule {
  * {@link ICustomColumnsModuleOptions.components}.
  */
 export interface ICustomColumnsComponents {
-    /** The Edit Columns panel, with the custom-column commands wired in. */
-    onRenderEditColumns: (props: IEditColumnsProps) => JSX.Element;
+    /** The column editor's pieces, with the custom-column commands wired in. */
+    editColumns: IEditColumnsComponents;
 }
 
 /** What the custom-columns module contributes. Built by {@link createCustomColumnsModule}. */
@@ -140,24 +137,6 @@ export interface ICustomColumnsModule {
     enableCustomColumnDeletion?: boolean;
 }
 
-/** What the grid-customizer module contributes. Built by {@link createGridCustomizerModule}. */
-export interface IGridCustomizerModule {
-    /** Hooks into the grid's column definitions and row class rules. */
-    strategy: IGridCustomizerStrategy;
-}
-
-/**
- * Every component the lookup-many module renders. Override it through
- * {@link ILookupManyModuleOptions.components}.
- *
- * Named for the module to leave `ILookupManyComponents` to the picker itself, whose members are its
- * react-select slots.
- */
-export interface ILookupManyModuleComponents {
-    /** The cell of any column carrying `metadata.LookupMany`. */
-    onRenderCell: (props: IGridCellParams) => JSX.Element;
-}
-
 /** What the lookup-many module contributes. Built by {@link createLookupManyModule}. */
 export interface ILookupManyModule {
     /**
@@ -166,47 +145,18 @@ export interface ILookupManyModule {
      * throws when that column renders.
      */
     createDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
-    /** What the grid passes to `createDataProvider` alongside the cell's record and column. */
-    services: ITaskGridServiceLocator;
-    /** The module's UI. */
-    components: ILookupManyModuleComponents;
-}
-
-/**
- * Every component the dependencies module renders. Override it through
- * {@link IDependenciesModuleOptions.components}.
- */
-export interface IDependenciesComponents {
-    /**
-     * The cell of the grid's predecessors and successors columns. One member for both: `props.direction`
-     * says which side the column shows.
-     */
-    onRenderCell: (props: IDependenciesCellRendererProps) => JSX.Element;
 }
 
 /** What the dependencies module contributes. Built by {@link createDependenciesModule}. */
 export interface IDependenciesModule {
     /** The loaded dependencies, asked per task. */
     provider: IDependenciesProvider;
-    /** The module's UI. */
-    components: IDependenciesComponents;
-}
-
-/**
- * Every component the checklist module renders. Override it through
- * {@link IChecklistModuleOptions.components}.
- */
-export interface IChecklistComponents {
-    /** The cell of the grid's checklist column. */
-    onRenderCell: (props: IChecklistCellRendererProps) => JSX.Element;
 }
 
 /** What the checklist module contributes. Built by {@link createChecklistModule}. */
 export interface IChecklistModule {
     /** The loaded checklist items, asked per task. */
     provider: IChecklistProvider;
-    /** The module's UI. */
-    components: IChecklistComponents;
 }
 
 /**
@@ -215,7 +165,7 @@ export interface IChecklistModule {
  */
 export interface IGanttComponents {
     /** The whole view: the task grid beside the timeline. Replaces the plain grid. */
-    onRenderView: (props: IGanttViewProps) => JSX.Element;
+    onRenderView: () => JSX.Element;
     /** The timeline's zoom control, rendered in the header left of the ribbon. */
     onRenderZoomSlider: () => JSX.Element;
     /** The Gantt's part of the gear callout, rendered after the grid's own toggles. */
@@ -224,11 +174,8 @@ export interface IGanttComponents {
 
 /** What the Gantt module contributes. Built by {@link createGanttModule}. */
 export interface IGanttModule {
-    /**
-     * Everything the module holds, under its own names: its `provider`, `components`, `fieldMapping` and
-     * `labels`. Built over the grid's locator, so it answers for the grid's services too.
-     */
-    services: IGanttServiceLocator;
+    /** Everything the module holds for the view shown, under its own names; every view has its own chart. */
+    readonly services: IGanttServiceLocator;
     /**
      * The timeline's own ribbon commands — *Zoom to fit* and *Go to today*. The header appends them to
      * the grid's.
@@ -246,27 +193,33 @@ export interface IProjectModule<TData extends ProjectData = ProjectData> {
     provider: IProjectProvider<TData>;
 }
 
-/**
- * The modules a grid runs with, one optional key per available feature. A key is filled by calling that
- * module's `create*Module` builder; omit it and neither the feature nor its UI exists.
- */
-export interface ITaskGridModules {
+/** A task grid feature: what it registers once per mount, and what it adds to the grid. */
+export interface ITaskGridFeature extends IGridModule<ITaskTreeServiceMap> {
+    /** Registers the feature's own services, once per mount, before the first view loads. */
+    onInitialize?(services: ITaskGridServiceLocator): void;
+}
+
+/** The grid modules that work with a task grid; the row model and grouping are the task tree's own. */
+export type ITaskGridModules = Pick<IGridModules, 'license' | 'rowSelection' | 'cellSelection' | 'editing' | 'sorting' | 'filtering' | 'aggregation' | 'clipboard' | 'legacyClientApiCompatibility' | 'custom'>;
+
+/** The task grid's own features; a feature is on because its key is filled. */
+export interface ITaskGridFeatures {
     /** Personal views: *My views*, the save commands and the view manager. */
-    userQueries?: IUserQueryModule;
+    userQueries?: ITaskGridFeature;
     /** Task templates: capturing one from a task, and expanding one into tasks. */
-    templates?: ITemplateModule;
+    templates?: ITaskGridFeature;
     /** User-defined (dynamic) columns: creating, editing, deleting, and their values. */
-    customColumns?: ICustomColumnsModule;
-    /** Deep customization of the grid's own AG Grid instance: column definitions, row class rules, one-time init. */
-    gridCustomizer?: IGridCustomizerModule;
-    /** Candidate records for lookup-many (multi-value picker) columns. */
-    lookupMany?: ILookupManyModule;
+    customColumns?: ITaskGridFeature;
+    /** The picker of lookup-many (multi-value) columns. */
+    lookupMany?: ITaskGridFeature;
     /** Task dependencies: what each task waits on, and what waits on it. */
-    dependencies?: IDependenciesModule;
+    dependencies?: ITaskGridFeature;
     /** Task checklists: the items on each task, and whether they are done. */
-    checklist?: IChecklistModule;
+    checklist?: ITaskGridFeature;
     /** The Gantt: a timeline beside the grid, with its own zoom, weekends and per-view state. */
-    gantt?: IGanttModule;
+    gantt?: ITaskGridFeature;
     /** The project the tasks belong to. Read by the Gantt's project markers. */
-    project?: IProjectModule;
+    project?: ITaskGridFeature;
+    /** The caller's own features, after the task grid's. */
+    custom?: ITaskGridFeature[];
 }

@@ -10,29 +10,31 @@ const PRIORITY_COLORS: Record<number, 'default' | 'info' | 'warning' | 'error'> 
     3: 'error',
 }
 
-const PriorityCell = (props: ITaskGridCellProps) => {
-    const option = props.baseColumn?.metadata?.OptionSet?.find(option => option.Value == props.value.value)
-    if (!option) {
-        return <></>
+const PriorityChip = () => {
+    const field = useGridField()!
+    const label = field.getFormattedValue()
+    if (!label) {
+        return null
     }
     return <Stack height="100%" px={1} justifyContent="center" alignItems="flex-start">
-        <Chip size="small" label={option.Label} color={PRIORITY_COLORS[Number(option.Value)] ?? 'default'} />
+        <Chip size="small" label={label} color={PRIORITY_COLORS[Number(field.getValue())] ?? 'default'} />
     </Stack>
 }
 
-const components: Partial<ITaskGridComponents> = {
-    onRenderCellRenderer: (props, defaultRender) => {
-        //every other column, and the loading state of this one, stay with the grid's own cell
-        if (props.baseColumn?.name !== 'priority' || props.value.loading) {
-            return defaultRender(props)
-        }
-        return <PriorityCell {...props} />
-    },
+//only the value is replaced: loading, validation, commands and editing stay the grid's own
+const PRIORITY_CELL: ICellRendererComponents = {
+    columnControl: { onRenderControl: () => <PriorityChip /> },
 }
+
+const PriorityCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
+    <Grid.Cell.Renderer {...props} components={PRIORITY_CELL} />
+</Grid.Cell.Field>
 
 const TaskGridExample = () => <TaskGrid
     descriptor={descriptor}
-    components={components} />
+    colDefs={{
+        priority: { cellRenderer: PriorityCell },
+    }} />
 `
 
 export const CustomCellRendererExample = () => <TaskGridExampleRunner seedCode={CUSTOM_CELL_RENDERER_CODE} />

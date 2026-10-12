@@ -1,7 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createChecklistModule, createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryChecklistStrategy, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridFactoryParams, ITaskGridServiceLocator } from '@talxis/base-controls';
+import { createChecklistModule, createDependenciesModule, createFilteringModule, createLookupManyModule, createSortingModule, createTemplateModule, createUserQueryModule, MemoryChecklistStrategy, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import type { IChecklistItem, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridFeatures, ITaskGridModules, ITaskGridServiceLocator } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -23,15 +23,15 @@ const ACTIVE_STATE_CODE = '0';
  * contract a real consumer uses: dependencies resolve asynchronously while the grid shows its own
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
-/** The feature modules {@link createMemoryTaskGridDescriptor} knows how to register. */
-export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany' | 'dependencies' | 'checklist';
+/** The features {@link createMemoryTaskGridDescriptor} knows how to register. */
+export type MemoryTaskGridFeatureName = 'userQueries' | 'templates' | 'lookupMany' | 'dependencies' | 'checklist';
 
 /** What the docs grid registers when a story does not say otherwise. */
-const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany', 'dependencies', 'checklist'];
+const DEFAULT_FEATURES: MemoryTaskGridFeatureName[] = ['userQueries', 'templates', 'lookupMany', 'dependencies', 'checklist'];
 
 /**
- * The in-memory data the module builders close over. Handed to a story that registers its own modules,
- * because the fixtures live in this file rather than in the snippet.
+ * The in-memory data the module builders close over, read as it is when a module is built. Handed to a
+ * story that registers its own modules, because the fixtures live in this file rather than in the snippet.
  */
 export interface IMemoryModuleData {
     /** The personal views, as the last mount left them. */
@@ -48,112 +48,92 @@ export interface IMemoryModuleData {
 
 interface ICreateMemoryTaskGridDescriptorOptions {
     /**
-     * Which feature modules to register. Defaults to {@link DEFAULT_MODULES}; pass a single name to show
-     * one module in isolation. `gridCustomizer` is separate, because it needs a strategy from the story.
+     * Which features to register. Defaults to {@link DEFAULT_FEATURES}; pass a single name to show
+     * one module in isolation.
      */
-    modules?: MemoryTaskGridModuleName[];
-    /**
-     * Replaces the built-in module registration outright. Called on every mount with the fixture data, so
-     * a live example can define its own `modules` and have an edit take effect.
-     */
-    onGetModuleOverrides?: (data: IMemoryModuleData) => IMemoryModules | undefined;
-    /** Registered as the `gridCustomizer` module. Built once per mount, with the locator. */
-    onGetGridCustomizerStrategy?: (params: ITaskGridFactoryParams) => IGridCustomizerStrategy | undefined;
+    features?: MemoryTaskGridFeatureName[];
     /**
      * Replaces the hand-written fixture records, keeping the views, columns, templates and lookup
      * sources. The dev stories use it to mount a generated dataset.
      */
     onGetRecords?: () => Promise<IRawRecord[]>;
-    /** Container height. Defaults to `600px`, the height every documentation grid runs at. */
-    height?: string;
 }
 
 export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
-    //the store. onInitialize is called again on every remount, but the seed below only ever runs once -
-    //every later call hands back whatever is currently in these variables, which `keepSession` refreshes
-    //from the providers just before each control is torn down
+    //the store: seeded once, then read back from the providers as they go
     let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let dependencies: ITaskDependency[] = [];
     let checklist: Record<string, IChecklistItem[]> = {};
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
-    //the task records live here between mounts: the provider owns copies while a grid is up, and they are
-    //read back below when it is torn down - which is what makes a task the user created survive switching
-    //a view or applying Edit columns
     let records: IRawRecord[] = [];
     let metadata: IMemoryTaskGridDescriptorInitializeResult['metadata'];
     let fieldMapping: IMemoryTaskGridDescriptorInitializeResult['fieldMapping'];
     let systemQueries: ISavedQuery[] = [];
     let gridParameters: IMemoryTaskGridDescriptorInitializeResult['gridParameters'];
 
-    const enabledModules = options?.modules ?? DEFAULT_MODULES;
-    const isEnabled = (name: MemoryTaskGridModuleName) => enabledModules.includes(name);
+    const enabledFeatures = options?.features ?? DEFAULT_FEATURES;
+    const isEnabled = (name: MemoryTaskGridFeatureName) => enabledFeatures.includes(name);
 
-    //features are opt-in by registration: returning the module is what turns each one on, and what
-    //puts its UI in the bundle - a grid that never registers one does not ship it. A builder that
-    //returns undefined leaves its feature off, exactly like omitting the key
-    const builtInModules: IMemoryModules = {
-        onGetUserQueriesModule: ({ services }) => {
-            if (!isEnabled('userQueries')) {
-                return undefined;
-            }
-            return createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
-                services,
-                enableQueryManager: true,
-                enableSaveAsNewQuery: true,
-                enableSaveQueryChanges: true,
-            });
-        },
-        onGetTemplatesModule: ({ services }) => {
-            if (!isEnabled('templates')) {
-                return undefined;
-            }
-            return createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates, services }) });
-        },
-        onGetGridCustomizerModule: ({ services }) => {
-            const strategy = options?.onGetGridCustomizerStrategy?.({ services });
-            return strategy ? createGridCustomizerModule({ strategy }) : undefined;
-        },
-        onGetDependenciesModule: ({ services }) => !isEnabled('dependencies') ? undefined : createDependenciesModule({
-            strategy: new MemoryTaskDependencyStrategy({ dependencies, services }),
-            services,
+    const data: IMemoryModuleData = {
+        get userQueries() { return userQueries; },
+        get templates() { return templates; },
+        get lookupSources() { return lookupSources; },
+        get dependencies() { return dependencies; },
+        get checklist() { return checklist; },
+    };
+
+    const modules: ITaskGridModules = {
+        sorting: createSortingModule(),
+        filtering: createFilteringModule(),
+    };
+
+    //a feature left out is a feature, and its UI, left out
+    const features: ITaskGridFeatures = {
+        userQueries: !isEnabled('userQueries') ? undefined : createUserQueryModule({
+            onCreateStrategy: ({ services }) => new MemoryUserQueryStrategy({ userQueries, services }),
+            enableQueryManager: true,
+            enableSaveAsNewQuery: true,
+            enableSaveQueryChanges: true,
         }),
-        onGetChecklistModule: ({ services }) => !isEnabled('checklist') ? undefined : createChecklistModule({
-            strategy: new MemoryChecklistStrategy({ items: checklist, services }),
-            services,
+        templates: !isEnabled('templates') ? undefined : createTemplateModule({
+            onCreateProvider: ({ services }) => new MemoryTemplateDataProvider({ templates, services }),
         }),
-        onGetLookupManyModule: ({ services }) => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
+        dependencies: !isEnabled('dependencies') ? undefined : createDependenciesModule({
+            onCreateStrategy: ({ services }) => new MemoryTaskDependencyStrategy({ dependencies, services }),
+        }),
+        checklist: !isEnabled('checklist') ? undefined : createChecklistModule({
+            onCreateStrategy: ({ services }) => new MemoryChecklistStrategy({ items: checklist, services }),
+        }),
+        lookupMany: !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column, services }) => {
                 const source = lookupSources[column.name];
                 return source && MemoryLookupManyDataProviderFactory.create({ source, services });
             },
-            services,
         }),
     };
 
-    //an example that defines its own modules wins outright; otherwise the built-in set above
-    const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources, dependencies, checklist })
-        ?? builtInModules;
+    //the task grids this store already listens to
+    const keptGrids = new WeakSet<ITaskGridServiceLocator>();
 
     /**
-     * Reads every provider back into the store just before the control is torn down, which is the one
-     * place this sandbox keeps anything. Nothing a memory strategy was handed is ever written to, so this
-     * is what makes a task, a view or a template the user created survive a remount.
+     * Reads every feature back into the store when the task grid goes, which is the one place this sandbox
+     * keeps anything; the tasks are read back by the strategy, since every view has its own.
      *
-     * Subscribed through the locator rather than the grid's `onBeforeDestroy` prop, because a descriptor
-     * has no say over the props the example passes to `<TaskGrid />`.
+     * Subscribed through the locator rather than the grid's `onDestroyed` prop, because a descriptor has no
+     * say over the props the example passes to `<TaskGrid />`.
      */
     const keepSession = (services: ITaskGridServiceLocator) => {
-        services.whenAvailable('datasetControl', datasetControl => {
-            datasetControl.events.addEventListener('onBeforeDestroy', () => {
-                records = services.get('taskDataProvider').getRawData();
-                userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? userQueries;
-                dependencies = services.find('dependenciesModule')?.provider.getDependencies() ?? dependencies;
-                const templateProvider = services.find('templatesModule')?.provider as MemoryTemplateDataProvider | undefined;
-                templates = templateProvider?.getTemplateSource() ?? templates;
-            });
+        if (keptGrids.has(services)) {
+            return;
+        }
+        keptGrids.add(services);
+        services.get('taskGrid').events.addEventListener('onDestroyed', () => {
+            userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? userQueries;
+            dependencies = services.find('dependenciesModule')?.provider.getDependencies() ?? dependencies;
+            const templateProvider = services.find('templatesModule')?.provider as MemoryTemplateDataProvider | undefined;
+            templates = templateProvider?.getTemplateSource() ?? templates;
         });
     };
 
@@ -161,12 +141,13 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     const onCreateTaskStrategy = ({ services, metadata }: IMemoryTaskStrategyContext) => {
         keepSession(services);
         return new MemoryTaskStrategy({
-            //seeded from what the last mount ended with, not from the fixtures
+            //seeded from what the last view ended with, not from the fixtures
             onInitialize: async provider => ({
                 rawData: records,
                 metadata: metadata,
                 columns: provider.getColumns(),
             }),
+            onDestroy: provider => records = provider.getRawData(),
             //new rows should look like a real task rather than a row of empty cells
             onGetNewTaskDefaults: () => ({
                 statuscode: 1,
@@ -288,7 +269,6 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableTaskCreation: true,
                 enableHideInactiveTasksToggle: true,
                 enableShowHierarchyToggle: true,
-                enableNavigation: true,
                 enableTaskEditing: true,
                 enableEditColumns: true,
                 enableInlineCreation: true,
@@ -296,19 +276,14 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableQuickFind: true,
                 enableTaskDeletion: true,
                 enableViewSwitcher: true,
-                enableSorting: true,
-                enableFiltering: true,
             };
             isSeeded = true;
         }
         //every later call reads the current store - kept in sync by the write-backs above, not by this
-        //function never running again. The strategy and the modules are part of what it resolves, so
-        //they always see the data this call just returned
-        return { records, metadata, fieldMapping, systemQueries, gridParameters, modules: buildModules(), onCreateTaskStrategy };
+        //function never running again
+        return { records, metadata, fieldMapping, systemQueries, gridParameters, onCreateTaskStrategy };
     };
 
-    return new MemoryTaskGridDescriptor({
-        height: options?.height ?? '600px',
-        onInitialize,
-    });
+    const descriptor = new MemoryTaskGridDescriptor({ onInitialize });
+    return { descriptor, modules, features, data };
 };

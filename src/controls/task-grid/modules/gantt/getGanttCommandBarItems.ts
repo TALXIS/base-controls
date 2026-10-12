@@ -1,4 +1,4 @@
-import { ICommandBarItemProps } from "@legacy";
+import { ICommandBarItemProps } from "@fluentui/react";
 import { IGanttServiceLocator } from "./services";
 
 /** What {@link getGanttCommandBarItems} needs. */

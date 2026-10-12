@@ -10,18 +10,18 @@ export const REOPEN_QUEUE_CODE = `const createQueueProvider = () => {
 
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
-    const state = React.useRef<IGridState>({})
     const [mountCount, setMountCount] = React.useState(0)
     const reopen = () => setMountCount(count => count + 1)
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={[{ key: 'reopen', text: 'Close and reopen', iconProps: { iconName: 'Refresh' }, onClick: reopen }]} />
-        <Grid.Root
-            key={mountCount}
-            provider={tickets}
-            modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
-            state={state.current}
-            height='360px' />
+        <DataProviderContextProvider provider={tickets}>
+            <Grid.Root
+                key={mountCount}
+                modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
+                stateKey='ticket-queue'
+                height='360px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `

@@ -165,12 +165,9 @@ export class DependenciesProvider implements IDependenciesProvider {
         return this._bySuccessor.has(taskId) || this._byPredecessor.has(taskId);
     }
 
-    //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
-    //module is built before the control exists.
+    //releases the provider's listeners when the task grid goes away
     private _registerCleanup(): void {
-        this._services.whenAvailable('datasetControl', datasetControl => {
-            datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());
-        });
+        this._services.get('taskGrid').events.addEventListener('onDestroyed', () => this.events.clearEventListeners());
     }
 
     //the tasks touched by a dependency that is in one of the two sets but not the other — which covers every way a

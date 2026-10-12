@@ -1,6 +1,6 @@
 import { EventEmitter, IEventEmitter } from '@talxis/client-libraries';
 import { GanttStatic } from 'gantt-trial';
-import { IModuleState } from '@controls/task-grid/providers/state';
+import { IModuleState, moduleState } from '@controls/task-grid/providers/state';
 import { IGanttServiceLocator } from '../../services';
 import { isWeekend } from '../../gantt-chart-config';
 import { isDayScaleVisible } from '../../gantt-zooming';
@@ -48,8 +48,7 @@ export class GanttWeekends implements IGanttWeekends {
     constructor(parameters: IGanttWeekendsParameters) {
         this._services = parameters.services;
         this._visibleByDefault = parameters.visibleByDefault;
-        this._state = parameters.services.get('taskGridServices').get('taskGridState')
-            .module<IGanttWeekendsState>(GANTT_WEEKENDS_STATE_KEY, 'view');
+        this._state = moduleState<IGanttWeekendsState>(parameters.services.get('taskGridServices'), GANTT_WEEKENDS_STATE_KEY);
         //a closure over the setting rather than a value, so changing it needs a repaint and nothing else
         this._gantt.ignore_time = date => !this.isWeekendVisible() && isWeekend(date) && isDayScaleVisible(this._gantt);
     }

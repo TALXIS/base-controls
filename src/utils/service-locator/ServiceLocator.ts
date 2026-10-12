@@ -66,6 +66,10 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
         }
     }
 
+    public unregister<TKey extends keyof TServiceMap>(key: TKey): void {
+        this._resolvers.delete(key);
+    }
+
     public destroy(): void {
         this._isDestroyed = true;
         this._resolvers.clear();

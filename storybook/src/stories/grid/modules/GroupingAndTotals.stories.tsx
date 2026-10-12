@@ -97,7 +97,9 @@ const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }
     }
 }
 
-<Grid.Root provider={timesheets} modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
+<DataProviderContextProvider provider={timesheets}>
+    <Grid.Root modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
+</DataProviderContextProvider>
 \`\`\`
 
 These rows hold their values under aliases of their own, such as \`status_group\` and \`hours_sum\`, so \`record.getValue('status')\` reads \`null\` on them. A rule that acts on an empty or unmatched value acts on them too: without the guard, this lock would also lock every group row and the totals row.

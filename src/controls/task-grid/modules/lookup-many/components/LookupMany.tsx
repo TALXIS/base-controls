@@ -1,6 +1,6 @@
 import { IDataProvider } from '@talxis/client-libraries';
 import * as React from 'react';
-import { useLocalizationService } from '@controls/task-grid/context';
+import { useTaskGridLabels } from '@controls/task-grid/context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { LookupManyComponents, ILookupManyComponents } from './components/components';
 import { LookupManyPropsContext } from './context';
@@ -24,7 +24,7 @@ export const LookupMany = (props: ILookupManyProps) => {
     const components = { ...LookupManyComponents, ...props.components };
     const defaultOptionsPromiseRef = React.useRef<Promise<any> | null>(null);
     const defaultOptionsResolveRef = React.useRef<any>(null);
-    const localizationService = useLocalizationService();
+    const localizationService = useTaskGridLabels();
     const hasBeenUnmountedRef = React.useRef(false);
     const MultiValueContainerComponent = React.useRef(components.onRenderMultiValueContainer);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);

@@ -19,7 +19,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * The memory fixtures the gantt module is developed against, with the module itself left out for now - so
- * this is the grid on its own until `onGetGanttModule` is registered again in `GanttTaskGrid`.
+ * this is the grid on its own until `features.gantt` is passed again in `GanttTaskGrid`.
  */
 export const Timeline: Story = {
     name: 'Timeline beside the grid',

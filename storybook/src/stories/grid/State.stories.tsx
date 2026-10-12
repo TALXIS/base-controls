@@ -5,16 +5,18 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ReopenQueueExample } from '../../grid/examples/stateExamples'
 
 const DESCRIPTION = `
-The \`state\` prop remembers where the user was: the cell at the top-left of the viewport, the open groups and the focused cell. Hand the same object to the next grid to put the user back.
+A grid with a \`stateKey\` remembers where the user was: the cell at the top-left of the viewport, the open groups and the focused cell. The next grid with the same \`stateKey\` puts the user back.
 
 \`\`\`tsx
-const state = React.useRef<IGridState>({})
-
-<Grid.Root provider={provider} modules={modules} state={state.current} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root stateKey='tickets' modules={modules} />
+</DataProviderContextProvider>
 \`\`\`
 
-- The grid reads \`state\` once, at mount, and writes into the same object as the user scrolls, opens groups and focuses cells. Keep the object, and it is always current.
-- It is a plain object, so you can store it as JSON and pass it back on the next visit.
+- The grid reads its state once, at mount, and writes it as the user scrolls, opens groups and focuses cells.
+- Without a \`stateKey\`, the grid keeps nothing.
+- Inside a DatasetControl, the grid keeps it per view, in the control's state. See [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl.
+- Where the state is kept is up to [**StateProvider**](?path=/docs/providers-stateprovider--overview).
 - The column layout, sorting, filtering and grouping are the provider's, not part of this state: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
 
 ## What the grid keeps

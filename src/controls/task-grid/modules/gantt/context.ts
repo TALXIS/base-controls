@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useServices } from "@controls/task-grid/context";
+import { useTaskGridRuntime } from "@controls/task-grid/context";
 import { IGanttServiceMap } from "./services";
 
 /**
@@ -7,7 +7,7 @@ import { IGanttServiceMap } from "./services";
  * @throws When the module is not registered, which is also when nothing in here should be rendering.
  */
 export const useGanttModule = () => {
-    return useServices().get('ganttModule');
+    return useTaskGridRuntime().services.get('ganttModule');
 };
 
 /** Where everything the module holds is reached, the grid's own services included. */

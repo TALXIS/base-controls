@@ -1,13 +1,11 @@
-import { ITaskGridServiceLocator } from "@controls/task-grid/services";
-import { IProjectModule } from "../interfaces";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ITaskGridFeature } from "../interfaces";
 import { IProjectStrategy, ProjectData, ProjectProvider } from "./ProjectProvider";
 
 /** Options for {@link createProjectModule}. */
 export interface IProjectModuleOptions<TData extends ProjectData = ProjectData> {
-    /** Where the project record and its dates are read from. */
-    strategy: IProjectStrategy<TData>;
-    /** The locator the builder was handed. The provider reaches the task side through it. */
-    services: ITaskGridServiceLocator;
+    /** Returns where the project record and its dates are read from. Called once per mount. */
+    onCreateStrategy: (params: ITaskGridFactoryParams) => IProjectStrategy<TData>;
 }
 
 /**
@@ -17,19 +15,18 @@ export interface IProjectModuleOptions<TData extends ProjectData = ProjectData> 
  * Only the Gantt reads it today — its project start and end markers. Registering it is what makes
  * those markers exist.
  *
+ * Pass it as `features.project`. The grid registers it as `projectModule`.
+ *
  * @example
  * ```ts
- * modules: {
- *     onGetProjectModule: ({ services }) => createProjectModule({
- *         strategy: myProjectStrategy,
- *         services,
- *     }),
- * }
+ * features={{
+ *     project: createProjectModule({ onCreateStrategy: () => myProjectStrategy }),
+ * }}
  * ```
  */
-export const createProjectModule = <TData extends ProjectData = ProjectData>(options: IProjectModuleOptions<TData>): IProjectModule<TData> => ({
-    provider: new ProjectProvider({
-        strategy: options.strategy,
-        services: options.services,
-    }),
+export const createProjectModule = <TData extends ProjectData = ProjectData>(options: IProjectModuleOptions<TData>): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = new ProjectProvider({ strategy: options.onCreateStrategy({ services }), services });
+        services.register('projectModule', () => ({ provider }));
+    },
 });

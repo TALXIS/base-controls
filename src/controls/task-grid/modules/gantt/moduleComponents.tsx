@@ -5,7 +5,7 @@ import { GanttView } from "./gantt-view";
 
 /** The defaults for {@link IGanttComponents}. */
 export const GanttComponents: IGanttComponents = {
-    onRenderView: (props) => <GanttView {...props} />,
+    onRenderView: () => <GanttView />,
     onRenderZoomSlider: () => <ZoomSliderAdapter />,
     onRenderSettingsSection: () => <GanttSettingsSection />,
 };

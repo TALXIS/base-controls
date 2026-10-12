@@ -1,37 +1,48 @@
-import { ITaskGridServiceLocator } from "@controls/task-grid/services";
-import { IDependenciesComponents, IDependenciesModule } from "../interfaces";
-import { DependenciesComponents } from "./moduleComponents";
-import { DependenciesProvider, ITaskDependencyStrategy } from "./DependenciesProvider";
+import { ColDef } from "ag-grid-community";
+import { IRecord } from "@talxis/client-libraries";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { TASK_TREE_PRIORITY } from "@controls/task-grid/module";
+import { ITaskGridFeature } from "../interfaces";
+import { DependenciesProvider, ITaskDependencyStrategy, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./DependenciesProvider";
+import { DependenciesCell } from "./dependencies-cell";
 
 /** Options for {@link createDependenciesModule}. */
 export interface IDependenciesModuleOptions {
-    /** Where the dependencies are read from. */
-    strategy: ITaskDependencyStrategy;
-    /** The locator the builder was handed. The provider reaches the task side through it. */
-    services: ITaskGridServiceLocator;
-    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
-    components?: Partial<IDependenciesComponents>;
+    /** Returns where the dependencies are read from. Called once per mount. */
+    onCreateStrategy: (params: ITaskGridFactoryParams) => ITaskDependencyStrategy;
 }
+
+const DEPENDENCY_COLUMN_NAMES = new Set([PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME]);
+
+const onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
+    for (const colDef of columnDefs.filter(colDef => DEPENDENCY_COLUMN_NAMES.has(colDef.colId!))) {
+        colDef.cellRenderer = DependenciesCell;
+        colDef.editable = false;
+        colDef.context = { ...colDef.context, isLocked: true };
+    }
+};
 
 /**
  * Builds the dependencies module: you supply where dependencies are read from, this brings the provider
- * the grid asks per task and the cell renderer that shows them.
+ * the grid asks per task and the predecessors and successors columns that show them.
  *
- * Assign it to a `modules` key — `modules.onGetDependenciesModule` on a shipped descriptor, or
- * `onGetModules` on a descriptor of your own. Which column *renders* dependencies is driven by the
- * `TaskDependencies` custom control on the column itself.
+ * Pass it as `features.dependencies`. The grid registers it as `dependenciesModule`.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetDependenciesModule: ({ services }) => createDependenciesModule({
- *         strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES, services }),
- *         services,
+ * features={{
+ *     dependencies: createDependenciesModule({
+ *         onCreateStrategy: ({ services }) => new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES, services }),
  *     }),
- * }
+ * }}
  * ```
  */
-export const createDependenciesModule = (options: IDependenciesModuleOptions): IDependenciesModule => ({
-    provider: new DependenciesProvider({ strategy: options.strategy, services: options.services }),
-    components: { ...DependenciesComponents, ...options.components },
+export const createDependenciesModule = (options: IDependenciesModuleOptions): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = new DependenciesProvider({ strategy: options.onCreateStrategy({ services }), services });
+        services.register('dependenciesModule', () => ({ provider }));
+    },
+    onRegister: runtime => {
+        runtime.services.get('columns').registerColumnDefinitions(onColumnDefinitions, TASK_TREE_PRIORITY + 1);
+    },
 });

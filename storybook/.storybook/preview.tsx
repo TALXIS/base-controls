@@ -2,7 +2,7 @@ import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider, ThemeGenerator, ThemeProvider } from '@talxis/base-controls';
+import { PcfContextProvider, StateProvider, ThemeGenerator, ThemeProvider } from '@talxis/base-controls';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
@@ -20,25 +20,27 @@ const preview: Preview = {
   decorators: [
     (Story) => (
       <PcfContextProvider>
-        <StorybookProviders>
-          <>
-            <style>
-              {`
-                .sbdocs-content p,
-                .sbdocs-content li {
-                  font-size: 16px;
-                  line-height: 1.65;
-                }
+        <StateProvider>
+          <StorybookProviders>
+            <>
+              <style>
+                {`
+                  .sbdocs-content p,
+                  .sbdocs-content li {
+                    font-size: 16px;
+                    line-height: 1.65;
+                  }
 
-                .form-strategy-hidden-preview.sbdocs-preview,
-                .docs-hidden-preview.sbdocs-preview {
-                  display: none;
-                }
-              `}
-            </style>
-            <Story />
-          </>
-        </StorybookProviders>
+                  .form-strategy-hidden-preview.sbdocs-preview,
+                  .docs-hidden-preview.sbdocs-preview {
+                    display: none;
+                  }
+                `}
+              </style>
+              <Story />
+            </>
+          </StorybookProviders>
+        </StateProvider>
       </PcfContextProvider>
     ),
   ],
@@ -99,6 +101,22 @@ const preview: Preview = {
               'Custom Components',
               ['Form Context', 'Overview', 'Samples'],
             ],
+          ],
+          'DatasetControl',
+          [
+            'Get started',
+            ['Overview', 'Loading data', 'Props and events'],
+            'Layout',
+            ['Overview'],
+            'Parts',
+            ['Overview', 'Views', 'Ribbon', 'Quick find', 'Edit columns', 'Notifications and empty records', 'Paging'],
+            'Localization',
+            ['Overview'],
+            'State',
+            ['Overview'],
+            'Customization',
+            ['Appearance', 'Your own collection view', 'Extending'],
+            'Dev',
           ],
           'Task Grid',
           [

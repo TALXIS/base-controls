@@ -1,19 +1,18 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` comes from the sandbox. */
-export const MODULE_CHECKLIST_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
-const getModules: GetModules = (data) => ({
-    onGetChecklistModule: ({ services }) => createChecklistModule({
-        //where the items are read from - the grid asks for the tasks it loaded, and the provider keeps
-        //what comes back per task, so a cell can ask about its own without another read
-        strategy: new MemoryChecklistStrategy({ items: data.checklist, services }),
-        services,
+/** Seed snippet of the example. `descriptor` and `data` come from the sandbox. */
+export const MODULE_CHECKLIST_CODE = `/** The features this grid runs with. Anything not listed here is off. */
+const features: ITaskGridFeatures = {
+    checklist: createChecklistModule({
+        //where the items are read from
+        onCreateStrategy: ({ services }) => new MemoryChecklistStrategy({ items: data.checklist, services }),
     }),
-})
+}
 
 const TaskGridExample = () => <TaskGrid
-    descriptor={descriptor} />
+    descriptor={descriptor}
+    features={features} />
 `
 
-export const ModuleChecklistExample = () => <TaskGridExampleRunner modules={['checklist']} seedCode={MODULE_CHECKLIST_CODE} />
+export const ModuleChecklistExample = () => <TaskGridExampleRunner features={['checklist']} seedCode={MODULE_CHECKLIST_CODE} />

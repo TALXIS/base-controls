@@ -1,5 +1,4 @@
 import { GanttStatic } from "gantt-trial";
-import { IGanttServiceLocator } from "../services";
 
 type ScrollSource = 'grid' | 'chart';
 
@@ -7,27 +6,37 @@ type ScrollSource = 'grid' | 'chart';
 const ECHO_WINDOW_MS = 100;
 
 export interface IGanttScrollSyncParameters {
-    /** Where the chart and the grid's viewport are reached. */
-    services: IGanttServiceLocator;
+    chart: GanttStatic;
+    /** The element the grid's rows scroll in. */
+    gridViewport: HTMLElement;
 }
 
 /**
  * Keeps the two halves of the split view scrolled to the same row.
  *
  * Only the side just written to ignores its next scroll — a shared guard would drop every second event of
- * a continuous scroll. Built after `gantt.init`: `$scroll_ver` is one of the elements the chart draws.
+ * a continuous scroll.
  */
 export class GanttScrollSync {
-    private _services: IGanttServiceLocator;
+    private _chartViewport: HTMLElement;
+    private _gridViewport: HTMLElement;
     private _echoUntil: Record<ScrollSource, number> = { grid: 0, chart: 0 };
 
     constructor(parameters: IGanttScrollSyncParameters) {
-        this._services = parameters.services;
-        this._chart.$scroll_ver.addEventListener('scroll', event => this._onScrolled('chart', event));
-        this._services.get('taskGridServices').whenAvailable('gridApi', () => {
-            this._getGridViewport().addEventListener('scroll', event => this._onScrolled('grid', event));
-        });
+        this._chartViewport = parameters.chart.$scroll_ver;
+        this._gridViewport = parameters.gridViewport;
+        this._chartViewport.addEventListener('scroll', this._onChartScrolled);
+        this._gridViewport.addEventListener('scroll', this._onGridScrolled);
     }
+
+    public destroy(): void {
+        this._chartViewport.removeEventListener('scroll', this._onChartScrolled);
+        this._gridViewport.removeEventListener('scroll', this._onGridScrolled);
+    }
+
+    private _onChartScrolled = (event: Event): void => this._onScrolled('chart', event);
+
+    private _onGridScrolled = (event: Event): void => this._onScrolled('grid', event);
 
     private _onScrolled(source: ScrollSource, event: Event): void {
         if (Date.now() < this._echoUntil[source]) {
@@ -36,25 +45,6 @@ export class GanttScrollSync {
         }
         const target: ScrollSource = source === 'grid' ? 'chart' : 'grid';
         this._echoUntil[target] = Date.now() + ECHO_WINDOW_MS;
-        this._getElement(target).scrollTop = (event.target as Element).scrollTop;
-    }
-
-    private _getElement(source: ScrollSource): HTMLElement {
-        return source === 'chart' ? this._chart.$scroll_ver : this._getGridViewport();
-    }
-
-    private _getGridViewport(): HTMLElement {
-        const controlId = this._services.get('taskGridServices').get('datasetControl').getControlId();
-        const rootElement = document.getElementById(`${controlId}-root`);
-        const viewport = rootElement?.querySelector('.ag-grid-viewport');
-        if (!(viewport instanceof HTMLElement)) {
-            throw new Error('AgGrid viewport not found');
-        }
-
-        return viewport;
-    }
-
-    private get _chart(): GanttStatic {
-        return this._services.get('ganttChart');
+        (target === 'chart' ? this._chartViewport : this._gridViewport).scrollTop = (event.target as Element).scrollTop;
     }
 }

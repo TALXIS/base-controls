@@ -71,43 +71,44 @@ const GridExample = () => {
         cells.render()
     }
 
-    return <Grid.Root
-        provider={provider}
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-        enableOptionSetColors
-        colDefs={{
-            products: { hide: true },
-            probability: {
-                headerName: 'Win chance',
-                cellRenderer: WinChanceCell,
-                initialWidth: 220,
-                context: {
-                    alignment: 'left',
-                    cell: {
-                        onGetLoading: (result, { record }) => {
-                            result.isLoading = forecasting.has(record.getRecordId())
-                        },
-                        onGetLock: (result, { record }) => {
-                            result.isLocked = isClosed(record)
-                        },
-                        onGetValidation: (result, { record }) => {
-                            const chance = Number(record.getValue('probability') ?? 0)
-                            if (chance < 0 || chance > 100) {
-                                result.error = true
-                                result.errorMessage = 'A win chance is between 0 and 100 %.'
-                            }
-                        },
-                        onGetCommands: (result, { record }) => {
-                            if (!isClosed(record)) {
-                                result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
-                            }
+    return <DataProviderContextProvider provider={provider}>
+        <Grid.Root
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            enableOptionSetColors
+            colDefs={{
+                products: { hide: true },
+                probability: {
+                    headerName: 'Win chance',
+                    cellRenderer: WinChanceCell,
+                    initialWidth: 220,
+                    context: {
+                        alignment: 'left',
+                        cell: {
+                            onGetLoading: (result, { record }) => {
+                                result.isLoading = forecasting.has(record.getRecordId())
+                            },
+                            onGetLock: (result, { record }) => {
+                                result.isLocked = isClosed(record)
+                            },
+                            onGetValidation: (result, { record }) => {
+                                const chance = Number(record.getValue('probability') ?? 0)
+                                if (chance < 0 || chance > 100) {
+                                    result.error = true
+                                    result.errorMessage = 'A win chance is between 0 and 100 %.'
+                                }
+                            },
+                            onGetCommands: (result, { record }) => {
+                                if (!isClosed(record)) {
+                                    result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
+                                }
+                            },
                         },
                     },
                 },
-            },
-        }}
-        onGridReady={gridRuntime => { runtime.current = gridRuntime }}
-        height='440px' />
+            }}
+            onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+            height='440px' />
+    </DataProviderContextProvider>
 }
 `
 
@@ -137,18 +138,19 @@ const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
 
 const CaptionedHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={CAPTIONED_HEADER} />
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule(),
-    }}
-    colDefs={{
-        price: { headerComponent: CaptionedHeader },
-        instock: { headerComponent: CaptionedHeader },
-        reorderlevel: { headerComponent: CaptionedHeader },
-    }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            sorting: createSortingModule(),
+        }}
+        colDefs={{
+            price: { headerComponent: CaptionedHeader },
+            instock: { headerComponent: CaptionedHeader },
+            reorderlevel: { headerComponent: CaptionedHeader },
+        }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const PIPELINE_HEADER_CODE = `const styles = mergeStyleSets({
@@ -206,15 +208,16 @@ const GridExample = () => {
         })
     }, [])
 
-    return <Grid.Root
-        provider={provider}
-        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-        colDefs={{
-            value: { headerComponent: SummaryHeader },
-            probability: { headerComponent: SummaryHeader },
-        }}
-        onGridReady={gridRuntime => { runtime.current = gridRuntime }}
-        height='440px' />
+    return <DataProviderContextProvider provider={provider}>
+        <Grid.Root
+            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+            colDefs={{
+                value: { headerComponent: SummaryHeader },
+                probability: { headerComponent: SummaryHeader },
+            }}
+            onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+            height='440px' />
+    </DataProviderContextProvider>
 }
 `
 
@@ -230,12 +233,13 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
-    labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
-    components={COMPONENTS}
-    height='360px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule() }}
+        labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
+        components={COMPONENTS}
+        height='360px' />
+</DataProviderContextProvider>
 `
 
 export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({
@@ -258,11 +262,12 @@ const COMPONENTS: IGridComponents = {
 
 const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
     <CommandBar items={[{ key: 'refresh', text: 'Check stock again', iconProps: { iconName: 'Refresh' }, onClick: () => { provider.refresh() } }]} />
-    <Grid.Root
-        provider={provider}
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        components={COMPONENTS}
-        height='400px' />
+    <DataProviderContextProvider provider={provider}>
+        <Grid.Root
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            components={COMPONENTS}
+            height='400px' />
+    </DataProviderContextProvider>
 </Stack>
 `
 
@@ -281,14 +286,15 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createServerSideRowModelModule(),
-        grouping: createGroupingModule(),
-    }}
-    components={COMPONENTS}
-    height='420px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createServerSideRowModelModule(),
+            grouping: createGroupingModule(),
+        }}
+        components={COMPONENTS}
+        height='420px' />
+</DataProviderContextProvider>
 `
 
 export const ERROR_ROWS_CODE = `const RetryMessageBar = (props: IMessageBarProps) => {
@@ -311,14 +317,15 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createServerSideRowModelModule(),
-        grouping: createGroupingModule(),
-    }}
-    components={COMPONENTS}
-    height='420px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createServerSideRowModelModule(),
+            grouping: createGroupingModule(),
+        }}
+        components={COMPONENTS}
+        height='420px' />
+</DataProviderContextProvider>
 `
 
 export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
@@ -337,13 +344,14 @@ const SAVE_STATUS: IRecordSaveUiComponents = {
 
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-    colDefs={{
-        [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
-    }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+        colDefs={{
+            [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
+        }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 const WAREHOUSE_DELAY = 2500
@@ -464,20 +472,21 @@ const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.da
     <EditingCell.Editor {...props} components={HTML_EDITOR} />
 </Grid.Cell.Field>
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-    colDefs={{
-        description: {
-            cellRenderer: HtmlCell,
-            cellEditor: HtmlEditor,
-            cellEditorPopup: true,
-            autoHeight: true,
-            //Enter starts a new line in the editor rather than closing it
-            suppressKeyboardEvent: params => params.editing && params.event.key === 'Enter',
-        },
-    }}
-    height='520px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+        colDefs={{
+            description: {
+                cellRenderer: HtmlCell,
+                cellEditor: HtmlEditor,
+                cellEditorPopup: true,
+                autoHeight: true,
+                //Enter starts a new line in the editor rather than closing it
+                suppressKeyboardEvent: params => params.editing && params.event.key === 'Enter',
+            },
+        }}
+        height='520px' />
+</DataProviderContextProvider>
 `
 
 const DESCRIPTIONS: { [name: string]: string } = {

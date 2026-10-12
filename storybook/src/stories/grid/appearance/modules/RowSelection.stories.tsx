@@ -10,10 +10,11 @@ The row selection module adds a checkbox column of its own, keyed \`SELECTION_CO
 \`\`\`tsx
 const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
-<Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
-    colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
+        colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
+</DataProviderContextProvider>
 \`\`\`
 
 - Every key and part is optional: what you leave out keeps its default.

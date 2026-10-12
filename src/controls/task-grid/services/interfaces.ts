@@ -3,19 +3,18 @@ import { IPcfContext } from "@interfaces";
 //implementation into the bundle
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { ITaskGridLabels } from "@controls/task-grid/labels";
-import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@controls/task-grid/interfaces";
+import type { INativeColumns, ITaskGridDescriptor, ITaskGridParameters } from "@controls/task-grid/interfaces";
+import type { ITaskGridRuntime } from "@controls/task-grid/runtime";
+import type { IDatasetControlRuntime } from "@controls/dataset-control";
 import type { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import type { ITaskExpansionProvider } from "@controls/task-grid/providers/expansion";
 import type { ISavedQueryDataProvider } from "@controls/task-grid/providers/saved-query";
-import type { ITaskGridStateProvider } from "@controls/task-grid/providers/state";
-import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@controls/task-grid/modules/interfaces";
-import type { GridApi, IGridCustomizer } from "@controls/task-grid/components/grid/grid-customizer/GridCustomizer";
-import type { ITaskGridComponents } from "@controls/task-grid/components/components";
+import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@controls/task-grid/modules/interfaces";
 
 /**
  * Every dependency the grid can hand out, keyed by name and typed by its contract.
  *
- * The first group is always there. The second is the modules the descriptor resolved, each under its own
+ * The first group is always there. The second is the modules the grid was given, each under its own
  * key — leave a module out and its key is absent, which is what `find` is for. What a module brings is
  * reached through the module itself (`find('templatesModule')?.provider`), so there is one entry per
  * feature rather than two.
@@ -23,8 +22,10 @@ import type { ITaskGridComponents } from "@controls/task-grid/components/compone
 export interface ITaskGridServiceMap {
     /** The PCF context the grid renders in: navigation, formatting, dialogs. */
     pcfContext: IPcfContext;
-    /** What the grid carries across a remount: the view to open on, and what modules keep. */
-    taskGridState: ITaskGridStateProvider;
+    /** The task grid's settings, view actions and lifetime. */
+    taskGrid: ITaskGridRuntime;
+    /** The DatasetControl the task grid runs in: the provider shown, the views and the loading. */
+    datasetControl: IDatasetControlRuntime;
     /** Resolves every UI label. */
     localizationService: ILocalizationService<ITaskGridLabels>;
     /** The descriptor this grid was built from. */
@@ -33,23 +34,9 @@ export interface ITaskGridServiceMap {
     gridParameters: ITaskGridParameters;
     /** The column roles the descriptor mapped, plus the grid's own path column. */
     nativeColumns: INativeColumns;
-    /** The control instance backing the current mount. */
-    datasetControl: ITaskGridDatasetControl;
-    /** The replaceable parts of the grid's UI, as the caller's `components` prop resolved them. */
-    components: ITaskGridComponents;
-    /**
-     * The grid's own AG Grid configuration: column definitions, row class rules, cell components.
-     * Registered with the modules, so it is there before the grid is.
-     */
-    gridCustomizer: IGridCustomizer;
-    /**
-     * The raw AG Grid api. Registered the moment AG Grid hands one over, which is after everything else —
-     * so wait for it with `whenAvailable` rather than resolving it in a constructor.
-     */
-    gridApi: GridApi;
-    /** The grid's data layer: the tasks, the hierarchy, and every task operation. */
+    /** The tasks of the view loaded last; replaced with every view, so reach it when used. */
     taskDataProvider: ITaskDataProvider;
-    /** Which rows are expanded. The one authority both halves of the split view mirror. */
+    /** Which rows are expanded in the view; replaced with every view, like the task provider. */
     taskExpansion: ITaskExpansionProvider;
     /** The views the grid runs on. */
     savedQueryDataProvider: ISavedQueryDataProvider;
@@ -59,13 +46,11 @@ export interface ITaskGridServiceMap {
     templatesModule: ITemplateModule;
     /** The custom-columns module, UI included. Present when it is registered. */
     customColumnsModule: ICustomColumnsModule;
-    /** The grid-customizer module. Present when it is registered. */
-    gridCustomizerModule: IGridCustomizerModule;
     /** The lookup-many module. Present when it is registered. */
     lookupManyModule: ILookupManyModule;
-    /** The dependencies module, cell renderer included. Present when it is registered. */
+    /** The dependencies module. Present when it is registered. */
     dependenciesModule: IDependenciesModule;
-    /** The checklist module, cell renderer included. Present when it is registered. */
+    /** The checklist module. Present when it is registered. */
     checklistModule: IChecklistModule;
     /** The Gantt module, timeline included. Present when it is registered. */
     ganttModule: IGanttModule;

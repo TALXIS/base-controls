@@ -1,8 +1,9 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 import { ITaskDataProvider } from "../task";
+import { moduleState } from "../state";
 
-/** What the module's state slice is stored under. Part of what a session carries, so it is fixed. */
+/** What the expansion slice is stored under. Part of what a personal view saves, so it is fixed. */
 export const TASK_EXPANSION_STATE_KEY = 'expansion';
 
 /** One change to what is expanded, as the two halves of the split view receive it. */
@@ -26,7 +27,7 @@ export interface ITaskExpansionEvents {
     onExpansionChanged: (delta: ITaskExpansionDelta) => void;
 }
 
-/** What a session remembers about expansion. */
+/** What a view remembers about expansion. */
 export interface ITaskExpansionState {
     /** The records the user left expanded. */
     expandedIds?: string[];
@@ -72,7 +73,7 @@ export interface ITaskExpansionProvider {
 }
 
 export interface ITaskExpansionParameters {
-    /** Where the records, the hierarchy and the session's state are reached. */
+    /** Where the records, the hierarchy and the view's state are reached. */
     services: ITaskGridServiceLocator;
 }
 
@@ -172,7 +173,7 @@ export class TaskExpansionProvider implements ITaskExpansionProvider {
     }
 
     private get _state() {
-        return this._services.get('taskGridState').module<ITaskExpansionState>(TASK_EXPANSION_STATE_KEY, 'session');
+        return moduleState<ITaskExpansionState>(this._services, TASK_EXPANSION_STATE_KEY);
     }
 
     private get _taskDataProvider(): ITaskDataProvider {

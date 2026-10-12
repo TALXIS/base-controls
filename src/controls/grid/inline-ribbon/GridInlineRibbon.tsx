@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Ribbon } from "@controls/dataset-control/ribbon";
+import { Ribbon as LegacyRibbon } from "@legacy/ribbon";
 import { IGridInlineRibbon } from "./interfaces"
 import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "./GridInlineRibbonModel";
 import { useEventEmitter } from "@hooks/useEventEmitter";
@@ -63,7 +63,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
 
     }, (props) => {
         return <div {...props.container}>
-            <Ribbon
+            <LegacyRibbon
                 context={{
                     ...context,
                     mode: {

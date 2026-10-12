@@ -1,116 +1,65 @@
-import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react"
-import { usePcfContext } from "@utils";
-import * as React from "react"
-import { getViewSwitcherStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@controls/task-grid/context";
+import { useState } from "react";
+import { ContextualMenuItemType, IButtonProps, IContextualMenuItem } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
-import { useSurfaceMenuProps } from "@ui";
-import { withButtonLoading } from "@legacy";
+import { DatasetControl, useRequiredDatasetControlRuntime, ViewSwitcherUiComponents } from "@controls/dataset-control";
+import { useTaskDataProvider, useTaskGridLabels, useTaskGridRuntime } from "@controls/task-grid/context";
+import { IUserQueryDataProviderEvents } from "@controls/task-grid/modules/interfaces";
 
-const CommandBarButton = withButtonLoading(CommandBarButtonBase);
-
-/** The view dropdown. Lists the personal views and their commands when the user-queries module is registered. */
+/** The views, with the personal-view commands below them when the user-queries feature is on. */
 export const ViewSwitcher = () => {
-    const localizationService = useLocalizationService();
-    const datasetControl = useDatasetControl();
-    const services = useServices();
-    const savedQueryDataProvider = services.get('savedQueryDataProvider');
-    const userQueriesModule = services.find('userQueriesModule');
-    const taskDataProvider = useTaskDataProvider();
-    const systemQueries = savedQueryDataProvider.getSystemQueries();
-    const userQueries = savedQueryDataProvider.getUserQueries();
-    const currentQuery = savedQueryDataProvider.getCurrentQuery();
-    const theme = useTheme();
-    const styles = React.useMemo(() => getViewSwitcherStyles(theme), []);
-    const [showViewManagerDialog, setShowViewManagerDialog] = React.useState(false);
-    const [showCreateViewDialog, setShowCreateViewDialog] = React.useState(false);
-    const [isLoading, setIsLoading] = React.useState(false);
+    const runtime = useTaskGridRuntime();
+    const datasetControl = useRequiredDatasetControlRuntime();
+    const provider = useTaskDataProvider();
+    const labels = useTaskGridLabels();
+    const userQueries = runtime.services.find('userQueriesModule');
+    const [dialog, setDialog] = useState<'create' | 'manage'>();
+    const [isSaving, setIsSaving] = useState(false);
 
-    useEventEmitter(userQueriesModule?.provider.events, 'onBeforeUserQueryUpdated', () => {
-        setIsLoading(true);
-    });
-    useEventEmitter(userQueriesModule?.provider.events, 'onAfterUserQueryUpdated', () => {
-        setIsLoading(false);
-    });
+    useEventEmitter<IUserQueryDataProviderEvents>(userQueries?.provider.events, 'onBeforeUserQueryUpdated', () => setIsSaving(true));
+    useEventEmitter<IUserQueryDataProviderEvents>(userQueries?.provider.events, 'onAfterUserQueryUpdated', () => setIsSaving(false));
 
-    const isQueryIdCurrent = (queryId: string): boolean => {
-        return currentQuery.id === queryId;
-    }
+    const saveChanges = () => {
+        const query = runtime.services.get('savedQueryDataProvider').getSavedQuery(datasetControl.getViewId()!);
+        userQueries?.provider.updateFromGridState(query, provider);
+    };
 
-    const getViewSwitcherItems = (): IContextualMenuItem[] => {
-        const userQueriesEnabled = !!userQueriesModule;
-        const isViewManagerEnabled = userQueriesModule?.enableQueryManager ?? false;
-        const isSaveAsNewEnabled = userQueriesModule?.enableSaveAsNewQuery ?? false;
-        const isSaveEnabled = userQueriesModule?.enableSaveQueryChanges ?? false;
-
-        const mapQuery = (query: { id: string; name: string }): IContextualMenuItem => ({
-            key: query.id,
-            text: query.name,
-            className: isQueryIdCurrent(query.id) ? styles.selectedViewItem : undefined,
-            onClick: () => datasetControl.changeSavedQuery(query.id)
-        });
-
-        return [
-            ...(userQueriesEnabled && userQueries.length > 0 ? [{
-                key: 'userViewHeader',
-                itemType: ContextualMenuItemType.Header,
-                iconProps: { iconName: 'ViewList' },
-                text: localizationService.getLocalizedString('myViews'),
+    const getCommands = (): IContextualMenuItem[] => {
+        if (!userQueries) {
+            return [];
+        }
+        const viewId = datasetControl.getViewId();
+        const commands: IContextualMenuItem[] = [
+            ...(userQueries.enableSaveAsNewQuery ? [{
+                key: 'saveNewView',
+                text: labels.getLocalizedString('saveAsNew'),
+                iconProps: { iconName: 'SaveAs' },
+                onClick: () => setDialog('create'),
             }] : []),
-            ...(userQueriesEnabled ? userQueries.map(mapQuery) : []),
-            {
-                key: 'systemViewHeader',
-                itemType: ContextualMenuItemType.Header,
-                iconProps: { iconName: 'ViewList' },
-                text: localizationService.getLocalizedString('systemViews'),
-            },
-            ...systemQueries.map(mapQuery),
-            ...(userQueriesEnabled ? [
-                {
-                    key: 'viewsDivider',
-                    itemType: ContextualMenuItemType.Divider
-                },
-                ...(isSaveAsNewEnabled ? [
-                {
-                    key: 'saveNewView',
-                    text: localizationService.getLocalizedString('saveAsNew'),
-                    iconProps: { iconName: 'SaveAs' },
-                    onClick: () => setShowCreateViewDialog(true)
-                }] : []),
-                ...(userQueriesModule?.provider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
-                    key: 'saveExistingView',
-                    text: localizationService.getLocalizedString('saveExisting'),
-                    iconProps: { iconName: 'Save' },
-                    onClick: async () => {
-                        userQueriesModule?.provider.updateFromGridState(currentQuery, taskDataProvider);
-                    }
-                }] : []),
-                ...(isViewManagerEnabled ? [
-                {
-                    key: 'manageView',
-                    text: localizationService.getLocalizedString('manageViews'),
-                    iconProps: { iconName: 'Settings' },
-                    onClick: () => setShowViewManagerDialog(true)
-                }
-            ] : [])
-            ] : [])
+            ...(userQueries.enableSaveQueryChanges && viewId && userQueries.provider.isUserQuery(viewId) ? [{
+                key: 'saveExistingView',
+                text: labels.getLocalizedString('saveExisting'),
+                iconProps: { iconName: 'Save' },
+                onClick: saveChanges,
+            }] : []),
+            ...(userQueries.enableQueryManager ? [{
+                key: 'manageView',
+                text: labels.getLocalizedString('manageViews'),
+                iconProps: { iconName: 'Settings' },
+                onClick: () => setDialog('manage'),
+            }] : []),
         ];
-    }
-    const menuProps = useSurfaceMenuProps({ items: getViewSwitcherItems() });
+        return commands.length === 0 ? [] : [{ key: 'viewsDivider', itemType: ContextualMenuItemType.Divider }, ...commands];
+    };
+
+    const renderButton = (props: IButtonProps) => ViewSwitcherUiComponents.onRenderButton({
+        ...props,
+        disabled: isSaving || provider.isLoading(),
+        menuProps: props.menuProps && { ...props.menuProps, items: [...props.menuProps.items, ...getCommands()] },
+    });
 
     return <>
-        <CommandBarButton
-            isLoading={isLoading}
-            disabled={taskDataProvider.isLoading()}
-            styles={{
-                label: styles.commandBarButtonLabel,
-                menuIcon: styles.menuIcon,
-                menuIconExpanded: styles.menuIconExpanded
-            }}
-            menuProps={menuProps} text={currentQuery.name} />
-        {showCreateViewDialog && userQueriesModule
-            && userQueriesModule.components.onRenderCreateView({ onDismiss: () => setShowCreateViewDialog(false) })}
-        {showViewManagerDialog && userQueriesModule
-            && userQueriesModule.components.onRenderViewManager({ onDismiss: () => setShowViewManagerDialog(false) })}
-    </>
-}
+        <DatasetControl.ViewSwitcher components={{ onRenderButton: renderButton }} />
+        {dialog === 'create' && userQueries?.components.onRenderCreateView({ onDismiss: () => setDialog(undefined) })}
+        {dialog === 'manage' && userQueries?.components.onRenderViewManager({ onDismiss: () => setDialog(undefined) })}
+    </>;
+};

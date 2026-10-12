@@ -10,10 +10,11 @@ The editing module adds two columns of its own: one a row reports its save in, k
 \`\`\`tsx
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
-<Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-    colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRenderer: SaveStatusCell } }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+        colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRenderer: SaveStatusCell } }} />
+</DataProviderContextProvider>
 \`\`\`
 
 - Every key and part is optional: what you leave out keeps its default.

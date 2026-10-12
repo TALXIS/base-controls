@@ -31,12 +31,13 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
-            onGridReady={runtime => { runtimeRef.current = runtime }}
-            onColumnsChanged={columns => setOrder(describeOrder(columns))}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
+                onGridReady={runtime => { runtimeRef.current = runtime }}
+                onColumnsChanged={columns => setOrder(describeOrder(columns))}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -72,12 +73,13 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
-            enableOptionSetColors
-            onGridReady={runtime => { runtimeRef.current = runtime }}
-            height='400px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
+                enableOptionSetColors
+                onGridReady={runtime => { runtimeRef.current = runtime }}
+                height='400px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `

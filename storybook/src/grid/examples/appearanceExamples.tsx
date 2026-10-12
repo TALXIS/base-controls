@@ -20,29 +20,30 @@ const getUrgency = (ticket: IRecord) => {
     return hoursLeft < AT_RISK_HOURS ? AT_RISK : undefined
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule(),
-    }}
-    colDefs={{
-        duedate: {
-            context: {
-                cell: {
-                    onGetTheme: (theme, { record }) => {
-                        const urgency = getUrgency(record)
-                        if (urgency) {
-                            theme.colors.background = urgency.background
-                            theme.colors.text = urgency.text
-                        }
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            sorting: createSortingModule(),
+        }}
+        colDefs={{
+            duedate: {
+                context: {
+                    cell: {
+                        onGetTheme: (theme, { record }) => {
+                            const urgency = getUrgency(record)
+                            if (urgency) {
+                                theme.colors.background = urgency.background
+                                theme.colors.text = urgency.text
+                            }
+                        },
                     },
                 },
             },
-        },
-    }}
-    enableOptionSetColors
-    height='440px' />
+        }}
+        enableOptionSetColors
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
@@ -61,18 +62,19 @@ const escalatedTicketsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        editing: createEditingModule(),
-        grouping: createGroupingModule(),
-        custom: [escalatedTicketsModule],
-    }}
-    colDefs={{
-        escalated: { context: { cell: { oneClickEdit: true } } },
-    }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            editing: createEditingModule(),
+            grouping: createGroupingModule(),
+            custom: [escalatedTicketsModule],
+        }}
+        colDefs={{
+            escalated: { context: { cell: { oneClickEdit: true } } },
+        }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const THEME_EDIT_CODE = `const MONOSPACE = 'Consolas, "Courier New", monospace'
@@ -81,13 +83,14 @@ const toMonospace = (theme: ITheme) => {
     theme.fonts.medium = { ...theme.fonts.medium, fontFamily: MONOSPACE }
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-    colDefs={{
-        ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
-    }}
-    height='420px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+        colDefs={{
+            ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
+        }}
+        height='420px' />
+</DataProviderContextProvider>
 `
 
 export const DENSITY_CODE = `const DENSITIES = [
@@ -112,14 +115,15 @@ const GridExample = () => {
             <Toggle inlineLabel label='Option set colours' checked={hasOptionSetColors} onChange={(_, checked) => setHasOptionSetColors(!!checked)} />
         </Stack>
         {/* the grid reads these at mount */}
-        <Grid.Root
-            key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            rowHeight={rowHeight}
-            enableZebra={isZebra}
-            enableOptionSetColors={hasOptionSetColors}
-            height='440px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
+                modules={{ rowModel: createClientSideRowModelModule() }}
+                rowHeight={rowHeight}
+                enableZebra={isZebra}
+                enableOptionSetColors={hasOptionSetColors}
+                height='440px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -139,13 +143,14 @@ const columnLinesModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        custom: [columnLinesModule],
-    }}
-    height='360px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            custom: [columnLinesModule],
+        }}
+        height='360px' />
+</DataProviderContextProvider>
 `
 
 export const HEADER_COLOURS_CODE = `const CHANGED = '#fff4ce'
@@ -209,12 +214,13 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
-            colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
-            onGridReady={gridRuntime => runtime.current = gridRuntime}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
+                colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
+                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -279,28 +285,29 @@ const czechTotals = createAggregationModule({
     },
 })
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        editing: createEditingModule(),
-        sorting: czechSorting,
-        filtering: czechFiltering,
-        grouping: czechGrouping,
-        aggregation: czechTotals,
-    }}
-    labels={CZECH_LABELS}
-    colDefs={{
-        employee: { context: { isLocked: true } },
-    }}
-    rowSettings={{
-        onGetLock: (result, { record }) => {
-            if (Number(record.getValue('status')) === APPROVED) {
-                result.isLocked = true
-            }
-        },
-    }}
-    height='460px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            editing: createEditingModule(),
+            sorting: czechSorting,
+            filtering: czechFiltering,
+            grouping: czechGrouping,
+            aggregation: czechTotals,
+        }}
+        labels={CZECH_LABELS}
+        colDefs={{
+            employee: { context: { isLocked: true } },
+        }}
+        rowSettings={{
+            onGetLock: (result, { record }) => {
+                if (Number(record.getValue('status')) === APPROVED) {
+                    result.isLocked = true
+                }
+            },
+        }}
+        height='460px' />
+</DataProviderContextProvider>
 `
 
 export const SpotBreachesExample = () => <GridExampleRunner seedCode={BREACH_DEADLINES_CODE} dataset='tickets' />

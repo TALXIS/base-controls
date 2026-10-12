@@ -50,7 +50,9 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} farItems={[rowsSlider]} />
-        <Grid.Root provider={lines} modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
+        <DataProviderContextProvider provider={lines}>
+            <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -65,7 +67,9 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
         <div className={styles.container} style={{ height: containerHeight }}>
-            <Grid.Root provider={provider} modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
+            <DataProviderContextProvider provider={provider}>
+                <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
+            </DataProviderContextProvider>
         </div>
     </Stack>
 }
@@ -114,25 +118,26 @@ const GridExample = () => {
         </Stack>
         <div className={styles.layout}>
             <div className={styles.grid}>
-                <Grid.Root
-                    //the modules are read at mount, so auto-save mounts the grid again
-                    key={mountCount + String(isAutoSaveOn)}
-                    provider={provider}
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
-                    height='440px'
-                    onGridReady={() => log('onGridReady')}
-                    onDestroyed={() => log('onDestroyed')}
-                    onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
-                    onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
-                    onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
-                    onBeforeRecordSaved={record => log('onBeforeRecordSaved', ticketOf(record))}
-                    onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
-                    onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
-                    onError={message => log('onError', message)}
-                    onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
-                    onRowClicked={record => log('onRowClicked', ticketOf(record))}
-                    onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}
-                    onColumnsChanged={columns => log('onColumnsChanged', columns.length + ' columns written back')} />
+                <DataProviderContextProvider provider={provider}>
+                    <Grid.Root
+                        //the modules are read at mount, so auto-save mounts the grid again
+                        key={mountCount + String(isAutoSaveOn)}
+                        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
+                        height='440px'
+                        onGridReady={() => log('onGridReady')}
+                        onDestroyed={() => log('onDestroyed')}
+                        onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
+                        onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
+                        onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
+                        onBeforeRecordSaved={record => log('onBeforeRecordSaved', ticketOf(record))}
+                        onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
+                        onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
+                        onError={message => log('onError', message)}
+                        onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
+                        onRowClicked={record => log('onRowClicked', ticketOf(record))}
+                        onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}
+                        onColumnsChanged={columns => log('onColumnsChanged', columns.length + ' columns written back')} />
+                </DataProviderContextProvider>
             </div>
             <div className={styles.log}>
                 {entries.length === 0 && <div className={styles.time}>Events show here as they fire, newest first.</div>}
@@ -196,14 +201,15 @@ const GridExample = () => {
 
     return <div className={styles.layout}>
         <div className={styles.grid}>
-            <Grid.Root
-                provider={provider}
-                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-                enableNavigation={false}
-                height='480px'
-                onRowClicked={setTicket}
-                onFocusedCellChanged={record => record && setTicket(record)}
-                onCellDoubleClicked={record => setOpenedTicket(record)} />
+            <DataProviderContextProvider provider={provider}>
+                <Grid.Root
+                    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+                    enableNavigation={false}
+                    height='480px'
+                    onRowClicked={setTicket}
+                    onFocusedCellChanged={record => record && setTicket(record)}
+                    onCellDoubleClicked={record => setOpenedTicket(record)} />
+            </DataProviderContextProvider>
         </div>
         <div className={styles.pane}>
             {ticket

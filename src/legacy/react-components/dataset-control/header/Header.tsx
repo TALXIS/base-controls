@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
 import { ICommandBarItemProps, useRerender } from "@legacy";
 import { QuickFind } from "../quick-find/QuickFind";
-import { Ribbon } from "@controls/dataset-control/ribbon/Ribbon";
+import { Ribbon } from "@legacy/ribbon/Ribbon";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { IDatasetControlEvents } from "@utils/dataset-control";
+import { IDatasetControlEvents } from "@legacy/dataset-control/model/DatasetControl";
 import { EditColumns } from "../edit-columns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {

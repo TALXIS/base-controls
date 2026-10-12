@@ -30,14 +30,15 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 ## Turning modules on
 
 \`\`\`tsx
-<Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            rowSelection: createRowSelectionModule({ mode: 'multiple' }),
+            sorting: createSortingModule(),
+            filtering: createFilteringModule(),
+        }} />
+</DataProviderContextProvider>
 \`\`\`
 
 An entry set to \`undefined\` is the same as one left out.
@@ -52,13 +53,14 @@ interface IOrdersGridProps {
     allowGrouping: boolean
 }
 
-const OrdersGrid = (props: IOrdersGridProps) => <Grid.Root
-    key={props.allowGrouping ? 'grouped' : 'flat'}
-    provider={props.provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        grouping: props.allowGrouping ? createGroupingModule() : undefined,
-    }} />
+const OrdersGrid = (props: IOrdersGridProps) => <DataProviderContextProvider provider={props.provider}>
+    <Grid.Root
+        key={props.allowGrouping ? 'grouped' : 'flat'}
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            grouping: props.allowGrouping ? createGroupingModule() : undefined,
+        }} />
+</DataProviderContextProvider>
 \`\`\`
 
 What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too: when grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\`, then call \`provider.refresh()\`.
@@ -71,13 +73,14 @@ The grid runs on AG Grid Community. The modules marked in the table's *AG Grid E
 //a LicenseKey input parameter declared in your control's manifest
 const licenseKey = context.parameters.LicenseKey.raw
 
-<Grid.Root
-    provider={provider}
-    modules={{
-        license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
-        rowModel: createServerSideRowModelModule(),
-        grouping: createGroupingModule(),
-    }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
+            rowModel: createServerSideRowModelModule(),
+            grouping: createGroupingModule(),
+        }} />
+</DataProviderContextProvider>
 \`\`\`
 
 - \`key\` is required, so leave the module out while there is no key, as above. Outside a PCF control, read the key from your app's configuration, such as an environment value set at build time.

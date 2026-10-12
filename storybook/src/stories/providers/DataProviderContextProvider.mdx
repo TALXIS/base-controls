@@ -1,0 +1,40 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+
+<Meta title="Providers/DataProviderContextProvider" />
+
+# DataProviderContextProvider
+
+`DataProviderContextProvider` hands a data provider to every grid and checklist below it. `Grid.Root` and `CheckList` read their provider from it, once, when they mount.
+
+Inside a [**DatasetControl**](?path=/docs/datasetcontrol-get-started-overview--overview), the control provides the provider it loaded, so you don't add one yourself.
+
+## Provide a provider
+
+<Source
+  language="tsx"
+  dark={false}
+  code={`import { createClientSideRowModelModule, DataProviderContextProvider, Grid, PcfContextProvider } from '@talxis/base-controls';
+
+export const Products = () => (
+  <PcfContextProvider>
+    <DataProviderContextProvider provider={products}>
+      <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} />
+    </DataProviderContextProvider>
+  </PcfContextProvider>
+);`}
+/>
+
+## Read the provider
+
+`useDataProvider()` returns the provider from the nearest `DataProviderContextProvider`, or from a loaded `DatasetControl`. It throws when there is none.
+
+<Source
+  language="tsx"
+  dark={false}
+  code={`import { useDataProvider } from '@talxis/base-controls';
+
+const RecordCount = () => {
+  const provider = useDataProvider();
+  return <span>{provider.getRecords().length} records</span>;
+};`}
+/>

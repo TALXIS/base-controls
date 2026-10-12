@@ -18,9 +18,9 @@ const meta = {
             },
             description: {
                 component: `
-This page is about tuning a grid whose features you have already chosen: **feature flags**, **column metadata**, **labels**, and **replaceable UI**. All four are independent of which strategy you use.
+This page is about tuning a grid whose features you have already chosen: **feature flags**, **column metadata**, **labels**, **replaceable UI**, and the **Grid's own options**. All five are independent of which strategy you use.
 
-*Which* features exist at all is a separate axis, and it belongs to [**Modules**](?path=/story/task-grid-modules--overview). The short version: a flag decides whether a feature's UI is shown, a module decides whether the feature exists, and both have to be in place.
+*Which* features exist at all is a separate axis, and it belongs to [**Modules**](?path=/story/task-grid-modules--overview). The short version: a flag decides whether a feature's UI is shown, \`features\` decides whether the feature exists, and both have to be in place.
 
 ## Feature flags
 
@@ -44,15 +44,17 @@ Grouped by what they control:
 | Area | Flags |
 |---|---|
 | Editing | \`enableTaskEditing\`, \`enableTaskCreation\`, \`enableInlineCreation\`, \`enableTaskDeletion\` |
-| Ordering | \`enableRowDragging\`, \`enableSorting\`, \`enableFiltering\` |
+| Ordering | \`enableRowDragging\` |
 | Searching | \`enableQuickFind\` |
 | Views | \`enableViewSwitcher\` — the personal-view commands are options on the user-queries module instead, see below |
 | Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\` |
-| Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\`, \`enableNavigation\`, \`rowHeight\`, \`agGridLicenseKey\` |
+| Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\` |
+
+Sorting, filtering, navigation, the row height and the AG Grid licence are the Grid's, so they are \`TaskGrid\` props and modules rather than flags: \`modules.sorting\`, \`modules.filtering\`, \`modules.license\`, \`enableNavigation\`, \`rowHeight\`. See [**Grid options**](?path=/story/task-grid-customizations-grid-options--overview).
 
 A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the personal-view commands only appear once \`enableViewSwitcher\` is on.
 
-So a feature missing from the ribbon is one of two things: its flag was left out of \`onGetGridParameters\`, or the module that provides it was never registered.
+So a feature missing from the header is one of two things: its flag was left out of \`onGetGridParameters\`, or the feature that provides it was never passed.
 
 Three \`enable*\` options are deliberately **not** on this list — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`. They live on \`createUserQueryModule\`, because the commands they gate arrive with that module. See [**Modules**](?path=/story/task-grid-modules--overview).
 
@@ -62,7 +64,7 @@ Most per-column behaviour comes from the column definitions your strategy return
 
 | Control name | Applied as | Notes |
 |---|---|---|
-| \`PercentComplete\` | renderer + editor | Progress bar with an inline percentage editor. |
+| \`PercentComplete\` | renderer | Progress bar. Edited as a number. |
 | \`LookupMany\` | renderer | Generic multi-record picker. |
 | \`PeopleLookupMany\` | renderer | Avatar picker. Takes an \`ImageUrlPropertyName\` binding. |
 | \`ColorfulLookupMany\` | renderer | Coloured chips. Takes a \`ColorPropertyName\` binding. |
@@ -76,7 +78,7 @@ Most per-column behaviour comes from the column definitions your strategy return
 }
 \`\`\`
 
-A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the \`lookupMany\` module is registered — no customizer needed. Each extension ships a factory for the candidates: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both columns are live in the grid below — **Assigned To** and **Tags**. Registering the module: [**Modules → lookupMany**](?path=/story/task-grid-modules--overview).
+A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the \`lookupMany\` module is registered. Each extension ships a factory for the candidates: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both columns are live in the grid below — **Assigned To** and **Tags**. Registering the module: [**Modules → lookupMany**](?path=/story/task-grid-modules--overview).
 
 ### Columns the grid owns
 
@@ -111,7 +113,7 @@ Declare it when the values point at something the grid can actually filter on. \
 
 ## Going lower
 
-When metadata is not enough, the \`gridCustomizer\` module hands you the AG Grid instance itself — column definitions, row class rules, formatting expressions, the api. It has its own page, with live examples: [**Modules → Customizer**](?path=/story/task-grid-modules-customizer--overview).
+When metadata is not enough, \`TaskGrid\` takes the Grid's own options — \`colDefs\` for a column's cells, validation and colours, its events, and modules of your own for row classes and AG Grid itself. It has its own page, with live examples: [**Grid options**](?path=/story/task-grid-customizations-grid-options--overview).
 
 ## Labels and localization
 
@@ -132,7 +134,7 @@ Any key you omit keeps its English default. \`ITaskGridLabels\` is the full set.
 
 ## Replaceable UI
 
-The grid's cells, its loading skeleton and its command bar can all be swapped for your own components through the \`components\` prop. That has its own page, with a live example: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
+The grid's cells, its loading skeleton and its command bar can all be swapped for your own components — the cells through \`colDefs\`, the rest through \`components\`. That has its own page, with live examples: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
                 `.trim(),
             },
         },

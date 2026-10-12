@@ -34,7 +34,7 @@ Several behaviours that look like they need a subclass are parameters on both sh
 
 - \`onCreateTaskStrategy\` — every task-level option, because they belong to the task strategy: new-task defaults, what counts as active, what happens on open, and on Dataverse the form ids, \`rootTaskId\` and the delete flags. Returned from \`onInitialize\` on both shipped descriptors, which hand the callback what they just resolved.
 - **A hook per operation on the task strategy itself.** \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\`, \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onOpenDatasetItems\` — plus \`onGetFormParameters\` on Dataverse. Each receives the parameters of the matching action, so wrapping one is a forward rather than a rewrite. See [**the actions classes**](#the-actions-classes).
-- \`modules\` — whether an optional feature exists at all. [**Modules**](?path=/story/task-grid-modules--overview) is the reference; nothing there needs a subclass.
+- \`modules\` on \`TaskGrid\` — whether an optional feature exists at all, and modules of your own. [**Modules**](?path=/story/task-grid-modules--overview) is the reference; nothing there needs a subclass.
 
 ## The descriptor contract
 
@@ -49,11 +49,8 @@ first — everything below assumes it.
 | \`onGetFieldMapping\` | ✅ | ✅ |
 | \`onCreateTaskStrategy\` | ✅ | ✅ |
 | \`onCreateSavedQueryStrategy\` | ✅ from \`systemQueries\` | ✅ from \`systemQueries\` |
-| \`onGetModules\` | ✅ from the \`modules\` your \`onInitialize\` resolves, each builder given the locator | ✅ same, each builder given its context slice and the locator |
-| \`onLoadDependencies\` | ✅ re-runs on every remount | ✅ re-runs on every remount |
-| \`onGetHeight\` | ✅ | ✅ |
+| \`onLoadDependencies\` | ✅ runs once per mount | ✅ runs once per mount |
 | \`onGetGridParameters\` | ✅ | ✅ |
-| \`onGetControlId\` | — | — |
 
 Both descriptors forward every optional hook to something you resolve, so you rarely need a subclass to switch a feature on — only to change what an already-wired piece *does*. Two implementations simply do not exist: there is no Dataverse template provider, and no in-memory custom-columns strategy — [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview) is the only one that ships for custom columns.
 
@@ -157,37 +154,40 @@ import {
     TemplateDataProviderBase, MemoryLookupManyDataProviderFactory, DataverseLookupManyDataProviderFactory,
     //the Talxis platform strategies
     TalxisTaskDependencyStrategy, TalxisChecklistStrategy, TalxisCustomColumnsStrategy,
-    //the module builders
-    createUserQueryModule, createTemplateModule, createGridCustomizerModule, createLookupManyModule,
-    createDependenciesModule, createChecklistModule, createCustomColumnsModule,
+    //the feature builders
+    createUserQueryModule, createTemplateModule, createLookupManyModule,
+    createDependenciesModule, createChecklistModule, createCustomColumnsModule, createProjectModule,
+    //naming the task grid's own columns in colDefs
+    ADD_TASK_COLUMN_NAME, PERCENT_COMPLETE_CONTROL_NAME, TASK_TREE_PRIORITY,
     //the shipped module strategies
     MemoryTaskDependencyStrategy, DataverseTaskDependencyStrategy, MemoryChecklistStrategy,
     //adding a column from a strategy of your own
     applyColumn,
-    //the locator, inside a React component
-    useTaskGridServices,
+    //the runtime and its services, inside a React component
+    useTaskGridRuntime, useTaskDataProvider,
+    //a feature's own slice of a view's state
+    moduleState,
 } from '@talxis/base-controls'
 
 import type {
     //the descriptor contract and what it hands you
-    ITaskGridDescriptor, ITaskGridServiceLocator, ITaskGridServiceMap, ITaskGridFactoryParams, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
+    ITaskGridDescriptor, ITaskGridRuntime, ITaskGridServiceLocator, ITaskGridServiceMap, ITaskGridFactoryParams, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
     ICreateTasksFromTemplateParams,
     //the strategies and providers
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,
     ITaskSiblingContext, ITaskMoveParams, ITaskCreateParams,
     ISavedQuery, ISavedQueryStrategy, IUserQueryStrategy, ISavedQueryDataProvider,
     ITemplateDataProvider,
-    IGridCustomizerStrategy, IGridCustomizer,
-    //the module contracts
-    ITaskGridModules, IUserQueryModule, ITemplateModule,
-    IGridCustomizerModule, ILookupManyModule, IDependenciesModule, IChecklistModule, ICustomColumnsModule,
+    //the feature contracts
+    ITaskGridFeature, ITaskGridFeatures, ITaskGridModules, ITaskTreeServiceMap, IUserQueryModule, ITemplateModule,
+    ILookupManyModule, IDependenciesModule, IChecklistModule, ICustomColumnsModule, IProjectModule,
     //what the module strategies implement
     ITaskDependencyStrategy, ITaskDependency, IChecklistStrategy, IChecklistItem, ICustomColumnsStrategy,
     //the saved-query provider, for a column of your own
     SavedQueryHook,
     //per-extension params and contexts
-    IMemoryTaskGridDescriptorParams, IMemoryTaskGridDescriptorInitializeResult, IMemoryStrategyContext, IMemoryTaskStrategyParams, IMemoryModules,
-    IDataverseTaskGridDescriptorParams, IDataverseTaskGridDescriptorInitializeResult, IDataverseStrategyContext, IDataverseTaskStrategyParams, IDataverseModules,
+    IMemoryTaskGridDescriptorParams, IMemoryTaskGridDescriptorInitializeResult, IMemoryStrategyContext, IMemoryTaskStrategyParams,
+    IDataverseTaskGridDescriptorParams, IDataverseTaskGridDescriptorInitializeResult, IDataverseStrategyContext, IDataverseTaskStrategyParams,
 } from '@talxis/base-controls'
 \`\`\`
 
@@ -196,9 +196,9 @@ import type {
 1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value, or the raw value is in a shape the lookup reader does not recognise. Dataverse records carry it under \`_<lookup>_value\`; a hand-built record can instead put an entity-reference array under the plain column name. A bare guid under the plain name is the one combination that does not work.
 2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings. See [**Memory → Task options**](?path=/story/task-grid-descriptors-memory-task-options--overview), under *Ordering*.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
-4. **A feature is missing from the ribbon** — either its flag in \`onGetGridParameters\` defaults to \`false\`, or the module that provides it was never registered. A flag and a module are separate switches: the flag controls the UI, the module controls whether the feature exists at all, so both have to be in place.
-5. **\`No <service> is registered\`** — something resolved a service with \`get\` that only exists when a module registers it. Either register the module, or switch the call site to \`find\` and handle the feature being off. The same error during startup means a constructor resolved a service instead of waiting for the method that needs it.
-6. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when the custom-columns module is registered, \`talxis_userquery\` when the user-queries one is. Neither read is error-wrapped. Drop the builder for the feature you have no model for.
+4. **A feature is missing from the ribbon** — either its flag in \`onGetGridParameters\` defaults to \`false\`, or the module that provides it was never passed. A flag and a module are separate switches: the flag controls the UI, the module controls whether the feature exists at all, so both have to be in place.
+5. **\`No <service> is registered\`** — something resolved a service with \`get\` that only exists when a module registers it. Either pass the module, or switch the call site to \`find\` and handle the feature being off. The same error during startup means a constructor resolved a service instead of waiting for the method that needs it.
+6. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when the custom-columns module is passed, \`talxis_userquery\` when the user-queries one is. Neither read is error-wrapped. Drop the module for the feature you have no model for.
 
 Then pick a route: [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview), [**Extend a shipped strategy**](?path=/story/task-grid-extending-extend-a-shipped-strategy--overview), or [**Write your own**](?path=/story/task-grid-extending-write-your-own--overview).
                 `.trim(),

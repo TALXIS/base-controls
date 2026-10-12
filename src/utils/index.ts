@@ -9,3 +9,4 @@ export * from './service-locator';
 export * from './localization';
 export * from './adapters';
 export * from './stack-rank';
+export * from './state';

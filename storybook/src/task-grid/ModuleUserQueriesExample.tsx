@@ -1,21 +1,21 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` comes from the sandbox. */
-export const MODULE_USER_QUERIES_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
-const getModules: GetModules = (data) => ({
-    onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+/** Seed snippet of the example. `descriptor` and `data` come from the sandbox. */
+export const MODULE_USER_QUERIES_CODE = `/** The features this grid runs with. Anything not listed here is off. */
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
         //where the views are stored - swap this for your own backend
-        strategy: new MemoryUserQueryStrategy({ userQueries: data.userQueries, services }),
-        services,
+        onCreateStrategy: ({ services }) => new MemoryUserQueryStrategy({ userQueries: data.userQueries, services }),
         enableQueryManager: true,
         enableSaveAsNewQuery: true,
         enableSaveQueryChanges: true,
     }),
-})
+}
 
 const TaskGridExample = () => <TaskGrid
-    descriptor={descriptor} />
+    descriptor={descriptor}
+    features={features} />
 `
 
-export const ModuleUserQueriesExample = () => <TaskGridExampleRunner modules={['userQueries']} seedCode={MODULE_USER_QUERIES_CODE} />
+export const ModuleUserQueriesExample = () => <TaskGridExampleRunner features={['userQueries']} seedCode={MODULE_USER_QUERIES_CODE} />

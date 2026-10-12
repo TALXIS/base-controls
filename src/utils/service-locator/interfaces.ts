@@ -39,6 +39,8 @@ export interface IServiceLocator<TServiceMap extends object> {
      * Runs at most once per callback. A service that is never registered simply never calls back.
      */
     whenAvailable<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void): void;
+    /** Removes the key's resolver, so `find` returns `undefined` until something registers it again. */
+    unregister<TKey extends keyof TServiceMap>(key: TKey): void;
     /**
      * Releases what the locator holds: the resolvers, and the callbacks still waiting on a key. Both close
      * over whatever built them, so this is what stops a locator from keeping its owner reachable.

@@ -2,7 +2,12 @@ import React from 'react'
 import Editor, { OnMount } from '@monaco-editor/react'
 import { mergeStyleSets } from '@fluentui/react'
 import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from '../form/shared/monacoEditor'
+import { gridSandboxDeclarations } from '../grid/gridSandboxDeclarations'
 import { taskGridSandboxDeclarations } from './taskGridSandboxDeclarations'
+
+//the task grid's sandbox draws these with MUI, and has no grid provider of its own
+const SHADOWED_DECLARATION = /^declare const (Stack|Slider|TextField|provider):.*$/gm
+const declarations = `${gridSandboxDeclarations.replace(SHADOWED_DECLARATION, '')}\n${taskGridSandboxDeclarations}`
 
 const styles = mergeStyleSets({
     frame: {
@@ -22,7 +27,7 @@ interface ITaskGridCodeEditorProps {
 export const TaskGridCodeEditor = (props: ITaskGridCodeEditorProps) => {
     const handleMount: OnMount = (_editor, monaco) => {
         configureTypeScriptCompiler(monaco)
-        registerExtraLibs(monaco, taskGridSandboxDeclarations, 'file:///sandbox/task-grid-runtime.d.ts')
+        registerExtraLibs(monaco, declarations, 'file:///sandbox/task-grid-runtime.d.ts')
     }
 
     return <div className={styles.frame}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { InputActionMeta } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
-import { useModel } from "@controls/dataset-control/useModel";
+import { useModel } from "@legacy/dataset-control/useModel";
 import { Selector } from "../selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';

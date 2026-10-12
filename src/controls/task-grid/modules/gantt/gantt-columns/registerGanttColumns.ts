@@ -1,6 +1,7 @@
 import { IColumn } from "@talxis/client-libraries";
 import { applyColumn, ISavedQuery } from "@controls/task-grid/providers/saved-query";
-import { IGanttServiceLocator } from "../services";
+import { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import { IGanttFieldMapping } from "../services";
 
 /**
  * Puts the timeline's columns on every view, hidden where a view leaves one out.
@@ -8,9 +9,8 @@ import { IGanttServiceLocator } from "../services";
  * They are ordinary task attributes, so their definitions come from the views themselves — a system view
  * showing the column is what describes it. Registered while the module is built, before any view loads.
  */
-export const registerGanttColumns = (services: IGanttServiceLocator): void => {
-    services.get('taskGridServices').whenAvailable('savedQueryDataProvider', provider => {
-        const fieldMapping = services.get('fieldMapping');
+export const registerGanttColumns = (services: ITaskGridServiceLocator, fieldMapping: IGanttFieldMapping): void => {
+    services.whenAvailable('savedQueryDataProvider', provider => {
         const columnNames = [fieldMapping.startDate, fieldMapping.endDate, fieldMapping.percentComplete, fieldMapping.statusCode]
             .filter((columnName): columnName is string => !!columnName);
         provider.registerHook(query => {

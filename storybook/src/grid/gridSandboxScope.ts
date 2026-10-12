@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify'
 import { HighlightChangesModule } from 'ag-grid-community'
 import { DefaultEditor } from 'react-simple-wysiwyg'
 import {
-    ActionButton, Checkbox, ChoiceGroup, DefaultButton, Dropdown, FontWeights, Icon, IconButton, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
+    ActionButton, Checkbox, ChoiceGroup, ContextualMenuItemType, DefaultButton, DocumentCard, DocumentCardActivity, DocumentCardDetails, DocumentCardImage, DocumentCardTitle, Dropdown, FontWeights, Icon, IconButton, ImageFit, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
     PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
 } from '@fluentui/react'
 import {
@@ -14,12 +14,12 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
+    CommandBar, DataProviderContextProvider, DatasetControl, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControlRuntime, useRequiredDatasetControlRuntime, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useDataProvider, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { CheckList, CHECK_LIST_LABELS } from '@talxis/base-controls'
-import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider } from './data'
+import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
 export const GRID_SANDBOX_SCOPE = {
@@ -30,6 +30,20 @@ export const GRID_SANDBOX_SCOPE = {
     HighlightChangesModule,
     DefaultEditor,
     Grid,
+    DataProviderContextProvider,
+    StateProvider,
+    StateStore,
+    useStateStore,
+    useControlStateStore,
+    useDataProvider,
+    DatasetControl,
+    useDatasetControlRuntime,
+    useRequiredDatasetControlRuntime,
+    ViewSwitcherUiComponents,
+    ErrorMessageBarComponents,
+    Ribbon,
+    LoadingBoundaryComponents,
+    ContextualMenuItemType,
     useGridService,
     useGridCell,
     useGridField,
@@ -98,6 +112,9 @@ export const GRID_SANDBOX_SCOPE = {
     isLightColor,
     ThemeProvider,
     ThemeGenerator,
+    DEAL_ROWS,
+    DEAL_COLUMNS,
+    DEAL_PRIMARY_ID,
     createDealsProvider,
     createTimesheetsProvider,
     createTicketsProvider,
@@ -116,10 +133,16 @@ export const GRID_SANDBOX_SCOPE = {
     ChoiceGroup,
     CommandBar,
     DefaultButton,
+    DocumentCard,
+    DocumentCardActivity,
+    DocumentCardDetails,
+    DocumentCardImage,
+    DocumentCardTitle,
     Dropdown,
     FontWeights,
     Icon,
     IconButton,
+    ImageFit,
     Label,
     Link,
     mergeStyleSets,

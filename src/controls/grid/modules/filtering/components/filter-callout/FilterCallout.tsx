@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Target } from "@fluentui/react";
 import { IColumn, IInternalDataProvider } from "@talxis/client-libraries";
 import { getClassNames, usePcfContext } from "@utils";
-import { DatasetColumnFiltering } from "@controls/dataset-control/filtering/DatasetColumnFiltering";
+import { DatasetColumnFiltering } from "@controls/grid/modules/filtering/components/dataset-column-filtering/DatasetColumnFiltering";
 import { IOptionSet } from "@controls/fields/option-set";
 import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
 import { IControl, IParameters } from "@interfaces";

@@ -1,5 +1,8 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
+/** What the grid tells a click on a group's chevron apart by. */
+export const GROUPING_TOGGLE_CLASS_NAME = 'talxis__baseControl__GroupingToggle';
+
 export const getGroupingUiToggleStyles = (theme: ITheme) => mergeStyleSets({
     container: {
         display: 'flex',

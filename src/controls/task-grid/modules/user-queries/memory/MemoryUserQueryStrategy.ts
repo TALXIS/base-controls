@@ -17,8 +17,8 @@ export interface IMemoryUserQueryStrategyParams {
 /**
  * In-memory {@link IUserQueryStrategy} — personal views held in a copy of the array it was given.
  *
- * Nothing is kept across a remount. To carry views over, read `userQueriesModule.provider.getQueries()`
- * from the grid's `onBeforeDestroy` prop and hand them back next time.
+ * Nothing is kept across a mount. To carry views over, read `userQueriesModule.provider.getQueries()`
+ * from the grid's `onDestroyed` prop and hand them back next time.
  */
 export class MemoryUserQueryStrategy implements IUserQueryStrategy {
     private _userQueries: ISavedQuery[];

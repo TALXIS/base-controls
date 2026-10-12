@@ -8,7 +8,6 @@ const COMMAND_ICONS: Record<string, React.ElementType> = {
     AddToShoppingList: PlaylistAddIcon,
     Edit: EditIcon,
     Delete: DeleteIcon,
-    ColumnOptions: ViewColumnIcon,
     Settings: SettingsIcon,
 }
 
@@ -20,8 +19,8 @@ const CommandIcon = (props: { name?: string }) => {
     return <IconComponent fontSize="small" />
 }
 
-const MuiCommandBar = (props: ITaskGridCommandBarProps) => {
-    const [menu, setMenu] = React.useState<{ anchor: HTMLElement, item: ITaskGridCommandBarItem } | null>(null)
+const MuiCommandBar = (props: ICommandBarProps) => {
+    const [menu, setMenu] = React.useState<{ anchor: HTMLElement, item: ICommandBarItemProps } | null>(null)
     const [completedCount, setCompletedCount] = React.useState(0)
     //the bar renders inside the grid, so it can reach the provider behind it
     const dataProvider = useTaskDataProvider()
@@ -40,7 +39,7 @@ const MuiCommandBar = (props: ITaskGridCommandBarProps) => {
         dataProvider.clearSelectedRecordIds()
     }
 
-    const onClick = (event: React.MouseEvent<HTMLElement>, item: ITaskGridCommandBarItem) => {
+    const onClick = (event: React.MouseEvent<HTMLElement>, item: ICommandBarItemProps) => {
         //an item with a submenu opens one instead of acting
         if (item.subMenuProps) {
             setMenu({ anchor: event.currentTarget, item })
@@ -105,4 +104,4 @@ const TaskGridExample = () => <TaskGrid
     components={components} />
 `
 
-export const CustomCommandBarExample = () => <TaskGridExampleRunner modules={['userQueries', 'lookupMany']} seedCode={CUSTOM_COMMAND_BAR_CODE} />
+export const CustomCommandBarExample = () => <TaskGridExampleRunner features={['userQueries', 'lookupMany']} seedCode={CUSTOM_COMMAND_BAR_CODE} />

@@ -13,7 +13,7 @@ export * from './gantt-chart-config';
 export * from './gantt-columns';
 export * from './gantt-expansion';
 export * from './gantt-manager';
-export * from './gantt-scroll-sync';
+export * from './gantt-grid';
 export * from './gantt-view-state';
 export * from './gantt-data';
 export * from './gantt-dates';

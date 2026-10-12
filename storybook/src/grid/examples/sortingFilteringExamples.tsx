@@ -1,15 +1,16 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const TRIAGE_QUEUE_CODE = `const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{
-        rowModel: createClientSideRowModelModule(),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }}
-    enableOptionSetColors
-    height='440px' />
+export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{
+            rowModel: createClientSideRowModelModule(),
+            sorting: createSortingModule(),
+            filtering: createFilteringModule(),
+        }}
+        enableOptionSetColors
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const OPEN_ON_WHAT_MATTERS_CODE = `//the filter callout writes option set values as strings
@@ -28,15 +29,16 @@ const createQueueProvider = () => {
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
-    return <Grid.Root
-        provider={tickets}
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            sorting: createSortingModule(),
-            filtering: createFilteringModule(),
-        }}
-        enableOptionSetColors
-        height='440px' />
+    return <DataProviderContextProvider provider={tickets}>
+        <Grid.Root
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+            }}
+            enableOptionSetColors
+            height='440px' />
+    </DataProviderContextProvider>
 }
 `
 
@@ -101,16 +103,17 @@ const GridExample = () => {
             {SAVED_VIEWS.map(view => <DefaultButton key={view.key} text={view.text} toggle checked={view.key === viewKey} onClick={() => showView(view)} />)}
             <Text>{ticketCount} tickets</Text>
         </Stack>
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-            }}
-            enableOptionSetColors
-            onDataLoaded={() => setTicketCount(provider.getRecords().length)}
-            height='440px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                }}
+                enableOptionSetColors
+                onDataLoaded={() => setTicketCount(provider.getRecords().length)}
+                height='440px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -157,16 +160,17 @@ const filterPlaceholdersModule: IGridModule = {
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
-    return <Grid.Root
-        provider={tickets}
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            sorting: createSortingModule(),
-            filtering: createFilteringModule(),
-            custom: [filterPlaceholdersModule],
-        }}
-        enableOptionSetColors
-        height='440px' />
+    return <DataProviderContextProvider provider={tickets}>
+        <Grid.Root
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+                custom: [filterPlaceholdersModule],
+            }}
+            enableOptionSetColors
+            height='440px' />
+    </DataProviderContextProvider>
 }
 `
 

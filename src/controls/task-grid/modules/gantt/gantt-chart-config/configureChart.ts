@@ -31,7 +31,7 @@ export const configureChart = (gantt: GanttStatic, services: IGanttServiceLocato
     gantt.config.scale_height = 43;
     gantt.config.scroll_size = 14;
     gantt.config.show_tasks_outside_timescale = true;
-    gantt.config.row_height = services.get('taskGridServices').get('datasetControl').getParameters().RowHeight?.raw ?? DEFAULT_ROW_HEIGHT;
+    gantt.config.row_height = DEFAULT_ROW_HEIGHT;
     //the grid owns the vertical scrollbar of the split view, so only the timeline's own is laid out
     gantt.config.layout = {
         css: 'gantt_container',

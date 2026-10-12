@@ -34,17 +34,18 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
         {hasSelection && <MessageBar>{selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected, {selectedHours} hours in all.</MessageBar>}
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                editing: createEditingModule({ autoSave: true }),
-                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
-                sorting: createSortingModule(),
-            }}
-            enableOptionSetColors
-            onGridReady={gridRuntime => runtime.current = gridRuntime}
-            height='440px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    editing: createEditingModule({ autoSave: true }),
+                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
+                    sorting: createSortingModule(),
+                }}
+                enableOptionSetColors
+                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                height='440px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -86,13 +87,14 @@ const GridExample = () => {
 
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <div className={styles.grid}>
-            <Grid.Root
-                provider={provider}
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
-                }}
-                height='440px' />
+            <DataProviderContextProvider provider={provider}>
+                <Grid.Root
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
+                    }}
+                    height='440px' />
+            </DataProviderContextProvider>
         </div>
         <ProductCard product={productId ? provider.getRecordsMap()[productId] : undefined} />
     </Stack>
@@ -103,14 +105,15 @@ export const COPY_PRICE_LIST_CODE = `const GridExample = () => {
     const [spreadsheet, setSpreadsheet] = React.useState('')
 
     return <Stack tokens={{ childrenGap: 12 }}>
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                cellSelection: createCellSelectionModule(),
-                clipboard: createClipboardModule({ copyHeadersToClipboard: true }),
-            }}
-            height='360px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    cellSelection: createCellSelectionModule(),
+                    clipboard: createClipboardModule({ copyHeadersToClipboard: true }),
+                }}
+                height='360px' />
+        </DataProviderContextProvider>
         <TextField
             label='Your spreadsheet'
             placeholder='Paste here with Ctrl+V'

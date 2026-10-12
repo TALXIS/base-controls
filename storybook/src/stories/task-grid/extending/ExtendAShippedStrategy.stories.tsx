@@ -36,7 +36,7 @@ Subclass when you want to change several operations at once, hold state of your 
 
 ## Start with the params
 
-Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, task dependencies and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-extending--overview).
+Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open — and every optional feature: personal views, templates, task dependencies and lookup-many candidates are all **modules** passed to \`TaskGrid\` — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-extending--overview).
 
 ## Subclassing a task strategy
 
@@ -69,7 +69,7 @@ Every optional feature — the strategies included — is already part of what \
 class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
     //the base descriptor keeps the resolved data private, so hold your own copy of anything you need
     constructor(private _data: IDataverseTaskGridDescriptorInitializeResult) {
-        super({ onInitialize: async () => _data, height: '600px' })
+        super({ onInitialize: async () => _data })
     }
 
     public onGetFieldMapping() {

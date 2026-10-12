@@ -48,6 +48,8 @@ export interface ICustomColumnsDataProvider {
 /** Errors raised by custom-column operations. */
 export interface ICustomColumnsDataProviderEvents {
     onError: (error: any, message: string) => void;
+    /** A column was created, changed or deleted. */
+    onColumnsChanged: () => void;
 }
 
 /** Wraps an {@link ICustomColumnsStrategy} with the grid's error handling and event dispatch. */
@@ -72,19 +74,19 @@ export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     }
     public async createColumn(): Promise<string | null> {
         return ErrorHelper.executeWithErrorHandling({
-            operation: () => this._strategy.onCreateColumn(),
+            operation: async () => this._onColumnsChanged(await this._strategy.onCreateColumn()),
             onError: (error, message) => this.events.dispatchEvent('onError', error, message)
         })
     }
     public async deleteColumn(columnName: string): Promise<string | null> {
         return ErrorHelper.executeWithErrorHandling({
-            operation: () => this._strategy.onDeleteColumn(columnName),
+            operation: async () => this._onColumnsChanged(await this._strategy.onDeleteColumn(columnName)),
             onError: (error, message) => this.events.dispatchEvent('onError', error, message)
         })
     }
     public async updateColumn(columnName: string): Promise<string | null> {
         return ErrorHelper.executeWithErrorHandling({
-            operation: () => this._strategy.onUpdateColumn(columnName),
+            operation: async () => this._onColumnsChanged(await this._strategy.onUpdateColumn(columnName)),
             onError: (error, message) => this.events.dispatchEvent('onError', error, message)
         })
     }
@@ -102,6 +104,13 @@ export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     public async refresh(): Promise<IColumn[]> {
         return await this._strategy.onRefresh();
     }
+    private _onColumnsChanged(columnName: string | null): string | null {
+        if (columnName) {
+            this.events.dispatchEvent('onColumnsChanged');
+        }
+        return columnName;
+    }
+
     public isCustomColumn(columnName: string): boolean {
         return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX);
     }

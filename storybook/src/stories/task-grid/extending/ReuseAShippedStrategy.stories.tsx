@@ -24,10 +24,10 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 
 | Piece | Construct with | Environment needs | Pairing caveat |
 |---|---|---|---|
-| \`MemoryUserQueryStrategy\` | \`{ userQueries, services }\` — the array it reads and writes, plus the locator every strategy takes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
+| \`MemoryUserQueryStrategy\` | \`{ userQueries, services }\` — the array it reads and writes, plus the locator every strategy takes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per mount, so a new array each time would wipe the views the user saved. |
 | \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId?, services }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
 | \`MemoryTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Feature data**](?path=/story/task-grid-descriptors-memory-feature-data--overview). |
-| \`MemoryTemplateDataProvider\` | \`{ templates, services }\` — the template source, plus the locator it reaches the task side through | none | Pairs with any task strategy. It deep-clones the source and never writes into it, so a template captured at runtime is kept only if you read \`getTemplateSource()\` from the grid's \`onBeforeDestroy\` prop. |
+| \`MemoryTemplateDataProvider\` | \`{ templates, services }\` — the template source, plus the locator it reaches the task side through | none | Pairs with any task strategy. It deep-clones the source and never writes into it, so a template captured at runtime is kept only if you read \`getTemplateSource()\` from the grid's \`onDestroyed\` prop. |
 | \`DataverseTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
 | \`MemoryTaskDependencyStrategy\` | \`{ dependencies, services }\` — the array it reads and deletes from, plus the locator | none | Pairs with any task strategy. Hand it the array you keep for the session, not a shared fixture: deleting a task removes the rows that pointed at it. It is asked for the tasks the grid loaded rather than deciding scope itself, so the array can hold dependencies for tasks the current view excludes. |
 | \`DataverseTaskDependencyStrategy\` | the table, its two task lookups, its option set, what the option set's values mean, and \`services\` — all required | Dataverse host, a dependency table | Read-only, and scoped by the task ids the grid hands it rather than by a filter of its own, so widening the view widens the read. Nothing filters \`statecode\`: deactivated rows are counted. An option-set value the map does not name falls back to finish-to-start with a warning. |
@@ -54,7 +54,7 @@ What a locator holds depends on which modules the grid runs with — see [**Exte
 The most useful mix, and the escape hatch when \`talxis_userquery\` is not deployed: real tasks over the Web API, personal views that live for the session only. No custom descriptor needed — the shipped one takes the module.
 
 \`\`\`ts
-//kept outside the callback: it runs per control instance, and this array is the store
+//kept outside the strategy: it is built per control instance, and this array is the store
 const userQueries: ISavedQuery[] = []
 
 const descriptor = new DataverseTaskGridDescriptor({
@@ -63,20 +63,22 @@ const descriptor = new DataverseTaskGridDescriptor({
         fieldMapping: FIELD_MAPPING,
         systemQueries: SYSTEM_QUERIES,
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
-        //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings
-        //the view manager and the save dialogs along with the strategy
-        modules: {
-            onGetUserQueriesModule: ({ services }) => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
-                services,
-                enableQueryManager: true,
-            }),
-        },
     }),
 })
+
+//personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings the view
+//manager and the save dialogs along with the strategy
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
+        onCreateStrategy: ({ services }) => new MemoryUserQueryStrategy({ userQueries, services }),
+        enableQueryManager: true,
+    }),
+}
+
+<TaskGrid descriptor={descriptor} features={features} />
 \`\`\`
 
-Note what is *not* here: no \`onGetTemplatesModule\`, so the template commands stay out of the ribbon. Every optional feature works this way — the builder you leave out is the code you do not ship. See [**Modules**](?path=/story/task-grid-modules--overview).
+Note what is *not* here: no \`templates\` module, so the template commands stay out of the ribbon. Every optional feature works this way — the module you leave out is the code you do not ship. See [**Modules**](?path=/story/task-grid-modules--overview).
 
 ## Your own loader on MemoryTaskStrategy
 

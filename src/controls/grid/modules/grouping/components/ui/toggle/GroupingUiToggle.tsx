@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { GroupingUiToggleComponents, IGroupingUiToggleComponents } from "./components";
-import { getGroupingUiToggleStyles } from "./styles";
+import { getClassNames } from "@utils";
+import { getGroupingUiToggleStyles, GROUPING_TOGGLE_CLASS_NAME } from "./styles";
 
 export interface IGroupingUiToggleProps {
     isExpanded: boolean;
@@ -16,7 +17,7 @@ export const GroupingUiToggle = (props: IGroupingUiToggleProps) => {
     const styles = useMemo(() => getGroupingUiToggleStyles(theme), [theme]);
 
     return components.onRenderContainer({
-        className: styles.container,
+        className: getClassNames([GROUPING_TOGGLE_CLASS_NAME, styles.container]),
         children: components.onRenderButton({
             isExpanded: props.isExpanded,
             iconProps: { iconName: props.isExpanded ? 'ChevronDown' : 'ChevronRight' },

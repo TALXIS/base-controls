@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 import { useTheme } from "@fluentui/react";
-import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
+import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
+import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
+import { getClassNames, useDataProvider, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
@@ -15,17 +17,23 @@ const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
 
 const NO_COMPONENTS: IGridComponents = {};
-/** Reads the PCF context off `PcfContextProvider`. */
+/** Reads the PCF context off `PcfContextProvider` and the provider off `DataProviderContext`. */
 export const GridRoot = (props: IGrid) => {
     const pcfContext = usePcfContext();
+    const provider = useDataProvider();
     const theme = useTheme();
+    const state = useControlStateStore(props.stateKey);
+    const datasetControl = useDatasetControlRuntime();
     const propsRef = useRef<IGrid>(props);
     propsRef.current = props;
 
     const runtime = useMemo(() => new GridRuntime({
         onGetProps: () => propsRef.current,
+        provider: provider,
         pcfContext: pcfContext,
         theme: theme,
+        state: state,
+        datasetControl: datasetControl,
     }), []);
 
     const settings = runtime.services.get('settings');

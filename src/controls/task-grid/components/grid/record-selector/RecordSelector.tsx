@@ -1,17 +1,17 @@
-import { DatasetControl } from "@controls/dataset-control"
-import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { DatasetControl as DatasetControlModel } from '@utils/dataset-control';
-import * as React from "react"
-import { Spinner } from "@legacy";
-import { getClassNames, usePcfContext } from "@utils";
-import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
+import * as React from "react";
+import { CommandBarButton, IButtonProps, Icon, Spinner, Text, useTheme } from "@fluentui/react";
+import { IDataProvider, IDataProviderEventListeners, IRecord } from "@talxis/client-libraries";
+import { FixedSizeList } from "react-window";
+import { useEventEmitter } from "@hooks";
+import { useRerender } from "@legacy";
+import { useDataProvider } from "@utils";
+import { DatasetControl } from "@controls/dataset-control";
+import { useTaskGridLabels } from "@controls/task-grid/context";
 import { getRecordSelectorStyles } from "./styles";
-import { FixedSizeList } from 'react-window';
-import { useLocalizationService } from "@controls/task-grid/context";
 
 /** Props for {@link RecordSelector}. */
 export interface IRecordSelectorProps {
-    /** The records to offer. Searched and paged through the provider itself. */
+    /** The records to offer, searched through the provider itself; it outlives the selector. */
     provider: IDataProvider;
     /** Called with the chosen record's id. */
     onRecordSelected: (recordId: string) => void;
@@ -21,131 +21,54 @@ export interface IRecordSelectorProps {
 
 /** A searchable, virtualized single-record picker over any `IDataProvider`. */
 export const RecordSelector = (props: IRecordSelectorProps) => {
-    const { onRecordSelected } = props;
-    const providerRef = React.useRef(props.provider);
-    const localizationService = useLocalizationService();
-    const pcfContext = usePcfContext();
-    const dataset = React.useMemo(() => new Dataset(providerRef.current), []);
     const theme = useTheme();
     const styles = React.useMemo(() => getRecordSelectorStyles(theme), []);
+    const providerRef = React.useRef(props.provider);
+
+    return <DatasetControl height='285px' className={styles.root} destroyProviderOnUnmount={false} onLoad={async () => ({ provider: providerRef.current })}>
+        <DatasetControl.Header className={styles.header}>
+            <DatasetControl.Header.End>
+                <DatasetControl.QuickFind />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body className={styles.body}>
+            <RecordList {...props} />
+        </DatasetControl.Body>
+    </DatasetControl>;
+};
+
+const RecordList = (props: IRecordSelectorProps) => {
+    const provider = useDataProvider();
+    const labels = useTaskGridLabels();
+    const theme = useTheme();
+    const styles = React.useMemo(() => getRecordSelectorStyles(theme), []);
+    const { rerender } = useRerender();
     const { onRenderRecord = (props, defaultRender) => defaultRender(props) } = props;
+    const records = provider.getRecords();
 
-    const datasetControl = React.useMemo(() => {
-        return new DatasetControlModel({
-            controlId: 'recordSelectorDatasetControl',
-            onGetParameters: () => {
-                return {
-                    Grid: dataset,
-                    EnableCommandBar: {
-                        raw: false
-                    },
-                    EnablePageSizeSwitcher: {
-                        raw: false
-                    },
-                    DestroyDatasetOnUnmount: {
-                        raw: false
-                    }
-                }
-            },
-            onGetPcfContext: () => pcfContext,
-            state: {}
-        })
-    }, []);
-    return <DatasetControl
-        onGetDatasetControlInstance={() => datasetControl}
-        onOverrideComponentProps={(props) => {
-            return {
-                ...props,
-                onRender: (props, defaultRender) => {
-                    return defaultRender({
-                        ...props,
-                        onRenderHeader: (props, defaultRender) => {
-                            return defaultRender({
-                                ...props,
-                                headerContainerProps: {
-                                    ...props.headerContainerProps,
-                                    className: getClassNames([props.headerContainerProps.className, styles.headerContainer]),
-                                },
-                                onRenderRibbonQuickFindWrapper: (props, defaultRender) => {
-                                    return defaultRender({
-                                        ...props,
-                                        onRenderQuickFind: (props, defaultRender) => {
-                                            return defaultRender({
-                                                ...props,
-                                                containerProps: {
-                                                    ...props.containerProps,
-                                                    className: getClassNames([props.containerProps.className, styles.quickFindContainer])
-                                                },
-                                                onRenderCalloutContainer: (props, defaultRender) => {
-                                                    return defaultRender({
-                                                        ...props,
-                                                        onRenderCallout: (props, defaultRender) => {
-                                                            return defaultRender({
-                                                                ...props,
-                                                                directionalHint: DirectionalHint.topLeftEdge
-                                                            })
-                                                        }
-                                                    })
-                                                }
-                                            })
-                                        },
+    useEventEmitter<IDataProviderEventListeners>(provider, ['onLoading', 'onNewDataLoaded'], rerender);
 
-                                    })
-                                }
-                            })
-                        },
-                        container: {
-                            ...props.container,
-                            className: getClassNames([props.container.className, styles.root])
-                        },
-                        onRenderControlContainer: (props, defaultRender) => {
-                            return defaultRender({
-                                ...props,
-                                controlContainerProps: {
-                                    ...props.controlContainerProps,
-                                    className: getClassNames([props.controlContainerProps.className, styles.controlContainer])
-                                }
-                            })
-                        }
-                    })
-                }
-            }
+    if (provider.isLoading()) {
+        return <div className={styles.loadingContainer}>
+            <Spinner />
+        </div>;
+    }
+    if (records.length === 0) {
+        return <div className={styles.recordsNotFoundContainer}>
+            <Icon className={styles.recordsNotFoundIcon} iconName='SearchAndApps' />
+            <Text>{labels.getLocalizedString('noRecordsFound')}</Text>
+        </div>;
+    }
+    return <FixedSizeList className={styles.recordList} itemCount={records.length} itemSize={36} height={200} width={300}>
+        {({ index, style }) => {
+            const record: IRecord = records[index];
+            return <div key={record.getRecordId()} style={style}>
+                {onRenderRecord({
+                    className: styles.recordButton,
+                    onClick: () => props.onRecordSelected(record.getRecordId()),
+                    text: record.getFormattedValue(provider.getMetadata().PrimaryNameAttribute)!
+                }, props => <CommandBarButton {...props} />)}
+            </div>;
         }}
-        onGetControlComponent={() => {
-            const records = providerRef.current.getRecords();
-            if (providerRef.current.isLoading()) {
-                return <div className={styles.loadingContainer}>
-                    <Spinner />
-                </div>
-            }
-            else if (records.length === 0) {
-                return <div className={styles.recordsNotFoundContainer}>
-                    <Icon className={styles.recordsNotFoundIcon} iconName='SearchAndApps' />
-                    <Text>{localizationService.getLocalizedString('noRecordsFound')}</Text>
-                </div>
-            }
-            else {
-                return <FixedSizeList
-                    className={styles.recordList}
-                    itemCount={records.length}
-                    itemSize={36}
-                    height={200}
-                    width={300}
-                >
-                    {({ index, style }) => {
-                        const record: IRecord = records[index];
-                        return (
-                            <div key={record.getRecordId()} style={style}>
-                                {onRenderRecord({
-                                    className: styles.recordButton,
-                                    onClick: () => onRecordSelected(record.getRecordId()),
-                                    text: record.getFormattedValue(providerRef.current.getMetadata().PrimaryNameAttribute)!
-                                }, (props) => <CommandBarButton {...props} />)}
-                            </div>
-                        );
-                    }}
-                </FixedSizeList>
-            }
-        }}
-    />
-}
+    </FixedSizeList>;
+};

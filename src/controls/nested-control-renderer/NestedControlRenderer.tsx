@@ -17,7 +17,7 @@ import { Shimmer } from '@ui';
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '@hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
-import { Ribbon } from '@controls/dataset-control/ribbon';
+import { Ribbon as LegacyRibbon } from '@legacy/ribbon';
 import { GridInlineRibbon } from '@controls/grid/inline-ribbon';
 import { GridValueRenderer } from '@controls/grid/value-renderer';
 
@@ -111,7 +111,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return GridInlineRibbon;
             }
             case 'Ribbon': {
-                return Ribbon;
+                return LegacyRibbon;
             }
             //a name nobody recognises gets the plainest control there is rather than nothing at all
             default:

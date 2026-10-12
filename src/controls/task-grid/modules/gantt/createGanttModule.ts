@@ -1,6 +1,9 @@
 import { LocalizationService, ServiceLocator } from "@utils";
 import { ITaskGridServiceLocator } from "@controls/task-grid/services";
-import { IGanttComponents, IGanttModule } from "../interfaces";
+import { ITaskDataProvider } from "@controls/task-grid/providers/task";
+import { registerGanttColumns } from "./gantt-columns";
+import { IGanttComponents, ITaskGridFeature } from "../interfaces";
+import { GanttGrid } from "./gantt-grid";
 import { GanttManager } from "./gantt-manager";
 import { GanttViewState } from "./gantt-view-state";
 import { IGanttFieldMapping, IGanttServiceLocator, IGanttServiceMap } from "./services";
@@ -34,8 +37,6 @@ export interface IGanttModules {
 export interface IGanttModuleOptions {
     /** The task columns the timeline draws from. See {@link IGanttFieldMapping}. */
     fieldMapping: IGanttFieldMapping;
-    /** The locator the builder was handed. The module builds its own over it. */
-    services: ITaskGridServiceLocator;
     /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
     components?: Partial<IGanttComponents>;
     /** Overrides for any subset of the Gantt's own strings. See {@link IGanttLabels}. */
@@ -53,47 +54,69 @@ export interface IGanttModuleOptions {
  * Builds the Gantt module: you supply which columns carry the task dates, this brings the timeline
  * beside the grid, the zoom controls in the header, and the state that keeps them per view.
  *
- * Assign it to a `modules` key — `modules.onGetGanttModule` on a shipped descriptor, or `onGetModules`
- * on a descriptor of your own. Registering it is what replaces the plain grid with the split view.
+ * Pass it as `features.gantt`. The grid registers it as `ganttModule`, and registering it is what replaces
+ * the plain grid with the split view.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetGanttModule: ({ services }) => createGanttModule({
+ * features={{
+ *     gantt: createGanttModule({
  *         fieldMapping: { startDate: 'scheduledstart', endDate: 'scheduledend' },
- *         services,
  *     }),
- * }
+ * }}
  * ```
  */
-export const createGanttModule = (options: IGanttModuleOptions): IGanttModule => {
-    //the module's own locator: what it registers here is what everything inside it reaches, with the
-    //grid's own locator as the one key that crosses over
-    const services = new ServiceLocator<IGanttServiceMap>();
+export const createGanttModule = (options: IGanttModuleOptions): ITaskGridFeature => ({
+    onInitialize: taskGridServices => initializeGantt(options, taskGridServices),
+    onRegister: runtime => {
+        new GanttGrid({ runtime, ganttServices: runtime.services.get('taskGrid').get('ganttModule').services });
+    },
+});
+
+const initializeGantt = (options: IGanttModuleOptions, taskGridServices: ITaskGridServiceLocator): void => {
     const components: IGanttComponents = { ...GanttComponents, ...options.components };
     const labels = new LocalizationService<IGanttLabels>({ ...GANTT_LABELS, ...options.labels });
+    //every view draws its own chart, so it gets its own locator, gone with the view's tasks
+    const viewServices = new Map<ITaskDataProvider, { services: IGanttServiceLocator; destroy: () => void }>();
 
-    services.register('taskGridServices', () => options.services);
-    services.register('fieldMapping', () => options.fieldMapping);
-    services.register('labels', () => labels);
-    services.register('components', () => components);
-
-
-    //before the manager, because the columns it registers read the field mapping through it - and the
-    //header reads the view state on its first render, long before there is a chart
-    const viewState = new GanttViewState({ services });
-    services.register('ganttViewState', () => viewState);
-
-    //also before the manager: which modules are registered decides which chart plugins it enables
-    registerGanttModules(services, options.onGetModules?.({ services }) ?? {});
-    //nothing reaches the manager, so it is not a service: constructing it is the point. Its constructor
-    //puts this module's columns on the views and starts waiting for a grid and a container
-    new GanttManager({ services });
-
-    return {
-        services: services,
-        onGetCommandBarItems: () => getGanttCommandBarItems({ services }),
+    const createViewServices = (provider: ITaskDataProvider): IGanttServiceLocator => {
+        //what is registered here is what everything inside the module reaches, with the grid's own locator as
+        //the one key that crosses over
+        const services = new ServiceLocator<IGanttServiceMap>();
+        services.register('taskGridServices', () => taskGridServices);
+        services.register('fieldMapping', () => options.fieldMapping);
+        services.register('labels', () => labels);
+        services.register('components', () => components);
+        const viewState = new GanttViewState({ services });
+        services.register('ganttViewState', () => viewState);
+        //before the manager: which modules are registered decides which chart plugins it enables
+        registerGanttModules(services, options.onGetModules?.({ services }) ?? {});
+        const manager = new GanttManager({ services });
+        provider.addEventListener('onDestroyed', () => destroyViewServices(provider));
+        viewServices.set(provider, { services, destroy: () => manager.destroy() });
+        return services;
     };
+
+    const destroyViewServices = (provider: ITaskDataProvider): void => {
+        viewServices.get(provider)?.destroy();
+        viewServices.delete(provider);
+    };
+
+    const getViewServices = (): IGanttServiceLocator => {
+        const provider = taskGridServices.get('taskDataProvider');
+        return viewServices.get(provider)?.services ?? createViewServices(provider);
+    };
+
+    //before the task grid's services go, which the charts still reach while they are torn down
+    taskGridServices.get('taskGrid').events.addEventListener('onDestroyed', () => [...viewServices.keys()].forEach(destroyViewServices));
+
+    registerGanttColumns(taskGridServices, options.fieldMapping);
+    taskGridServices.register('ganttModule', () => ({
+        get services() {
+            return getViewServices();
+        },
+        onGetCommandBarItems: () => getGanttCommandBarItems({ services: getViewServices() }),
+    }));
 };
 
 //registers each resolved module under its own key. A module the caller left out registers nothing, so its

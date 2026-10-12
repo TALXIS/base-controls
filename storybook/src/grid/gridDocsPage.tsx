@@ -20,6 +20,7 @@ const tokenize = (markdown: string): IPageToken[] => {
 interface IDocsStory {
     id: string
     name: string
+    title: string
     moduleExport: unknown
 }
 
@@ -36,6 +37,9 @@ const GridDocsPage = (props: IGridDocsPageProps) => {
     const context = React.useContext(DocsContext) as IDocsContext
     const stories = context.componentStories()
     const tokens = React.useMemo(() => tokenize(props.markdown), [props.markdown])
+    const segments = (stories[0]?.title ?? '').split('/')
+    //an Overview page inside a folder is titled after the folder
+    const title = segments[segments.length - 1] === 'Overview' ? segments[segments.length - 2] : undefined
     const placed = new Set(tokens.flatMap(token => token.kind === 'story' || token.kind === 'canvas' ? [token.name] : []))
 
     const findStory = (name: string) => {
@@ -60,7 +64,7 @@ const GridDocsPage = (props: IGridDocsPageProps) => {
     }
 
     return <>
-        <Title />
+        <Title>{title}</Title>
         {tokens.map(renderToken)}
         {/* an Overview story belongs to the page itself */}
         {stories.filter(story => !placed.has(story.name) && story.name !== 'Overview').map(story => <DocsStory key={story.id} of={story.moduleExport} expanded />)}

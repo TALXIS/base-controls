@@ -22,92 +22,100 @@ const meta = {
             },
             description: {
                 component: `
-The grid's optional features are **modules**. You list the ones you want on the descriptor; leave one out and it does not exist — there is no flag to turn it off.
+The task grid's optional features each come from a builder. You pass the ones you want to \`TaskGrid\` as \`features\`; leave one out and it does not exist — there is no flag to turn it off.
 
-| Module | What it adds | You supply |
-|---|---|---|
-| \`onGetUserQueriesModule\` | Personal views: *My views* in the view switcher, and the save and manage commands | where views are stored |
-| \`onGetTemplatesModule\` | Task templates: *New from template*, and *Create template from task* | where templates are stored, and what they expand into |
-| \`onGetLookupManyModule\` | Multi-record pickers on lookup-many columns | the candidate records |
-| \`onGetDependenciesModule\` | The **Predecessors** and **Successors** columns: what each task waits on, and what waits on it | where dependencies are read from |
-| \`onGetChecklistModule\` | The **Checklist** column: the items on each task, and whether they are done | where checklist items are read from |
-| \`onGetCustomColumnsModule\` | User-defined columns, created and edited from *Edit columns* | where the column definitions and values live |
-| \`onGetGridCustomizerModule\` | Direct access to AG Grid — see [**Customizer**](?path=/story/task-grid-modules-customizer--overview) | a customizer strategy |
+| Key | What it adds | Builder | You supply |
+|---|---|---|---|
+| \`userQueries\` | Personal views: *My views* in the view switcher, and the save and manage commands | \`createUserQueryModule\` | where views are stored |
+| \`templates\` | Task templates: *New from template*, and *Create template from task* | \`createTemplateModule\` | where templates are stored, and what they expand into |
+| \`lookupMany\` | Multi-record pickers on lookup-many columns | \`createLookupManyModule\` | the candidate records |
+| \`dependencies\` | The **Predecessors** and **Successors** columns: what each task waits on, and what waits on it | \`createDependenciesModule\` | where dependencies are read from |
+| \`checklist\` | The **Checklist** column: the items on each task, and whether they are done | \`createChecklistModule\` | where checklist items are read from |
+| \`customColumns\` | User-defined columns, created and edited from *Edit columns* | \`createCustomColumnsModule\` | where the column definitions and values live |
+| \`project\` | The project the tasks belong to, and the link every new task gets | \`createProjectModule\` | where the project is read from |
+| \`custom\` | Your own features — see [*Your own feature*](#your-own-feature) below | — | the feature |
+
+Beside them, \`modules\` takes the Grid's own modules that work with a task grid — \`sorting\`, \`filtering\`, \`aggregation\`, \`clipboard\`, \`cellSelection\`, \`editing\`, \`rowSelection\`, \`license\`, and your own in \`custom\`. See [**Grid → Modules**](?path=/docs/grid-modules--overview). Rows are selectable, and editable while the descriptor allows task editing; pass \`editing: undefined\` for a read-only grid. The row model and grouping are the task tree's own, so they are not offered.
 
 ## Turning one on
 
-\`modules\` is part of what \`onInitialize\` returns. Each key is a function that builds its module:
+\`\`\`tsx
+import { TaskGrid, createSortingModule, createUserQueryModule, MemoryUserQueryStrategy, type ITaskGridFeatures, type ITaskGridModules } from '@talxis/base-controls'
 
-\`\`\`ts
-import { MemoryTaskGridDescriptor, createUserQueryModule, MemoryUserQueryStrategy } from '@talxis/base-controls'
+const modules: ITaskGridModules = {
+    sorting: createSortingModule(),
+}
 
-const descriptor = new MemoryTaskGridDescriptor({
-    height: '600px',
-    onInitialize: async () => ({
-        records, metadata, fieldMapping, systemQueries,
-        gridParameters: { enableViewSwitcher: true },
-        modules: {
-            onGetUserQueriesModule: ({ services }) => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
-                services,
-                enableQueryManager: true,
-            }),
-        },
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
+        onCreateStrategy: ({ services }) => new MemoryUserQueryStrategy({ userQueries, services }),
+        enableQueryManager: true,
     }),
-})
+}
+
+<TaskGrid descriptor={descriptor} modules={modules} features={features} />
 \`\`\`
 
-That grid has personal views and nothing else. All seven keys work on \`DataverseTaskGridDescriptor\` too, which hands each builder the entity name and record id it needs.
+That grid sorts and has personal views, and nothing else. \`modules\` and \`features\` are read once, at mount, so build them once.
 
 Each builder takes the one thing only you can provide, plus a few switches for its commands:
 
 | Builder | Required | Optional, all off by default | Registered as |
 |---|---|---|---|
-| \`createUserQueryModule\` | \`strategy\`, \`services\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`, \`components\` | \`userQueriesModule\` |
-| \`createTemplateModule\` | \`provider\` | \`components\` | \`templatesModule\` |
-| \`createLookupManyModule\` | \`createDataProvider\`, \`services\` | \`components\` | \`lookupManyModule\` |
-| \`createDependenciesModule\` | \`strategy\`, \`services\` | \`components\` | \`dependenciesModule\` |
-| \`createChecklistModule\` | \`strategy\`, \`services\` | \`components\` | \`checklistModule\` |
-| \`createCustomColumnsModule\` | \`strategy\`, \`services\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`, \`components\` | \`customColumnsModule\` |
-| \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerModule\` |
+| \`createUserQueryModule\` | \`onCreateStrategy\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`, \`components\` | \`userQueriesModule\` |
+| \`createTemplateModule\` | \`onCreateProvider\` | \`components\` | \`templatesModule\` |
+| \`createLookupManyModule\` | \`createDataProvider\` | — | \`lookupManyModule\` |
+| \`createDependenciesModule\` | \`onCreateStrategy\` | — | \`dependenciesModule\` |
+| \`createChecklistModule\` | \`onCreateStrategy\` | — | \`checklistModule\` |
+| \`createCustomColumnsModule\` | \`onCreateStrategy\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`, \`components\` | \`customColumnsModule\` |
+| \`createProjectModule\` | \`onCreateStrategy\` | — | \`projectModule\` |
 
-Whatever a builder returns is registered under that key, so a module and everything it brings is reachable from anywhere in the grid — \`services.find('templatesModule')?.provider\`. See [**Anatomy → Services**](?path=/story/task-grid-descriptors-anatomy--overview).
+\`onCreateStrategy\` is called with the grid's \`services\` once per mount, so pass them on to the strategy you build. What a builder registers is reachable from anywhere in the grid — \`services.find('templatesModule')?.provider\`. See [**Anatomy → Services**](?path=/story/task-grid-descriptors-anatomy--overview).
 
-\`onGetCustomColumnsModule\` is the one module with no in-memory implementation: \`TalxisCustomColumnsStrategy\` is the only strategy that ships for it, so it needs the TALXIS models and has no live demo here. See [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
-
-## Overriding a module's UI
-
-A module brings its own UI, and \`components\` replaces any part of it. Each member is an \`onRender…\`
-method taking that component's props:
-
-| Builder | Members |
-|---|---|
-| \`createChecklistModule\` | \`onRenderCell\` |
-| \`createDependenciesModule\` | \`onRenderCell\` — \`props.direction\` says which of the two columns is rendering |
-| \`createLookupManyModule\` | \`onRenderCell\` |
-| \`createTemplateModule\` | \`onRenderTemplateSelector\` |
-| \`createUserQueryModule\` | \`onRenderViewManager\`, \`onRenderCreateView\` |
-| \`createCustomColumnsModule\` | \`onRenderEditColumns\` |
+On Dataverse, a strategy usually needs what the descriptor resolved — the task entity's name, the project record. Read it from the descriptor once the grid loads:
 
 \`\`\`ts
-onGetChecklistModule: ({ services }) => createChecklistModule({
-    strategy: new MemoryChecklistStrategy({ items: CHECKLIST_ITEMS, services }),
-    services,
-    components: {
-        onRenderCell: (props) => <MyChecklistCell {...props} />,
-    },
+userQueries: createUserQueryModule({
+    onCreateStrategy: () => new TalxisUserQueryStrategy({ entityName: descriptor.getStrategyContext().entityName }),
 }),
 \`\`\`
 
-Anything you leave out keeps the component the module ships, and each module's defaults are exported —
-\`ChecklistComponents\`, \`DependenciesComponents\`, \`LookupManyModuleComponents\`, \`TemplateComponents\`,
-\`UserQueryComponents\`, \`CustomColumnsComponents\` — so you can call one from inside your own component
-to wrap the shipped rendering rather than reproduce it.
+\`customColumns\` is the one feature with no in-memory implementation: \`TalxisCustomColumnsStrategy\` is the only strategy that ships for it, so it needs the TALXIS models and has no live demo here. See [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
 
-This is per module. To reach *every* data column's cell instead, use \`onRenderCellRenderer\` on the grid's
-own \`components\` prop: see [**Customizations → Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
+## Overriding a feature's UI
 
-Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
+The features that bring dialogs and pickers take \`components\`, which replaces any part of them:
+
+| Builder | Members |
+|---|---|
+| \`createTemplateModule\` | \`onRenderTemplateSelector\` |
+| \`createUserQueryModule\` | \`onRenderViewManager\`, \`onRenderCreateView\` |
+| \`createCustomColumnsModule\` | \`editColumns\` — the [**Edit columns**](?path=/docs/datasetcontrol-parts-overview--overview) pieces, with the custom-column commands in them |
+
+Anything you leave out keeps the component the feature ships. A feature's *column* — the checklist, the dependencies, a lookup-many picker — is a column like any other, and is replaced through \`colDefs\`: see [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
+
+## Your own feature
+
+A feature is a [**Grid module**](?path=/docs/grid-extending-write-a-module--overview) with one more step. \`onInitialize\` runs once per mount, before the first view loads, and reaches the task grid's services; \`onRegister\` runs each time the grid mounts — once per view — and reaches the Grid's:
+
+\`\`\`ts
+const auditFeature: ITaskGridFeature = {
+    //the task grid's services: the runtime, the providers, the other features
+    onInitialize: services => {
+        services.get('datasetControl').events.addEventListener('onLoaded', provider => provider.addEventListener('onAfterRecordSaved', audit))
+    },
+    //the Grid's services, with the task grid's under \`taskGrid\`
+    onRegister: runtime => {
+        runtime.services.get('rows').registerRowClass('audited-row', ({ record }) => isAudited(record))
+    },
+}
+
+<TaskGrid descriptor={descriptor} features={{ custom: [auditFeature] }} />
+\`\`\`
+
+Every view loads a task provider of its own, so a feature reaches \`taskDataProvider\` when it uses it, and listens to the DatasetControl's \`onLoaded\` to act on each one. Anything it keeps per view goes through \`moduleState(services, key)\`, which also saves it into a personal view. Something that needs only the grid — no \`onInitialize\` — is a plain Grid module and goes in \`modules.custom\`. Live examples: [**Customizations → Grid options**](?path=/story/task-grid-customizations-grid-options--overview).
+
+Every grid below runs **one** feature, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove it and the feature disappears from the grid.
                 `.trim(),
             },
         },

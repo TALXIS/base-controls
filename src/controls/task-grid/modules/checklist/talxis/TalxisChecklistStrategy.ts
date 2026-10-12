@@ -1,6 +1,7 @@
 import { DataTypes } from "@talxis/client-libraries";
 import { IChecklistItem, IChecklistStrategy } from "../ChecklistProvider";
 import type { ITaskGridServiceLocator } from "@controls/task-grid/services";
+import type { ITaskDataProvider } from "@controls/task-grid/providers/task";
 import { applyColumn } from "@controls/task-grid/providers/saved-query";
 
 /** The field each task carries its whole checklist in, as a JSON array. */
@@ -49,12 +50,10 @@ export class TalxisChecklistStrategy implements IChecklistStrategy {
     //reloads a task's checklist when its form closes. The form is where it is edited here, so the items the grid parsed
     //when the row loaded are stale the moment it is closed. A refresh is all it takes: the task record is fetched again
     //as the form closes and its new field value is on the record before this runs, so re-reading it is what the
-    //provider does anyway. What the provider holds is the parsed items, and nothing else reparses them. Waits for the
-    //task provider rather than resolving it: the grid builds its modules first, so there is nothing to reach at
-    //construction.
+    //provider does anyway. What the provider holds is the parsed items, and nothing else reparses them.
     private _registerEventListeners(): void {
-        this._services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
-            taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {
+        this._services.whenAvailable('datasetControl', datasetControl => datasetControl.events.addEventListener('onLoaded', provider => {
+            (provider as ITaskDataProvider).taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {
                 //a lookup cell opens a related record, whose ids are not task ids
                 if (!isTaskEntity || entityReferences.length === 0) {
                     return;
@@ -64,7 +63,7 @@ export class TalxisChecklistStrategy implements IChecklistStrategy {
                 const taskIds = entityReferences.map(reference => reference.id.guid);
                 await this._services.get('checklistModule').provider.refresh(taskIds);
             });
-        });
+        }));
     }
 
     //puts the JSON field on every view. A field no view carries is a field the read never selects, which is the only

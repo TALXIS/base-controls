@@ -3,23 +3,14 @@ import { ITheme, mergeStyleSets } from "@fluentui/react"
 export const getRecordSelectorStyles = (theme: ITheme) => {
     return mergeStyleSets({
         root: {
-            height: 285,
             width: 300,
-            '[class^="paginationRoot"]': {
-                '.ms-Button, .ms-CommandBar': {
-                    height: 36
-                }
-            }
         },
-        headerContainer: {
+        header: {
             padding: 8,
-            marginBottom: 0,
-            '.ms-TextField, .ms-TextField-fieldGroup': {
-                width: '100%'
-            }
         },
-        quickFindContainer: {
-            width: '100%'
+        body: {
+            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+            overflow: 'auto'
         },
         recordList: {
             display: 'flex',
@@ -47,11 +38,6 @@ export const getRecordSelectorStyles = (theme: ITheme) => {
             height: '100%',
             justifyContent: 'center',
             alignItems: 'center'
-        },
-        controlContainer: {
-            flex: 1,
-            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-            overflow: 'auto'
         }
     })
 }

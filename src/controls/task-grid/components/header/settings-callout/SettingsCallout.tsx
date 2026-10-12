@@ -1,7 +1,7 @@
 import { Label, Toggle } from "@fluentui/react";
 import * as React from "react"
 import { getSettingsCalloutStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@controls/task-grid/context";
+import { useTaskGridRuntime, useTaskGridLabels, useTaskDataProvider } from "@controls/task-grid/context";
 
 /**
  * The gear callout: the grid's own toggles, then the timeline's when the gantt module is registered.
@@ -10,15 +10,15 @@ import { useDatasetControl, useLocalizationService, useServices, useTaskDataProv
  * it unconditionally.
  */
 export const SettingsCallout = () => {
-    const localizationService = useLocalizationService();
-    const datasetControl = useDatasetControl();
+    const localizationService = useTaskGridLabels();
+    const runtime = useTaskGridRuntime();
     const taskDataProvider = useTaskDataProvider();
     const styles = React.useMemo(() => getSettingsCalloutStyles(), []);
-    const gantt = useServices().find('ganttModule');
-    const inactiveTasksVisibility = datasetControl.getInactiveTasksVisibility();
+    const gantt = runtime.services.find('ganttModule');
+    const inactiveTasksVisibility = runtime.getInactiveTasksVisibility();
     const isFlatListEnabled = taskDataProvider.isFlatListEnabled();
-    const isHierarchyToggleVisible = datasetControl.isShowHierarchyToggleVisible();
-    const isHideInactiveTasksToggleVisible = datasetControl.isHideInactiveTasksToggleVisible();
+    const isHierarchyToggleVisible = runtime.isShowHierarchyToggleVisible();
+    const isHideInactiveTasksToggleVisible = runtime.isHideInactiveTasksToggleVisible();
 
 
     return (<div className={styles.settingsCallout}>
@@ -29,7 +29,7 @@ export const SettingsCallout = () => {
             <Toggle
                 checked={!isFlatListEnabled}
                 onClick={() => {
-                    datasetControl.toggleFlatList(!isFlatListEnabled);
+                    runtime.toggleFlatList(!isFlatListEnabled);
                 }} />
         </>}
         {isHideInactiveTasksToggleVisible && <>
@@ -37,7 +37,7 @@ export const SettingsCallout = () => {
                 {localizationService.getLocalizedString('hideInactiveTasks')}
             </Label>
             <Toggle checked={!inactiveTasksVisibility} onClick={() => {
-                datasetControl.toggleHideInactiveTasks(inactiveTasksVisibility);
+                runtime.toggleHideInactiveTasks(inactiveTasksVisibility);
             }} />
         </>}
         {gantt?.services.get('components').onRenderSettingsSection()}

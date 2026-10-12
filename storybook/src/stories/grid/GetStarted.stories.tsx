@@ -26,7 +26,7 @@ Below is an example of a sales pipeline. Pick a preset or open **Features & Modu
 ## Your first grid
 
 \`\`\`tsx
-import { Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
+import { DataProviderContextProvider, Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 const products = new MemoryDataProvider({
@@ -42,11 +42,13 @@ const products = new MemoryDataProvider({
 })
 
 export const ProductGrid = () => <PcfContextProvider>
-    <Grid.Root provider={products} modules={{ rowModel: createClientSideRowModelModule() }} />
+    <DataProviderContextProvider provider={products}>
+        <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} />
+    </DataProviderContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-- \`provider\` holds the records and columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`.
+- [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) hands the grid its provider, which holds the records and columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`.
 - \`modules\` switch features on. Only \`rowModel\` is required. All modules are listed on [**Modules**](?path=/docs/grid-modules--overview).
 - \`PcfContextProvider\` must wrap the grid. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 `

@@ -1,75 +1,50 @@
+import * as React from "react";
 import { Dialog } from "@ui";
-import * as React from "react"
-import { getViewManagerDialogStyles } from "./styles";
-import { DatasetControl as DatasetControlRenderer } from '@controls/dataset-control';
-import { createEditingModule, createServerSideRowModelModule, Grid } from '@controls/grid';
-import { getClassNames } from "@utils";
+import { createEditingModule, createServerSideRowModelModule, Grid } from "@controls/grid";
+import { DatasetControl } from "@controls/dataset-control";
+import { useTaskGridLabels, useTaskGridRuntime } from "@controls/task-grid/context";
 import { ViewManager } from "./ViewManager";
-import { useDatasetControl, useLocalizationService, useRootElementId } from "@controls/task-grid/context";
+import { getViewManagerDialogStyles } from "./styles";
 
 interface IViewManagerDialogProps {
     onDismiss: () => void;
 }
 
-/** The *Manage views* dialog: rename and delete the user’s own views. */
+/** The *Manage views* dialog: rename and delete the user's own views. */
 export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
     const styles = React.useMemo(() => getViewManagerDialogStyles(), []);
-    const localizationService = useLocalizationService();
-    const datasetControl = useDatasetControl();
-    const viewManager = React.useMemo(() => new ViewManager(datasetControl), []);
-    const hostId = useRootElementId();
+    const labels = useTaskGridLabels();
+    const runtime = useTaskGridRuntime();
+    const viewManager = React.useMemo(() => new ViewManager({ services: runtime.services }), []);
+    const modules = React.useMemo(() => ({ rowModel: createServerSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }), []);
+
+    React.useEffect(() => () => viewManager.destroy(), []);
 
     const onDismiss = () => {
-        if(viewManager.shouldRemountOnDismiss()) {
-            datasetControl.requestRemount();
+        props.onDismiss();
+        if (viewManager.hasChanges()) {
+            runtime.reloadViews();
         }
-        else {
-            props.onDismiss();
-        }
-    }
+    };
 
     return <Dialog
         hidden={false}
         onDismiss={onDismiss}
         maxWidth={600}
         dialogContentProps={{
-            title: localizationService.getLocalizedString('manageViews'),
+            title: labels.getLocalizedString('manageViews'),
             className: styles.dialogContent,
             showCloseButton: true
-        }}
-        modalProps={{
-            layerProps: {
-                eventBubblingEnabled: true,
-                hostId: hostId,
-                styles: {
-                    root: styles.layerRoot
-                }
-            }
         }}>
-            <DatasetControlRenderer
-                onGetDatasetControlInstance={() => viewManager.getDatasetControl()}
-                onOverrideComponentProps={(props) => {
-                    return {
-                        ...props,
-                        onRender: (props, defaultRender) => {
-                            return defaultRender({
-                                ...props,
-                                container: {
-                                    ...props.container,
-                                    className: getClassNames([props.container.className, styles.datasetControlRoot])
-                                }
-                            })
-                        }
-                    }
-                }}
-                onGetControlComponent={(controlProps) => <Grid.Root
-                    provider={controlProps.parameters.Grid.getDataProvider()}
-                    modules={{
-                        rowModel: createServerSideRowModelModule(),
-                        editing: controlProps.parameters.EnableEditing?.raw === true ? createEditingModule({ autoSave: controlProps.parameters.EnableAutoSave?.raw === true }) : undefined,
-                    }}
-                    enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
-                />}
-             />
-    </Dialog>
-}
+        <DatasetControl className={styles.datasetControl} onLoad={async () => ({ provider: viewManager.getProvider() })}>
+            <DatasetControl.Header>
+                <DatasetControl.Header.End>
+                    <DatasetControl.Ribbon onLoad={async () => viewManager.getCommands()} />
+                </DatasetControl.Header.End>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid.Root modules={modules} enableNavigation={false} />
+            </DatasetControl.Body>
+        </DatasetControl>
+    </Dialog>;
+};

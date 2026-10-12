@@ -9,8 +9,8 @@ import { gridTranslations } from "@controls/grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
 import React from "react";
-import { IRibbonComponentProps } from "@controls/dataset-control/ribbon/interfaces";
-import { IDatasetControl } from "@utils/dataset-control";
+import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
+import { IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
 import { IColumn } from "@talxis/client-libraries";
 
 

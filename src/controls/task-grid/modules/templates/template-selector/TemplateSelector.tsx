@@ -1,6 +1,6 @@
 import * as React from "react";
 import { RecordSelector } from "@controls/task-grid/components/grid/record-selector";
-import { useServices } from "@controls/task-grid/context";
+import { useTaskGridRuntime } from "@controls/task-grid/context";
 import { ITemplateSelectorProps } from "../../interfaces";
 
 /**
@@ -8,7 +8,7 @@ import { ITemplateSelectorProps } from "../../interfaces";
  * `RecordSelector` over this grid's template provider.
  */
 export const TemplateSelector = (props: ITemplateSelectorProps) => {
-    const provider = useServices().get('templatesModule').provider;
+    const provider = useTaskGridRuntime().services.get('templatesModule').provider;
 
     return <RecordSelector
         provider={provider}

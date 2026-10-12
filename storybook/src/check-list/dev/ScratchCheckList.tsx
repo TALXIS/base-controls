@@ -1,6 +1,6 @@
 import React from 'react'
 import { CheckList, ICheckListFieldMapping, IGridRuntime } from '@talxis/base-controls'
-import { PcfContextProvider } from '@talxis/base-controls'
+import { DataProviderContextProvider, PcfContextProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
@@ -77,13 +77,14 @@ export const ScratchCheckList = () => {
                         </div>
                     ))}
                 </div>
-                <CheckList
-                    provider={provider}
-                    fieldMapping={FIELD_MAPPING}
-                    onGridReady={onGridReady}
-                    onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
-                    onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
-                    onError={message => log('onError', message)} />
+                <DataProviderContextProvider provider={provider}>
+                    <CheckList
+                        fieldMapping={FIELD_MAPPING}
+                        onGridReady={onGridReady}
+                        onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
+                        onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
+                        onError={message => log('onError', message)} />
+                </DataProviderContextProvider>
             </Stack>
         </PcfContextProvider>
     )

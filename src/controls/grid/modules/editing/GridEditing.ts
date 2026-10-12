@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi, RowClassParams, RowClassRules } from "ag-grid-community";
+import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IGridServiceLocator } from "../../services";
@@ -70,8 +70,6 @@ export class GridEditing implements IGridEditing {
     //by record, so the lock hooks run once per record rather than on every pass
     private _isLockedByRecord = new WeakMap<IRecord, boolean>();
     private _isRecordLockColumnVisible = false;
-    //one object, so the options are not handed to AG Grid again on every refresh
-    private _rowClassRules: RowClassRules<IRecord> = { [LOCKED_RECORD_ROW_CLASS]: params => this._isLockedRow(params) };
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
     public readonly locks: IGridLocks;
 
@@ -145,9 +143,9 @@ export class GridEditing implements IGridEditing {
         this._services.get('grid').registerAgGridOptions(result => {
             //AG Grid hands its own writes, such as a paste, over as `cellEditRequest`
             result.options.readOnlyEdit = true;
-            result.options.rowClassRules = this._rowClassRules;
         }, GRID_MODULE_PRIORITY.editing);
         this._services.get('gridTheme').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.editing);
+        this._services.get('rows').registerRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRecordLocked(record));
     }
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {
@@ -234,7 +232,7 @@ export class GridEditing implements IGridEditing {
         this._isLockedByRecord.delete(record);
         const isLocked = this._isRecordLocked(record);
         if (isLocked !== wasLocked) {
-            this._refreshRowClass(record);
+            this._services.get('rows').refreshRowClasses([record]);
         }
         if (isLocked) {
             this._setRecordLockColumnVisible(true);
@@ -243,19 +241,6 @@ export class GridEditing implements IGridEditing {
             this._syncRecordLockColumnVisibility();
         }
     };
-
-    //AG Grid runs the class rules again on a row's data update, never on a cell refresh
-    private _refreshRowClass(record: IRecord): void {
-        const node = this._gridApi.getRowNode(record.getRecordId());
-        if (node?.data) {
-            node.updateData(node.data);
-        }
-    }
-
-    //a pinned row stands for no record
-    private _isLockedRow(params: RowClassParams<IRecord>): boolean {
-        return !params.node.rowPinned && !!params.data && this._isRecordLocked(params.data);
-    }
 
     //the only pass over the rows, and it reads the cache
     private _syncRecordLockColumnVisibility(): void {

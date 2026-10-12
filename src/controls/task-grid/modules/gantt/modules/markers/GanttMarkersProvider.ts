@@ -187,10 +187,16 @@ export class GanttMarkersProvider implements IGanttMarkersProvider {
     }
 
     private _registerEventListeners() {
-        this._projectProvider?.events.addEventListener('onAfterProjectRefreshed', () => void this.refresh());
+        this._projectProvider?.events.addEventListener('onAfterProjectRefreshed', this._onProjectRefreshed);
         //the chart drops every marker it holds on a clear, so what is held here is drawn again
         this._gantt.attachEvent('onClear', () => this._draw(this._markers));
+        //the project outlives the chart, which goes with its view
+        this._gantt.attachEvent('onDestroy', () => this._projectProvider?.events.removeEventListener('onAfterProjectRefreshed', this._onProjectRefreshed));
     }
+
+    private _onProjectRefreshed = () => {
+        this.refresh();
+    };
 
     private get _taskGridServices(): ITaskGridServiceLocator {
         return this._services.get('taskGridServices');

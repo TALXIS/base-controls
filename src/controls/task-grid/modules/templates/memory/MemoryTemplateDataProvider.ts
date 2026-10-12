@@ -8,7 +8,7 @@ export interface IMemoryTemplateDataProviderParams extends ITemplateDataProvider
      * The template entity plus the child hierarchy each template expands into.
      *
      * Deep-cloned on the way in, records and children map alike, so the provider never writes into it. To keep a template captured at runtime, take a
-     * {@link MemoryTemplateDataProvider.getTemplateSource} snapshot from the grid's `onBeforeDestroy` prop;
+     * {@link MemoryTemplateDataProvider.getTemplateSource} snapshot from the grid's `onDestroyed` prop;
      * otherwise it goes with the provider.
      */
     templates: IMemoryTemplateSource;

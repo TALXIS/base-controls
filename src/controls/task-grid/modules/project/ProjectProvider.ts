@@ -99,11 +99,8 @@ export class ProjectProvider<TData extends ProjectData = ProjectData> implements
         return this._project;
     }
 
-    //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
-    //module is built before the control exists.
+    //releases the provider's listeners when the task grid goes away
     private _registerCleanup(): void {
-        this._services.whenAvailable('datasetControl', datasetControl => {
-            datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());
-        });
+        this._services.get('taskGrid').events.addEventListener('onDestroyed', () => this.events.clearEventListeners());
     }
 }

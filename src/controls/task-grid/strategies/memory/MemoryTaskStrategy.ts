@@ -36,8 +36,8 @@ export interface IMemoryTaskInitializeResult {
      * The task records the grid loads with. Deep-cloned on the way in, so nothing the grid does reaches
      * what you passed.
      *
-     * Nothing is kept for you either. To carry what the user did into the next mount, read
-     * `taskDataProvider.getRawData()` from the grid's `onBeforeDestroy` prop and hand it back here.
+     * Nothing is kept for you either. To carry what the user did into the next view or mount, read
+     * `provider.getRawData()` in `onDestroy` and hand it back here.
      */
     rawData: IRawRecord[];
     /** Entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
@@ -113,6 +113,8 @@ export interface IMemoryTaskStrategyParams {
      * fields onto the stored record.
      */
     onRecordSave?: (params: IMemoryTaskSaveParams) => Promise<IRecordSaveOperationResult>;
+    /** Called before the view's provider goes, while its records are readable; where to keep what the user did. */
+    onDestroy?: (provider: ITaskDataProvider) => void;
 }
 
 /**
@@ -121,8 +123,8 @@ export interface IMemoryTaskStrategyParams {
  * dependency.
  *
  * The behaviour lives in {@link MemoryTaskActions}; each hook here resolves that action's parameters and
- * calls it, unless an override was supplied. Nothing you hand it is ever written to, and nothing is kept
- * across a remount — see the grid's `onBeforeDestroy` prop for keeping what the user did.
+ * calls it, unless an override was supplied. Nothing you hand it is ever written to, and every view gets a
+ * strategy of its own — see `onDestroy` for keeping what the user did.
  *
  * Normally created by {@link MemoryTaskGridDescriptor}.
  */
@@ -147,6 +149,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     // ── ITaskDataProviderStrategy ────────────────────────────────────────────
 
     public async onInitialize(provider: ITaskDataProvider) {
+        //every column is already in memory, so a reload keeps what the user did
+        if (this._provider) {
+            return { columns: provider.getColumns(), rawData: provider.getRawData(), metadata: provider.getMetadata() };
+        }
         this._provider = provider;
         const { rawData, metadata, columns } = await this._params.onInitialize(provider);
         return {
@@ -237,6 +243,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     /** The consumer's last look at the data, called by the provider before it drops it. */
+
+    public onDestroy(): void {
+        this._params.onDestroy?.(this._provider);
+    }
 
     public onIsRecordActive(recordId: string): boolean {
         const params: IMemoryTaskActivityParams = {

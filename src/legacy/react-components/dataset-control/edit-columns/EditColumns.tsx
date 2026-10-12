@@ -12,7 +12,7 @@ import { useRerender, Spinner } from "@legacy";
 import { ColumnSelector } from "./column-selector/ColumnSelector";
 import { useShouldRemount } from "@hooks/useShouldRemount";
 import { ScopeSelector } from "./scope-selector/ScopeSelector";
-import { IEditColumns, IEditColumnsEvents } from "@utils/dataset-control/EditColumns";
+import { IEditColumns, IEditColumnsEvents } from "@legacy/dataset-control/model/EditColumns";
 import { EditColumnsContext } from "./useEditColumns";
 import { IComponents } from "./components";
 import { components as defaultComponents } from "./components";

@@ -1,16 +1,16 @@
 import { ITemplateDataProvider } from "@controls/task-grid/providers/template/TemplateDataProvider";
-import { ITemplateComponents, ITemplateModule } from "../interfaces";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ITaskGridFeature, ITemplateComponents } from "../interfaces";
 import { TemplateComponents } from "./moduleComponents";
 
 /** Options for {@link createTemplateModule}. */
 export interface ITemplateModuleOptions {
     /**
-     * Where templates are read from, captured to, and expanded into tasks. Typically
-     * `new MemoryTemplateDataProvider({ templates, services })`, or your own
-     * `ITemplateDataProvider`. It resolves what a template expands into; the grid's task provider adds
-     * those tasks.
+     * Returns where templates are read from, captured to, and expanded into tasks: typically
+     * `new MemoryTemplateDataProvider({ templates, services })`, or your own `ITemplateDataProvider`.
+     * Called once per mount.
      */
-    provider: ITemplateDataProvider;
+    onCreateProvider: (params: ITaskGridFactoryParams) => ITemplateDataProvider;
     /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
     components?: Partial<ITemplateComponents>;
 }
@@ -18,21 +18,24 @@ export interface ITemplateModuleOptions {
 /**
  * Builds the templating module: you supply the provider, this brings the UI.
  *
- * Assign it to a `modules` key — `modules.onGetTemplatesModule` on a shipped descriptor, or
- * `onGetModules` on a descriptor of your own.
- *
- * The grid registers it as `templatesModule`, which is how the task provider hears about an expansion.
+ * Pass it as `features.templates`. The grid registers it as `templatesModule`, which is how the task
+ * provider hears about an expansion.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetTemplatesModule: ({ services }) => createTemplateModule({
- *         provider: new MemoryTemplateDataProvider({ templates, services }),
+ * features={{
+ *     templates: createTemplateModule({
+ *         onCreateProvider: ({ services }) => new MemoryTemplateDataProvider({ templates, services }),
  *     }),
- * }
+ * }}
  * ```
  */
-export const createTemplateModule = (options: ITemplateModuleOptions): ITemplateModule => ({
-    provider: options.provider,
-    components: { ...TemplateComponents, ...options.components },
+export const createTemplateModule = (options: ITemplateModuleOptions): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = options.onCreateProvider({ services });
+        services.register('templatesModule', () => ({
+            provider: provider,
+            components: { ...TemplateComponents, ...options.components },
+        }));
+    },
 });

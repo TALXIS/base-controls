@@ -41,6 +41,10 @@ export interface ITaskGridLabels {
     /** Header of the column showing a task's checklist. */
     checklist: string;
     addChild: string;
+    /** Title of the header button that expands every task. */
+    expandAll: string;
+    /** Title of the header button that collapses every task. */
+    collapseAll: string;
     addCustomColumn: string;
     confirmColumnDelete: string;
     confirmColumnEdit: string;
@@ -62,7 +66,6 @@ export interface ITaskGridLabels {
     topLevel: string;
     canNotDeleteCompleted: string;
     canNotDeletedRecordsWithChild: string;
-    canNotEditCompletedTask: string;
     selectMaximumOneTask: string;
     hideInactiveTasks: string;
     successfulOperationDialogTitle: string;
@@ -123,6 +126,8 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     description: 'Description',
     noTaskTemplates: 'No task templates',
     addChild: 'Add Child',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
     addCustomColumn: 'Create Custom Column',
     confirmColumnDelete: 'Do you want to delete the selected column?',
     confirmColumnEdit: 'To edit the column, all data needs to be reloaded. Do you want to continue?',
@@ -144,7 +149,6 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     topLevel: 'Top-level',
     canNotDeleteCompleted: "You can't delete completed one.",
     canNotDeletedRecordsWithChild: "You can't delete records with children.",
-    canNotEditCompletedTask: "You can't edit completed task.",
     selectMaximumOneTask: 'Select maximum one task.',
     hideInactiveTasks: 'Hide inactive tasks',
     successfulOperationDialogTitle: 'Success',

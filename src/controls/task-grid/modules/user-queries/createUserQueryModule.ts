@@ -1,18 +1,16 @@
 import { IUserQueryStrategy } from "@controls/task-grid/providers/saved-query";
-import { IUserQueryComponents, IUserQueryModule } from "../interfaces";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { ITaskGridFeature, IUserQueryComponents } from "../interfaces";
 import { UserQueryComponents } from "./moduleComponents";
 import { UserQueryDataProvider } from "./UserQueryDataProvider";
-import { ITaskGridServiceLocator } from "@controls/task-grid/services";
 
 /** Options for {@link createUserQueryModule}. */
 export interface IUserQueryModuleOptions {
     /**
-     * Where the views are stored and how they are named, deleted and updated. Pass
-     * `MemoryUserQueryStrategy`, `TalxisUserQueryStrategy`, or your own.
+     * Returns where the views are stored and how they are named, deleted and updated:
+     * `MemoryUserQueryStrategy`, `TalxisUserQueryStrategy`, or your own. Called once per mount.
      */
-    strategy: IUserQueryStrategy;
-    /** The locator the builder was handed. The provider reaches the task side through it. */
-    services: ITaskGridServiceLocator;
+    onCreateStrategy: (params: ITaskGridFactoryParams) => IUserQueryStrategy;
     /** Show *Manage views*. Defaults to `false`. */
     enableQueryManager?: boolean;
     /** Show *Save as new view*. Defaults to `false`. */
@@ -26,30 +24,27 @@ export interface IUserQueryModuleOptions {
 /**
  * Builds the personal-views module: you supply the strategy, this brings the UI.
  *
- * Assign it to a `modules` key — `modules.onGetUserQueriesModule` on a shipped descriptor, or
- * `onGetModules` on a descriptor of your own.
- *
- * The grid registers it as `userQueriesModule`, so anything else reaches the module — and the provider
- * it built — through the services it was handed.
+ * Pass it as `features.userQueries`. The grid registers it as `userQueriesModule`.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetUserQueriesModule: ({ services }) => createUserQueryModule({
- *         strategy: new MemoryUserQueryStrategy({ userQueries, services }),
- *         services,
+ * features={{
+ *     userQueries: createUserQueryModule({
+ *         onCreateStrategy: ({ services }) => new MemoryUserQueryStrategy({ userQueries, services }),
  *         enableQueryManager: true,
  *     }),
- * }
+ * }}
  * ```
  */
-export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQueryModule => {
-    const provider = new UserQueryDataProvider({ strategy: options.strategy, services: options.services });
-    return {
-        provider: provider,
-        components: { ...UserQueryComponents, ...options.components },
-        enableQueryManager: options.enableQueryManager,
-        enableSaveAsNewQuery: options.enableSaveAsNewQuery,
-        enableSaveQueryChanges: options.enableSaveQueryChanges,
-    };
-};
+export const createUserQueryModule = (options: IUserQueryModuleOptions): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = new UserQueryDataProvider({ strategy: options.onCreateStrategy({ services }), services });
+        services.register('userQueriesModule', () => ({
+            provider: provider,
+            components: { ...UserQueryComponents, ...options.components },
+            enableQueryManager: options.enableQueryManager,
+            enableSaveAsNewQuery: options.enableSaveAsNewQuery,
+            enableSaveQueryChanges: options.enableSaveQueryChanges,
+        }));
+    },
+});

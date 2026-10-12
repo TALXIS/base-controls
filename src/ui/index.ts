@@ -11,6 +11,8 @@ export * from './date-picker';
 export * from './tag-picker';
 export * from './time-picker';
 export * from './notifications';
+export * from './error-message-bar';
+export * from './loading-boundary';
 export * from './option-tag';
 export * from './shimmer';
 export * from './zoom-slider';

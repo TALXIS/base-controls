@@ -10,14 +10,15 @@ export const OPEN_TICKET_GROUPS_CODE = `interface IGridExampleProps {
 }
 
 //remounted per row model: modules are read at mount
-const GridExample = (props: IGridExampleProps) => <Grid.Root
-    key={props.rowModel}
-    provider={provider}
-    modules={{
-        rowModel: props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
-        grouping: createGroupingModule(),
-    }}
-    height='440px' />
+const GridExample = (props: IGridExampleProps) => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        key={props.rowModel}
+        modules={{
+            rowModel: props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
+            grouping: createGroupingModule(),
+        }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 const FETCH_DELAY = 800

@@ -1,12 +1,13 @@
 import { IPcfContext } from "@interfaces";
-import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, ScrollApiModule } from "ag-grid-community";
+import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
+import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGrid, IGridEventHandlers, IGridModule, IGridOpenRecordParams } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
@@ -21,11 +22,10 @@ import { GridColumnLayout } from "../column-layout";
 import { GridOverlays } from "../overlays";
 import { GridSurfaces } from "../surfaces";
 import { GridTheme } from "../theme";
-import { GridStateStorage } from "../state";
 import { GridViewport } from "../viewport";
 
 /** The AG Grid modules every grid needs, whichever modules it runs. */
-const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, ScrollApiModule, RenderApiModule, GridStateModule, ColumnAutoSizeModule, RowAutoHeightModule];
+const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, ScrollApiModule, RenderApiModule, GridStateModule, ColumnAutoSizeModule, RowAutoHeightModule, RowStyleModule];
 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
@@ -52,10 +52,16 @@ export type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
 export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
     onGetProps: () => IGrid;
+    /** Where the records, the columns and the paging come from. */
+    provider: IDataProvider;
     /** The host context. */
     pcfContext: IPcfContext;
     /** The control's theme. */
     theme: ITheme;
+    /** The grid's own entry in the state store. */
+    state: IStateStore;
+    /** The DatasetControl the grid is inside, if any. */
+    datasetControl?: IDatasetControlRuntime;
 }
 
 /** The running grid with its services and AG Grid options. */
@@ -91,7 +97,7 @@ export class GridRuntime implements IGridRuntime {
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridRuntimeEvents> = new EventEmitter<IGridRuntimeEvents>();
 
-    constructor({ onGetProps, pcfContext, theme }: IGridRuntimeParameters) {
+    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
         //first api listener so the others find the options applied
@@ -99,13 +105,11 @@ export class GridRuntime implements IGridRuntime {
 
         //everything below reads the props and the provider through these
         const labels = new LocalizationService<IGridLabels>({ ...GRID_LABELS, ...onGetProps().labels });
-        const settings = new GridSettings({ onGetProps });
+        const settings = new GridSettings({ onGetProps, datasetControl });
         this._services.register('labels', () => labels);
         this._services.register('settings', () => settings);
-        const state = new GridStateStorage({ state: onGetProps().state });
         this._services.register('state', () => state);
         this._services.register('pcfContext', () => pcfContext);
-        const provider = onGetProps().provider;
         this._services.register('provider', () => provider);
         this._services.register('theme', () => theme);
         const gridTheme = new GridTheme({ theme, rowHeight: settings.getDefaultRowHeight() });
@@ -164,7 +168,6 @@ export class GridRuntime implements IGridRuntime {
         const keys = new Set([...Object.keys(next), ...Object.keys(previous)] as ManagedGridOptionKey[]);
         for (const key of keys) {
             if (next[key] !== previous[key]) {
-                //a customizer patches `setGridOption` to rewrite the keys it owns
                 gridApi.setGridOption(key, next[key]);
             }
         }

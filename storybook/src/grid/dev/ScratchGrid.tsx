@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { IGridState, getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules, DataProviderContextProvider } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -21,18 +21,6 @@ const hslToHex = (hue: number, saturation: number, lightness: number): string =>
 }
 
 const hashText = (text: string): number => [...text].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0)
-
-/** Every data column takes input where its cell stands, with no editor to open. */
-const oneClickEditModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('columns').registerColumnDefinitions(columnDefs => {
-            const columnsMap = runtime.services.get('provider').getColumnsMap()
-            for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId!])) {
-                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, oneClickEdit: true } }
-            }
-        })
-    },
-}
 
 /** Tints every record cell: numbers from green to red across their column's range, any other value by what it is. */
 const heatmapModule: IGridModule = {
@@ -449,8 +437,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         provider.refresh()
     }, [provider])
 
-    //where the user was, kept across the remounts below
-    const stateRef = React.useRef<IGridState>({})
     const [mountCount, setMountCount] = React.useState(0)
 
     //remounted on every change: modules are read once, which is the contract this story holds to
@@ -468,22 +454,23 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
         grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
-        custom: [oneClickEditModule, ...(props.heatmap ? [heatmapModule] : [])],
+        custom: props.heatmap ? [heatmapModule] : [],
     }), [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
-        <Grid.Root
-            key={key}
-            provider={provider}
-            modules={modules}
-            colDefs={SCRATCH_COL_DEFS}
-            height='100%'
-            enableNavigation={props.enableNavigation}
-            enableZebra={props.enableZebra}
-            enableOptionSetColors={props.enableOptionSetColors}
-            rowHeight={props.rowHeight}
-            state={stateRef.current}
-            onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                key={key}
+                modules={modules}
+                colDefs={SCRATCH_COL_DEFS}
+                height='100%'
+                enableNavigation={props.enableNavigation}
+                enableZebra={props.enableZebra}
+                enableOptionSetColors={props.enableOptionSetColors}
+                rowHeight={props.rowHeight}
+                stateKey='scratch-grid'
+                onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
+        </DataProviderContextProvider>
     </div>
 }

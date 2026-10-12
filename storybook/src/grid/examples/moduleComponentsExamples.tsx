@@ -25,14 +25,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
-            }}
-            colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
-            height='400px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
+                }}
+                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
+                height='400px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -45,10 +46,11 @@ const COMPONENTS: IGridSortingComponents = {
     sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} iconName={descending ? 'SortDown' : 'SortUp'} className={styles.arrow} /> },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const FILTER_ICON_CODE = `const styles = mergeStyleSets({
@@ -66,10 +68,11 @@ const COMPONENTS: IGridFilteringComponents = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const GROUP_BADGES_CODE = `const styles = mergeStyleSets({
@@ -89,10 +92,11 @@ const COMPONENTS: IGridGroupingComponents = {
     groupCell: { count: { onRenderCount: props => <ProductCount className={props.className} /> } },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
-    height='460px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
+        height='460px' />
+</DataProviderContextProvider>
 `
 
 export const STOCK_TOTALS_CODE = `const styles = mergeStyleSets({
@@ -109,10 +113,11 @@ const COMPONENTS: IGridAggregationComponents = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
-    height='460px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
+        height='460px' />
+</DataProviderContextProvider>
 `
 
 const createSortedProducts = () => {

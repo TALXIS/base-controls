@@ -1,21 +1,17 @@
-import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IRawRecord } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDeletedUserQueriesResult } from "./providers/saved-query";
 import { IUserQueryDataProviderEvents } from "./modules/interfaces";
-import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
+import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProviderEventListener } from "./providers/task";
 import { ITemplateDataProviderEvents } from "./providers/template/TemplateDataProvider";
-import { ITaskGridDatasetControl } from "./interfaces";
-import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
-import { ITaskGridProps } from "./TaskGrid";
+import type { ITaskGridProps } from "./TaskGrid";
+import { useTaskDataProvider, useTaskGridRuntime } from "./context";
 
-/**
- * Forwards every event the grid raises to the matching prop on {@link ITaskGridProps}. The three
- * `onError` sources are funnelled into the single `onError` prop.
- */
-export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => {
-    const { taskEvents } = taskDataProvider;
+/** Forwards every event of the view shown to the matching prop on {@link ITaskGridProps}. */
+export const useTaskGridEvents = (props: ITaskGridProps) => {
+    const { taskEvents } = useTaskDataProvider();
     //undefined when the module is not registered; useEventEmitter tolerates that, so the props never fire
-    const services = datasetControl.getServices();
+    const services = useTaskGridRuntime().services;
     const queryEvents = services.find('userQueriesModule')?.provider.events;
     const templateEvents = services.find('templatesModule')?.provider.templateEvents;
 
@@ -43,10 +39,4 @@ export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGr
     useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onAfterTemplateCreated', (record: IRawRecord | null) => props.onTemplateCreated?.(record));
     useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onError', (error: any, message: string) => props.onError?.(error, message));
 
-    //the grid's own emitter, not the inherited dataset-control one. Fires while every provider still holds
-    //its data, so a consumer can read whatever it wants to keep
-    useEventEmitter<ITaskGridDatasetControlEvents>(datasetControl.events, 'onBeforeDestroy', () => props.onBeforeDestroy?.(datasetControl.getServices()));
-
-    useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));
-    useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onRecordSaved?.(result));
 };

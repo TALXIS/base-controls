@@ -1,14 +1,12 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
 import {
-    TaskGrid, useTaskDataProvider, useTaskGridDatasetControl,
-    createUserQueryModule, createTemplateModule,
-    createGridCustomizerModule, createLookupManyModule, createDependenciesModule, createChecklistModule,
-    MemoryUserQueryStrategy, MemoryTemplateDataProvider, MemoryLookupManyDataProviderFactory,
-    MemoryTaskDependencyStrategy,
-    MemoryChecklistStrategy,
+    TaskGrid, useTaskDataProvider, useTaskGridRuntime, useTaskGridLabels,
+    createUserQueryModule, createTemplateModule, createLookupManyModule, createDependenciesModule, createChecklistModule,
+    MemoryUserQueryStrategy, MemoryTemplateDataProvider, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryChecklistStrategy,
+    ADD_TASK_COLUMN_NAME, PERCENT_COMPLETE_CONTROL_NAME, TASK_TREE_PRIORITY,
 } from '@talxis/base-controls'
-import type { ITaskGridDescriptor } from '@talxis/base-controls'
+import type { ITaskGridDescriptor, ITaskGridFeatures, ITaskGridModules, ITaskGridProps } from '@talxis/base-controls'
 import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DoneAllIcon from '@mui/icons-material/DoneAll'
@@ -17,6 +15,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import SettingsIcon from '@mui/icons-material/Settings'
 import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import { GRID_SANDBOX_SCOPE } from '../grid/gridSandboxScope'
+import type { IMemoryModuleData } from './memoryDescriptor'
 
 interface ITaskGridLivePreviewProps {
     code: string
@@ -25,19 +25,65 @@ interface ITaskGridLivePreviewProps {
      * recreating it on every edit would reload the grid and throw the session away.
      */
     descriptor: ITaskGridDescriptor
-    /**
-     * Receives the `GridCustomizerStrategy` class the snippet defined, if it defined one. The class, not
-     * an instance: it takes the locator, which only the descriptor holds.
-     */
-    onGridCustomizerStrategy?: (strategyClass: any) => void
-    /** Receives the `getModules` factory the snippet defined, if it defined one. */
-    onGetModules?: (getModules: any) => void
+    /** What the snippet's `TaskGrid` runs with when it passes no `modules` of its own. */
+    modules: ITaskGridModules
+    /** What the snippet's `TaskGrid` runs with when it passes no `features` of its own. */
+    features: ITaskGridFeatures
+    /** The fixture data a snippet builds its own modules from. */
+    data: IMemoryModuleData
     onError?: (error: string | null) => void
+}
+
+const TASK_GRID_SCOPE = {
+    useTaskDataProvider,
+    useTaskGridRuntime,
+    useTaskGridLabels,
+    createUserQueryModule,
+    createTemplateModule,
+    createLookupManyModule,
+    createDependenciesModule,
+    createChecklistModule,
+    MemoryUserQueryStrategy,
+    MemoryTemplateDataProvider,
+    MemoryLookupManyDataProviderFactory,
+    MemoryTaskDependencyStrategy,
+    MemoryChecklistStrategy,
+    ADD_TASK_COLUMN_NAME,
+    PERCENT_COMPLETE_CONTROL_NAME,
+    TASK_TREE_PRIORITY,
+    Alert,
+    Autocomplete,
+    Avatar,
+    AvatarGroup,
+    Button,
+    Chip,
+    LinearProgress,
+    Menu,
+    MenuItem,
+    Popover,
+    Rating,
+    Slider,
+    Snackbar,
+    Stack,
+    TextField,
+    Tooltip,
+    Typography,
+    AddIcon,
+    DoneAllIcon,
+    DeleteIcon,
+    EditIcon,
+    PlaylistAddIcon,
+    SettingsIcon,
+    ViewColumnIcon,
 }
 
 /** Compiles the edited snippet and renders whatever `TaskGridExample` it defines. */
 export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
     const compiled = React.useMemo(() => {
+        //what a snippet calls `TaskGrid`: the sandbox's modules and features, unless the snippet passes its own
+        const SandboxTaskGrid = (taskGridProps: ITaskGridProps) => <TaskGrid enableNavigation height='600px' modules={props.modules} features={props.features} {...taskGridProps} />
+        //MUI over Fluent where the two share a name: these examples draw with MUI
+        const scope = { ...GRID_SANDBOX_SCOPE, ...TASK_GRID_SCOPE, TaskGrid: SandboxTaskGrid, descriptor: props.descriptor, defaultModules: props.modules, defaultFeatures: props.features, data: props.data }
         try {
             const transformed = Babel.transform(props.code, {
                 presets: [
@@ -46,113 +92,18 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 ],
                 filename: 'task-grid-snippet.tsx',
             }).code ?? ''
-
-            const factory = new Function(
-                'React',
-                'TaskGrid',
-                'descriptor',
-                'useTaskDataProvider',
-                'useTaskGridDatasetControl',
-                'Chip',
-                'Stack',
-                'Alert',
-                'Autocomplete',
-                'Avatar',
-                'AvatarGroup',
-                'Button',
-                'Snackbar',
-                'AddIcon',
-                'DoneAllIcon',
-                'DeleteIcon',
-                'EditIcon',
-                'PlaylistAddIcon',
-                'SettingsIcon',
-                'ViewColumnIcon',
-                'Menu',
-                'MenuItem',
-                'Popover',
-                'LinearProgress',
-                'Rating',
-                'Slider',
-                'TextField',
-                'Tooltip',
-                'Typography',
-                'createUserQueryModule',
-                'createTemplateModule',
-                'createGridCustomizerModule',
-                'createLookupManyModule',
-                'createDependenciesModule',
-                'createChecklistModule',
-                'MemoryUserQueryStrategy',
-                'MemoryTemplateDataProvider',
-                'MemoryLookupManyDataProviderFactory',
-                'MemoryTaskDependencyStrategy',
-                'MemoryChecklistStrategy',
-                `${transformed}
-                 return {
-                   Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
-                   strategy: typeof GridCustomizerStrategy !== "undefined" ? GridCustomizerStrategy : undefined,
-                   getModules: typeof getModules !== "undefined" ? getModules : undefined,
-                 };`,
-            )
-
-            const result = factory(
-                React,
-                TaskGrid,
-                props.descriptor,
-                useTaskDataProvider,
-                useTaskGridDatasetControl,
-                Chip,
-                Stack,
-                Alert,
-                Autocomplete,
-                Avatar,
-                AvatarGroup,
-                Button,
-                Snackbar,
-                AddIcon,
-                DoneAllIcon,
-                DeleteIcon,
-                EditIcon,
-                PlaylistAddIcon,
-                SettingsIcon,
-                ViewColumnIcon,
-                Menu,
-                MenuItem,
-                Popover,
-                LinearProgress,
-                Rating,
-                Slider,
-                TextField,
-                Tooltip,
-                Typography,
-                createUserQueryModule,
-                createTemplateModule,
-                createGridCustomizerModule,
-                createLookupManyModule,
-                createDependenciesModule,
-                createChecklistModule,
-                MemoryUserQueryStrategy,
-                MemoryTemplateDataProvider,
-                MemoryLookupManyDataProviderFactory,
-                MemoryTaskDependencyStrategy,
-                MemoryChecklistStrategy,
-            ) as { Component: React.ComponentType | null; strategy?: any; getModules?: any }
-
-            return { Component: result.Component, strategy: result.strategy, getModules: result.getModules, error: null as string | null }
+            const factory = new Function(...Object.keys(scope), `${transformed}
+                return typeof TaskGridExample !== "undefined" ? TaskGridExample : null;`)
+            return { Component: factory(...Object.values(scope)) as React.ComponentType | null, error: null as string | null }
         } catch (error) {
-            return { Component: null, strategy: undefined, getModules: undefined, error: (error as Error).message }
+            return { Component: null, error: (error as Error).message }
         }
-        //the descriptor and context are stable for the life of the story, so the code is the only trigger
+        //the descriptor, the modules and the features are stable for the life of the story, so the code is the only trigger
     }, [props.code])
 
     React.useEffect(() => {
         props.onError?.(compiled.error)
     }, [compiled.error])
-
-    //handed over before the grid mounts, because both are resolved on mount
-    props.onGridCustomizerStrategy?.(compiled.strategy)
-    props.onGetModules?.(compiled.getModules)
 
     if (compiled.error) {
         return <pre>{compiled.error}</pre>

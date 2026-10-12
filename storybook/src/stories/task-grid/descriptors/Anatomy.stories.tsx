@@ -53,18 +53,16 @@ Every remaining hook is optional, and each one turns something on by being answe
 
 | Hook | Effect when omitted |
 |---|---|
-| \`onGetModules\` | No optional features at all — see [**Modules**](?path=/story/task-grid-modules--overview). |
 | \`onLoadDependencies\` | Nothing is awaited before the grid builds. Both shipped descriptors run their \`onInitialize\` here. |
 | \`onGetGridParameters\` | Every flag in \`ITaskGridParameters\` is \`false\`. |
-| \`onGetHeight\` | The grid fills its parent. |
-| \`onGetControlId\` | A UUID is generated. |
 
-That is the whole modularity story: **required strategies, optional modules, flags for the UI**. A feature you
-did not ask for is not disabled — its code is not there.
+That is the whole modularity story: **required strategies, optional features, flags for the UI**. The features
+are not the descriptor's: they are passed to \`TaskGrid\` beside it — see [**Modules**](?path=/story/task-grid-modules--overview).
+A feature you did not ask for is not disabled — its code is not there.
 
 ### Views split along the same line
 
-The required strategy covers *system* views only. Personal views are a module, so the two contracts are
+The required strategy covers *system* views only. Personal views are a feature, so the two contracts are
 separate:
 
 \`\`\`ts
@@ -73,7 +71,7 @@ interface ISavedQueryStrategy {
     onGetSystemQueries: () => Promise<ISavedQuery[]>
 }
 
-//optional, carried by the user-queries module
+//optional, carried by the user-queries feature
 interface IUserQueryStrategy {
     onGetUserQueries: () => Promise<ISavedQuery[]>
     onIsUserQuery: (queryId: string) => boolean
@@ -85,26 +83,36 @@ interface IUserQueryStrategy {
 
 ## What runs when
 
-The order matters, because the strategies are built *after* configuration resolves:
+Some of it runs once per mount, and some for every view loaded — every view gets a task provider of its own.
+
+**Once per mount**, before the first view loads:
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here; on both shipped descriptors this is
    where \`onInitialize\` runs.
-2. \`onGetModules({ services })\` — once per mount. Each module is registered as its builder returns it,
+2. \`onCreateSavedQueryStrategy({ services })\`.
+3. Each feature's \`onInitialize(services)\`. This is where a feature builds its strategy and registers itself,
    which is what makes it reachable from everywhere else.
-3. \`onCreateSavedQueryStrategy({ services })\`, then the saved-query provider loads the views.
-4. \`onCreateTaskStrategy({ services })\`, then the strategy's own \`onInitialize\` loads the records.
-5. The modules that read per task — dependencies, checklists — are refreshed for the tasks that loaded.
+4. The saved-query provider loads the views; the custom columns and the project load beside them.
+
+**For every view loaded** — the first one, a view switch, a reload:
+
+1. \`onCreateTaskStrategy({ services })\` builds the view's task strategy, and its provider gets the view's
+   columns, filters and sorting, then whatever the user changed in that view since.
+2. The strategy's own \`onInitialize\` loads the records, and again whenever the user adds a column or a link
+   it did not load.
+3. The features that read per task — dependencies, checklists — are refreshed for the tasks that loaded.
+4. The grid mounts, and each feature's \`onRegister(runtime)\` adds its columns and cells.
 
 \`onGetFieldMapping()\` is read on demand rather than at a fixed point: it backs the \`nativeColumns\` service,
 so it runs the first time anything asks for a column name.
 
-Two things follow. Anything a strategy or module reads at *call* time already exists, which is why resolving
-in methods works and resolving in constructors does not. And nothing is cached across remounts — see
-[**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
+Two things follow. Anything a strategy or feature reads at *call* time already exists, which is why resolving
+in methods works and resolving in constructors does not. And a task strategy lives only as long as its view —
+see [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
 
 ## Services
 
-Strategies, providers and module builders are not handed a growing list of arguments. The grid builds one
+Strategies, providers and features are not handed a growing list of arguments. The grid builds one
 **service locator** and passes it to all of them, in a params object with a \`services\` key. Each one stores
 it and resolves what it needs when it needs it.
 
@@ -120,17 +128,18 @@ interface ITaskGridServiceLocator {
 }
 \`\`\`
 
-Always registered: \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`,
-\`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\`, \`savedQueryDataProvider\`.
+Always registered: \`taskGrid\` (the runtime), \`datasetControl\` (the [**DatasetControl**](?path=/docs/datasetcontrol-customization-extending--overview) it runs in),
+\`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`savedQueryDataProvider\`,
+and the view's \`taskDataProvider\` and \`taskExpansion\`, which are replaced with every view.
 
-One key per registered module: \`userQueriesModule\`, \`templatesModule\`, \`customColumnsModule\`,
-\`gridCustomizerModule\`, \`lookupManyModule\`, \`dependenciesModule\`, \`checklistModule\`. Leave a module out
-and its key is simply absent, which is what \`find\` is for.
+One key per registered feature: \`userQueriesModule\`, \`templatesModule\`, \`customColumnsModule\`,
+\`lookupManyModule\`, \`dependenciesModule\`, \`checklistModule\`, \`ganttModule\`, \`projectModule\`. Leave a
+feature out and its key is simply absent, which is what \`find\` is for.
 
 \`\`\`ts
-//off when the module is not registered
+//off when the feature is not registered
 const templates = services.find('templatesModule')?.provider
-//this code only runs because the module exists, so get is the honest call
+//this code only runs because the feature exists, so get is the honest call
 const checklist = services.get('checklistModule').provider
 \`\`\`
 
@@ -158,19 +167,20 @@ Resolvers are lazy, so a key can be registered before the thing behind it exists
 may therefore throw where the same \`get\` from a method succeeds a moment later.
 
 When you genuinely have to act from a constructor — subscribing to an event, say — use \`whenAvailable\`. It
-fires immediately if the service is there and waits if it is not:
+fires immediately if the service is there and waits if it is not. To act on every view's tasks, listen for the
+DatasetControl loading one:
 
 \`\`\`ts
 constructor(params: IMyStrategyParams) {
     this._services = params.services
-    this._services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
-        taskEvents.addEventListener('onAfterTasksDeleted', result => this._onTasksDeleted(result))
-    })
+    this._services.whenAvailable('datasetControl', datasetControl => datasetControl.events.addEventListener('onLoaded', provider => {
+        (provider as ITaskDataProvider).taskEvents.addEventListener('onAfterTasksDeleted', result => this._onTasksDeleted(result))
+    }))
 }
 \`\`\`
 
-In React, \`useTaskGridServices()\` returns the same locator, so a custom cell renderer or command reaches the
-providers without props. Imperative code inside the grid uses \`datasetControl.getServices()\`.
+In React, \`useTaskGridRuntime().services\` is the same locator, so a custom cell renderer or command reaches the
+providers without props, and a feature's \`onRegister\` reaches it as \`runtime.services.get('taskGrid')\`.
 
 ## Where to go next
 
@@ -179,7 +189,7 @@ providers without props. Imperative code inside the grid uses \`datasetControl.g
   parameter.
 - [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview) — ready-made strategies
   for the TALXIS models.
-- [**Modules**](?path=/story/task-grid-modules--overview) — the optional features and how registering one
+- [**Modules**](?path=/story/task-grid-modules--overview) — the optional features and how passing one
   turns it on.
 - [**Extending**](?path=/story/task-grid-extending--overview) — reusing a shipped piece, changing one
   behaviour, or writing a descriptor of your own.

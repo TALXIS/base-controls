@@ -7,11 +7,12 @@ import { FillContainerExample, InvoiceLinesExample, TicketPreviewPaneExample, Wa
 const DESCRIPTION = `
 Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the events it fires.
 
+The grid reads its provider, with the records, the columns and the paging, from [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) at mount. See [**Data**](?path=/docs/grid-get-started-data--overview).
+
 ## Props
 
 | Prop | Type | Default | Read | What it does |
 |---|---|---|---|---|
-| \`provider\` | \`IDataProvider\` | Required | At mount | The records, the columns and the paging. See [**Data**](?path=/docs/grid-get-started-data--overview). |
 | \`modules\` | \`IGridModules\` | Required | At mount | The features the grid has. \`rowModel\` is the one every grid needs. See [**Modules**](?path=/docs/grid-modules--overview). |
 | \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. See *Data types* on [**Data**](?path=/docs/grid-get-started-data--overview). |
 | \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. See [**Appearance**](?path=/docs/grid-appearance--overview). |
@@ -23,7 +24,7 @@ Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the even
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, and loading and error rows. See [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview) and [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview). |
 | \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Localization**](?path=/docs/grid-localization-overview--overview). |
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns-overview--overview). |
-| \`state\` | \`IGridState\` | None | At mount, then written in place | Where the user was scrolled, which groups were open and which cell had focus. See [**State**](?path=/docs/grid-state--overview). |
+| \`stateKey\` | \`string\` | None | At mount | The key the grid keeps where the user was scrolled, which groups were open and which cell had focus under. See [**State**](?path=/docs/grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
 | \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |

@@ -8,10 +8,11 @@ const DESCRIPTION = `
 The grid draws an overlay over its rows when it has none to show: a message when there are no records, and a spinner while they load. To change how either looks, pass \`components.overlays\` to \`<Grid.Root />\`.
 
 \`\`\`tsx
-<Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule() }}
-    components={{ overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } } }} />
+<DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule() }}
+        components={{ overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } } }} />
+</DataProviderContextProvider>
 \`\`\`
 
 - Every key and part is optional: what you leave out keeps its default.
@@ -24,7 +25,7 @@ The grid draws an overlay over its rows when it has none to show: a message when
 |---|---|
 | \`overlays.emptyRecords\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` |
 
-The text is the grid's \`noRecordsFound\` label, set through \`labels\`.
+The text is the grid's \`noRecordsFound\` label, set through \`labels\`. The same empty state is \`DatasetControl.Ui.EmptyRecords\`, for showing it outside a grid.
 
 {{story: An empty catalogue}}
 

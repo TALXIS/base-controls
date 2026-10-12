@@ -5,7 +5,7 @@ import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text } from "@fluentui/react";
 import { ThemeProvider } from "@utils";
-import { useModel } from "@controls/dataset-control/useModel";
+import { useModel } from "@legacy/dataset-control/useModel";
 import { useEditColumns } from "../useEditColumns";
 import { useThemeGenerator } from "@theme";
 

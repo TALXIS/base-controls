@@ -1,4 +1,4 @@
-import { IModuleState } from "@controls/task-grid/providers/state";
+import { IModuleState, moduleState } from "@controls/task-grid/providers/state";
 import { IGanttServiceLocator } from "../services";
 
 /**
@@ -68,8 +68,7 @@ export class GanttViewState implements IGanttViewStateProvider {
 
     constructor(parameters: IGanttViewStateParameters) {
         this._services = parameters.services;
-        this._state = parameters.services.get('taskGridServices').get('taskGridState')
-            .module<IGanttViewState>(GANTT_MODULE_STATE_KEY, 'view');
+        this._state = moduleState<IGanttViewState>(parameters.services.get('taskGridServices'), GANTT_MODULE_STATE_KEY);
     }
 
     public getZoom(): IGanttZoomState | undefined {

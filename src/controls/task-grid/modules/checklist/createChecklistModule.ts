@@ -1,36 +1,47 @@
-import { ITaskGridServiceLocator } from "@controls/task-grid/services";
-import { IChecklistComponents, IChecklistModule } from "../interfaces";
-import { ChecklistComponents } from "./moduleComponents";
-import { ChecklistProvider, IChecklistStrategy } from "./ChecklistProvider";
+import { ColDef } from "ag-grid-community";
+import { IRecord } from "@talxis/client-libraries";
+import { ITaskGridFactoryParams } from "@controls/task-grid/interfaces";
+import { TASK_TREE_PRIORITY } from "@controls/task-grid/module";
+import { ITaskGridFeature } from "../interfaces";
+import { CHECKLIST_COLUMN_NAME, ChecklistProvider, IChecklistStrategy } from "./ChecklistProvider";
+import { ChecklistCell } from "./checklist-cell";
 
 /** Options for {@link createChecklistModule}. */
 export interface IChecklistModuleOptions {
-    /** Where the checklist items are read from. */
-    strategy: IChecklistStrategy;
-    /** The locator the builder was handed. The provider reaches the task side through it. */
-    services: ITaskGridServiceLocator;
-    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
-    components?: Partial<IChecklistComponents>;
+    /** Returns where the checklist items are read from. Called once per mount. */
+    onCreateStrategy: (params: ITaskGridFactoryParams) => IChecklistStrategy;
 }
+
+const onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
+    const colDef = columnDefs.find(colDef => colDef.colId === CHECKLIST_COLUMN_NAME);
+    if (colDef) {
+        colDef.cellRenderer = ChecklistCell;
+        colDef.editable = false;
+        colDef.context = { ...colDef.context, isLocked: true };
+    }
+};
 
 /**
  * Builds the checklist module: you supply where checklist items are read from, this brings the provider
- * the grid asks per task and the cell renderer that shows them.
+ * the grid asks per task and the column that shows them.
  *
- * Assign it to a `modules` key — `modules.onGetChecklistModule` on a shipped descriptor, or `onGetModules`
- * on a descriptor of your own. Registering it is what creates the grid's checklist column.
+ * Pass it as `features.checklist`. The grid registers it as `checklistModule`.
  *
  * @example
  * ```ts
- * modules: {
- *     onGetChecklistModule: ({ services }) => createChecklistModule({
- *         strategy: new MemoryChecklistStrategy({ items: CHECKLIST_ITEMS, services }),
- *         services,
+ * features={{
+ *     checklist: createChecklistModule({
+ *         onCreateStrategy: ({ services }) => new MemoryChecklistStrategy({ items: CHECKLIST_ITEMS, services }),
  *     }),
- * }
+ * }}
  * ```
  */
-export const createChecklistModule = (options: IChecklistModuleOptions): IChecklistModule => ({
-    provider: new ChecklistProvider({ strategy: options.strategy, services: options.services }),
-    components: { ...ChecklistComponents, ...options.components },
+export const createChecklistModule = (options: IChecklistModuleOptions): ITaskGridFeature => ({
+    onInitialize: services => {
+        const provider = new ChecklistProvider({ strategy: options.onCreateStrategy({ services }), services });
+        services.register('checklistModule', () => ({ provider }));
+    },
+    onRegister: runtime => {
+        runtime.services.get('columns').registerColumnDefinitions(onColumnDefinitions, TASK_TREE_PRIORITY + 1);
+    },
 });

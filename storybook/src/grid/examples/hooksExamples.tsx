@@ -18,12 +18,13 @@ const closedDealsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
-    enableOptionSetColors
-    labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
-    height='420px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
+        enableOptionSetColors
+        labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
+        height='420px' />
+</DataProviderContextProvider>
 `
 
 export const DAY_UNDER_TEN_HOURS_CODE = `const MAX_HOURS_A_DAY = 10
@@ -57,10 +58,11 @@ const dayLimitModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const REFRESH_PRICES_CODE = `//stands in for the supplier's price list
@@ -111,10 +113,11 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), custom: [priceRefresh.module] }}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), custom: [priceRefresh.module] }}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -140,11 +143,12 @@ const urgentRowsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
-    enableOptionSetColors
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
+        enableOptionSetColors
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
@@ -174,15 +178,16 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {message && <MessageBar messageBarType={MessageBarType.success} onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <Grid.Root
-            provider={provider}
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-                custom: [copyColumnModule],
-            }}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                    custom: [copyColumnModule],
+                }}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -203,10 +208,11 @@ export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [currencyModule] }}
-    height='420px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [currencyModule] }}
+        height='420px' />
+</DataProviderContextProvider>
 `
 
 export const ASSIGN_TO_ME_CODE = `const ME = 'Eva Horák'
@@ -232,11 +238,12 @@ const assignToMeModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), custom: [assignToMeModule] }}
-    enableOptionSetColors
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), custom: [assignToMeModule] }}
+        enableOptionSetColors
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
@@ -271,10 +278,11 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} styles={{ flexContainer: { display: 'flex', gap: 16 } }} />
-        <Grid.Root
-            provider={provider}
-            modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
-            height='420px' />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
+                height='420px' />
+        </DataProviderContextProvider>
     </Stack>
 }
 `
@@ -294,10 +302,11 @@ const placeholdersModule: IGridModule = {
     },
 }
 
-const GridExample = () => <Grid.Root
-    provider={provider}
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
-    height='440px' />
+const GridExample = () => <DataProviderContextProvider provider={provider}>
+    <Grid.Root
+        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
+        height='440px' />
+</DataProviderContextProvider>
 `
 
 export const LockClosedDealsExample = () => <GridExampleRunner seedCode={LOCK_CLOSED_DEALS_CODE} dataset='deals' />

@@ -6,11 +6,14 @@ import { getNotificationMessageBarStyles } from './styles';
 import { LocalizationService } from '@utils';
 import { INotificationMessageBarLabels, NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
 
+/** One message of a notification bar. */
+export interface INotificationMessage {
+	text: string;
+	level: 'ERROR' | 'WARNING' | 'INFO';
+}
+
 export interface INotificationMessageBarProps {
-	messages?: {
-		text: string;
-		level: 'ERROR' | 'WARNING' | 'INFO';
-	}[],
+	messages?: INotificationMessage[],
 	components?: Partial<INotificationMessageBarComponents>;
 	labels?: Partial<INotificationMessageBarLabels>;
 }

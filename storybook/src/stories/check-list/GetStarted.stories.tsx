@@ -12,7 +12,7 @@ CheckList presents the records of a data provider as a to-do list. Users tick it
 ## Usage
 
 \`\`\`tsx
-import { CheckList, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
+import { CheckList, DataProviderContextProvider, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 const launchPlan = new MemoryDataProvider({
@@ -31,11 +31,13 @@ const launchPlan = new MemoryDataProvider({
 const FIELD_MAPPING: ICheckListFieldMapping = { name: 'name', stackRank: 'stackrank', completed: 'completed' }
 
 export const LaunchPlan = () => <PcfContextProvider>
-    <CheckList provider={launchPlan} fieldMapping={FIELD_MAPPING} />
+    <DataProviderContextProvider provider={launchPlan}>
+        <CheckList fieldMapping={FIELD_MAPPING} />
+    </DataProviderContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-- \`provider\` holds the items. Leave its first load to the checklist, which orders it by \`stackRank\` before loading. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
+- [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) hands the checklist its provider, which holds the items. Leave its first load to the checklist, which orders it by \`stackRank\` before loading. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
 - \`fieldMapping\` names the columns that hold an item's name, position and state. See *Field mapping* below.
 - \`PcfContextProvider\` must wrap the checklist. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 

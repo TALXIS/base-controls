@@ -57,11 +57,10 @@ extension, and views can live wherever you like. Task loading and saving keep us
 
 ## Setup
 
-\`onInitialize\` resolves everything — the data, the task strategy and the feature modules. \`height\` is the only other constructor parameter, because the loading skeleton needs it before your data exists:
+\`onInitialize\` resolves everything — the data and the task strategy:
 
 \`\`\`ts
 const descriptor = new DataverseTaskGridDescriptor({
-    height: '600px',
     onInitialize: async () => ({
         baseFetchXml: \`
             <fetch>
@@ -86,19 +85,6 @@ const descriptor = new DataverseTaskGridDescriptor({
         projectRecord: { entityName: 'talxis_project', id: projectId },
         userId: userId,
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
-        //personal views are on because this registers the module - there is no flag for it
-        modules: {
-            onGetUserQueriesModule: ({ services, entityName, recordId, userId }) => createUserQueryModule({
-                services,
-                strategy: new TalxisUserQueryStrategy({
-                    entityName,
-                    recordId,
-                    ownerId: userId,
-                    services,
-                }),
-                enableQueryManager: true,
-            }),
-        },
         //the form ids, the delete behaviour and the root task are the strategy's options
         onCreateTaskStrategy: ({ services, fetchXml, sourceRecord }) => new DataverseTaskStrategy({
             onInitialize: async () => ({
@@ -113,6 +99,20 @@ const descriptor = new DataverseTaskGridDescriptor({
         }),
     }),
 })
+
+//personal views are on because this feature is passed - there is no flag for it
+const features: ITaskGridFeatures = {
+    userQueries: createUserQueryModule({
+        //what onInitialize resolved, read once the grid loads
+        onCreateStrategy: ({ services }) => {
+            const { entityName, recordId, userId } = descriptor.getStrategyContext()
+            return new TalxisUserQueryStrategy({ entityName, recordId, ownerId: userId, services })
+        },
+        enableQueryManager: true,
+    }),
+}
+
+<TaskGrid descriptor={descriptor} features={features} height='600px' />
 \`\`\`
 
 Both shipped strategies are shaped the same way: a required \`onInitialize\` that resolves what the strategy runs on — awaited while the grid shows its skeleton, so anything it needs can be fetched there — plus one optional hook per operation next to it. Every hook receives the parameters of the matching \`DataverseTaskActions\` method, so an override can wrap the shipped behaviour instead of replacing it:
@@ -124,7 +124,7 @@ onDeleteTasks: async params => {
 },
 \`\`\`
 
-The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onOpenDatasetItems\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\` and \`onGetFormParameters\`. The task entity name is derived from the FetchXML, so you never pass it separately — it reaches you on the \`context\` each module builder and \`onCreateTaskStrategy\` receives. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
+The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onOpenDatasetItems\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\` and \`onGetFormParameters\`. The task entity name is derived from the FetchXML, so you never pass it separately — it reaches you on the \`context\` \`onCreateTaskStrategy\` receives, and from \`descriptor.getStrategyContext()\` in a module's strategy. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
 
 ## Field mapping
 
@@ -161,22 +161,15 @@ Resolved by \`onInitialize\`:
 | \`baseFetchXml\` | ✅ | FetchXML driving the initial load. May use the Liquid variables above. |
 | \`fieldMapping\` | ✅ | Column roles, plus the optional \`projectId\` lookup. |
 | \`systemQueries\` | ✅ | Non-deletable views in the view switcher. At least one, and their columns are the grid's catalogue. |
-| \`projectRecord?\` | — | The project these tasks belong to. Handed to the project and lookup-many builders; register the project module over it to reach the Liquid variables and the link new tasks get. |
+| \`projectRecord?\` | — | The project these tasks belong to, read back through \`getStrategyContext()\`. Register the project module over it to reach the Liquid variables and the link new tasks get. |
 | \`sourceRecord?\` | — | An additional record exposed to Liquid templates (a sprint or board, say). |
 | \`userId?\` | — | Current user GUID. Pass it to the user-query strategy to scope personal views per user. |
 | \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
-| \`modules?\` | — | The feature modules, one \`onGetXModule\` builder per feature. See [**Modules**](?path=/story/task-grid-modules--overview); the Dataverse-specific shape is \`IDataverseModules\`. |
 
-The one constructor parameter, next to \`onInitialize\`:
+## Every mount costs a round trip
 
-| Parameter | Required | Description |
-|---|:--------:|---|
-| \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
-
-## Remounts cost a round trip
-
-\`onInitialize\` re-runs on every remount, and here that re-fetches the project and source records over the network. Keep it idempotent and cheap. The lifecycle itself is the same for both descriptors — see [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
+\`onInitialize\` runs once per mount, and here that fetches the project and source records over the network; switching a view does not run it again. Keep it idempotent and cheap. The lifecycle itself is the same for both descriptors — see [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
 
 To change what one of the shipped pieces does, see [**Extend a shipped strategy**](?path=/story/task-grid-extending-extend-a-shipped-strategy--overview).
                 `.trim(),

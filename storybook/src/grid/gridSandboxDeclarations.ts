@@ -25,10 +25,16 @@ declare const ChoiceGroup: typeof import('@fluentui/react').ChoiceGroup;
 /** Fluent's command bar, with its menus drawn in the application's theme. */
 declare const CommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element;
 declare const DefaultButton: typeof import('@fluentui/react').DefaultButton;
+declare const DocumentCard: typeof import('@fluentui/react').DocumentCard;
+declare const DocumentCardActivity: typeof import('@fluentui/react').DocumentCardActivity;
+declare const DocumentCardDetails: typeof import('@fluentui/react').DocumentCardDetails;
+declare const DocumentCardImage: typeof import('@fluentui/react').DocumentCardImage;
+declare const DocumentCardTitle: typeof import('@fluentui/react').DocumentCardTitle;
 declare const Dropdown: typeof import('@fluentui/react').Dropdown;
 declare const FontWeights: typeof import('@fluentui/react').FontWeights;
 declare const Icon: typeof import('@fluentui/react').Icon;
 declare const IconButton: typeof import('@fluentui/react').IconButton;
+declare const ImageFit: typeof import('@fluentui/react').ImageFit;
 declare const Label: typeof import('@fluentui/react').Label;
 declare const Link: typeof import('@fluentui/react').Link;
 declare const mergeStyleSets: typeof import('@fluentui/react').mergeStyleSets;
@@ -782,6 +788,8 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
     onRecordsDelete(recordIds: string[]): Promise<{ success: boolean; results: IRecordDeleteOperationResult[] }>;
     onIsRecordActive(recordId: string): boolean;
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference): void;
+    /** The columns Edit columns offers to add. */
+    onGetAvailableColumns(): Promise<IColumn[]>;
     getDataAsync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): Promise<IRetrievedData>;
     getDataSync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): IRetrievedData;
 }
@@ -804,6 +812,12 @@ declare class TotalRow {
 }
 
 declare function createDealsProvider(): MemoryDataProvider;
+/** The 30 deals of the sales pipeline, as raw records. */
+declare const DEAL_ROWS: IRawRecord[];
+/** The columns of the deals. */
+declare const DEAL_COLUMNS: IColumn[];
+/** The id attribute of the deals. */
+declare const DEAL_PRIMARY_ID: string;
 /** A new, unloaded provider over a consulting team's 24 timesheet entries of last week. */
 declare function createTimesheetsProvider(): MemoryDataProvider;
 /** A new, unloaded provider over a support desk's 36 tickets. */
@@ -1726,6 +1740,10 @@ interface IGridRows extends IEventEmitter<IGridRowsEvents> {
     registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
     /** Sets the row's height over what the hooks decide. */
     setRowHeight(record: IRecord, height: number): void;
+    /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
+    registerRowClass(className: string, rule: (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean): () => void;
+    /** Runs the class rules over the records' rows again. */
+    refreshRowClasses(records: IRecord[]): void;
 }
 
 type GridLockHook = (result: IGridLock, context: IGridLockContext) => void;
@@ -1989,15 +2007,16 @@ interface IGridModuleServiceMap {
     rowSelection: IGridRowSelection;
 }
 
-/** Everything the grid keeps for its next mount, keyed by the part that wrote it. */
-type IGridState = { [key: string]: unknown };
+/** What the store keeps, by id; plain data, so a host can persist it. */
+type IStateDictionary = { [id: string]: unknown };
 
-/** A keyed store each part of the grid reads its own entry from and writes it back to. */
-interface IGridStateStorage {
-    get<TValue>(key: string): TValue | undefined;
-    set<TValue>(key: string, value: TValue): void;
-    /** Every entry, to keep for the next mount. */
-    getAll(): IGridState;
+/** Keeps state by id, for whatever needs it back after a remount. */
+interface IStateStore {
+    get<TValue>(id: string): TValue | undefined;
+    set<TValue>(id: string, value: TValue): void;
+    delete(id: string): void;
+    /** A store over the entry under \`id\`, created on first use. */
+    scope(id: string): IStateStore;
 }
 
 /** Everything the grid is made of. */
@@ -2009,7 +2028,7 @@ interface IGridServiceMap extends IGridModuleServiceMap {
     /** What the caller asked the grid to be, with its defaults applied. */
     settings: IGridSettings;
     /** What the grid's parts keep for the next mount. */
-    state: IGridStateStorage;
+    state: IStateStore;
     rows: IGridRows;
     validation: IGridValidation;
     provider: IDataProvider;
@@ -2060,6 +2079,25 @@ interface IPcfContext {
 
 /** Throws outside PcfContextProvider. */
 declare function usePcfContext(): IPcfContext;
+
+/** Hands the provider to every grid below it. */
+declare const DataProviderContextProvider: (props: { provider: IDataProvider; children?: React.ReactNode }) => JSX.Element;
+/** Throws outside DataProviderContextProvider. */
+declare function useDataProvider(): IDataProvider;
+/** Keeps state by id in a plain dictionary, written in place. */
+declare class StateStore implements IStateStore {
+    constructor(parameters?: { state?: IStateDictionary });
+    get<TValue>(id: string): TValue | undefined;
+    set<TValue>(id: string, value: TValue): void;
+    delete(id: string): void;
+    scope(id: string): IStateStore;
+}
+/** Hands one state store to every control below it; a fresh in-memory one without \`store\`. */
+declare const StateProvider: (props: { store?: IStateStore; children?: React.ReactNode }) => JSX.Element;
+/** Returns the store from the nearest StateProvider, or the page-wide one without it. */
+declare function useStateStore(): IStateStore;
+/** The store a control keeps its state in, per view inside a DatasetControl; nothing is kept without a stateKey. */
+declare function useControlStateStore(stateKey: string | undefined): IStateStore;
 
 /** The record form: Form.Root, Form.Section, Form.Field, Form.Cell, Form.Control and the rest. */
 declare const Form: typeof import('@talxis/base-controls').Form;
@@ -2700,7 +2738,7 @@ interface IOverlayUiLoadingComponents {
     onRenderText: (props: ITextProps) => JSX.Element | null;
 }
 
-interface IOverlayUiEmptyRecordsComponents {
+interface IEmptyRecordsUiComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderText: (props: ITextProps) => JSX.Element | null;
@@ -2712,14 +2750,14 @@ interface IOverlayUiLoadingProps {
     components?: Partial<IOverlayUiLoadingComponents>;
 }
 
-interface IOverlayUiEmptyRecordsProps {
+interface IEmptyRecordsUiProps {
     message: string;
-    components?: Partial<IOverlayUiEmptyRecordsComponents>;
+    className?: string;
+    components?: Partial<IEmptyRecordsUiComponents>;
 }
 
 interface IOverlayUi {
     Loading: (props: IOverlayUiLoadingProps) => JSX.Element | null;
-    EmptyRecords: (props: IOverlayUiEmptyRecordsProps) => JSX.Element | null;
 }
 
 /** What the grid draws over its rows. */
@@ -2878,7 +2916,7 @@ interface IRecordSaveSelectionCellProps extends ICellRendererParams<IRecord> {
 /** Replaces parts of what the grid draws over its rows. */
 interface IGridOverlayComponents {
     loading?: Partial<IOverlayUiLoadingComponents>;
-    emptyRecords?: Partial<IOverlayUiEmptyRecordsComponents>;
+    emptyRecords?: Partial<IEmptyRecordsUiComponents>;
 }
 
 /** Replaces parts of the rows the grid draws in place of records. */
@@ -2914,8 +2952,6 @@ interface IGridEventHandlers {
 
 interface IGrid extends Partial<IGridEventHandlers> {
     /** Read once, at mount. */
-    provider: IDataProvider;
-    /** Read once, at mount. */
     modules: IGridModules;
     /** True by default and read once, at mount. */
     enableNavigation?: boolean;
@@ -2936,8 +2972,8 @@ interface IGrid extends Partial<IGridEventHandlers> {
     /** Applied by id on every column build, after every module's hook. */
     colDefs?: { [colId: string]: IGridColDefOverride };
     /** Read whenever the grid asks. */
-    /** Where the user was, read at mount and written in place. */
-    state?: IGridState;
+    /** The key the grid's state is kept under, per view inside a DatasetControl. */
+    stateKey?: string;
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
@@ -3374,5 +3410,236 @@ interface ICheckListProps extends Omit<IGrid, 'modules' | 'labels'> {
 
 /** A grid over the provider's records as a checklist. */
 declare const CheckList: (props: ICheckListProps) => JSX.Element;
+
+declare const ContextualMenuItemType: typeof import('@fluentui/react').ContextualMenuItemType;
+
+/** A view the user can switch to. */
+interface IDatasetControlView {
+    id: string;
+    name: string;
+    /** The header the view is listed under; views without one are listed under "System views". */
+    group?: string;
+}
+
+interface IDatasetControlLoadParameters {
+    /** The view to load; undefined on a first load, for onLoad to pick the default. */
+    viewId?: string;
+}
+
+interface IDatasetControlLoadResult {
+    provider: IDataProvider;
+    /** What the view switcher lists. */
+    views?: IDatasetControlView[];
+    /** The view the provider shows, when onLoad picked the default. */
+    viewId?: string;
+}
+
+interface IDatasetControlLabels { unsavedChangesConfirmation: string }
+interface IViewSwitcherLabels { ungroupedViewsHeader: string }
+interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: string; leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }
+interface IPaginationLabels { firstPageTooltip: string; previousPageTooltip: string; nextPageTooltip: string; currentPage: string }
+interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pageSizeTooltip: string }
+interface IDatasetControlNotificationsLabels { groupedNotificationsSummary: string }
+interface IEditColumnsLabels { editColumns: string; save: string; cancel: string; scopeSelectorLabel: string; columnSelectorPlaceholder: string; customColumnTooltip: string; unnamed: string; noResults: string }
+
+interface IDatasetControlRuntimeEvents {
+    /** A load started: the first one, a view switch or a reload. */
+    onLoadStarted: () => void;
+    /** A load finished, and its provider is now the one shown, under a new key. */
+    onLoaded: (provider: IDataProvider) => void;
+    /** A load failed; the provider shown before it, if any, stays. */
+    onLoadFailed: (error: unknown) => void;
+    onDestroyed: () => void;
+}
+
+/** A command the ribbon draws as a button and runs when clicked. */
+interface IRibbonCommand {
+    /** Stable across loads. */
+    id: string;
+    label: string;
+    tooltip?: string;
+    /** A Fluent icon name. */
+    iconName?: string;
+    /** The ribbon also disables a command while it runs. */
+    isDisabled?: boolean;
+    onExecute: () => Promise<void> | void;
+}
+
+interface IRibbonRuntimeEvents {
+    onBeforeLoad: () => void;
+    onLoaded: () => void;
+    onBeforeExecute: (command: IRibbonCommand) => void;
+    onAfterExecute: (command: IRibbonCommand) => void;
+}
+
+/** The ribbon's commands, and which of them are running. */
+interface IRibbonRuntime {
+    readonly events: { addEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void; removeEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void };
+    /** undefined until the first load finishes. */
+    getCommands(): IRibbonCommand[] | undefined;
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
+    isRunning(commandId: string): boolean;
+    /** Calls onLoad again; the latest call's commands win. */
+    reload(): Promise<void>;
+}
+
+interface IRibbonProps {
+    /** Called at mount and on every reload(). */
+    onLoad: () => Promise<IRibbonCommand[]>;
+    /** Which side the commands are drawn against; defaults to 'start'. */
+    align?: 'start' | 'end';
+    /** Disables every command, such as while the data behind them loads. */
+    disabled?: boolean;
+    /** Put on the ribbon's box, and on the shimmer while loading. */
+    className?: string;
+    /** Called with the runtime once it exists, before the first load. */
+    onReady?: (ribbon: IRibbonRuntime) => void;
+    components?: {
+        onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
+        /** Its container is a shimmer the height of the command bar by default. */
+        loadingBoundary?: Partial<{
+            onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+            onRenderSpinner: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element | null;
+            onRenderText: (props: import('@fluentui/react').ITextProps) => JSX.Element | null;
+        }>;
+        errorMessage?: Partial<IErrorMessageBarComponents>;
+    };
+}
+
+/** A command bar of the commands onLoad returns, each run when clicked. */
+declare const Ribbon: (props: IRibbonProps) => JSX.Element;
+/** The loading boundary's default slots: a spinner with a text beside it. */
+declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['components']>['loadingBoundary']>;
+
+interface IDatasetControlServiceMap {
+    runtime: IDatasetControlRuntime;
+    labels: ILocalizationService<IDatasetControlLabels>;
+    viewSwitcher: { getViews(): IDatasetControlView[]; getCurrentView(): IDatasetControlView | undefined; select(viewId: string): void };
+    quickFind: { getQuery(): string; setQuery(query: string): void; search(): void; clear(): void };
+    editColumns: { isOpen(): boolean; open(): void; close(): void; save(): void };
+    [key: string]: any;
+}
+
+/** The control's services, and when it is loaded and gone. */
+interface IDatasetControlRuntime {
+    readonly events: { addEventListener<K extends keyof IDatasetControlRuntimeEvents>(event: K, listener: IDatasetControlRuntimeEvents[K]): void; removeEventListener<K extends keyof IDatasetControlRuntimeEvents>(event: K, listener: IDatasetControlRuntimeEvents[K]): void };
+    readonly services: {
+        get<K extends keyof IDatasetControlServiceMap>(key: K): IDatasetControlServiceMap[K];
+        find<K extends keyof IDatasetControlServiceMap>(key: K): IDatasetControlServiceMap[K] | undefined;
+        whenAvailable<K extends keyof IDatasetControlServiceMap>(key: K, callback: (service: IDatasetControlServiceMap[K]) => void): void;
+    };
+    /** The provider shown, from the last load that succeeded. */
+    getProvider(): IDataProvider | undefined;
+    /** Changes with every provider, for keying what renders it. */
+    getProviderKey(): number;
+    isLoading(): boolean;
+    /** The control's height, as the height prop gives it. */
+    getHeight(): string | undefined;
+    /** The views the last load that succeeded returned; empty when it returned none. */
+    getViews(): IDatasetControlView[];
+    /** The view the provider shown is for. */
+    getViewId(): string | undefined;
+    /** Where the parts keep their state for a view: the one shown, unless another is given. */
+    getViewStateStore(viewId?: string): IStateStore;
+    /** Why the last load failed, until the next one starts. */
+    getError(): unknown;
+    /** Runs onLoad again for the view, behind the skeleton; asks first when there are unsaved changes and never rejects. */
+    reload(parameters: IDatasetControlLoadParameters): Promise<void>;
+    /** Runs the load that failed again. */
+    retry(): Promise<void>;
+}
+
+interface IDatasetControlProps {
+    /** Loads the provider for the view and whatever it needs; called at mount and on every view switch. */
+    onLoad: (parameters: IDatasetControlLoadParameters) => Promise<IDatasetControlLoadResult>;
+    children: React.ReactNode;
+    /** '100%' fills the parent; the content's height when left out. */
+    height?: string;
+    className?: string;
+    /** The key the control's state is kept under in the state store. */
+    stateKey?: string;
+    /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to true. */
+    destroyProviderOnUnmount?: boolean;
+    labels?: Partial<IDatasetControlLabels>;
+    components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
+    onReady?: (runtime: IDatasetControlRuntime) => void;
+    onDestroyed?: (runtime: IDatasetControlRuntime) => void;
+}
+
+interface IErrorMessageBarComponents {
+    /** The bar; children holds the title, actions the command bar. */
+    onRenderMessageBar: (props: import('@fluentui/react').IMessageBarProps) => JSX.Element | null;
+    /** Wraps the title; its children are the title. */
+    onRenderTooltip: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null;
+    onRenderTitle: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
+    /** The details and retry commands; an override can add its own items. */
+    onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
+}
+
+type IDatasetControlCommandBarProps = import('@fluentui/react').ICommandBarProps;
+
+interface IDatasetControlContainerComponents { onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }
+interface IDatasetControlListColumn { column: IColumn; text: string; commands: ICommandBarItemProps[] }
+
+interface IEditColumnsComponents {
+    button?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    panel?: Partial<{ onRenderPanel: (props: any) => JSX.Element | null; onRenderFooter: (props: any) => JSX.Element | null; onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }>;
+    scopeSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: any; text: string }) => JSX.Element | null }>;
+    columnSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: IColumn; text: string }) => JSX.Element | null }>;
+    columnList?: Partial<{ onRenderColumn: (props: IDatasetControlListColumn) => JSX.Element | null }>;
+}
+
+/** Loads the provider through onLoad and holds every part inside it; the parts are attached to it. */
+interface IDatasetControlNamespace {
+    (props: IDatasetControlProps): JSX.Element;
+    /** The row above the records; Start and End are its left and right regions. */
+    Header: ((props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element) & {
+        Start: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
+        End: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
+    };
+    /** Fills the height the header and footer leave, usually with the grid. */
+    Body: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
+    /** The row below the records; Start and End are its left and right regions. */
+    Footer: ((props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element) & {
+        Start: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
+        End: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
+    };
+    ViewSwitcher: (props: { labels?: Partial<IViewSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    /** The shared Ribbon, loaded again whenever the selected records change. */
+    Ribbon: (props: IRibbonProps) => JSX.Element;
+    QuickFind: (props: {
+        labels?: Partial<IQuickFindLabels>;
+        components?: Partial<{
+            onRenderTextField: (props: any) => JSX.Element | null;
+            onRenderCallout: (props: any) => JSX.Element | null;
+            /** Handed to onRenderCallout as its components. */
+            callout: Partial<{
+                onRenderCallout: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
+                onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
+                onRenderDescription: (props: { leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }) => JSX.Element | null;
+                onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+                onRenderColumn: (props: { column: IColumn }) => JSX.Element | null;
+            }>;
+        }>;
+    }) => JSX.Element;
+    Notifications: (props: { labels?: Partial<IDatasetControlNotificationsLabels>; messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
+    Pagination: (props: { labels?: Partial<IPaginationLabels>; components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
+    PageSizeSwitcher: (props: { labels?: Partial<IPageSizeSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    /** The empty state in place of its children while the provider has no records. */
+    EmptyRecords: (props: { children?: React.ReactNode; labels?: Partial<{ noRecordsFound: string }>; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
+    /** The button that opens the column editor, and the editor itself. */
+    EditColumns: (props: { enableScopeSelector?: boolean; labels?: Partial<IEditColumnsLabels>; components?: IEditColumnsComponents }) => JSX.Element;
+    Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyRecords: (props: IEmptyRecordsUiProps) => JSX.Element | null; [part: string]: any };
+}
+
+declare const DatasetControl: IDatasetControlNamespace;
+/** The runtime of the DatasetControl the component is inside of, if any. */
+declare const useDatasetControlRuntime: () => IDatasetControlRuntime | undefined;
+/** The runtime of the DatasetControl the part is inside of; throws outside one. */
+declare const useRequiredDatasetControlRuntime: () => IDatasetControlRuntime;
+declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
+/** The view switcher's default slots, to render the default button with your own items. */
+declare const ViewSwitcherUiComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };
 
 `

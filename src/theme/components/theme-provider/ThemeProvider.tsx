@@ -28,7 +28,7 @@ export const ThemeProvider = React.forwardRef<HTMLDivElement, IThemeProviderProp
     return <div
         ref={ref}
         {...divProps}
-        className={getClassNames([className, applyTo === 'element' ? styles.root : undefined])}>
+        className={getClassNames([className, applyTo === 'element' ? styles.themeProvider : undefined])}>
         <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>{children}</ThemeContext>
     </div>;
 });

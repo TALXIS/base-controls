@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGrid, IGridCellParams, IGridModules, PcfContextProvider } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGrid, IGridCellParams, IGridModules, PcfContextProvider, DataProviderContextProvider } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -164,12 +164,13 @@ const ParsingGrid = (props: IParsingScratchGridProps & { culture: string, langua
 
     return <PcfContextProvider userSettings={{ formatInfoCultureName: props.culture, lcid: props.languageId }}>
         <LastChange change={change} />
-        <Grid.Root
-            provider={provider}
-            modules={createModules(props.enableAutoSave)}
-            colDefs={COL_DEFS}
-            height='100%'
-            enableNavigation />
+        <DataProviderContextProvider provider={provider}>
+            <Grid.Root
+                modules={createModules(props.enableAutoSave)}
+                colDefs={COL_DEFS}
+                height='100%'
+                enableNavigation />
+        </DataProviderContextProvider>
     </PcfContextProvider>
 }
 

@@ -11,12 +11,8 @@ export const getViewManagerDialogStyles = () => {
                 }
             }
         },
-        datasetControlRoot: {
+        datasetControl: {
             width: 600
-        },
-        layerRoot: {
-            zIndex: 1,
-            position: 'absolute'
         }
     })
 }
