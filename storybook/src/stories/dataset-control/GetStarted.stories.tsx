@@ -38,7 +38,7 @@ export const Accounts = () => <PcfContextProvider>
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+            <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
         </DatasetControl.Body>
         <DatasetControl.Footer>
             <DatasetControl.Footer.Start>
@@ -54,7 +54,7 @@ export const Accounts = () => <PcfContextProvider>
 
 - \`onLoad\` returns the provider every part works on. Until it has loaded, a placeholder stands in for the control. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview).
 - \`height\` sizes the control, and what shows the records fills what the header and the footer leave. \`Header\`, \`Body\` and \`Footer\`, with their \`Start\` and \`End\` regions, place the parts. See [**Layout**](?path=/docs/datasetcontrol-layout-overview--overview).
-- \`Grid.Root\` takes no provider: it gets the one \`onLoad\` returned.
+- \`Grid\` takes no provider: it gets the one \`onLoad\` returned.
 - \`stateKey\` brings the user back where they left off the next time the control mounts. See [**State**](?path=/docs/datasetcontrol-state-overview--overview).
 - \`PcfContextProvider\` must wrap the control. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 `

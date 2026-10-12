@@ -35,7 +35,7 @@ export const urgentTicketsModule: IGridModule = {
 }
 
 export const TicketQueue = (props: { provider: IDataProvider }) => <DataProviderContextProvider provider={props.provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             custom: [urgentTicketsModule],
@@ -45,7 +45,7 @@ export const TicketQueue = (props: { provider: IDataProvider }) => <DataProvider
 
 - Build a module once, as a constant or in \`useMemo\`. \`modules\` is read at mount: see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
 - Yours register after the built-in ones, so their services, such as \`runtime.services.find('rowSelection')\`, already answer in your \`onRegister\`.
-- \`onRegister\` runs before AG Grid exists: reach its api with \`runtime.services.whenAvailable('gridApi', gridApi => ...)\`. It also runs while \`<Grid.Root />\` renders for the first time, so it must not set React state.
+- \`onRegister\` runs before AG Grid exists: reach its api with \`runtime.services.whenAvailable('gridApi', gridApi => ...)\`. It also runs while \`<Grid />\` renders for the first time, so it must not set React state.
 - Take what the module works on from \`runtime.services\`, such as \`runtime.services.get('provider')\`, rather than from outside, and it works in any grid.
 - A module that needs options, or state of your app, is a function that builds one: \`createCopyColumnModule(onCopied)\`. Read state that changes through a getter or a ref, since the module is built once. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
 
@@ -108,7 +108,7 @@ declare module '@talxis/base-controls' {
 
 - Surfaces are drawn in ascending priority. The built-in ones are the filter callout (\`'filterCallout'\`), the dialog grouping opens when a selection would load too many groups (\`'groupSelectionLimit'\`), and the legacy client API's notification callout (\`'notificationCallout'\`).
 - A surface is inside the grid's React tree, so its components can call \`useGridService\`, and they are drawn in the grid's theme.
-- The list is read each time \`<Grid.Root />\` renders, not when your state changes, so a surface's component follows its own state, as the bar subscribes to its service. A surface hook registered after the grid mounted appears the next time \`<Grid.Root />\` renders.
+- The list is read each time \`<Grid />\` renders, not when your state changes, so a surface's component follows its own state, as the bar subscribes to its service. A surface hook registered after the grid mounted appears the next time \`<Grid />\` renders.
 - A surface that draws a block, such as the bar, makes a grid without \`height\` taller, as the example shows. Callouts, panels and dialogs draw in a layer of their own and take no room.
 `
 

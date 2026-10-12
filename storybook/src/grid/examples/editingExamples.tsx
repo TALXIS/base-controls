@@ -10,7 +10,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{status}</MessageBar>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
                 onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
                 onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
@@ -47,7 +47,7 @@ const GridExample = () => {
         <CommandBar items={commands} />
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
                 onRecordValueChanged={countChanged}
                 onAfterSaved={countChanged}
@@ -85,7 +85,7 @@ const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
     return <DataProviderContextProvider provider={timesheets}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             colDefs={{
                 hours: { context: { cell: { onGetValidation: validateHours } } },
@@ -107,7 +107,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 key={isWeekClosed ? 'closed' : 'open'}
                 modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
                 rowSettings={{
@@ -173,7 +173,7 @@ const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
     return <DataProviderContextProvider provider={timesheets}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             height='420px' />
     </DataProviderContextProvider>
@@ -193,7 +193,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
                 colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
                 onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}

@@ -5,9 +5,9 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { FillContainerExample, InvoiceLinesExample, TicketPreviewPaneExample, WatchEveryEventExample } from '../../../grid/examples/propsAndEventsExamples'
 
 const DESCRIPTION = `
-Everything \`<Grid.Root />\` takes: its props, how it sizes itself, and the events it fires.
+Everything \`<Grid />\` takes: its props, how it sizes itself, and the events it fires.
 
-The grid reads its provider, with the records, the columns and the paging, from [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) at mount. See [**Data**](?path=/docs/grid-get-started-data--overview).
+The provider, with the records, the columns and the paging, is not a prop: the grid takes it from the DatasetControl or the \`DataProviderContextProvider\` around it, once, at mount. See *Your first grid* on [**Get started**](?path=/docs/grid-get-started--overview).
 
 ## Props
 
@@ -19,18 +19,18 @@ The grid reads its provider, with the records, the columns and the paging, from 
 | \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`rowHeight\` | \`number\` | \`42\` | At mount | How tall a row is, in pixels. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows the grid grows to before it scrolls, while \`height\` is not set. See *Sizing* below. |
-| \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. See *Sizing* below. |
+| \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. Ignored inside a DatasetControl that has a height. See *Sizing* below. |
 | \`className\` | \`string\` | None | Live | Added to the grid's root element, beside its own classes. |
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | Your own loading and empty overlays, and loading and error rows. See [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview) and [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview). |
-| \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Localization**](?path=/docs/grid-localization-overview--overview). |
-| \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns-overview--overview). |
-| \`stateKey\` | \`string\` | None | At mount | The key the grid keeps where the user was scrolled, which groups were open and which cell had focus under. See [**State**](?path=/docs/grid-state--overview). |
+| \`labels\` | \`Partial<IGridLabels>\` | \`GRID_LABELS\`, in English | At mount | The strings the grid draws. See [**Localization**](?path=/docs/grid-localization--overview). |
+| \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns--overview). |
+| \`stateKey\` | \`string\` | None | At mount | The key the grid keeps where the user was scrolled, which groups were open and which cell had focus under; per view inside a DatasetControl. See [**State**](?path=/docs/grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
 | \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |
 | \`onDataLoaded\`, \`onRowClicked\` and the other events | Functions | None | Live | See *Events* below. |
 
-A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without the save status of its rows, and without its scroll position, open groups and focus unless you pass the same \`state\`.
+A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without the save status of its rows, and without its scroll position, open groups and focus unless it has a \`stateKey\`.
 
 ## Sizing
 
@@ -43,7 +43,9 @@ A prop read at mount keeps the value the grid mounted with. To change one, rende
 
 **With \`height\`**, the grid is exactly that tall and its rows scroll inside it. \`maxVisibleRows\` is ignored. \`'100%'\` fills a parent that has its own height.
 
-**In both cases**, the grid is at least 220px tall, so \`height='150px'\` still draws 220px.
+**Inside a DatasetControl with a \`height\`**, the grid fills the control's body, whatever its own \`height\` and \`maxVisibleRows\` say. Without one, the grid sizes itself as above.
+
+**In every case**, the grid is at least 220px tall, so \`height='150px'\` still draws 220px.
 
 {{story: Invoice lines that grow}}
 

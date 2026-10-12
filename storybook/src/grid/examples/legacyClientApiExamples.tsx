@@ -72,7 +72,7 @@ const supportDeskScript: IGridModule = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
@@ -140,7 +140,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={[{ key: 'sync', text: 'Sync stock', iconProps: { iconName: 'Sync' }, disabled: isSyncing, onClick: () => { onSync() } }]} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     editing: createEditingModule({ autoSave: true }),
@@ -170,7 +170,7 @@ const triageScript: IGridModule = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             editing: createEditingModule({ autoSave: true }),

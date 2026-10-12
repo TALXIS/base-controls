@@ -90,7 +90,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
             <DatasetControl.Notifications messages={props.overrideSlots ? [{ text: 'Deals sync nightly.', level: 'INFO' }] : undefined} />
             {isThrowing && <ThrowingPart />}
             <DatasetControl.Body>
-                <Grid.Root stateKey='grid' modules={modules} />
+                <Grid stateKey='grid' modules={modules} />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.Start>

@@ -14,7 +14,7 @@ const GridExample = () => {
     const deals = React.useMemo(createPipelineProvider, [])
 
     return <DataProviderContextProvider provider={deals}>
-        <Grid.Root
+        <Grid
             modules={{
                 rowModel: createClientSideRowModelModule(),
                 sorting: createSortingModule(),
@@ -55,7 +55,7 @@ const GridExample = () => {
             onChange={(_, option) => setType(option?.key as GroupingType)}
             styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
         <DataProviderContextProvider provider={timesheets}>
-            <Grid.Root
+            <Grid
                 key={type}
                 modules={{
                     rowModel: createClientSideRowModelModule(),
@@ -80,7 +80,7 @@ const GridExample = () => {
     const deals = React.useMemo(createDealsWithTotals, [])
 
     return <DataProviderContextProvider provider={deals}>
-        <Grid.Root
+        <Grid
             modules={{
                 rowModel: createClientSideRowModelModule(),
                 sorting: createSortingModule(),
@@ -121,7 +121,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={toolbarItems} />
         <DataProviderContextProvider provider={timesheets}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     grouping: createGroupingModule(),

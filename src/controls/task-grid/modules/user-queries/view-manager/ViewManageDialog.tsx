@@ -43,7 +43,7 @@ export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid.Root modules={modules} enableNavigation={false} />
+                <Grid modules={modules} enableNavigation={false} />
             </DatasetControl.Body>
         </DatasetControl>
     </Dialog>;

@@ -14,7 +14,7 @@ const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+            <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
         </DatasetControl.Body>
     </DatasetControl>
 </Stack>
@@ -41,7 +41,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDealsOnRe
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
     </DatasetControl.Body>
 </DatasetControl>
 `

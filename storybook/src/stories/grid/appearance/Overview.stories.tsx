@@ -5,7 +5,25 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ColumnLinesExample, ThemeEditExample, DensityExample, EscalatedTicketsExample, HeaderColoursExample, SpotBreachesExample } from '../../../grid/examples/appearanceExamples'
 
 const DESCRIPTION = `
-The grid draws in your theme. On top of it you can colour cells and headers by what they hold and pick a density, zebra rows and option set colours. To translate what the grid shows, see [**Localization**](?path=/docs/grid-localization-overview--overview). To replace what the grid draws rather than recolour it, see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview), [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview), [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview), [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview) and how modules draw their pieces: [**Editing**](?path=/docs/grid-appearance-modules-editing--overview), [**Row selection**](?path=/docs/grid-appearance-modules-row-selection--overview), [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview), [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview), [**Grouping**](?path=/docs/grid-appearance-modules-grouping--overview) and [**Totals**](?path=/docs/grid-appearance-modules-totals--overview).
+The grid draws in your theme. On top of it you can colour cells and headers by what they hold and pick a density, zebra rows and option set colours. To translate what the grid shows, see [**Localization**](?path=/docs/grid-localization--overview).
+
+## Replacing what the grid draws
+
+To draw something your own way rather than recolour it, replace it:
+
+| What | Where | Page |
+|---|---|---|
+| A column's cells and editors | \`cellRenderer\`, \`cellEditor\` in \`colDefs\` | [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) |
+| A column's header | \`headerComponent\` in \`colDefs\` | [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview) |
+| The loading and empty overlays | \`components.overlays\` | [**Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview) |
+| The loading and error rows | \`components.rows\` | [**Custom rows**](?path=/docs/grid-appearance-custom-rows--overview) |
+| What a module draws | The module's \`components\` option, or its column in \`colDefs\` | [**Module parts**](?path=/docs/grid-appearance-module-parts--overview) |
+
+Most of these take \`components\`: an object of keys, each holding \`onRender...\` parts.
+
+- Every key and part is optional: what you leave out keeps its default.
+- A part is called, not mounted, so it can't use hooks itself. Return a component that does.
+- Define \`components\` outside your component, so the grid does not redraw on every render.
 
 ## Colour cells by their data
 

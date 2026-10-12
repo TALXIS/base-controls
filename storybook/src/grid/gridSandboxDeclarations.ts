@@ -2983,16 +2983,15 @@ interface IGrid extends Partial<IGridEventHandlers> {
     onDestroyed?: (runtime: IGridRuntime) => void;
 }
 
-/** Everything a grid is rendered from. */
-interface IGridNamespace {
-    Root: (props: IGrid) => JSX.Element;
+/** The parts a grid is drawn from, attached to the grid itself. */
+interface IGridParts {
     Cell: IGridCellNamespace;
     ColumnHeader: IGridColumnHeaderNamespace;
     Overlay: IGridOverlayNamespace;
     Row: IGridRowNamespace;
 }
 
-declare const Grid: IGridNamespace;
+declare const Grid: ((props: IGrid) => JSX.Element) & IGridParts;
 
 interface IRowSelectionUiCheckboxComponents {
     /** What the checkbox is drawn in, and what takes the click. */

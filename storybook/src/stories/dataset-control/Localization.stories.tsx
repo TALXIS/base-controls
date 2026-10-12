@@ -19,7 +19,7 @@ const DESCRIPTION = `Every string a part shows can be replaced through its \`lab
 | \`Pagination\` | \`firstPageTooltip\`, \`previousPageTooltip\`, \`nextPageTooltip\`, \`currentPage\` (with \`{{ number }}\`) | \`PAGINATION_LABELS\` |
 | \`PageSizeSwitcher\` | \`recordRange\` (with \`{{ start }}\` and \`{{ end }}\`), \`recordTotal\` (with \`{{ total }}\`), \`pageSizeTooltip\` | \`PAGE_SIZE_SWITCHER_LABELS\` |
 
-The grid's strings are the grid's own \`labels\`: see [**Localization**](?path=/docs/grid-localization-overview--overview) of the grid. View and column names come from \`onLoad\` and the provider.
+The grid's strings are the grid's own \`labels\`: see [**Localization**](?path=/docs/grid-localization--overview) of the grid. View and column names come from \`onLoad\` and the provider.
 `
 
 const meta = {

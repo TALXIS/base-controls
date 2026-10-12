@@ -80,7 +80,7 @@ An editable grid adds a save status column, \`RECORD_SAVE_COLUMN_KEY\` (\`'recor
 
 - With row selection on, the status is drawn in the row's checkbox cell instead.
 - The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it.
-- Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or change how it looks on [**Editing appearance**](?path=/docs/grid-appearance-modules-editing--overview).
+- Hide the column with \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`, or change how it looks: see *Editing* on [**Module parts**](?path=/docs/grid-appearance-module-parts--overview).
 
 ## Validation
 
@@ -112,11 +112,11 @@ A server can refuse a save the browser allowed. A provider reports that as \`{ s
 - A refused record keeps its values and stays unsaved, ready to be saved again.
 - Errors from the server appear only in the callout. A cell outlines only what fails validation in the browser.
 - A provider holds one interceptor per name: a second \`setInterceptor('onRecordSave', ...)\` replaces the first.
-- The callout's title and button are the \`recordSaveErrorTitle\` and \`recordSaveErrorDismiss\` labels: see [**Localization**](?path=/docs/grid-localization-overview--overview).
+- The callout's title and button are the \`recordSaveErrorTitle\` and \`recordSaveErrorDismiss\` labels: see [**Localization**](?path=/docs/grid-localization--overview).
 
 ## Locks
 
-Locks decide what can be edited. There are four levels, checked in the order of the table below. The first level that locks wins, and only its mark is drawn: a cell in a locked column or row shows no lock of its own. The tooltips are the labels in the last column: see [**Localization**](?path=/docs/grid-localization-overview--overview).
+Locks decide what can be edited. There are four levels, checked in the order of the table below. The first level that locks wins, and only its mark is drawn: a cell in a locked column or row shows no lock of its own. The tooltips are the labels in the last column: see [**Localization**](?path=/docs/grid-localization--overview).
 
 {{story: Freeze approved entries}}
 

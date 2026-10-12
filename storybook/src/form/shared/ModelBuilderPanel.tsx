@@ -739,7 +739,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                     </DatasetControl.Header>
                     <DatasetControl.Notifications />
                     <DatasetControl.Body>
-                        <Grid.Root
+                        <Grid
                             modules={{
                                 rowModel: createClientSideRowModelModule(),
                                 rowSelection: createRowSelectionModule({ mode: "multiple" }),

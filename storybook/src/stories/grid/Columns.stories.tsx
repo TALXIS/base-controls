@@ -15,7 +15,7 @@ Every provider column becomes a grid column. \`colDefs\` changes them and adds y
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         colDefs={{
             name: { pinned: 'left', context: { isPrimary: true } },
@@ -43,7 +43,7 @@ A column's width comes from its \`visualSizeFactor\`, or \`initialWidth\` in \`c
 ## Navigation
 
 - \`context.isPrimary: true\` draws the value as a link to its record.
-- Clicking it, or double-clicking a row without editing, opens the record. Pass \`onOpenRecord\` to \`<Grid.Root />\` to do something else.
+- Clicking it, or double-clicking a row without editing, opens the record. Pass \`onOpenRecord\` to \`<Grid />\` to do something else.
 - \`enableNavigation={false}\` turns links and opening off.
 
 {{story: Open a product from its name}}
@@ -98,15 +98,16 @@ To size rows to the text instead, set AG Grid's \`autoHeight: true\` in \`colDef
 
 \`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated (\`visualSizeFactor\` and \`order\`).
 
+- Inside a DatasetControl with a \`stateKey\`, the control keeps the columns of each view for you: see [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl. The rest of this section is for a grid on its own.
 - Save each column's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before the provider's first \`refresh()\`.
 - Columns added through \`colDefs\` are not included.
-- Where the user was scrolled, which groups were open and which cell had focus are kept in the \`state\` prop: see [**State**](?path=/docs/grid-state--overview).
+- Where the user was scrolled, which groups were open and which cell had focus are kept under \`stateKey\`: see [**State**](?path=/docs/grid-state--overview).
 
 {{story: Remember the layout}}
 `
 
 const meta = {
-    title: 'Grid/Columns/Overview',
+    title: 'Grid/Columns',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

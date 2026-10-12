@@ -21,7 +21,7 @@ const getUrgency = (ticket: IRecord) => {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             sorting: createSortingModule(),
@@ -63,7 +63,7 @@ const escalatedTicketsModule: IGridModule = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             editing: createEditingModule(),
@@ -84,7 +84,7 @@ const toMonospace = (theme: ITheme) => {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
         colDefs={{
             ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
@@ -116,7 +116,7 @@ const GridExample = () => {
         </Stack>
         {/* the grid reads these at mount */}
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
                 modules={{ rowModel: createClientSideRowModelModule() }}
                 rowHeight={rowHeight}
@@ -144,7 +144,7 @@ const columnLinesModule: IGridModule = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             custom: [columnLinesModule],
@@ -215,7 +215,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
                 colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
                 onGridReady={gridRuntime => runtime.current = gridRuntime}
@@ -286,7 +286,7 @@ const czechTotals = createAggregationModule({
 })
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             editing: createEditingModule(),

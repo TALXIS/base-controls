@@ -24,7 +24,7 @@ export const Grid = () => {
         };
     }, []);
 
-    return <GridBase.Root
+    return <GridBase
         enableZebra={false}
         enableOptionSetColors={true}
         {...options.gridProps}

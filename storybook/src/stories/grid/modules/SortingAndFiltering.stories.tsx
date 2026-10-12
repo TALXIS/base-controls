@@ -29,7 +29,7 @@ A column's callout sets one condition, and the conditions of all filtered column
 | Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`: see *The header* on [**Columns**](?path=/docs/grid-columns-overview--overview).
+The provider's defaults are on [**Data**](?path=/docs/grid-get-started-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`: see *The header* on [**Columns**](?path=/docs/grid-columns--overview).
 
 ## Open the grid sorted and filtered
 
@@ -53,7 +53,9 @@ Once someone applies or clears a column filter, the provider's filter becomes th
 
 {{story: Switch between saved views}}
 
-A view is a sort and a filter applied together. The column menus write to the same provider state, so a view and the user's own changes mix, and the next view replaces both. Neither module raises an event when the sort or the filter changes: to remember what someone set, read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`.
+A view is a sort and a filter applied together. Inside a DatasetControl, views are the control's: \`onLoad\` returns a provider per view, its view switcher switches between them, and with a \`stateKey\` it keeps what the user sorted and filtered in each. See [**Views**](?path=/docs/datasetcontrol-parts-views--overview) of DatasetControl.
+
+On its own, as here, the column menus write to the same provider state as the view, so a view and the user's own changes mix, and the next view replaces both. Neither module raises an event when the sort or the filter changes: to remember what someone set, read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`.
 
 ## Narrow what a filter offers
 
@@ -104,7 +106,7 @@ A view is a sort and a filter applied together. The column menus write to the sa
 
 ## Labels
 
-Pass any of these keys as the module's \`labels\`, read at mount. The grid's own \`labels\` prop does not cover them: see [**Localization**](?path=/docs/grid-localization-overview--overview).
+Pass any of these keys as the module's \`labels\`, read at mount. The grid's own \`labels\` prop does not cover them: see [**Localization**](?path=/docs/grid-localization--overview).
 
 | \`createSortingModule({ labels })\` | Default | Where it shows |
 |---|---|---|
@@ -125,7 +127,7 @@ Inside the callout, the operator names follow the user's language, and the *Appl
 
 ## Components
 
-Each module's \`components\` option replaces the arrow, the funnel and the callout's frame: see [**Sorting**](?path=/docs/grid-appearance-modules-sorting--overview) and [**Filtering**](?path=/docs/grid-appearance-modules-filtering--overview) under *Appearance → Modules*.
+Each module's \`components\` option replaces the arrow, the funnel and the callout's frame: see *Sorting* and *Filtering* on [**Module parts**](?path=/docs/grid-appearance-module-parts--overview).
 `
 
 const meta = {

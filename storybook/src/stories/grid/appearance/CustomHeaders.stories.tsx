@@ -9,7 +9,7 @@ Every column draws its header with the grid's own header: the column's name, its
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         colDefs={{ price: { headerComponent: CaptionedHeader } }} />
 </DataProviderContextProvider>
@@ -35,9 +35,7 @@ Render \`Grid.ColumnHeader.Renderer\` and pass \`components\`:
 | \`container\` | \`onRenderButton\` | The button the header is, which opens the menu |
 | \`menu\` | \`onRenderContextualMenu\` | The column's menu |
 
-- Every key is optional: what you leave out keeps its default.
-- A part is called, not mounted, so it can't use hooks itself. Return a component that does.
-- Define \`components\` outside your component, so the header does not redraw on every render.
+- Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 {{story: A header with a caption}}
 

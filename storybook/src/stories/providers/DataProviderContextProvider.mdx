@@ -4,7 +4,7 @@ import { Meta, Source } from '@storybook/addon-docs/blocks';
 
 # DataProviderContextProvider
 
-`DataProviderContextProvider` hands a data provider to every grid and checklist below it. `Grid.Root` and `CheckList` read their provider from it, once, when they mount.
+`DataProviderContextProvider` hands a data provider to every grid and checklist below it. `Grid` and `CheckList` read their provider from it, once, when they mount.
 
 Inside a [**DatasetControl**](?path=/docs/datasetcontrol-get-started-overview--overview), the control provides the provider it loaded, so you don't add one yourself.
 
@@ -18,7 +18,7 @@ Inside a [**DatasetControl**](?path=/docs/datasetcontrol-get-started-overview--o
 export const Products = () => (
   <PcfContextProvider>
     <DataProviderContextProvider provider={products}>
-      <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} />
+      <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
     </DataProviderContextProvider>
   </PcfContextProvider>
 );`}

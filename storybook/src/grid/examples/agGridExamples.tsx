@@ -32,7 +32,7 @@ const GridExample = () => {
         <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
                 onGridReady={runtime => { runtimeRef.current = runtime }}
                 onColumnsChanged={columns => setOrder(describeOrder(columns))}
@@ -74,7 +74,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
                 enableOptionSetColors
                 onGridReady={runtime => { runtimeRef.current = runtime }}

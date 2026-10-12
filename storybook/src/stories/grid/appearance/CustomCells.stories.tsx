@@ -9,7 +9,7 @@ Every column draws its cells with the grid's own cell, which shows the value the
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
         colDefs={{ description: { cellRenderer: HtmlCell, cellEditor: HtmlEditor } }} />
 </DataProviderContextProvider>
@@ -46,9 +46,7 @@ Render the grid's cell and pass \`components\`:
 
 - \`onRenderControl\` gets the default as \`defaultRender\`, so you can fall back to it for some records.
 - \`onRenderOutline\` must keep the \`className\` it is handed: the grid hides the focus border of an invalid cell by it.
-- Every key is optional: what you leave out keeps its default.
-- A part is called, not mounted, so it can't use hooks itself. Return a component that does.
-- Define \`components\` outside your component, so the cell does not redraw on every render.
+- Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 {{story: Edit descriptions as rich text}}
 

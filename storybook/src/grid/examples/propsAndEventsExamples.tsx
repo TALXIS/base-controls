@@ -51,7 +51,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} farItems={[rowsSlider]} />
         <DataProviderContextProvider provider={lines}>
-            <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
+            <Grid modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
         </DataProviderContextProvider>
     </Stack>
 }
@@ -68,7 +68,7 @@ const GridExample = () => {
         <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
         <div className={styles.container} style={{ height: containerHeight }}>
             <DataProviderContextProvider provider={provider}>
-                <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
+                <Grid modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
             </DataProviderContextProvider>
         </div>
     </Stack>
@@ -119,7 +119,7 @@ const GridExample = () => {
         <div className={styles.layout}>
             <div className={styles.grid}>
                 <DataProviderContextProvider provider={provider}>
-                    <Grid.Root
+                    <Grid
                         //the modules are read at mount, so auto-save mounts the grid again
                         key={mountCount + String(isAutoSaveOn)}
                         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
@@ -202,7 +202,7 @@ const GridExample = () => {
     return <div className={styles.layout}>
         <div className={styles.grid}>
             <DataProviderContextProvider provider={provider}>
-                <Grid.Root
+                <Grid
                     modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
                     enableNavigation={false}
                     height='480px'

@@ -15,7 +15,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} la
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} labels={{ noRecordsFound: 'Žádné záznamy.' }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} labels={{ noRecordsFound: 'Žádné záznamy.' }} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

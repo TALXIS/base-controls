@@ -5,19 +5,17 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ErrorRowsExample, LoadingRowsExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-Besides rows of records, the grid draws rows that stand in for records it doesn't have: one while a group's records load, and one when records or totals fail to load. To change how either looks, pass \`components.rows\` to \`<Grid.Root />\`.
+Besides rows of records, the grid draws rows that stand in for records it doesn't have: one while a group's records load, and one when records or totals fail to load. To change how either looks, pass \`components.rows\` to \`<Grid />\`.
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createServerSideRowModelModule(), grouping: createGroupingModule() }}
         components={{ rows: { loading: { onRenderShimmer: () => <Spinner /> } } }} />
 </DataProviderContextProvider>
 \`\`\`
 
-- Every key and part is optional: what you leave out keeps its default.
-- A part is called, not mounted, so it can't use hooks itself. Return a component that does.
-- Define \`components\` outside your component, so the grid does not redraw on every render.
+- Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 ## Loading
 

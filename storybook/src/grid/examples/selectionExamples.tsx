@@ -35,7 +35,7 @@ const GridExample = () => {
         <CommandBar items={commands} />
         {hasSelection && <MessageBar>{selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected, {selectedHours} hours in all.</MessageBar>}
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     editing: createEditingModule({ autoSave: true }),
@@ -88,7 +88,7 @@ const GridExample = () => {
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <div className={styles.grid}>
             <DataProviderContextProvider provider={provider}>
-                <Grid.Root
+                <Grid
                     modules={{
                         rowModel: createClientSideRowModelModule(),
                         rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
@@ -106,7 +106,7 @@ export const COPY_PRICE_LIST_CODE = `const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     cellSelection: createCellSelectionModule(),

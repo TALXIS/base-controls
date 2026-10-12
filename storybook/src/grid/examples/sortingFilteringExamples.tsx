@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
 export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             sorting: createSortingModule(),
@@ -30,7 +30,7 @@ const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
     return <DataProviderContextProvider provider={tickets}>
-        <Grid.Root
+        <Grid
             modules={{
                 rowModel: createClientSideRowModelModule(),
                 sorting: createSortingModule(),
@@ -104,7 +104,7 @@ const GridExample = () => {
             <Text>{ticketCount} tickets</Text>
         </Stack>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     sorting: createSortingModule(),
@@ -161,7 +161,7 @@ const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
     return <DataProviderContextProvider provider={tickets}>
-        <Grid.Root
+        <Grid
             modules={{
                 rowModel: createClientSideRowModelModule(),
                 sorting: createSortingModule(),

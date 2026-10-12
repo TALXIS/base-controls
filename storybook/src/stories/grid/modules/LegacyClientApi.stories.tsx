@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyValuePlaceholdersExample, StockScriptExample, TicketRecommendationsExample } from '../../../grid/examples/legacyClientApiExamples'
 
 const DESCRIPTION = `
-Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column: \`record.expressions.setDisabledExpression\`, \`record.expressions.ui.setNotificationsExpression\` and the others listed below. The legacy client API compatibility module makes \`<Grid.Root />\` draw what they set, so those scripts keep working.
+Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column: \`record.expressions.setDisabledExpression\`, \`record.expressions.ui.setNotificationsExpression\` and the others listed below. The legacy client API compatibility module makes \`<Grid />\` draw what they set, so those scripts keep working.
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),

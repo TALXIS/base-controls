@@ -17,7 +17,7 @@ export const GridExample = (props: IGridExampleProps) => {
 
     return <FeatureFrame {...frame}>
         <DataProviderContextProvider provider={deals}>
-            <Grid.Root
+            <Grid
                 //modules are read once, at mount
                 key={JSON.stringify(props.features)}
                 modules={{ rowModel: createClientSideRowModelModule(), ...modules }}

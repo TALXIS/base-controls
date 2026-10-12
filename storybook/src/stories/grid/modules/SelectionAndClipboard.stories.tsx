@@ -23,7 +23,7 @@ The module adds a checkbox column, \`SELECTION_COLUMN_KEY\`, pinned first.
 | \`onSelectionChanged\` | None | Called with the ids of the selected records every time the selection changes. |
 
 - The options are read at mount, so the \`onSelectionChanged\` the grid mounted with runs for its whole life. Pass a state setter, as the examples here do, or read anything that changes through a ref.
-- To draw the checkbox your own way, set the column's \`cellRenderer\` through \`colDefs\`: see [**Row selection**](?path=/docs/grid-appearance-modules-row-selection--overview).
+- To draw the checkbox your own way, set the column's \`cellRenderer\` through \`colDefs\`: see *Row selection* on [**Module parts**](?path=/docs/grid-appearance-module-parts--overview).
 
 ### How users select
 

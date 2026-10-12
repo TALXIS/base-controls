@@ -12,7 +12,7 @@ The grid shows what its provider holds: the provider's columns become the grid's
 - \`dataSource\` holds the records, one property per column.
 - \`metadata\` describes the table. \`PrimaryIdAttribute\` names the id property and is required. \`PrimaryNameAttribute\` and \`LogicalName\` are used when a record is opened.
 - \`columns\` lists the columns. What the grid reads from each is below.
-- Create the provider once, here with \`React.useMemo\`. The grid reads \`provider\` only when it mounts.
+- Create the provider once, here with \`React.useMemo\`. The grid takes it from around it once, at mount: see *Your first grid* on [**Get started**](?path=/docs/grid-get-started--overview).
 
 ## Columns
 

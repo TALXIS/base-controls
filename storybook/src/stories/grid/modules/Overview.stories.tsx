@@ -25,13 +25,13 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 | \`custom\` | An array of \`IGridModule\` | Modules of your own | | [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) |
 
 - Which columns a module offers its feature on comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\`. See [**Data**](?path=/docs/grid-get-started-data--overview).
-- Sorting, filtering, grouping and aggregation take \`labels\` for their text and \`components\` for the parts they draw: see [**Localization**](?path=/docs/grid-localization-overview--overview) and the *Appearance → Modules* pages. The editing and row selection modules draw columns of their own, changed through \`colDefs\`.
+- Sorting, filtering, grouping and aggregation take \`labels\` for their text and \`components\` for the parts they draw: see [**Localization**](?path=/docs/grid-localization--overview) and [**Module parts**](?path=/docs/grid-appearance-module-parts--overview). The editing and row selection modules draw columns of their own, changed through \`colDefs\`.
 
 ## Turning modules on
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             rowSelection: createRowSelectionModule({ mode: 'multiple' }),
@@ -43,7 +43,7 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 
 An entry set to \`undefined\` is the same as one left out.
 
-A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\` or \`createEditingModule({ onEditedCellChanged })\`, not through props of \`<Grid.Root />\`.
+A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\` or \`createEditingModule({ onEditedCellChanged })\`, not through props of \`<Grid />\`.
 
 \`modules\`, and every option you pass to a factory, are read once, when the grid mounts (see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview)). To switch a module on or off, or to change its options, give the grid a new \`key\`:
 
@@ -54,7 +54,7 @@ interface IOrdersGridProps {
 }
 
 const OrdersGrid = (props: IOrdersGridProps) => <DataProviderContextProvider provider={props.provider}>
-    <Grid.Root
+    <Grid
         key={props.allowGrouping ? 'grouped' : 'flat'}
         modules={{
             rowModel: createClientSideRowModelModule(),
@@ -74,7 +74,7 @@ The grid runs on AG Grid Community. The modules marked in the table's *AG Grid E
 const licenseKey = context.parameters.LicenseKey.raw
 
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
             rowModel: createServerSideRowModelModule(),

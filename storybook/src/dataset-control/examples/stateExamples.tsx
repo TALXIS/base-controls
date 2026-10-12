@@ -19,7 +19,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
+                <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
             </DatasetControl.Body>
         </DatasetControl>}
     </Stack>
@@ -64,7 +64,7 @@ const GridExample = () => {
                         </DatasetControl.Header.End>
                     </DatasetControl.Header>
                     <DatasetControl.Body>
-                        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} />
+                        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} />
                     </DatasetControl.Body>
                 </DatasetControl>
             </StateProvider>

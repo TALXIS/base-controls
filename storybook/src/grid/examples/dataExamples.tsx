@@ -24,7 +24,7 @@ export const OWN_RECORDS_CODE = `const createCatalogue = () => new MemoryDataPro
 const GridExample = () => {
     const catalogue = React.useMemo(createCatalogue, [])
     return <DataProviderContextProvider provider={catalogue}>
-        <Grid.Root modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} height='400px' />
+        <Grid modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} height='400px' />
     </DataProviderContextProvider>
 }
 `
@@ -120,7 +120,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
         <DataProviderContextProvider provider={directory}>
-            <Grid.Root modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
+            <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
         </DataProviderContextProvider>
     </Stack>
 }
@@ -153,7 +153,7 @@ export const REQUIRED_AND_READ_ONLY_CODE = `const createStockCount = () => {
 const GridExample = () => {
     const stockCount = React.useMemo(createStockCount, [])
     return <DataProviderContextProvider provider={stockCount}>
-        <Grid.Root modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }} height='420px' />
+        <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }} height='420px' />
     </DataProviderContextProvider>
 }
 `

@@ -68,7 +68,7 @@ const unsavedChangesModule: IGridModule = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [unsavedChangesModule] }}
         maxVisibleRows={9} />
 </DataProviderContextProvider>

@@ -10,7 +10,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle inlineLabel label='Show every column' checked={showEveryColumn} onChange={(_, checked) => setShowEveryColumn(!!checked)} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 //a new key makes the grid build its columns again
                 key={String(showEveryColumn)}
                 modules={{ rowModel: createClientSideRowModelModule() }}
@@ -92,7 +92,7 @@ const GridExample = () => {
 
     return <>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule() }}
                 colDefs={{
                     name: { pinned: 'left', context: { isPrimary: true } },
@@ -129,7 +129,7 @@ const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
 </Grid.Cell.Root>
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
         colDefs={{
             stockvalue: {
@@ -170,7 +170,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{status}</MessageBar>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
                 colDefs={{
                     actions: {
@@ -225,7 +225,7 @@ const GridExample = () => {
     const redrawHeaders = () => runtime.current?.services.get('columns').headers.render()
 
     return <DataProviderContextProvider provider={provider}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
             colDefs={{
                 instock: {
@@ -259,7 +259,7 @@ const GridExample = () => {
 `
 
 export const LONG_NOTES_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         colDefs={{
             nextstep: { context: { cell: { isRowResizable: false } } },
@@ -269,7 +269,7 @@ export const LONG_NOTES_CODE = `const GridExample = () => <DataProviderContextPr
 `
 
 export const AUTO_HEIGHT_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         colDefs={{
             notes: { autoHeight: true },
@@ -300,7 +300,7 @@ const ProductList = (props: IProductListProps) => {
     const [products] = React.useState(() => openProducts(props.layout))
 
     return <DataProviderContextProvider provider={products}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule() }}
             onColumnsChanged={columns => props.onLayoutChanged(columns.map(column => ({ name: column.name, visualSizeFactor: column.visualSizeFactor, order: column.order })))}
             height='420px' />

@@ -12,7 +12,7 @@ const DESCRIPTION = `A DatasetControl puts every view back the way the user left
 \`\`\`tsx
 <DatasetControl stateKey='deals' onLoad={loadDeals} height='600px'>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={modules} />
+        <Grid stateKey='grid' modules={modules} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`

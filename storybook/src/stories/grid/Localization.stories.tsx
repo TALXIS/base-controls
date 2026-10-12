@@ -11,7 +11,7 @@ Every string the grid shows can be replaced: the grid's own through \`labels\`, 
 
 ## The grid's labels
 
-\`labels\` on \`<Grid.Root />\` takes any of these keys; the rest keep their English default. It is read once, at mount. \`GRID_LABELS\` holds the defaults.
+\`labels\` on \`<Grid />\` takes any of these keys; the rest keep their English default. It is read once, at mount. \`GRID_LABELS\` holds the defaults.
 
 | Key | Default | Where it shows |
 |---|---|---|
@@ -30,7 +30,7 @@ The grid's \`labels\` cover only the strings above. Each module that draws text 
 
 | What | Where its strings go | Keys and defaults |
 |---|---|---|
-| The grid | \`labels\` on \`<Grid.Root />\` | Above |
+| The grid | \`labels\` on \`<Grid />\` | Above |
 | Sorting | \`createSortingModule({ labels })\` | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview) |
 | Filtering | \`createFilteringModule({ labels })\` | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview) |
 | Grouping | \`createGroupingModule({ labels })\` | [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
@@ -39,7 +39,7 @@ The grid's \`labels\` cover only the strings above. Each module that draws text 
 `
 
 const meta = {
-    title: 'Grid/Localization/Overview',
+    title: 'Grid/Localization',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

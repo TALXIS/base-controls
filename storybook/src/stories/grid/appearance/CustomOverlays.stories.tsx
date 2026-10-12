@@ -5,19 +5,17 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyCatalogueExample, WarehouseLoadingExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-The grid draws an overlay over its rows when it has none to show: a message when there are no records, and a spinner while they load. To change how either looks, pass \`components.overlays\` to \`<Grid.Root />\`.
+The grid draws an overlay over its rows when it has none to show: a message when there are no records, and a spinner while they load. To change how either looks, pass \`components.overlays\` to \`<Grid />\`.
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         components={{ overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } } }} />
 </DataProviderContextProvider>
 \`\`\`
 
-- Every key and part is optional: what you leave out keeps its default.
-- A part is called, not mounted, so it can't use hooks itself. Return a component that does.
-- Define \`components\` outside your component, so the grid does not redraw on every render.
+- Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 ## No records
 

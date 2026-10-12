@@ -40,7 +40,7 @@ export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
                     {end.length > 0 && <DatasetControl.Header.End>{end}</DatasetControl.Header.End>}
                 </DatasetControl.Header>}
                 <DatasetControl.Body>
-                    <Grid.Root stateKey='grid' modules={modules} />
+                    <Grid stateKey='grid' modules={modules} />
                 </DatasetControl.Body>
                 {(footerStart.length > 0 || footerEnd.length > 0) && <DatasetControl.Footer>
                     {footerStart.length > 0 && <DatasetControl.Footer.Start>{footerStart}</DatasetControl.Footer.Start>}

@@ -115,10 +115,8 @@ export interface IGridRowNamespace {
     Ui: IRowUi;
 }
 
-/** Everything a grid is rendered from. */
-export interface IGridNamespace {
-    /** The grid itself. */
-    Root: typeof GridRoot;
+/** The parts a grid is drawn from, attached to the grid itself. */
+export interface IGridParts {
     /** Everything a cell is drawn from. */
     Cell: IGridCellNamespace;
     /** Everything a column header is drawn from. */
@@ -129,8 +127,10 @@ export interface IGridNamespace {
     Row: IGridRowNamespace;
 }
 
-export const Grid: IGridNamespace = {
-    Root: GridRoot,
+/** The grid, with the parts it is drawn from. */
+export type IGridNamespace = typeof GridRoot & IGridParts;
+
+export const Grid: IGridNamespace = Object.assign(GridRoot, {
     Cell: {
         Renderer: CellRenderer,
         EmptyRenderer: CellEmptyRenderer,
@@ -172,4 +172,4 @@ export const Grid: IGridNamespace = {
         Error: RowError,
         Ui: RowUi,
     },
-};
+});

@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { LaunchPlanExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
-CheckList presents the records of a data provider as a to-do list. Users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. It is built on [**Grid**](?path=/docs/grid-get-started--overview): it accepts every \`Grid.Root\` prop, so its columns, cells and events are configured as in any grid.
+CheckList presents the records of a data provider as a to-do list. Users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. It is built on [**Grid**](?path=/docs/grid-get-started--overview): it accepts every \`Grid\` prop, so its columns, cells and events are configured as in any grid.
 
 {{story: A launch plan}}
 
@@ -49,11 +49,11 @@ export const LaunchPlan = () => <PcfContextProvider>
 | \`stackRank\` | Text holding a lexorank string, such as \`'0\\|100000:'\` | The item's position. The list is sorted by it, and a drag writes a new rank between the item's neighbours. Hidden. |
 | \`completed\` | \`TwoOptions\` | Whether the item is finished, shown as the checkbox column. |
 
-The provider's other columns are shown and edited as in any grid, such as *Priority*, *Owner*, *Due* and *Estimate* above. See [**Columns**](?path=/docs/grid-columns-overview--overview).
+The provider's other columns are shown and edited as in any grid, such as *Priority*, *Owner*, *Due* and *Estimate* above. See [**Columns**](?path=/docs/grid-columns--overview).
 
 ## Props
 
-\`CheckList\` accepts every prop of \`Grid.Root\`, listed on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). These differ:
+\`CheckList\` accepts every prop of \`Grid\`, listed on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). These differ:
 
 | Prop | Default | Description |
 |---|---|---|

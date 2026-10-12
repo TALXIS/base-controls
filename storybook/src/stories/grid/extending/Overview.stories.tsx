@@ -14,8 +14,8 @@ Each mounted grid has one runtime, an \`IGridRuntime\`. You are handed it in thr
 | Where | When | What it is for |
 |---|---|---|
 | A module's \`onRegister(runtime)\` | Once, as the grid mounts: before AG Grid exists and before the first row is drawn | Registering hooks, services and listeners. Pass the module in \`modules.custom\`. |
-| \`onGridReady(runtime)\` on \`<Grid.Root />\` | Once, when AG Grid is ready | Keeping the runtime for code outside the grid, such as a toolbar. |
-| \`onDestroyed(runtime)\` on \`<Grid.Root />\` | Once, as the grid unmounts, while AG Grid still answers | Reading what you want to keep. See [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). |
+| \`onGridReady(runtime)\` on \`<Grid />\` | Once, when AG Grid is ready | Keeping the runtime for code outside the grid, such as a toolbar. |
+| \`onDestroyed(runtime)\` on \`<Grid />\` | Once, as the grid unmounts, while AG Grid still answers | Reading what you want to keep. See [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). |
 
 | Member | What it is |
 |---|---|
@@ -26,7 +26,7 @@ Each mounted grid has one runtime, an \`IGridRuntime\`. You are handed it in thr
 
 Inside anything the grid draws, such as a custom cell, a header part, an overlay or a surface, read a service with \`useGridService(key)\`:
 
-- It works only inside the grid's own React tree. In the component that renders \`<Grid.Root />\`, it throws.
+- It works only inside the grid's own React tree. In the component that renders \`<Grid />\`, it throws.
 - A service every grid has is there on the first render. An optional one is \`undefined\` until something registers it, and the component renders once more when it arrives.
 - It hands you the service, not its state. To draw again when the service changes, subscribe to it, as the bar on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) does.
 
@@ -48,7 +48,8 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | Key | What it is |
 |---|---|
 | \`provider\` | The provider the grid mounted with. |
-| \`settings\` | The props with their defaults applied. \`isNavigationEnabled()\`, \`isZebraEnabled()\`, \`areOptionSetColorsEnabled()\` and \`getDefaultRowHeight()\` answer as the grid mounted; \`getMaxVisibleRows()\`, \`getHeight()\`, \`getColDefs()\` and \`getRowSettings()\` answer with the current props. |
+| \`state\` | The grid's keyed store under its \`stateKey\`: \`get(key)\`, \`set(key, value)\`, \`delete(key)\`. See [**State**](?path=/docs/grid-state--overview). |
+| \`settings\` | The props with their defaults applied. \`isNavigationEnabled()\`, \`isZebraEnabled()\`, \`areOptionSetColorsEnabled()\` and \`getDefaultRowHeight()\` answer as the grid mounted; \`getMaxVisibleRows()\`, \`getHeight()\`, \`getColDefs()\` and \`getRowSettings()\` answer with the current props; \`getHeight()\` is \`'100%'\` inside a DatasetControl that has a height. |
 | \`labels\` | The grid's strings, with \`labels\` applied: \`getLocalizedString(key)\`. |
 | \`theme\` | The Fluent theme the grid mounted in. |
 | \`gridTheme\` | The AG Grid theme made from it, and the root element's styles: \`registerTheme\`, \`registerStyles\`. See *The AG Grid theme* on [**Appearance**](?path=/docs/grid-appearance--overview). |
@@ -101,7 +102,7 @@ A hook is a function you register on a service. Whenever the grid needs the answ
 | \`gridTheme\` | \`registerTheme\` | The AG Grid theme: replace \`result.theme\`, for example with \`result.theme.withParams({ ... })\` | \`result: IGridAgTheme\`, \`fluentTheme\` | |
 | \`gridTheme\` | \`registerStyles\` | Styles of the grid's root element, after the grid's own: push an \`IStyle\` | \`result: IGridStyles\`, \`fluentTheme\` | |
 
-*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns-overview--overview). The colour and theme hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
+*Then, last* is the column's or the row's own callback, which runs after every hook of its kind, so the column has the last word. They are set through \`colDefs\` and \`rowSettings\`: see [**Columns**](?path=/docs/grid-columns--overview). The colour and theme hooks are covered on [**Appearance**](?path=/docs/grid-appearance--overview), and the filter callout's on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview).
 
 ## Priorities
 
@@ -144,7 +145,7 @@ Services tell you what happens through events. Subscribe with \`addEventListener
 | \`grouping.events\` | \`onGroupSelectionLimitDialogChanged\` | None | The dialog that refuses a selection of too many groups opens or closes. |
 | \`events\` of each \`IGridColumnHeader\` | \`onMenuVisibilityChanged\` | \`isOpen\` | The header's menu opens or closes. |
 
-- The grid's own events also reach \`<Grid.Root />\` as props, and a module's through its options, listed with the order they fire in on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). The service events suit a module, which has no props.
+- The grid's own events also reach \`<Grid />\` as props, and a module's through its options, listed with the order they fire in on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). The service events suit a module, which has no props.
 - No event fires when sorting, filters, grouping or totals change. Sorting, filters and grouping reload the provider, so follow \`onDataLoaded\` and read the provider.
 - The provider has events of its own, such as \`onRecordColumnValueChanged\`, \`onAfterRecordSaved\` and \`onNewDataLoaded\`: \`runtime.services.get('provider').addEventListener(...)\`. Remove them on \`onDestroyed\`: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 - \`keyboard.onKeyDown(handler)\` is not an event: it returns the function that stops it.
@@ -162,8 +163,8 @@ The grid asks your hooks for their answers when it draws; nothing tells it that 
 | A row's height | When AG Grid lays the row out | \`resetRowHeights()\` on the \`gridApi\` service |
 | The column definitions | When the grid is ready, then on every load of the provider | \`provider.refresh()\` |
 | AG Grid options | When AG Grid is ready, on every load, and on \`refreshAgGridOptions()\` | \`runtime.refreshAgGridOptions()\` |
-| AG Grid's initial options, the AG Grid theme, root styles | Once, when the grid mounts | A new \`key\` on \`<Grid.Root />\` |
-| Surfaces | Each time \`<Grid.Root />\` renders | Nothing: a surface's component follows its own state |
+| AG Grid's initial options, the AG Grid theme, root styles | Once, when the grid mounts | A new \`key\` on \`<Grid />\` |
+| Surfaces | Each time \`<Grid />\` renders | Nothing: a surface's component follows its own state |
 
 \`cells.getCell\` finds only cells on screen. A cell that scrolls into view draws with the current answers anyway.
 `

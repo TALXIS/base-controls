@@ -26,7 +26,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
                     rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
@@ -47,7 +47,7 @@ const COMPONENTS: IGridSortingComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
         height='440px' />
 </DataProviderContextProvider>
@@ -69,7 +69,7 @@ const COMPONENTS: IGridFilteringComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
         height='440px' />
 </DataProviderContextProvider>
@@ -93,7 +93,7 @@ const COMPONENTS: IGridGroupingComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
         height='460px' />
 </DataProviderContextProvider>
@@ -114,7 +114,7 @@ const COMPONENTS: IGridAggregationComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
         height='460px' />
 </DataProviderContextProvider>

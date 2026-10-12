@@ -9,7 +9,7 @@ A grid with a \`stateKey\` remembers where the user was: the cell at the top-lef
 
 \`\`\`tsx
 <DataProviderContextProvider provider={provider}>
-    <Grid.Root stateKey='tickets' modules={modules} />
+    <Grid stateKey='tickets' modules={modules} />
 </DataProviderContextProvider>
 \`\`\`
 
@@ -17,7 +17,7 @@ A grid with a \`stateKey\` remembers where the user was: the cell at the top-lef
 - Without a \`stateKey\`, the grid keeps nothing.
 - Inside a DatasetControl, the grid keeps it per view, in the control's state. See [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl.
 - Where the state is kept is up to [**StateProvider**](?path=/docs/providers-stateprovider--overview).
-- The column layout, sorting, filtering and grouping are the provider's, not part of this state: see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns-overview--overview).
+- The column layout, sorting, filtering and grouping are the provider's, not part of this state. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view; on its own, see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview).
 
 ## What the grid keeps
 

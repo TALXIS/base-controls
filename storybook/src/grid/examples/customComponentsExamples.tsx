@@ -72,7 +72,7 @@ const GridExample = () => {
     }
 
     return <DataProviderContextProvider provider={provider}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
             enableOptionSetColors
             colDefs={{
@@ -139,7 +139,7 @@ const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
 const CaptionedHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={CAPTIONED_HEADER} />
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createClientSideRowModelModule(),
             sorting: createSortingModule(),
@@ -209,7 +209,7 @@ const GridExample = () => {
     }, [])
 
     return <DataProviderContextProvider provider={provider}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
             colDefs={{
                 value: { headerComponent: SummaryHeader },
@@ -234,7 +234,7 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule() }}
         labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
         components={COMPONENTS}
@@ -263,7 +263,7 @@ const COMPONENTS: IGridComponents = {
 const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
     <CommandBar items={[{ key: 'refresh', text: 'Check stock again', iconProps: { iconName: 'Refresh' }, onClick: () => { provider.refresh() } }]} />
     <DataProviderContextProvider provider={provider}>
-        <Grid.Root
+        <Grid
             modules={{ rowModel: createClientSideRowModelModule() }}
             components={COMPONENTS}
             height='400px' />
@@ -287,7 +287,7 @@ const COMPONENTS: IGridComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createServerSideRowModelModule(),
             grouping: createGroupingModule(),
@@ -318,7 +318,7 @@ const COMPONENTS: IGridComponents = {
 }
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{
             rowModel: createServerSideRowModelModule(),
             grouping: createGroupingModule(),
@@ -345,7 +345,7 @@ const SAVE_STATUS: IRecordSaveUiComponents = {
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
         colDefs={{
             [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
@@ -473,7 +473,7 @@ const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.da
 </Grid.Cell.Field>
 
 const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
         colDefs={{
             description: {

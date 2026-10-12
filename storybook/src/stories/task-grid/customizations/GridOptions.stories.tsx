@@ -25,7 +25,7 @@ const meta = {
 
 | You want to change | Use | Reference |
 |---|---|---|
-| one column: its cells, validation, colours, lock, commands, width | \`colDefs\` | [**Grid → Columns**](?path=/docs/grid-columns-overview--overview) |
+| one column: its cells, validation, colours, lock, commands, width | \`colDefs\` | [**Grid → Columns**](?path=/docs/grid-columns--overview) |
 | every row: its height, its lock | \`rowSettings\` | [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
 | what happens as the user works | \`onRecordValueChanged\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … | [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
 | anything else: row classes, AG Grid options, hooks over every cell | a module of your own in \`modules.custom\` | [**Grid → Write a module**](?path=/docs/grid-extending-write-a-module--overview) |

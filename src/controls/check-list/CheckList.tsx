@@ -32,5 +32,5 @@ export const CheckList = (props: ICheckListProps) => {
         };
     }, []);
 
-    return <Grid.Root enableZebra={false} enableOptionSetColors={true} {...gridProps} modules={modules} />;
+    return <Grid enableZebra={false} enableOptionSetColors={true} {...gridProps} modules={modules} />;
 };

@@ -25,11 +25,18 @@ Below is an example of a sales pipeline. Pick a preset or open **Features & Modu
 
 ## Your first grid
 
+The grid draws the records of a data provider, and finds that provider around it. Render it in one of two places:
+
+- **Inside a [DatasetControl](?path=/docs/datasetcontrol-get-started-overview--overview)** — recommended. The control loads the provider and hands it to the grid, and brings the header, the paging, the views, the loading and error states, and the state kept per view.
+- **Inside a [DataProviderContextProvider](?path=/docs/providers-dataprovidercontextprovider--overview)**, for a grid on its own: you load the provider and hand it over yourself.
+
+Without either, the grid throws.
+
 \`\`\`tsx
-import { DataProviderContextProvider, Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
+import { DatasetControl, Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
-const products = new MemoryDataProvider({
+const createProducts = () => new MemoryDataProvider({
     dataSource: [
         { productid: 'desk', name: 'Standing desk', price: 640 },
         { productid: 'chair', name: 'Ergonomic chair', price: 410 },
@@ -42,22 +49,36 @@ const products = new MemoryDataProvider({
 })
 
 export const ProductGrid = () => <PcfContextProvider>
-    <DataProviderContextProvider provider={products}>
-        <Grid.Root modules={{ rowModel: createClientSideRowModelModule() }} />
-    </DataProviderContextProvider>
+    <DatasetControl onLoad={async () => ({ provider: createProducts() })}>
+        <DatasetControl.Body>
+            <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+        </DatasetControl.Body>
+    </DatasetControl>
 </PcfContextProvider>
 \`\`\`
 
-- [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) hands the grid its provider, which holds the records and columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`.
+On its own, the same grid sits in a \`DataProviderContextProvider\` instead, with a provider you create once:
+
+\`\`\`tsx
+const products = createProducts()
+
+<DataProviderContextProvider provider={products}>
+    <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+</DataProviderContextProvider>
+\`\`\`
+
+- At mount, the grid loads a provider nothing has loaded yet, and shows one that is already loaded or loading as it is. To load it again, call \`provider.refresh()\`.
+- The provider holds the records and the columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`. See [**Data**](?path=/docs/grid-get-started-data--overview).
 - \`modules\` switch features on. Only \`rowModel\` is required. All modules are listed on [**Modules**](?path=/docs/grid-modules--overview).
-- \`PcfContextProvider\` must wrap the grid. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
+- \`PcfContextProvider\` must wrap the grid too. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
+- The examples in these docs use \`DataProviderContextProvider\`, so each shows only the grid.
 `
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-get-started-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
     { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-modules-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
-    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns-overview--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
+    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
     { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, your own labels, and your own cells, headers and overlays.' },
     { title: 'Built to extend', iconName: 'Plug', href: '?path=/docs/grid-extending--overview', text: 'Hooks into what the grid draws and decides, modules of your own, and AG Grid underneath when you need it.' },
 ]

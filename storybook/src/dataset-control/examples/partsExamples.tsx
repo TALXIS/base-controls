@@ -11,7 +11,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} he
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: false }) }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: false }) }} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -25,7 +25,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -44,7 +44,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadSearchabl
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -61,7 +61,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} he
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -80,7 +80,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
     </DatasetControl.Header>
     <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -115,7 +115,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
 
 const PAGING_CODE = `const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Body>
-        <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

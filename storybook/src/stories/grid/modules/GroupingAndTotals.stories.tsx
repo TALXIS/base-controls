@@ -21,7 +21,7 @@ modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingM
 - A group row shows its value, a chevron and how many records it holds in the column of its level, the group's totals in the columns that have one, and nothing elsewhere. Every cell of a group row is locked.
 - Ungrouping a column from its menu also removes its total.
 - While anything is grouped, record rows take the grid's plain background: zebra stripes disappear, and so does the background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets. How to keep yours is under *Which colour wins* on [**Appearance**](?path=/docs/grid-appearance--overview).
-- A \`colDefs\` entry can undo what grouping and totals set on a column: see *Changing a column* on [**Columns**](?path=/docs/grid-columns-overview--overview).
+- A \`colDefs\` entry can undo what grouping and totals set on a column: see *Changing a column* on [**Columns**](?path=/docs/grid-columns--overview).
 
 ## Preset grouping and totals
 
@@ -98,7 +98,7 @@ const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }
 }
 
 <DataProviderContextProvider provider={timesheets}>
-    <Grid.Root modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
+    <Grid modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
 </DataProviderContextProvider>
 \`\`\`
 
@@ -149,7 +149,7 @@ Both modules' options are read at mount: see *Props* on [**Props and events**](?
 
 ## Labels
 
-Pass any of these keys as the module's \`labels\`. The grid's own \`labels\` prop does not cover them: see [**Localization**](?path=/docs/grid-localization-overview--overview). Keep the \`{{...}}\` placeholders in a translation.
+Pass any of these keys as the module's \`labels\`. The grid's own \`labels\` prop does not cover them: see [**Localization**](?path=/docs/grid-localization--overview). Keep the \`{{...}}\` placeholders in a translation.
 
 | \`createGroupingModule({ labels })\` | Default | Where it shows |
 |---|---|---|
@@ -174,7 +174,7 @@ A function's label is its menu item, the caption above the figure in the totals 
 
 ## Components
 
-Each module's \`components\` option replaces the group icon, the group row's chevron and count, and the parts of the totals: see [**Grouping**](?path=/docs/grid-appearance-modules-grouping--overview) and [**Totals**](?path=/docs/grid-appearance-modules-totals--overview) under *Appearance → Modules*. The group selection alert and the error for an oversized group open through the PCF context's \`navigation\` dialogs, so no component replaces them.
+Each module's \`components\` option replaces the group icon, the group row's chevron and count, and the parts of the totals: see *Grouping* and *Totals* on [**Module parts**](?path=/docs/grid-appearance-module-parts--overview). The group selection alert and the error for an oversized group open through the PCF context's \`navigation\` dialogs, so no component replaces them.
 `
 
 const meta = {

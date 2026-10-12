@@ -11,7 +11,7 @@ export const OPEN_TICKET_GROUPS_CODE = `interface IGridExampleProps {
 
 //remounted per row model: modules are read at mount
 const GridExample = (props: IGridExampleProps) => <DataProviderContextProvider provider={provider}>
-    <Grid.Root
+    <Grid
         key={props.rowModel}
         modules={{
             rowModel: props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),

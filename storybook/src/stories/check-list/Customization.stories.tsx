@@ -22,11 +22,11 @@ Make the checklist read-only, change its wording, or configure its grid.
 | \`deleteItem\` | Delete | As the delete button's tooltip. |
 | \`confirmDialog.deleteItem.text\` | Are you sure you want to delete this item? | In the dialog that confirms a delete. |
 
-Pass any of them in \`labels\`, together with the grid's own strings. See [**Localization**](?path=/docs/grid-localization-overview--overview).
+Pass any of them in \`labels\`, together with the grid's own strings. See [**Localization**](?path=/docs/grid-localization--overview).
 
 ## Configure the grid
 
-\`CheckList\` accepts every \`Grid.Root\` prop. Of the grid modules, it takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and \`custom\`: sorting, filtering and grouping would break the order, and cell selection turns off dragging.
+\`CheckList\` accepts every \`Grid\` prop. Of the grid modules, it takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and \`custom\`: sorting, filtering and grouping would break the order, and cell selection turns off dragging.
 
 {{story: A release board}}
 

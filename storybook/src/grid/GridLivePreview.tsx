@@ -8,21 +8,21 @@ const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider']
 
 type ISandboxScope = typeof GRID_SANDBOX_SCOPE
 
-//the snippet's own Grid.Root or CheckList tells the runner which provider it draws
+//the snippet's own Grid or CheckList tells the runner which provider it draws
 const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISandboxScope => {
     const useReportProvider = () => {
         const provider = useDataProvider()
         React.useEffect(() => onProviderRendered(provider), [provider])
     }
-    const Root = (props: IGrid) => {
+    const ReportingGrid = (props: IGrid) => {
         useReportProvider()
-        return <Grid.Root {...props} />
+        return <Grid {...props} />
     }
     const CheckList = (props: ICheckListProps) => {
         useReportProvider()
         return <CheckListBase {...props} />
     }
-    return { ...GRID_SANDBOX_SCOPE, Grid: { ...Grid, Root: Root as typeof Grid.Root }, CheckList }
+    return { ...GRID_SANDBOX_SCOPE, Grid: Object.assign(ReportingGrid, { Cell: Grid.Cell, ColumnHeader: Grid.ColumnHeader, Overlay: Grid.Overlay, Row: Grid.Row }), CheckList }
 }
 
 /** One file of a live example; the first is the one that defines `GridExample`. */

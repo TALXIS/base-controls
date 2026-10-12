@@ -235,10 +235,8 @@ export class GridRuntime implements IGridRuntime {
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        if (!this._provider.isFirstLoadRequested()) {
-            this._provider.refresh();
-        }
-        else if (!this._provider.isLoading()) {
+        //loading the provider is the DatasetControl's, so the grid only draws what is there or waits for it
+        if (this._provider.isFirstLoadRequested() && !this._provider.isLoading()) {
             this._onNewDataLoaded();
             return;
         }

@@ -30,7 +30,7 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid.Root stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+                <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
             </DatasetControl.Body>
         </DatasetControl>
         <Stack>{log.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}</Stack>

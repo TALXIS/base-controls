@@ -460,7 +460,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 key={key}
                 modules={modules}
                 colDefs={SCRATCH_COL_DEFS}

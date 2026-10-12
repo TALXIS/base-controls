@@ -165,7 +165,7 @@ const ParsingGrid = (props: IParsingScratchGridProps & { culture: string, langua
     return <PcfContextProvider userSettings={{ formatInfoCultureName: props.culture, lcid: props.languageId }}>
         <LastChange change={change} />
         <DataProviderContextProvider provider={provider}>
-            <Grid.Root
+            <Grid
                 modules={createModules(props.enableAutoSave)}
                 colDefs={COL_DEFS}
                 height='100%'
