@@ -13,17 +13,19 @@ export const PIPELINE_BY_MANAGER_CODE = `const createPipelineProvider = () => {
 const GridExample = () => {
     const deals = React.useMemo(createPipelineProvider, [])
 
-    return <DataProviderContextProvider provider={deals}>
-        <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                grouping: createGroupingModule({ defaultExpandedLevel: 0 }),
-                aggregation: createAggregationModule(),
-            }}
-            enableOptionSetColors
-            height='480px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: deals })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    grouping: createGroupingModule({ defaultExpandedLevel: 0 }),
+                    aggregation: createAggregationModule(),
+                }}
+                enableOptionSetColors
+                height='480px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -54,17 +56,19 @@ const GridExample = () => {
             options={[{ key: 'nested', text: 'By employee, then by day' }, { key: 'flat', text: 'One group per employee and day' }]}
             onChange={(_, option) => setType(option?.key as GroupingType)}
             styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
-        <DataProviderContextProvider provider={timesheets}>
-            <Grid
-                key={type}
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    grouping: createGroupingModule({ type, defaultExpandedLevel: 0 }),
-                    aggregation: createAggregationModule(),
-                }}
-                enableOptionSetColors
-                height='480px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+            <DatasetControl.Body>
+                <Grid
+                    key={type}
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        grouping: createGroupingModule({ type, defaultExpandedLevel: 0 }),
+                        aggregation: createAggregationModule(),
+                    }}
+                    enableOptionSetColors
+                    height='480px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -79,17 +83,19 @@ export const FILTERED_TOTALS_CODE = `const createDealsWithTotals = () => {
 const GridExample = () => {
     const deals = React.useMemo(createDealsWithTotals, [])
 
-    return <DataProviderContextProvider provider={deals}>
-        <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-                aggregation: createAggregationModule(),
-            }}
-            enableOptionSetColors
-            height='440px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: deals })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                    aggregation: createAggregationModule(),
+                }}
+                enableOptionSetColors
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -120,17 +126,19 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={toolbarItems} />
-        <DataProviderContextProvider provider={timesheets}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    grouping: createGroupingModule(),
-                    aggregation: createAggregationModule(),
-                }}
-                enableOptionSetColors
-                onGridReady={runtime => { runtimeRef.current = runtime }}
-                height='440px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        grouping: createGroupingModule(),
+                        aggregation: createAggregationModule(),
+                    }}
+                    enableOptionSetColors
+                    onGridReady={runtime => { runtimeRef.current = runtime }}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `

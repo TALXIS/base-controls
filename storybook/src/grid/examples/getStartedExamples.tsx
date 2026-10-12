@@ -16,14 +16,16 @@ export const GridExample = (props: IGridExampleProps) => {
     const { modules, frame, ...featureProps } = useFeatures(deals, props.features)
 
     return <FeatureFrame {...frame}>
-        <DataProviderContextProvider provider={deals}>
-            <Grid
-                //modules are read once, at mount
-                key={JSON.stringify(props.features)}
-                modules={{ rowModel: createClientSideRowModelModule(), ...modules }}
-                {...featureProps}
-                height='520px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: deals })}>
+            <DatasetControl.Body>
+                <Grid
+                    //modules are read once, at mount
+                    key={JSON.stringify(props.features)}
+                    modules={{ rowModel: createClientSideRowModelModule(), ...modules }}
+                    {...featureProps}
+                    height='520px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </FeatureFrame>
 }
 `

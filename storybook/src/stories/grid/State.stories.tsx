@@ -8,9 +8,11 @@ const DESCRIPTION = `
 A grid with a \`stateKey\` remembers where the user was: the cell at the top-left of the viewport, the open groups and the focused cell. The next grid with the same \`stateKey\` puts the user back.
 
 \`\`\`tsx
-<DataProviderContextProvider provider={provider}>
-    <Grid stateKey='tickets' modules={modules} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid stateKey='tickets' modules={modules} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - The grid reads its state once, at mount, and writes it as the user scrolls, opens groups and focuses cells.

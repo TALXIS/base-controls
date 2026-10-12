@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules, DataProviderContextProvider } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -459,18 +459,20 @@ export const ScratchGrid = (props: IScratchGridProps) => {
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                key={key}
-                modules={modules}
-                colDefs={SCRATCH_COL_DEFS}
-                height='100%'
-                enableNavigation={props.enableNavigation}
-                enableZebra={props.enableZebra}
-                enableOptionSetColors={props.enableOptionSetColors}
-                rowHeight={props.rowHeight}
-                stateKey='scratch-grid'
-                onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    key={key}
+                    modules={modules}
+                    colDefs={SCRATCH_COL_DEFS}
+                    height='100%'
+                    enableNavigation={props.enableNavigation}
+                    enableZebra={props.enableZebra}
+                    enableOptionSetColors={props.enableOptionSetColors}
+                    rowHeight={props.rowHeight}
+                    stateKey='scratch-grid'
+                    onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
+            </DatasetControl.Body>
+        </DatasetControl>
     </div>
 }

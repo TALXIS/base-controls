@@ -8,11 +8,13 @@ const DESCRIPTION = `
 The grid draws an overlay over its rows when it has none to show: a message when there are no records, and a spinner while they load. To change how either looks, pass \`components.overlays\` to \`<Grid />\`.
 
 \`\`\`tsx
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        components={{ overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } } }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            components={{ overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } } }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).

@@ -18,13 +18,15 @@ const closedDealsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
-        enableOptionSetColors
-        labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
+            enableOptionSetColors
+            labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const DAY_UNDER_TEN_HOURS_CODE = `const MAX_HOURS_A_DAY = 10
@@ -58,11 +60,13 @@ const dayLimitModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const REFRESH_PRICES_CODE = `//stands in for the supplier's price list
@@ -99,26 +103,24 @@ const createPriceRefresh = () => {
 
 const GridExample = () => {
     const priceRefresh = React.useMemo(createPriceRefresh, [])
-    const [isRefreshing, setIsRefreshing] = React.useState(false)
 
-    const refreshPrices = async () => {
-        setIsRefreshing(true)
-        await priceRefresh.refreshPrices(provider.getRecords())
-        setIsRefreshing(false)
-    }
-
-    const commands: ICommandBarItemProps[] = [
-        { key: 'refresh', text: isRefreshing ? 'Refreshing prices...' : 'Refresh prices', iconProps: { iconName: 'Refresh' }, disabled: isRefreshing, onClick: () => { refreshPrices() } },
+    //the ribbon disables a command while it runs
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'refresh', label: 'Refresh prices', iconName: 'Refresh', onExecute: () => priceRefresh.refreshPrices(provider.getRecords()) },
     ]
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} />
-        <DataProviderContextProvider provider={provider}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
             <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), custom: [priceRefresh.module] }}
                 height='420px' />
-        </DataProviderContextProvider>
-    </Stack>
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -143,12 +145,14 @@ const urgentRowsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
-        enableOptionSetColors
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
+            enableOptionSetColors
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
@@ -178,16 +182,18 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {message && <MessageBar messageBarType={MessageBarType.success} onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                    custom: [copyColumnModule],
-                }}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        sorting: createSortingModule(),
+                        filtering: createFilteringModule(),
+                        custom: [copyColumnModule],
+                    }}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -208,11 +214,13 @@ export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [currencyModule] }}
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [currencyModule] }}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const ASSIGN_TO_ME_CODE = `const ME = 'Eva Horák'
@@ -238,12 +246,14 @@ const assignToMeModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), custom: [assignToMeModule] }}
-        enableOptionSetColors
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), custom: [assignToMeModule] }}
+            enableOptionSetColors
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
@@ -278,11 +288,13 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} styles={{ flexContainer: { display: 'flex', gap: 16 } }} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -302,11 +314,13 @@ const placeholdersModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const LockClosedDealsExample = () => <GridExampleRunner seedCode={LOCK_CLOSED_DEALS_CODE} dataset='deals' />

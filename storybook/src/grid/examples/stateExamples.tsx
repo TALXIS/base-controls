@@ -15,13 +15,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={[{ key: 'reopen', text: 'Close and reopen', iconProps: { iconName: 'Refresh' }, onClick: reopen }]} />
-        <DataProviderContextProvider provider={tickets}>
-            <Grid
-                key={mountCount}
-                modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
-                stateKey='ticket-queue'
-                height='360px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: tickets })}>
+            <DatasetControl.Body>
+                <Grid
+                    key={mountCount}
+                    modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
+                    stateKey='ticket-queue'
+                    height='360px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `

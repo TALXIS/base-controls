@@ -28,7 +28,7 @@ Below is an example of a sales pipeline. Pick a preset or open **Features & Modu
 The grid draws the records of a data provider, and finds that provider around it. Render it in one of two places:
 
 - **Inside a [DatasetControl](?path=/docs/datasetcontrol-get-started-overview--overview)** — recommended. The control loads the provider and hands it to the grid, and brings the header, the paging, the views, the loading and error states, and the state kept per view.
-- **Inside a [DataProviderContextProvider](?path=/docs/providers-dataprovidercontextprovider--overview)**, for a grid on its own: you load the provider and hand it over yourself.
+- **Inside a [DataProviderContextProvider](?path=/docs/providers-dataprovidercontextprovider--overview)**, for a grid on its own: you load the provider yourself and hand it over.
 
 Without either, the grid throws.
 
@@ -57,21 +57,21 @@ export const ProductGrid = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-On its own, the same grid sits in a \`DataProviderContextProvider\` instead, with a provider you create once:
+On its own, the grid sits in a \`DataProviderContextProvider\` instead. The grid never loads the provider, so load it yourself:
 
 \`\`\`tsx
 const products = createProducts()
+products.refresh()
 
 <DataProviderContextProvider provider={products}>
     <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
 </DataProviderContextProvider>
 \`\`\`
 
-- At mount, the grid loads a provider nothing has loaded yet, and shows one that is already loaded or loading as it is. To load it again, call \`provider.refresh()\`.
 - The provider holds the records and the columns. Use any provider from \`@talxis/client-libraries\`, or your own class extending \`DataProvider\`. See [**Data**](?path=/docs/grid-get-started-data--overview).
 - \`modules\` switch features on. Only \`rowModel\` is required. All modules are listed on [**Modules**](?path=/docs/grid-modules--overview).
 - \`PcfContextProvider\` must wrap the grid too. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
-- The examples in these docs use \`DataProviderContextProvider\`, so each shows only the grid.
+- The examples in these docs run inside a DatasetControl.
 `
 
 const EXPLORE: IExploreCard[] = [

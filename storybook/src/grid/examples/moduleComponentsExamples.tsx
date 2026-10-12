@@ -25,15 +25,17 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
-                }}
-                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
-                height='400px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
+                    }}
+                    colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
+                    height='400px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -46,11 +48,13 @@ const COMPONENTS: IGridSortingComponents = {
     sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} iconName={descending ? 'SortDown' : 'SortUp'} className={styles.arrow} /> },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const FILTER_ICON_CODE = `const styles = mergeStyleSets({
@@ -68,11 +72,13 @@ const COMPONENTS: IGridFilteringComponents = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const GROUP_BADGES_CODE = `const styles = mergeStyleSets({
@@ -92,11 +98,13 @@ const COMPONENTS: IGridGroupingComponents = {
     groupCell: { count: { onRenderCount: props => <ProductCount className={props.className} /> } },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
-        height='460px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
+            height='460px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const STOCK_TOTALS_CODE = `const styles = mergeStyleSets({
@@ -113,11 +121,13 @@ const COMPONENTS: IGridAggregationComponents = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
-        height='460px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
+            height='460px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 const createSortedProducts = () => {

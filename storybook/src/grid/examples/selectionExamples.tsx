@@ -12,8 +12,8 @@ const GridExample = () => {
     const selectedHours = selectedEntries.reduce((total, entry) => total + Number(entry.getValue('hours') ?? 0), 0)
     const hasSelection = selectedEntries.length > 0
 
-    const setStatus = (status: number) => {
-        selectedEntries.forEach(entry => {
+    const setStatus = (entries: IRecord[], status: number) => {
+        entries.forEach(entry => {
             runtime.current?.services.get('fields').get(entry, 'status').setValue(status)
         })
         provider.clearSelectedRecordIds()
@@ -24,17 +24,26 @@ const GridExample = () => {
         provider.setSelectedRecordIds(submitted.map(entry => entry.getRecordId()))
     }
 
-    const commands: ICommandBarItemProps[] = [
-        { key: 'approve', text: 'Approve (' + selectedEntries.length + ')', iconProps: { iconName: 'CheckMark' }, disabled: !hasSelection, onClick: () => setStatus(APPROVED) },
-        { key: 'reject', text: 'Reject (' + selectedEntries.length + ')', iconProps: { iconName: 'Cancel' }, disabled: !hasSelection, onClick: () => setStatus(REJECTED) },
-        { key: 'selectSubmitted', text: 'Select all submitted', iconProps: { iconName: 'MultiSelect' }, onClick: selectSubmitted },
-        { key: 'clear', text: 'Clear selection', iconProps: { iconName: 'Clear' }, disabled: !hasSelection, onClick: () => provider.clearSelectedRecordIds() },
-    ]
+    //loaded again whenever the selection changes, so it reads the selection off the provider
+    const loadCommands = async (): Promise<IRibbonCommand[]> => {
+        const entries = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
+        const isEmpty = entries.length === 0
+        return [
+            { id: 'approve', label: 'Approve (' + entries.length + ')', iconName: 'CheckMark', isDisabled: isEmpty, onExecute: () => setStatus(entries, APPROVED) },
+            { id: 'reject', label: 'Reject (' + entries.length + ')', iconName: 'Cancel', isDisabled: isEmpty, onExecute: () => setStatus(entries, REJECTED) },
+            { id: 'selectSubmitted', label: 'Select all submitted', iconName: 'MultiSelect', onExecute: selectSubmitted },
+            { id: 'clear', label: 'Clear selection', iconName: 'Clear', isDisabled: isEmpty, onExecute: () => provider.clearSelectedRecordIds() },
+        ]
+    }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} />
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
         {hasSelection && <MessageBar>{selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected, {selectedHours} hours in all.</MessageBar>}
-        <DataProviderContextProvider provider={provider}>
+        <DatasetControl.Body>
             <Grid
                 modules={{
                     rowModel: createClientSideRowModelModule(),
@@ -45,8 +54,8 @@ const GridExample = () => {
                 enableOptionSetColors
                 onGridReady={gridRuntime => runtime.current = gridRuntime}
                 height='440px' />
-        </DataProviderContextProvider>
-    </Stack>
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -87,14 +96,16 @@ const GridExample = () => {
 
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <div className={styles.grid}>
-            <DataProviderContextProvider provider={provider}>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
-                    }}
-                    height='440px' />
-            </DataProviderContextProvider>
+            <DatasetControl onLoad={async () => ({ provider: provider })}>
+                <DatasetControl.Body>
+                    <Grid
+                        modules={{
+                            rowModel: createClientSideRowModelModule(),
+                            rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
+                        }}
+                        height='440px' />
+                </DatasetControl.Body>
+            </DatasetControl>
         </div>
         <ProductCard product={productId ? provider.getRecordsMap()[productId] : undefined} />
     </Stack>
@@ -105,15 +116,17 @@ export const COPY_PRICE_LIST_CODE = `const GridExample = () => {
     const [spreadsheet, setSpreadsheet] = React.useState('')
 
     return <Stack tokens={{ childrenGap: 12 }}>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    cellSelection: createCellSelectionModule(),
-                    clipboard: createClipboardModule({ copyHeadersToClipboard: true }),
-                }}
-                height='360px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        cellSelection: createCellSelectionModule(),
+                        clipboard: createClipboardModule({ copyHeadersToClipboard: true }),
+                    }}
+                    height='360px' />
+            </DatasetControl.Body>
+        </DatasetControl>
         <TextField
             label='Your spreadsheet'
             placeholder='Paste here with Ctrl+V'

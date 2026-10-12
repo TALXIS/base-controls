@@ -15,11 +15,13 @@ The editing module adds two columns of its own: one a row reports its save in, k
 \`\`\`tsx
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-        colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRenderer: SaveStatusCell } }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRenderer: SaveStatusCell } }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - Every key and part is optional: what you leave out keeps its default.
@@ -44,11 +46,13 @@ The row selection module adds a checkbox column of its own, keyed \`SELECTION_CO
 \`\`\`tsx
 const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
-        colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
+            colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - Every key and part is optional: what you leave out keeps its default.

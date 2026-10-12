@@ -1,16 +1,18 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            sorting: createSortingModule(),
-            filtering: createFilteringModule(),
-        }}
-        enableOptionSetColors
-        height='440px' />
-</DataProviderContextProvider>
+export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+            }}
+            enableOptionSetColors
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const OPEN_ON_WHAT_MATTERS_CODE = `//the filter callout writes option set values as strings
@@ -29,16 +31,18 @@ const createQueueProvider = () => {
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
-    return <DataProviderContextProvider provider={tickets}>
-        <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-            }}
-            enableOptionSetColors
-            height='440px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                }}
+                enableOptionSetColors
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -103,17 +107,19 @@ const GridExample = () => {
             {SAVED_VIEWS.map(view => <DefaultButton key={view.key} text={view.text} toggle checked={view.key === viewKey} onClick={() => showView(view)} />)}
             <Text>{ticketCount} tickets</Text>
         </Stack>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                }}
-                enableOptionSetColors
-                onDataLoaded={() => setTicketCount(provider.getRecords().length)}
-                height='440px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        sorting: createSortingModule(),
+                        filtering: createFilteringModule(),
+                    }}
+                    enableOptionSetColors
+                    onDataLoaded={() => setTicketCount(provider.getRecords().length)}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -160,17 +166,19 @@ const filterPlaceholdersModule: IGridModule = {
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
 
-    return <DataProviderContextProvider provider={tickets}>
-        <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-                custom: [filterPlaceholdersModule],
-            }}
-            enableOptionSetColors
-            height='440px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                    custom: [filterPlaceholdersModule],
+                }}
+                enableOptionSetColors
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

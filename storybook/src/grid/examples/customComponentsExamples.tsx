@@ -71,44 +71,46 @@ const GridExample = () => {
         cells.render()
     }
 
-    return <DataProviderContextProvider provider={provider}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            enableOptionSetColors
-            colDefs={{
-                products: { hide: true },
-                probability: {
-                    headerName: 'Win chance',
-                    cellRenderer: WinChanceCell,
-                    initialWidth: 220,
-                    context: {
-                        alignment: 'left',
-                        cell: {
-                            onGetLoading: (result, { record }) => {
-                                result.isLoading = forecasting.has(record.getRecordId())
-                            },
-                            onGetLock: (result, { record }) => {
-                                result.isLocked = isClosed(record)
-                            },
-                            onGetValidation: (result, { record }) => {
-                                const chance = Number(record.getValue('probability') ?? 0)
-                                if (chance < 0 || chance > 100) {
-                                    result.error = true
-                                    result.errorMessage = 'A win chance is between 0 and 100 %.'
-                                }
-                            },
-                            onGetCommands: (result, { record }) => {
-                                if (!isClosed(record)) {
-                                    result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
-                                }
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                enableOptionSetColors
+                colDefs={{
+                    products: { hide: true },
+                    probability: {
+                        headerName: 'Win chance',
+                        cellRenderer: WinChanceCell,
+                        initialWidth: 220,
+                        context: {
+                            alignment: 'left',
+                            cell: {
+                                onGetLoading: (result, { record }) => {
+                                    result.isLoading = forecasting.has(record.getRecordId())
+                                },
+                                onGetLock: (result, { record }) => {
+                                    result.isLocked = isClosed(record)
+                                },
+                                onGetValidation: (result, { record }) => {
+                                    const chance = Number(record.getValue('probability') ?? 0)
+                                    if (chance < 0 || chance > 100) {
+                                        result.error = true
+                                        result.errorMessage = 'A win chance is between 0 and 100 %.'
+                                    }
+                                },
+                                onGetCommands: (result, { record }) => {
+                                    if (!isClosed(record)) {
+                                        result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
+                                    }
+                                },
                             },
                         },
                     },
-                },
-            }}
-            onGridReady={gridRuntime => { runtime.current = gridRuntime }}
-            height='440px' />
-    </DataProviderContextProvider>
+                }}
+                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -138,19 +140,21 @@ const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
 
 const CaptionedHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={CAPTIONED_HEADER} />
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            sorting: createSortingModule(),
-        }}
-        colDefs={{
-            price: { headerComponent: CaptionedHeader },
-            instock: { headerComponent: CaptionedHeader },
-            reorderlevel: { headerComponent: CaptionedHeader },
-        }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+            }}
+            colDefs={{
+                price: { headerComponent: CaptionedHeader },
+                instock: { headerComponent: CaptionedHeader },
+                reorderlevel: { headerComponent: CaptionedHeader },
+            }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const PIPELINE_HEADER_CODE = `const styles = mergeStyleSets({
@@ -208,16 +212,18 @@ const GridExample = () => {
         })
     }, [])
 
-    return <DataProviderContextProvider provider={provider}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
-            colDefs={{
-                value: { headerComponent: SummaryHeader },
-                probability: { headerComponent: SummaryHeader },
-            }}
-            onGridReady={gridRuntime => { runtime.current = gridRuntime }}
-            height='440px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+                colDefs={{
+                    value: { headerComponent: SummaryHeader },
+                    probability: { headerComponent: SummaryHeader },
+                }}
+                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -233,13 +239,15 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
-        components={COMPONENTS}
-        height='360px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
+            components={COMPONENTS}
+            height='360px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({
@@ -262,12 +270,14 @@ const COMPONENTS: IGridComponents = {
 
 const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
     <CommandBar items={[{ key: 'refresh', text: 'Check stock again', iconProps: { iconName: 'Refresh' }, onClick: () => { provider.refresh() } }]} />
-    <DataProviderContextProvider provider={provider}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            components={COMPONENTS}
-            height='400px' />
-    </DataProviderContextProvider>
+    <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule() }}
+                components={COMPONENTS}
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 </Stack>
 `
 
@@ -286,15 +296,17 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createServerSideRowModelModule(),
-            grouping: createGroupingModule(),
-        }}
-        components={COMPONENTS}
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createServerSideRowModelModule(),
+                grouping: createGroupingModule(),
+            }}
+            components={COMPONENTS}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const ERROR_ROWS_CODE = `const RetryMessageBar = (props: IMessageBarProps) => {
@@ -317,15 +329,17 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createServerSideRowModelModule(),
-            grouping: createGroupingModule(),
-        }}
-        components={COMPONENTS}
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createServerSideRowModelModule(),
+                grouping: createGroupingModule(),
+            }}
+            components={COMPONENTS}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
@@ -344,14 +358,16 @@ const SAVE_STATUS: IRecordSaveUiComponents = {
 
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-        colDefs={{
-            [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
-        }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            colDefs={{
+                [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
+            }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 const WAREHOUSE_DELAY = 2500
@@ -472,21 +488,23 @@ const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.da
     <EditingCell.Editor {...props} components={HTML_EDITOR} />
 </Grid.Cell.Field>
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-        colDefs={{
-            description: {
-                cellRenderer: HtmlCell,
-                cellEditor: HtmlEditor,
-                cellEditorPopup: true,
-                autoHeight: true,
-                //Enter starts a new line in the editor rather than closing it
-                suppressKeyboardEvent: params => params.editing && params.event.key === 'Enter',
-            },
-        }}
-        height='520px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            colDefs={{
+                description: {
+                    cellRenderer: HtmlCell,
+                    cellEditor: HtmlEditor,
+                    cellEditorPopup: true,
+                    autoHeight: true,
+                    //Enter starts a new line in the editor rather than closing it
+                    suppressKeyboardEvent: params => params.editing && params.event.key === 'Enter',
+                },
+            }}
+            height='520px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 const DESCRIPTIONS: { [name: string]: string } = {

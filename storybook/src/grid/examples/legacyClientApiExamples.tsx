@@ -71,17 +71,19 @@ const supportDeskScript: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-            custom: [supportDeskScript],
-        }}
-        colDefs={{ title: { initialWidth: 380 } }}
-        enableOptionSetColors
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
+                custom: [supportDeskScript],
+            }}
+            colDefs={{ title: { initialWidth: 380 } }}
+            enableOptionSetColors
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const STOCK_SCRIPT_CODE = `const LOCKED_WHEN_DISCONTINUED = ['price', 'instock', 'reorderlevel', 'supplier']
@@ -139,17 +141,19 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={[{ key: 'sync', text: 'Sync stock', iconProps: { iconName: 'Sync' }, disabled: isSyncing, onClick: () => { onSync() } }]} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    editing: createEditingModule({ autoSave: true }),
-                    legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-                    custom: [stockScript],
-                }}
-                colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{
+                        rowModel: createClientSideRowModelModule(),
+                        editing: createEditingModule({ autoSave: true }),
+                        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
+                        custom: [stockScript],
+                    }}
+                    colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -169,17 +173,19 @@ const triageScript: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            editing: createEditingModule({ autoSave: true }),
-            legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-            custom: [triageScript],
-        }}
-        enableOptionSetColors
-        height='400px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                editing: createEditingModule({ autoSave: true }),
+                legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
+                custom: [triageScript],
+            }}
+            enableOptionSetColors
+            height='400px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const TicketRecommendationsExample = () => <GridExampleRunner seedCode={TICKET_RECOMMENDATIONS_CODE} dataset='tickets' />

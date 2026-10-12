@@ -8,11 +8,13 @@ const DESCRIPTION = `
 Every column draws its cells with the grid's own cell, which shows the value the way its data type reads. When a column needs something else, give it a cell of your own: set \`cellRenderer\` in \`colDefs\` to draw its cells, and \`cellEditor\` to edit them (with the editing module).
 
 \`\`\`tsx
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-        colDefs={{ description: { cellRenderer: HtmlCell, cellEditor: HtmlEditor } }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            colDefs={{ description: { cellRenderer: HtmlCell, cellEditor: HtmlEditor } }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 You build that cell one of two ways:

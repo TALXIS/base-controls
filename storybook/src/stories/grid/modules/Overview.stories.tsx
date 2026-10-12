@@ -30,15 +30,17 @@ Selecting, sorting, filtering, grouping, totals and copying are modules: you pas
 ## Turning modules on
 
 \`\`\`tsx
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-            sorting: createSortingModule(),
-            filtering: createFilteringModule(),
-        }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                rowSelection: createRowSelectionModule({ mode: 'multiple' }),
+                sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+            }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 An entry set to \`undefined\` is the same as one left out.
@@ -53,14 +55,16 @@ interface IOrdersGridProps {
     allowGrouping: boolean
 }
 
-const OrdersGrid = (props: IOrdersGridProps) => <DataProviderContextProvider provider={props.provider}>
-    <Grid
-        key={props.allowGrouping ? 'grouped' : 'flat'}
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            grouping: props.allowGrouping ? createGroupingModule() : undefined,
-        }} />
-</DataProviderContextProvider>
+const OrdersGrid = (props: IOrdersGridProps) => <DatasetControl onLoad={async () => ({ provider: props.provider })}>
+    <DatasetControl.Body>
+        <Grid
+            key={props.allowGrouping ? 'grouped' : 'flat'}
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                grouping: props.allowGrouping ? createGroupingModule() : undefined,
+            }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too: when grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\`, then call \`provider.refresh()\`.
@@ -73,14 +77,16 @@ The grid runs on AG Grid Community. The modules marked in the table's *AG Grid E
 //a LicenseKey input parameter declared in your control's manifest
 const licenseKey = context.parameters.LicenseKey.raw
 
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
-            rowModel: createServerSideRowModelModule(),
-            grouping: createGroupingModule(),
-        }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                license: licenseKey ? createLicenseModule({ key: licenseKey }) : undefined,
+                rowModel: createServerSideRowModelModule(),
+                grouping: createGroupingModule(),
+            }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - \`key\` is required, so leave the module out while there is no key, as above. Outside a PCF control, read the key from your app's configuration, such as an environment value set at build time.

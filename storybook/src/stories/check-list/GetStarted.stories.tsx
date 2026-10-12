@@ -12,7 +12,7 @@ CheckList presents the records of a data provider as a to-do list. Users tick it
 ## Usage
 
 \`\`\`tsx
-import { CheckList, DataProviderContextProvider, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
+import { CheckList, DatasetControl, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 const launchPlan = new MemoryDataProvider({
@@ -31,13 +31,15 @@ const launchPlan = new MemoryDataProvider({
 const FIELD_MAPPING: ICheckListFieldMapping = { name: 'name', stackRank: 'stackrank', completed: 'completed' }
 
 export const LaunchPlan = () => <PcfContextProvider>
-    <DataProviderContextProvider provider={launchPlan}>
-        <CheckList fieldMapping={FIELD_MAPPING} />
-    </DataProviderContextProvider>
+    <DatasetControl onLoad={async () => ({ provider: launchPlan })}>
+        <DatasetControl.Body>
+            <CheckList fieldMapping={FIELD_MAPPING} />
+        </DatasetControl.Body>
+    </DatasetControl>
 </PcfContextProvider>
 \`\`\`
 
-- [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) hands the checklist its provider, which holds the items. Leave its first load to the checklist, which orders it by \`stackRank\` before loading. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
+- The checklist needs a provider around it, like any grid: see *Your first grid* on [**Grid → Get started**](?path=/docs/grid-get-started--overview). It orders the items by \`stackRank\`, loading them again if they came in another order, so sort by it in \`onLoad\` to load them once. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
 - \`fieldMapping\` names the columns that hold an item's name, position and state. See *Field mapping* below.
 - \`PcfContextProvider\` must wrap the checklist. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 

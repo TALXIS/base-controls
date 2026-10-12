@@ -7,7 +7,7 @@ import { FillContainerExample, InvoiceLinesExample, TicketPreviewPaneExample, Wa
 const DESCRIPTION = `
 Everything \`<Grid />\` takes: its props, how it sizes itself, and the events it fires.
 
-The provider, with the records, the columns and the paging, is not a prop: the grid takes it from the DatasetControl or the \`DataProviderContextProvider\` around it, once, at mount. See *Your first grid* on [**Get started**](?path=/docs/grid-get-started--overview).
+The provider, with the records, the columns and the paging, is not a prop: the grid takes it from the DatasetControl or the \`DataProviderContextProvider\` around it, once, at mount, and never loads it itself. See *Your first grid* on [**Get started**](?path=/docs/grid-get-started--overview).
 
 ## Props
 

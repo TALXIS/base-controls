@@ -8,11 +8,13 @@ const DESCRIPTION = `
 Besides rows of records, the grid draws rows that stand in for records it doesn't have: one while a group's records load, and one when records or totals fail to load. To change how either looks, pass \`components.rows\` to \`<Grid />\`.
 
 \`\`\`tsx
-<DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createServerSideRowModelModule(), grouping: createGroupingModule() }}
-        components={{ rows: { loading: { onRenderShimmer: () => <Spinner /> } } }} />
-</DataProviderContextProvider>
+<DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createServerSideRowModelModule(), grouping: createGroupingModule() }}
+            components={{ rows: { loading: { onRenderShimmer: () => <Spinner /> } } }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - Parts follow the rules in *Replacing what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).

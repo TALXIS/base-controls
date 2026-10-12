@@ -19,7 +19,7 @@ A module is an \`IGridModule\`:
 Pass your modules in \`modules.custom\`:
 
 \`\`\`tsx
-import { createClientSideRowModelModule, DataProviderContextProvider, Grid, IGridModule } from '@talxis/base-controls'
+import { createClientSideRowModelModule, DatasetControl, Grid, IGridModule } from '@talxis/base-controls'
 import { IDataProvider } from '@talxis/client-libraries'
 
 const HIGH = 1
@@ -34,13 +34,15 @@ export const urgentTicketsModule: IGridModule = {
     },
 }
 
-export const TicketQueue = (props: { provider: IDataProvider }) => <DataProviderContextProvider provider={props.provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            custom: [urgentTicketsModule],
-        }} />
-</DataProviderContextProvider>
+export const TicketQueue = (props: { provider: IDataProvider }) => <DatasetControl onLoad={async () => ({ provider: props.provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                custom: [urgentTicketsModule],
+            }} />
+    </DatasetControl.Body>
+</DatasetControl>
 \`\`\`
 
 - Build a module once, as a constant or in \`useMemo\`. \`modules\` is read at mount: see *Props* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).

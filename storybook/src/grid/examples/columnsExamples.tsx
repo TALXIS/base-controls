@@ -9,19 +9,21 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle inlineLabel label='Show every column' checked={showEveryColumn} onChange={(_, checked) => setShowEveryColumn(!!checked)} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                //a new key makes the grid build its columns again
-                key={String(showEveryColumn)}
-                modules={{ rowModel: createClientSideRowModelModule() }}
-                colDefs={{
-                    ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
-                    name: { pinned: 'left' },
-                    category: { pinned: 'right' },
-                    photo: { maxWidth: 80 },
-                }}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    //a new key makes the grid build its columns again
+                    key={String(showEveryColumn)}
+                    modules={{ rowModel: createClientSideRowModelModule() }}
+                    colDefs={{
+                        ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
+                        name: { pinned: 'left' },
+                        category: { pinned: 'right' },
+                        photo: { maxWidth: 80 },
+                    }}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -91,15 +93,17 @@ const GridExample = () => {
     const [productId, setProductId] = React.useState<string>()
 
     return <>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule() }}
-                colDefs={{
-                    name: { pinned: 'left', context: { isPrimary: true } },
-                }}
-                onOpenRecord={({ record }) => setProductId(record.getRecordId())}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule() }}
+                    colDefs={{
+                        name: { pinned: 'left', context: { isPrimary: true } },
+                    }}
+                    onOpenRecord={({ record }) => setProductId(record.getRecordId())}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
         <ProductPanel product={productId ? provider.getRecordsMap()[productId] : undefined} onDismiss={() => setProductId(undefined)} />
     </>
 }
@@ -128,21 +132,23 @@ const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
     </Grid.Cell.Theme>
 </Grid.Cell.Root>
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-        colDefs={{
-            stockvalue: {
-                headerName: 'Stock value',
-                pinned: 'right',
-                initialWidth: 130,
-                cellRenderer: StockValueCell,
-                valueGetter: params => params.data ? getStockValue(params.data) : null,
-                context: { alignment: 'right' },
-            },
-        }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            colDefs={{
+                stockvalue: {
+                    headerName: 'Stock value',
+                    pinned: 'right',
+                    initialWidth: 130,
+                    cellRenderer: StockValueCell,
+                    valueGetter: params => params.data ? getStockValue(params.data) : null,
+                    context: { alignment: 'right' },
+                },
+            }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const ROW_COMMANDS_CODE = `const isLowStock = (product: IRecord) => Number(product.getValue('instock') ?? 0) < Number(product.getValue('reorderlevel') ?? 0)
@@ -169,32 +175,34 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{status}</MessageBar>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                colDefs={{
-                    actions: {
-                        headerName: '',
-                        pinned: 'right',
-                        initialWidth: 96,
-                        context: {
-                            cell: {
-                                onGetCommands: (result, { record }) => {
-                                    if (isLowStock(record) && !isDiscontinued(record)) {
-                                        result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
-                                    }
-                                    result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
-                                    if (!isDiscontinued(record)) {
-                                        result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
-                                    }
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                    colDefs={{
+                        actions: {
+                            headerName: '',
+                            pinned: 'right',
+                            initialWidth: 96,
+                            context: {
+                                cell: {
+                                    onGetCommands: (result, { record }) => {
+                                        if (isLowStock(record) && !isDiscontinued(record)) {
+                                            result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
+                                        }
+                                        result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
+                                        if (!isDiscontinued(record)) {
+                                            result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
+                                        }
+                                    },
                                 },
                             },
                         },
-                    },
-                }}
-                onGridReady={gridRuntime => runtime.current = gridRuntime}
-                height='440px' />
-        </DataProviderContextProvider>
+                    }}
+                    onGridReady={gridRuntime => runtime.current = gridRuntime}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -224,58 +232,64 @@ const GridExample = () => {
     //a header does not watch the values of the records
     const redrawHeaders = () => runtime.current?.services.get('columns').headers.render()
 
-    return <DataProviderContextProvider provider={provider}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
-            colDefs={{
-                instock: {
-                    context: {
-                        header: {
-                            onGetAdornments: adornments => {
-                                const lowStock = provider.getRecords().filter(isLowStock).length
-                                if (lowStock > 0) {
-                                    adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
-                                }
-                            },
-                            onGetMenuSections: sections => {
-                                sections.push({
-                                    key: 'quickFilters',
-                                    title: 'Quick filters',
-                                    items: [
-                                        ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
-                                        { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
-                                    ],
-                                })
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
+                colDefs={{
+                    instock: {
+                        context: {
+                            header: {
+                                onGetAdornments: adornments => {
+                                    const lowStock = provider.getRecords().filter(isLowStock).length
+                                    if (lowStock > 0) {
+                                        adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
+                                    }
+                                },
+                                onGetMenuSections: sections => {
+                                    sections.push({
+                                        key: 'quickFilters',
+                                        title: 'Quick filters',
+                                        items: [
+                                            ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
+                                            { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
+                                        ],
+                                    })
+                                },
                             },
                         },
                     },
-                },
-            }}
-            onGridReady={gridRuntime => { runtime.current = gridRuntime }}
-            onRecordValueChanged={redrawHeaders}
-            height='440px' />
-    </DataProviderContextProvider>
+                }}
+                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                onRecordValueChanged={redrawHeaders}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
-export const LONG_NOTES_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        colDefs={{
-            nextstep: { context: { cell: { isRowResizable: false } } },
-        }}
-        height='480px' />
-</DataProviderContextProvider>
+export const LONG_NOTES_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            colDefs={{
+                nextstep: { context: { cell: { isRowResizable: false } } },
+            }}
+            height='480px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
-export const AUTO_HEIGHT_CODE = `const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule() }}
-        colDefs={{
-            notes: { autoHeight: true },
-        }}
-        height='480px' />
-</DataProviderContextProvider>
+export const AUTO_HEIGHT_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            colDefs={{
+                notes: { autoHeight: true },
+            }}
+            height='480px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const REMEMBER_LAYOUT_CODE = `interface IColumnLayout {
@@ -299,12 +313,14 @@ const openProducts = (layout: IColumnLayout[]) => {
 const ProductList = (props: IProductListProps) => {
     const [products] = React.useState(() => openProducts(props.layout))
 
-    return <DataProviderContextProvider provider={products}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
-            onColumnsChanged={columns => props.onLayoutChanged(columns.map(column => ({ name: column.name, visualSizeFactor: column.visualSizeFactor, order: column.order })))}
-            height='420px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule() }}
+                onColumnsChanged={columns => props.onLayoutChanged(columns.map(column => ({ name: column.name, visualSizeFactor: column.visualSizeFactor, order: column.order })))}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 
 const GridExample = () => {

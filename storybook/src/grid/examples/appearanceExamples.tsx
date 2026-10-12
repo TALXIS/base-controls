@@ -20,30 +20,32 @@ const getUrgency = (ticket: IRecord) => {
     return hoursLeft < AT_RISK_HOURS ? AT_RISK : undefined
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            sorting: createSortingModule(),
-        }}
-        colDefs={{
-            duedate: {
-                context: {
-                    cell: {
-                        onGetTheme: (theme, { record }) => {
-                            const urgency = getUrgency(record)
-                            if (urgency) {
-                                theme.colors.background = urgency.background
-                                theme.colors.text = urgency.text
-                            }
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+            }}
+            colDefs={{
+                duedate: {
+                    context: {
+                        cell: {
+                            onGetTheme: (theme, { record }) => {
+                                const urgency = getUrgency(record)
+                                if (urgency) {
+                                    theme.colors.background = urgency.background
+                                    theme.colors.text = urgency.text
+                                }
+                            },
                         },
                     },
                 },
-            },
-        }}
-        enableOptionSetColors
-        height='440px' />
-</DataProviderContextProvider>
+            }}
+            enableOptionSetColors
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
@@ -62,19 +64,21 @@ const escalatedTicketsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            editing: createEditingModule(),
-            grouping: createGroupingModule(),
-            custom: [escalatedTicketsModule],
-        }}
-        colDefs={{
-            escalated: { context: { cell: { oneClickEdit: true } } },
-        }}
-        height='440px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                editing: createEditingModule(),
+                grouping: createGroupingModule(),
+                custom: [escalatedTicketsModule],
+            }}
+            colDefs={{
+                escalated: { context: { cell: { oneClickEdit: true } } },
+            }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const THEME_EDIT_CODE = `const MONOSPACE = 'Consolas, "Courier New", monospace'
@@ -83,14 +87,16 @@ const toMonospace = (theme: ITheme) => {
     theme.fonts.medium = { ...theme.fonts.medium, fontFamily: MONOSPACE }
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-        colDefs={{
-            ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
-        }}
-        height='420px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            colDefs={{
+                ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
+            }}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const DENSITY_CODE = `const DENSITIES = [
@@ -115,15 +121,17 @@ const GridExample = () => {
             <Toggle inlineLabel label='Option set colours' checked={hasOptionSetColors} onChange={(_, checked) => setHasOptionSetColors(!!checked)} />
         </Stack>
         {/* the grid reads these at mount */}
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
-                modules={{ rowModel: createClientSideRowModelModule() }}
-                rowHeight={rowHeight}
-                enableZebra={isZebra}
-                enableOptionSetColors={hasOptionSetColors}
-                height='440px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
+                    modules={{ rowModel: createClientSideRowModelModule() }}
+                    rowHeight={rowHeight}
+                    enableZebra={isZebra}
+                    enableOptionSetColors={hasOptionSetColors}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -143,14 +151,16 @@ const columnLinesModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            custom: [columnLinesModule],
-        }}
-        height='360px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                custom: [columnLinesModule],
+            }}
+            height='360px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const HEADER_COLOURS_CODE = `const CHANGED = '#fff4ce'
@@ -214,13 +224,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
-                colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
-                onGridReady={gridRuntime => runtime.current = gridRuntime}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
+                    colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
+                    onGridReady={gridRuntime => runtime.current = gridRuntime}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -285,29 +297,31 @@ const czechTotals = createAggregationModule({
     },
 })
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <Grid
-        modules={{
-            rowModel: createClientSideRowModelModule(),
-            editing: createEditingModule(),
-            sorting: czechSorting,
-            filtering: czechFiltering,
-            grouping: czechGrouping,
-            aggregation: czechTotals,
-        }}
-        labels={CZECH_LABELS}
-        colDefs={{
-            employee: { context: { isLocked: true } },
-        }}
-        rowSettings={{
-            onGetLock: (result, { record }) => {
-                if (Number(record.getValue('status')) === APPROVED) {
-                    result.isLocked = true
-                }
-            },
-        }}
-        height='460px' />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                editing: createEditingModule(),
+                sorting: czechSorting,
+                filtering: czechFiltering,
+                grouping: czechGrouping,
+                aggregation: czechTotals,
+            }}
+            labels={CZECH_LABELS}
+            colDefs={{
+                employee: { context: { isLocked: true } },
+            }}
+            rowSettings={{
+                onGetLock: (result, { record }) => {
+                    if (Number(record.getValue('status')) === APPROVED) {
+                        result.isLocked = true
+                    }
+                },
+            }}
+            height='460px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const SpotBreachesExample = () => <GridExampleRunner seedCode={BREACH_DEADLINES_CODE} dataset='tickets' />

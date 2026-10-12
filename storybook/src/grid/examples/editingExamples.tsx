@@ -9,13 +9,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>{status}</MessageBar>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
-                onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                    onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
+                    onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -46,13 +48,15 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-                onRecordValueChanged={countChanged}
-                onAfterSaved={countChanged}
-                height='400px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+                    onRecordValueChanged={countChanged}
+                    onAfterSaved={countChanged}
+                    height='400px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -84,15 +88,17 @@ const validateComment = (result: IFieldValidationResult, { record }: { record: I
 const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
-    return <DataProviderContextProvider provider={timesheets}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            colDefs={{
-                hours: { context: { cell: { onGetValidation: validateHours } } },
-                comment: { context: { cell: { onGetValidation: validateComment } } },
-            }}
-            height='420px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                colDefs={{
+                    hours: { context: { cell: { onGetValidation: validateHours } } },
+                    comment: { context: { cell: { onGetValidation: validateComment } } },
+                }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -106,38 +112,40 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                key={isWeekClosed ? 'closed' : 'open'}
-                modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
-                rowSettings={{
-                    onGetLock: (result, { record }) => {
-                        if (Number(record.getValue('status')) === APPROVED) {
-                            result.isLocked = true
-                        }
-                    },
-                }}
-                colDefs={{
-                    employee: { context: { isLocked: true } },
-                    rate: {
-                        context: {
-                            cell: {
-                                onGetLock: (result, { record }) => {
-                                    if (!isBillable(record)) {
-                                        result.isLocked = true
-                                    }
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    key={isWeekClosed ? 'closed' : 'open'}
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
+                    rowSettings={{
+                        onGetLock: (result, { record }) => {
+                            if (Number(record.getValue('status')) === APPROVED) {
+                                result.isLocked = true
+                            }
+                        },
+                    }}
+                    colDefs={{
+                        employee: { context: { isLocked: true } },
+                        rate: {
+                            context: {
+                                cell: {
+                                    onGetLock: (result, { record }) => {
+                                        if (!isBillable(record)) {
+                                            result.isLocked = true
+                                        }
+                                    },
                                 },
                             },
                         },
-                    },
-                }}
-                labels={{
-                    columnLocked: 'An entry stays with the employee who logged it.',
-                    recordLocked: 'Approved entries cannot be changed.',
-                    valueLocked: 'Only billable work has an hourly rate.',
-                }}
-                height='440px' />
-        </DataProviderContextProvider>
+                    }}
+                    labels={{
+                        columnLocked: 'An entry stays with the employee who logged it.',
+                        recordLocked: 'Approved entries cannot be changed.',
+                        valueLocked: 'Only billable work has an hourly rate.',
+                    }}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -172,11 +180,13 @@ const createTimesheets = () => {
 const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
-    return <DataProviderContextProvider provider={timesheets}>
-        <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-            height='420px' />
-    </DataProviderContextProvider>
+    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -192,13 +202,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
-                onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                    colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
+                    onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `

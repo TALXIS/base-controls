@@ -10,16 +10,20 @@ const FIELD_MAPPING = `const FIELD_MAPPING: ICheckListFieldMapping = {
 
 export const LAUNCH_PLAN_CODE = `${FIELD_MAPPING}
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <CheckList fieldMapping={FIELD_MAPPING} />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <CheckList fieldMapping={FIELD_MAPPING} />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const READ_ONLY_CODE = `${FIELD_MAPPING}
 
-const GridExample = () => <DataProviderContextProvider provider={provider}>
-    <CheckList fieldMapping={FIELD_MAPPING} modules={{ editing: undefined }} />
-</DataProviderContextProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <CheckList fieldMapping={FIELD_MAPPING} modules={{ editing: undefined }} />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const RELEASE_BOARD_CODE = `${FIELD_MAPPING}
@@ -44,39 +48,41 @@ const GridExample = () => {
         runtime.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
     }
 
-    return <DataProviderContextProvider provider={provider}>
-        <CheckList
-            fieldMapping={FIELD_MAPPING}
-            modules={{ aggregation: createAggregationModule() }}
-            colDefs={{
-                name: { context: { cell: { onGetLock: lockWhenDone } } },
-                owner: {
-                    context: {
-                        cell: {
-                            onGetCommands: (result, { record }) => {
-                                if (isItem(record) && !isDone(record) && !record.getValue('owner')) {
-                                    result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
-                                }
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <CheckList
+                fieldMapping={FIELD_MAPPING}
+                modules={{ aggregation: createAggregationModule() }}
+                colDefs={{
+                    name: { context: { cell: { onGetLock: lockWhenDone } } },
+                    owner: {
+                        context: {
+                            cell: {
+                                onGetCommands: (result, { record }) => {
+                                    if (isItem(record) && !isDone(record) && !record.getValue('owner')) {
+                                        result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
+                                    }
+                                },
                             },
                         },
                     },
-                },
-                duedate: {
-                    context: {
-                        cell: {
-                            onGetLock: lockWhenDone,
-                            onGetTheme: (theme, { record }) => {
-                                if (isOverdue(record)) {
-                                    theme.colors.background = OVERDUE
-                                    theme.colors.text = getTextColorForBackground(OVERDUE)
-                                }
+                    duedate: {
+                        context: {
+                            cell: {
+                                onGetLock: lockWhenDone,
+                                onGetTheme: (theme, { record }) => {
+                                    if (isOverdue(record)) {
+                                        theme.colors.background = OVERDUE
+                                        theme.colors.text = getTextColorForBackground(OVERDUE)
+                                    }
+                                },
                             },
                         },
                     },
-                },
-            }}
-            onGridReady={gridRuntime => runtime.current = gridRuntime} />
-    </DataProviderContextProvider>
+                }}
+                onGridReady={gridRuntime => runtime.current = gridRuntime} />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -117,12 +123,14 @@ const GridExample = () => {
     const close = () => setOpenedItem(undefined)
 
     return <>
-        <DataProviderContextProvider provider={provider}>
-            <CheckList
-                fieldMapping={FIELD_MAPPING}
-                colDefs={{ name: { context: { isPrimary: true } } }}
-                onOpenRecord={({ record }) => setOpenedItem(record)} />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <CheckList
+                    fieldMapping={FIELD_MAPPING}
+                    colDefs={{ name: { context: { isPrimary: true } } }}
+                    onOpenRecord={({ record }) => setOpenedItem(record)} />
+            </DatasetControl.Body>
+        </DatasetControl>
         <Panel isOpen={!!openedItem} headerText={openedItem?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={close} onRenderFooterContent={() => <DefaultButton text='Close' onClick={close} />}>
             {openedItem && <ItemForm key={openedItem.getRecordId()} item={openedItem} />}
         </Panel>

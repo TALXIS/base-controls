@@ -31,13 +31,15 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
-                onGridReady={runtime => { runtimeRef.current = runtime }}
-                onColumnsChanged={columns => setOrder(describeOrder(columns))}
-                height='420px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
+                    onGridReady={runtime => { runtimeRef.current = runtime }}
+                    onColumnsChanged={columns => setOrder(describeOrder(columns))}
+                    height='420px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `
@@ -73,13 +75,15 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <CommandBar items={commands} />
-        <DataProviderContextProvider provider={provider}>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
-                enableOptionSetColors
-                onGridReady={runtime => { runtimeRef.current = runtime }}
-                height='400px' />
-        </DataProviderContextProvider>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
+                    enableOptionSetColors
+                    onGridReady={runtime => { runtimeRef.current = runtime }}
+                    height='400px' />
+            </DatasetControl.Body>
+        </DatasetControl>
     </Stack>
 }
 `

@@ -1,6 +1,6 @@
 import React from 'react'
 import { CheckList, ICheckListFieldMapping, IGridRuntime } from '@talxis/base-controls'
-import { DataProviderContextProvider, PcfContextProvider } from '@talxis/base-controls'
+import { DatasetControl, PcfContextProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
@@ -77,14 +77,16 @@ export const ScratchCheckList = () => {
                         </div>
                     ))}
                 </div>
-                <DataProviderContextProvider provider={provider}>
-                    <CheckList
-                        fieldMapping={FIELD_MAPPING}
-                        onGridReady={onGridReady}
-                        onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
-                        onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
-                        onError={message => log('onError', message)} />
-                </DataProviderContextProvider>
+                <DatasetControl onLoad={async () => ({ provider: provider })}>
+                    <DatasetControl.Body>
+                        <CheckList
+                            fieldMapping={FIELD_MAPPING}
+                            onGridReady={onGridReady}
+                            onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
+                            onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
+                            onError={message => log('onError', message)} />
+                    </DatasetControl.Body>
+                </DatasetControl>
             </Stack>
         </PcfContextProvider>
     )
