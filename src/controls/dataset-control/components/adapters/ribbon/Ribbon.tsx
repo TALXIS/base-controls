@@ -6,6 +6,7 @@ import { IRibbonProps, IRibbonRuntime, Ribbon as SharedRibbon } from "@controls/
 import { useDatasetControlRegion } from "../region";
 import { getDatasetControlRibbonStyles } from "./styles";
 
+/** Props for `DatasetControl.Ribbon`, the shared `Ribbon`'s own. */
 export type IDatasetControlRibbonProps = IRibbonProps;
 
 /** The ribbon, loaded again whenever the selected records change; in an `End` region its commands sit against the right. */

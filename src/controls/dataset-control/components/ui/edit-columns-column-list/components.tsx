@@ -4,7 +4,9 @@ import { EditColumnsColumn } from "./EditColumnsColumn";
 
 /** A column in the list, with what it offers to do. */
 export interface IEditColumnsListColumn {
+    /** The column itself. */
     column: IColumn;
+    /** What the list shows for it. */
     text: string;
     /** Remove, by default; an override adds its own next to it. */
     commands: ICommandBarItemProps[];

@@ -1,3 +1,4 @@
+/** The strings of the page size switcher. */
 export interface IPageSizeSwitcherLabels {
     /** `start` and `end` are the first and last record on the page. */
     recordRange: string;

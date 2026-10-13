@@ -1,6 +1,7 @@
 import React from "react";
 import { IDataProvider } from "@talxis/client-libraries";
 
+/** The provider the components inside it work on; `DatasetControl` provides it. */
 export const DataProviderContext = React.createContext<IDataProvider | null>(null);
 
 DataProviderContext.displayName = "DataProviderContext";

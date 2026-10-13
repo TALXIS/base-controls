@@ -1,7 +1,9 @@
 import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
 
+/** What the pagination raises. */
 export interface IDatasetControlPaginationEvents {
+    /** The page changed, or a page started loading. */
     onPagingChanged: () => void;
 }
 
@@ -11,7 +13,24 @@ export interface IDatasetControlPaginationParameters {
 }
 
 /** Moves the provider between its pages. */
-export class DatasetControlPagination {
+export interface IDatasetControlPagination {
+    /** Subscribe to the pagination's events. */
+    readonly events: IEventSubscriber<IDatasetControlPaginationEvents>;
+    /** The current page, counted from 1. */
+    getPageNumber(): number;
+    /** Whether there is a page before this one and nothing is loading. */
+    canMovePrevious(): boolean;
+    /** Whether there is a page after this one and nothing is loading. */
+    canMoveNext(): boolean;
+    /** Loads the first page; asks first when there are unsaved changes. */
+    moveFirst(): void;
+    /** Loads the previous page; asks first when there are unsaved changes. */
+    movePrevious(): void;
+    /** Loads the next page; asks first when there are unsaved changes. */
+    moveNext(): void;
+}
+
+export class DatasetControlPagination implements IDatasetControlPagination {
     public readonly events: IEventEmitter<IDatasetControlPaginationEvents> = new EventEmitter<IDatasetControlPaginationEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;

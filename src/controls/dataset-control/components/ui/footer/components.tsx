@@ -1,5 +1,6 @@
 /** The replaceable pieces of the footer. */
 export interface IFooterUiComponents {
+    /** The box of the footer. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 

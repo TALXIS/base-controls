@@ -1,3 +1,4 @@
+/** The strings of the notifications. */
 export interface INotificationsLabels {
     /** `count` is how many notifications there are. */
     groupedNotificationsSummary: string;

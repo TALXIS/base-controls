@@ -23,7 +23,7 @@ const loadViews = async (): Promise<IDatasetControlView[]> => {
 - Picking a view calls the control's \`onLoad\` with its \`viewId\`, shows the placeholder while it runs, then shows the new provider and destroys the old one. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview).
 - When the records have unsaved changes, the control asks first, and stays on the view if the user cancels.
 - Switching back to a view puts it back as the user left it: sorted, searched, paged and scrolled. See [**State**](?path=/docs/datasetcontrol-state-overview--overview).
-- To switch views from your own code, call \`runtime.reload({ viewId })\`. See [**Extending**](?path=/docs/datasetcontrol-customization-extending--overview).
+- To switch views from your own code, call \`control.loadView(viewId)\`. See [**Extending**](?path=/docs/datasetcontrol-customization-extending--overview).
 
 | Prop | Type | Default | What it does |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 import React from "react";
 import { useContextWithNullCheck } from "@utils";
-import { IDatasetControlRuntime } from "../../../runtime";
+import { IDatasetControl, IDatasetControlRuntime } from "../../../runtime";
 
 export const DatasetControlRuntimeContext = React.createContext<IDatasetControlRuntime | null>(null);
 
@@ -14,4 +14,9 @@ export const useDatasetControlRuntime = (): IDatasetControlRuntime | undefined =
 /** The runtime of the `DatasetControl` the part is inside of; throws outside one. */
 export const useRequiredDatasetControlRuntime = (): IDatasetControlRuntime => {
     return useContextWithNullCheck(DatasetControlRuntimeContext);
+};
+
+/** The `DatasetControl` the component is inside of; throws outside one. */
+export const useDatasetControl = (): IDatasetControl => {
+    return useRequiredDatasetControlRuntime();
 };

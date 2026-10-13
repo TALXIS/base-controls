@@ -1,3 +1,4 @@
+/** The strings of the view switcher. */
 export interface IViewSwitcherLabels {
     /** The header of the views that have no group. */
     ungroupedViewsHeader: string;

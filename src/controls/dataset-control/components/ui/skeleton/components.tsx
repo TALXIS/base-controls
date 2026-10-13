@@ -2,6 +2,7 @@ import { ISkeletonShimmerProps, SkeletonShimmer } from "./SkeletonShimmer";
 
 /** The replaceable pieces of the skeleton. */
 export interface ISkeletonUiComponents {
+    /** The placeholder itself. */
     onRenderSkeleton: (props: ISkeletonShimmerProps) => JSX.Element | null;
 }
 

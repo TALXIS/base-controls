@@ -2,6 +2,7 @@ import { CommandBarButton, IButtonProps } from "@fluentui/react";
 
 /** The replaceable pieces of the Edit Columns button. */
 export interface IEditColumnsButtonUiComponents {
+    /** The button. */
     onRenderButton: (props: IButtonProps) => JSX.Element | null;
 }
 

@@ -3,13 +3,21 @@ import { IStateStore } from "@utils";
 
 /** What the control keeps of a view's provider, for the next time the view is loaded. */
 export interface IDatasetControlProviderState {
+    /** The columns, as Edit columns left them. */
     columns: IColumn[];
+    /** The related entities the columns come from. */
     linking: ILinkEntityExposedExpression[];
+    /** The sort the user applied. */
     sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
+    /** The filter the user applied. */
     filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
+    /** The page size the user picked. */
     pageSize: number;
+    /** The page the user was on. */
     pageNumber: number;
+    /** What the user searched for. */
     searchQuery: string;
+    /** The records the user selected. */
     selectedRecordIds: string[];
 }
 

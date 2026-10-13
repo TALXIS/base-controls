@@ -9,16 +9,19 @@ import { IDatasetControlView } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { IViewSwitcherLabels, VIEW_SWITCHER_LABELS } from "./labels";
-import { DatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from "./DatasetControlViewSwitcher";
+import { DatasetControlViewSwitcher, IDatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from "./DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
 import { getViewSwitcherStyles } from "./styles";
 
+/** Props for `DatasetControl.ViewSwitcher`. */
 export interface IViewSwitcherProps {
     /** Called at mount and on every `reload()`; returns the views to list. */
     onLoad: () => Promise<IDatasetControlView[]>;
     /** Called with the switcher once it exists, before the first load. */
-    onReady?: (viewSwitcher: DatasetControlViewSwitcher) => void;
+    onReady?: (viewSwitcher: IDatasetControlViewSwitcher) => void;
+    /** Overrides for the switcher's strings. */
     labels?: Partial<IViewSwitcherLabels>;
+    /** Replacements for the switcher's pieces. */
     components?: IViewSwitcherComponents;
 }
 

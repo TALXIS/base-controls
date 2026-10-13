@@ -1,6 +1,7 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator, IDatasetControlView } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IDatasetControlView, IEventSubscriber } from "../../../runtime/interfaces";
 
+/** What the view switcher raises. */
 export interface IDatasetControlViewSwitcherEvents {
     /** Fired when a load starts, once the previous load's error is cleared. */
     onBeforeLoad: () => void;
@@ -14,7 +15,22 @@ export interface IDatasetControlViewSwitcherParameters {
 }
 
 /** The views the switcher's `onLoad` returns, and switching between them. */
-export class DatasetControlViewSwitcher {
+export interface IDatasetControlViewSwitcher {
+    /** Subscribe to the switcher's events. */
+    readonly events: IEventSubscriber<IDatasetControlViewSwitcherEvents>;
+    /** `undefined` until the first load finishes. */
+    getViews(): IDatasetControlView[] | undefined;
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
+    /** `undefined` when the loaded view is not among the views. */
+    getCurrentView(): IDatasetControlView | undefined;
+    /** Calls `onLoad` again; the latest call's views win. */
+    reload(): Promise<void>;
+    /** Loads the control for the view. */
+    select(viewId: string): void;
+}
+
+export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
     public readonly events: IEventEmitter<IDatasetControlViewSwitcherEvents> = new EventEmitter<IDatasetControlViewSwitcherEvents>();
     private _services: IDatasetControlServiceLocator;
     private _onLoad: () => Promise<IDatasetControlView[]>;
@@ -69,7 +85,7 @@ export class DatasetControlViewSwitcher {
     public select(viewId: string): void {
         const runtime = this._services.get('runtime');
         if (viewId !== runtime.getViewId()) {
-            runtime.reload({ viewId });
+            runtime.loadView(viewId);
         }
     }
 

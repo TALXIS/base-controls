@@ -2,9 +2,13 @@ import { useMemo } from "react";
 import { EditColumnsButtonUiComponents, IEditColumnsButtonUiComponents } from "./components";
 import { getEditColumnsButtonUiStyles } from "./styles";
 
+/** Props for the button that opens the column editor. */
 export interface IEditColumnsButtonUiProps {
+    /** The button's text. */
     text: string;
+    /** Opens the editor. */
     onClick: () => void;
+    /** Replacements for its slots. */
     components?: Partial<IEditColumnsButtonUiComponents>;
 }
 

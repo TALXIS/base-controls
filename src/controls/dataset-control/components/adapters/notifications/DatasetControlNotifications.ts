@@ -1,8 +1,10 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
 import { INotificationMessage } from "@ui/notifications";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
 
+/** What the notifications raise. */
 export interface IDatasetControlNotificationsEvents {
+    /** The messages changed. */
     onNotificationsChanged: () => void;
 }
 
@@ -12,7 +14,14 @@ export interface IDatasetControlNotificationsParameters {
 }
 
 /** What the control has to tell the user about its records. */
-export class DatasetControlNotifications {
+export interface IDatasetControlNotifications {
+    /** Subscribe to the notifications' events. */
+    readonly events: IEventSubscriber<IDatasetControlNotificationsEvents>;
+    /** The provider's load error, while there is one. */
+    getMessages(): INotificationMessage[];
+}
+
+export class DatasetControlNotifications implements IDatasetControlNotifications {
     public readonly events: IEventEmitter<IDatasetControlNotificationsEvents> = new EventEmitter<IDatasetControlNotificationsEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;

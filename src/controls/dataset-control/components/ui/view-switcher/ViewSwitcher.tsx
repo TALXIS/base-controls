@@ -5,12 +5,15 @@ import { getClassNames } from "@utils";
 import { IViewSwitcherUiComponents, ViewSwitcherUiComponents } from "./components";
 import { getViewSwitcherUiStyles } from "./styles";
 
+/** Props for the view switcher, as plain UI. */
 export interface IViewSwitcherUiProps {
     /** The current view's name. */
     text: string;
+    /** The menu's items: the views, under their group headers. */
     items: IContextualMenuItem[];
     /** The item drawn as the current one. */
     selectedKey?: string;
+    /** Replacements for its slots. */
     components?: Partial<IViewSwitcherUiComponents>;
 }
 

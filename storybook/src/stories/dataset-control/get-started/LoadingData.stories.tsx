@@ -17,7 +17,7 @@ const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatase
 
 ## onLoad
 
-It is called when the control mounts, on every view switch, and on \`runtime.reload()\`. Each call returns a new provider.
+It is called when the control mounts, on every view switch, and on \`loadView()\` and \`reload()\` of the control. Each call returns a new provider.
 
 | Parameter | What it holds |
 |---|---|

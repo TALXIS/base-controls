@@ -1,15 +1,21 @@
 import { ITextFieldProps, TextField } from "@legacy";
 import { IQuickFindCalloutComponents, IQuickFindCalloutProps, QuickFindCallout } from "./callout";
 
+/** The strings of the quick find's callout. */
 export interface IQuickFindUiLabels {
+    /** Shown when the query starts with `*`. */
     leadingWildcardWarning: string;
+    /** The start of the sentence above the columns. */
     columnsHintStart: string;
+    /** The bold operator between the columns. */
     columnsHintOperator: string;
+    /** The end of the sentence above the columns. */
     columnsHintEnd: string;
 }
 
 /** The replaceable pieces of the quick find. */
 export interface IQuickFindUiComponents {
+    /** The search field. */
     onRenderTextField: (props: ITextFieldProps) => JSX.Element | null;
     /** What explains how the search matches, under the field. */
     onRenderCallout: (props: IQuickFindCalloutProps) => JSX.Element | null;

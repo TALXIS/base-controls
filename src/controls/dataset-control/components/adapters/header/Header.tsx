@@ -2,9 +2,13 @@ import { DatasetControlUi, IHeaderUiComponents } from "../../ui";
 import { HeaderStart } from "./HeaderStart";
 import { HeaderEnd } from "./HeaderEnd";
 
+/** Props for `DatasetControl.Header`. */
 export interface IHeaderProps {
+    /** `Header.Start` and `Header.End`. */
     children?: React.ReactNode;
+    /** Added to the header's box. */
     className?: string;
+    /** Replacements for the header's slots. */
     components?: Partial<IHeaderUiComponents>;
 }
 

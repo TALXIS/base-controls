@@ -1,12 +1,15 @@
 import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
 
+/** What the page size switcher raises. */
 export interface IDatasetControlPageSizeSwitcherEvents {
+    /** The page size or the records on the page changed. */
     onPageSizeChanged: () => void;
 }
 
 /** Which records of how many the current page shows. */
 export interface IDatasetControlRecordRange {
+    /** The first record on the page, counted from 1; `0` when the page is empty. */
     first: number;
     /** With a trailing `+` when the provider has more pages but no total. */
     last: string;
@@ -27,7 +30,22 @@ export const DEFAULT_PAGE_SIZES = [25, 50, 75, 100, 250];
 const TOTAL_OVER_LIMIT = -1;
 
 /** How many records a page holds, and which of them the page shows. */
-export class DatasetControlPageSizeSwitcher {
+export interface IDatasetControlPageSizeSwitcher {
+    /** Subscribe to the switcher's events. */
+    readonly events: IEventSubscriber<IDatasetControlPageSizeSwitcherEvents>;
+    /** How many records a page holds. */
+    getPageSize(): number;
+    /** The sizes the menu offers. */
+    getPageSizes(): number[];
+    /** Whether the provider is loading. */
+    isLoading(): boolean;
+    /** Loads the records in pages of `pageSize`; asks first when there are unsaved changes. */
+    setPageSize(pageSize: number): void;
+    /** Which records of how many the current page shows. */
+    getRecordRange(): IDatasetControlRecordRange;
+}
+
+export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSwitcher {
     public readonly events: IEventEmitter<IDatasetControlPageSizeSwitcherEvents> = new EventEmitter<IDatasetControlPageSizeSwitcherEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;

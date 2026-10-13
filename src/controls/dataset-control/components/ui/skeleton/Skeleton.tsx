@@ -1,7 +1,9 @@
 import { ISkeletonUiComponents, SkeletonUiComponents } from "./components";
 import { ISkeletonShimmerProps } from "./SkeletonShimmer";
 
+/** Props for the placeholder shown while the control loads. */
 export interface ISkeletonUiProps extends ISkeletonShimmerProps {
+    /** Replacements for its slots. */
     components?: Partial<ISkeletonUiComponents>;
 }
 

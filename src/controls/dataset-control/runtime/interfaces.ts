@@ -1,27 +1,88 @@
+import type { IDataProvider } from "@talxis/client-libraries";
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { IDatasetControlLabels } from "../components/adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
-import type { DatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
-import type { DatasetControlQuickFind } from "../components/adapters/quick-find/DatasetControlQuickFind";
-import type { DatasetControlPagination } from "../components/adapters/pagination/DatasetControlPagination";
-import type { DatasetControlPageSizeSwitcher } from "../components/adapters/page-size-switcher/DatasetControlPageSizeSwitcher";
-import type { DatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
-import type { DatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
+import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
+import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "../components/adapters/quick-find/DatasetControlQuickFind";
+import type { DatasetControlPagination, IDatasetControlPagination } from "../components/adapters/pagination/DatasetControlPagination";
+import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "../components/adapters/page-size-switcher/DatasetControlPageSizeSwitcher";
+import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
+import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
+
+/** Subscribing to an emitter's events, without dispatching them. */
+export interface IEventSubscriber<T extends { [K in keyof T]: (...args: any[]) => any }> {
+    /** Calls `callback` every time `event` is raised. */
+    addEventListener<K extends keyof T>(event: K, callback: T[K]): void;
+    /** Stops calling `callback`, which must be the function that was added. */
+    removeEventListener<K extends keyof T>(event: K, callbackToRemove: T[K]): void;
+}
 
 /** A view the user can switch to. */
 export interface IDatasetControlView {
+    /** The id `onLoad` is called with. */
     id: string;
+    /** Shown in the view switcher. */
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: string;
 }
 
-/** Everything the control is made of; a consumer adds its own keys by augmenting this. */
-export interface IDatasetControlServiceMap {
+/** What the control raises as it loads and goes. */
+export interface IDatasetControlEvents {
+    /** A load started: the first one, a view switch or a reload. */
+    onLoadStarted: () => void;
+    /** A load finished, and its provider is now the one shown. */
+    onLoaded: (provider: IDataProvider) => void;
+    /** A load failed; the provider shown before it, if any, stays. */
+    onLoadFailed: (error: unknown) => void;
+    /** The control is unmounting. */
+    onDestroyed: () => void;
+}
+
+/** The parts rendered inside the control, each there only while it is rendered. */
+export interface IDatasetControlPartMap {
+    /** `DatasetControl.ViewSwitcher`. */
+    viewSwitcher: IDatasetControlViewSwitcher;
+    /** `DatasetControl.QuickFind`. */
+    quickFind: IDatasetControlQuickFind;
+    /** `DatasetControl.Pagination`. */
+    pagination: IDatasetControlPagination;
+    /** `DatasetControl.PageSizeSwitcher`. */
+    pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
+    /** `DatasetControl.Notifications`. */
+    notifications: IDatasetControlNotifications;
+    /** `DatasetControl.EditColumns`. */
+    editColumns: IDatasetControlEditColumns;
+}
+
+/** Looks up the parts rendered right now. */
+export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'whenAvailable'>;
+
+/** The DatasetControl as its consumer drives it. */
+export interface IDatasetControl {
+    /** Subscribe to the control's events. */
+    readonly events: IEventSubscriber<IDatasetControlEvents>;
+    /** The parts rendered inside the control. */
+    readonly parts: IDatasetControlPartLocator;
+    /** The provider shown, from the last load that succeeded. */
+    getProvider(): IDataProvider | undefined;
+    /** The view the provider shown is for. */
+    getViewId(): string | undefined;
+    /** Whether a load is running. */
+    isLoading(): boolean;
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
+    /** Loads the view on a new provider; asks first when there are unsaved changes. */
+    loadView(viewId: string): Promise<void>;
+    /** Loads the current view again on a new provider; asks first when there are unsaved changes. */
+    reload(): Promise<void>;
+    /** Runs the load that failed again. */
+    retry(): Promise<void>;
+}
+
+export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     runtime: IDatasetControlRuntime;
-    /** The strings of `DatasetControl` itself. */
     labels: ILocalizationService<IDatasetControlLabels>;
-    /** The parts below are there only while the part is rendered. */
     viewSwitcher: DatasetControlViewSwitcher;
     quickFind: DatasetControlQuickFind;
     pagination: DatasetControlPagination;

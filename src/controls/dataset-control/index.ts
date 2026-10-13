@@ -1,9 +1,9 @@
 export * from './namespace';
 export type {
-    IDatasetControlRuntime, IDatasetControlRuntimeEvents, IDatasetControlLoadParameters, IDatasetControlLoadResult,
-    IDatasetControlServiceMap, IDatasetControlServiceLocator, IDatasetControlView, IDatasetControlProviderState,
+    IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
+    IDatasetControlView, IDatasetControlProviderState, IEventSubscriber,
 } from './runtime';
-export { useDatasetControlRuntime, useRequiredDatasetControlRuntime, useControlStateStore } from './components/adapters/root';
+export { useDatasetControl, useControlStateStore } from './components/adapters/root';
 export type { IDatasetControlProps, IDatasetControlLabels, IDatasetControlComponents } from './components/adapters/root';
 export { DATASET_CONTROL_LABELS } from './components/adapters/root';
 export { VIEW_SWITCHER_LABELS } from './components/adapters/view-switcher';
@@ -26,19 +26,13 @@ export type { IDatasetControlRegion } from './components/adapters/region';
 export { useDatasetControlRegion } from './components/adapters/region';
 export type { IBodyProps as IDatasetControlBodyProps } from './components/adapters/body';
 export type { IFooterProps as IDatasetControlFooterProps, IFooterStartProps as IDatasetControlFooterStartProps, IFooterEndProps as IDatasetControlFooterEndProps } from './components/adapters/footer';
-export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcherEvents } from './components/adapters/view-switcher';
+export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from './components/adapters/view-switcher';
 export type { IDatasetControlRibbonProps } from './components/adapters/ribbon';
-export type { IQuickFindProps, IDatasetControlQuickFindEvents } from './components/adapters/quick-find';
-export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotificationsEvents } from './components/adapters/notifications';
-export type { IPaginationProps, IDatasetControlPaginationEvents } from './components/adapters/pagination';
-export type { IPageSizeSwitcherProps, IDatasetControlPageSizeSwitcherEvents, IDatasetControlRecordRange } from './components/adapters/page-size-switcher';
-export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumnsEvents, IDatasetControlEditColumnsSessionEvents } from './components/adapters/edit-columns';
-export type { DatasetControlViewSwitcher } from './components/adapters/view-switcher';
-export type { DatasetControlQuickFind } from './components/adapters/quick-find';
-export type { DatasetControlNotifications } from './components/adapters/notifications';
-export type { DatasetControlPagination } from './components/adapters/pagination';
-export type { DatasetControlPageSizeSwitcher } from './components/adapters/page-size-switcher';
-export type { DatasetControlEditColumns, DatasetControlEditColumnsSession } from './components/adapters/edit-columns';
+export type { IQuickFindProps, IDatasetControlQuickFind, IDatasetControlQuickFindEvents } from './components/adapters/quick-find';
+export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotifications, IDatasetControlNotificationsEvents } from './components/adapters/notifications';
+export type { IPaginationProps, IDatasetControlPagination, IDatasetControlPaginationEvents } from './components/adapters/pagination';
+export type { IPageSizeSwitcherProps, IDatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents, IDatasetControlRecordRange } from './components/adapters/page-size-switcher';
+export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumns, IDatasetControlEditColumnsEvents } from './components/adapters/edit-columns';
 export * from './components/ui';
 export {
     ContainerUiComponents, SkeletonUiComponents, HeaderUiComponents, BodyUiComponents, FooterUiComponents, ViewSwitcherUiComponents,

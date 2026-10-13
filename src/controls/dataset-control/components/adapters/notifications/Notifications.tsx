@@ -8,8 +8,11 @@ import { INotificationsLabels, NOTIFICATIONS_LABELS } from "./labels";
 import { INotificationsComponents, NotificationsComponents } from "./components";
 import { DatasetControlNotifications, IDatasetControlNotificationsEvents } from "./DatasetControlNotifications";
 
+/** Props for `DatasetControl.Notifications`. */
 export interface INotificationsProps extends Omit<INotificationMessageBarProps, 'labels' | 'components'> {
+    /** Overrides for the notifications' strings. */
     labels?: Partial<INotificationsLabels>;
+    /** Replacements for the notifications' pieces. */
     components?: Partial<INotificationsComponents>;
 }
 

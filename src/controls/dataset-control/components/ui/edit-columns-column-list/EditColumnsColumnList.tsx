@@ -5,12 +5,15 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { EditColumnsColumnListUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsListColumn } from "./components";
 import { getEditColumnsColumnListUiStyles } from "./styles";
 
+/** Props for the list of chosen columns, as plain UI. */
 export interface IEditColumnsColumnListUiProps {
+    /** The chosen columns, in order. */
     columns: IEditColumnsListColumn[];
     /** The column scrolled into view, e.g. the one just added. */
     scrollToName?: string;
     /** Puts the column where `targetName` is. */
     onMove: (name: string, targetName: string) => void;
+    /** Replacements for its slots. */
     components?: Partial<IEditColumnsColumnListUiComponents>;
 }
 

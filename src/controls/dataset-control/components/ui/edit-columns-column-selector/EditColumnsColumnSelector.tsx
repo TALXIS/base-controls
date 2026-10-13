@@ -4,18 +4,27 @@ import { Attribute, IColumn } from "@talxis/client-libraries";
 import { EditColumnsSelector, IEditColumnsSelectorUiComponents } from "../edit-columns-selector";
 import { getEditColumnsColumnSelectorUiStyles } from "./styles";
 
+/** Props for the picker of the column to add, as plain UI. */
 export interface IEditColumnsColumnSelectorUiProps {
     /** The columns already chosen, hidden from the options. */
     value: IColumn[];
+    /** Shown while nothing is typed. */
     placeholder: string;
+    /** Shown when no column matches. */
     noResultsText: string;
+    /** Shown while the options load. */
     loadingText: string;
+    /** Stands in for a column without a name. */
     noNameText: string;
     /** What an option's tooltip says. */
     getOptionTooltip: (column: IColumn) => string;
+    /** Whether the menu opens as soon as the picker mounts. */
     openMenuOnMount?: boolean;
+    /** Loads the columns matching what is typed. */
     onLoadOptions: (query?: string) => Promise<IColumn[]>;
+    /** Called with the column the user picked. */
     onAdd: (column: IColumn) => void;
+    /** Replacements for its slots. */
     components?: Partial<IEditColumnsSelectorUiComponents<IColumn>>;
 }
 

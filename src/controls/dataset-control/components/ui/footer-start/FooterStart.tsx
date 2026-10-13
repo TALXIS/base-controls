@@ -3,9 +3,13 @@ import { getClassNames } from "@utils";
 import { FooterStartUiComponents, IFooterStartUiComponents } from "./components";
 import { getFooterStartUiStyles } from "./styles";
 
+/** Props for the footer's start region, as plain UI. */
 export interface IFooterStartUiProps {
+    /** The parts drawn against the left. */
     children?: React.ReactNode;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IFooterStartUiComponents>;
 }
 

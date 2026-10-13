@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ContextualMenuItemType, IButtonProps, IContextualMenuItem } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
-import { DatasetControl, useRequiredDatasetControlRuntime, ViewSwitcherUiComponents } from "@controls/dataset-control";
+import { DatasetControl, ViewSwitcherUiComponents } from "@controls/dataset-control";
+import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root";
 import { useTaskDataProvider, useTaskGridLabels, useTaskGridRuntime } from "@controls/task-grid/context";
 import { IUserQueryDataProviderEvents } from "@controls/task-grid/modules/interfaces";
 

@@ -7,14 +7,17 @@ import { Callout, TooltipHost } from "@ui";
 import { EditColumnsSelectorUiComponents, IEditColumnsSelectorUiComponents } from "./components";
 import { getEditColumnsSelectorUiStyles } from "./styles";
 
+/** Props for the select the column editor's pickers are built on. */
 export interface IEditColumnsSelectorUiProps<TOption, IsMulti extends boolean = false> extends Omit<AsyncProps<TOption, IsMulti, GroupBase<TOption>>, 'components'> {
     /** Drawn above the selector. */
     label?: string;
+    /** Shown when no option matches. */
     noResultsText: string;
     /** Shown in the menu while the options load. */
     loadingText: string;
     /** What an option's tooltip says; its label when left out. */
     getOptionTooltip?: (option: TOption) => string;
+    /** Replacements for its slots. */
     components?: Partial<IEditColumnsSelectorUiComponents<TOption>>;
 }
 

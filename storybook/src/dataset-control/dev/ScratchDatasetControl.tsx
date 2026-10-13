@@ -1,7 +1,7 @@
 import React from 'react'
 import { ContextualMenuItemType, IButtonProps } from '@fluentui/react'
 import {
-    createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControlRuntime,
+    createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControl,
     IRibbonCommand, PcfContextProvider, useDataProvider, ViewSwitcherUiComponents,
 } from '@talxis/base-controls'
 import { loadDealColumns, loadDealScopes, loadDeals, loadDealViews } from '../dealViews'
@@ -55,8 +55,8 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
         sorting: createSortingModule(),
     }), [])
 
-    //parked on window so the runtime can be poked at from the browser console
-    const onReady = (runtime: IDatasetControlRuntime) => Object.assign(window, { datasetControlRuntime: runtime })
+    //parked on window so the control can be poked at from the browser console
+    const onReady = (control: IDatasetControl) => Object.assign(window, { datasetControl: control })
 
     const onLoad = async (params: IDatasetControlLoadParameters) => {
         if (failNextLoadRef.current) {

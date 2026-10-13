@@ -3,17 +3,27 @@ import { IColumn } from "@talxis/client-libraries";
 import { IQuickFindUiComponents, IQuickFindUiLabels, QuickFindUiComponents } from "./components";
 import { getQuickFindUiStyles } from "./styles";
 
+/** Props for the quick find, as plain UI. */
 export interface IQuickFindUiProps {
+    /** The query in the field. */
     value: string;
+    /** Shown while the field is empty. */
     placeholder: string;
     /** The columns a search matches on; the field is disabled without any. */
     columns: IColumn[];
+    /** Whether the query starts with a wildcard, which the callout warns about. */
     isLikeQuery: boolean;
+    /** Disables the field. */
     disabled?: boolean;
+    /** The callout's strings. */
     labels: IQuickFindUiLabels;
+    /** Called with what the user typed. */
     onChange: (value: string) => void;
+    /** Called on Enter and by the search button. */
     onSearch: () => void;
+    /** Called by the clear button. */
     onClear: () => void;
+    /** Replacements for its slots. */
     components?: Partial<IQuickFindUiComponents>;
 }
 

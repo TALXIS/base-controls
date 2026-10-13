@@ -3,9 +3,13 @@ import { getClassNames } from "@utils";
 import { FooterEndUiComponents, IFooterEndUiComponents } from "./components";
 import { getFooterEndUiStyles } from "./styles";
 
+/** Props for the footer's end region, as plain UI. */
 export interface IFooterEndUiProps {
+    /** The parts drawn against the right. */
     children?: React.ReactNode;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IFooterEndUiComponents>;
 }
 

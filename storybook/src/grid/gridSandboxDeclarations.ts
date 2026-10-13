@@ -14,6 +14,9 @@ declare namespace JSX {
     interface ElementAttributesProperty {
         props: {};
     }
+    interface ElementChildrenAttribute {
+        children: {};
+    }
     interface IntrinsicAttributes {
         key?: React.Key | null;
     }
@@ -2084,6 +2087,8 @@ declare function usePcfContext(): IPcfContext;
 declare const DataProviderContextProvider: (props: { provider: IDataProvider; children?: React.ReactNode }) => JSX.Element;
 /** Throws outside DataProviderContextProvider. */
 declare function useDataProvider(): IDataProvider;
+/** Returns the provider and draws the component again on each of the events, read once at mount. */
+declare function useDataProviderEvents(events: (keyof IDataProviderEventListeners)[]): IDataProvider;
 /** Keeps state by id in a plain dictionary, written in place. */
 declare class StateStore implements IStateStore {
     constructor(parameters?: { state?: IStateDictionary });
@@ -3438,6 +3443,7 @@ interface IViewSwitcherLabels { ungroupedViewsHeader: string }
 
 /** The views the switcher's onLoad returns, and switching between them. */
 interface IDatasetControlViewSwitcher {
+    readonly events: { addEventListener(event: 'onBeforeLoad' | 'onLoaded', listener: () => void): void; removeEventListener(event: 'onBeforeLoad' | 'onLoaded', listener: () => void): void };
     /** undefined until the first load finishes. */
     getViews(): IDatasetControlView[] | undefined;
     /** What the last load threw, until the next one starts. */
@@ -3467,10 +3473,10 @@ interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pa
 interface IDatasetControlNotificationsLabels { groupedNotificationsSummary: string }
 interface IEditColumnsLabels { editColumns: string; save: string; cancel: string; scopeSelectorLabel: string; columnSelectorPlaceholder: string; customColumnTooltip: string; unnamed: string; noResults: string; loading: string }
 
-interface IDatasetControlRuntimeEvents {
+interface IDatasetControlEvents {
     /** A load started: the first one, a view switch or a reload. */
     onLoadStarted: () => void;
-    /** A load finished, and its provider is now the one shown, under a new key. */
+    /** A load finished, and its provider is now the one shown. */
     onLoaded: (provider: IDataProvider) => void;
     /** A load failed; the provider shown before it, if any, stays. */
     onLoadFailed: (error: unknown) => void;
@@ -3537,38 +3543,100 @@ declare const Ribbon: (props: IRibbonProps) => JSX.Element;
 /** The loading boundary's default slots: a spinner with a text beside it. */
 declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['components']>['loadingBoundary']>;
 
-interface IDatasetControlServiceMap {
-    runtime: IDatasetControlRuntime;
-    labels: ILocalizationService<IDatasetControlLabels>;
-    viewSwitcher: IDatasetControlViewSwitcher;
-    quickFind: { getQuery(): string; setQuery(query: string): void; search(): void; clear(): void };
-    editColumns: { isOpen(): boolean; open(): void; close(): void; save(): void };
-    [key: string]: any;
+/** Subscribing to an emitter's events, without dispatching them. */
+type IEventSubscriber<T> = {
+    addEventListener<K extends keyof T>(event: K, listener: T[K]): void;
+    removeEventListener<K extends keyof T>(event: K, listener: T[K]): void;
+};
+
+/** What the quick find part offers. */
+interface IDatasetControlQuickFind {
+    readonly events: IEventSubscriber<{ onQueryChanged: () => void }>;
+    getQuery(): string;
+    /** Edits the query without searching. */
+    setQuery(query: string): void;
+    /** The columns a search matches on; empty when the provider cannot search. */
+    getColumns(): IColumn[];
+    /** Whether the query starts with a wildcard, which searches slowly. */
+    isLikeQuery(): boolean;
+    search(): void;
+    clear(): void;
 }
 
-/** The control's services, and when it is loaded and gone. */
-interface IDatasetControlRuntime {
-    readonly events: { addEventListener<K extends keyof IDatasetControlRuntimeEvents>(event: K, listener: IDatasetControlRuntimeEvents[K]): void; removeEventListener<K extends keyof IDatasetControlRuntimeEvents>(event: K, listener: IDatasetControlRuntimeEvents[K]): void };
-    readonly services: {
-        get<K extends keyof IDatasetControlServiceMap>(key: K): IDatasetControlServiceMap[K];
-        find<K extends keyof IDatasetControlServiceMap>(key: K): IDatasetControlServiceMap[K] | undefined;
-        whenAvailable<K extends keyof IDatasetControlServiceMap>(key: K, callback: (service: IDatasetControlServiceMap[K]) => void): void;
-    };
+/** Opens and closes the column editor. */
+interface IDatasetControlEditColumns {
+    readonly events: IEventSubscriber<{ onOpenChanged: () => void }>;
+    isOpen(): boolean;
+    /** Opens the editor over a copy of the provider's columns. */
+    open(): void;
+    /** Closes the editor and drops whatever was not saved. */
+    close(): void;
+    /** Writes the edit to the provider and closes the editor. */
+    save(): void;
+}
+
+/** Moves the provider between its pages. */
+interface IDatasetControlPagination {
+    readonly events: IEventSubscriber<{ onPagingChanged: () => void }>;
+    getPageNumber(): number;
+    canMovePrevious(): boolean;
+    canMoveNext(): boolean;
+    moveFirst(): void;
+    movePrevious(): void;
+    moveNext(): void;
+}
+
+/** How many records a page holds, and which of them the page shows. */
+interface IDatasetControlPageSizeSwitcher {
+    readonly events: IEventSubscriber<{ onPageSizeChanged: () => void }>;
+    getPageSize(): number;
+    getPageSizes(): number[];
+    isLoading(): boolean;
+    setPageSize(pageSize: number): void;
+    getRecordRange(): { first: number; last: string; total?: string };
+}
+
+/** What the control has to tell the user about its records. */
+interface IDatasetControlNotifications {
+    readonly events: IEventSubscriber<{ onNotificationsChanged: () => void }>;
+    /** The provider's load error, while there is one. */
+    getMessages(): { text: string; level: string }[];
+}
+
+/** The parts rendered inside the control, each there only while it is rendered. */
+interface IDatasetControlPartMap {
+    viewSwitcher: IDatasetControlViewSwitcher;
+    quickFind: IDatasetControlQuickFind;
+    pagination: IDatasetControlPagination;
+    pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
+    notifications: IDatasetControlNotifications;
+    editColumns: IDatasetControlEditColumns;
+}
+
+/** Looks up the parts rendered right now. */
+interface IDatasetControlPartLocator {
+    /** Throws when the part is not rendered. */
+    get<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K];
+    find<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K] | undefined;
+    /** Calls back once the part is rendered. */
+    whenAvailable<K extends keyof IDatasetControlPartMap>(key: K, callback: (part: IDatasetControlPartMap[K]) => void): void;
+}
+
+/** The DatasetControl as its consumer drives it. */
+interface IDatasetControl {
+    readonly events: IEventSubscriber<IDatasetControlEvents>;
+    readonly parts: IDatasetControlPartLocator;
     /** The provider shown, from the last load that succeeded. */
     getProvider(): IDataProvider | undefined;
-    /** Changes with every provider, for keying what renders it. */
-    getProviderKey(): number;
-    isLoading(): boolean;
-    /** The control's height, as the height prop gives it. */
-    getHeight(): string | undefined;
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
-    /** Where the parts keep their state for a view: the one shown, unless another is given. */
-    getViewStateStore(viewId?: string): IStateStore;
-    /** Why the last load failed, until the next one starts. */
+    isLoading(): boolean;
+    /** What the last load threw, until the next one starts. */
     getError(): unknown;
-    /** Runs onLoad again for the view, behind the skeleton; asks first when there are unsaved changes and never rejects. */
-    reload(parameters: IDatasetControlLoadParameters): Promise<void>;
+    /** Loads the view on a new provider; asks first when there are unsaved changes. */
+    loadView(viewId: string): Promise<void>;
+    /** Loads the current view again on a new provider; asks first when there are unsaved changes. */
+    reload(): Promise<void>;
     /** Runs the load that failed again. */
     retry(): Promise<void>;
 }
@@ -3586,8 +3654,9 @@ interface IDatasetControlProps {
     destroyProviderOnUnmount?: boolean;
     labels?: Partial<IDatasetControlLabels>;
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
-    onReady?: (runtime: IDatasetControlRuntime) => void;
-    onDestroyed?: (runtime: IDatasetControlRuntime) => void;
+    /** Called once the control exists, before the first load. */
+    onReady?: (control: IDatasetControl) => void;
+    onDestroyed?: (control: IDatasetControl) => void;
 }
 
 interface IErrorMessageBarComponents {
@@ -3666,10 +3735,8 @@ interface IDatasetControlNamespace {
 }
 
 declare const DatasetControl: IDatasetControlNamespace;
-/** The runtime of the DatasetControl the component is inside of, if any. */
-declare const useDatasetControlRuntime: () => IDatasetControlRuntime | undefined;
-/** The runtime of the DatasetControl the part is inside of; throws outside one. */
-declare const useRequiredDatasetControlRuntime: () => IDatasetControlRuntime;
+/** The DatasetControl the component is inside of; throws outside one. */
+declare const useDatasetControl: () => IDatasetControl;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
 /** The view switcher's default slots, to render the default button with your own items. */
 declare const ViewSwitcherUiComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };

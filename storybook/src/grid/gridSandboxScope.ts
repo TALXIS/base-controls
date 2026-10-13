@@ -14,7 +14,7 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderContextProvider, DatasetControl, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControlRuntime, useRequiredDatasetControlRuntime, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useDataProvider, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
+    CommandBar, DataProviderContextProvider, DatasetControl, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
@@ -36,9 +36,9 @@ export const GRID_SANDBOX_SCOPE = {
     useStateStore,
     useControlStateStore,
     useDataProvider,
+    useDataProviderEvents,
     DatasetControl,
-    useDatasetControlRuntime,
-    useRequiredDatasetControlRuntime,
+    useDatasetControl,
     ViewSwitcherUiComponents,
     ErrorMessageBarComponents,
     Ribbon,

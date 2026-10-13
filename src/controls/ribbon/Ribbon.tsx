@@ -25,6 +25,7 @@ export interface IRibbonProps {
     className?: string;
     /** Called with the runtime once it exists, before the first load. */
     onReady?: (ribbon: IRibbonRuntime) => void;
+    /** Replacements for the command bar, the shimmer and the error. */
     components?: IRibbonComponents;
 }
 

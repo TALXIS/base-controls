@@ -12,17 +12,25 @@ import { IDatasetControlEditColumnsLoaders, IDatasetControlEditColumnsSessionEve
 
 /** Replacements for the pieces of the column editor. */
 export interface IEditColumnsComponents {
+    /** The button that opens the editor. */
     button?: Partial<IEditColumnsButtonUiComponents>;
+    /** The panel the editor sits in. */
     panel?: Partial<IEditColumnsPanelUiComponents>;
+    /** The picker of the entity columns are added from. */
     scopeSelector?: Partial<IEditColumnsSelectorUiComponents<IAvailableRelatedColumn>>;
+    /** The picker of the column to add. */
     columnSelector?: Partial<IEditColumnsSelectorUiComponents<IColumn>>;
+    /** The list of the chosen columns. */
     columnList?: Partial<IEditColumnsColumnListUiComponents>;
     /** How a failed column or scope load looks. */
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }
 
+/** Props for `DatasetControl.EditColumns`. */
 export interface IEditColumnsProps extends IDatasetControlEditColumnsLoaders {
+    /** Overrides for the editor's strings; read once, at mount. */
     labels?: Partial<IEditColumnsLabels>;
+    /** Replacements for the editor's pieces. */
     components?: IEditColumnsComponents;
 }
 

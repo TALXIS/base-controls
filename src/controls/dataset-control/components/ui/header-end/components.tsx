@@ -1,5 +1,6 @@
 /** The replaceable pieces of the header's end region. */
 export interface IHeaderEndUiComponents {
+    /** The box of the header's end region. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 

@@ -4,6 +4,7 @@ import { ISpinnerProps, ITextProps, Spinner, Text } from "@fluentui/react";
 export interface ILoadingBoundaryComponents {
     /** Drawn in place of the children while loading; its `children` are the spinner and the text. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    /** The spinner. */
     onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
     /** The text beside the spinner; its `children` are the `loading` label. */
     onRenderText: (props: ITextProps) => JSX.Element | null;

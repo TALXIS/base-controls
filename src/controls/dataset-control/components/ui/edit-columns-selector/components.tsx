@@ -1,7 +1,10 @@
 import { getEditColumnsSelectorUiStyles } from "./styles";
 
+/** Props for one option of a picker. */
 export interface IEditColumnsSelectorOptionProps<TOption> {
+    /** The option itself. */
     option: TOption;
+    /** What the option shows. */
     text: string;
 }
 

@@ -8,11 +8,14 @@ import { INotificationMessageBarLabels, NOTIFICATION_MESSAGE_BAR_LABELS } from '
 
 /** One message of a notification bar. */
 export interface INotificationMessage {
+	/** What the message says. */
 	text: string;
+	/** How the message is drawn; the most severe one sets the bar's type. */
 	level: 'ERROR' | 'WARNING' | 'INFO';
 }
 
 export interface INotificationMessageBarProps {
+	/** The messages to show; the bar is not drawn without any. */
 	messages?: INotificationMessage[],
 	components?: Partial<INotificationMessageBarComponents>;
 	labels?: Partial<INotificationMessageBarLabels>;

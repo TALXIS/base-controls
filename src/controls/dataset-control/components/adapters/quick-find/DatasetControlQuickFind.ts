@@ -1,7 +1,9 @@
 import { EventEmitter, IDataProvider, IColumn, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
 
+/** What the quick find raises. */
 export interface IDatasetControlQuickFindEvents {
+    /** The query was edited. */
     onQueryChanged: () => void;
 }
 
@@ -11,7 +13,24 @@ export interface IDatasetControlQuickFindParameters {
 }
 
 /** What the user searches the provider for. */
-export class DatasetControlQuickFind {
+export interface IDatasetControlQuickFind {
+    /** Subscribe to the quick find's events. */
+    readonly events: IEventSubscriber<IDatasetControlQuickFindEvents>;
+    /** The query in the box, searched or not. */
+    getQuery(): string;
+    /** Edits the query without searching. */
+    setQuery(query: string): void;
+    /** The columns a search matches on; empty when the provider cannot search. */
+    getColumns(): IColumn[];
+    /** Whether the query starts with a wildcard, which searches slowly. */
+    isLikeQuery(): boolean;
+    /** Searches the provider for the query; asks first when there are unsaved changes. */
+    search(): void;
+    /** Empties the query and searches again. */
+    clear(): void;
+}
+
+export class DatasetControlQuickFind implements IDatasetControlQuickFind {
     public readonly events: IEventEmitter<IDatasetControlQuickFindEvents> = new EventEmitter<IDatasetControlQuickFindEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;

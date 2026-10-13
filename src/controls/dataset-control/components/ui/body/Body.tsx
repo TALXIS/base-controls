@@ -3,9 +3,13 @@ import { getClassNames } from "@utils";
 import { BodyUiComponents, IBodyUiComponents } from "./components";
 import { getBodyUiStyles } from "./styles";
 
+/** Props for the body, as plain UI. */
 export interface IBodyUiProps {
+    /** What shows the records. */
     children?: React.ReactNode;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IBodyUiComponents>;
 }
 

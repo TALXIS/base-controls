@@ -11,6 +11,7 @@ export interface ISkeletonShimmerProps {
      * of a task grid: checkbox, name, status, assignee, due date, priority.
      */
     columns?: string[];
+    /** How many rows the placeholder draws. */
     rowCount?: number;
     /** The ribbon above the columns. */
     showHeader?: boolean;

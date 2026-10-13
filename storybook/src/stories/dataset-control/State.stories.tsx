@@ -29,7 +29,7 @@ const DESCRIPTION = `A DatasetControl puts every view back the way the user left
 
 - A grid keeps its state only with a \`stateKey\` of its own, unique within the control. What it keeps is on [**State**](?path=/docs/grid-state--overview) of the grid.
 - A view the user hasn't been on yet starts from what \`onLoad\` returns.
-- \`runtime.reload()\` of the view shown keeps its setup too, since the view is left and loaded again.
+- \`reload()\` of the view shown keeps its setup too, since the view is left and loaded again.
 
 ## Inside the store
 

@@ -3,10 +3,13 @@ import { getClassNames } from '@utils';
 import { EmptyRecordsUiComponents, IEmptyRecordsUiComponents } from './components';
 import { getEmptyRecordsUiStyles } from './styles';
 
+/** Props for the empty state, as plain UI. */
 export interface IEmptyRecordsUiProps {
     /** What is said about there being nothing to show. */
     message: string;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IEmptyRecordsUiComponents>;
 }
 

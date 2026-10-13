@@ -4,12 +4,15 @@ import { Callout } from "@ui";
 import type { IQuickFindUiLabels } from "../components";
 import { getQuickFindCalloutStyles } from "./styles";
 
+/** Props for one column in the callout. */
 export interface IQuickFindCalloutColumnProps {
+    /** The column a search matches on. */
     column: IColumn;
 }
 
 /** The replaceable pieces of the quick find callout. */
 export interface IQuickFindCalloutComponents {
+    /** The callout itself. */
     onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
     /** Shown instead of the description and columns while the query starts with a wildcard. */
     onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
@@ -17,6 +20,7 @@ export interface IQuickFindCalloutComponents {
     onRenderDescription: (props: IQuickFindUiLabels) => JSX.Element | null;
     /** Holds the columns; its `children` are what `onRenderColumn` returns. */
     onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    /** One column a search matches on. */
     onRenderColumn: (props: IQuickFindCalloutColumnProps) => JSX.Element | null;
 }
 

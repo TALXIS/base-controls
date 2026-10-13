@@ -19,7 +19,7 @@ const loadColumns = async (scope?: IAvailableRelatedColumn): Promise<IColumn[]> 
 - With \`onLoadScopes\`, a scope selector lets the user add columns of related records too; without it, there is none.
 - Both are called every time the editor needs them: when it opens, on every search and on every scope picked. While they run, the pickers say *Loading...*. When one throws, its error shows in place of the pickers, with *Details* and *Try again*.
 - *Cancel*, or closing the panel, drops the changes.
-- To open the editor from your own code, call \`runtime.services.get('editColumns').open()\`. See [**Extending**](?path=/docs/datasetcontrol-customization-extending--overview).
+- To open the editor from your own code, call \`control.parts.get('editColumns').open()\`. See [**Extending**](?path=/docs/datasetcontrol-customization-extending--overview).
 
 | Prop | Type | Default | What it does |
 |---|---|---|---|

@@ -1,5 +1,6 @@
 /** The replaceable pieces of the header. */
 export interface IHeaderUiComponents {
+    /** The box of the header. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 

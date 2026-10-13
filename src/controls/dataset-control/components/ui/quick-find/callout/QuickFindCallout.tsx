@@ -4,12 +4,19 @@ import type { IQuickFindUiLabels } from "../components";
 import { IQuickFindCalloutComponents, QuickFindCalloutComponents } from "./components";
 import { getQuickFindCalloutStyles } from "./styles";
 
+/** Props for the callout that explains how the search matches. */
 export interface IQuickFindCalloutProps {
+    /** The selector of the element the callout points at. */
     target: string;
+    /** The columns a search matches on. */
     columns: IColumn[];
+    /** Whether to show the wildcard warning instead of the columns. */
     isLikeQuery: boolean;
+    /** The callout's strings. */
     labels: IQuickFindUiLabels;
+    /** Called when the callout closes. */
     onDismiss: () => void;
+    /** Replacements for its slots. */
     components?: Partial<IQuickFindCalloutComponents>;
 }
 

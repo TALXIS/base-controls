@@ -3,9 +3,13 @@ import { getClassNames } from "@utils";
 import { HeaderEndUiComponents, IHeaderEndUiComponents } from "./components";
 import { getHeaderEndUiStyles } from "./styles";
 
+/** Props for the header's end region, as plain UI. */
 export interface IHeaderEndUiProps {
+    /** The parts drawn against the right. */
     children?: React.ReactNode;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IHeaderEndUiComponents>;
 }
 

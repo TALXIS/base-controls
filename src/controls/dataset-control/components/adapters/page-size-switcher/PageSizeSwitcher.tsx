@@ -7,10 +7,13 @@ import { useRequiredDatasetControlRuntime } from "../root";
 import { IPageSizeSwitcherLabels, PAGE_SIZE_SWITCHER_LABELS } from "./labels";
 import { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents } from "./DatasetControlPageSizeSwitcher";
 
+/** Props for `DatasetControl.PageSizeSwitcher`. */
 export interface IPageSizeSwitcherProps {
     /** The sizes the menu offers; read once, at mount. */
     pageSizes?: number[];
+    /** Overrides for the switcher's strings. */
     labels?: Partial<IPageSizeSwitcherLabels>;
+    /** Replacements for the switcher's slots. */
     components?: Partial<IPageSizeSwitcherUiComponents>;
 }
 

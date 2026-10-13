@@ -1,5 +1,5 @@
 import { useDataProvider, usePcfContext } from "@utils";
-import { useRequiredDatasetControlRuntime } from "@controls/dataset-control";
+import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root";
 import { useTaskGridLabels, useTaskGridRuntime } from "@controls/task-grid/context";
 
 /** Creates, edits and deletes custom columns inside the open column editor. */

@@ -1,8 +1,10 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
+import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
 import { DatasetControlEditColumnsSession, IDatasetControlEditColumnsLoaders } from "./DatasetControlEditColumnsSession";
 
+/** What the column editor raises. */
 export interface IDatasetControlEditColumnsEvents {
+    /** The editor opened or closed. */
     onOpenChanged: () => void;
 }
 
@@ -11,8 +13,22 @@ export interface IDatasetControlEditColumnsParameters extends IDatasetControlEdi
     provider: IDataProvider;
 }
 
+/** Opens and closes the column editor. */
+export interface IDatasetControlEditColumns {
+    /** Subscribe to the editor's events. */
+    readonly events: IEventSubscriber<IDatasetControlEditColumnsEvents>;
+    /** Whether the editor is open. */
+    isOpen(): boolean;
+    /** Opens the editor over a copy of the provider's columns. */
+    open(): void;
+    /** Closes the editor and drops whatever was not saved. */
+    close(): void;
+    /** Writes the edit to the provider and closes the editor. */
+    save(): void;
+}
+
 /** Whether the column editor is open, and the edit it holds while it is. */
-export class DatasetControlEditColumns {
+export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     public readonly events: IEventEmitter<IDatasetControlEditColumnsEvents> = new EventEmitter<IDatasetControlEditColumnsEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;

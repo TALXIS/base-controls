@@ -6,5 +6,6 @@ import { IRibbonUiComponents } from "./ui";
 export interface IRibbonComponents extends Partial<IRibbonUiComponents> {
     /** Its container is a shimmer the height of the command bar by default. */
     loadingBoundary?: Partial<ILoadingBoundaryComponents>;
+    /** How a failed load of the commands looks. */
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }

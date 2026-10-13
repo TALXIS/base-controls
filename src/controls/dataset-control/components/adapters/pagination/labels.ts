@@ -1,6 +1,10 @@
+/** The strings of the pagination. */
 export interface IPaginationLabels {
+    /** The first page button's tooltip. */
     firstPageTooltip: string;
+    /** The previous page button's tooltip. */
     previousPageTooltip: string;
+    /** The next page button's tooltip. */
     nextPageTooltip: string;
     /** `number` is the current page's number. */
     currentPage: string;

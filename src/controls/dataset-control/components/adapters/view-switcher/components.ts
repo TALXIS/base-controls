@@ -6,5 +6,6 @@ import type { IViewSwitcherUiComponents } from "../../ui";
 export interface IViewSwitcherComponents extends Partial<IViewSwitcherUiComponents> {
     /** Its container is a shimmer the size of the button by default. */
     loadingBoundary?: Partial<ILoadingBoundaryComponents>;
+    /** How a failed view load looks. */
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }

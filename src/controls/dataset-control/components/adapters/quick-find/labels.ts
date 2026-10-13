@@ -1,12 +1,16 @@
+/** The strings of the quick find. */
 export interface IQuickFindLabels {
     /** `collection` is the provider's plural entity name, or `defaultCollectionName` when it has none. */
     searchPlaceholder: string;
+    /** Stands in for the collection name when the provider has none. */
     defaultCollectionName: string;
     /** Shown in the callout when the query starts with `*`. */
     leadingWildcardWarning: string;
     /** The callout's sentence above the columns: start, the bold operator, then end. */
     columnsHintStart: string;
+    /** The bold operator between the columns. */
     columnsHintOperator: string;
+    /** The end of the sentence, after the columns. */
     columnsHintEnd: string;
 }
 

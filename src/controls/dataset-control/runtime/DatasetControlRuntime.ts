@@ -1,53 +1,35 @@
-import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
+import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import { IStateStore, LocalizationService, ServiceLocator, StateStore } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControlServiceLocator, IDatasetControlServiceMap } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 
-export interface IDatasetControlRuntimeEvents {
-    /** A load started: the first one, a view switch or a reload. */
-    onLoadStarted: () => void;
-    /** A load finished, and its provider is now the one shown, under a new key. */
-    onLoaded: (provider: IDataProvider) => void;
-    /** A load failed; the provider shown before it, if any, stays. */
-    onLoadFailed: (error: unknown) => void;
-    onDestroyed: () => void;
-}
-
+/** What `onLoad` is called with. */
 export interface IDatasetControlLoadParameters {
     /** The view to load; `undefined` on a first load with none kept, for `onLoad` to pick the default. */
     viewId?: string;
 }
 
+/** What `onLoad` returns. */
 export interface IDatasetControlLoadResult {
+    /** The provider every part works on. */
     provider: IDataProvider;
     /** The view `provider` shows, when `onLoad` picked the default. */
     viewId?: string;
 }
 
-/** The control's services, and when it is loaded and gone. */
-export interface IDatasetControlRuntime {
-    readonly events: IEventEmitter<IDatasetControlRuntimeEvents>;
+/** What the parts, the Grid and the skeleton need beside the consumer's API. */
+export interface IDatasetControlRuntime extends IDatasetControl {
+    readonly events: IEventEmitter<IDatasetControlEvents>;
     readonly services: IDatasetControlServiceLocator;
-    /** The provider shown, from the last load that succeeded. */
-    getProvider(): IDataProvider | undefined;
     /** Changes with every provider, for keying what renders it. */
     getProviderKey(): number;
-    /** The view the provider shown is for. */
-    getViewId(): string | undefined;
-    /** Where the parts keep their state for a view: the one shown, unless another is given. */
-    getViewStateStore(viewId?: string): IStateStore;
-    isLoading(): boolean;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
-    /** What the last load threw, until the next one starts. */
-    getError(): unknown;
-    /** Runs `onLoad` again for the view, behind the skeleton, on a new provider; asks first when there are unsaved changes and never rejects. */
-    reload(parameters: IDatasetControlLoadParameters): Promise<void>;
-    /** Runs the load that failed again. */
-    retry(): Promise<void>;
+    /** Where the parts keep their state for a view: the one shown, unless another is given. */
+    getViewStateStore(viewId?: string): IStateStore;
 }
 
 export interface IDatasetControlRuntimeParameters {
@@ -57,7 +39,7 @@ export interface IDatasetControlRuntimeParameters {
 }
 
 export class DatasetControlRuntime implements IDatasetControlRuntime {
-    public readonly events: IEventEmitter<IDatasetControlRuntimeEvents> = new EventEmitter<IDatasetControlRuntimeEvents>();
+    public readonly events: IEventEmitter<IDatasetControlEvents> = new EventEmitter<IDatasetControlEvents>();
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
     private _onGetProps: () => IDatasetControlProps;
     private _state: DatasetControlState;
@@ -80,6 +62,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public get services(): IDatasetControlServiceLocator {
+        return this._services;
+    }
+
+    public get parts(): IDatasetControlPartLocator {
         return this._services;
     }
 
@@ -115,18 +101,16 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         await this._load({ viewId: this._state.getViewId() });
     }
 
-    public async reload(parameters: IDatasetControlLoadParameters): Promise<void> {
-        const provider = this._provider as IInternalDataProvider | undefined;
-        if (!provider) {
-            await this._load(parameters);
-            return;
-        }
-        //resolves without loading when the user keeps their unsaved changes
-        await provider.executeWithUnsavedChangesBlocker(() => this._load(parameters));
+    public async loadView(viewId: string): Promise<void> {
+        await this._loadBehindBlocker({ viewId });
+    }
+
+    public async reload(): Promise<void> {
+        await this._loadBehindBlocker({ viewId: this._viewId });
     }
 
     public async retry(): Promise<void> {
-        await this.reload({ viewId: this._requestedViewId });
+        await this._loadBehindBlocker({ viewId: this._requestedViewId });
     }
 
     public destroy(): void {
@@ -138,6 +122,16 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         }
         this.events.clearEventListeners();
         this._services.destroy();
+    }
+
+    private async _loadBehindBlocker(parameters: IDatasetControlLoadParameters): Promise<void> {
+        const provider = this._provider as IInternalDataProvider | undefined;
+        if (!provider) {
+            await this._load(parameters);
+            return;
+        }
+        //resolves without loading when the user keeps their unsaved changes
+        await provider.executeWithUnsavedChangesBlocker(() => this._load(parameters));
     }
 
     private async _load(parameters: IDatasetControlLoadParameters): Promise<void> {

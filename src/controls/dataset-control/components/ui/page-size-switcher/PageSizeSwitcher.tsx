@@ -4,15 +4,21 @@ import { useSurfaceMenuProps } from "@ui";
 import { IPageSizeSwitcherUiComponents, PageSizeSwitcherUiComponents } from "./components";
 import { getPageSizeSwitcherUiStyles } from "./styles";
 
+/** Props for the page size switcher, as plain UI. */
 export interface IPageSizeSwitcherUiProps {
     /** Which records the page shows, e.g. "1 - 25 of 120". */
     text: string;
+    /** The size drawn as the current one. */
     pageSize: number;
+    /** The sizes the menu offers. */
     pageSizes: number[];
     /** The menu's header. */
     title: string;
+    /** Disables the button. */
     disabled?: boolean;
+    /** Called with the size the user picked. */
     onPageSizeChange: (pageSize: number) => void;
+    /** Replacements for its slots. */
     components?: Partial<IPageSizeSwitcherUiComponents>;
 }
 

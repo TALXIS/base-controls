@@ -4,9 +4,13 @@ import { getClassNames } from "@utils";
 import { FooterUiComponents, IFooterUiComponents } from "./components";
 import { getFooterUiStyles } from "./styles";
 
+/** Props for the footer, as plain UI. */
 export interface IFooterUiProps {
+    /** The start and end regions. */
     children?: React.ReactNode;
+    /** Added to its box. */
     className?: string;
+    /** Replacements for its slots. */
     components?: Partial<IFooterUiComponents>;
 }
 

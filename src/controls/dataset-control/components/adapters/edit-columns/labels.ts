@@ -1,9 +1,14 @@
+/** The strings of the column editor. */
 export interface IEditColumnsLabels {
     /** The button's text and the panel's title. */
     editColumns: string;
+    /** The panel's save button. */
     save: string;
+    /** The panel's cancel button. */
     cancel: string;
+    /** The label of the entity picker. */
     scopeSelectorLabel: string;
+    /** The placeholder of the column picker. */
     columnSelectorPlaceholder: string;
     /** The tooltip of a user-defined column in the column selector. */
     customColumnTooltip: string;

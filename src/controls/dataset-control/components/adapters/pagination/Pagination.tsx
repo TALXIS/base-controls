@@ -8,8 +8,11 @@ import { useDatasetControlRegion } from "../region";
 import { IPaginationLabels, PAGINATION_LABELS } from "./labels";
 import { DatasetControlPagination, IDatasetControlPaginationEvents } from "./DatasetControlPagination";
 
+/** Props for `DatasetControl.Pagination`. */
 export interface IPaginationProps {
+    /** Overrides for the pagination's strings. */
     labels?: Partial<IPaginationLabels>;
+    /** Replacements for the pagination's slots. */
     components?: Partial<IPaginationUiComponents>;
 }
 

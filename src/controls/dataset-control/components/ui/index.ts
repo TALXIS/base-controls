@@ -42,30 +42,53 @@ export type { IEditColumnsColumnListUiProps, IEditColumnsColumnListUiComponents,
 
 /** The dataset control's parts as plain UI, with no control behind them. */
 export interface IDatasetControlUi {
+    /** The control's outer box. */
     Container: typeof Container;
+    /** The placeholder shown while the control loads. */
     Skeleton: typeof Skeleton;
+    /** The row above the records. */
     Header: typeof Header;
+    /** The header's left region. */
     HeaderStart: typeof HeaderStart;
+    /** The header's right region. */
     HeaderEnd: typeof HeaderEnd;
+    /** What fills the height the header and footer leave. */
     Body: typeof Body;
+    /** The row below the records. */
     Footer: typeof Footer;
+    /** The footer's left region. */
     FooterStart: typeof FooterStart;
+    /** The footer's right region. */
     FooterEnd: typeof FooterEnd;
+    /** The button that lists the views. */
     ViewSwitcher: typeof ViewSwitcher;
+    /** The search field. */
     QuickFind: typeof QuickFind;
+    /** The callout that explains how the search matches. */
     QuickFindCallout: typeof QuickFindCallout;
+    /** The page buttons. */
     Pagination: typeof Pagination;
+    /** The record range and the page size menu. */
     PageSizeSwitcher: typeof PageSizeSwitcher;
+    /** The empty state. */
     EmptyRecords: typeof EmptyRecords;
+    /** The button that opens the column editor. */
     EditColumnsButton: typeof EditColumnsButton;
+    /** The panel the column editor sits in. */
     EditColumnsPanel: typeof EditColumnsPanel;
+    /** The select the column editor's pickers are built on. */
     EditColumnsSelector: typeof EditColumnsSelector;
+    /** The picker of the entity columns are added from. */
     EditColumnsScopeSelector: typeof EditColumnsScopeSelector;
+    /** The picker of the column to add. */
     EditColumnsColumnSelector: typeof EditColumnsColumnSelector;
+    /** The list of chosen columns, reordered by dragging. */
     EditColumnsColumnList: typeof EditColumnsColumnList;
+    /** One chosen column in the list. */
     EditColumnsColumn: typeof EditColumnsColumn;
 }
 
+/** Every part of the control as plain UI, with no control behind it. */
 export const DatasetControlUi: IDatasetControlUi = {
     Container,
     Skeleton,
