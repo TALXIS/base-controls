@@ -17,29 +17,14 @@ const DealsRibbon = () => {
 }
 \`\`\`
 
-| Prop | Type | Default | What it does |
-|---|---|---|---|
-| \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | Required | Returns the commands. Called at mount, whenever the selection changes, and on \`reload()\`. |
-| \`disabled\` | \`boolean\` | \`false\` | Disables every command. |
-| \`className\` | \`string\` | None | Added to the ribbon's box. |
-| \`onReady\` | \`(ribbon: IRibbonRuntime) => void\` | None | Hands you the ribbon's runtime. Its \`reload()\` loads the commands again, such as after a command changed which ones apply. |
-| \`components\` | \`IRibbonComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview). |
-
-## Commands
-
-| Field | What it does |
-|---|---|
-| \`id\` | Identifies the command across loads. Required. |
-| \`label\` | The button's text. |
-| \`tooltip\` | Shown on hover. |
-| \`iconName\` | A Fluent icon name. |
-| \`isDisabled\` | Shows the button disabled. |
-| \`onExecute\` | Runs when the button is clicked. While the promise it returns runs, the button is disabled. |
-
-- Commands are shown in the order they are returned. Leave out a command that does not apply.
+- A command is \`{ id, label, tooltip?, iconName?, isDisabled?, onExecute }\`. Commands are shown in the order they are returned.
+- While a command's \`onExecute\` runs, its button is disabled.
+- To load the commands again yourself, such as after a command changed which ones apply, call \`reload()\` on the ribbon \`onReady\` hands you.
 - While the commands load, a shimmer stands in for them. When \`onLoad\` throws, the ribbon shows the error, with *Details* and *Try again*.
 - In \`Header.End\` the commands sit against the right; in \`Header.Start\`, against the left. Commands that do not fit move into the overflow menu.
 - The same ribbon, without the reload on selection, is exported as \`Ribbon\`, for a command bar outside DatasetControl.
+
+All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API, and the command's fields on [**Hooks and types**](?path=/docs/datasetcontrol-api-hooks-and-types--overview).
 
 {{story: Commands for the selected deals}}
 `

@@ -17,7 +17,7 @@ A grid with a \`stateKey\` remembers where the user was: the cell at the top-lef
 
 - The grid reads its state once, at mount, and writes it as the user scrolls, opens groups and focuses cells.
 - Without a \`stateKey\`, the grid keeps nothing.
-- Inside a DatasetControl, the grid keeps it per view, in the control's state. See [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl.
+- Inside a DatasetControl, the grid keeps it per view, in the control's state. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview) of DatasetControl.
 - Where the state is kept is up to [**StateProvider**](?path=/docs/providers-stateprovider--overview).
 - The column layout, sorting, filtering and grouping are the provider's, not part of this state. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view; on its own, see *Remembering the layout* on [**Columns**](?path=/docs/grid-columns--overview).
 

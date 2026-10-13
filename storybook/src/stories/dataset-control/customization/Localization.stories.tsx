@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { gridDocsPage } from '../../grid/gridDocsPage'
-import { CzechExample } from '../../dataset-control/examples/localizationExamples'
+import { renderStory } from '../../form/storyHelpers'
+import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { CzechExample } from '../../../dataset-control/examples/localizationExamples'
 
 const DESCRIPTION = `Every string a part shows can be replaced through its \`labels\`. What you leave out keeps its English default, exported for each part. A label with \`{{ name }}\` in it is filled in.
 
@@ -13,7 +13,7 @@ const DESCRIPTION = `Every string a part shows can be replaced through its \`lab
 | \`DatasetControl\` | \`unsavedChangesConfirmation\` | \`DATASET_CONTROL_LABELS\` |
 | \`ViewSwitcher\` | \`ungroupedViewsHeader\` | \`VIEW_SWITCHER_LABELS\` |
 | \`QuickFind\` | \`searchPlaceholder\` (with \`{{ collection }}\`), \`defaultCollectionName\`, \`leadingWildcardWarning\`, \`columnsHintStart\`, \`columnsHintOperator\`, \`columnsHintEnd\` | \`QUICK_FIND_LABELS\` |
-| \`EditColumns\` | \`editColumns\`, \`save\`, \`cancel\`, \`scopeSelectorLabel\`, \`columnSelectorPlaceholder\`, \`customColumnTooltip\`, \`unnamed\`, \`noResults\` | \`EDIT_COLUMNS_LABELS\` |
+| \`EditColumns\` | \`editColumns\`, \`save\`, \`cancel\`, \`scopeSelectorLabel\`, \`columnSelectorPlaceholder\`, \`customColumnTooltip\`, \`unnamed\`, \`noResults\`, \`loading\` | \`EDIT_COLUMNS_LABELS\` |
 | \`Notifications\` | \`groupedNotificationsSummary\` (with \`{{ count }}\`) | \`DATASET_CONTROL_NOTIFICATIONS_LABELS\` |
 | \`EmptyRecords\` | \`noRecordsFound\` | \`EMPTY_RECORDS_LABELS\` |
 | \`Pagination\` | \`firstPageTooltip\`, \`previousPageTooltip\`, \`nextPageTooltip\`, \`currentPage\` (with \`{{ number }}\`) | \`PAGINATION_LABELS\` |
@@ -23,7 +23,7 @@ The grid's strings are the grid's own \`labels\`: see [**Localization**](?path=/
 `
 
 const meta = {
-    title: 'DatasetControl/Localization/Overview',
+    title: 'DatasetControl/Customization/Localization',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -12,11 +12,7 @@ const DESCRIPTION = `## Notifications
 <DatasetControl.Notifications messages={[{ text: 'Deals are synced every night.', level: 'INFO' }]} />
 \`\`\`
 
-| Prop | What it does |
-|---|---|
-| \`messages\` | Your own messages: \`{ text, level: 'ERROR' \\| 'WARNING' \\| 'INFO' }\`. |
-| \`labels\` | \`groupedNotificationsSummary\`, shown when there are several. See [**Localization**](?path=/docs/datasetcontrol-localization-overview--overview). |
-| \`components\` | \`onRenderNotifications\`. See [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview). |
+A message is \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 {{story: The deals service is unreachable}}
 
@@ -32,10 +28,7 @@ const DESCRIPTION = `## Notifications
 </DatasetControl.Body>
 \`\`\`
 
-| Prop | What it does |
-|---|---|
-| \`labels\` | \`noRecordsFound\`. See [**Localization**](?path=/docs/datasetcontrol-localization-overview--overview). |
-| \`components\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\`. See [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview). |
+All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 {{story: Nothing matches}}
 `

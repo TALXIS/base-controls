@@ -90,7 +90,7 @@ The features that bring dialogs and pickers take \`components\`, which replaces 
 |---|---|
 | \`createTemplateModule\` | \`onRenderTemplateSelector\` |
 | \`createUserQueryModule\` | \`onRenderViewManager\`, \`onRenderCreateView\` |
-| \`createCustomColumnsModule\` | \`editColumns\` — the [**Edit columns**](?path=/docs/datasetcontrol-parts-overview--overview) pieces, with the custom-column commands in them |
+| \`createCustomColumnsModule\` | \`editColumns\` — the [**Edit columns**](?path=/docs/datasetcontrol-parts-edit-columns--overview) pieces, with the custom-column commands in them |
 
 Anything you leave out keeps the component the feature ships. A feature's *column* — the checklist, the dependencies, a lookup-many picker — is a column like any other, and is replaced through \`colDefs\`: see [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
 

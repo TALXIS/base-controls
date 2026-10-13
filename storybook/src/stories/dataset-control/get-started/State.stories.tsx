@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { gridDocsPage } from '../../grid/gridDocsPage'
-import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../dataset-control/examples/stateExamples'
+import { renderStory } from '../../form/storyHelpers'
+import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../../dataset-control/examples/stateExamples'
 
 const DESCRIPTION = `A DatasetControl puts every view back the way the user left it: the records sorted, filtered, searched and paged as they were, the columns they chose, and the grid scrolled where it was.
 
@@ -53,11 +53,11 @@ const OnlyMineToggle = () => {
 }
 \`\`\`
 
-A gallery that keeps its scroll this way is on [**Your own collection view**](?path=/docs/datasetcontrol-customization-your-own-collection-view--overview).
+A gallery that keeps its scroll this way is on [**Your own collection view**](?path=/docs/datasetcontrol-customization-your-own-parts--overview).
 `
 
 const meta = {
-    title: 'DatasetControl/State/Overview',
+    title: 'DatasetControl/Get started/State',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

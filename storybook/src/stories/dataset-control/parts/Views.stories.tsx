@@ -22,15 +22,11 @@ const loadViews = async (): Promise<IDatasetControlView[]> => {
 - While the views load, a shimmer stands in for the switcher. When \`onLoad\` throws, the switcher shows the error, with *Details* and *Try again*.
 - Picking a view calls the control's \`onLoad\` with its \`viewId\`, shows the placeholder while it runs, then shows the new provider and destroys the old one. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview).
 - When the records have unsaved changes, the control asks first, and stays on the view if the user cancels.
-- Switching back to a view puts it back as the user left it: sorted, searched, paged and scrolled. See [**State**](?path=/docs/datasetcontrol-state-overview--overview).
-- To switch views from your own code, call \`control.loadView(viewId)\`. See [**Extending**](?path=/docs/datasetcontrol-customization-extending--overview).
+- Switching back to a view puts it back as the user left it: sorted, searched, paged and scrolled. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview).
+- To switch views from your own code, call \`control.loadView(viewId)\`. See [**Your own parts**](?path=/docs/datasetcontrol-customization-your-own-parts--overview).
+- To list the views again, such as after the user saved a new one, call \`reload()\` on the switcher \`onReady\` hands you.
 
-| Prop | Type | Default | What it does |
-|---|---|---|---|
-| \`onLoad\` | \`() => Promise<IDatasetControlView[]>\` | Required | Returns the views to list. Called at mount, with every view loaded, and on \`reload()\`. |
-| \`onReady\` | \`(viewSwitcher) => void\` | None | Hands you the switcher. Its \`reload()\` lists the views again, such as after the user saved a new one. |
-| \`labels\` | \`Partial<IViewSwitcherLabels>\` | English | \`ungroupedViewsHeader\`, the header of the views without a group. See [**Localization**](?path=/docs/datasetcontrol-localization-overview--overview). |
-| \`components\` | \`IViewSwitcherComponents\` | Defaults | \`onRenderButton\`, whose \`menuProps.items\` are the views; \`loadingBoundary\` and \`errorMessage\`. See [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview). |
+All its props, and what \`control.parts.get('viewSwitcher')\` offers, are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 {{story: Switch the view}}
 `

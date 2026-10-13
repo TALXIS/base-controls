@@ -18,10 +18,9 @@ const DESCRIPTION = `\`DatasetControl.QuickFind\` searches the provider's quick 
 - The field is disabled while the provider loads, and while it has no quick find columns and no primary column.
 - The placeholder names the provider's records from its metadata, or *records* without one.
 
-| Prop | What it does |
-|---|---|
-| \`labels\` | The placeholder and the callout's text. See [**Localization**](?path=/docs/datasetcontrol-localization-overview--overview). |
-| \`components\` | The text field, the callout and the callout's pieces. See [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview). |
+- To search from your own code, call \`setQuery(query)\` and \`search()\` on \`control.parts.get('quickFind')\`.
+
+All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 {{story: Find a deal}}
 `

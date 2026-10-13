@@ -17,21 +17,14 @@ const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatase
 
 ## onLoad
 
-It is called when the control mounts, on every view switch, and on \`loadView()\` and \`reload()\` of the control. Each call returns a new provider.
+\`onLoad\` is called when the control mounts, on every view switch, and on \`loadView()\` and \`reload()\`. Each call returns a new provider.
 
-| Parameter | What it holds |
-|---|---|
-| \`viewId\` | The view to load: the one the user picked, or on the first load the view the control kept. \`undefined\` when there is none, for \`onLoad\` to pick the default. |
+- It is called with the \`viewId\` to load: the view the user picked, or on the first load the one the control kept. With no \`viewId\`, pick the default view, and return its id beside the provider.
+- Before showing the provider, the control puts back what it kept for the view, such as its sorting and search. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview).
+- It then loads the provider's first page, so the parts show records straight away. A provider \`onLoad\` already started loading isn't loaded again.
+- The views to switch between come from the view switcher: see [**Views**](?path=/docs/datasetcontrol-parts-views--overview).
 
-| Result | What it holds | Default |
-|---|---|---|
-| \`provider\` | The provider every part works on. | Required |
-| \`viewId\` | The view \`provider\` shows. | The \`viewId\` it was called with |
-
-The list of views to switch between is the view switcher's own: see [**Views**](?path=/docs/datasetcontrol-parts-views--overview).
-
-- Before showing the provider, the control puts back the setup it kept for the view, such as its sorting and search. See [**State**](?path=/docs/datasetcontrol-state-overview--overview).
-- It then waits for the provider's first page, so the parts show records straight away. A provider that \`onLoad\` has already started loading isn't loaded again.
+The parameters and the result are on [**Hooks and types**](?path=/docs/datasetcontrol-api-hooks-and-types--overview).
 
 ## While loading
 

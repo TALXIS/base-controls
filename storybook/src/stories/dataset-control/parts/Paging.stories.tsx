@@ -20,10 +20,7 @@ const DESCRIPTION = `\`DatasetControl.PageSizeSwitcher\` shows which records the
 - Without a total from the provider, the range ends with a \`+\` while there are more pages. Past the provider's count limit, the total shows as *5000+*.
 - The paging buttons are disabled while there is no page to move to.
 
-| Part | Props |
-|---|---|
-| \`PageSizeSwitcher\` | \`pageSizes\`, the sizes the menu offers, read at mount; \`labels\`; \`components\` (\`onRenderButton\`) |
-| \`Pagination\` | \`labels\`, \`components\` (\`onRenderCommandBar\`) |
+All their props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 {{story: Page through the deals}}
 `

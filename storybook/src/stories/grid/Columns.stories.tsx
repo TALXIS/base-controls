@@ -98,7 +98,7 @@ To size rows to the text instead, set AG Grid's \`autoHeight: true\` in \`colDef
 
 ## Remembering the layout
 
-Give the DatasetControl a \`stateKey\`, and it keeps the columns of each view as the user left them: their widths, their order and which are shown. See [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl.
+Give the DatasetControl a \`stateKey\`, and it keeps the columns of each view as the user left them: their widths, their order and which are shown. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview) of DatasetControl.
 
 - Columns added through \`colDefs\` are not included.
 - Where the user was scrolled, which groups were open and which cell had focus are the grid's own, kept under its \`stateKey\`: see [**State**](?path=/docs/grid-state--overview).

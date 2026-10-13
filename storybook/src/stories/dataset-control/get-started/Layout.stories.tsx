@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { gridDocsPage } from '../../grid/gridDocsPage'
-import { FullPageExample, PickPartsExample } from '../../dataset-control/examples/layoutExamples'
+import { renderStory } from '../../form/storyHelpers'
+import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { FullPageExample, PickPartsExample } from '../../../dataset-control/examples/layoutExamples'
 
 const DESCRIPTION = `The parts sit in a container, in a header above the records, a body that holds them and a footer below them. The header and the footer each have a left and a right region, so every part keeps its place whatever else you leave out.
 
@@ -30,16 +30,16 @@ const DESCRIPTION = `The parts sit in a container, in a header above the records
 </DatasetControl>
 \`\`\`
 
-| Part | What it is | Props |
-|---|---|---|
-| \`DatasetControl\` | The control's box, stacking the header, body and footer. | \`height\`: \`'100%'\` fills the parent; the content's height when left out. \`className\`. |
-| \`Header\` | The row above the records, 15px above them. | \`className\` |
-| \`Header.Start\`, \`Header.End\` | The header's left side, sized to what it holds, and its right side, taking the rest of the row. | \`className\` |
-| \`Body\` | Fills the height the header and footer leave. Put what shows the records here, with a height of \`'100%'\`. | \`className\` |
-| \`Footer\` | The row below the records, with a line above it. | \`className\` |
-| \`Footer.Start\`, \`Footer.End\` | The footer's left and right sides. | \`className\` |
+| Part | What it is |
+|---|---|
+| \`DatasetControl\` | The control's box, stacking the header, body and footer. |
+| \`Header\` | The row above the records, 15px above them. |
+| \`Header.Start\`, \`Header.End\` | The header's left side, sized to what it holds, and its right side, taking the rest of the row. |
+| \`Body\` | Fills the height the header and footer leave. Put what shows the records here. |
+| \`Footer\` | The row below the records, with a line above it. |
+| \`Footer.Start\`, \`Footer.End\` | The footer's left and right sides. |
 
-Every part takes \`components\` too: see [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview).
+Their props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
 
 ## Height
 
@@ -78,7 +78,7 @@ A region takes any number of parts, and nothing runs out of the control.
 `
 
 const meta = {
-    title: 'DatasetControl/Layout/Overview',
+    title: 'DatasetControl/Get started/Layout',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

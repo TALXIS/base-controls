@@ -44,27 +44,14 @@ const styles = mergeStyleSets({
 
 //shows the products DatasetControl loaded as a gallery; clicking a card selects it
 const ProductGallery = () => {
-    const provider = useDataProvider()
+    const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
     //per view inside the DatasetControl, so each view comes back scrolled where it was
     const store = useControlStateStore('gallery')
     const galleryRef = React.useRef<HTMLDivElement>(null)
-    const [, setVersion] = React.useState(0)
 
     React.useLayoutEffect(() => {
         galleryRef.current!.scrollTop = store.get<number>('scrollTop') ?? 0
     }, [])
-
-    React.useEffect(() => {
-        const rerender = () => setVersion(version => version + 1)
-        provider.addEventListener('onNewDataLoaded', rerender)
-        provider.addEventListener('onRecordsSelected', rerender)
-        provider.addEventListener('onRecordColumnValueChanged', rerender)
-        return () => {
-            provider.removeEventListener('onNewDataLoaded', rerender)
-            provider.removeEventListener('onRecordsSelected', rerender)
-            provider.removeEventListener('onRecordColumnValueChanged', rerender)
-        }
-    }, [provider])
 
     const selectedIds = provider.getSelectedRecordIds()
     const toggle = (id: string) => provider.setSelectedRecordIds(selectedIds.includes(id) ? selectedIds.filter(selectedId => selectedId !== id) : [...selectedIds, id])
