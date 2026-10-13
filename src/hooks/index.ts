@@ -6,4 +6,4 @@ export * from './useMouseOver';
 export * from './useControlLabels';
 export * from './useEventEmitter';
 export * from './useIsMounted';
-export * from './useIsLoading';
+export * from './useIsLoading';export * from './useLatest';

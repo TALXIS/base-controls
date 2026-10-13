@@ -2,6 +2,7 @@ import { IconButton, useTheme } from "@fluentui/react";
 import { useEffect, useMemo, useRef } from "react";
 import { IZoomSliderComponents, ZoomSliderComponents } from "./components";
 import { getZoomSliderStyles } from "./styles";
+import { useLatest } from "@hooks";
 
 const HOLD_DELAY = 300;
 const HOLD_INTERVAL = 75;
@@ -23,8 +24,7 @@ export interface IZoomSliderProps {
 
 export const ZoomSlider = (props: IZoomSliderProps) => {
     const { onChange, disabled, min = 0, max = 100, step = 1 } = props;
-    const valuerRef = useRef(props.value);
-    valuerRef.current = props.value;
+    const valueRef = useLatest(props.value);
     const theme = useTheme();
     const components = useMemo(() => ({ ...ZoomSliderComponents, ...props.components }), []);
     const styles = useMemo(() => getZoomSliderStyles(theme, disabled), [disabled, theme]);
@@ -32,7 +32,7 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
     const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const changeZoomLevel = (direction: number) => {
-        onChange(Math.max(min, Math.min(max, valuerRef.current + direction * step)));
+        onChange(Math.max(min, Math.min(max, valueRef.current + direction * step)));
     };
 
     const stopHold = () => {
@@ -80,7 +80,7 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
                 min: min,
                 max: max,
                 step: step,
-                value: valuerRef.current,
+                value: valueRef.current,
                 showValue: false,
                 styles: {
                     thumb: styles.thumb,

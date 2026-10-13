@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 import { useTheme } from "@fluentui/react";
@@ -12,6 +12,7 @@ import { getGridStyles } from "./styles";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
+import { useLatest } from "@hooks";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
@@ -24,8 +25,7 @@ export const GridRoot = (props: IGrid) => {
     const theme = useTheme();
     const state = useControlStateStore(props.stateKey);
     const datasetControl = useDatasetControlRuntime();
-    const propsRef = useRef<IGrid>(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
 
     const runtime = useMemo(() => new GridRuntime({
         onGetProps: () => propsRef.current,

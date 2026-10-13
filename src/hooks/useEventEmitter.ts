@@ -1,9 +1,9 @@
 import { IEventEmitter } from "@talxis/client-libraries";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
+import { useLatest } from "./useLatest";
 
 export const useEventEmitter = <T extends { [K in keyof T]: (...args: any[]) => any }>(emitter: IEventEmitter<T> | null | undefined, event: keyof T | (keyof T)[], callback: T[keyof T]) => {
-    const callbackRef = useRef(callback);
-    callbackRef.current = callback;
+    const callbackRef = useLatest(callback);
 
     const memoizedCallback = useCallback((...args) => {
         callbackRef.current(...args);

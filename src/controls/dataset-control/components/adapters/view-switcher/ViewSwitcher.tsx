@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { useEventEmitter } from "@hooks";
+import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { ErrorBoundary, LocalizationService } from "@utils";
 import { Shimmer } from "@ui/shimmer";
@@ -25,8 +25,7 @@ export interface IViewSwitcherProps {
 /** Switches the control between the views its `onLoad` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
-    const propsRef = useRef(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
     const viewSwitcher = useMemo(() => new DatasetControlViewSwitcher({ services: runtime.services, onLoad: () => propsRef.current.onLoad() }), []);
     const labels = useMemo(() => new LocalizationService<IViewSwitcherLabels>({ ...VIEW_SWITCHER_LABELS, ...props.labels }), [props.labels]);
     const styles = useMemo(() => getViewSwitcherStyles(), []);

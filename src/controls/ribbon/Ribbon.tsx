@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { useEventEmitter } from "@hooks";
+import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { ErrorBoundary, getClassNames } from "@utils";
 import { Shimmer } from "@ui/shimmer";
@@ -30,8 +30,7 @@ export interface IRibbonProps {
 
 /** A command bar of the commands `onLoad` returns, each run when clicked. */
 export const Ribbon = (props: IRibbonProps) => {
-    const propsRef = useRef(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
     const runtime = useMemo(() => new RibbonRuntime({ onLoad: () => propsRef.current.onLoad() }), []);
     const styles = useMemo(() => getRibbonStyles(props.align ?? 'start'), [props.align]);
     const { rerender } = useRerender();

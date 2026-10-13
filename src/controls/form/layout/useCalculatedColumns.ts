@@ -1,5 +1,6 @@
 import React from "react";
 import { ILayoutBreakpoints, Layout } from "./Layout";
+import { useLatest } from "@hooks";
 
 
 interface IUseCalculatedColumnsParams {
@@ -25,8 +26,7 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
         containerStyles: Layout.getColumnsContainerStyles(breakpoints.lg)
     });
 
-    const breakpointsRef = React.useRef(breakpoints);
-    breakpointsRef.current = breakpoints;
+    const breakpointsRef = useLatest(breakpoints);
 
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
         const containerWidth = entries[0].contentRect.width;

@@ -16,6 +16,7 @@ import { ITaskGridDescriptor } from "./interfaces";
 import { ITaskGridRuntime, TaskGridRuntime } from "./runtime";
 import { useTaskGridEvents } from "./useTaskGridEvents";
 import { ITaskGridFeature, ITaskGridFeatures, ITaskGridModules } from "./modules/interfaces";
+import { useLatest } from "@hooks";
 
 /** Props for {@link TaskGrid}: the shared grid's own, less what the task grid owns, and the task grid's. */
 export interface ITaskGridProps extends Omit<IGrid, 'modules' | 'stateKey' | 'height' | 'labels' | 'components' | 'onError' | 'onOpenRecord' | 'onDestroyed'> {
@@ -82,11 +83,9 @@ export interface ITaskGridProps extends Omit<IGrid, 'modules' | 'stateKey' | 'he
 
 /** A hierarchical task grid over the descriptor's tasks and views; render it inside a `PcfContextProvider`. */
 export const TaskGrid = (props: ITaskGridProps) => {
-    const propsRef = React.useRef(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
     const pcfContext = usePcfContext();
-    const pcfContextRef = React.useRef(pcfContext);
-    pcfContextRef.current = pcfContext;
+    const pcfContextRef = useLatest(pcfContext);
     const options = React.useMemo(() => getGridOptions(props), []);
     const runtime = React.useMemo(() => new TaskGridRuntime({
         descriptor: props.descriptor,

@@ -8,12 +8,12 @@ import { getClassNames } from "@utils";
 import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "./styles";
 import { DataProvider } from "@talxis/client-libraries";
+import { useLatest } from "@hooks";
 
 const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefreshed', 'onAfterCommandsRefreshed'];
 
 export const GridInlineRibbon = (props: IGridInlineRibbon) => {
-    const propsRef = useRef(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
     const context = props.context;
     const record = props.parameters.Record.raw;
     //one model per record: a reload can hand the same row a new one

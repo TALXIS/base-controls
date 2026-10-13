@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useEventEmitter } from "@hooks";
+import { useEffect, useMemo } from "react";
+import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { DataProviderContext, ErrorBoundary, useStateStore } from "@utils";
 import { DatasetControlRuntime, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime, IDatasetControlRuntimeEvents } from "../../../runtime";
@@ -33,8 +33,7 @@ export interface IDatasetControlProps {
 /** Loads the provider and holds every part of the control. */
 export const Root = (props: IDatasetControlProps) => {
     const stateStore = useStateStore();
-    const propsRef = useRef(props);
-    propsRef.current = props;
+    const propsRef = useLatest(props);
     const runtime = useMemo(() => new DatasetControlRuntime({ onGetProps: () => propsRef.current, stateStore }), []);
     const { rerender } = useRerender();
 
