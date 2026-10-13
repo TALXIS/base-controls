@@ -4,7 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { PagingExample } from '../../../dataset-control/examples/partsExamples'
 
-const DESCRIPTION = `\`DatasetControl.PageSizeSwitcher\` shows which records the page holds, such as *1 - 25 of 120*, and opens a menu of page sizes: 25, 50, 75, 100 and 250. \`DatasetControl.Pagination\` moves to the first, previous and next page, and shows the current page.
+const DESCRIPTION = `\`DatasetControl.PageSizeSwitcher\` shows which records the page holds, such as *1 - 25 of 120*, and opens a menu of page sizes: 25, 50, 75, 100 and 250, or the ones its \`pageSizes\` lists. \`DatasetControl.Pagination\` moves to the first, previous and next page, and shows the current page.
 
 \`\`\`tsx
 <DatasetControl.Footer>
@@ -22,7 +22,7 @@ const DESCRIPTION = `\`DatasetControl.PageSizeSwitcher\` shows which records the
 
 | Part | Props |
 |---|---|
-| \`PageSizeSwitcher\` | \`labels\`, \`components\` (\`onRenderButton\`) |
+| \`PageSizeSwitcher\` | \`pageSizes\`, the sizes the menu offers, read at mount; \`labels\`; \`components\` (\`onRenderButton\`) |
 | \`Pagination\` | \`labels\`, \`components\` (\`onRenderCommandBar\`) |
 
 {{story: Page through the deals}}

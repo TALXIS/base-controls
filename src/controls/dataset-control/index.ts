@@ -12,7 +12,7 @@ export { QUICK_FIND_LABELS } from './components/adapters/quick-find';
 export type { IQuickFindLabels } from './components/adapters/quick-find';
 export { PAGINATION_LABELS } from './components/adapters/pagination';
 export type { IPaginationLabels } from './components/adapters/pagination';
-export { PAGE_SIZE_SWITCHER_LABELS } from './components/adapters/page-size-switcher';
+export { PAGE_SIZE_SWITCHER_LABELS, DEFAULT_PAGE_SIZES } from './components/adapters/page-size-switcher';
 export type { IPageSizeSwitcherLabels } from './components/adapters/page-size-switcher';
 export { EMPTY_RECORDS_LABELS } from './components/adapters/empty-records';
 export type { IEmptyRecordsProps, IEmptyRecordsLabels } from './components/adapters/empty-records';

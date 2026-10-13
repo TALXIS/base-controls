@@ -3648,7 +3648,7 @@ interface IDatasetControlNamespace {
     }) => JSX.Element;
     Notifications: (props: { labels?: Partial<IDatasetControlNotificationsLabels>; messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
     Pagination: (props: { labels?: Partial<IPaginationLabels>; components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
-    PageSizeSwitcher: (props: { labels?: Partial<IPageSizeSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    PageSizeSwitcher: (props: { pageSizes?: number[]; labels?: Partial<IPageSizeSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
     EmptyRecords: (props: { children?: React.ReactNode; labels?: Partial<{ noRecordsFound: string }>; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */

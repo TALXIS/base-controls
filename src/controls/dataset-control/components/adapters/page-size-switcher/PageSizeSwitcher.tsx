@@ -8,6 +8,8 @@ import { IPageSizeSwitcherLabels, PAGE_SIZE_SWITCHER_LABELS } from "./labels";
 import { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents } from "./DatasetControlPageSizeSwitcher";
 
 export interface IPageSizeSwitcherProps {
+    /** The sizes the menu offers; read once, at mount. */
+    pageSizes?: number[];
     labels?: Partial<IPageSizeSwitcherLabels>;
     components?: Partial<IPageSizeSwitcherUiComponents>;
 }
@@ -16,7 +18,7 @@ export interface IPageSizeSwitcherProps {
 export const PageSizeSwitcher = (props: IPageSizeSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProvider();
-    const pageSizeSwitcher = useMemo(() => new DatasetControlPageSizeSwitcher({ services: runtime.services, provider }), []);
+    const pageSizeSwitcher = useMemo(() => new DatasetControlPageSizeSwitcher({ services: runtime.services, provider, pageSizes: props.pageSizes }), []);
     const labels = useMemo(() => new LocalizationService<IPageSizeSwitcherLabels>({ ...PAGE_SIZE_SWITCHER_LABELS, ...props.labels }), [props.labels]);
     const { rerender } = useRerender();
     const range = pageSizeSwitcher.getRecordRange();

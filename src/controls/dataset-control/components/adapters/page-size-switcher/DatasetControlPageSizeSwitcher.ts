@@ -17,9 +17,12 @@ export interface IDatasetControlRecordRange {
 export interface IDatasetControlPageSizeSwitcherParameters {
     services: IDatasetControlServiceLocator;
     provider: IDataProvider;
+    /** The sizes the menu offers; {@link DEFAULT_PAGE_SIZES} when left out. */
+    pageSizes?: number[];
 }
 
-const PAGE_SIZES = [25, 50, 75, 100, 250];
+/** The sizes the page size switcher offers unless it is given its own. */
+export const DEFAULT_PAGE_SIZES = [25, 50, 75, 100, 250];
 //what the provider reports past its count limit
 const TOTAL_OVER_LIMIT = -1;
 
@@ -28,10 +31,12 @@ export class DatasetControlPageSizeSwitcher {
     public readonly events: IEventEmitter<IDatasetControlPageSizeSwitcherEvents> = new EventEmitter<IDatasetControlPageSizeSwitcherEvents>();
     private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;
+    private _pageSizes: number[];
 
     constructor(parameters: IDatasetControlPageSizeSwitcherParameters) {
         this._services = parameters.services;
         this._provider = parameters.provider as IInternalDataProvider;
+        this._pageSizes = parameters.pageSizes ?? DEFAULT_PAGE_SIZES;
         this._provider.addEventListener('onNewDataLoaded', this._onChanged);
         this._provider.addEventListener('onLoading', this._onChanged);
         this._services.register('pageSizeSwitcher', () => this);
@@ -42,7 +47,7 @@ export class DatasetControlPageSizeSwitcher {
     }
 
     public getPageSizes(): number[] {
-        return PAGE_SIZES;
+        return this._pageSizes;
     }
 
     public isLoading(): boolean {
