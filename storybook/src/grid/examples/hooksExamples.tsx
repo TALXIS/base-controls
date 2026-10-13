@@ -180,21 +180,19 @@ const GridExample = () => {
     const [message, setMessage] = React.useState('')
     const copyColumnModule = React.useMemo(() => createCopyColumnModule(setMessage), [])
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         {message && <MessageBar messageBarType={MessageBarType.success} onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        sorting: createSortingModule(),
-                        filtering: createFilteringModule(),
-                        custom: [copyColumnModule],
-                    }}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    sorting: createSortingModule(),
+                    filtering: createFilteringModule(),
+                    custom: [copyColumnModule],
+                }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -286,16 +284,18 @@ const GridExample = () => {
         provider.refresh()
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} styles={{ flexContainer: { display: 'flex', gap: 16 } }} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} styles={{ flexContainer: { display: 'flex', gap: 16 } }} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

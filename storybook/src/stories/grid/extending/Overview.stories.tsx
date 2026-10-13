@@ -14,7 +14,7 @@ Each mounted grid has one runtime, an \`IGridRuntime\`. You are handed it in thr
 | Where | When | What it is for |
 |---|---|---|
 | A module's \`onRegister(runtime)\` | Once, as the grid mounts: before AG Grid exists and before the first row is drawn | Registering hooks, services and listeners. Pass the module in \`modules.custom\`. |
-| \`onGridReady(runtime)\` on \`<Grid />\` | Once, when AG Grid is ready | Keeping the runtime for code outside the grid, such as a toolbar. |
+| \`onGridReady(runtime)\` on \`<Grid />\` | Once, when AG Grid is ready | Keeping the runtime for code outside the grid, such as a ribbon command. |
 | \`onDestroyed(runtime)\` on \`<Grid />\` | Once, as the grid unmounts, while AG Grid still answers | Reading what you want to keep. See [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). |
 
 | Member | What it is |

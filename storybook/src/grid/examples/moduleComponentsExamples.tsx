@@ -23,20 +23,18 @@ const StarCell = (props: IGridCellParams) => <SelectionCell {...props} component
 const GridExample = () => {
     const [starred, setStarred] = React.useState<string[]>([])
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
-                    }}
-                    colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
-                    height='400px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
+                }}
+                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { ExpandFromToolbarExample, FilteredTotalsExample, HoursByEmployeeExample, PipelineByManagerExample } from '../../../grid/examples/groupingTotalsExamples'
+import { ExpandFromRibbonExample, FilteredTotalsExample, HoursByEmployeeExample, PipelineByManagerExample } from '../../../grid/examples/groupingTotalsExamples'
 
 const DESCRIPTION = `
 Grouping gathers the rows under a group row for each value of a column, level by level. The aggregation module adds totals, to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not: see [**Modules**](?path=/docs/grid-modules--overview).
@@ -60,7 +60,7 @@ The grid hands \`type\` to the provider when it mounts, and the provider regroup
 
 \`defaultExpandedLevel\` sets how deep the groups open as they appear. Levels count from \`0\`, the top one, and the default \`-1\` keeps every group closed; any number past the deepest level opens everything. Once someone opens or closes a single group, groups that appear later stay closed until \`setExpandedLevel\` or the expansion column's buttons apply a level again.
 
-{{story: Expand and collapse from a toolbar}}
+{{story: Expand and collapse from the ribbon}}
 
 Whether the groups' records load with the list or as each group opens depends on the row model: see *Row models* on [**Modules**](?path=/docs/grid-modules--overview).
 
@@ -219,13 +219,13 @@ export const HoursByEmployeeAndDay: Story = {
     },
 }
 
-export const ExpandAndCollapseFromAToolbar: Story = {
-    name: 'Expand and collapse from a toolbar',
-    render: () => renderStory(<ExpandFromToolbarExample />),
+export const ExpandAndCollapseFromTheRibbon: Story = {
+    name: 'Expand and collapse from the ribbon',
+    render: () => renderStory(<ExpandFromRibbonExample />),
     parameters: {
         docs: {
             description: {
-                story: `Timesheets by status, then by employee. The toolbar keeps the runtime from \`onGridReady\` and calls \`grouping.setExpandedLevel\` with \`getExpandedLevel()\` and \`getDeepestLevel()\`. Expand one level, then expand all.`,
+                story: `Timesheets by status, then by employee. The DatasetControl's ribbon keeps the runtime from \`onGridReady\` and calls \`grouping.setExpandedLevel\` with \`getExpandedLevel()\` and \`getDeepestLevel()\`. Expand one level, then expand all.`,
             },
         },
     },

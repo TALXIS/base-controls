@@ -217,23 +217,25 @@ const GridExample = () => {
         runtime.current?.services.get('columns').headers.render()
     }
 
-    const commands: ICommandBarItemProps[] = [
-        { key: 'save', text: 'Save', iconProps: { iconName: 'Save' }, onClick: () => { provider.save() } },
-        { key: 'discard', text: 'Discard', iconProps: { iconName: 'Undo' }, onClick: discard },
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'save', label: 'Save', iconName: 'Save', onExecute: async () => { await provider.save() } },
+        { id: 'discard', label: 'Discard', iconName: 'Undo', onExecute: discard },
     ]
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
-                    colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
-                    onGridReady={gridRuntime => runtime.current = gridRuntime}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
+                colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
+                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

@@ -119,14 +119,12 @@ const GridExample = () => {
     const [opened, setOpened] = React.useState('')
     const directory = React.useMemo(createDirectory, [])
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: directory })}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
-        <DatasetControl onLoad={async () => ({ provider: directory })}>
-            <DatasetControl.Body>
-                <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

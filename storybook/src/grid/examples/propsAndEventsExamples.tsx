@@ -26,36 +26,39 @@ const createInvoiceLines = () => new MemoryDataProvider({
 
 const GridExample = () => {
     const lines = React.useMemo(createInvoiceLines, [])
-    const [lineCount, setLineCount] = React.useState(3)
+    const lineCount = React.useRef(3)
+    const ribbon = React.useRef<IRibbonRuntime>()
     const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
 
-    const showLines = (count: number) => {
+    const showLines = async (count: number) => {
         lines.setDataSource(Array.from({ length: count }, (_, index) => toLine(index)))
-        lines.refresh()
-        setLineCount(count)
+        lineCount.current = count
+        await lines.refresh()
+        //the ribbon reloads on its own only when the selection changes
+        ribbon.current?.reload()
     }
 
-    const commands: ICommandBarItemProps[] = [
-        { key: 'add', text: 'Add line', iconProps: { iconName: 'Add' }, onClick: () => showLines(lineCount + 1) },
-        { key: 'remove', text: 'Remove last line', iconProps: { iconName: 'Remove' }, disabled: lineCount === 0, onClick: () => showLines(lineCount - 1) },
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'add', label: 'Add line', iconName: 'Add', onExecute: () => showLines(lineCount.current + 1) },
+        { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
     ]
 
-    const rowsSlider: ICommandBarItemProps = {
-        key: 'maxVisibleRows',
-        onRender: () => <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
-            <Text>Rows before it scrolls</Text>
-            <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
-        </Stack>,
-    }
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} farItems={[rowsSlider]} />
-        <DatasetControl onLoad={async () => ({ provider: lines })}>
-            <DatasetControl.Body>
-                <Grid modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: lines })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} onReady={runtime => ribbon.current = runtime} />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
+                    <Text>Rows before it scrolls</Text>
+                    <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
+                </Stack>
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -69,9 +72,9 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
         <div className={styles.container} style={{ height: containerHeight }}>
-            <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl height='100%' onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
-                    <Grid modules={{ rowModel: createClientSideRowModelModule() }} height='100%' />
+                    <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
                 </DatasetControl.Body>
             </DatasetControl>
         </div>
@@ -112,49 +115,53 @@ const GridExample = () => {
         setEntries(current => [entry, ...current].slice(0, 200))
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal wrap verticalAlign='center' tokens={{ childrenGap: 8 }}>
-            <Toggle inlineLabel label='Auto-save' checked={isAutoSaveOn} onChange={(_, checked) => setIsAutoSaveOn(!!checked)} styles={{ root: { margin: '0 8px 0 0' } }} />
-            <DefaultButton iconProps={{ iconName: 'Refresh' }} text='Reload' onClick={() => provider.refresh()} />
-            <DefaultButton iconProps={{ iconName: 'Save' }} text='Save all' onClick={() => provider.save()} />
-            <DefaultButton iconProps={{ iconName: 'Sync' }} text='Remount' onClick={() => setMountCount(count => count + 1)} />
-            <DefaultButton iconProps={{ iconName: 'Clear' }} text='Clear log' onClick={() => setEntries([])} />
-        </Stack>
-        <div className={styles.layout}>
-            <div className={styles.grid}>
-                <DatasetControl onLoad={async () => ({ provider: provider })}>
-                    <DatasetControl.Body>
-                        <Grid
-                            //the modules are read at mount, so auto-save mounts the grid again
-                            key={mountCount + String(isAutoSaveOn)}
-                            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
-                            height='440px'
-                            onGridReady={() => log('onGridReady')}
-                            onDestroyed={() => log('onDestroyed')}
-                            onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
-                            onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
-                            onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
-                            onBeforeRecordSaved={record => log('onBeforeRecordSaved', ticketOf(record))}
-                            onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
-                            onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
-                            onError={message => log('onError', message)}
-                            onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
-                            onRowClicked={record => log('onRowClicked', ticketOf(record))}
-                            onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}
-                            onColumnsChanged={columns => log('onColumnsChanged', columns.length + ' columns written back')} />
-                    </DatasetControl.Body>
-                </DatasetControl>
-            </div>
-            <div className={styles.log}>
-                {entries.length === 0 && <div className={styles.time}>Events show here as they fire, newest first.</div>}
-                {entries.map(entry => <div key={entry.id}>
-                    <span className={styles.time}>{entry.time}</span>
-                    <span className={styles.event}>{entry.event}</span>
-                    {entry.detail}
-                </div>)}
-            </div>
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'reload', label: 'Reload', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
+        { id: 'save', label: 'Save all', iconName: 'Save', onExecute: async () => { await provider.save() } },
+        { id: 'remount', label: 'Remount', iconName: 'Sync', onExecute: () => setMountCount(count => count + 1) },
+        { id: 'clear', label: 'Clear log', iconName: 'Clear', onExecute: () => setEntries([]) },
+    ]
+
+    return <div className={styles.layout}>
+        <div className={styles.grid}>
+            <DatasetControl onLoad={async () => ({ provider: provider })}>
+                <DatasetControl.Header>
+                    <DatasetControl.Header.Start>
+                        <Toggle inlineLabel label='Auto-save' checked={isAutoSaveOn} onChange={(_, checked) => setIsAutoSaveOn(!!checked)} />
+                        <DatasetControl.Ribbon onLoad={loadCommands} />
+                    </DatasetControl.Header.Start>
+                </DatasetControl.Header>
+                <DatasetControl.Body>
+                    <Grid
+                        //the modules are read at mount, so auto-save mounts the grid again
+                        key={mountCount + String(isAutoSaveOn)}
+                        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
+                        height='440px'
+                        onGridReady={() => log('onGridReady')}
+                        onDestroyed={() => log('onDestroyed')}
+                        onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
+                        onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
+                        onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
+                        onBeforeRecordSaved={record => log('onBeforeRecordSaved', ticketOf(record))}
+                        onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
+                        onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
+                        onError={message => log('onError', message)}
+                        onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
+                        onRowClicked={record => log('onRowClicked', ticketOf(record))}
+                        onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}
+                        onColumnsChanged={columns => log('onColumnsChanged', columns.length + ' columns written back')} />
+                </DatasetControl.Body>
+            </DatasetControl>
         </div>
-    </Stack>
+        <div className={styles.log}>
+            {entries.length === 0 && <div className={styles.time}>Events show here as they fire, newest first.</div>}
+            {entries.map(entry => <div key={entry.id}>
+                <span className={styles.time}>{entry.time}</span>
+                <span className={styles.event}>{entry.event}</span>
+                {entry.detail}
+            </div>)}
+        </div>
+    </div>
 }
 `
 

@@ -131,30 +131,27 @@ const syncStock = async () => {
 }
 
 const GridExample = () => {
-    const [isSyncing, setIsSyncing] = React.useState(false)
+    //the ribbon disables a command while it runs
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync stock', iconName: 'Sync', onExecute: syncStock }]
 
-    const onSync = async () => {
-        setIsSyncing(true)
-        await syncStock()
-        setIsSyncing(false)
-    }
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={[{ key: 'sync', text: 'Sync stock', iconProps: { iconName: 'Sync' }, disabled: isSyncing, onClick: () => { onSync() } }]} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        editing: createEditingModule({ autoSave: true }),
-                        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-                        custom: [stockScript],
-                    }}
-                    colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    editing: createEditingModule({ autoSave: true }),
+                    legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
+                    custom: [stockScript],
+                }}
+                colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

@@ -53,9 +53,9 @@ Once someone applies or clears a column filter, the provider's filter becomes th
 
 {{story: Switch between saved views}}
 
-A view is a sort and a filter applied together. Inside a DatasetControl, views are the control's: \`onLoad\` returns a provider per view, its view switcher switches between them, and with a \`stateKey\` it keeps what the user sorted and filtered in each. See [**Views**](?path=/docs/datasetcontrol-parts-views--overview) of DatasetControl.
+A view is a sort and a filter applied together. Views are the DatasetControl's: \`onLoad\` sets up a provider per view, the view switcher switches between them, and with a \`stateKey\` the control keeps what the user sorted and filtered in each. See [**Views**](?path=/docs/datasetcontrol-parts-views--overview) of DatasetControl.
 
-On its own, as here, the column menus write to the same provider state as the view, so a view and the user's own changes mix, and the next view replaces both. Neither module raises an event when the sort or the filter changes: to remember what someone set, read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`.
+Neither module raises an event when the sort or the filter changes: to follow what someone set, read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`.
 
 ## Narrow what a filter offers
 
@@ -176,7 +176,7 @@ export const SwitchBetweenSavedViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Each button applies a sort and a filter through \`provider.setSorting\` and \`provider.setFiltering\`, then calls \`refresh()\`. On *Open tickets*, filter *Priority* to High: your filter joins the view's, and the next view replaces both.`,
+                story: `Each view loads a provider of its own, sorted and filtered in \`onLoad\` through \`setSorting\` and \`setFiltering\`. On *Open tickets*, filter *Priority* to High: your filter joins the view's. Switch to another view and back, and the control's \`stateKey\` brings your filter back with it.`,
             },
         },
     },

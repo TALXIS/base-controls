@@ -212,7 +212,7 @@ export const ReviewChangesThenSaveThemAll: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Corrections wait for a command bar built on \`provider.getDirtyRecordIds()\`, \`provider.save()\` and \`provider.clearChanges()\`, kept current by \`onRecordValueChanged\` and \`onAfterSaved\`. Change two entries, then press *Discard* or *Save*.`,
+                story: `Corrections wait for the DatasetControl's ribbon, built on \`provider.getDirtyRecordIds()\`, \`provider.save()\` and \`provider.clearChanges()\`, and loaded again on \`onRecordValueChanged\` and \`onAfterSaved\`. Change two entries, then press *Discard* or *Save*.`,
             },
         },
     },

@@ -44,32 +44,35 @@ const GridExample = () => {
     const timesheets = React.useMemo(createWeekProvider, [])
     const [type, setType] = React.useState<GroupingType>('nested')
 
-    //the provider regroups by the new type only on its next load
-    React.useEffect(() => {
+    const changeType = (next: GroupingType) => {
+        setType(next)
+        //the provider regroups by the new type only on its next load
         timesheets.refresh()
-    }, [type])
+    }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <ChoiceGroup
-            label='Group the week'
-            selectedKey={type}
-            options={[{ key: 'nested', text: 'By employee, then by day' }, { key: 'flat', text: 'One group per employee and day' }]}
-            onChange={(_, option) => setType(option?.key as GroupingType)}
-            styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
-        <DatasetControl onLoad={async () => ({ provider: timesheets })}>
-            <DatasetControl.Body>
-                <Grid
-                    key={type}
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        grouping: createGroupingModule({ type, defaultExpandedLevel: 0 }),
-                        aggregation: createAggregationModule(),
-                    }}
-                    enableOptionSetColors
-                    height='480px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <ChoiceGroup
+                    label='Group the week'
+                    selectedKey={type}
+                    options={[{ key: 'nested', text: 'By employee, then by day' }, { key: 'flat', text: 'One group per employee and day' }]}
+                    onChange={(_, option) => changeType(option?.key as GroupingType)}
+                    styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                key={type}
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    grouping: createGroupingModule({ type, defaultExpandedLevel: 0 }),
+                    aggregation: createAggregationModule(),
+                }}
+                enableOptionSetColors
+                height='480px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -99,7 +102,7 @@ const GridExample = () => {
 }
 `
 
-export const EXPAND_FROM_TOOLBAR_CODE = `const createReviewProvider = () => {
+export const EXPAND_FROM_RIBBON_CODE = `const createReviewProvider = () => {
     const timesheets = createTimesheetsProvider()
     timesheets.grouping.addGroupBy({ columnName: 'status', alias: 'status_group' })
     timesheets.grouping.addGroupBy({ columnName: 'employee', alias: 'employee_group' })
@@ -118,28 +121,30 @@ const GridExample = () => {
         }
     }
 
-    const toolbarItems: ICommandBarItemProps[] = [
-        { key: 'collapseAll', text: 'Collapse all', iconProps: { iconName: 'CollapseContent' }, onClick: () => expandTo(() => -1) },
-        { key: 'expandLevel', text: 'Expand one level', iconProps: { iconName: 'ChevronDown' }, onClick: () => expandTo(current => current + 1) },
-        { key: 'expandAll', text: 'Expand all', iconProps: { iconName: 'ExploreContent' }, onClick: () => expandTo((_, deepest) => deepest) },
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'collapseAll', label: 'Collapse all', iconName: 'CollapseContent', onExecute: () => expandTo(() => -1) },
+        { id: 'expandLevel', label: 'Expand one level', iconName: 'ChevronDown', onExecute: () => expandTo(current => current + 1) },
+        { id: 'expandAll', label: 'Expand all', iconName: 'ExploreContent', onExecute: () => expandTo((_, deepest) => deepest) },
     ]
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={toolbarItems} />
-        <DatasetControl onLoad={async () => ({ provider: timesheets })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        grouping: createGroupingModule(),
-                        aggregation: createAggregationModule(),
-                    }}
-                    enableOptionSetColors
-                    onGridReady={runtime => { runtimeRef.current = runtime }}
-                    height='440px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={{
+                    rowModel: createClientSideRowModelModule(),
+                    grouping: createGroupingModule(),
+                    aggregation: createAggregationModule(),
+                }}
+                enableOptionSetColors
+                onGridReady={runtime => { runtimeRef.current = runtime }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -149,4 +154,4 @@ export const HoursByEmployeeExample = () => <GridExampleRunner seedCode={HOURS_B
 
 export const FilteredTotalsExample = () => <GridExampleRunner seedCode={FILTERED_TOTALS_CODE} dataset='deals' />
 
-export const ExpandFromToolbarExample = () => <GridExampleRunner seedCode={EXPAND_FROM_TOOLBAR_CODE} dataset='timesheets' />
+export const ExpandFromRibbonExample = () => <GridExampleRunner seedCode={EXPAND_FROM_RIBBON_CODE} dataset='timesheets' />

@@ -7,24 +7,26 @@ export const KEY_COLUMNS_CODE = `const DETAIL_COLUMNS = ['sku', 'reorderlevel', 
 const GridExample = () => {
     const [showEveryColumn, setShowEveryColumn] = React.useState(true)
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Toggle inlineLabel label='Show every column' checked={showEveryColumn} onChange={(_, checked) => setShowEveryColumn(!!checked)} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    //a new key makes the grid build its columns again
-                    key={String(showEveryColumn)}
-                    modules={{ rowModel: createClientSideRowModelModule() }}
-                    colDefs={{
-                        ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
-                        name: { pinned: 'left' },
-                        category: { pinned: 'right' },
-                        photo: { maxWidth: 80 },
-                    }}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <Toggle inlineLabel label='Show every column' checked={showEveryColumn} onChange={(_, checked) => setShowEveryColumn(!!checked)} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                //a new key makes the grid build its columns again
+                key={String(showEveryColumn)}
+                modules={{ rowModel: createClientSideRowModelModule() }}
+                colDefs={{
+                    ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
+                    name: { pinned: 'left' },
+                    category: { pinned: 'right' },
+                    photo: { maxWidth: 80 },
+                }}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -173,37 +175,35 @@ const GridExample = () => {
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                    colDefs={{
-                        actions: {
-                            headerName: '',
-                            pinned: 'right',
-                            initialWidth: 96,
-                            context: {
-                                cell: {
-                                    onGetCommands: (result, { record }) => {
-                                        if (isLowStock(record) && !isDiscontinued(record)) {
-                                            result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
-                                        }
-                                        result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
-                                        if (!isDiscontinued(record)) {
-                                            result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
-                                        }
-                                    },
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                colDefs={{
+                    actions: {
+                        headerName: '',
+                        pinned: 'right',
+                        initialWidth: 96,
+                        context: {
+                            cell: {
+                                onGetCommands: (result, { record }) => {
+                                    if (isLowStock(record) && !isDiscontinued(record)) {
+                                        result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
+                                    }
+                                    result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
+                                    if (!isDiscontinued(record)) {
+                                        result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
+                                    }
                                 },
                             },
                         },
-                    }}
-                    onGridReady={gridRuntime => runtime.current = gridRuntime}
-                    height='440px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+                    },
+                }}
+                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -292,47 +292,32 @@ export const AUTO_HEIGHT_CODE = `const GridExample = () => <DatasetControl onLoa
 </DatasetControl>
 `
 
-export const REMEMBER_LAYOUT_CODE = `interface IColumnLayout {
-    name: string
-    visualSizeFactor?: number
-    order?: number
+export const REMEMBER_LAYOUT_CODE = `interface IProductListProps {
+    onReopen: () => void
 }
 
-interface IProductListProps {
-    layout: IColumnLayout[]
-    onLayoutChanged: (layout: IColumnLayout[]) => void
-}
-
-const openProducts = (layout: IColumnLayout[]) => {
-    const products = createProductsProvider()
-    const saved = new Map(layout.map(column => [column.name, column]))
-    products.setColumns(products.getColumns().map(column => ({ ...column, ...saved.get(column.name) })))
-    return products
-}
-
+//the control keeps the columns of each view under its stateKey
 const ProductList = (props: IProductListProps) => {
-    const [products] = React.useState(() => openProducts(props.layout))
+    const products = React.useMemo(createProductsProvider, [])
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'reopen', label: 'Reopen the list', iconName: 'Refresh', onExecute: props.onReopen },
+    ]
 
-    return <DatasetControl onLoad={async () => ({ provider: products })}>
+    return <DatasetControl stateKey='product-list' onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule() }}
-                onColumnsChanged={columns => props.onLayoutChanged(columns.map(column => ({ name: column.name, visualSizeFactor: column.visualSizeFactor, order: column.order })))}
-                height='420px' />
+            <Grid modules={{ rowModel: createClientSideRowModelModule() }} height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
 
 const GridExample = () => {
-    const [layout, setLayout] = React.useState<IColumnLayout[]>([])
     const [visit, setVisit] = React.useState(0)
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <MessageBar actions={<DefaultButton text='Reopen the list' iconProps={{ iconName: 'Refresh' }} onClick={() => setVisit(visit + 1)} />}>
-            {layout.length ? 'Layout saved. Reopen the list: it opens the way you left it.' : 'Resize or move a column, then reopen the list.'}
-        </MessageBar>
-        <ProductList key={visit} layout={layout} onLayoutChanged={setLayout} />
-    </Stack>
+    return <ProductList key={visit} onReopen={() => setVisit(visit + 1)} />
 }
 `
 

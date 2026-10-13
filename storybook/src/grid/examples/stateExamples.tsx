@@ -11,20 +11,24 @@ export const REOPEN_QUEUE_CODE = `const createQueueProvider = () => {
 const GridExample = () => {
     const tickets = React.useMemo(createQueueProvider, [])
     const [mountCount, setMountCount] = React.useState(0)
-    const reopen = () => setMountCount(count => count + 1)
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'reopen', label: 'Close and reopen', iconName: 'Refresh', onExecute: () => setMountCount(count => count + 1) },
+    ]
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={[{ key: 'reopen', text: 'Close and reopen', iconProps: { iconName: 'Refresh' }, onClick: reopen }]} />
-        <DatasetControl onLoad={async () => ({ provider: tickets })}>
-            <DatasetControl.Body>
-                <Grid
-                    key={mountCount}
-                    modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
-                    stateKey='ticket-queue'
-                    height='360px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                key={mountCount}
+                modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
+                stateKey='ticket-queue'
+                height='360px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

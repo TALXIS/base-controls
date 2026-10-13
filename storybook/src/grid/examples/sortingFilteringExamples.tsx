@@ -50,78 +50,68 @@ export const SAVED_VIEWS_CODE = `const RESOLVED = '4'
 const IS_OPEN = { attributeName: 'status', conditionOperator: Operators.DoesNotEqual.Value, value: RESOLVED }
 
 interface ISavedView {
-    key: string
-    text: string
-    apply: () => void
+    id: string
+    name: string
+    apply: (tickets: IDataProvider) => void
 }
 
 const SAVED_VIEWS: ISavedView[] = [
     {
-        key: 'open',
-        text: 'Open tickets',
-        apply: () => {
-            provider.setSorting([{ name: 'duedate', sortDirection: 0 }])
-            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN] })
+        id: 'open',
+        name: 'Open tickets',
+        apply: tickets => {
+            tickets.setSorting([{ name: 'duedate', sortDirection: 0 }])
+            tickets.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN] })
         },
     },
     {
-        key: 'dueToday',
-        text: 'Due today',
-        apply: () => {
-            provider.setSorting([{ name: 'duedate', sortDirection: 0 }])
-            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN, { attributeName: 'duedate', conditionOperator: Operators.Today.Value, value: '' }] })
+        id: 'dueToday',
+        name: 'Due today',
+        apply: tickets => {
+            tickets.setSorting([{ name: 'duedate', sortDirection: 0 }])
+            tickets.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN, { attributeName: 'duedate', conditionOperator: Operators.Today.Value, value: '' }] })
         },
     },
     {
-        key: 'oldest',
-        text: 'Oldest first',
-        apply: () => {
-            provider.setSorting([{ name: 'createdon', sortDirection: 0 }])
-            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN] })
+        id: 'oldest',
+        name: 'Oldest first',
+        apply: tickets => {
+            tickets.setSorting([{ name: 'createdon', sortDirection: 0 }])
+            tickets.setFiltering({ filterOperator: Type.And.Value, conditions: [IS_OPEN] })
         },
     },
     {
-        key: 'everything',
-        text: 'Everything',
-        apply: () => {
-            provider.setSorting([])
-            provider.setFiltering(null)
-        },
+        id: 'everything',
+        name: 'Everything',
+        apply: () => { },
     },
 ]
 
-const GridExample = () => {
-    const [viewKey, setViewKey] = React.useState(SAVED_VIEWS[0].key)
-    const [ticketCount, setTicketCount] = React.useState(provider.getRecords().length)
-
-    const showView = (view: ISavedView) => {
-        view.apply()
-        provider.refresh()
-        setViewKey(view.key)
-    }
-
-    React.useEffect(() => showView(SAVED_VIEWS[0]), [])
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal wrap verticalAlign='center' tokens={{ childrenGap: 8 }}>
-            {SAVED_VIEWS.map(view => <DefaultButton key={view.key} text={view.text} toggle checked={view.key === viewKey} onClick={() => showView(view)} />)}
-            <Text>{ticketCount} tickets</Text>
-        </Stack>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        sorting: createSortingModule(),
-                        filtering: createFilteringModule(),
-                    }}
-                    enableOptionSetColors
-                    onDataLoaded={() => setTicketCount(provider.getRecords().length)}
-                    height='440px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+//every view loads a provider of its own, sorted and filtered the way the view says
+const loadView = async (parameters: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
+    const view = SAVED_VIEWS.find(view => view.id === parameters.viewId) ?? SAVED_VIEWS[0]
+    const tickets = createTicketsProvider()
+    view.apply(tickets)
+    return { provider: tickets, views: SAVED_VIEWS.map(view => ({ id: view.id, name: view.name })), viewId: view.id }
 }
+
+const GridExample = () => <DatasetControl stateKey='ticket-views' onLoad={loadView}>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher />
+        </DatasetControl.Header.Start>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid
+            modules={{
+                rowModel: createClientSideRowModelModule(),
+                sorting: createSortingModule(),
+                filtering: createFilteringModule(),
+            }}
+            enableOptionSetColors
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const TAILORED_FILTERS_CODE = `//each list keeps the operator its data type's filter opens on

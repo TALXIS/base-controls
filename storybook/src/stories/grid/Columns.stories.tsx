@@ -98,12 +98,11 @@ To size rows to the text instead, set AG Grid's \`autoHeight: true\` in \`colDef
 
 ## Remembering the layout
 
-\`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated (\`visualSizeFactor\` and \`order\`).
+Give the DatasetControl a \`stateKey\`, and it keeps the columns of each view as the user left them: their widths, their order and which are shown. See [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl.
 
-- Inside a DatasetControl with a \`stateKey\`, the control keeps the columns of each view for you: see [**State**](?path=/docs/datasetcontrol-state-overview--overview) of DatasetControl. The rest of this section is for a grid on its own.
-- Save each column's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before the provider's first \`refresh()\`.
 - Columns added through \`colDefs\` are not included.
-- Where the user was scrolled, which groups were open and which cell had focus are kept under \`stateKey\`: see [**State**](?path=/docs/grid-state--overview).
+- Where the user was scrolled, which groups were open and which cell had focus are the grid's own, kept under its \`stateKey\`: see [**State**](?path=/docs/grid-state--overview).
+- A grid on its own keeps nothing. \`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated: save each one's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before you load the provider.
 
 {{story: Remember the layout}}
 `
@@ -214,7 +213,7 @@ export const RememberTheLayout: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onColumnsChanged\` saves widths and order. Resize or move a column, then reopen the list.`,
+                story: `The control's \`stateKey\` keeps the widths and the order. Resize or move a column, then reopen the list.`,
             },
         },
     },

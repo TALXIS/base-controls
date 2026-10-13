@@ -7,27 +7,24 @@ export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provide
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change the hours of an entry: it saves as soon as you leave the cell.')
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                    onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
-                    onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
+                onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
 export const REVIEW_CHANGES_CODE = `const entries = (count: number) => count === 1 ? '1 entry' : \`\${count} entries\`
 
 const GridExample = () => {
-    const [changedCount, setChangedCount] = React.useState(provider.getDirtyRecordIds().length)
+    const ribbon = React.useRef<IRibbonRuntime>()
     const [message, setMessage] = React.useState('')
-    const countChanged = () => setChangedCount(provider.getDirtyRecordIds().length)
 
     const saveAll = async () => {
         const results = await provider.save()
@@ -40,24 +37,32 @@ const GridExample = () => {
         setMessage('Changes discarded.')
     }
 
-    const commands: ICommandBarItemProps[] = [
-        { key: 'save', text: \`Save \${entries(changedCount)}\`, iconProps: { iconName: 'Save' }, disabled: changedCount === 0, onClick: () => { saveAll() } },
-        { key: 'discard', text: 'Discard', iconProps: { iconName: 'Undo' }, disabled: changedCount === 0, onClick: discard },
-    ]
+    const loadCommands = async (): Promise<IRibbonCommand[]> => {
+        const changedCount = provider.getDirtyRecordIds().length
+        return [
+            { id: 'save', label: \`Save \${entries(changedCount)}\`, iconName: 'Save', isDisabled: changedCount === 0, onExecute: saveAll },
+            { id: 'discard', label: 'Discard', iconName: 'Undo', isDisabled: changedCount === 0, onExecute: discard },
+        ]
+    }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} />
+    //the ribbon reloads on its own only when the selection changes
+    const reloadCommands = () => ribbon.current?.reload()
+
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} onReady={runtime => ribbon.current = runtime} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
-                    onRecordValueChanged={countChanged}
-                    onAfterSaved={countChanged}
-                    height='400px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+                onRecordValueChanged={reloadCommands}
+                onAfterSaved={reloadCommands}
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -110,43 +115,45 @@ const isBillable = (record: IRecord) => record.getValue('billable') === '1'
 const GridExample = () => {
     const [isWeekClosed, setIsWeekClosed] = React.useState(false)
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    key={isWeekClosed ? 'closed' : 'open'}
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
-                    rowSettings={{
-                        onGetLock: (result, { record }) => {
-                            if (Number(record.getValue('status')) === APPROVED) {
-                                result.isLocked = true
-                            }
-                        },
-                    }}
-                    colDefs={{
-                        employee: { context: { isLocked: true } },
-                        rate: {
-                            context: {
-                                cell: {
-                                    onGetLock: (result, { record }) => {
-                                        if (!isBillable(record)) {
-                                            result.isLocked = true
-                                        }
-                                    },
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                key={isWeekClosed ? 'closed' : 'open'}
+                modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
+                rowSettings={{
+                    onGetLock: (result, { record }) => {
+                        if (Number(record.getValue('status')) === APPROVED) {
+                            result.isLocked = true
+                        }
+                    },
+                }}
+                colDefs={{
+                    employee: { context: { isLocked: true } },
+                    rate: {
+                        context: {
+                            cell: {
+                                onGetLock: (result, { record }) => {
+                                    if (!isBillable(record)) {
+                                        result.isLocked = true
+                                    }
                                 },
                             },
                         },
-                    }}
-                    labels={{
-                        columnLocked: 'An entry stays with the employee who logged it.',
-                        recordLocked: 'Approved entries cannot be changed.',
-                        valueLocked: 'Only billable work has an hourly rate.',
-                    }}
-                    height='440px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+                    },
+                }}
+                labels={{
+                    columnLocked: 'An entry stays with the employee who logged it.',
+                    recordLocked: 'Approved entries cannot be changed.',
+                    valueLocked: 'Only billable work has an hourly rate.',
+                }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -200,18 +207,16 @@ const getAmountToInvoice = () => provider.getRecords()
 const GridExample = () => {
     const [amountToInvoice, setAmountToInvoice] = React.useState(getAmountToInvoice)
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
-                    colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
-                    onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
+                onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 

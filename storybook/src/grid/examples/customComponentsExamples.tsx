@@ -268,17 +268,23 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
-    <CommandBar items={[{ key: 'refresh', text: 'Check stock again', iconProps: { iconName: 'Refresh' }, onClick: () => { provider.refresh() } }]} />
-    <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Body>
-            <Grid
-                modules={{ rowModel: createClientSideRowModelModule() }}
-                components={COMPONENTS}
-                height='400px' />
-        </DatasetControl.Body>
-    </DatasetControl>
-</Stack>
+const loadCommands = async (): Promise<IRibbonCommand[]> => [
+    { id: 'refresh', label: 'Check stock again', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
+]
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.Ribbon onLoad={loadCommands} />
+        </DatasetControl.Header.Start>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid
+            modules={{ rowModel: createClientSideRowModelModule() }}
+            components={COMPONENTS}
+            height='400px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const LOADING_ROWS_CODE = `const styles = mergeStyleSets({

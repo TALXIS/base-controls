@@ -163,7 +163,7 @@ export const ApproveTimesheetsInBulk: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A manager signs off last week's timesheets: \`createRowSelectionModule({ mode: 'multiple', onSelectionChanged })\` feeds the toolbar, which selects and clears through the provider. Pick *Select all submitted*, then *Approve*, and watch each checkbox cell report its save.`,
+                story: `A manager signs off last week's timesheets: \`createRowSelectionModule({ mode: 'multiple', onSelectionChanged })\` feeds the message above the grid, and the DatasetControl's ribbon, loaded again with every selection, selects and clears through the provider. Pick *Select all submitted*, then *Approve*, and watch each checkbox cell report its save.`,
             },
         },
     },

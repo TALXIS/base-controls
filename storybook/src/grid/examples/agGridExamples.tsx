@@ -28,19 +28,21 @@ const GridExample = () => {
         runtimeRef.current?.refreshAgGridOptions()
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
-                    onGridReady={runtime => { runtimeRef.current = runtime }}
-                    onColumnsChanged={columns => setOrder(describeOrder(columns))}
-                    height='420px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
+                onGridReady={runtime => { runtimeRef.current = runtime }}
+                onColumnsChanged={columns => setOrder(describeOrder(columns))}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
@@ -68,23 +70,25 @@ const GridExample = () => {
         requestAnimationFrame(() => requestAnimationFrame(() => gridApi.flashCells({ rowNodes: [node] })))
     }
 
-    const commands: ICommandBarItemProps[] = [
-        { key: 'fit', text: 'Fit columns to content', iconProps: { iconName: 'FitWidth' }, onClick: fitColumns },
-        { key: 'newest', text: 'Jump to the newest ticket', iconProps: { iconName: 'Ringer' }, onClick: jumpToNewestTicket },
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'fit', label: 'Fit columns to content', iconName: 'FitWidth', onExecute: fitColumns },
+        { id: 'newest', label: 'Jump to the newest ticket', iconName: 'Ringer', onExecute: jumpToNewestTicket },
     ]
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <CommandBar items={commands} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <Grid
-                    modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
-                    enableOptionSetColors
-                    onGridReady={runtime => { runtimeRef.current = runtime }}
-                    height='400px' />
-            </DatasetControl.Body>
-        </DatasetControl>
-    </Stack>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
+                enableOptionSetColors
+                onGridReady={runtime => { runtimeRef.current = runtime }}
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
 `
 
