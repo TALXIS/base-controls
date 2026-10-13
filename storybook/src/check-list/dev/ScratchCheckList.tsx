@@ -1,6 +1,6 @@
 import React from 'react'
 import { CheckList, ICheckListFieldMapping, IGridRuntime } from '@talxis/base-controls'
-import { DatasetControl, PcfContextProvider } from '@talxis/base-controls'
+import { DatasetControl, PcfContextProvider, sortCheckListProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
@@ -77,7 +77,7 @@ export const ScratchCheckList = () => {
                         </div>
                     ))}
                 </div>
-                <DatasetControl onLoad={async () => ({ provider: provider })}>
+                <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
                     <DatasetControl.Body>
                         <CheckList
                             fieldMapping={FIELD_MAPPING}

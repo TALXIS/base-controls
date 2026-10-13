@@ -12,7 +12,7 @@ CheckList presents the records of a data provider as a to-do list. Users tick it
 ## Usage
 
 \`\`\`tsx
-import { CheckList, DatasetControl, ICheckListFieldMapping, PcfContextProvider } from '@talxis/base-controls'
+import { CheckList, DatasetControl, ICheckListFieldMapping, PcfContextProvider, sortCheckListProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 const launchPlan = new MemoryDataProvider({
@@ -31,7 +31,7 @@ const launchPlan = new MemoryDataProvider({
 const FIELD_MAPPING: ICheckListFieldMapping = { name: 'name', stackRank: 'stackrank', completed: 'completed' }
 
 export const LaunchPlan = () => <PcfContextProvider>
-    <DatasetControl onLoad={async () => ({ provider: launchPlan })}>
+    <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(launchPlan, FIELD_MAPPING) })}>
         <DatasetControl.Body>
             <CheckList fieldMapping={FIELD_MAPPING} />
         </DatasetControl.Body>
@@ -39,7 +39,7 @@ export const LaunchPlan = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-- The checklist needs a provider around it, like any grid: see *Your first grid* on [**Grid → Get started**](?path=/docs/grid-get-started--overview). It orders the items by \`stackRank\`, loading them again if they came in another order, so sort by it in \`onLoad\` to load them once. To store the items in your own backend, see [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
+- The checklist needs a provider around it, like any grid, and draws its items in the order the provider loaded them. Sort the provider by \`stackRank\` before it loads with \`sortCheckListProvider(provider, fieldMapping)\`, which returns the provider. On its own, sort it, then call \`refresh()\`: see *Your first grid* on [**Grid → Get started**](?path=/docs/grid-get-started--overview).
 - \`fieldMapping\` names the columns that hold an item's name, position and state. See *Field mapping* below.
 - \`PcfContextProvider\` must wrap the checklist. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 

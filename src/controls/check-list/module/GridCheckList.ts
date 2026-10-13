@@ -47,7 +47,7 @@ export class GridCheckList implements IGridCheckList {
         this._runtime = parameters.runtime;
         this._fieldMapping = parameters.fieldMapping;
         this._labels = new LocalizationService<ICheckListLabels>({ ...CHECK_LIST_LABELS, ...parameters.labels });
-        this._sortByStackRank();
+        this._warnWhenUnsorted();
         new CheckListColumns({ services: this._runtime.services, checkList: this });
         if (this._runtime.services.find('editing')) {
             new CheckListReordering({ runtime: this._runtime, checkList: this });
@@ -55,16 +55,10 @@ export class GridCheckList implements IGridCheckList {
         }
     }
 
-    //a provider loaded in another order is loaded again in the list's
-    private _sortByStackRank(): void {
-        const provider = this._runtime.services.get('provider');
-        const sorting = provider.getSorting();
-        if (sorting.length === 1 && sorting[0].name === this._fieldMapping.stackRank && sorting[0].sortDirection === 0) {
-            return;
-        }
-        provider.setSorting([{ name: this._fieldMapping.stackRank, sortDirection: 0 }]);
-        if (provider.isFirstLoadRequested()) {
-            provider.refresh();
+    private _warnWhenUnsorted(): void {
+        const sorting = this._runtime.services.get('provider').getSorting();
+        if (sorting.length !== 1 || sorting[0].name !== this._fieldMapping.stackRank || sorting[0].sortDirection !== 0) {
+            console.warn(`CheckList: the provider is not sorted by '${this._fieldMapping.stackRank}', so the items show out of order. Call sortCheckListProvider before it loads.`);
         }
     }
 

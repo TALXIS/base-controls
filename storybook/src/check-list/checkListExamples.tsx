@@ -10,7 +10,7 @@ const FIELD_MAPPING = `const FIELD_MAPPING: ICheckListFieldMapping = {
 
 export const LAUNCH_PLAN_CODE = `${FIELD_MAPPING}
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
         <CheckList fieldMapping={FIELD_MAPPING} />
     </DatasetControl.Body>
@@ -19,7 +19,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 
 export const READ_ONLY_CODE = `${FIELD_MAPPING}
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
         <CheckList fieldMapping={FIELD_MAPPING} modules={{ editing: undefined }} />
     </DatasetControl.Body>
@@ -48,7 +48,7 @@ const GridExample = () => {
         runtime.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
     }
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+    return <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
         <DatasetControl.Body>
             <CheckList
                 fieldMapping={FIELD_MAPPING}
@@ -123,7 +123,7 @@ const GridExample = () => {
     const close = () => setOpenedItem(undefined)
 
     return <>
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
             <DatasetControl.Body>
                 <CheckList
                     fieldMapping={FIELD_MAPPING}

@@ -3409,6 +3409,8 @@ interface ICheckListProps extends Omit<IGrid, 'modules' | 'labels'> {
 
 /** A grid over the provider's records as a checklist. */
 declare const CheckList: (props: ICheckListProps) => JSX.Element;
+/** Sorts the provider by the checklist's stackRank column; call it before the provider loads. */
+declare const sortCheckListProvider: <TProvider extends IDataProvider>(provider: TProvider, fieldMapping: Pick<ICheckListFieldMapping, 'stackRank'>) => TProvider;
 
 declare const ContextualMenuItemType: typeof import('@fluentui/react').ContextualMenuItemType;
 
