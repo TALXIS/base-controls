@@ -214,7 +214,7 @@ const GridExample = () => {
 
     const discard = () => {
         provider.clearChanges()
-        gridRef.current?.renderHeaders()
+        gridRef.current?.services.get('columns').headers.render()
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [

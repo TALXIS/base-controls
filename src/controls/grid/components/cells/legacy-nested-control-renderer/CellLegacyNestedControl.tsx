@@ -5,7 +5,7 @@ import { IGridValueRenderer } from "@controls/grid/value-renderer";
 import { IControl } from "@interfaces";
 import { IGridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
-import { useGridService } from "../../../useGridService";
+import { useGridInternalService } from "../../../useGridService";
 import { CellNestedRoot } from "../nested-react-root/CellNestedRoot";
 import { getBindings } from "./getBindings";
 
@@ -23,7 +23,7 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
     const { controlProps, control } = props;
     const { context, parameters } = controlProps;
     const cell = useGridCell();
-    const settings = useGridService('settings');
+    const settings = useGridInternalService('settings');
     const fieldControl = control.getFieldControl();
     const column = fieldControl?.getColumn();
     const customControl = control.getCustomControl();

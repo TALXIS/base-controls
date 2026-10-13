@@ -1,13 +1,13 @@
 import { IColumn, IDataProviderEventListeners, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
 import { IGridProps } from "./interfaces";
-import { IGridRuntime, IGridEvents } from "./services/runtime";
+import { GridRuntime, IGridEvents } from "./services/runtime";
 import { IGridColumnsEvents } from "./services/columns";
 import { IGridRowsEvents } from "./services/rows";
 import { IGridCellsEvents } from "./services/cells";
 
 /** Hands what the grid's parts dispatch to the event props of the same name. */
-export const useGridEventHandlers = (runtime: IGridRuntime, props: IGridProps) => {
+export const useGridEventHandlers = (runtime: GridRuntime, props: IGridProps) => {
     const provider = runtime.services.get('provider');
     const columns = runtime.services.get('columns');
     const rows = runtime.services.get('rows');

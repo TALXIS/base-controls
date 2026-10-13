@@ -30,7 +30,7 @@ An expression is set on one record for one column, and setting it again replaces
 - on \`provider.getRecords()\`, for the records already loaded;
 - on the provider's \`onRecordLoaded\` event, for every record loaded or saved after that.
 
-Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener on the runtime's \`onDestroyed\` event: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). An expression for a column the provider does not have is ignored, with a console warning.
+Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener on the grid's \`onDestroyed\` event: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). An expression for a column the provider does not have is ignored, with a console warning.
 
 An expression that reads only its own record's values redraws when they change. One that reads anything else, such as the time, another record or a flag of your own, does not: call \`provider.requestRender()\` once that changes, as the stock sync below does.
 

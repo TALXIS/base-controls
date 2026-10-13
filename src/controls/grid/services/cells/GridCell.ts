@@ -1,7 +1,7 @@
 import { ColDef, IRowNode } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IAlignment } from "@utils";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme, IGridCellTheme } from "./GridCellTheme";
@@ -9,7 +9,7 @@ import { IGridField } from "../fields";
 import { GridControl, IGridControl } from "./GridControl";
 
 export interface IGridCellParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
     record: IRecord;
     /** The column AG Grid is drawing. */
     colDef: ColDef<IRecord>;
@@ -73,7 +73,7 @@ export interface IGridCell {
 
 export class GridCell implements IGridCell {
     public readonly events: IEventEmitter<IGridCellEvents> = new EventEmitter<IGridCellEvents>();
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _record: IRecord;
     private _colDef: ColDef<IRecord>;
     private _node?: IRowNode<IRecord>;

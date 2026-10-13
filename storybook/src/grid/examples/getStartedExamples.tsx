@@ -152,7 +152,7 @@ const AT_A_GLANCE = `import { getCloseDateState, getValueShare, isClosed, isOver
 import type { IFeature } from './features'
 
 /** What a cell shows: a grouped column draws its value in the group's row rather than in the deal's. */
-const getShownValue = (runtime: IGridRuntime, record: IRecord, columnName: string) => {
+const getShownValue = (runtime: IGrid, record: IRecord, columnName: string) => {
     const grouping = runtime.services.find('grouping')
     const column = runtime.services.get('provider').getColumnsMap()[columnName]
     if (column && grouping?.isColumnGrouped(column)) {
@@ -425,7 +425,7 @@ const CLOSING_DEALS = `import { findDeal, isClosed, isSummaryRow, LOST, WON } fr
 import type { IFeature } from './features'
 
 //the field saves the deal while auto-save is on
-const closeDeal = async (runtime: IGridRuntime, deal: IRecord, stage: number) => {
+const closeDeal = async (runtime: IGrid, deal: IRecord, stage: number) => {
     const result = await runtime.services.get('fields').get(deal, 'stage').setValue(stage)
     if (result && !result.success) {
         deal.clearChanges()

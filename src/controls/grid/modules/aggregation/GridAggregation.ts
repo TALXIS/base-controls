@@ -21,16 +21,10 @@ import { IGridAgTheme } from "../../services/theme";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** The totals under the rows. */
-        aggregation: IGridAggregationService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** The totals under the rows. */
         aggregation: IGridAggregation;
     }
 }
+
 
 /** What the row stands in as until the totals are worked out. */
 const PENDING_RECORD_ID = '__total__pending';
@@ -63,10 +57,6 @@ export interface IGridAggregation {
     addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
     /** Removes the total with the alias. */
     removeAggregation(alias: string): void;
-}
-
-/** Aggregation as the grid's own parts and modules use it. */
-export interface IGridAggregationService extends IGridAggregation {
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridAggregationComponents;
     /** What the column's total is called, for the row pinned under the rest. */
@@ -75,7 +65,7 @@ export interface IGridAggregationService extends IGridAggregation {
     getAggregateValueColumnName(record: IRecord, columnName: string): string;
 }
 
-export class GridAggregation implements IGridAggregationService {
+export class GridAggregation implements IGridAggregation {
     private _services: IGridAggregationServiceLocator;
     private _allowUserAggregation: boolean;
     private _totalRow?: TotalRow;

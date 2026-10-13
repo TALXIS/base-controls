@@ -171,7 +171,7 @@ const GridExample = () => {
     }
 
     const discontinue = (product: IRecord) => {
-        gridRef.current?.getField(product, 'discontinued').setValue(true)
+        gridRef.current?.services.get('fields').get(product, 'discontinued').setValue(true)
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
@@ -230,7 +230,7 @@ const GridExample = () => {
     }
 
     //a header does not watch the values of the records
-    const redrawHeaders = () => gridRef.current?.renderHeaders()
+    const redrawHeaders = () => gridRef.current?.services.get('columns').headers.render()
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>

@@ -3,14 +3,14 @@ import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis
 import { BaseControls } from "@utils";
 import { IGridValueRenderer, IGridValueRendererParameters } from "@controls/grid/value-renderer";
 import { IParameters } from "@interfaces";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 import { hasResizeGrip } from "../../components/cells/resize-grip/hasResizeGrip";
 
 export interface IGridControlParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
     /** The cell this draws. */
     cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
@@ -35,7 +35,7 @@ export interface IGridControl {
 }
 
 export class GridControl implements IGridControl {
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;

@@ -115,7 +115,7 @@ const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
     const expandTo = (getLevel: (current: number, deepest: number) => number) => {
-        const grouping = gridRef.current?.modules.find('grouping')
+        const grouping = gridRef.current?.services.find('grouping')
         if (grouping) {
             grouping.setExpandedLevel(getLevel(grouping.getExpandedLevel(), grouping.getDeepestLevel()))
         }

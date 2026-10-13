@@ -4,7 +4,7 @@ import { CellFocusedEvent } from "ag-grid-community";
 import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
 import { getRowNode } from "../rows/getRowNode";
 
@@ -50,18 +50,11 @@ export interface IGridCellsEvents {
 }
 
 export interface IGridCellsParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** Every cell the grid has on screen. */
 export interface IGridCells {
-    readonly events: IEventEmitter<IGridCellsEvents>;
-    /** A cell of this grid. */
-    createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
-    /** Registers a cell as rendered. */
-    addCell(cell: IGridCell): void;
-    /** Removes a cell from the registry once it is gone. */
-    removeCell(cell: IGridCell): void;
     /** Draws every cell on screen again, for a change their records do not carry. */
     render(): void;
     /** Every cell on screen. */
@@ -98,6 +91,17 @@ export interface IGridCells {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerCellCommands(hook: GridCellCommandsHook, priority?: number): () => void;
+}
+
+/** What the grid's own parts read of it. */
+export interface IGridCellsInternal extends IGridCells {
+    readonly events: IEventEmitter<IGridCellsEvents>;
+    /** A cell of this grid. */
+    createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
+    /** Registers a cell as rendered. */
+    addCell(cell: IGridCell): void;
+    /** Removes a cell from the registry once it is gone. */
+    removeCell(cell: IGridCell): void;
     /** Run by the `GridControl` of the cell in question. */
     applyControlHooks(result: {
         control: Required<ICustomColumnControl>;
@@ -120,8 +124,8 @@ export interface IGridCells {
     }): void;
 }
 
-export class GridCells implements IGridCells {
-    private _services: IGridServiceLocator;
+export class GridCells implements IGridCellsInternal {
+    private _services: IGridInternalServiceLocator;
     private _renderedCells = new Map<string, IGridCell>();
     private _controlHooks = new HookRegistry<GridControlHook>();
     private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();

@@ -80,7 +80,7 @@ Clicking a header opens its menu. \`context.header\` adds to it:
 - \`onGetMenuItems(items)\`: change the final menu items.
 - \`onGetTheme(theme)\`: colour the header (see [**Appearance**](?path=/docs/grid-appearance--overview)).
 
-The menu is worked out when it opens; adornments when the header draws. Call \`grid.renderHeaders()\` after a change the header should reflect.
+The menu is worked out when it opens; adornments when the header draws. Call \`grid.services.get('columns').headers.render()\` after a change the header should reflect.
 
 {{story: Flag low stock in the header}}
 

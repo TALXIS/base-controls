@@ -1,20 +1,20 @@
 import { GridApi, IRowDragItem, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
-import { IGridAgGridInitialOptions, IGridAgGridOptions, IGridRuntime } from "../../grid/services/runtime";
+import { IGridAgGridInitialOptions, IGridAgGridOptions, IGrid } from "../../grid/services/runtime";
 import { IGridEditedCell } from "../../grid/modules/editing";
 import { IGridCheckList } from "./GridCheckList";
 import { IGridStyles } from "../../grid/services/theme";
 import { getCheckListReorderingStyles } from "./styles";
 
 export interface ICheckListReorderingParameters {
-    runtime: IGridRuntime;
+    runtime: IGrid;
     checkList: IGridCheckList;
 }
 
 /** Items reorder by dragging anywhere on their row, and the drop is saved as the item's stack rank. */
 export class CheckListReordering {
-    private _runtime: IGridRuntime;
+    private _runtime: IGrid;
     private _checkList: IGridCheckList;
     private _isEditing = false;
     //the item being dragged, until a drop in the grid settles where it goes

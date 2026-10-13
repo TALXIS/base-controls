@@ -22,16 +22,10 @@ import { GridLockHook } from "../editing/GridLocks";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Grouping the rows by a column. */
-        grouping: IGridGroupingService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** Grouping the rows by a column. */
         grouping: IGridGrouping;
     }
 }
+
 
 /** The chevron and the count a group row draws beside the value. */
 const GROUPED_COLUMN_WIDTH_OFFSET = 80;
@@ -76,8 +70,6 @@ export interface IGridGroupingParameters {
 
 /** Grouping the rows by a column, on whichever row model the grid runs. */
 export interface IGridGrouping {
-    /** Subscribe to the grouping events. */
-    readonly events: IEventSubscriber<IGridGroupingEvents>;
     /** Whether the rows are grouped by the column. */
     isColumnGrouped(column: IColumn): boolean;
     /** Whether the rows may be grouped by the column. */
@@ -90,32 +82,28 @@ export interface IGridGrouping {
     setExpandedLevel(level: number): void;
     /** Groups the rows by the column, or stops grouping by it. */
     toggleColumnGroup(columnName: string): void;
-}
-
-/** Grouping as the grid's own parts and modules use it. */
-export interface IGridGroupingService extends IGridGrouping {
-    readonly events: IEventEmitter<IGridGroupingEvents>;
-    getMaxGroupLoadsPerSelection(): number;
-    isGroupSelectionLimitDialogOpen(): boolean;
-    closeGroupSelectionLimitDialog(): void;
-    /** The strings this module renders, for its own components. */
-    getLabels(): ILocalizationService<IGridGroupingLabels>;
     /** Whether the row stands for a group rather than for a record. */
     isGroupRow(node: IRowNode<IRecord>): boolean;
     /** The name a row holds a grouped column's value under. */
     getGroupedValueColumnName(record: IRecord, columnName: string): string;
     /** How many records a group holds when the column's aggregation is a count. */
     getGroupedCount(record: IRecord, columnName: string): number | undefined;
-    /** Whether a row's cell in this column carries the chevron that opens it. */
-    isColumnExpandable(record: IRecord, columnName: string): boolean;
     /** Whether the row stands for a group of this column. */
     isRowGroupedBy(record: IRecord, columnName: string): boolean;
+    readonly events: IEventSubscriber<IGridGroupingEvents>;
+    getMaxGroupLoadsPerSelection(): number;
+    isGroupSelectionLimitDialogOpen(): boolean;
+    closeGroupSelectionLimitDialog(): void;
+    /** The strings this module renders, for its own components. */
+    getLabels(): ILocalizationService<IGridGroupingLabels>;
+    /** Whether a row's cell in this column carries the chevron that opens it. */
+    isColumnExpandable(record: IRecord, columnName: string): boolean;
     toggleGroup(node: IRowNode<IRecord>): void;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridGroupingComponents;
 }
 
-export class GridGrouping implements IGridGroupingService {
+export class GridGrouping implements IGridGrouping {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;

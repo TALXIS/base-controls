@@ -11,16 +11,10 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Sorting the grid by a column. */
-        sorting: IGridSortingService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** Sorting the grid by a column. */
         sorting: IGridSorting;
     }
 }
+
 
 export interface IGridSortingParameters {
     /** This module's own locator. */
@@ -44,17 +38,13 @@ export interface IGridSorting {
     sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void;
     /** Stops sorting by the column. */
     clearColumnSorting(columnName: string): void;
-}
-
-/** Sorting as the grid's own parts and modules use it. */
-export interface IGridSortingService extends IGridSorting {
     /** What sorting a column reads as, by the type it holds. */
     getSortingLabel(columnName: string, descending?: boolean): string;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridSortingComponents;
 }
 
-export class GridSorting implements IGridSortingService {
+export class GridSorting implements IGridSorting {
     private _services: IGridSortingServiceLocator;
     private _sorting: Sorting;
 

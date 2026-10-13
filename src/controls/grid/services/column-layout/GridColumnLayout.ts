@@ -1,16 +1,16 @@
 import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { DEFAULT_COLUMN_WIDTH } from "../columns/GridColumns";
 import { getColumnContext } from "../columns/colDef";
 
 export interface IGridColumnLayoutParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** Lays out column widths and writes the user's resizes back to the provider. */
 export class GridColumnLayout {
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     /** What the widths were last laid out for so a user's drag outlives a reload. */
     private _layoutKey?: string;
     //colDefs are rebuilt on load only, so a drag would otherwise revert to the definition's width

@@ -62,12 +62,12 @@ const GridExample = () => {
     //stands in for a forecasting service
     const forecast = async (deal: IRecord) => {
         forecasting.add(deal.getRecordId())
-        gridRef.current!.renderCells()
+        gridRef.current!.services.get('cells').render()
         await new Promise(resolve => window.setTimeout(resolve, FORECAST_DELAY))
         forecasting.delete(deal.getRecordId())
         const chance = Number(deal.getValue('stage')) * 25 - 15 + Math.round(Math.random() * 20)
-        await gridRef.current!.getField(deal, 'probability').setValue(chance)
-        gridRef.current!.renderCells()
+        await gridRef.current!.services.get('fields').get(deal, 'probability').setValue(chance)
+        gridRef.current!.services.get('cells').render()
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -206,7 +206,7 @@ const GridExample = () => {
     React.useEffect(() => {
         totals.getDataProvider().addEventListener('onLoading', isLoading => {
             if (!isLoading) {
-                gridRef.current?.renderHeaders()
+                gridRef.current?.services.get('columns').headers.render()
             }
         })
     }, [])

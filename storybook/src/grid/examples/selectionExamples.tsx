@@ -14,7 +14,7 @@ const GridExample = () => {
 
     const setStatus = (entries: IRecord[], status: number) => {
         entries.forEach(entry => {
-            gridRef.current?.getField(entry, 'status').setValue(status)
+            gridRef.current?.services.get('fields').get(entry, 'status').setValue(status)
         })
         provider.clearSelectedRecordIds()
     }

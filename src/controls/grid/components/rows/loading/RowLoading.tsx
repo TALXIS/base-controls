@@ -1,6 +1,6 @@
 import { ILoadingCellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { useGridService } from "../../../useGridService";
+import { useGridInternalService } from "../../../useGridService";
 import { useGridComponents } from "../../../context";
 import { RowUi } from "../ui";
 
@@ -8,7 +8,7 @@ export interface IRowLoadingProps extends ILoadingCellRendererParams<IRecord> { 
 
 /** What a row shows while its records load, or the error they failed with. */
 export const RowLoading = (props: IRowLoadingProps) => {
-    const provider = useGridService('provider');
+    const provider = useGridInternalService('provider');
     const components = useGridComponents();
     const parentRecord: IRecord | undefined = props.node.parent?.data;
 

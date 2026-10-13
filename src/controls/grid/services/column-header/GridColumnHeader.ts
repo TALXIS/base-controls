@@ -2,7 +2,7 @@ import { ColDef, Column } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
 import { IContextualMenuItem } from "@fluentui/react";
 import { IAlignment } from "@utils";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { getColumnContext, IGridColumnContext } from "../columns";
 import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
 import { IColumnHeaderAdornment } from "./GridColumnHeaders";
@@ -13,7 +13,7 @@ export interface IGridColumnHeaderEvents {
 }
 
 export interface IGridColumnHeaderParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
     /** The column AG Grid is drawing. */
     column: Column;
     /** The element AG Grid draws the header in. */
@@ -51,7 +51,7 @@ export interface IGridColumnHeader {
 
 export class GridColumnHeader implements IGridColumnHeader {
     public readonly events: IEventEmitter<IGridColumnHeaderEvents> = new EventEmitter<IGridColumnHeaderEvents>();
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _column: Column;
     private _element?: HTMLElement;
     private _theme: IGridColumnHeaderTheme;

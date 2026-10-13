@@ -42,19 +42,23 @@ export interface IGridTheme {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerTheme(hook: GridThemeHook, priority?: number): () => void;
-    /** The AG Grid theme, after the hooks. */
-    getAgTheme(): Theme;
     /**
      * Registers a hook over the styles of the grid's root element.
      *
      * @param priority Ascending: a later style wins where the selectors are equally specific.
      */
     registerStyles(hook: GridStylesHook, priority?: number): () => void;
+}
+
+/** What the grid's own parts read of it. */
+export interface IGridThemeInternal extends IGridTheme {
+    /** The AG Grid theme, after the hooks. */
+    getAgTheme(): Theme;
     /** What the style hooks add to the grid's own styles. */
     getStyles(): IStyle[];
 }
 
-export class GridTheme implements IGridTheme {
+export class GridTheme implements IGridThemeInternal {
     private _parameters: IGridThemeParameters;
     private _hooks = new HookRegistry<GridThemeHook>();
     private _stylesHooks = new HookRegistry<GridStylesHook>();

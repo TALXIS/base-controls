@@ -3,7 +3,7 @@ import { Column } from "ag-grid-community";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { HookRegistry } from "@utils";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { GridColumnHeader, IGridColumnHeader } from "./GridColumnHeader";
 
 /** Something a module draws in a column header beside its name. */
@@ -38,7 +38,7 @@ export type GridColumnHeaderThemeHook = (theme: ThemeBuilder, header: IGridColum
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void;
 
 export interface IGridColumnHeadersParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** What a column header offers and what it draws. */
@@ -48,12 +48,6 @@ export interface IGridColumnHeadersEvents {
 }
 
 export interface IGridColumnHeaders {
-    /** The header of one column, as the parts drawing it read it. */
-    createHeader(parameters: {
-        column: Column;
-        element?: HTMLElement;
-    }): IGridColumnHeader;
-    readonly events: IEventEmitter<IGridColumnHeadersEvents>;
     /** Draws every header on screen again, for a change their columns do not carry. */
     render(): void;
     /**
@@ -68,8 +62,6 @@ export interface IGridColumnHeaders {
      * @param priority Ascending among hooks that all run after the sections.
      */
     registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
-    /** Everything the modules offer for a column, in order. */
-    getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     /**
      * Registers a hook over what a column header draws beside its name.
      *
@@ -82,14 +74,26 @@ export interface IGridColumnHeaders {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+}
+
+/** What the grid's own parts read of it. */
+export interface IGridColumnHeadersInternal extends IGridColumnHeaders {
+    /** The header of one column, as the parts drawing it read it. */
+    createHeader(parameters: {
+        column: Column;
+        element?: HTMLElement;
+    }): IGridColumnHeader;
+    readonly events: IEventEmitter<IGridColumnHeadersEvents>;
+    /** Everything the modules offer for a column, in order. */
+    getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     /** Run by the header in question. */
     applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void;
     /** Everything the modules draw for a column, in order. */
     getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[];
 }
 
-export class GridColumnHeaders implements IGridColumnHeaders {
-    private _services: IGridServiceLocator;
+export class GridColumnHeaders implements IGridColumnHeadersInternal {
+    private _services: IGridInternalServiceLocator;
     public readonly events: IEventEmitter<IGridColumnHeadersEvents> = new EventEmitter<IGridColumnHeadersEvents>();
     private _menuSectionHooks = new HookRegistry<GridColumnMenuSectionsHook>();
     private _menuItemHooks = new HookRegistry<GridColumnMenuItemsHook>();

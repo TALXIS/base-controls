@@ -126,7 +126,7 @@ Both modules' options are read at mount: see *Props* on [**Props and events**](?
 
 ## The grouping and aggregation services
 
-\`grid.modules.find('grouping')\` and \`find('aggregation')\` on the grid \`onReady\` hands you, \`runtime.services.find(...)\` in a module, or \`useGridService\` in a part the grid draws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
+\`grid.services.find('grouping')\` and \`find('aggregation')\` on the grid \`onReady\` or a module's \`onRegister\` hands you, or \`useGridService\` in a part the grid draws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
 
 | \`grouping\` | What it does |
 |---|---|

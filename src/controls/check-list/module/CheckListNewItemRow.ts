@@ -2,20 +2,20 @@ import { CellFocusedEvent, GridApi } from "ag-grid-community";
 import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IParameters } from "@interfaces";
 import { StackRank } from "@utils/stack-rank";
-import { IGridAgGridOptions, IGridRuntime } from "../../grid/services/runtime";
+import { IGridAgGridOptions, IGrid } from "../../grid/services/runtime";
 import { IGridCellHookParameters } from "../../grid/services/cells";
 import { IGridEditedCell } from "../../grid/modules/editing";
 import { GRID_MODULE_PRIORITY } from "../../grid/modules/priorities";
 import { IGridCheckList } from "./GridCheckList";
 
 export interface ICheckListNewItemRowParameters {
-    runtime: IGridRuntime;
+    runtime: IGrid;
     checkList: IGridCheckList;
 }
 
 /** A row pinned below the list; naming an item in it appends that item and readies the row for the next. */
 export class CheckListNewItemRow {
-    private _runtime: IGridRuntime;
+    private _runtime: IGrid;
     private _checkList: IGridCheckList;
     //its own provider, so typing into the row saves nothing until the item is committed
     private _draftProvider?: MemoryDataProvider;

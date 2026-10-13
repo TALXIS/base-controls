@@ -1,5 +1,5 @@
 import { IPcfContext } from "@interfaces";
-import { ColDef, ColumnApiModule, GridApi, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
+import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
@@ -10,9 +10,8 @@ import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-re
 import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps, IGridEventHandlers, IGridModule, IGridOpenRecordParams } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
-import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
-import { IGrid, IGridEvents, IGridModuleLocator } from "./interfaces";
-import type { IGridField } from "../fields";
+import { IGridInternalServiceLocator, IGridInternalServiceMap } from "../interfaces";
+import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
 import { GridValidation } from "../validation";
@@ -61,28 +60,8 @@ export interface IGridRuntimeParameters {
     datasetControl?: IDatasetControlRuntime;
 }
 
-/** The running grid with its services and AG Grid options, as modules build on it. */
-export interface IGridRuntime<TServices extends IGridServiceMap = IGridServiceMap> extends IGrid {
-    readonly events: IEventEmitter<IGridEvents>;
-    readonly services: IGridServiceLocator<TServices>;
-    /**
-     * Registers a hook over the options AG Grid reads only once, when it is created.
-     *
-     * @param priority Ascending: a higher number gets the later word.
-     */
-    registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
-    /**
-     * Registers a hook over options re-applied whenever a value's reference changes.
-     *
-     * @param priority Ascending: a higher number gets the later word.
-     */
-    registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
-    /** Runs the option hooks again and hands AG Grid the ones that changed. */
-    refreshAgGridOptions(): void;
-}
-
-export class GridRuntime implements IGridRuntime {
-    private _services = new ServiceLocator<IGridServiceMap>();
+export class GridRuntime implements IGrid {
+    private _services = new ServiceLocator<IGridInternalServiceMap>();
     private _onGetProps: () => IGridProps;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
@@ -140,32 +119,8 @@ export class GridRuntime implements IGridRuntime {
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 
-    public get services(): IGridServiceLocator {
+    public get services(): IGridInternalServiceLocator {
         return this._services;
-    }
-
-    public get modules(): IGridModuleLocator {
-        return this._services;
-    }
-
-    public getProvider(): IDataProvider {
-        return this._provider;
-    }
-
-    public getField(record: IRecord, columnName: string): IGridField {
-        return this._services.get('fields').get(record, columnName);
-    }
-
-    public renderCells(): void {
-        this._services.get('cells').render();
-    }
-
-    public renderHeaders(): void {
-        this._services.get('columns').headers.render();
-    }
-
-    public getAgGridApi(): GridApi<IRecord> | undefined {
-        return this._services.find('gridApi');
     }
 
     public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {

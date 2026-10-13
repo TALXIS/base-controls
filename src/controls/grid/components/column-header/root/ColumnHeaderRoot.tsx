@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Column } from "ag-grid-community";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";
-import { useGridService } from "../../../useGridService";
+import { useGridInternalService } from "../../../useGridService";
 import { IGridColumnHeadersEvents } from "../../../services/column-header";
 import { GridColumnHeaderContext, GridColumnHeaderRevisionContext } from "./context";
 
@@ -20,7 +20,7 @@ export interface IColumnHeaderRootProps extends IColumnHeaderParams {
 
 /** What makes a header a header of this grid: everything inside it belongs to one column. */
 export const ColumnHeaderRoot = (props: IColumnHeaderRootProps) => {
-    const headers = useGridService('columns').headers;
+    const headers = useGridInternalService('columns').headers;
     const header = useMemo(
         () => headers.createHeader({ column: props.column, element: props.eGridHeader }),
         [headers, props.column, props.eGridHeader]);

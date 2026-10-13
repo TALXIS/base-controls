@@ -6,8 +6,8 @@ import { CellFieldRenderer } from "../../components/cells/field-cell-renderer/Ce
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../components/column-header/ColumnHeaderRenderer";
 import { IGridColumnContext } from "./colDef";
-import { IGridServiceLocator } from "../../services";
-import { GridColumnHeaders, IGridColumnHeaders } from "../column-header";
+import { IGridInternalServiceLocator } from "../../services";
+import { GridColumnHeaders, IGridColumnHeaders, IGridColumnHeadersInternal } from "../column-header";
 import { CellEmptyRenderer } from "@controls/grid/components/cells/empty-cell-renderer/CellEmptyRenderer";
 
 
@@ -23,7 +23,7 @@ const MIN_COLUMN_WIDTH = 40;
 export type GridColumnDefinitionsHook = (columnDefs: ColDef<IRecord>[]) => void;
 
 export interface IGridColumnsParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 export interface IGridColumnsEvents {
@@ -35,7 +35,6 @@ export interface IGridColumnsEvents {
 
 /** The columns the grid gives AG Grid. */
 export interface IGridColumns {
-    readonly events: IEventEmitter<IGridColumnsEvents>;
     /** What a column header offers, assembled from what the modules registered. */
     readonly headers: IGridColumnHeaders;
     /**
@@ -44,14 +43,20 @@ export interface IGridColumns {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+}
+
+/** What the grid's own parts read of it. */
+export interface IGridColumnsInternal extends IGridColumns {
+    readonly headers: IGridColumnHeadersInternal;
+    readonly events: IEventEmitter<IGridColumnsEvents>;
     /** The definitions the grid is to be given, after every module has had its say. */
     getColumnDefinitions(): ColDef<IRecord>[];
 }
 
-export class GridColumns implements IGridColumns {
-    private _services: IGridServiceLocator;
+export class GridColumns implements IGridColumnsInternal {
+    private _services: IGridInternalServiceLocator;
     private _hooks = new HookRegistry<GridColumnDefinitionsHook>();
-    private _headers: IGridColumnHeaders;
+    private _headers: IGridColumnHeadersInternal;
     public readonly events: IEventEmitter<IGridColumnsEvents> = new EventEmitter<IGridColumnsEvents>();
 
     constructor(parameters: IGridColumnsParameters) {
@@ -61,7 +66,7 @@ export class GridColumns implements IGridColumns {
         this._hooks.register(this._applyColDefs, Number.MAX_SAFE_INTEGER);
     }
 
-    public get headers(): IGridColumnHeaders {
+    public get headers(): IGridColumnHeadersInternal {
         return this._headers;
     }
 

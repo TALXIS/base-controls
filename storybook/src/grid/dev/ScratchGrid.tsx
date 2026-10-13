@@ -471,7 +471,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     enableOptionSetColors={props.enableOptionSetColors}
                     rowHeight={props.rowHeight}
                     stateKey='scratch-grid'
-                    onReady={grid => { (window as any).__scratchGridApi = grid.getAgGridApi(); (window as any).__scratchGrid = grid }} />
+                    onReady={grid => { (window as any).__scratchGridApi = grid.services.find('gridApi'); (window as any).__scratchGrid = grid }} />
             </DatasetControl.Body>
         </DatasetControl>
     </div>

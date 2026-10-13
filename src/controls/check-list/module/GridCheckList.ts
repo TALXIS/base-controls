@@ -1,6 +1,6 @@
 import { IRecord } from "@talxis/client-libraries";
 import { ILocalizationService, LocalizationService } from "@utils";
-import { IGridRuntime } from "../../grid/services/runtime";
+import { IGrid } from "../../grid/services/runtime";
 import { IGridServiceMap } from "../../grid/services/interfaces";
 import { CHECK_LIST_LABELS, ICheckListLabels } from "../labels";
 import { CheckListColumns } from "./CheckListColumns";
@@ -24,7 +24,7 @@ export interface ICheckListServiceMap extends IGridServiceMap {
 }
 
 export interface IGridCheckListParameters {
-    runtime: IGridRuntime;
+    runtime: IGrid;
     fieldMapping: ICheckListFieldMapping;
     labels?: Partial<ICheckListLabels>;
 }
@@ -39,7 +39,7 @@ export interface IGridCheckList {
 }
 
 export class GridCheckList implements IGridCheckList {
-    private _runtime: IGridRuntime;
+    private _runtime: IGrid;
     private _fieldMapping: ICheckListFieldMapping;
     private _labels: ILocalizationService<ICheckListLabels>;
 

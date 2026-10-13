@@ -1,6 +1,6 @@
 import { GridApi } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import type { IGridAgGridOptions } from "../runtime";
 
 /** How long a load may take before it is worth telling anyone about. */
@@ -17,12 +17,12 @@ const ACTIVE_OVERLAYS: { [overlay in GridOverlay]: string | undefined } = {
 };
 
 export interface IGridOverlaysParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** The spinner and the empty state. */
 export class GridOverlays {
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _visibleOverlay: GridOverlay = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;

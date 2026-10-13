@@ -12,16 +12,10 @@ import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/components/ui/toggle/sty
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Which records are selected. */
-        rowSelection: IGridRowSelectionService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** Which records are selected. */
         rowSelection: IGridRowSelection;
     }
 }
+
 
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
@@ -60,11 +54,6 @@ export interface IGridRowSelection {
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     /** Selects the record, or deselects it, through whatever intercepts `onSelectRecords`. */
     toggleRecord(record: IRecord): Promise<void>;
-}
-
-/** Row selection as the grid's own parts and modules use it. */
-export interface IGridRowSelectionService extends IGridRowSelection {
-    readonly events: IEventEmitter<IGridRowSelectionEvents>;
     setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
@@ -74,7 +63,7 @@ export interface IGridRowSelectionService extends IGridRowSelection {
     isRecordSelectionDisabled(record: IRecord): boolean;
 }
 
-export class GridRowSelection implements IGridRowSelectionService {
+export class GridRowSelection implements IGridRowSelection {
     private _services: IGridRowSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
     /** The persisted selection waiting for its records to load. */

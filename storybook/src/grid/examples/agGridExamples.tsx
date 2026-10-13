@@ -56,10 +56,10 @@ const getNewestTicket = (tickets: IRecord[]) => tickets.reduce<IRecord | undefin
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
-    const fitColumns = () => gridRef.current?.getAgGridApi()?.autoSizeAllColumns()
+    const fitColumns = () => gridRef.current?.services.find('gridApi')?.autoSizeAllColumns()
 
     const jumpToNewestTicket = () => {
-        const gridApi = gridRef.current?.getAgGridApi()
+        const gridApi = gridRef.current?.services.find('gridApi')
         const newest = getNewestTicket(provider.getRecords())
         const node = newest && gridApi?.getRowNode(newest.getRecordId())
         if (!gridApi || !node) {

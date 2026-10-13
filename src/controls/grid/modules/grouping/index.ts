@@ -1,5 +1,5 @@
 export * from './createGroupingModule';
-export * from './GridGrouping';
+export type { IGroupingSettings, IGridGrouping } from './GridGrouping';
 export * from './moduleComponents';
 export * from './useGridGroupingLabels';
 export * from './services';

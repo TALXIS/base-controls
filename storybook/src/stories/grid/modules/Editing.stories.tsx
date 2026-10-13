@@ -38,7 +38,7 @@ A value reaches the record when the cell's control commits it:
 - Closing an editor without changing the value commits nothing.
 - With \`autoSave\`, each commit calls \`record.save()\` straight away. A value that fails validation is sent to \`save()\` too, which refuses it.
 - A paste, a cut or a fill handle drag writes text into each cell, which the grid parses with the column's data type. Text that does not parse leaves the cell as it was. With \`autoSave\`, each record saves once, after all its cells are written.
-- To change a value from your own code and save it as a cell would, call \`grid.getField(record, columnName).setValue(value)\` on the grid \`onReady\` hands you. \`record.setValue()\` changes the record and saves nothing.
+- To change a value from your own code and save it as a cell would, call \`grid.services.get('fields').get(record, columnName).setValue(value)\` on the grid \`onReady\` hands you. \`record.setValue()\` changes the record and saves nothing.
 
 ## Saving
 

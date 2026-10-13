@@ -2,7 +2,7 @@ import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
-import type { IGrid, IGridRuntime } from "./services/runtime";
+import type { IGrid } from "./services/runtime";
 import type { IGridServiceMap } from "./services/interfaces";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
@@ -11,7 +11,7 @@ import type { IGridRowSettings } from "./services/rows";
 export interface IGridModule<TServices extends IGridServiceMap = IGridServiceMap> {
     agGridModules?: Module[];
     /** Registers what the module contributes to the grid. */
-    onRegister?(runtime: IGridRuntime<TServices>): void;
+    onRegister?(grid: IGrid<TServices>): void;
 }
 
 /** The modules a grid was given. */

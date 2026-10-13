@@ -1,20 +1,18 @@
 import { ColDef, GridApi } from "ag-grid-community";
 import { IDataProvider, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { getColumnContext } from "../columns/colDef";
 
 /** A hook over whether a record's value in a column is valid. */
 export type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
 
 export interface IGridValidationParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** What the grid says about the values its records hold, registered into each record it loads. */
 export interface IGridValidation {
-    /** Whether the record's value in the column is valid, after the hooks and the column's `onGetValidation`. */
-    get(params: { record: IRecord; columnName: string }): IFieldValidationResult;
     /**
      * Registers a hook over every column of every record.
      *
@@ -23,8 +21,14 @@ export interface IGridValidation {
     registerValidation(hook: GridValidationHook, priority?: number): () => void;
 }
 
-export class GridValidation implements IGridValidation {
-    private _services: IGridServiceLocator;
+/** What the grid's own parts read of it. */
+export interface IGridValidationInternal extends IGridValidation {
+    /** Whether the record's value in the column is valid, after the hooks and the column's `onGetValidation`. */
+    get(params: { record: IRecord; columnName: string }): IFieldValidationResult;
+}
+
+export class GridValidation implements IGridValidationInternal {
+    private _services: IGridInternalServiceLocator;
     private _hooks = new HookRegistry<GridValidationHook>();
     private _validatedColumnNames = new Set<string>();
     //once set, every column stays registered: an expression cannot be taken off a record

@@ -45,7 +45,7 @@ const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
     const assignToMe = (record: IRecord) => {
-        gridRef.current?.getField(record, 'owner').setValue('John Doe')
+        gridRef.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
     }
 
     return <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>

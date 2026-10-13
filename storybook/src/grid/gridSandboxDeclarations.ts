@@ -1522,7 +1522,6 @@ interface IGridColumnHeadersEvents {
 }
 
 interface IGridColumnHeaders {
-    readonly events: IEventEmitter<IGridColumnHeadersEvents>;
     /** Redraws every header, for state their columns do not hold. */
     render(): void;
     /** The built-in modules add their sections at GRID_MODULE_PRIORITY. */
@@ -1531,12 +1530,6 @@ interface IGridColumnHeaders {
     registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
     registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
     registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
-    getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
-    getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[];
-    /** The header of one column, as the parts drawing it read it. */
-    createHeader(parameters: { column: Column; element?: HTMLElement }): IGridColumnHeader;
-    /** Run by the header in question. */
-    applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void;
 }
 
 type GridColumnDefinitionsHook = (columnDefs: IGridColDef[]) => void;
@@ -1549,11 +1542,9 @@ interface IGridColumnsEvents {
 }
 
 interface IGridColumns {
-    readonly events: IEventEmitter<IGridColumnsEvents>;
     readonly headers: IGridColumnHeaders;
     /** Runs on every column build, before the colDefs prop. */
     registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void;
-    getColumnDefinitions(): IGridColDef[];
 }
 
 /** Which cell a hook is running for. */
@@ -1673,7 +1664,6 @@ interface IGridCell {
 }
 
 interface IGridCells {
-    readonly events: IEventEmitter<IGridCellsEvents>;
     /** Redraws every cell, for state their records do not hold. */
     render(): void;
     getCells(): IGridCell[];
@@ -1688,19 +1678,6 @@ interface IGridCells {
     registerCellLoading(hook: GridCellLoadingHook, priority?: number): () => void;
     /** Commands show while the row is hovered, focused or selected. */
     registerCellCommands(hook: GridCellCommandsHook, priority?: number): () => void;
-    createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
-    /** Registers a cell as rendered. */
-    addCell(cell: IGridCell): void;
-    removeCell(cell: IGridCell): void;
-    /** Run by the control of the cell in question. */
-    applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void;
-    applyControlParametersHooks(result: IParameters, params: IGridCellHookParameters): void;
-    /** Run by the theme of the cell in question. */
-    applyCellThemeHooks(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void;
-    /** Run by the cell in question. */
-    applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void;
-    /** Run by the cell in question. */
-    applyCellCommandsHooks(result: IGridCellCommands, params: { record: IRecord; columnName: string }): void;
 }
 
 interface IGridCellParameters {
@@ -1737,12 +1714,8 @@ interface IGridRowSettings {
     onGetHeight?: GridRowHeightHook;
 }
 
-interface IGridRows extends IEventEmitter<IGridRowsEvents> {
-    /** Whether the row is hovered, focused or selected. */
-    isHighlighted(record: IRecord): boolean;
+interface IGridRows {
     registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
-    /** Sets the row's height over what the hooks decide. */
-    setRowHeight(record: IRecord, height: number): void;
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
     registerRowClass(className: string, rule: (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean): () => void;
     /** Runs the class rules over the records' rows again. */
@@ -1760,7 +1733,6 @@ interface IGridLocks {
 type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
 
 interface IGridValidation {
-    get(params: { record: IRecord; columnName: string }): IFieldValidationResult;
     /** An error blocks the record's save. */
     registerValidation(hook: GridValidationHook, priority?: number): () => void;
 }
@@ -1793,7 +1765,6 @@ type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
 interface IGridSurfaces {
     registerSurface(hook: GridSurfacesHook, priority?: number): () => void;
-    getSurfaces(): IGridSurface[];
 }
 
 type IGridRowModelType = 'clientSide' | 'serverSide';
@@ -1855,10 +1826,8 @@ type GridThemeHook = (result: IGridAgTheme, fluentTheme: ITheme) => void;
 interface IGridTheme {
     /** A hook over the AG Grid theme, read at mount. */
     registerTheme(hook: GridThemeHook, priority?: number): () => void;
-    getAgTheme(): AgGridTheme;
     /** A later style wins where the selectors are equally specific. */
     registerStyles(hook: GridStylesHook, priority?: number): () => void;
-    getStyles(): import('@fluentui/react').IStyle[];
 }
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
@@ -1869,42 +1838,10 @@ interface IGridEvents {
     onDestroyed: () => void;
 }
 
-/** The modules the grid runs, each there only when the grid was given it. */
-interface IGridModuleMap {
-    sorting: Pick<IGridSorting, 'getSorting' | 'isColumnSortable' | 'isSorted' | 'isSortedDescending' | 'sortColumn' | 'clearColumnSorting'>;
-    filtering: Pick<IGridFiltering, 'events' | 'getFiltering' | 'isColumnFilterable' | 'isFiltered' | 'getColumnFilter' | 'removeColumnFilter' | 'openFilter' | 'closeFilter'>;
-    grouping: Pick<IGridGrouping, 'events' | 'isColumnGrouped' | 'canColumnBeGrouped' | 'toggleColumnGroup' | 'getExpandedLevel' | 'getDeepestLevel' | 'setExpandedLevel'>;
-    aggregation: Pick<IGridAggregation, 'canColumnBeAggregated' | 'addAggregation' | 'removeAggregation'>;
-    rowSelection: Pick<IGridRowSelection, 'events' | 'getMode' | 'selectRecords' | 'toggleRecord'>;
-    editing: Pick<IGridEditing, 'events' | 'isEditing' | 'isAutoSaveEnabled'>;
-}
-
-/** The grid as its consumer drives it: what onReady and onDestroyed hand you. */
+/** The running grid: what onReady and onDestroyed hand you, and what a module's onRegister gets. */
 interface IGrid {
     readonly events: IEventSubscriber<IGridEvents>;
-    readonly modules: {
-        /** Throws when the grid was not given the module. */
-        get<K extends keyof IGridModuleMap>(key: K): IGridModuleMap[K];
-        find<K extends keyof IGridModuleMap>(key: K): IGridModuleMap[K] | undefined;
-        whenAvailable<K extends keyof IGridModuleMap>(key: K, callback: (module: IGridModuleMap[K]) => void): void;
-    };
-    /** The provider the grid shows. */
-    getProvider(): IDataProvider;
-    /** A record's field, whose setValue saves as a cell would. */
-    getField(record: IRecord, columnName: string): IGridField;
-    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
-    openRecord(params: IGridOpenRecordParams): void;
-    /** Draws the cells again, such as after something outside the grid changed how they look. */
-    renderCells(): void;
-    /** Draws the column headers again. */
-    renderHeaders(): void;
-    /** AG Grid's own api, once AG Grid is ready; a last resort. */
-    getAgGridApi(): GridApi | undefined;
-}
-
-/** The running grid with its services and AG Grid options, as modules build on it. */
-interface IGridRuntime extends Omit<IGrid, 'events'> {
-    readonly events: IEventEmitter<IGridEvents>;
+    /** Every part of the grid, by key. */
     readonly services: IGridServiceLocator;
     /** A hook over the options AG Grid reads once, when it is created. */
     registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
@@ -1912,6 +1849,8 @@ interface IGridRuntime extends Omit<IGrid, 'events'> {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
+    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
+    openRecord(params: IGridOpenRecordParams): void;
 }
 
 interface IGridOpenRecordParams {
@@ -2057,8 +1996,6 @@ interface IStateStore {
 
 /** Everything the grid is made of. */
 interface IGridServiceMap extends IGridModuleServiceMap {
-    /** The grid's own element, there once it is mounted. */
-    gridRoot: HTMLElement;
     /** AG Grid's own api, there once the grid is ready. */
     gridApi: GridApi;
     /** What the caller asked the grid to be, with its defaults applied. */
@@ -2082,10 +2019,10 @@ interface IGridServiceMap extends IGridModuleServiceMap {
     /** The fields of the grid's records, saved as the grid saves. */
     fields: IGridFields;
     rowModel: IGridRowModel;
-    grid: IGridRuntime;
+    grid: IGrid;
 }
 
-type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'gridApi';
+type IGridDeferredService = keyof IGridModuleServiceMap | 'gridApi';
 
 type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
 
@@ -2155,7 +2092,7 @@ interface IGridModule {
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
     /** Registers what the module contributes to the grid. */
-    onRegister?: (runtime: IGridRuntime) => void;
+    onRegister?: (runtime: IGrid) => void;
 }
 
 /** Read once, at mount. */
@@ -2436,7 +2373,7 @@ interface IGridValueRendererParameters extends IParameters {
     /** Always the grid's own provider, also in a group row. */
     Provider: { raw: IDataProvider };
     /** The grid the value is drawn in, which opens records. */
-    Runtime: { raw: IGridRuntime };
+    Runtime: { raw: IGrid };
     Record: { raw: IRecord };
     PrefixIcon: { raw: string | null; type?: string };
     SuffixIcon: { raw: string | null; type?: string };

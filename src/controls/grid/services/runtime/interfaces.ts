@@ -1,8 +1,7 @@
-import type { GridApi } from "ag-grid-community";
-import type { IDataProvider, IRecord } from "@talxis/client-libraries";
-import type { IEventSubscriber, IServiceLocator } from "@utils";
+import type { IEventSubscriber } from "@utils";
 import type { IGridEventHandlers, IGridOpenRecordParams } from "../../interfaces";
-import type { IGridField } from "../fields";
+import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
+import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
 
 /** What the grid raises as it loads and goes. */
 export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
@@ -10,28 +9,26 @@ export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
     onDestroyed: () => void;
 }
 
-/** The modules the grid runs, each there only when the grid was given it; a module adds its own by augmenting this. */
-export interface IGridModuleMap { }
-
-/** Looks up the modules the grid runs. */
-export type IGridModuleLocator = Pick<IServiceLocator<IGridModuleMap>, 'get' | 'find' | 'whenAvailable'>;
-
-/** The grid as its consumer drives it. */
-export interface IGrid {
+/** The running grid: what `onReady` and `onDestroyed` hand you, and what a module's `onRegister` gets. */
+export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
     /** Subscribe to the grid's events. */
     readonly events: IEventSubscriber<IGridEvents>;
-    /** The modules the grid runs, such as `sorting` or `rowSelection`. */
-    readonly modules: IGridModuleLocator;
-    /** The provider the grid shows. */
-    getProvider(): IDataProvider;
-    /** A record's field, whose `setValue` saves as a cell would. */
-    getField(record: IRecord, columnName: string): IGridField;
+    /** Every part of the grid, by key. */
+    readonly services: IGridServiceLocator<TServices>;
+    /**
+     * Registers a hook over the options AG Grid reads only once, when it is created.
+     *
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
+    /**
+     * Registers a hook over options re-applied whenever a value's reference changes.
+     *
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    /** Runs the option hooks again and hands AG Grid the ones that changed. */
+    refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
-    /** Draws the cells again, such as after something outside the grid changed how they look. */
-    renderCells(): void;
-    /** Draws the column headers again. */
-    renderHeaders(): void;
-    /** AG Grid's own api, once AG Grid is ready; a last resort. */
-    getAgGridApi(): GridApi<IRecord> | undefined;
 }

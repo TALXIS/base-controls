@@ -1,12 +1,12 @@
 import { DataProvider, DataType, DataTypes, IColumn } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
 import { IGridValueRendererParameters } from "@controls/grid/value-renderer";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 
 export interface IGridFieldControlParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
     /** The field this draws. */
     field: IGridField;
     /** The cell it draws in, whose column definition says how. */
@@ -26,7 +26,7 @@ export interface IGridFieldControl {
 }
 
 export class GridFieldControl implements IGridFieldControl {
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _field: IGridField;
     private _cell: IGridCell;
     private _takesInput: boolean;

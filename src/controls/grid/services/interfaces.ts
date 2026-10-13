@@ -5,28 +5,24 @@ import type { ITheme } from "@theme";
 import type { ILocalizationService, IServiceLocator, IStateStore } from "@utils";
 import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
-import type { IGridRuntime } from "../services/runtime";
+import type { IGrid } from "../services/runtime";
 import type { IGridRowModel } from "./row-model";
-import type { IGridColumns } from "../services/columns";
-import type { IGridCells } from "../services/cells";
+import type { IGridColumns, IGridColumnsInternal } from "../services/columns";
+import type { IGridCells, IGridCellsInternal } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
-import type { IGridRows } from "../services/rows";
-import type { IGridValidation } from "../services/validation";
-import type { IGridSurfaces } from "../services/surfaces";
+import type { IGridRows, IGridRowsInternal } from "../services/rows";
+import type { IGridValidation, IGridValidationInternal } from "../services/validation";
+import type { IGridSurfaces, IGridSurfacesInternal } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
-import type { IGridTheme } from "../services/theme";
+import type { IGridTheme, IGridThemeInternal } from "../services/theme";
 
 /** The services the modules register; a module adds its own by augmenting this. */
 export interface IGridModuleServiceMap { }
 
-/** Everything the grid is made of. */
+/** Everything the grid is made of that a module or your code may use. */
 export interface IGridServiceMap extends IGridModuleServiceMap {
-    /** The grid's own element, there once it is mounted. */
-    gridRoot: HTMLElement;
     /** AG Grid's own api, there once AG Grid is ready; a last resort for what the hooks cannot express. */
     gridApi: GridApi<IRecord>;
-    /** What the caller asked the grid to be, with its defaults applied. */
-    settings: IGridSettings;
     /** What the grid's parts keep for the next mount. */
     state: IStateStore;
     /** What is true of a row as a whole. */
@@ -47,16 +43,30 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
     columns: IGridColumns;
     /** What a cell shows and the hooks modules add to it through. */
     cells: IGridCells;
-    /** What the user is pressing while the grid is doing something about it. */
-    keyboard: IGridKeyboard;
     /** What the modules draw over the grid. */
     surfaces: IGridSurfaces;
     /** The fields of the grid's records, saved as the grid saves. */
     fields: IGridFields;
+    /** What the caller asked the grid to be, with its defaults applied. */
+    settings: IGridSettings;
+    /** What the user is pressing while the grid is doing something about it. */
+    keyboard: IGridKeyboard;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
-    /** The running grid and the hooks over AG Grid's props. */
-    grid: IGridRuntime;
+    /** The running grid. */
+    grid: IGrid;
+}
+
+/** The services as the grid's own parts use them: what draws the grid; a module adds what its own parts read by augmenting this. */
+export interface IGridInternalServiceMap extends IGridServiceMap {
+    /** The grid's own element, there once it is mounted. */
+    gridRoot: HTMLElement;
+    rows: IGridRowsInternal;
+    validation: IGridValidationInternal;
+    gridTheme: IGridThemeInternal;
+    columns: IGridColumnsInternal;
+    cells: IGridCellsInternal;
+    surfaces: IGridSurfacesInternal;
 }
 
 /** The services a grid may be without, or have only once it is mounted. */
@@ -64,3 +74,5 @@ export type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'g
 
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
 export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceLocator<TServices>;
+
+export type IGridInternalServiceLocator<TServices extends IGridInternalServiceMap = IGridInternalServiceMap> = IServiceLocator<TServices>;

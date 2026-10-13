@@ -53,7 +53,7 @@ export const TicketQueue = (props: { provider: IDataProvider }) => <DatasetContr
 
 ## Cleaning up
 
-The provider outlives the grid. A listener you add to it stays, and keeps your module alive, until you remove it. Remove it on the runtime's \`onDestroyed\` event, which fires as the grid unmounts:
+The provider outlives the grid. A listener you add to it stays, and keeps your module alive, until you remove it. Remove it on the grid's \`onDestroyed\` event, which fires as the grid unmounts:
 
 \`\`\`tsx
 import { IGridModule } from '@talxis/base-controls'

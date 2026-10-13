@@ -15,16 +15,10 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Filtering the grid by a column. */
-        filtering: IGridFilteringService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** Filtering the grid by a column. */
         filtering: IGridFiltering;
     }
 }
+
 
 /** What changed about the filter a column header has open. */
 export interface IGridFilteringEvents {
@@ -70,30 +64,25 @@ export interface IGridFiltering {
     openFilter(columnName: string, target?: HTMLElement): void;
     /** Closes the filter callout. */
     closeFilter(): void;
-}
-
-/** Filtering as the grid's own parts and modules use it. */
-export interface IGridFilteringService extends IGridFiltering {
-    readonly events: IEventEmitter<IGridFilteringEvents>;
-    /** The strings this module renders, for its own components. */
-    getLabels(): ILocalizationService<IGridFilteringLabels>;
-    /** Which column's filter callout is open, if any. */
-    getOpenColumnName(): string | undefined;
-    /** What the open filter is drawn against: the header it was opened from. */
-    getOpenTarget(): HTMLElement | undefined;
     /**
      * Registers a hook over the parameters the filter callout's controls are handed.
      *
      * @param priority Ascending: a higher number gets the later word.
      */
     registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    /** The strings this module renders, for its own components. */
+    getLabels(): ILocalizationService<IGridFilteringLabels>;
+    /** Which column's filter callout is open, if any. */
+    getOpenColumnName(): string | undefined;
+    /** What the open filter is drawn against: the header it was opened from. */
+    getOpenTarget(): HTMLElement | undefined;
     /** The parameters a filter control is handed: the ones it came with, the grid's defaults, then the hooks. */
     getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridFilteringComponents;
 }
 
-export class GridFiltering implements IGridFilteringService {
+export class GridFiltering implements IGridFiltering {
     private _services: IGridFilteringServiceLocator;
     private _filtering: Filtering;
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();

@@ -3,7 +3,7 @@ import { ICellRendererParams } from "ag-grid-community";
 import { IRecordEvents } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRerender } from "@legacy";
-import { useGridService } from "../../../useGridService";
+import { useGridInternalService } from "../../../useGridService";
 import { IGridCellEvents } from "../../../services/cells";
 import type { IGridEditedCell, IGridEditingEvents } from "../../../modules/editing/GridEditing";
 import { GridCellContext, GridCellRevisionContext } from "./context";
@@ -21,14 +21,14 @@ export interface ICellRootProps extends ICellRendererParams {
 /** What makes a cell a cell of this grid: everything inside it belongs to one `GridCell`. */
 export const CellRoot = (props: ICellRootProps) => {
     const { data: record, children } = props;
-    const cells = useGridService('cells');
+    const cells = useGridInternalService('cells');
     const parentCell = useContext(GridCellContext);
     const field = useGridField();
     const colDef = props.colDef!;
     const takesInput = !!props.takesInput;
     const cell = useMemo(() => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell, field: field }),[cells, record, colDef, props.node, takesInput, props.eGridCell, field]);
     const { rerender: redraw, revision } = useRerender();
-    const editing = useGridService('editing');
+    const editing = useGridInternalService('editing');
     const isThisCell = (editedCell: IGridEditedCell | undefined) => editedCell?.recordId === record.getRecordId() && editedCell?.columnName === colDef.colId;
 
     //any field can decide what another cell of the row draws

@@ -1,6 +1,6 @@
 import { GridApi, IRowNode } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../interfaces";
+import { IGridInternalServiceLocator } from "../interfaces";
 import { getRowNode } from "../rows/getRowNode";
 
 const VIEWPORT_STATE_KEY = 'viewport';
@@ -12,12 +12,12 @@ interface IGridViewportState {
 }
 
 export interface IGridViewportParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** Where the user is scrolled and focused, kept in the grid's state. */
 export class GridViewport {
-    private _services: IGridServiceLocator;
+    private _services: IGridInternalServiceLocator;
     private _pending?: IGridViewportState;
     private _hasLoaded = false;
 

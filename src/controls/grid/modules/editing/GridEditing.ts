@@ -24,16 +24,10 @@ import { getRowNode } from "../../services/rows/getRowNode";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
-        editing: IGridEditingService;
-    }
-}
-
-declare module "../../services/runtime/interfaces" {
-    interface IGridModuleMap {
-        /** Which cell the user is editing, and whether an edit saves itself. */
         editing: IGridEditing;
     }
 }
+
 
 export interface IGridEditedCell {
     recordId: string;
@@ -58,11 +52,6 @@ export interface IGridEditing {
     isEditing(record: IRecord, columnName: string): boolean;
     /** Whether an edit saves its record straight away. */
     isAutoSaveEnabled(): boolean;
-}
-
-/** Editing as the grid's own parts and modules use it. */
-export interface IGridEditingService extends IGridEditing {
-    readonly events: IEventEmitter<IGridEditingEvents>;
     /** Whether a column, a record's row or a cell is locked. */
     readonly locks: IGridLocks;
     /** Whether the user is editing this cell, counting an editor from the moment it is drawn. */
@@ -75,7 +64,7 @@ export interface IGridEditingService extends IGridEditing {
     finish(cell: IGridCell): void;
 }
 
-export class GridEditing implements IGridEditingService {
+export class GridEditing implements IGridEditing {
     private _services: IGridServiceLocator;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;

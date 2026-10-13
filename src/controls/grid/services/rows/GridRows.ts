@@ -1,7 +1,7 @@
 import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClassParams, RowClassRules, RowClickedEvent, RowHeightParams } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
-import { IGridServiceLocator } from "../../services";
+import { IGridInternalServiceLocator } from "../../services";
 import { getRowNode } from "./getRowNode";
 
 export interface IGridRowsEvents {
@@ -29,29 +29,33 @@ export interface IGridRowSettings {
 }
 
 export interface IGridRowsParameters {
-    services: IGridServiceLocator;
+    services: IGridInternalServiceLocator;
 }
 
 /** What is true of a row as a whole. */
-export interface IGridRows extends IEventEmitter<IGridRowsEvents> {
-    /** Whether the row is hovered, focused or selected. */
-    isHighlighted(record: IRecord): boolean;
+export interface IGridRows {
     /**
      * Registers a hook over how tall a row is.
      *
      * @param priority Ascending: a higher number gets the later word.
      */
     registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
-    /** Sets how tall the record's row is, over what the hooks decide. */
-    setRowHeight(record: IRecord, height: number): void;
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
     registerRowClass(className: string, rule: GridRowClassRule): () => void;
     /** Runs the class rules over the records' rows again. */
     refreshRowClasses(records: IRecord[]): void;
 }
 
-export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows {
-    private _services: IGridServiceLocator;
+/** What the grid's own parts read of it. */
+export interface IGridRowsInternal extends IGridRows, IEventEmitter<IGridRowsEvents> {
+    /** Whether the row is hovered, focused or selected. */
+    isHighlighted(record: IRecord): boolean;
+    /** Sets how tall the record's row is, over what the hooks decide. */
+    setRowHeight(record: IRecord, height: number): void;
+}
+
+export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRowsInternal {
+    private _services: IGridInternalServiceLocator;
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
