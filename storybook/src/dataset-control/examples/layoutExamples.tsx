@@ -64,37 +64,36 @@ const FullPageRibbon = () => {
 }
 
 const pageStyles = mergeStyleSets({
-    page: { height: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '16px 24px', gap: 16 },
-    title: { flexShrink: 0 },
-    content: { flex: 1, minHeight: 0 },
+    page: { height: '100vh' },
+    header: { padding: '12px 20px 0' },
+    //a line of its own, above the regions
+    title: { flexBasis: '100%' },
 })
 
-/** A page with a title, and the control filling the rest of the window with `height='100%'`. */
+/** A page that is all the control, filling the window with `height='100%'`, its title in the header. */
 export const FullPageExample = () => <div className={pageStyles.page}>
-    <Text variant='xLarge' className={pageStyles.title}>Sales pipeline</Text>
-    <div className={pageStyles.content}>
-        <DatasetControl stateKey='deals' onLoad={loadDeals} height='100%'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
-                </DatasetControl.Header.Start>
-                <DatasetControl.Header.End>
-                    <FullPageRibbon />
-                    <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />
-                    <DatasetControl.QuickFind />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }), sorting: createSortingModule() }} />
-            </DatasetControl.Body>
-            <DatasetControl.Footer>
-                <DatasetControl.Footer.Start>
-                    <DatasetControl.PageSizeSwitcher />
-                </DatasetControl.Footer.Start>
-                <DatasetControl.Footer.End>
-                    <DatasetControl.Pagination />
-                </DatasetControl.Footer.End>
-            </DatasetControl.Footer>
-        </DatasetControl>
-    </div>
+    <DatasetControl stateKey='deals' onLoad={loadDeals} height='100%'>
+        <DatasetControl.Header className={pageStyles.header}>
+            <Text variant='xLarge' className={pageStyles.title}>Sales pipeline</Text>
+            <DatasetControl.Header.Start>
+                <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <FullPageRibbon />
+                <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />
+                <DatasetControl.QuickFind />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }), sorting: createSortingModule() }} />
+        </DatasetControl.Body>
+        <DatasetControl.Footer>
+            <DatasetControl.Footer.Start>
+                <DatasetControl.PageSizeSwitcher />
+            </DatasetControl.Footer.Start>
+            <DatasetControl.Footer.End>
+                <DatasetControl.Pagination />
+            </DatasetControl.Footer.End>
+        </DatasetControl.Footer>
+    </DatasetControl>
 </div>

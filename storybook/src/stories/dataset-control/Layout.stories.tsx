@@ -112,7 +112,7 @@ export const TheWholePage: Story = {
         docs: {
             story: { inline: false, iframeHeight: 560 },
             description: {
-                story: `A page with a title, and the control filling the rest of the window with \`height='100%'\`. Open it on its own and resize the window: the grid always fills what the header and the footer leave, and the header gives way on a narrow window.`,
+                story: `The control as the whole page, filling the window with \`height='100%'\`, its title in the header. Open it on its own and resize the window: the grid always fills what the header and the footer leave, and the header gives way on a narrow window.`,
             },
         },
     },
