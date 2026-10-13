@@ -8,7 +8,7 @@ import { useDatasetControlRegion } from "../region";
 import { getDatasetControlRibbonStyles } from "./styles";
 
 /** Props for `DatasetControl.Ribbon`; reach the ribbon through `control.parts.get('ribbon')`. */
-export type IDatasetControlRibbonProps = Omit<IRibbonProps, 'onReady'>;
+export type IDatasetControlRibbonProps = Omit<IRibbonProps, 'onReady' | 'align'>;
 
 /** The ribbon, loaded again whenever the selected records change; in an `End` region its commands sit against the right. */
 export const Ribbon = (props: IDatasetControlRibbonProps) => {
@@ -31,5 +31,5 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
         runtime.services.register('ribbon', () => ribbon);
     };
 
-    return <SharedRibbon align={region === 'end' ? 'end' : 'start'} {...props} className={getClassNames([styles.datasetControlRibbon, props.className])} onReady={onReady} />;
+    return <SharedRibbon {...props} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onReady={onReady} />;
 };

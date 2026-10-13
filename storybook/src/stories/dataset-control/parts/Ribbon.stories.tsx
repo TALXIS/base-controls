@@ -31,7 +31,6 @@ const DealsRibbon = () => {
 |---|---|---|---|
 | \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | Required | Returns the commands. Called at mount, whenever the selection changes, and on \`reload()\`. |
 | \`disabled\` | \`boolean\` | \`false\` | Disables every command. |
-| \`align\` | \`'start' \\| 'end'\` | Its region's side | Which side the commands are drawn against. |
 | \`className\` | \`string\` | None | Added to the ribbon's box. |
 | \`components\` | \`IRibbonComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
 

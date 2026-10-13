@@ -3703,7 +3703,7 @@ interface IDatasetControlNamespace {
     ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
     /** Reach it through control.parts.get('ribbon'). */
-    Ribbon: (props: Omit<IRibbonProps, 'onReady'>) => JSX.Element;
+    Ribbon: (props: Omit<IRibbonProps, 'onReady' | 'align'>) => JSX.Element;
     QuickFind: (props: {
         labels?: Partial<IQuickFindLabels>;
         components?: Partial<{
