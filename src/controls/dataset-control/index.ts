@@ -26,7 +26,7 @@ export type { IDatasetControlRegion } from './components/adapters/region';
 export { useDatasetControlRegion } from './components/adapters/region';
 export type { IBodyProps as IDatasetControlBodyProps } from './components/adapters/body';
 export type { IFooterProps as IDatasetControlFooterProps, IFooterStartProps as IDatasetControlFooterStartProps, IFooterEndProps as IDatasetControlFooterEndProps } from './components/adapters/footer';
-export type { IViewSwitcherProps } from './components/adapters/view-switcher';
+export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcherEvents } from './components/adapters/view-switcher';
 export type { IDatasetControlRibbonProps } from './components/adapters/ribbon';
 export type { IQuickFindProps, IDatasetControlQuickFindEvents } from './components/adapters/quick-find';
 export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotificationsEvents } from './components/adapters/notifications';

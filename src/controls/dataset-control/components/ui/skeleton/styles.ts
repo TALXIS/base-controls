@@ -1,7 +1,8 @@
 import { ITheme, keyframes, mergeStyleSets } from '@fluentui/react';
 
-//the header's 44px row with its 15px gap below
-const HEADER_HEIGHT = 59;
+//the same row and gap below as the header it stands in for
+const HEADER_HEIGHT = 44;
+const HEADER_GAP = 15;
 const COLUMN_HEADER_HEIGHT = 42;
 const ROW_HEIGHT = 42;
 const FOOTER_HEIGHT = 44;
@@ -30,11 +31,11 @@ export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
         },
         header: {
             height: HEADER_HEIGHT,
+            marginBottom: HEADER_GAP,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 8px',
-            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+            gap: 8,
             flexShrink: 0,
         },
         headerLeft: {
@@ -97,7 +98,6 @@ export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
             height: FOOTER_HEIGHT,
             display: 'flex',
             alignItems: 'center',
-            padding: '0 8px',
             borderTop: `1px solid ${theme.semanticColors.bodyDivider}`,
             flexShrink: 0,
         },

@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const WATCH_RUNTIME_CODE = `import { loadDeals } from './views'
+const WATCH_RUNTIME_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => {
     const [log, setLog] = React.useState<string[]>([])
@@ -26,7 +26,7 @@ const GridExample = () => {
         <DatasetControl stateKey='deals' key={mountKey} onLoad={loadDeals} onReady={onReady} onDestroyed={() => write('onDestroyed')} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher />
+                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>

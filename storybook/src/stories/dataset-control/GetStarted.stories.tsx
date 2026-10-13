@@ -60,7 +60,7 @@ export const Accounts = () => <PcfContextProvider>
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/datasetcontrol-get-started-loading-data--overview', text: 'Load the provider and its views in your own onLoad, behind a placeholder, with a failed load shown and retried for you.' },
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/datasetcontrol-get-started-loading-data--overview', text: 'Load the provider for each view in your own onLoad, behind a placeholder, with a failed load shown and retried for you.' },
     { title: 'Every part', iconName: 'Puzzle', href: '?path=/docs/datasetcontrol-parts-overview--overview', text: 'Views, a ribbon that follows the selection, quick find, column editing, notifications, an empty state and paging.' },
     { title: 'Layout that adapts', iconName: 'ResponsiveDesign', href: '?path=/docs/datasetcontrol-layout-overview--overview', text: 'Left and right regions that keep their places, a height that fills any space, and a header that gives way on a narrow screen.' },
     { title: 'Back where they left off', iconName: 'History', href: '?path=/docs/datasetcontrol-state-overview--overview', text: 'Every view keeps its sorting, search, paging and scroll, and the control reopens on the view the user was on.' },

@@ -15,7 +15,6 @@ const DESCRIPTION = `Any component inside \`DatasetControl\` can read and drive 
 | \`reload({ viewId })\` | Loads the view through \`onLoad\`, asking first when there are unsaved changes. |
 | \`retry()\` | Runs the load that failed again. |
 | \`getViewId()\` | The view the provider shown is for. |
-| \`getViews()\` | The views the last load that succeeded returned. |
 | \`getViewStateStore(viewId?)\` | Where the parts keep their state for a view: the one shown, unless another is given. See [**State**](?path=/docs/datasetcontrol-state-overview--overview). |
 | \`getProvider()\` | The provider shown, from the last load that succeeded. |
 | \`getProviderKey()\` | Changes with every provider, for keying what renders it. |
@@ -30,14 +29,14 @@ const DESCRIPTION = `Any component inside \`DatasetControl\` can read and drive 
 
 | Key | What it is |
 |---|---|
-| \`viewSwitcher\` | \`getViews()\`, \`getCurrentView()\`, \`select(viewId)\` |
+| \`viewSwitcher\` | \`getViews()\`, \`getCurrentView()\`, \`select(viewId)\`, \`reload()\` |
 | \`quickFind\` | \`getQuery()\`, \`setQuery(query)\`, \`search()\`, \`clear()\`, \`getColumns()\` |
 | \`editColumns\` | \`open()\`, \`close()\`, \`save()\`, \`isOpen()\` |
 | \`pagination\` | \`getPageNumber()\`, \`canMovePrevious()\`, \`canMoveNext()\`, \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` |
 | \`pageSizeSwitcher\` | \`getPageSize()\`, \`getPageSizes()\`, \`setPageSize(size)\`, \`getRecordRange()\` |
 | \`notifications\` | \`getMessages()\` |
 
-A part's service is there only while the part is rendered, so reach it with \`find\`. The provider and the views are on the runtime: \`getProvider()\` and \`getViews()\`, or \`useDataProvider()\` in a component. The classes behind them are on \`DatasetControl.Classes\`, for typing.
+A part's service is there only while the part is rendered, so reach it with \`find\`. The provider is on the runtime, \`getProvider()\`, or \`useDataProvider()\` in a component; the views are the view switcher's. The classes behind them are on \`DatasetControl.Classes\`, for typing.
 
 ## Parts of your own
 

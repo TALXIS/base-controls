@@ -92,13 +92,15 @@ const loadView = async (parameters: IDatasetControlLoadParameters): Promise<IDat
     const view = SAVED_VIEWS.find(view => view.id === parameters.viewId) ?? SAVED_VIEWS[0]
     const tickets = createTicketsProvider()
     view.apply(tickets)
-    return { provider: tickets, views: SAVED_VIEWS.map(view => ({ id: view.id, name: view.name })), viewId: view.id }
+    return { provider: tickets, viewId: view.id }
 }
+
+const loadViews = async (): Promise<IDatasetControlView[]> => SAVED_VIEWS.map(view => ({ id: view.id, name: view.name }))
 
 const GridExample = () => <DatasetControl stateKey='ticket-views' onLoad={loadView}>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadViews} />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>

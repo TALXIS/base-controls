@@ -10,7 +10,7 @@ const DESCRIPTION = `The parts sit in a container, in a header above the records
 <DatasetControl onLoad={loadDeals} height='600px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.Ribbon onLoad={loadCommands} />

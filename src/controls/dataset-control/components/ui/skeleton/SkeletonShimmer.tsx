@@ -19,6 +19,11 @@ export interface ISkeletonShimmerProps {
 }
 
 const DEFAULT_COLUMNS = ['0 0 32px', '2 1 0', '1 1 0', '1 1 0', '1 1 0', '1 1 0'];
+//the widths of the parts and their own shimmers, so nothing jumps when they replace the placeholder
+const VIEW_SWITCHER_WIDTH = 120;
+const RIBBON_WIDTH = 208;
+const EDIT_COLUMNS_WIDTH = 119;
+const QUICK_FIND_WIDTH = 230;
 const DEFAULT_ROW_COUNT = 20;
 
 //how much of each column the shimmer fills, indexed modulo their length so a column count other than the
@@ -58,13 +63,12 @@ export const SkeletonShimmer = (props: ISkeletonShimmerProps) => {
             {showHeader &&
                 <div className={styles.header}>
                     <div className={styles.headerLeft}>
-                        <div className={styles.headerPill} style={{ width: 120 }} />
+                        <div className={styles.headerPill} style={{ width: VIEW_SWITCHER_WIDTH }} />
                     </div>
                     <div className={styles.headerRight}>
-                        <div className={styles.headerPill} style={{ width: 100 }} />
-                        <div className={styles.headerPill} style={{ width: 100 }} />
-                        <div className={styles.headerPill} style={{ width: 90 }} />
-                        <div className={styles.headerPill} style={{ width: 160 }} />
+                        <div className={styles.headerPill} style={{ width: RIBBON_WIDTH }} />
+                        <div className={styles.headerPill} style={{ width: EDIT_COLUMNS_WIDTH }} />
+                        <div className={styles.headerPill} style={{ width: QUICK_FIND_WIDTH }} />
                     </div>
                 </div>
             }

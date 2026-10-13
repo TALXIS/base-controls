@@ -10,7 +10,7 @@ const DESCRIPTION = `Everything \`<DatasetControl />\` takes, and the events of 
 
 | Prop | Type | Default | Read | What it does |
 |---|---|---|---|---|
-| \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | On every load | Returns the provider, and optionally the views. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview). |
+| \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | On every load | Returns the provider, and the view it shows. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview). |
 | \`children\` | \`ReactNode\` | Required | Live | The parts. See [**Layout**](?path=/docs/datasetcontrol-layout-overview--overview). |
 | \`height\` | \`string\` | None | Live | The control's height. \`'100%'\` fills the parent; the content's height when left out. See *Height* on [**Layout**](?path=/docs/datasetcontrol-layout-overview--overview). |
 | \`className\` | \`string\` | None | Live | Added to the control's box. |

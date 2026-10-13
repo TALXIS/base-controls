@@ -2,10 +2,10 @@ import React from 'react'
 import { mergeStyleSets, Text } from '@fluentui/react'
 import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { loadDeals } from '../dealViews'
+import { loadDeals, loadDealViews } from '../dealViews'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const PICK_PARTS_CODE = `import { loadDeals } from './views'
+const PICK_PARTS_CODE = `import { loadDeals, loadDealViews } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
 const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Page size', 'Pagination']
@@ -25,7 +25,7 @@ const GridExample = () => {
             <DatasetControl stateKey='deals' onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
-                        {has('View switcher') && <DatasetControl.ViewSwitcher />}
+                        {has('View switcher') && <DatasetControl.ViewSwitcher onLoad={loadDealViews} />}
                         {has('Ribbon') && !has('View switcher') && <DealsRibbon />}
                     </DatasetControl.Header.Start>
                     <DatasetControl.Header.End>
@@ -76,7 +76,7 @@ export const FullPageExample = () => <div className={pageStyles.page}>
         <DatasetControl stateKey='deals' onLoad={loadDeals} height='100%'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher />
+                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <FullPageRibbon />

@@ -3429,14 +3429,38 @@ interface IDatasetControlLoadParameters {
 
 interface IDatasetControlLoadResult {
     provider: IDataProvider;
-    /** What the view switcher lists. */
-    views?: IDatasetControlView[];
     /** The view the provider shows, when onLoad picked the default. */
     viewId?: string;
 }
 
 interface IDatasetControlLabels { unsavedChangesConfirmation: string }
 interface IViewSwitcherLabels { ungroupedViewsHeader: string }
+
+/** The views the switcher's onLoad returns, and switching between them. */
+interface IDatasetControlViewSwitcher {
+    /** undefined until the first load finishes. */
+    getViews(): IDatasetControlView[] | undefined;
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
+    getCurrentView(): IDatasetControlView | undefined;
+    /** Calls onLoad again; the latest call's views win. */
+    reload(): Promise<void>;
+    /** Reloads the control for the view. */
+    select(viewId: string): void;
+}
+
+interface IViewSwitcherProps {
+    /** Called at mount and on every reload(); returns the views to list. */
+    onLoad: () => Promise<IDatasetControlView[]>;
+    /** Called with the switcher once it exists, before the first load. */
+    onReady?: (viewSwitcher: IDatasetControlViewSwitcher) => void;
+    labels?: Partial<IViewSwitcherLabels>;
+    components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> & {
+        /** Its container is a shimmer the size of the button by default. */
+        loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }>;
+        errorMessage?: Partial<IErrorMessageBarComponents>;
+    };
+}
 interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: string; leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }
 interface IPaginationLabels { firstPageTooltip: string; previousPageTooltip: string; nextPageTooltip: string; currentPage: string }
 interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pageSizeTooltip: string }
@@ -3516,7 +3540,7 @@ declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['comp
 interface IDatasetControlServiceMap {
     runtime: IDatasetControlRuntime;
     labels: ILocalizationService<IDatasetControlLabels>;
-    viewSwitcher: { getViews(): IDatasetControlView[]; getCurrentView(): IDatasetControlView | undefined; select(viewId: string): void };
+    viewSwitcher: IDatasetControlViewSwitcher;
     quickFind: { getQuery(): string; setQuery(query: string): void; search(): void; clear(): void };
     editColumns: { isOpen(): boolean; open(): void; close(): void; save(): void };
     [key: string]: any;
@@ -3537,8 +3561,6 @@ interface IDatasetControlRuntime {
     isLoading(): boolean;
     /** The control's height, as the height prop gives it. */
     getHeight(): string | undefined;
-    /** The views the last load that succeeded returned; empty when it returned none. */
-    getViews(): IDatasetControlView[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
@@ -3606,7 +3628,7 @@ interface IDatasetControlNamespace {
         Start: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
         End: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
     };
-    ViewSwitcher: (props: { labels?: Partial<IViewSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
     Ribbon: (props: IRibbonProps) => JSX.Element;
     QuickFind: (props: {

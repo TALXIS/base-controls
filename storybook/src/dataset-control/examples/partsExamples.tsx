@@ -2,12 +2,12 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const VIEWS_CODE = `import { loadDeals } from './views'
+const VIEWS_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
@@ -49,12 +49,12 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadSearchabl
 </DatasetControl>
 `
 
-const EDIT_COLUMNS_CODE = `import { loadDeals } from './views'
+const EDIT_COLUMNS_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns enableScopeSelector={false} />

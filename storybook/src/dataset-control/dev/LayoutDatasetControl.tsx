@@ -3,7 +3,7 @@ import { DefaultButton } from '@fluentui/react'
 import {
     createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, PcfContextProvider,
 } from '@talxis/base-controls'
-import { loadDeals } from '../dealViews'
+import { loadDeals, loadDealViews } from '../dealViews'
 
 export interface ILayoutDatasetControlProps {
     viewSwitcher: boolean
@@ -26,7 +26,7 @@ const loadCommands = async () => COMMANDS
 export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
     const modules = React.useMemo(() => ({ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }), [])
     const ribbon = <DatasetControl.Ribbon onLoad={loadCommands} />
-    const start = [props.viewSwitcher && <DatasetControl.ViewSwitcher key='viewSwitcher' />, props.ribbon === 'start' && React.cloneElement(ribbon, { key: 'ribbon' })].filter(Boolean)
+    const start = [props.viewSwitcher && <DatasetControl.ViewSwitcher key='viewSwitcher' onLoad={loadDealViews} />, props.ribbon === 'start' && React.cloneElement(ribbon, { key: 'ribbon' })].filter(Boolean)
     const footerIn = (region: 'start' | 'end') => [props.pagination === region && <DatasetControl.Pagination key='pagination' />, props.pageSizeSwitcher === region && <DatasetControl.PageSizeSwitcher key='pageSizeSwitcher' />].filter(Boolean)
     const footerStart = footerIn('start')
     const footerEnd = footerIn('end')

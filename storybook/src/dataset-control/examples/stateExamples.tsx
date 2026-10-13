@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const BACK_WHERE_YOU_LEFT_OFF_CODE = `import { loadDeals } from './views'
+const BACK_WHERE_YOU_LEFT_OFF_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => {
     const [isShown, setIsShown] = React.useState(true)
@@ -12,7 +12,7 @@ const GridExample = () => {
         {isShown && <DatasetControl stateKey='deals' onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher />
+                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <DatasetControl.QuickFind />
@@ -26,7 +26,7 @@ const GridExample = () => {
 }
 `
 
-const INSIDE_THE_STORE_CODE = `import { loadDeals } from './views'
+const INSIDE_THE_STORE_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const styles = mergeStyleSets({
     store: { flex: '0 0 340px', height: 440, margin: 0, padding: 12, overflow: 'auto', boxSizing: 'border-box', fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4 },
@@ -57,7 +57,7 @@ const GridExample = () => {
                 <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
                     <DatasetControl.Header>
                         <DatasetControl.Header.Start>
-                            <DatasetControl.ViewSwitcher />
+                            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
                         </DatasetControl.Header.Start>
                         <DatasetControl.Header.End>
                             <DatasetControl.QuickFind />

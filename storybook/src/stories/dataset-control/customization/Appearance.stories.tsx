@@ -7,7 +7,7 @@ import { YourOwnPiecesExample } from '../../../dataset-control/examples/appearan
 const DESCRIPTION = `Every part takes \`components\`, which replaces pieces of what it draws. A piece is handed the props its default would get, so you can change them and render the default, or render something of your own.
 
 \`\`\`tsx
-<DatasetControl.ViewSwitcher components={{ onRenderButton: props => <MyViewButton {...props} /> }} />
+<DatasetControl.ViewSwitcher onLoad={loadViews} components={{ onRenderButton: props => <MyViewButton {...props} /> }} />
 \`\`\`
 
 - Every piece is optional: what you leave out keeps its default.

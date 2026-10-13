@@ -4,7 +4,7 @@ import {
     createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControlRuntime,
     IRibbonCommand, PcfContextProvider, useDataProvider, ViewSwitcherUiComponents,
 } from '@talxis/base-controls'
-import { loadDeals } from '../dealViews'
+import { loadDeals, loadDealViews } from '../dealViews'
 
 interface IScratchDatasetControlProps {
     /** Whether the parts' slots are replaced, to see the overrides take effect. */
@@ -74,7 +74,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
         <DatasetControl key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onReady={onReady} height="640px">
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
+                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <ScratchRibbon />

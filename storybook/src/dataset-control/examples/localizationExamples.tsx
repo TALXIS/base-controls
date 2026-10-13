@@ -2,12 +2,12 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const CZECH_CODE = `import { loadDeals } from './views'
+const CZECH_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} labels={{ unsavedChangesConfirmation: 'Neuložené změny budou ztraceny. Pokračovat?' }} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher labels={{ ungroupedViewsHeader: 'Systémová zobrazení' }} />
+            <DatasetControl.ViewSwitcher onLoad={loadDealViews} labels={{ ungroupedViewsHeader: 'Systémová zobrazení' }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns labels={{ editColumns: 'Upravit sloupce', save: 'Uložit', cancel: 'Zrušit', columnSelectorPlaceholder: 'Přidat sloupec...', noResults: 'Nic nenalezeno.' }} />

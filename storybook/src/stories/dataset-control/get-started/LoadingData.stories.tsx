@@ -4,17 +4,12 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { FailedLoadExample, WaitingExample } from '../../../dataset-control/examples/loadingDataExamples'
 
-const DESCRIPTION = `DatasetControl gets its provider from \`onLoad\`. Load whatever the provider needs there, such as its views, metadata or settings. A placeholder stands in for the control until the provider has loaded its first page.
+const DESCRIPTION = `DatasetControl gets its provider from \`onLoad\`. Load whatever the provider needs there, such as the view's definition, metadata or settings. A placeholder stands in for the control until the provider has loaded its first page.
 
 \`\`\`tsx
 const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-    const views = await fetchDealViews()
-    const view = views.find(view => view.id === params.viewId) ?? views[0]
-    return {
-        provider: await createDealsProvider(view),
-        views: views.map(view => ({ id: view.id, name: view.name, group: view.isPersonal ? 'My views' : undefined })),
-        viewId: view.id,
-    }
+    const view = await fetchDealView(params.viewId ?? DEFAULT_VIEW_ID)
+    return { provider: await createDealsProvider(view), viewId: view.id }
 }
 
 <DatasetControl onLoad={loadDeals}>...</DatasetControl>
@@ -31,8 +26,9 @@ It is called when the control mounts, on every view switch, and on \`runtime.rel
 | Result | What it holds | Default |
 |---|---|---|
 | \`provider\` | The provider every part works on. | Required |
-| \`views\` | The views the view switcher lists: \`{ id, name, group? }\`. See [**Views**](?path=/docs/datasetcontrol-parts-views--overview). | None |
-| \`viewId\` | Which of the views \`provider\` shows. | The \`viewId\` it was called with |
+| \`viewId\` | The view \`provider\` shows. | The \`viewId\` it was called with |
+
+The list of views to switch between is the view switcher's own: see [**Views**](?path=/docs/datasetcontrol-parts-views--overview).
 
 - Before showing the provider, the control puts back the setup it kept for the view, such as its sorting and search. See [**State**](?path=/docs/datasetcontrol-state-overview--overview).
 - It then waits for the provider's first page, so the parts show records straight away. A provider that \`onLoad\` has already started loading isn't loaded again.

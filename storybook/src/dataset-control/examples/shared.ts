@@ -35,10 +35,16 @@ class DealsProvider extends MemoryDataProvider {
 }
 
 export const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-    //stands in for fetching the views and the metadata from a server
+    //stands in for fetching the view and the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
     const view = VIEWS.find(view => view.id === params.viewId) ?? VIEWS[0]
-    return { provider: new DealsProvider(view), views: VIEWS.map(({ id, name, group }) => ({ id, name, group })), viewId: view.id }
+    return { provider: new DealsProvider(view), viewId: view.id }
+}
+
+//what the view switcher lists
+export const loadDealViews = async (): Promise<IDatasetControlView[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400))
+    return VIEWS.map(({ id, name, group }) => ({ id, name, group }))
 }
 `,
 }

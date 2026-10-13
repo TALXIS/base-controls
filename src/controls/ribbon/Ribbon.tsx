@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { ErrorBoundary } from "@utils";
+import { ErrorBoundary, getClassNames } from "@utils";
 import { Shimmer } from "@ui/shimmer";
 import { ILoadingBoundaryComponents, LoadingBoundary } from "@ui/loading-boundary";
 import { IRibbonCommand } from "./interfaces";
@@ -10,6 +10,9 @@ import { IRibbonRuntime, IRibbonRuntimeEvents, RibbonRuntime } from "./RibbonRun
 import { IRibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { RibbonUi } from "./ui";
+
+//as wide as the skeleton's ribbon pill
+const SHIMMER_WIDTH = 208;
 
 export interface IRibbonProps {
     /** Called at mount and on every `reload()`. */
@@ -30,7 +33,7 @@ export const Ribbon = (props: IRibbonProps) => {
     const propsRef = useRef(props);
     propsRef.current = props;
     const runtime = useMemo(() => new RibbonRuntime({ onLoad: () => propsRef.current.onLoad() }), []);
-    const styles = useMemo(() => getRibbonStyles(), []);
+    const styles = useMemo(() => getRibbonStyles(props.align ?? 'start'), [props.align]);
     const { rerender } = useRerender();
     const { loadingBoundary, errorMessage, ...commandBar } = props.components ?? {};
 
@@ -43,7 +46,7 @@ export const Ribbon = (props: IRibbonProps) => {
     }, []);
 
     const loadingBoundaryComponents: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <Shimmer className={props.className} styles={{ shimmerWrapper: styles.shimmerWrapper }} />,
+        onRenderContainer: () => <Shimmer width={SHIMMER_WIDTH} className={getClassNames([styles.shimmer, props.className])} styles={{ shimmerWrapper: styles.shimmerWrapper }} />,
         ...loadingBoundary,
     };
 

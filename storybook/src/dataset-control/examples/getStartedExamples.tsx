@@ -2,13 +2,13 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const SHOWCASE_CODE = `import { loadDeals } from './views'
+const SHOWCASE_CODE = `import { loadDeals, loadDealViews } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DealsRibbon />

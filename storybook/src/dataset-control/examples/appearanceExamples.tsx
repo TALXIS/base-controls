@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const YOUR_OWN_PIECES_CODE = `import { loadDeals } from './views'
+const YOUR_OWN_PIECES_CODE = `import { loadDeals, loadDealViews } from './views'
 
 //the default button, with a command added under the views
 const ViewSwitcherWithManage = (props: IButtonProps) => ViewSwitcherUiComponents.onRenderButton({
@@ -16,7 +16,7 @@ const ViewSwitcherWithManage = (props: IButtonProps) => ViewSwitcherUiComponents
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher components={{ onRenderButton: props => <ViewSwitcherWithManage {...props} /> }} />
+            <DatasetControl.ViewSwitcher onLoad={loadDealViews} components={{ onRenderButton: props => <ViewSwitcherWithManage {...props} /> }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns components={{

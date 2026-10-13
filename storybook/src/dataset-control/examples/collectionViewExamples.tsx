@@ -13,8 +13,10 @@ const loadProducts = async (params: IDatasetControlLoadParameters): Promise<IDat
     //the product name is what the quick find searches
     provider.setColumns(provider.getColumns().map(column => ({ ...column, isPrimary: column.name === 'name' })))
     provider.setFiltering(view.category ? { filterOperator: 0, conditions: [{ attributeName: 'category', conditionOperator: 0, value: \`\${view.category}\` }] } : null)
-    return { provider, views: VIEWS.map(({ id, name }) => ({ id, name })), viewId: view.id }
+    return { provider, viewId: view.id }
 }
+
+const loadViews = async (): Promise<IDatasetControlView[]> => VIEWS.map(({ id, name }) => ({ id, name }))
 
 //orders more of the selected products; the commands follow the selection
 const ProductsRibbon = () => {
@@ -88,7 +90,7 @@ const ProductGallery = () => {
 const GridExample = () => <DatasetControl stateKey='products' onLoad={loadProducts} height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
+            <DatasetControl.ViewSwitcher onLoad={loadViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <ProductsRibbon />

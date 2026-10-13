@@ -2,7 +2,7 @@ import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } fro
 import { IStateStore, LocalizationService, ServiceLocator, StateStore } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
+import { IDatasetControlServiceLocator, IDatasetControlServiceMap } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 
@@ -23,8 +23,6 @@ export interface IDatasetControlLoadParameters {
 
 export interface IDatasetControlLoadResult {
     provider: IDataProvider;
-    /** What the view switcher lists. */
-    views?: IDatasetControlView[];
     /** The view `provider` shows, when `onLoad` picked the default. */
     viewId?: string;
 }
@@ -37,8 +35,6 @@ export interface IDatasetControlRuntime {
     getProvider(): IDataProvider | undefined;
     /** Changes with every provider, for keying what renders it. */
     getProviderKey(): number;
-    /** The views the last load that succeeded returned; empty when it returned none. */
-    getViews(): IDatasetControlView[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
@@ -67,7 +63,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _state: DatasetControlState;
     private _provider?: IDataProvider;
     private _providerKey = 0;
-    private _views: IDatasetControlView[] = [];
     private _viewId?: string;
     private _requestedViewId?: string;
     private _isLoading = false;
@@ -94,10 +89,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getProviderKey(): number {
         return this._providerKey;
-    }
-
-    public getViews(): IDatasetControlView[] {
-        return this._views;
     }
 
     public getViewId(): string | undefined {
@@ -187,7 +178,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         const previous = this._provider;
         this._provider = result.provider;
         this._providerKey++;
-        this._views = result.views ?? [];
         this._viewId = result.viewId ?? parameters.viewId;
         this._isLoading = false;
         this.events.dispatchEvent('onLoaded', result.provider);
