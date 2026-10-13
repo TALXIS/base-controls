@@ -3,7 +3,7 @@ import { DefaultButton } from '@fluentui/react'
 import {
     createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, PcfContextProvider,
 } from '@talxis/base-controls'
-import { loadDeals, loadDealViews } from '../dealViews'
+import { loadDealColumns, loadDeals, loadDealViews } from '../dealViews'
 
 export interface ILayoutDatasetControlProps {
     viewSwitcher: boolean
@@ -30,7 +30,7 @@ export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
     const footerIn = (region: 'start' | 'end') => [props.pagination === region && <DatasetControl.Pagination key='pagination' />, props.pageSizeSwitcher === region && <DatasetControl.PageSizeSwitcher key='pageSizeSwitcher' />].filter(Boolean)
     const footerStart = footerIn('start')
     const footerEnd = footerIn('end')
-    const end = [props.ribbon === 'end' && React.cloneElement(ribbon, { key: 'ribbon' }), props.editColumns && <DatasetControl.EditColumns key='editColumns' />, props.quickFind && <DatasetControl.QuickFind key='quickFind' />, ...Array.from({ length: props.extraButtons }, (_, index) => <DefaultButton key={`extra${index}`} text={`Button ${index + 1}`} />)].filter(Boolean)
+    const end = [props.ribbon === 'end' && React.cloneElement(ribbon, { key: 'ribbon' }), props.editColumns && <DatasetControl.EditColumns key='editColumns' onLoadColumns={loadDealColumns} />, props.quickFind && <DatasetControl.QuickFind key='quickFind' />, ...Array.from({ length: props.extraButtons }, (_, index) => <DefaultButton key={`extra${index}`} text={`Button ${index + 1}`} />)].filter(Boolean)
 
     return <PcfContextProvider>
         <div style={{ width: props.width }}>

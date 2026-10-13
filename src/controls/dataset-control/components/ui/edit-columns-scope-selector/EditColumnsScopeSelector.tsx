@@ -6,6 +6,7 @@ export interface IEditColumnsScopeSelectorUiProps {
     label: string;
     defaultValue: IAvailableRelatedColumn;
     noResultsText: string;
+    loadingText: string;
     getOptionLabel: (scope: IAvailableRelatedColumn) => string;
     onLoadOptions: (query?: string) => Promise<IAvailableRelatedColumn[]>;
     onChange: (scope: IAvailableRelatedColumn) => void;
@@ -28,6 +29,7 @@ export const EditColumnsScopeSelector = (props: IEditColumnsScopeSelectorUiProps
         isDisabled={isDisabled}
         defaultValue={props.defaultValue}
         noResultsText={props.noResultsText}
+        loadingText={props.loadingText}
         getOptionValue={scope => `${scope.relatedEntityPrimaryIdAttribute}_${scope.name}`}
         getOptionLabel={props.getOptionLabel}
         loadOptions={query => props.onLoadOptions(query)}

@@ -1,12 +1,12 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
 import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
-import { DatasetControlEditColumnsSession } from "./DatasetControlEditColumnsSession";
+import { DatasetControlEditColumnsSession, IDatasetControlEditColumnsLoaders } from "./DatasetControlEditColumnsSession";
 
 export interface IDatasetControlEditColumnsEvents {
     onOpenChanged: () => void;
 }
 
-export interface IDatasetControlEditColumnsParameters {
+export interface IDatasetControlEditColumnsParameters extends IDatasetControlEditColumnsLoaders {
     services: IDatasetControlServiceLocator;
     provider: IDataProvider;
 }
@@ -17,10 +17,12 @@ export class DatasetControlEditColumns {
     private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;
     private _session?: DatasetControlEditColumnsSession;
+    private _loaders: IDatasetControlEditColumnsLoaders;
 
     constructor(parameters: IDatasetControlEditColumnsParameters) {
         this._services = parameters.services;
         this._provider = parameters.provider;
+        this._loaders = { onLoadColumns: parameters.onLoadColumns, onLoadScopes: parameters.onLoadScopes };
         this._services.register('editColumns', () => this);
     }
 
@@ -33,7 +35,7 @@ export class DatasetControlEditColumns {
         if (this._session) {
             return;
         }
-        this._session = new DatasetControlEditColumnsSession({ provider: this._provider });
+        this._session = new DatasetControlEditColumnsSession({ provider: this._provider, ...this._loaders });
         this.events.dispatchEvent('onOpenChanged');
     }
 

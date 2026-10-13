@@ -4,11 +4,22 @@ export interface IDatasetControlEditColumnsSessionEvents {
     onColumnsChanged: () => void;
     onColumnAdded: (column: IColumn) => void;
     onScopeChanged: () => void;
+    /** A column or scope load threw; `getError()` holds what. */
+    onLoadFailed: () => void;
 }
 
-export interface IDatasetControlEditColumnsSessionParameters {
+/** Where the column editor gets what it offers. */
+export interface IDatasetControlEditColumnsLoaders {
+    /** The columns a scope offers: the provider's own entity when `scope` is undefined. */
+    onLoadColumns: (scope?: IAvailableRelatedColumn) => Promise<IColumn[]>;
+    /** The related entities columns can be added from; without it, there is no scope to pick. */
+    onLoadScopes?: () => Promise<IAvailableRelatedColumn[]>;
+}
+
+export interface IDatasetControlEditColumnsSessionParameters extends IDatasetControlEditColumnsLoaders {
     provider: IDataProvider;
 }
+
 
 /** An edit of the columns that reaches the provider only when saved. */
 export class DatasetControlEditColumnsSession {
@@ -18,9 +29,14 @@ export class DatasetControlEditColumnsSession {
     //keyed by the related entity's id attribute and the lookup it is reached through
     private _linking: Map<string, ILinkEntityExposedExpression>;
     private _scope?: IAvailableRelatedColumn;
+    private _onLoadColumns: IDatasetControlEditColumnsLoaders['onLoadColumns'];
+    private _onLoadScopes?: IDatasetControlEditColumnsLoaders['onLoadScopes'];
+    private _error?: unknown;
 
     constructor(parameters: IDatasetControlEditColumnsSessionParameters) {
         this._provider = parameters.provider;
+        this._onLoadColumns = parameters.onLoadColumns;
+        this._onLoadScopes = parameters.onLoadScopes;
         this._columns = this._provider.getColumns().map(column => ({ ...column }));
         this._linking = new Map(this._provider.getLinking().map(link => [`${link.from}_${link.to}`, link]));
     }
@@ -34,17 +50,35 @@ export class DatasetControlEditColumnsSession {
         return this._provider.getMetadata()?.DisplayCollectionName;
     }
 
-    /** The columns of the current scope's entity. */
+    /** The columns of the current scope; `[]` when the load threw. */
     public async getAvailableColumns(query?: string): Promise<IColumn[]> {
-        const entityName = this._scope?.metadata?.Targets?.[0] ?? this._provider.getEntityName();
-        const columns = await this._provider.getAvailableColumns({ entityName });
+        const scope = this._scope;
+        const columns = await this._load(() => this._onLoadColumns(scope));
         return query ? columns.filter(column => this._matches(column.displayName, query)) : columns;
     }
 
-    /** The entities columns can be added from: the provider's own and those its lookups reach. */
+    /** Whether there are scopes to pick from. */
+    public hasScopes(): boolean {
+        return !!this._onLoadScopes;
+    }
+
+    /** The entities columns can be added from; `[]` when the load threw. */
     public async getScopes(query?: string): Promise<IAvailableRelatedColumn[]> {
-        const scopes = await this._provider.getAvailableRelatedColumns();
+        const onLoadScopes = this._onLoadScopes;
+        if (!onLoadScopes) {
+            return [];
+        }
+        const scopes = await this._load(onLoadScopes);
         return query ? scopes.filter(scope => this._matches(scope.displayName, query)) : scopes;
+    }
+
+    /** What the last failed load threw, until `clearError()`. */
+    public getError(): unknown {
+        return this._error;
+    }
+
+    public clearError(): void {
+        this._error = undefined;
     }
 
     /** The scope standing for the provider's own entity, which the session starts in. */
@@ -112,8 +146,23 @@ export class DatasetControlEditColumnsSession {
         return { ...column, name: `${link.alias}.${column.name}`, displayName: `${column.displayName} (${scope.displayName})` };
     }
 
+    private async _load<T>(load: () => Promise<T[]>): Promise<T[]> {
+        try {
+            return await load();
+        }
+        catch (error) {
+            this._error = error;
+            this.events.dispatchEvent('onLoadFailed');
+            return [];
+        }
+    }
+
+    private _getLinkKey(scope: IAvailableRelatedColumn): string {
+        return `${scope.relatedEntityPrimaryIdAttribute}_${scope.name}`;
+    }
+
     private _getLink(scope: IAvailableRelatedColumn): ILinkEntityExposedExpression {
-        const key = `${scope.relatedEntityPrimaryIdAttribute}_${scope.name}`;
+        const key = this._getLinkKey(scope);
         const existing = this._linking.get(key);
         if (existing) {
             return existing;

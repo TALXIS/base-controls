@@ -3465,7 +3465,7 @@ interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: s
 interface IPaginationLabels { firstPageTooltip: string; previousPageTooltip: string; nextPageTooltip: string; currentPage: string }
 interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pageSizeTooltip: string }
 interface IDatasetControlNotificationsLabels { groupedNotificationsSummary: string }
-interface IEditColumnsLabels { editColumns: string; save: string; cancel: string; scopeSelectorLabel: string; columnSelectorPlaceholder: string; customColumnTooltip: string; unnamed: string; noResults: string }
+interface IEditColumnsLabels { editColumns: string; save: string; cancel: string; scopeSelectorLabel: string; columnSelectorPlaceholder: string; customColumnTooltip: string; unnamed: string; noResults: string; loading: string }
 
 interface IDatasetControlRuntimeEvents {
     /** A load started: the first one, a view switch or a reload. */
@@ -3611,6 +3611,8 @@ interface IEditColumnsComponents {
     scopeSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: any; text: string }) => JSX.Element | null }>;
     columnSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: IColumn; text: string }) => JSX.Element | null }>;
     columnList?: Partial<{ onRenderColumn: (props: IDatasetControlListColumn) => JSX.Element | null }>;
+    /** How a failed column or scope load looks. */
+    errorMessage?: Partial<IErrorMessageBarComponents>;
 }
 
 /** Loads the provider through onLoad and holds every part inside it; the parts are attached to it. */
@@ -3652,7 +3654,14 @@ interface IDatasetControlNamespace {
     /** The empty state in place of its children while the provider has no records. */
     EmptyRecords: (props: { children?: React.ReactNode; labels?: Partial<{ noRecordsFound: string }>; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
-    EditColumns: (props: { enableScopeSelector?: boolean; labels?: Partial<IEditColumnsLabels>; components?: IEditColumnsComponents }) => JSX.Element;
+    EditColumns: (props: {
+        /** The columns the user can add: the records' own when scope is undefined. */
+        onLoadColumns: (scope?: IAvailableRelatedColumn) => Promise<IColumn[]>;
+        /** The related entities columns can come from; shows the scope selector. */
+        onLoadScopes?: () => Promise<IAvailableRelatedColumn[]>;
+        labels?: Partial<IEditColumnsLabels>;
+        components?: IEditColumnsComponents;
+    }) => JSX.Element;
     Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyRecords: (props: IEmptyRecordsUiProps) => JSX.Element | null; [part: string]: any };
 }
 

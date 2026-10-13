@@ -14,7 +14,7 @@ const DESCRIPTION = `The parts sit in a container, in a header above the records
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.Ribbon onLoad={loadCommands} />
-            <DatasetControl.EditColumns />
+            <DatasetControl.EditColumns onLoadColumns={loadColumns} />
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>

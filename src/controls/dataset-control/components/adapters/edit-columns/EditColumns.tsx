@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { DatasetConstants, IAvailableRelatedColumn, IColumn } from "@talxis/client-libraries";
-import { useEventEmitter } from "@hooks";
+import { useEventEmitter, useLatest } from "@hooks";
+import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
-import { LocalizationService, useDataProvider } from "@utils";
+import { ErrorBoundary, LocalizationService, useDataProvider } from "@utils";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { EDIT_COLUMNS_LABELS, IEditColumnsLabels } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "./DatasetControlEditColumns";
-import { IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
+import { IDatasetControlEditColumnsLoaders, IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
 
 /** Replacements for the pieces of the column editor. */
 export interface IEditColumnsComponents {
@@ -16,11 +17,11 @@ export interface IEditColumnsComponents {
     scopeSelector?: Partial<IEditColumnsSelectorUiComponents<IAvailableRelatedColumn>>;
     columnSelector?: Partial<IEditColumnsSelectorUiComponents<IColumn>>;
     columnList?: Partial<IEditColumnsColumnListUiComponents>;
+    /** How a failed column or scope load looks. */
+    errorMessage?: Partial<IErrorMessageBarComponents>;
 }
 
-export interface IEditColumnsProps {
-    /** Whether the related-entity scope selector is shown; defaults to `true`. */
-    enableScopeSelector?: boolean;
+export interface IEditColumnsProps extends IDatasetControlEditColumnsLoaders {
     labels?: Partial<IEditColumnsLabels>;
     components?: IEditColumnsComponents;
 }
@@ -31,11 +32,19 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProvider();
-    const editColumns = useMemo(() => new DatasetControlEditColumns({ services: runtime.services, provider }), []);
+    const propsRef = useLatest(props);
+    const editColumns = useMemo(() => new DatasetControlEditColumns({
+        services: runtime.services,
+        provider,
+        onLoadColumns: scope => propsRef.current.onLoadColumns(scope),
+        onLoadScopes: props.onLoadScopes && (() => propsRef.current.onLoadScopes!()),
+    }), []);
     const labels = useMemo(() => new LocalizationService<IEditColumnsLabels>({ ...EDIT_COLUMNS_LABELS, ...props.labels }), [props.labels]);
     const components = props.components ?? NO_COMPONENTS;
     const { rerender } = useRerender();
     const [scopeVersion, setScopeVersion] = useState(0);
+    //mounts the selectors again, which loads them again
+    const [retryCount, setRetryCount] = useState(0);
     const [addedColumn, setAddedColumn] = useState<IColumn>();
     const session = editColumns.getSession();
 
@@ -43,7 +52,13 @@ export const EditColumns = (props: IEditColumnsProps) => {
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onColumnsChanged', rerender);
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onColumnAdded', setAddedColumn);
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onScopeChanged', () => setScopeVersion(version => version + 1));
+    useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onLoadFailed', rerender);
     useEffect(() => () => editColumns.destroy(), []);
+
+    const retry = () => {
+        session?.clearError();
+        setRetryCount(count => count + 1);
+    };
 
     const getTitle = (): string => {
         const collectionName = session?.getEntityDisplayName();
@@ -68,25 +83,30 @@ export const EditColumns = (props: IEditColumnsProps) => {
             onSave={() => editColumns.save()}
             onDismiss={() => editColumns.close()}
             components={components.panel}>
-            {(props.enableScopeSelector ?? true) && <DatasetControlUi.EditColumnsScopeSelector
-                label={labels.getLocalizedString('scopeSelectorLabel')}
-                defaultValue={session.getMainScope()}
-                noResultsText={labels.getLocalizedString('noResults')}
-                getOptionLabel={getScopeLabel}
-                onLoadOptions={query => session.getScopes(query)}
-                onChange={scope => session.setScope(scope)}
-                components={components.scopeSelector} />}
-            <DatasetControlUi.EditColumnsColumnSelector
-                key={scopeVersion}
-                openMenuOnMount={scopeVersion > 0}
-                value={session.getColumns()}
-                placeholder={labels.getLocalizedString('columnSelectorPlaceholder')}
-                noResultsText={labels.getLocalizedString('noResults')}
-                noNameText={labels.getLocalizedString('unnamed')}
-                getOptionTooltip={column => column.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? labels.getLocalizedString('customColumnTooltip') : column.name}
-                onLoadOptions={query => session.getAvailableColumns(query)}
-                onAdd={column => session.addColumn(column)}
-                components={components.columnSelector} />
+            <ErrorBoundary error={session.getError()} onRetry={retry} components={components.errorMessage}>
+                {session.hasScopes() && <DatasetControlUi.EditColumnsScopeSelector
+                    key={retryCount}
+                    label={labels.getLocalizedString('scopeSelectorLabel')}
+                    defaultValue={session.getMainScope()}
+                    noResultsText={labels.getLocalizedString('noResults')}
+                    loadingText={labels.getLocalizedString('loading')}
+                    getOptionLabel={getScopeLabel}
+                    onLoadOptions={query => session.getScopes(query)}
+                    onChange={scope => session.setScope(scope)}
+                    components={components.scopeSelector} />}
+                <DatasetControlUi.EditColumnsColumnSelector
+                    key={`${scopeVersion}-${retryCount}`}
+                    openMenuOnMount={scopeVersion > 0}
+                    value={session.getColumns()}
+                    placeholder={labels.getLocalizedString('columnSelectorPlaceholder')}
+                    noResultsText={labels.getLocalizedString('noResults')}
+                    loadingText={labels.getLocalizedString('loading')}
+                    noNameText={labels.getLocalizedString('unnamed')}
+                    getOptionTooltip={column => column.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? labels.getLocalizedString('customColumnTooltip') : column.name}
+                    onLoadOptions={query => session.getAvailableColumns(query)}
+                    onAdd={column => session.addColumn(column)}
+                    components={components.columnSelector} />
+            </ErrorBoundary>
             <DatasetControlUi.EditColumnsColumnList
                 columns={session.getColumns().map(column => ({
                     column,

@@ -9,6 +9,7 @@ export interface IEditColumnsColumnSelectorUiProps {
     value: IColumn[];
     placeholder: string;
     noResultsText: string;
+    loadingText: string;
     noNameText: string;
     /** What an option's tooltip says. */
     getOptionTooltip: (column: IColumn) => string;
@@ -26,6 +27,7 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
     const styles = useMemo(() => getEditColumnsColumnSelectorUiStyles(), []);
     const ref = useRef<SelectInstance<IColumn, true>>(null);
     const [defaultOptions, setDefaultOptions] = useState<IColumn[]>([]);
+    const [isLoadingDefaultOptions, setIsLoadingDefaultOptions] = useState(true);
     const [inputValue, setInputValue] = useState('');
 
     useEffect(() => {
@@ -36,7 +38,10 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
         loadDefaultOptions();
     }, []);
 
-    const loadDefaultOptions = async () => setDefaultOptions(await props.onLoadOptions());
+    const loadDefaultOptions = async () => {
+        setDefaultOptions(await props.onLoadOptions());
+        setIsLoadingDefaultOptions(false);
+    };
 
     const onInputChange = (value: string, meta: InputActionMeta): string => {
         const kept = INPUT_CLEARING_ACTIONS.has(meta.action) ? meta.prevInputValue : value;
@@ -61,8 +66,10 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
         hideSelectedOptions
         controlShouldRenderValue={false}
         defaultOptions={defaultOptions}
+        isLoading={isLoadingDefaultOptions || undefined}
         placeholder={props.placeholder}
         noResultsText={props.noResultsText}
+        loadingText={props.loadingText}
         getOptionValue={column => Attribute.GetNameFromAlias(column.name)}
         getOptionLabel={column => column.displayName ?? props.noNameText}
         getOptionTooltip={props.getOptionTooltip}

@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const CZECH_CODE = `import { loadDeals, loadDealViews } from './views'
+const CZECH_CODE = `import { loadDealColumns, loadDeals, loadDealViews } from './views'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} labels={{ unsavedChangesConfirmation: 'Neuložené změny budou ztraceny. Pokračovat?' }} height='480px'>
     <DatasetControl.Header>
@@ -10,7 +10,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} la
             <DatasetControl.ViewSwitcher onLoad={loadDealViews} labels={{ ungroupedViewsHeader: 'Systémová zobrazení' }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
-            <DatasetControl.EditColumns labels={{ editColumns: 'Upravit sloupce', save: 'Uložit', cancel: 'Zrušit', columnSelectorPlaceholder: 'Přidat sloupec...', noResults: 'Nic nenalezeno.' }} />
+            <DatasetControl.EditColumns onLoadColumns={loadDealColumns} labels={{ editColumns: 'Upravit sloupce', save: 'Uložit', cancel: 'Zrušit', columnSelectorPlaceholder: 'Přidat sloupec...', noResults: 'Nic nenalezeno.' }} />
             <DatasetControl.QuickFind labels={{ searchPlaceholder: 'Hledat {{ collection }}...', defaultCollectionName: 'záznamy', columnsHintStart: 'Použít filtr', columnsHintOperator: 'začíná na', columnsHintEnd: 'na tyto sloupce:' }} />
         </DatasetControl.Header.End>
     </DatasetControl.Header>

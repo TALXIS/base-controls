@@ -11,13 +11,15 @@ export interface IEditColumnsSelectorUiProps<TOption, IsMulti extends boolean = 
     /** Drawn above the selector. */
     label?: string;
     noResultsText: string;
+    /** Shown in the menu while the options load. */
+    loadingText: string;
     /** What an option's tooltip says; its label when left out. */
     getOptionTooltip?: (option: TOption) => string;
     components?: Partial<IEditColumnsSelectorUiComponents<TOption>>;
 }
 
 const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(props: IEditColumnsSelectorUiProps<TOption, IsMulti>, ref: React.Ref<SelectInstance<TOption, IsMulti>>) => {
-    const { label, noResultsText, getOptionTooltip, components: componentsProp, ...selectProps } = props;
+    const { label, noResultsText, loadingText, getOptionTooltip, components: componentsProp, ...selectProps } = props;
     const components = { ...EditColumnsSelectorUiComponents, ...componentsProp } as IEditColumnsSelectorUiComponents<TOption>;
     const theme = useTheme();
     const styles = useMemo(() => getEditColumnsSelectorUiStyles(), []);
@@ -35,6 +37,7 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
         defaultOptions
         maxMenuHeight={600}
         noOptionsMessage={() => noResultsText}
+        loadingMessage={() => loadingText}
         styles={{
             option: base => ({ ...base, padding: 0, cursor: 'pointer' }),
             menu: () => ({ width: 300 }),

@@ -11,6 +11,8 @@ export interface IEditColumnsLabels {
     unnamed: string;
     /** Shown by a selector that finds nothing. */
     noResults: string;
+    /** Shown by a selector while its options load. */
+    loading: string;
 }
 
 /** The English defaults for {@link IEditColumnsLabels}. */
@@ -23,4 +25,5 @@ export const EDIT_COLUMNS_LABELS: IEditColumnsLabels = {
     customColumnTooltip: 'User column',
     unnamed: '(No name)',
     noResults: 'No results found.',
+    loading: 'Loading...',
 };

@@ -17,29 +17,26 @@ const VIEWS: IDealView[] = [
 ]
 
 //the deals as one view shows them
-class DealsProvider extends MemoryDataProvider {
-    constructor(view: IDealView) {
-        super({
-            dataSource: DEAL_ROWS.map(row => ({ ...row })),
-            metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
-            columns: DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name', isHidden: !view.columns.includes(column.name), order: view.columns.indexOf(column.name) })),
-        })
-        this.setSorting(view.sorting ?? [])
-        this.setFiltering(view.filtering ?? null)
-    }
-
-    //every deal column can be added back in Edit columns
-    public async onGetAvailableColumns(): Promise<IColumn[]> {
-        return DEAL_COLUMNS
-    }
+const createViewProvider = (view: IDealView) => {
+    const provider = new MemoryDataProvider({
+        dataSource: DEAL_ROWS.map(row => ({ ...row })),
+        metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
+        columns: DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name', isHidden: !view.columns.includes(column.name), order: view.columns.indexOf(column.name) })),
+    })
+    provider.setSorting(view.sorting ?? [])
+    provider.setFiltering(view.filtering ?? null)
+    return provider
 }
 
 export const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
     //stands in for fetching the view and the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
     const view = VIEWS.find(view => view.id === params.viewId) ?? VIEWS[0]
-    return { provider: new DealsProvider(view), viewId: view.id }
+    return { provider: createViewProvider(view), viewId: view.id }
 }
+
+//every deal column can be added back in Edit columns
+export const loadDealColumns = async (): Promise<IColumn[]> => DEAL_COLUMNS
 
 //what the view switcher lists
 export const loadDealViews = async (): Promise<IDatasetControlView[]> => {

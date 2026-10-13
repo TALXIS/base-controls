@@ -2,10 +2,10 @@ import React from 'react'
 import { mergeStyleSets, Text } from '@fluentui/react'
 import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { loadDeals, loadDealViews } from '../dealViews'
+import { loadDealColumns, loadDeals, loadDealViews } from '../dealViews'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const PICK_PARTS_CODE = `import { loadDeals, loadDealViews } from './views'
+const PICK_PARTS_CODE = `import { loadDealColumns, loadDeals, loadDealViews } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
 const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Page size', 'Pagination']
@@ -30,7 +30,7 @@ const GridExample = () => {
                     </DatasetControl.Header.Start>
                     <DatasetControl.Header.End>
                         {has('Ribbon') && has('View switcher') && <DealsRibbon />}
-                        {has('Edit columns') && <DatasetControl.EditColumns />}
+                        {has('Edit columns') && <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />}
                         {has('Quick find') && <DatasetControl.QuickFind />}
                         {has('Your own button') && <DefaultButton text='Export to Excel' iconProps={{ iconName: 'ExcelDocument' }} />}
                     </DatasetControl.Header.End>
@@ -80,7 +80,7 @@ export const FullPageExample = () => <div className={pageStyles.page}>
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <FullPageRibbon />
-                    <DatasetControl.EditColumns />
+                    <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />
                     <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
