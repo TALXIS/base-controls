@@ -37,7 +37,7 @@ Hand back the \`metadata\` you were given, and for the records hand back what th
 
 ### The hooks, and the defaults behind them
 
-Each hook falls back to the matching \`MemoryTaskActions\` method and receives its exact parameters, so an override can wrap the default rather than replace it — see [**Extending**](?path=/story/task-grid-extending--overview), under *The actions classes*.
+Each hook falls back to the matching \`MemoryTaskActions\` method and receives its exact parameters, so an override can wrap the default rather than replace it — see [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview), under *The actions classes*.
 
 | Hook | Default | 
 |---|---|

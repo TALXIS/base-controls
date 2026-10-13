@@ -4,7 +4,8 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { QuickFindExample } from '../../../dataset-control/examples/partsExamples'
 
-const DESCRIPTION = `\`DatasetControl.QuickFind\` searches the records, in the provider's quick find columns, or its primary column when it has none.
+const DESCRIPTION = `
+\`DatasetControl.QuickFind\` searches the records, in the provider's quick find columns, or its primary column when it has none.
 
 \`\`\`tsx
 <DatasetControl.Header.End>
@@ -29,7 +30,7 @@ const DESCRIPTION = `\`DatasetControl.QuickFind\` searches the records, in the p
 
 ## From your code
 
-The quick find is \`control.parts.get('quickFind')\`. Put a query in it and search, as if the user typed it:
+\`control.parts.get('quickFind')\` returns the quick find while it is rendered. See *Parts live as long as a load* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). Put a query in it and search, as if the user typed it:
 
 \`\`\`tsx
 const quickFind = control.parts.get('quickFind')
@@ -70,7 +71,7 @@ export const FindADeal: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Search for *Contoso*, then for *\\*rollout*, which matches anywhere in the name. Focus the field to see which columns it searches.`,
+                story: `Try: search for *Contoso*, then for *\\*rollout*, which matches anywhere in the name, and focus the field to see which columns it searches.`,
             },
         },
     },

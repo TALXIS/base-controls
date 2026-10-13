@@ -145,8 +145,8 @@ const createQueueProvider = () => {
 }
 
 const filterPlaceholdersModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('filtering').registerFilterControlParameters((result, { column, control }) => {
+    onRegister: grid => {
+        grid.services.get('filtering').registerFilterControlParameters((result, { column, control }) => {
             const placeholder = FILTER_PLACEHOLDERS.get(column.name)
             if (control === 'value' && placeholder) {
                 result.Placeholder = { raw: placeholder }

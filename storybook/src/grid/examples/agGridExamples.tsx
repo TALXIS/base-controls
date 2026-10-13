@@ -3,8 +3,8 @@ import { GridExampleRunner } from '../GridExampleRunner'
 import { createTicketsProvider } from '../data'
 
 export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
-    onRegister: runtime => {
-        runtime.registerAgGridOptions(result => {
+    onRegister: grid => {
+        grid.registerAgGridOptions(result => {
             result.options.suppressMovableColumns = !isUnlocked()
         })
     },

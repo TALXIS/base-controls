@@ -51,8 +51,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
 
 const escalatedTicketsModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerCellTheme((theme, { record }) => {
+    onRegister: grid => {
+        grid.services.get('cells').registerCellTheme((theme, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') !== '1') {
                 return
@@ -138,8 +138,8 @@ const GridExample = () => {
 
 export const COLUMN_LINES_CODE = `//lines between the columns and a frame round the grid
 const columnLinesModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('gridTheme').registerTheme((result, fluentTheme) => {
+    onRegister: grid => {
+        grid.services.get('gridTheme').registerTheme((result, fluentTheme) => {
             const line = { color: fluentTheme.semanticColors.bodyDivider }
             result.theme = result.theme.withParams({
                 columnBorder: line,
@@ -186,8 +186,8 @@ const validateHours = (result: IFieldValidationResult, { record }: { record: IRe
 }
 
 const reviewModule: IGridModule = {
-    onRegister: runtime => {
-        const headers = runtime.services.get('columns').headers
+    onRegister: grid => {
+        const headers = grid.services.get('columns').headers
         headers.registerColumnHeaderTheme((theme, header) => {
             const column = header.getColumn()
             const background = column && getHeaderColour(column.name)
@@ -202,7 +202,7 @@ const reviewModule: IGridModule = {
         const redraw = () => headers.render()
         provider.addEventListener('onRecordColumnValueChanged', redraw)
         provider.addEventListener('onAfterSaved', redraw)
-        runtime.events.addEventListener('onDestroyed', () => {
+        grid.events.addEventListener('onDestroyed', () => {
             provider.removeEventListener('onRecordColumnValueChanged', redraw)
             provider.removeEventListener('onAfterSaved', redraw)
         })

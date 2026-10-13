@@ -87,13 +87,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
 
 const EMPTY_RECORDS_CODE = `//the deals' names, drawn again whenever the provider loads new records
 const DealNames = () => {
-    const provider = useDataProvider()
-    const [, setVersion] = React.useState(0)
-    React.useEffect(() => {
-        const rerender = () => setVersion(version => version + 1)
-        provider.addEventListener('onNewDataLoaded', rerender)
-        return () => provider.removeEventListener('onNewDataLoaded', rerender)
-    }, [provider])
+    const provider = useDataProviderEvents(['onNewDataLoaded'])
     return <Stack tokens={{ childrenGap: 4, padding: 12 }}>
         {provider.getRecords().map(record => <Text key={record.getRecordId()}>{record.getFormattedValue('name')}</Text>)}
     </Stack>

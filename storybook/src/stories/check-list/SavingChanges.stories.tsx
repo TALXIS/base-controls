@@ -1,54 +1,42 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
+import { renderStory } from '../form/storyHelpers'
+import { SaveLogExample } from '../../check-list/checkListExamples'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 
 const DESCRIPTION = `
-The checklist changes the records of its provider and asks the provider to save them. To store the list in your own backend, give the checklist a provider that saves there.
+The checklist changes the records of its provider and asks the provider to save them. This page lists what it changes and when; to store the list in your own backend, give it a provider that saves there.
+
+{{story: Watch what the checklist saves}}
 
 ## What the checklist changes
 
 | When the user | The checklist |
 |---|---|
-| Ticks or unticks an item | Sets \`completed\` to \`true\` or \`false\`. |
-| Renames an item, or edits another column | Edits the cell, as any grid does. |
+| Ticks or unticks an item | Sets \`completed\` to \`true\` or \`false\`. Read back, the value is \`'1'\` or \`'0'\`. |
+| Renames an item, or edits another column | Sets the value, as any grid cell does. |
 | Drags an item | Sets \`stackRank\` to a rank between the item's new neighbours. |
-| Names an item in the bottom row | Adds a record with \`provider.newRecord()\` after the last item and sets its \`stackRank\`. |
+| Names an item in the bottom row | Adds a record with \`provider.newRecord()\` after the last item, and sets its \`stackRank\`. |
 | Deletes an item | Asks for confirmation, then calls \`provider.deleteRecords([recordId])\`. |
 
-With auto-save, every change except a delete is saved as soon as it is made; a delete always goes to the provider. Without auto-save, changes stay on the records until you save them. See *Saving* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+- With the default auto-save, every change but a delete saves its record at once. Without auto-save, changes stay on the records until you save them: see *Save* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+- A delete goes to the provider straight away, with or without auto-save. The delete button is there only while the editing module is on.
 
 ## Save to your backend
 
-Extend a provider and override the methods that persist records:
-
-\`\`\`ts
-import { IRecord, IRecordSaveOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
-
-class LaunchPlanProvider extends MemoryDataProvider {
-    public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        await api.saveItem(record.getRawData())
-        return super.onRecordSave(record)
-    }
-
-    public async onRecordsDelete(recordIds: string[]) {
-        await api.deleteItems(recordIds)
-        return super.onRecordsDelete(recordIds)
-    }
-}
-\`\`\`
-
-- \`onRecordSave\` saves one record and resolves \`{ recordId, success, fields, errors? }\`. \`record.isNew()\` tells a new item from an existing one.
-- \`onRecordsDelete\` deletes records and resolves \`{ success, results }\`, one \`{ recordId, success }\` per record. A record whose delete fails stays in the list.
-- Calling \`super\` keeps the provider's own copy of the records in step with your backend.
-- \`MemoryDataProvider\` suits records you load yourself. To load them from your backend too, extend \`DataProvider\` and implement its data methods.
+The provider decides where a save goes. To send the checklist's changes to your API, extend the provider and override \`onRecordSave\` and \`onRecordsDelete\`: see *Your own provider* on [**Data providers**](?path=/docs/data-providers--overview). \`record.isNew()\` tells an item added in the bottom row from one that existed.
 
 ## React to changes
 
-The grid's events are available on \`CheckList\`. The ones most often used with a checklist are:
+Listen on the provider, or through the grid's event props, which \`CheckList\` takes as well:
 
-- \`onRecordValueChanged(record, columnName, newValue)\`, after a tick, a rename, a drag or a new item.
-- \`onAfterRecordSaved(result)\`, once the provider has saved a record or refused it.
+| Event | When it fires |
+|---|---|
+| \`onRecordValueChanged(record, columnName, newValue)\` | After a tick, a rename, a drag or a new item. |
+| \`onAfterRecordSaved(result)\` | Once the provider has saved a record, or refused it. |
+| \`onAfterRecordsDeleted(results)\` | After a delete, on the provider. |
 
-Deletes raise no event; handle them in \`onRecordsDelete\`. Every event is listed under *Events* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
+Every provider event is under *Events* on [**Data providers**](?path=/docs/data-providers--overview), and every grid event on [**Props and events**](?path=/docs/grid-props-and-events--overview).
 `
 
 const meta = {
@@ -67,8 +55,14 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-//a docs page needs a story to render on
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => null,
+export const WatchWhatTheChecklistSaves: Story = {
+    name: 'Watch what the checklist saves',
+    render: () => renderStory(<SaveLogExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The provider's \`onAfterRecordSaved\` and \`onAfterRecordsDeleted\` events, logged beside the list. Try: tick an item, drag one, add one and delete one.`,
+            },
+        },
+    },
 }

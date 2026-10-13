@@ -4,7 +4,8 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
 
-const DESCRIPTION = `\`DatasetControl.Ribbon\` shows the commands your \`onLoad\` returns and runs one when it is clicked. It calls \`onLoad\` again whenever the selected records change, so read the selection inside it and return only the commands that apply.
+const DESCRIPTION = `
+\`DatasetControl.Ribbon\` shows the commands its own \`onLoad\` returns and runs one when it is clicked. It calls its \`onLoad\` again whenever the selected records change, so read the selection there and return only the commands that apply.
 
 \`\`\`tsx
 const DealsRibbon = () => {
@@ -19,11 +20,11 @@ const DealsRibbon = () => {
 
 - Commands are shown in the order they are returned. Commands that do not fit move into the overflow menu.
 - While a command's \`onExecute\` runs, its button is disabled.
-- While the commands load, a shimmer stands in for them. When \`onLoad\` throws, the ribbon shows the error, with *Details* and *Try again*.
-- In \`Header.End\` the commands sit against the right; in \`Header.Start\`, against the left.
+- While the commands load, a shimmer shows in their place. When the ribbon's \`onLoad\` throws, it shows the error, with *Details* and *Try again*.
+- In \`Header.End\` the commands sit against the right; in \`Header.Start\`, against the left. See *Place the parts* on [**Layout**](?path=/docs/datasetcontrol-layout--overview).
 - The same ribbon, without the reload on selection, is exported as \`Ribbon\`, for a command bar outside DatasetControl.
 
-{{story: Commands for the selected deals}}
+{{story: Act on the selected deals}}
 
 ## Props
 
@@ -34,20 +35,20 @@ const DealsRibbon = () => {
 | \`className\` | \`string\` | None | Added to the ribbon's box. |
 | \`components\` | \`IRibbonComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
 
-A command:
+An \`IRibbonCommand\`:
 
-| Field | Type | Description |
-|---|---|---|
-| \`id\` | \`string\` | Identifies the command across loads. Required. |
-| \`label\` | \`string\` | The button's text. Required. |
-| \`tooltip\` | \`string\` | Shown on hover. |
-| \`iconName\` | \`string\` | A Fluent icon name. |
-| \`isDisabled\` | \`boolean\` | Shows the button disabled. |
-| \`onExecute\` | \`() => Promise<void> \\| void\` | Runs when the button is clicked. Required. |
+| Key | Type | Default | Description |
+|---|---|---|---|
+| \`id\` | \`string\` | Required | Identifies the command across loads. |
+| \`label\` | \`string\` | Required | The button's text. |
+| \`onExecute\` | \`() => Promise<void> \\| void\` | Required | Runs when the button is clicked. |
+| \`tooltip\` | \`string\` | None | Shown on hover. |
+| \`iconName\` | \`string\` | None | A Fluent icon name. |
+| \`isDisabled\` | \`boolean\` | \`false\` | Shows the button disabled. |
 
 ## From your code
 
-The ribbon is \`control.parts.get('ribbon')\`. When a command changes what applies without changing the selection, call its \`reload()\`, as *Mark as won* does in the example:
+\`control.parts.get('ribbon')\` returns the ribbon while it is rendered. See *Parts live as long as a load* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). When a command changes what applies without changing the selection, call the ribbon's \`reload()\`, as *Mark as won* does in the example:
 
 \`\`\`tsx
 const markWon = async (ids: string[]) => {
@@ -58,7 +59,7 @@ const markWon = async (ids: string[]) => {
 
 | Member | Description |
 |---|---|
-| \`getCommands()\` | The commands \`onLoad\` returned; \`undefined\` until it first finishes. |
+| \`getCommands()\` | The commands the ribbon's \`onLoad\` returned; \`undefined\` until it first finishes. |
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Calls \`onLoad\` again. |
 | \`getError()\` | What the last \`onLoad\` threw, until the next one starts. |
@@ -82,12 +83,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const CommandsForTheSelectedDeals: Story = {
-    name: 'Commands for the selected deals',
+    name: 'Act on the selected deals',
     render: () => renderStory(<RibbonExample />),
     parameters: {
         docs: {
             description: {
-                story: `Select deals: *Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Marking takes a moment, during which the button is disabled, then the ribbon loads its commands again.`,
+                story: `*Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won; the button is disabled while it runs, then the commands load again.`,
             },
         },
     },

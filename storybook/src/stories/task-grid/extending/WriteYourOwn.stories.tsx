@@ -20,7 +20,7 @@ When neither shipped strategy fits — a REST API, GraphQL, SQL through a gatewa
 
 You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/strategies/memory/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
 
-Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-extending--overview).
+Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-talking-to-the-grid--overview).
 
 ## The task strategy
 
@@ -41,7 +41,7 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onDestroy?()\` | — | Called just before the view's provider is torn down — when another view loads, and on unmount — while its data is still readable. Every view gets a strategy of its own, so this is where the strategy hands back the records or releases what it holds. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you return from \`createTemplateModule\`'s \`onCreateProvider\` — see [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
+Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you return from \`createTemplateModule\`'s \`onCreateProvider\` — see [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview), under *The template data provider*.
 
 ### \`onInitialize\` is your setup hook
 
@@ -215,11 +215,11 @@ const features: ITaskGridFeatures = {
 <TaskGrid descriptor={new MyTaskGridDescriptor()} features={features} />
 \`\`\`
 
-\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a feature registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Extending → Services**](?path=/story/task-grid-extending--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a feature registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Extending → Services**](?path=/story/task-grid-talking-to-the-grid--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 
-The descriptor contract, the startup ordering and the template provider are on [**Extending**](?path=/story/task-grid-extending--overview). Shipped pieces you can drop into the descriptor above are on [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview), and [**Memory**](?path=/story/task-grid-descriptors-memory--overview) is the reference implementation to read alongside your own.
+The descriptor contract, the startup ordering and the template provider are on [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview). Shipped pieces you can drop into the descriptor above are on [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview), and [**Memory**](?path=/story/task-grid-descriptors-memory--overview) is the reference implementation to read alongside your own.
                 `.trim(),
             },
         },

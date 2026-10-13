@@ -23,40 +23,50 @@ export interface ICheckListServiceMap extends IGridServiceMap {
     checkList: IGridCheckList;
 }
 
+declare module "../../grid/services/interfaces" {
+    interface IGridModuleServiceMap {
+        /** The checklist, in a grid the `CheckList` draws. */
+        checkList: IGridCheckList;
+    }
+}
+
 export interface IGridCheckListParameters {
-    runtime: IGrid;
+    grid: IGrid;
     fieldMapping: ICheckListFieldMapping;
     labels?: Partial<ICheckListLabels>;
 }
 
 /** What makes the grid a checklist. */
 export interface IGridCheckList {
+    /** The columns the checklist works with. */
     getFieldMapping(): ICheckListFieldMapping;
+    /** The checklist's strings. */
     getLabels(): ILocalizationService<ICheckListLabels>;
     /** Whether the record is one of the list's items, not the row that adds one. */
     isItem(record: IRecord): boolean;
+    /** Whether the item is finished. */
     isCompleted(record: IRecord): boolean;
 }
 
 export class GridCheckList implements IGridCheckList {
-    private _runtime: IGrid;
+    private _grid: IGrid;
     private _fieldMapping: ICheckListFieldMapping;
     private _labels: ILocalizationService<ICheckListLabels>;
 
     constructor(parameters: IGridCheckListParameters) {
-        this._runtime = parameters.runtime;
+        this._grid = parameters.grid;
         this._fieldMapping = parameters.fieldMapping;
         this._labels = new LocalizationService<ICheckListLabels>({ ...CHECK_LIST_LABELS, ...parameters.labels });
         this._warnWhenUnsorted();
-        new CheckListColumns({ services: this._runtime.services, checkList: this });
-        if (this._runtime.services.find('editing')) {
-            new CheckListReordering({ runtime: this._runtime, checkList: this });
-            new CheckListNewItemRow({ runtime: this._runtime, checkList: this });
+        new CheckListColumns({ services: this._grid.services, checkList: this });
+        if (this._grid.services.find('editing')) {
+            new CheckListReordering({ grid: this._grid, checkList: this });
+            new CheckListNewItemRow({ grid: this._grid, checkList: this });
         }
     }
 
     private _warnWhenUnsorted(): void {
-        const sorting = this._runtime.services.get('provider').getSorting();
+        const sorting = this._grid.services.get('provider').getSorting();
         if (sorting.length !== 1 || sorting[0].name !== this._fieldMapping.stackRank || sorting[0].sortDirection !== 0) {
             console.warn(`CheckList: the provider is not sorted by '${this._fieldMapping.stackRank}', so the items show out of order. Call sortCheckListProvider before it loads.`);
         }
@@ -71,7 +81,7 @@ export class GridCheckList implements IGridCheckList {
     }
 
     public isItem(record: IRecord): boolean {
-        return record.getDataProvider() === this._runtime.services.get('provider');
+        return record.getDataProvider() === this._grid.services.get('provider');
     }
 
     public isCompleted(record: IRecord): boolean {

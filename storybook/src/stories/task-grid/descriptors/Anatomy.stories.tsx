@@ -191,7 +191,7 @@ providers without props, and a feature's \`onRegister\` reaches it as \`runtime.
   for the TALXIS models.
 - [**Modules**](?path=/story/task-grid-modules--overview) — the optional features and how passing one
   turns it on.
-- [**Extending**](?path=/story/task-grid-extending--overview) — reusing a shipped piece, changing one
+- [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview) — reusing a shipped piece, changing one
   behaviour, or writing a descriptor of your own.
                 `.trim(),
             },

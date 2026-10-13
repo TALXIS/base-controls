@@ -5,10 +5,10 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyValuePlaceholdersExample, StockScriptExample, TicketRecommendationsExample } from '../../../grid/examples/legacyClientApiExamples'
 
 const DESCRIPTION = `
-Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column: \`record.expressions.setDisabledExpression\`, \`record.expressions.ui.setNotificationsExpression\` and the others listed below. The legacy client API compatibility module makes \`<Grid />\` draw what they set, so those scripts keep working.
+Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column: see *Record expressions* on [**Data providers**](?path=/docs/data-providers--overview). The legacy client API compatibility module makes \`<Grid />\` draw what they set, so those scripts keep working.
 
 \`\`\`tsx
-<DatasetControl onLoad={async () => ({ provider: provider })}>
+<DatasetControl onLoad={loadTickets}>
     <DatasetControl.Body>
         <Grid
             modules={{
@@ -23,29 +23,28 @@ The module takes no options and needs no AG Grid Enterprise licence.
 
 {{story: Recommend next steps on tickets}}
 
-## Registering expressions
+## Register expressions
 
-An expression is set on one record for one column, and setting it again replaces it. A record drops its expressions every time it loads again, and a successful save loads it again. So register them twice:
+A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that.
 
-- on \`provider.getRecords()\`, for the records already loaded;
-- on the provider's \`onRecordLoaded\` event, for every record loaded or saved after that.
+- Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener in \`onDestroyed\`: see *Clean up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
+- An expression for a column the provider does not have is ignored, with a console warning.
+- An expression that reads anything besides its own record's values, such as the time or another record, needs \`provider.requestRender()\` when that changes, as the stock sync below does.
 
-Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener on the grid's \`onDestroyed\` event: see *Cleaning up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). An expression for a column the provider does not have is ignored, with a console warning.
+{{story: Colour, lock and load cells from a script}}
 
-An expression that reads only its own record's values redraws when they change. One that reads anything else, such as the time, another record or a flag of your own, does not: call \`provider.requestRender()\` once that changes, as the stock sync below does.
-
-{{story: Colours, locks and loading from scripts}}
+\`ui.setControlParametersExpression\` changes what the cell's control receives, such as its \`Placeholder\`.
 
 {{story: Say why a value is empty}}
 
 ## Expressions with and without the module
 
-Every expression takes the column's logical name first. Some are answered by the record itself, so they work with or without the module.
+Every expression takes the column's logical name first. Some are read by the record itself, so they work with or without the module.
 
 | Expression | With the module | Without it |
 |---|---|---|
-| \`setDisabledExpression(column, () => boolean)\` | \`true\` locks the cell and shows its lock icon, in a grid with the editing module. \`false\` cannot open what the grid, the column or the record locks: see *With the rest of the grid*. | Ignored |
-| \`ui.setNotificationsExpression(column, () => IAddControlNotificationOptions[])\` | Buttons in the cell: see *Notifications*. | Ignored |
+| \`setDisabledExpression(column, () => boolean)\` | \`true\` locks the cell and shows its lock icon, in a grid with the editing module. \`false\` cannot open what the grid, the column or the record locks: see *With the rest of the grid* below. | Ignored |
+| \`ui.setNotificationsExpression(column, () => IAddControlNotificationOptions[])\` | Buttons in the cell: see *Notifications* below. | Ignored |
 | \`ui.setCustomFormattingExpression(column, cellTheme => ({ backgroundColor?, textColor?, primaryColor? }))\` | Colours the cell. A new background without a text or primary colour gets a readable one. \`cellTheme\` is a Fluent theme of the cell's current colours, and \`undefined\` leaves the cell as it is. \`className\` and \`themeOverride\` are ignored. | Ignored |
 | \`ui.setLoadingExpression(column, () => boolean)\` | \`true\` draws a shimmer in place of the cell's value, lock icon, notifications and error. | Ignored |
 | \`ui.setControlParametersExpression(column, parameters => parameters)\` | Adds to or overrides the parameters the cell's control gets, such as \`Placeholder\`, both while it shows the value and while it is edited. It cannot remove one. | Ignored |
@@ -55,7 +54,7 @@ Every expression takes the column's logical name first. Some are answered by the
 | \`setValidationExpression(column, () => IFieldValidationResult)\` | Marks the cell invalid with the message and refuses the save. | The same |
 | \`setRequiredLevelExpression(column, () => level)\` | \`'required'\` makes an empty value invalid; \`'none'\` and \`'recommended'\` do not. The header's required marker still follows the column's metadata. | The same |
 | \`setValueExpression(column, () => any)\` | The value the cell shows until the user changes it. \`undefined\` keeps the stored value. | The same |
-| \`setFormattedValueExpression(column, formattedValue => text)\` | The text the cell shows, handed the text it would show. Lookup links, files and coloured option sets are drawn from the value instead. | The same |
+| \`setFormattedValueExpression(column, formattedValue => text)\` | The text the cell shows, from the text it would show. Lookup links, files and coloured option sets are drawn from the value instead. | The same |
 | \`setCurrencySymbolExpression(column, () => string)\` | The symbol a money cell shows. | The same |
 | \`ui.setCustomControlComponentExpression\` | Not read by the grid. | Not read |
 
@@ -65,7 +64,7 @@ How validation and locks work in general is on [**Editing**](?path=/docs/grid-mo
 
 Each notification an expression returns is an \`IAddControlNotificationOptions\`, drawn as a button in the cell, next to the value.
 
-| Option | What the grid does with it |
+| Option | Description |
 |---|---|
 | \`uniqueId\` | Required. Tells the cell's notifications apart, so keep it unique within the cell. |
 | \`iconName\` | The Fluent icon on the button. |
@@ -93,12 +92,12 @@ When a notification shows:
 
 ## With the rest of the grid
 
-- The module runs first, before every other built-in module and your hooks, and its lock, loading and colour answers replace what ran before it: see *Priorities* on [**Extending**](?path=/docs/grid-extending--overview).
+- The module runs first, before every other built-in module and your hooks, so later hooks can change its locks, loading and colours: see *How hooks run* on [**Hooks**](?path=/docs/grid-extending-hooks--overview).
 - The grid's validation replaces a script's \`setValidationExpression\`. A column with \`context.cell.onGetValidation\`, or every column once a \`registerValidation\` is registered, gets the grid's own validation expression on every record, and the script's never runs. Move such a check into the grid's validation.
 - A disabled expression cannot open a grid without the editing module, a column locked by its metadata or by \`context.isLocked\`, or a record locked as a whole.
 - With the module on, \`context: { isLocked: false }\` in \`colDefs\` no longer opens a column whose metadata has \`IsValidForUpdate: false\`: the module still locks its cells. To open them, also return \`false\` from a \`setDisabledExpression\` on that column, or unlock them in \`context.cell.onGetLock\`.
 - While rows are grouped, the grouping module repaints record cells with the grid's background after this module runs. A script's background colour is lost, but the text colour picked to contrast with it stays.
-- Group rows and the totals row are records too, and can carry expressions: see *Group rows and the totals row are records too* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+- Group rows and the totals row can carry expressions too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 `
 
 const meta = {
@@ -123,19 +122,19 @@ export const RecommendNextStepsOnTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A script tells agents what to do about each ticket, through \`ui.setNotificationsExpression\` on the Subject column. Hover an overdue ticket and click *Overdue*; the *Assign to me* icon on an unassigned ticket acts at once.`,
+                story: `A script tells agents what to do about each ticket through \`ui.setNotificationsExpression\` on the Subject column. Try: hover an overdue ticket and click *Overdue*; the *Assign to me* icon on an unassigned ticket acts at once.`,
             },
         },
     },
 }
 
 export const ColoursLocksAndLoadingFromScripts: Story = {
-    name: 'Colours, locks and loading from scripts',
+    name: 'Colour, lock and load cells from a script',
     render: () => renderStory(<StockScriptExample />),
     parameters: {
         docs: {
             description: {
-                story: `An inventory script colours In stock with \`ui.setCustomFormattingExpression\`, locks discontinued products with \`setDisabledExpression\`, and shimmers In stock during a sync with \`ui.setLoadingExpression\` and \`provider.requestRender()\`. Turn a product's Discontinued on, or press *Sync stock*.`,
+                story: `An inventory script colours In stock with \`ui.setCustomFormattingExpression\`, locks discontinued products with \`setDisabledExpression\`, and shimmers In stock during a sync with \`ui.setLoadingExpression\` and \`provider.requestRender()\`. Try: turn a product's Discontinued on, or press *Sync stock*.`,
             },
         },
     },
@@ -147,7 +146,7 @@ export const SayWhyAValueIsEmpty: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A triage script gives an empty Assigned to a placeholder that says why, through \`ui.setControlParametersExpression\`. New tickets read *Waiting for triage*; set one's Status to *In progress* and it reads *Unassigned*.`,
+                story: `A triage script gives an empty Assigned to a placeholder that says why. Try: set a New ticket's Status to *In progress*; it changes from *Waiting for triage* to *Unassigned*.`,
             },
         },
     },

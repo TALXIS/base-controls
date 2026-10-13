@@ -85,7 +85,7 @@ The parameters carry everything the factory needs: the cell's record and column 
 
 ## Templates
 
-No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract to implement, and [**Memory → Feature data**](?path=/story/task-grid-descriptors-memory-feature-data--overview) for a working example.
+No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview) for the contract to implement, and [**Memory → Feature data**](?path=/story/task-grid-descriptors-memory-feature-data--overview) for a working example.
 
 ## Task dependencies
 

@@ -39,7 +39,7 @@ Task Grid is a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--over
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
-| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract. |
+| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access. See [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview) for the contract. |
 | \`features?\` | — | The task grid's own features: personal views, templates, dependencies and the rest. See [**Modules**](?path=/story/task-grid-modules--overview). Read once, at mount. |
 | \`modules?\` | — | Grid modules that work with a task grid: sorting, filtering, clipboard, your own. Read once, at mount. |
 | \`height?\` | — | \`'100%'\` fills the parent; the content's height when left out. |
@@ -64,7 +64,7 @@ Every event the grid raises is a prop, so nothing needs a strategy or the impera
 | Personal views | \`onBeforeUserQueryCreated\`, \`onUserQueryCreated\`, \`onBeforeUserQueryUpdated\`, \`onUserQueryUpdated\`, \`onBeforeUserQueriesDeleted\`, \`onUserQueriesDeleted\` |
 | Templates | \`onBeforeTemplateCreated\`, \`onTemplateCreated\` |
 | Errors | \`onError\`, which fans in the task, view and template errors |
-| Records and cells | the Grid's own: \`onRecordValueChanged\`, \`onBeforeRecordSaved\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … — see [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
+| Records and cells | the Grid's own: \`onRecordValueChanged\`, \`onBeforeRecordSaved\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … — see [**Grid → Props and events**](?path=/docs/grid-props-and-events--overview) |
 
 Anything that can be cancelled reports it: a "created" or "updated" view prop receives \`null\` when the user closed the dialog, \`onTasksDeleted\` receives the per-task result, and \`onTaskMoved\` receives the changed records — or \`null\` when the task did not move, because the drop was refused or the strategy cancelled. The template props only fire when templates are enabled.
 
@@ -154,7 +154,7 @@ const descriptor = new DataverseTaskGridDescriptor({
 - [**Memory**](?path=/story/task-grid-descriptors-memory--overview) / [**Dataverse**](?path=/story/task-grid-descriptors-dataverse--overview) — every parameter of the descriptor you picked. [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview) if you are on TALXIS.
 - [**Modules**](?path=/story/task-grid-modules--overview) — the features that ship, how passing one turns it on, and the grid modules beside them. A live grid per feature.
 - [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, replaceable components, and the Grid's own options.
-- [**Extending**](?path=/story/task-grid-extending--overview) — reusing a shipped strategy, changing one behaviour, or writing your own.
+- [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview) — reusing a shipped strategy, changing one behaviour, or writing your own.
                 `
 
 const meta = {

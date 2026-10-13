@@ -38,8 +38,8 @@ const UnsavedChangesBar = () => {
 }
 
 const unsavedChangesModule: IGridModule = {
-    onRegister: runtime => {
-        const provider = runtime.services.get('provider')
+    onRegister: grid => {
+        const provider = grid.services.get('provider')
         const listeners = new Set<(count: number) => void>()
         const getCount = () => provider.getDirtyRecordIds().length
         const notify = () => listeners.forEach(listener => listener(getCount()))
@@ -50,8 +50,8 @@ const unsavedChangesModule: IGridModule = {
                 return () => listeners.delete(listener)
             },
         }
-        runtime.services.register('unsavedChanges', () => unsavedChanges)
-        runtime.services.get('surfaces').registerSurface(surfaces => {
+        grid.services.register('unsavedChanges', () => unsavedChanges)
+        grid.services.get('surfaces').registerSurface(surfaces => {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
 
@@ -59,7 +59,7 @@ const unsavedChangesModule: IGridModule = {
         provider.addEventListener('onAfterRecordSaved', notify)
         provider.addEventListener('onNewDataLoaded', notify)
         //the provider outlives the grid
-        runtime.events.addEventListener('onDestroyed', () => {
+        grid.events.addEventListener('onDestroyed', () => {
             provider.removeEventListener('onRecordColumnValueChanged', notify)
             provider.removeEventListener('onAfterRecordSaved', notify)
             provider.removeEventListener('onNewDataLoaded', notify)

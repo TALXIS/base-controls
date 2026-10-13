@@ -1980,6 +1980,8 @@ interface IGridModuleServiceMap {
     filtering: IGridFiltering;
     sorting: IGridSorting;
     rowSelection: IGridRowSelection;
+    /** There in a grid the CheckList draws. */
+    checkList: IGridCheckList;
 }
 
 /** What the store keeps, by id; plain data, so a host can persist it. */
@@ -2092,7 +2094,7 @@ interface IGridModule {
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
     /** Registers what the module contributes to the grid. */
-    onRegister?: (runtime: IGrid) => void;
+    onRegister?: (grid: IGrid) => void;
 }
 
 /** Read once, at mount. */
@@ -3351,6 +3353,16 @@ declare function createAggregationModule(options?: IAggregationModuleOptions): I
 /** Carries what legacy scripts set on records' fields into the cells. */
 declare function createLegacyClientApiCompatibilityModule(): IGridModule;
 /** Which of the provider's columns carry the label, the order and the completion state. */
+/** What makes the grid a checklist: grid.services.find('checkList'). */
+interface IGridCheckList {
+    /** The columns the checklist works with. */
+    getFieldMapping(): ICheckListFieldMapping;
+    /** Whether the record is one of the list's items, not the row that adds one. */
+    isItem(record: IRecord): boolean;
+    /** Whether the item is finished. */
+    isCompleted(record: IRecord): boolean;
+}
+
 interface ICheckListFieldMapping {
     /** Column holding the item's label. */
     name: string;

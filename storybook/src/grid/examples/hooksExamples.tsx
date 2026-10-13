@@ -9,8 +9,8 @@ const LOCKED_WHEN_CLOSED = ['products', 'value', 'probability', 'closedate']
 const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValue('stage')))
 
 const closedDealsModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.whenAvailable('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
+    onRegister: grid => {
+        grid.services.whenAvailable('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }
@@ -39,10 +39,10 @@ const getHoursThatDay = (entry: IRecord) => entry.getDataProvider().getRecords()
     .reduce((total, other) => total + Number(other.getValue('hours') ?? 0), 0)
 
 const dayLimitModule: IGridModule = {
-    onRegister: runtime => {
-        const timesheets = runtime.services.get('provider')
-        const cells = runtime.services.get('cells')
-        runtime.services.get('validation').registerValidation((result, { record, columnName }) => {
+    onRegister: grid => {
+        const timesheets = grid.services.get('provider')
+        const cells = grid.services.get('cells')
+        grid.services.get('validation').registerValidation((result, { record, columnName }) => {
             if (columnName === 'hours' && getHoursThatDay(record) > MAX_HOURS_A_DAY) {
                 result.error = true
                 result.errorMessage = \`\${record.getValue('employee')} logged more than \${MAX_HOURS_A_DAY} hours on this day.\`
@@ -56,7 +56,7 @@ const dayLimitModule: IGridModule = {
         }
         timesheets.addEventListener('onRecordColumnValueChanged', redrawDay)
         //the provider outlives the grid
-        runtime.events.addEventListener('onDestroyed', () => timesheets.removeEventListener('onRecordColumnValueChanged', redrawDay))
+        grid.events.addEventListener('onDestroyed', () => timesheets.removeEventListener('onRecordColumnValueChanged', redrawDay))
     },
 }
 
@@ -79,8 +79,8 @@ const createPriceRefresh = () => {
     const refreshing = new Set<string>()
     let cells: IGridCells | undefined
     const module: IGridModule = {
-        onRegister: runtime => {
-            cells = runtime.services.get('cells')
+        onRegister: grid => {
+            cells = grid.services.get('cells')
             cells.registerCellLoading((result, { record, columnName }) => {
                 if (columnName === 'price' && refreshing.has(record.getRecordId())) {
                     result.isLoading = true
@@ -127,9 +127,9 @@ const GridExample = () => {
 export const URGENT_ROWS_CODE = `const HIGH = 1
 
 const urgentRowsModule: IGridModule = {
-    onRegister: runtime => {
-        const tickets = runtime.services.get('provider')
-        runtime.services.get('rows').registerRowHeight((result, { record }) => {
+    onRegister: grid => {
+        const tickets = grid.services.get('provider')
+        grid.services.get('rows').registerRowHeight((result, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
                 result.height = 64
             }
@@ -137,11 +137,11 @@ const urgentRowsModule: IGridModule = {
         //AG Grid asks for a row's height again only when it is told to
         const resizeRows = (_record: IRecord, columnName: string) => {
             if (columnName === 'priority') {
-                runtime.services.find('gridApi')?.resetRowHeights()
+                grid.services.find('gridApi')?.resetRowHeights()
             }
         }
         tickets.addEventListener('onRecordColumnValueChanged', resizeRows)
-        runtime.events.addEventListener('onDestroyed', () => tickets.removeEventListener('onRecordColumnValueChanged', resizeRows))
+        grid.events.addEventListener('onDestroyed', () => tickets.removeEventListener('onRecordColumnValueChanged', resizeRows))
     },
 }
 
@@ -156,14 +156,14 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 `
 
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
-    onRegister: runtime => {
-        runtime.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
+    onRegister: grid => {
+        grid.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
             const column = header.getColumn()
             if (!column) {
                 return
             }
             const copyValues = async () => {
-                const values = runtime.services.get('provider').getRecords().map(record => record.getFormattedValue(column.name) ?? '')
+                const values = grid.services.get('provider').getRecords().map(record => record.getFormattedValue(column.name) ?? '')
                 await navigator.clipboard.writeText(values.join('\\n'))
                 onCopied(\`Copied \${values.length} values of \${column.displayName}.\`)
             }
@@ -197,8 +197,8 @@ const GridExample = () => {
 `
 
 export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
+    onRegister: grid => {
+        grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
             if (header.getColumn()?.dataType !== DataTypes.Currency) {
                 return
             }
@@ -225,8 +225,8 @@ export const ASSIGN_TO_ME_CODE = `const ME = 'Eva Horák'
 const IN_PROGRESS = 2
 
 const assignToMeModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+    onRegister: grid => {
+        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'assignee' || record.getValue('assignee')) {
                 return
             }
@@ -257,8 +257,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
 
 const createColumnsByRoleModule = (getRole: () => Role): IGridModule => ({
-    onRegister: runtime => {
-        runtime.services.get('columns').registerColumnDefinitions(columnDefs => {
+    onRegister: grid => {
+        grid.services.get('columns').registerColumnDefinitions(columnDefs => {
             const rate = columnDefs.find(colDef => colDef.colId === 'rate')
             if (rate) {
                 rate.hide = getRole() !== 'manager'
@@ -305,8 +305,8 @@ export const PLACEHOLDERS_CODE = `const PLACEHOLDERS: { [columnName: string]: st
 }
 
 const placeholdersModule: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerControlParameters((parameters, { columnName }) => {
+    onRegister: grid => {
+        grid.services.get('cells').registerControlParameters((parameters, { columnName }) => {
             if (PLACEHOLDERS[columnName]) {
                 parameters.Placeholder = { raw: PLACEHOLDERS[columnName] }
             }

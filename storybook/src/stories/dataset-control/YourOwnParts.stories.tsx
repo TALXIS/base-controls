@@ -5,22 +5,23 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { SelectedValueExample } from '../../dataset-control/examples/yourOwnPartsExamples'
 import { GalleryExample } from '../../dataset-control/examples/collectionViewExamples'
 
-const DESCRIPTION = `A part of your own is any component you put inside the control: a total in the footer, a filter in the header, or a gallery in place of the grid. Inside the control, it has what the built-in parts have:
+const DESCRIPTION = `
+A part of your own is any component you put inside the control: a total in the footer, a filter in the header, or a gallery in place of the grid. Inside the control, it has what the built-in parts have:
 
-| Hook | Returns |
+| Hook | Description |
 |---|---|
 | \`useDataProviderEvents(events)\` | The provider, and draws the component again on each of the provider's \`events\`. |
-| \`useDataProvider()\` | The provider, without drawing again. |
+| \`useDataProvider()\` | The provider, without drawing again. More on reading it under *Read records* and *Events* on [**Data providers**](?path=/docs/data-providers--overview). |
 | \`useDatasetControl()\` | The control, to switch views or reach the built-in parts. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
-| \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See [**State**](?path=/docs/datasetcontrol-state--overview). |
-| \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`: the side of the header or footer the component is in. |
+| \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See *Keep your own part's state* on [**State**](?path=/docs/datasetcontrol-state--overview). |
+| \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 
 ## A part in a region
 
 \`\`\`tsx
 const SelectedValue = () => {
     const provider = useDataProviderEvents(['onRecordsSelected'])
-    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + provider.getRecordsMap()[id].getValue('value'), 0)
+    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id].getValue('value') ?? 0), 0)
     return <Text>Selected: {total}</Text>
 }
 
@@ -29,7 +30,7 @@ const SelectedValue = () => {
 </DatasetControl.Footer.Start>
 \`\`\`
 
-{{story: Total of the selected deals}}
+{{story: Total the selected deals}}
 
 To make it look like a built-in part, draw it with \`DatasetControl.Ui\`, which holds every part as plain UI. See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
 
@@ -51,7 +52,7 @@ The parts work on the provider, not on the grid, so anything that shows records 
 - Wrap the view in \`DatasetControl.EmptyRecords\` for an empty state. See [**Notifications and empty records**](?path=/docs/datasetcontrol-parts-notifications-and-empty-records--overview).
 - Edit columns changes the provider's columns, so it is useful only when your view shows them.
 
-{{story: Products as a gallery}}
+{{story: Show products as a gallery}}
 `
 
 const meta = {
@@ -71,24 +72,24 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const TotalOfTheSelectedDeals: Story = {
-    name: 'Total of the selected deals',
+    name: 'Total the selected deals',
     render: () => renderStory(<SelectedValueExample />),
     parameters: {
         docs: {
             description: {
-                story: `Select deals to see their total value in the footer.`,
+                story: `A part of your own in the footer, redrawn on every selection by \`useDataProviderEvents\`. Try: select a few deals.`,
             },
         },
     },
 }
 
 export const ProductsAsAGallery: Story = {
-    name: 'Products as a gallery',
+    name: 'Show products as a gallery',
     render: () => renderStory(<GalleryExample />),
     parameters: {
         docs: {
             description: {
-                story: `An office furniture shop's products as cards. Switch views, search, page, and click cards to select them: the ribbon follows the selection. Scroll, switch to *Seating* and back: the gallery is scrolled where you left it.`,
+                story: `An office furniture shop's products as cards in place of the grid; the ribbon follows the selection as around a grid. Try: click cards to select them, scroll, then switch to *Seating* and back.`,
             },
         },
     },

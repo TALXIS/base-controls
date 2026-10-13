@@ -152,9 +152,9 @@ const AT_A_GLANCE = `import { getCloseDateState, getValueShare, isClosed, isOver
 import type { IFeature } from './features'
 
 /** What a cell shows: a grouped column draws its value in the group's row rather than in the deal's. */
-const getShownValue = (runtime: IGrid, record: IRecord, columnName: string) => {
-    const grouping = runtime.services.find('grouping')
-    const column = runtime.services.get('provider').getColumnsMap()[columnName]
+const getShownValue = (grid: IGrid, record: IRecord, columnName: string) => {
+    const grouping = grid.services.find('grouping')
+    const column = grid.services.get('provider').getColumnsMap()[columnName]
     if (column && grouping?.isColumnGrouped(column)) {
         return grouping.isRowGroupedBy(record, columnName) ? record.getValue(grouping.getGroupedValueColumnName(record, columnName)) : undefined
     }
@@ -169,9 +169,9 @@ const VALUE_TINTS = ['#f3faf3', '#dff6dd', '#bfe8bc']
 
 /** An icon before overdue and due close dates. */
 const statusIcons: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerControlParameters((parameters, { record, columnName }) => {
-            const value = getShownValue(runtime, record, columnName)
+    onRegister: grid => {
+        grid.services.get('cells').registerControlParameters((parameters, { record, columnName }) => {
+            const value = getShownValue(grid, record, columnName)
             const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
             if (state) {
                 parameters.PrefixIcon = { raw: CLOSE_DATE_ICONS[state] }
@@ -182,10 +182,10 @@ const statusIcons: IGridModule = {
 
 /** Close dates tinted red when overdue and amber when due this week, and Value tinted by deal size. */
 const colourRules: IGridModule = {
-    onRegister: runtime => {
+    onRegister: grid => {
         //after grouping, which repaints every row while the deals are grouped
-        runtime.services.get('cells').registerCellTheme((theme, { record, columnName }) => {
-            const value = getShownValue(runtime, record, columnName)
+        grid.services.get('cells').registerCellTheme((theme, { record, columnName }) => {
+            const value = getShownValue(grid, record, columnName)
             if (value == null || isClosed(record)) {
                 return
             }
@@ -202,8 +202,8 @@ const colourRules: IGridModule = {
 
 /** What the colours and icons in Close date mean. */
 const headerExtras: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
+    onRegister: grid => {
+        grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
             const legend = LEGENDS[header.getColumn()?.name ?? '']
             if (legend) {
                 adornments.push({ key: 'legend', placement: 'suffix', title: legend, onRender: () => <Icon iconName='Info' /> })
@@ -218,11 +218,11 @@ const LEGENDS: { [columnName: string]: string } = {
 
 /** Commands in the close date of an overdue deal that push it back. */
 const overdueActions: IGridModule = {
-    onRegister: runtime => {
+    onRegister: grid => {
         //the field saves the deal while auto-save is on
-        const pushBack = (deal: IRecord, days: number) => runtime.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
-        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
-            if (columnName !== 'closedate' || !isOverdue(record) || getShownValue(runtime, record, columnName) == null) {
+        const pushBack = (deal: IRecord, days: number) => grid.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
+        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+            if (columnName !== 'closedate' || !isOverdue(record) || getShownValue(grid, record, columnName) == null) {
                 return
             }
             result.items.push({ key: 'pushWeek', text: 'Push a week', iconProps: { iconName: 'Forward' }, onClick: () => { pushBack(record, 7) } })
@@ -249,13 +249,13 @@ const QUICK_VIEWS: { [columnName: string]: { key: string; text: string; iconName
 
 /** A Quick views section in the menus of Close date and Value, each view a ready-made filter. */
 const quickViews: IGridModule = {
-    onRegister: runtime => {
-        const deals = runtime.services.get('provider')
+    onRegister: grid => {
+        const deals = grid.services.get('provider')
         const show = (conditions: ICondition[] | null) => {
             deals.setFiltering(conditions ? { filterOperator: Type.And.Value, conditions } : null)
             deals.refresh()
         }
-        runtime.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
+        grid.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
             const views = QUICK_VIEWS[header.getColumn()?.name ?? '']
             if (!views) {
                 return
@@ -314,12 +314,12 @@ const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel i
 
 /** An Open in a form command beside every deal's name. */
 const openInForm: IGridModule = {
-    onRegister: runtime => {
-        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+    onRegister: grid => {
+        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'name' || isSummaryRow(record)) {
                 return
             }
-            result.items.push({ key: 'openInForm', title: 'Open in a form', iconProps: { iconName: 'OpenPane' }, onClick: () => runtime.openRecord({ record, reference: record.getNamedReference(), columnName }) })
+            result.items.push({ key: 'openInForm', title: 'Open in a form', iconProps: { iconName: 'OpenPane' }, onClick: () => grid.openRecord({ record, reference: record.getNamedReference(), columnName }) })
         })
     },
 }
@@ -425,8 +425,8 @@ const CLOSING_DEALS = `import { findDeal, isClosed, isSummaryRow, LOST, WON } fr
 import type { IFeature } from './features'
 
 //the field saves the deal while auto-save is on
-const closeDeal = async (runtime: IGrid, deal: IRecord, stage: number) => {
-    const result = await runtime.services.get('fields').get(deal, 'stage').setValue(stage)
+const closeDeal = async (grid: IGrid, deal: IRecord, stage: number) => {
+    const result = await grid.services.get('fields').get(deal, 'stage').setValue(stage)
     if (result && !result.success) {
         deal.clearChanges()
         return false
@@ -439,12 +439,12 @@ const celebrate = (origin: { x: number; y: number }) => confetti({ particleCount
 
 /** Mark as won and Mark as lost in the actions column; on a selected deal they close every selected deal. */
 const dealCommands: IGridModule = {
-    onRegister: runtime => {
-        const deals = runtime.services.get('provider')
+    onRegister: grid => {
+        const deals = grid.services.get('provider')
         const closeDeals = async (deal: IRecord, stage: number, origin: { x: number; y: number }) => {
             const selectedIds = deals.getSelectedRecordIds()
             const targets = selectedIds.includes(deal.getRecordId()) ? selectedIds.map(recordId => findDeal(deals, recordId)) : [deal]
-            const closed = await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(runtime, target, stage)))
+            const closed = await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(grid, target, stage)))
             if (stage === WON && closed.some(Boolean)) {
                 celebrate(origin)
             }
@@ -454,7 +454,7 @@ const dealCommands: IGridModule = {
             const rect = button?.getBoundingClientRect()
             return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
         }
-        runtime.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
@@ -466,9 +466,9 @@ const dealCommands: IGridModule = {
 
 /** Paints won deals green and lost ones red. */
 const closedDealColours: IGridModule = {
-    onRegister: runtime => {
+    onRegister: grid => {
         //after grouping, which repaints every row while the deals are grouped
-        runtime.services.get('cells').registerCellTheme((theme, { record }) => {
+        grid.services.get('cells').registerCellTheme((theme, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }

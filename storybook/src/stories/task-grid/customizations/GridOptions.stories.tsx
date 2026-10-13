@@ -26,8 +26,8 @@ const meta = {
 | You want to change | Use | Reference |
 |---|---|---|
 | one column: its cells, validation, colours, lock, commands, width | \`colDefs\` | [**Grid → Columns**](?path=/docs/grid-columns--overview) |
-| every row: its height, its lock | \`rowSettings\` | [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
-| what happens as the user works | \`onRecordValueChanged\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … | [**Grid → Props and events**](?path=/docs/grid-get-started-props-and-events--overview) |
+| every row: its height, its lock | \`rowSettings\` | [**Grid → Props and events**](?path=/docs/grid-props-and-events--overview) |
+| what happens as the user works | \`onRecordValueChanged\`, \`onAfterRecordSaved\`, \`onRowClicked\`, … | [**Grid → Props and events**](?path=/docs/grid-props-and-events--overview) |
 | anything else: row classes, AG Grid options, hooks over every cell | a module of your own in \`modules.custom\` | [**Grid → Write a module**](?path=/docs/grid-extending-write-a-module--overview) |
 
 A task grid brings its own provider, and its \`height\` and \`stateKey\` are the DatasetControl's, which the grid inside fills. \`onError\` and opening a record go through the task grid's own [**events**](?path=/story/task-grid-get-started--overview) and the descriptor's strategy.

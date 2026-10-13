@@ -4,7 +4,8 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { YourOwnPiecesExample } from '../../dataset-control/examples/appearanceExamples'
 
-const DESCRIPTION = `Every part takes \`components\`, which replaces pieces of what it draws. A piece is handed the props its default would get, so you can change them and render the default, or render something of your own.
+const DESCRIPTION = `
+Every part takes \`components\`, which replaces pieces of what it draws. A piece receives the props its default would get, so you can change them and render the default, or render something of your own.
 
 \`\`\`tsx
 <DatasetControl.ViewSwitcher onLoad={loadViews} components={{ onRenderButton: props => <MyViewButton {...props} /> }} />
@@ -13,24 +14,35 @@ const DESCRIPTION = `Every part takes \`components\`, which replaces pieces of w
 - Every piece is optional: what you leave out keeps its default.
 - A piece inside a part, such as the quick find's callout, has its pieces under its own name: \`components={{ callout: { onRenderColumn } }}\`.
 - The defaults are exported, such as \`ViewSwitcherUiComponents\`, to render the default with your changes.
-- \`DatasetControl.Ui\` holds every part as plain UI, with no control behind it, for building something that looks like the built-in part.
+- \`DatasetControl.Ui\` holds the regions and most parts as plain UI, with no control behind them, for building something that looks like a built-in part. The ribbon and the notifications are not in it: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 
-{{story: Your own pieces}}
+{{story: Replace pieces of the parts}}
 
-## Pieces
+## Every piece
 
-| Part | Pieces |
-|---|---|
-| \`DatasetControl\` | \`onRenderContainer\`, the control's box; \`skeleton\`: \`onRenderSkeleton\`, and \`loadingBoundary\`, whose container is the placeholder (render \`<div {...props} />\` for a spinner instead); \`errorMessage\`: \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\` and \`onRenderCommandBar\`, the error shown when loading fails |
-| \`Header\`, \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | \`onRenderContainer\` |
-| \`ViewSwitcher\` | \`onRenderButton\`, whose \`menuProps.items\` are the views |
-| \`Ribbon\` | \`onRenderCommandBar\`, whose \`items\` are the commands; \`loadingBoundary\`, what stands in while the commands load; \`errorMessage\`, the error when \`onLoad\` throws |
-| \`QuickFind\` | \`onRenderTextField\`, \`onRenderCallout\`; \`callout\`: \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` |
-| \`EditColumns\` | \`button.onRenderButton\`; \`panel\`: \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\`, empty by default; \`scopeSelector\` and \`columnSelector\`: \`onRenderSelector\`, \`onRenderOption\`; \`columnList.onRenderColumn\`, whose \`commands\` hold the remove button |
-| \`Notifications\` | \`onRenderNotifications\` |
-| \`EmptyRecords\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` |
-| \`Pagination\` | \`onRenderCommandBar\` |
-| \`PageSizeSwitcher\` | \`onRenderButton\` |
+| Part | Key | Description |
+|---|---|---|
+| \`DatasetControl\` | Top level | \`onRenderContainer\`: the control's box |
+| \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\`, and \`loadingBoundary\`, whose container is the placeholder. Render \`<div {...props} />\` there for a spinner instead. |
+| \`DatasetControl\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\`: the error shown when loading fails |
+| \`Header\`, \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRenderContainer\` |
+| \`ViewSwitcher\` | Top level | \`onRenderButton\`, whose \`menuProps.items\` are the views |
+| \`ViewSwitcher\` | \`loadingBoundary\` | What shows while the views load |
+| \`ViewSwitcher\` | \`errorMessage\` | The error when the switcher's \`onLoad\` throws |
+| \`Ribbon\` | Top level | \`onRenderCommandBar\`, whose \`items\` are the commands |
+| \`Ribbon\` | \`loadingBoundary\` | What shows while the commands load |
+| \`Ribbon\` | \`errorMessage\` | The error when the ribbon's \`onLoad\` throws |
+| \`QuickFind\` | Top level | \`onRenderTextField\`, \`onRenderCallout\` |
+| \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` |
+| \`EditColumns\` | \`button\` | \`onRenderButton\` |
+| \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` (empty by default) |
+| \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` |
+| \`EditColumns\` | \`columnList\` | \`onRenderColumn\`, whose \`commands\` hold the remove button |
+| \`EditColumns\` | \`errorMessage\` | The error when \`onLoadColumns\` or \`onLoadScopes\` throws |
+| \`Notifications\` | Top level | \`onRenderNotifications\` |
+| \`EmptyRecords\` | Top level | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` |
+| \`Pagination\` | Top level | \`onRenderCommandBar\` |
+| \`PageSizeSwitcher\` | Top level | \`onRenderButton\` |
 `
 
 const meta = {
@@ -50,12 +62,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const YourOwnPieces: Story = {
-    name: 'Your own pieces',
+    name: 'Replace pieces of the parts',
     render: () => renderStory(<YourOwnPiecesExample />),
     parameters: {
         docs: {
             description: {
-                story: `The view switcher adds *Manage views* under the views, the column editor adds an info command to each column, and the quick find shows each column's name in its callout. Open each of them.`,
+                story: `The view switcher adds *Manage views* under the views, the column editor adds an info command to each column, and the quick find shows each column's name in its callout. Try: open each of them.`,
             },
         },
     },

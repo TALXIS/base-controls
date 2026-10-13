@@ -4,7 +4,8 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FullPageExample, PickPartsExample } from '../../dataset-control/examples/layoutExamples'
 
-const DESCRIPTION = `The parts sit in a container, in a header above the records, a body that holds them and a footer below them. The header and the footer each have a left and a right region, so every part keeps its place whatever else you leave out.
+const DESCRIPTION = `
+The control is laid out in *regions*: a header above the records, a body that holds them and a footer below them. The header and the footer each have a start and an end, so every part keeps its place whatever else you leave out.
 
 \`\`\`tsx
 <DatasetControl onLoad={loadDeals} height='600px'>
@@ -30,7 +31,7 @@ const DESCRIPTION = `The parts sit in a container, in a header above the records
 </DatasetControl>
 \`\`\`
 
-| Part | What it is |
+| Region | Description |
 |---|---|
 | \`Header\` | The row above the records. |
 | \`Header.Start\`, \`Header.End\` | The header's left side, sized to what it holds, and its right side, taking the rest of the row. |
@@ -38,9 +39,11 @@ const DESCRIPTION = `The parts sit in a container, in a header above the records
 | \`Footer\` | The row below the records, with a line above it. |
 | \`Footer.Start\`, \`Footer.End\` | The footer's left and right sides. |
 
-Each of them takes \`className\`, and \`components\` to replace its box: see [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). Anything else you put inside the control, such as \`DatasetControl.Notifications\`, sits between them in the order you write it.
+- Each region takes \`className\`, and \`components\` to replace its box: see [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
+- A region takes your own content too, such as a page title placed directly in \`Header\`, as the full-page example below does.
+- Anything else you put inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
 
-## Height
+## Size the control
 
 \`height\` sizes the control's box. The header and the footer keep their own height, and the body takes the rest, so whatever shows the records there fills it.
 
@@ -52,9 +55,9 @@ Each of them takes \`className\`, and \`components\` to replace its box: see [**
 
 A grid in the body takes its height from the control, so it needs none of its own.
 
-{{story: The whole page}}
+{{story: Fill the whole page}}
 
-## Where the parts go
+## Place the parts
 
 - The view switcher goes in \`Header.Start\`; Edit columns and the quick find in \`Header.End\`, the quick find last.
 - The ribbon goes in \`Header.End\`, next to the search. Without a view switcher, put it in \`Header.Start\`, so its commands start on the left.
@@ -62,7 +65,7 @@ A grid in the body takes its height from the control, so it needs none of its ow
 
 A part's look follows its region: the ribbon and the paging draw their buttons against the left in \`Start\` and against the right in \`End\`.
 
-## Narrow screens
+## Fit a narrow screen
 
 The layout follows the control's own width, not the window's. As it narrows:
 
@@ -98,21 +101,21 @@ export const PickYourParts: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Turn the parts on and off: each keeps its side, and the rows keep their height. Add a button of your own, then narrow the control with the slider to see the ribbon fold its commands, the parts that no longer fit move onto the next line, and the search fill its line on a narrow control.`,
+                story: `Each part keeps its side, and the rows keep their height. Try: turn parts on and off, add a button of your own, then narrow the control with the slider to watch the ribbon fold its commands and the header parts wrap.`,
             },
         },
     },
 }
 
 export const TheWholePage: Story = {
-    name: 'The whole page',
+    name: 'Fill the whole page',
     render: () => <FullPageExample />,
     parameters: {
         layout: 'fullscreen',
         docs: {
             story: { inline: false, iframeHeight: 560 },
             description: {
-                story: `The control as the whole page, filling the window with \`height='100%'\`, its title in the header. Open it on its own and resize the window: the grid always fills what the header and the footer leave, and the header gives way on a narrow window.`,
+                story: `The control as the whole page, filling the window with \`height='100%'\`, its title in the header. Try: open it on its own and resize the window; the grid fills what the header and footer leave.`,
             },
         },
     },

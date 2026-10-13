@@ -31,7 +31,7 @@ Replace parts of what the grid renders with your own components while it keeps o
 - **A column's editor** — \`colDefs\` too, through \`cellEditor\`.
 - **The command bar** — \`components.onRenderCommandBar\` replaces the header's command bar and hands you Fluent's \`ICommandBarProps\`, its \`items\` being the task grid's commands.
 - **The loading skeleton and the error message** — \`components.skeleton\` and \`components.errorMessage\`, the same as on the [**DatasetControl**](?path=/docs/datasetcontrol-appearance--overview).
-- **The grid's overlays and rows** — \`components.overlays\` and \`components.rows\`, the same as on the Grid. See [**Grid → Custom overlays**](?path=/docs/grid-appearance-custom-overlays--overview).
+- **The grid's overlays and rows** — \`components.overlays\` and \`components.rows\`, the same as on the Grid. See [**Grid → Custom overlays**](?path=/docs/grid-appearance-overlays-and-rows--overview).
 
 The columns a feature brings are columns like any other: \`checklist__virtual\`, \`predecessors__virtual\`, \`successors__virtual\`, and every lookup-many column, are all replaced the same way.
 

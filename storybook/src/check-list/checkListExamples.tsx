@@ -30,19 +30,18 @@ export const RELEASE_BOARD_CODE = `${FIELD_MAPPING}
 
 const OVERDUE = '#fde7e9'
 
-//the row at the bottom that adds an item belongs to a provider of its own
-const isItem = (record: IRecord) => record.getDataProvider() === provider
-const isDone = (record: IRecord) => record.getValue('completed') === '1'
-const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
-
-const lockWhenDone = (result: IGridLock, { record }: { record: IRecord }) => {
-    if (isDone(record)) {
-        result.isLocked = true
-    }
-}
-
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
+    //the checklist tells its items from the row that adds one
+    const checkList = () => gridRef.current?.services.find('checkList')
+    const isDone = (record: IRecord) => !!checkList()?.isCompleted(record)
+    const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
+
+    const lockWhenDone = (result: IGridLock, { record }: { record: IRecord }) => {
+        if (isDone(record)) {
+            result.isLocked = true
+        }
+    }
 
     const assignToMe = (record: IRecord) => {
         gridRef.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
@@ -59,7 +58,7 @@ const GridExample = () => {
                         context: {
                             cell: {
                                 onGetCommands: (result, { record }) => {
-                                    if (isItem(record) && !isDone(record) && !record.getValue('owner')) {
+                                    if (checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
                                         result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
                                     }
                                 },
@@ -83,6 +82,49 @@ const GridExample = () => {
                 onReady={grid => gridRef.current = grid} />
         </DatasetControl.Body>
     </DatasetControl>
+}
+`
+
+export const SAVE_LOG_CODE = `${FIELD_MAPPING}
+
+const GridExample = () => {
+    const [log, setLog] = React.useState<string[]>([])
+    //a deleted item is gone from the provider by the time its delete is reported
+    const names = React.useRef<{ [recordId: string]: string }>({})
+    const write = (line: string) => setLog(lines => [line, ...lines].slice(0, 10))
+
+    React.useEffect(() => {
+        const remember = () => provider.getRecords().forEach(record => names.current[record.getRecordId()] = record.getValue('name'))
+        const onSaved = (result: IRecordSaveOperationResult) => {
+            remember()
+            write(\`Saved \${names.current[result.recordId]}: \${result.fields.join(', ')}\`)
+        }
+        const onDeleted = (results: IRecordDeleteOperationResult[]) => results.forEach(result => write(\`Deleted \${names.current[result.recordId]}\`))
+        remember()
+        provider.addEventListener('onNewDataLoaded', remember)
+        provider.addEventListener('onAfterRecordSaved', onSaved)
+        provider.addEventListener('onAfterRecordsDeleted', onDeleted)
+        return () => {
+            provider.removeEventListener('onNewDataLoaded', remember)
+            provider.removeEventListener('onAfterRecordSaved', onSaved)
+            provider.removeEventListener('onAfterRecordsDeleted', onDeleted)
+        }
+    }, [])
+
+    return <Stack horizontal tokens={{ childrenGap: 24 }}>
+        <Stack.Item grow>
+            <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+                <DatasetControl.Body>
+                    <CheckList fieldMapping={FIELD_MAPPING} />
+                </DatasetControl.Body>
+            </DatasetControl>
+        </Stack.Item>
+        <Stack styles={{ root: { width: 280 } }} tokens={{ childrenGap: 4 }}>
+            <Text variant='mediumPlus'>What the provider was asked to save</Text>
+            {log.length === 0 && <Text variant='small'>Tick, rename, drag, add or delete an item.</Text>}
+            {log.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}
+        </Stack>
+    </Stack>
 }
 `
 
@@ -146,6 +188,9 @@ export const ReadOnlyExample = () => <GridExampleRunner seedCode={READ_ONLY_CODE
 
 /** A checklist whose grid adds themes, locks, commands and totals. */
 export const ReleaseBoardExample = () => <GridExampleRunner seedCode={RELEASE_BOARD_CODE} onCreateProvider={createLaunchPlanProvider} />
+
+/** Every save and delete the checklist asks of its provider, logged beside it. */
+export const SaveLogExample = () => <GridExampleRunner seedCode={SAVE_LOG_CODE} onCreateProvider={createLaunchPlanProvider} />
 
 /** Item names as links that open the item in a form. */
 export const ItemPanelExample = () => <GridExampleRunner seedCode={ITEM_PANEL_CODE} onCreateProvider={createLaunchPlanProvider} />

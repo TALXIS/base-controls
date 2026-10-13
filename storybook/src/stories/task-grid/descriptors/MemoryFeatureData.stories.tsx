@@ -50,7 +50,7 @@ templates: createTemplateModule({
 
 Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Capturing a template *from* a task works in reverse: the task's visible column values become \`values\`, and its subtree becomes \`children\`.
 
-The provider copies the source and writes into nothing you handed it, so a template captured at runtime lives in the provider until you store it — see [**Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview). The contract behind both directions is on [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
+The provider copies the source and writes into nothing you handed it, so a template captured at runtime lives in the provider until you store it — see [**Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview). The contract behind both directions is on [**Extending**](?path=/story/task-grid-talking-to-the-grid--overview), under *The template data provider*.
 
 ## Lookup-many columns
 

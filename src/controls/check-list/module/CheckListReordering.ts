@@ -8,26 +8,26 @@ import { IGridStyles } from "../../grid/services/theme";
 import { getCheckListReorderingStyles } from "./styles";
 
 export interface ICheckListReorderingParameters {
-    runtime: IGrid;
+    grid: IGrid;
     checkList: IGridCheckList;
 }
 
 /** Items reorder by dragging anywhere on their row, and the drop is saved as the item's stack rank. */
 export class CheckListReordering {
-    private _runtime: IGrid;
+    private _grid: IGrid;
     private _checkList: IGridCheckList;
     private _isEditing = false;
     //the item being dragged, until a drop in the grid settles where it goes
     private _draggedRecord?: IRecord;
 
     constructor(parameters: ICheckListReorderingParameters) {
-        this._runtime = parameters.runtime;
+        this._grid = parameters.grid;
         this._checkList = parameters.checkList;
-        this._runtime.registerAgGridInitialOptions(this._onAgGridInitialOptions);
-        this._runtime.registerAgGridOptions(this._onAgGridOptions);
-        this._runtime.services.get('gridTheme').registerStyles(this._onStyles);
-        this._runtime.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-        this._runtime.services.whenAvailable('gridApi', this._onGridApiAvailable);
+        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions);
+        this._grid.registerAgGridOptions(this._onAgGridOptions);
+        this._grid.services.get('gridTheme').registerStyles(this._onStyles);
+        this._grid.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
+        this._grid.services.whenAvailable('gridApi', this._onGridApiAvailable);
     }
 
     private _onAgGridInitialOptions = (result: IGridAgGridInitialOptions): void => {
@@ -53,7 +53,7 @@ export class CheckListReordering {
     private _onEditedCellChanged = (_previous: IGridEditedCell | undefined, next: IGridEditedCell | undefined): void => {
         if (this._isEditing !== !!next) {
             this._isEditing = !!next;
-            this._runtime.refreshAgGridOptions();
+            this._grid.refreshAgGridOptions();
         }
     };
 
@@ -79,7 +79,7 @@ export class CheckListReordering {
     private _restoreDraggedRow = (): void => {
         const record = this._draggedRecord;
         this._draggedRecord = undefined;
-        const gridApi = this._runtime.services.find('gridApi');
+        const gridApi = this._grid.services.find('gridApi');
         if (!record || !gridApi) {
             return;
         }
@@ -103,7 +103,7 @@ export class CheckListReordering {
         const previousRank = api.getDisplayedRowAtIndex(node.rowIndex - 1)?.data?.getValue(stackRank);
         const nextRank = api.getDisplayedRowAtIndex(node.rowIndex + 1)?.data?.getValue(stackRank);
         if (!this._isBetween(node.data.getValue(stackRank), previousRank, nextRank)) {
-            this._runtime.services.get('fields').get(node.data, stackRank).setValue(StackRank.between(previousRank, nextRank));
+            this._grid.services.get('fields').get(node.data, stackRank).setValue(StackRank.between(previousRank, nextRank));
         }
     }
 

@@ -9,13 +9,13 @@ import { GRID_MODULE_PRIORITY } from "../../grid/modules/priorities";
 import { IGridCheckList } from "./GridCheckList";
 
 export interface ICheckListNewItemRowParameters {
-    runtime: IGrid;
+    grid: IGrid;
     checkList: IGridCheckList;
 }
 
 /** A row pinned below the list; naming an item in it appends that item and readies the row for the next. */
 export class CheckListNewItemRow {
-    private _runtime: IGrid;
+    private _grid: IGrid;
     private _checkList: IGridCheckList;
     //its own provider, so typing into the row saves nothing until the item is committed
     private _draftProvider?: MemoryDataProvider;
@@ -28,14 +28,14 @@ export class CheckListNewItemRow {
     private _upstreamPinnedRows?: IRecord[];
 
     constructor(parameters: ICheckListNewItemRowParameters) {
-        this._runtime = parameters.runtime;
+        this._grid = parameters.grid;
         this._checkList = parameters.checkList;
         //after the totals row, so the new-item row sits between the items and the totals
-        this._runtime.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
-        this._runtime.services.get('cells').registerControlParameters(this._onControlParameters);
-        this._runtime.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-        this._runtime.events.addEventListener('onDestroyed', this._onDestroyed);
-        this._runtime.services.whenAvailable('gridApi', this._onGridApiAvailable);
+        this._grid.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
+        this._grid.services.get('cells').registerControlParameters(this._onControlParameters);
+        this._grid.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
+        this._grid.events.addEventListener('onDestroyed', this._onDestroyed);
+        this._grid.services.whenAvailable('gridApi', this._onGridApiAvailable);
     }
 
     private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
@@ -87,17 +87,17 @@ export class CheckListNewItemRow {
     };
 
     private _commitDraft(draft: IRecord): void {
-        const gridApi = this._runtime.services.get('gridApi');
+        const gridApi = this._grid.services.get('gridApi');
         const stackRankColumn = this._checkList.getFieldMapping().stackRank;
         const rowCount = gridApi.getDisplayedRowCount();
         const lastRecord = rowCount > 0 ? gridApi.getDisplayedRowAtIndex(rowCount - 1)?.data : undefined;
-        const record = this._runtime.services.get('provider').newRecord({ rawData: draft.toRawData() });
+        const record = this._grid.services.get('provider').newRecord({ rawData: draft.toRawData() });
         this._resetDraft();
         gridApi.applyTransaction({ add: [record], addIndex: rowCount });
         gridApi.ensureIndexVisible(rowCount);
         //the pinned row is rebuilt from the new draft before its cell can be edited
         setTimeout(() => this._startEditingDraft(gridApi));
-        this._runtime.services.get('fields').get(record, stackRankColumn).setValue(StackRank.between(lastRecord?.getValue(stackRankColumn), undefined));
+        this._grid.services.get('fields').get(record, stackRankColumn).setValue(StackRank.between(lastRecord?.getValue(stackRankColumn), undefined));
     }
 
     private _startEditingDraft(gridApi: GridApi<IRecord>): void {
@@ -105,7 +105,7 @@ export class CheckListNewItemRow {
     }
 
     private _resetDraft(): void {
-        const provider = this._runtime.services.get('provider');
+        const provider = this._grid.services.get('provider');
         if (this._draftProvider) {
             this._retiredDraftProviders.push(this._draftProvider);
         }
@@ -116,7 +116,7 @@ export class CheckListNewItemRow {
             metadata: { ...column.metadata, RequiredLevel: 0 },
         })));
         this._draft = this._draftProvider.newRecord();
-        this._runtime.refreshAgGridOptions();
+        this._grid.refreshAgGridOptions();
     }
 
     private _onDestroyed = (): void => {

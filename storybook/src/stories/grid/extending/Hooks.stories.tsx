@@ -5,92 +5,128 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { AssignToMeExample, ColumnsByRoleExample, CopyColumnExample, CurrencyInHeaderExample, DayUnderTenHoursExample, LockClosedDealsExample, PlaceholdersExample, RefreshPricesExample, UrgentRowsExample } from '../../../grid/examples/hooksExamples'
 
 const DESCRIPTION = `
-A hook changes one decision the grid makes. Register it on a service in a module's \`onRegister\`, pass the module in \`modules.custom\`, and change the result the hook is handed: what it returns is ignored. Each example below is a small module that solves one problem. Every hook, what it is handed, the order hooks run in and how to make the grid ask again are on [**Extending**](?path=/docs/grid-extending--overview).
+A grid hook changes one decision the grid makes: a cell's colour, a lock, a validation rule, a column's menu. Register it on a service in a module's \`onRegister\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 
-- The grid asks again each time it draws, so keep a hook fast and free of side effects.
-- A hook runs at priority \`0\` unless you pass one, which is before every built-in module but the legacy client API one: see *Priorities* on [**Extending**](?path=/docs/grid-extending--overview).
-- Hooks run for group rows and the totals row too: see *Group rows and the totals row are records too* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+\`\`\`tsx
+const closedDealsModule: IGridModule = {
+    onRegister: grid => {
+        grid.services.find('editing')?.locks.registerLock((result, { record, columnName }) => {
+            if (record && columnName && isClosed(record)) {
+                result.isLocked = true
+            }
+        })
+    },
+}
 
-## Locks
+<DatasetControl onLoad={loadDeals}>
+    <DatasetControl.Body>
+        <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [closedDealsModule] }} />
+    </DatasetControl.Body>
+</DatasetControl>
+\`\`\`
 
 {{story: Lock the cells of closed deals}}
 
-One lock hook answers for three levels. The context it is handed says which one the grid is asking about:
+## How hooks run
 
-| Asked about | Context |
+- The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
+- Every \`register...\` call takes an optional \`priority\` and returns a function that removes the hook.
+- Hooks of one kind run in ascending priority, and in the order they were registered within one priority. The built-in modules register before yours.
+- The default priority is \`0\`, which runs before every built-in module, so a module that sets the same thing later overwrites it. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`.
+- \`GRID_MODULE_PRIORITY\` runs the modules in this order: \`legacyClientApiCompatibility\` (\`0\`), \`rowModel\`, \`editing\`, \`rowSelection\`, \`cellSelection\`, \`sorting\`, \`filtering\`, \`grouping\`, \`aggregation\`, \`clipboard\` (\`80\`). Zebra rows are drawn before every cell theme hook, and grouping and aggregation shade their own rows.
+- The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook.
+- Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+
+## Locks
+
+One lock hook decides three levels. The context it receives says which one the grid is asking about:
+
+| Level | Context |
 |---|---|
 | A column | \`{ columnName }\` |
 | A record's row | \`{ record }\` |
 | A cell | \`{ record, columnName }\` |
 
-Check the context before you read it. A hook that reads \`record\` without checking for it fails when the grid asks about a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+Check the context before you read it. A hook that reads \`record\` without checking fails for a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 ## Validation
+
+\`registerValidation\` sets \`result.error\` and \`result.errorMessage\` for a value. An error outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
 {{story: Keep a day under ten hours}}
 
 - The hook runs for every column of every record, so check \`columnName\` first.
-- An error it sets outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview).
-- A rule that reads other records gives them a new answer whenever one of them changes, so redraw the cells with \`cells.render()\`, as this module does.
+- A rule that reads other records changes its result whenever one of them changes, so redraw the cells with \`cells.render()\`, as this module does.
 
 ## Cells
 
+\`registerCellLoading\` draws a shimmer in place of a cell's value while \`result.isLoading\` is set.
+
 {{story: Refresh prices from a supplier}}
+
+\`registerCellCommands\` adds commands to a cell: push to \`result.items\` for buttons and to \`result.overflowItems\` for the **…** menu. How they are drawn is under *Add cell commands* on [**Columns**](?path=/docs/grid-columns--overview).
 
 {{story: Assign new tickets to yourself}}
 
-- Push to \`result.items\` for buttons and to \`result.overflowItems\` for the overflow menu. How they are drawn, and when they show, is under *Cell commands* on [**Columns**](?path=/docs/grid-columns--overview).
-- For commands that only one column offers, \`context.cell.onGetCommands\` in \`colDefs\` does the same, after the hooks.
+\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters the value renderer reads are under *Control parameters* on [**Columns**](?path=/docs/grid-columns--overview). \`takesInput\` is \`true\` for an editor and for a one-click cell.
 
-{{story: Placeholders for missing values}}
-
-The parameters hook changes what a cell's control is handed. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by the grid's value renderer, which reads these:
-
-| Parameter | What it does |
-|---|---|
-| \`Placeholder\` | The text an empty cell shows. Default \`---\`. |
-| \`PrefixIcon\`, \`SuffixIcon\` | The name of a Fluent icon drawn before or after the value. |
-| \`IsPrimaryColumn\` | \`true\`, with \`EnableNavigation\` also \`true\`, draws the value as a link that opens the record. |
-| \`EnableNavigation\` | \`false\` draws emails, phones, URLs, lookups and the primary column as plain text. |
-| \`EnableOptionSetColors\` | \`true\` draws options that have a colour as tags. |
-| \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
-| \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
-
-- \`takesInput\` is \`true\` for an editor and for a one-click cell. Those are drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`.
-- The value renderer reads the value from the record, so changing \`value\` here shows nothing. To change what a value reads as, use \`record.expressions.setFormattedValueExpression\`.
-- For one column, \`context.cell.onGetControlParameters\` in \`colDefs\` does the same, after the hooks.
+{{story: Show placeholders for missing values}}
 
 ## Rows
 
-{{story: Taller rows for urgent tickets}}
+\`registerRowHeight\` sets a row's height in pixels on \`result.height\`; leave it unset for the grid's \`rowHeight\`.
 
-- Leave \`result.height\` unset for the grid's \`rowHeight\`. \`rowSettings.onGetHeight\` runs after the hooks, and a height set with \`rows.setRowHeight\`, which is what a user's drag on a row's resize grip does, wins over both.
+{{story: Make urgent tickets taller}}
+
+- \`rowSettings.onGetHeight\` runs after the hooks, and a height set with \`rows.setRowHeight\`, as a user's drag on a row's resize grip does, wins over both.
 - AG Grid asks for a row's height when it lays the row out. After a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
-- A grid without \`height\` stops growing after \`maxVisibleRows\` rows of \`rowHeight\`, so taller rows fit fewer of themselves in it: see *Sizing* on [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview).
+- Taller rows reach the grid's height sooner: see *Size the grid* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 ## Columns
 
-{{story: Columns by role}}
+\`registerColumnDefinitions\` receives the column definitions built so far and can change, add, remove or reorder them.
 
-- The hook is handed the definitions built so far: one per provider column that is not hidden, with the column's name as \`colId\`, and what the hooks that ran before it added, such as the save and lock columns at \`GRID_MODULE_PRIORITY.editing\` and the checkbox column at \`GRID_MODULE_PRIORITY.rowSelection\`. Change entries, push new ones, splice them out or reorder them.
+{{story: Show columns by role}}
+
+- It receives one definition per provider column that is not hidden, with the column's name as \`colId\`, plus what earlier hooks added, such as the save and lock columns and the checkbox column.
 - Read a definition's \`context\` with \`getColumnContext(colDef)\`.
 - It runs when the grid is ready and on every load of the provider, so a change to what it reads shows after \`provider.refresh()\`.
-- At the default priority it runs before the modules, which can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module, and \`colDefs\` still runs after that.
-- A column a hook adds gets the grid's header and an empty cell, as a column added through \`colDefs\` does: see [**Columns**](?path=/docs/grid-columns--overview).
+- At the default priority the modules can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module.
 
 ## Headers
 
+\`registerColumnMenuSection\` adds sections to a column's menu, each \`{ key, title, items }\`. The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, so a section at the default priority comes above them.
+
 {{story: Copy a column's values}}
 
-- A section is \`{ key, title, items }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview). The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, pushed at their modules' priorities, so a section at the default priority comes above them.
-- \`registerColumnMenuItems\` runs after the sections are laid out and is handed every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
-- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\`, \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` answer the rest.
+- \`registerColumnMenuItems\` runs after the sections are laid out and receives every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
+- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\`, \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` read and drive the rest.
+
+\`registerColumnHeaderAdornments\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. The modules add the sort arrow, the filter funnel and the total's title after the name, and the group icon before it; at the default priority, yours come first on the same side.
 
 {{story: Show the currency in the header}}
 
-- An adornment is \`{ key, placement, title?, onRender? }\`, as under *The header* on [**Columns**](?path=/docs/grid-columns--overview).
-- The modules add the sort arrow, the filter funnel and the total's title after the name, and the group icon before it. At the default priority, yours come before theirs on the same side.
-- A header's colours come from \`registerColumnHeaderTheme\`: see [**Appearance**](?path=/docs/grid-appearance--overview).
+## Every hook
+
+| Service | Hook | Decides | Receives | Runs last |
+|---|---|---|---|---|
+| \`cells\` | \`registerCellTheme\` | A cell's colours: see *Colour cells by their data* on [**Appearance**](?path=/docs/grid-appearance--overview) | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
+| \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`context.cell.onGetLoading\` |
+| \`cells\` | \`registerCellCommands\` | A cell's commands: \`result.items\`, \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`context.cell.onGetCommands\` |
+| \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | None |
+| \`cells\` | \`registerControlParameters\` | The parameters a cell's control receives | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`context.cell.onGetControlParameters\` |
+| \`rows\` | \`registerRowHeight\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\` |
+| \`editing.locks\` | \`registerLock\` | Whether a column, a row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\`, \`context.cell.onGetLock\` |
+| \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\`, \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`context.cell.onGetValidation\` |
+| \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid receives | \`columnDefs: ColDef<IRecord>[]\` | \`colDefs\` |
+| \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`context.header.onGetMenuSections\` |
+| \`columns.headers\` | \`registerColumnMenuItems\` | The menu's final items, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`context.header.onGetMenuItems\` |
+| \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws beside the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`context.header.onGetAdornments\` |
+| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`context.header.onGetTheme\` |
+| \`surfaces\` | \`registerSurface\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | None |
+| \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | None |
+| The grid | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\` | AG Grid's options: see [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result: { options }\` | None |
+| \`gridTheme\` | \`registerTheme\`, \`registerStyles\` | The AG Grid theme and the root element's styles: see *The AG Grid theme* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result\`, \`fluentTheme\` | None |
 `
 
 const meta = {
@@ -115,7 +151,7 @@ export const LockTheCellsOfClosedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A won or lost deal keeps its numbers. \`editing.locks.registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Set a deal's Stage to Won: its numbers lock at once, and Stage stays open to reopen the deal.`,
+                story: `A won or lost deal keeps its numbers: \`registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Try: set a deal's Stage to Won; its numbers lock and Stage stays open.`,
             },
         },
     },
@@ -127,7 +163,7 @@ export const KeepADayUnderTenHours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Payroll caps a consultant's day at ten hours. \`registerValidation\` on the \`validation\` service adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the day's other entries. Anna Novak's Monday is already over: cut one of its entries until the day is back to ten.`,
+                story: `Payroll caps a consultant's day at ten hours: \`registerValidation\` adds up every entry of the same employee on the same day, and \`cells.render()\` redraws the day's other entries. Try: cut one of Anna Novak's Monday entries until the day is back to ten.`,
             },
         },
     },
@@ -139,7 +175,7 @@ export const RefreshPricesFromASupplier: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop takes its prices from a supplier's price list, which answers one product at a time. \`registerCellLoading\` on the \`cells\` service draws a shimmer in each Price cell until that product's price is back, and \`cells.render()\` shows the shimmers at once. Press *Refresh prices*.`,
+                story: `Prices come from a supplier one product at a time: \`registerCellLoading\` draws a shimmer in each Price cell until that product's price is back. Try: press *Refresh prices*.`,
             },
         },
     },
@@ -151,43 +187,43 @@ export const AssignNewTicketsToYourself: Story = {
     parameters: {
         docs: {
             description: {
-                story: `New tickets have nobody on them yet. \`registerCellCommands\` on the \`cells\` service offers *Assign to me* in the Assigned to cell of every unassigned ticket. Hover a New ticket and pick *Assign to me*.`,
+                story: `\`registerCellCommands\` offers *Assign to me* in the Assigned to cell of every unassigned ticket. Try: hover a New ticket and pick *Assign to me*.`,
             },
         },
     },
 }
 
 export const PlaceholdersForMissingValues: Story = {
-    name: 'Placeholders for missing values',
+    name: 'Show placeholders for missing values',
     render: () => renderStory(<PlaceholdersExample />),
     parameters: {
         docs: {
             description: {
-                story: `An empty cell should say what is missing. \`registerControlParameters\` on the \`cells\` service hands the Assigned to and Customer cells a \`Placeholder\` in place of \`---\`, and their editors get it too. New tickets read Unassigned; clear a ticket's Customer to see No customer.`,
+                story: `\`registerControlParameters\` gives the Assigned to and Customer cells a \`Placeholder\` in place of \`---\`, and their editors get it too. Try: clear a ticket's Customer to see No customer.`,
             },
         },
     },
 }
 
 export const TallerRowsForUrgentTickets: Story = {
-    name: 'Taller rows for urgent tickets',
+    name: 'Make urgent tickets taller',
     render: () => renderStory(<UrgentRowsExample />),
     parameters: {
         docs: {
             description: {
-                story: `A support desk wants its urgent tickets to stand out. \`registerRowHeight\` on the \`rows\` service makes every High priority row 64px tall, and \`resetRowHeights()\` makes AG Grid ask again when a priority changes. Change a ticket's Priority to High, or back to Normal.`,
+                story: `\`registerRowHeight\` makes every High priority row 64px tall, and \`resetRowHeights()\` makes AG Grid measure again when a priority changes. Try: change a ticket's Priority to High, or back to Normal.`,
             },
         },
     },
 }
 
 export const ColumnsByRole: Story = {
-    name: 'Columns by role',
+    name: 'Show columns by role',
     render: () => renderStory(<ColumnsByRoleExample />),
     parameters: {
         docs: {
             description: {
-                story: `Consultants log their hours without seeing what the client is billed. \`registerColumnDefinitions\` on the \`columns\` service hides Hourly rate unless a project manager is signed in. Switch to Project manager: \`provider.refresh()\` builds the columns again, with Hourly rate.`,
+                story: `Consultants log their hours without seeing the billing rate: \`registerColumnDefinitions\` hides Hourly rate unless a project manager is signed in. Try: switch to Project manager; \`provider.refresh()\` builds the columns again.`,
             },
         },
     },
@@ -199,7 +235,7 @@ export const CopyAColumnsValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A sales lead pastes a column of the pipeline into an email. \`registerColumnMenuSection\` on \`columns.headers\` adds a Column section with *Copy column values* to every column's menu, below the modules' sections because it runs at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Copy the Deal column from its menu.`,
+                story: `\`registerColumnMenuSection\` adds a Column section with *Copy column values* to every column's menu, below the modules' sections at \`GRID_MODULE_PRIORITY.aggregation + 1\`. Try: copy the Deal column from its menu.`,
             },
         },
     },
@@ -211,7 +247,7 @@ export const ShowTheCurrencyInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The shop's prices are in US dollars, and the header says so. \`registerColumnHeaderAdornments\` on \`columns.headers\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Hover the Price header, then sort by it: USD stays ahead of the arrow.`,
+                story: `\`registerColumnHeaderAdornments\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Try: hover the Price header, then sort by it; USD stays ahead of the arrow.`,
             },
         },
     },

@@ -2,32 +2,37 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { StarredProductsExample } from '../../../grid/examples/moduleComponentsExamples'
 import { ApproveInBulkExample, CopyPriceListExample, PickOneProductExample } from '../../../grid/examples/selectionExamples'
 
 const DESCRIPTION = `
 Three modules let users pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and copying need AG Grid Enterprise: see [**Modules**](?path=/docs/grid-modules--overview).
 
+\`\`\`tsx
+<DatasetControl onLoad={loadTimesheets}>
+    <DatasetControl.Body>
+        <Grid modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }) }} />
+    </DatasetControl.Body>
+</DatasetControl>
+\`\`\`
+
 {{story: Approve timesheets in bulk}}
 
 ## Row selection
 
-\`\`\`tsx
-rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
-\`\`\`
-
 The module adds a checkbox column, \`SELECTION_COLUMN_KEY\`, pinned first.
 
-| Option | Default | What it does |
+| Option | Default | Description |
 |---|---|---|
 | \`mode\` | Required | \`'multiple'\` lets any number of rows be selected, \`'single'\` one at a time. To offer no selection, leave the module out. |
 | \`onSelectionChanged\` | None | Called with the ids of the selected records every time the selection changes. |
 
 - The options are read at mount, so the \`onSelectionChanged\` the grid mounted with runs for its whole life. Pass a state setter, as the examples here do, or read anything that changes through a ref.
-- To draw the checkbox your own way, set the column's \`cellRenderer\` through \`colDefs\`: see *Row selection* on [**Module parts**](?path=/docs/grid-appearance-module-parts--overview).
+- To draw the checkbox your own way, set the column's \`cellRenderer\` through \`colDefs\`: see *Changing how it looks* below.
 
 ### How users select
 
-| Action | What it does |
+| Action | Description |
 |---|---|
 | Click a row | Selects that row and clears the others, in both modes |
 | Ctrl+click (Cmd+click on a Mac) | Adds the row to the selection, or takes it out |
@@ -41,34 +46,67 @@ The module adds a checkbox column, \`SELECTION_COLUMN_KEY\`, pinned first.
 - A click on a cell's commands does not select the row, and in the checkbox column only the checkbox does.
 - In a grouped grid, a plain click on a group row does not select it; Ctrl+click or the group's checkbox selects every record in the group. In \`'single'\` mode a group row's checkbox is disabled. How many groups one selection may load is on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
+In \`'single'\` mode, a click moves the selection to the row clicked.
+
 {{story: Pick one product}}
 
 ### Reading and changing the selection
 
-The selection belongs to the provider, not to the grid. Read it and change it there, and the grid follows:
+The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows. See *Selection* on [**Data providers**](?path=/docs/data-providers--overview).
 
-| Provider method | What it does |
-|---|---|
-| \`getSelectedRecordIds()\` | The selected records' ids, without group rows. Pass \`{ includeGroupRecordIds: true }\` to include them. |
-| \`setSelectedRecordIds(ids)\` | Replaces the selection. The id of a group row selects every record in the group. |
-| \`toggleSelectedRecordId(id)\` | Adds the id to the selection, or takes it out. |
-| \`clearSelectedRecordIds()\` | Clears the selection. |
-
-To get from an id to its record, use \`provider.getRecordsMap()[id]\`, which also holds the records of the groups that were loaded.
-
+- \`getSelectedRecordIds()\` leaves group rows out; pass \`{ includeGroupRecordIds: true }\` to include them. Selecting a group row's id selects every record in the group.
+- \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
 - A reload clears the selection: sorting, filtering, grouping, \`refresh()\` and moving to another page all start with nothing selected.
 - The selection outlives the grid: a grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them.
-- \`onSelectionChanged\` is called for every change: a click, the header checkbox, your own provider calls, a reload clearing it, and a new mount restoring it. Its ids are records only: group rows are left out, and the records of a selected group are in.
+- \`onSelectionChanged\` is called for every change, your own provider calls and a reload included. Its ids are records only: group rows are left out, and the records of a selected group are in.
+- With the editing module, a row's save status is drawn in its checkbox cell: see *The save status* on [**Editing**](?path=/docs/grid-modules-editing--overview).
 
-### The save status in the checkbox cell
+## Cell ranges and copying
 
-With row selection on, the editing module draws a row's save status in its checkbox cell, in place of the checkbox while there is one, so an editable grid has no save status column of its own. After a failed save the checkbox stays hidden until the red icon is dismissed. What the status shows is under *The save status* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+The cell selection module lets users highlight blocks of cells as in a spreadsheet, and the clipboard module copies them out. Both need AG Grid Enterprise.
 
-### The \`rowSelection\` service
+### Cell ranges
 
-\`runtime.services.find('rowSelection')\` in a module, or \`useGridService('rowSelection')\` in a part the grid draws. Both are \`undefined\` without the module.
+Drag across cells to highlight them, or extend a block from the focused cell with Shift+click and Shift+arrow keys. Ctrl+drag adds another block. \`createCellSelectionModule()\` takes AG Grid's \`CellSelectionOptions\`:
 
-| Member | What it does |
+| Option | Default | Description |
+|---|---|---|
+| \`suppressMultiRanges\` | \`false\` | \`true\` keeps one block at a time. |
+| \`handle\` | None | \`{ mode: 'range' }\` draws a handle on the block's corner that resizes it. \`{ mode: 'fill' }\` draws a handle that fills the cells it is dragged over, in an editable grid: numbers continue their series, other values repeat. \`direction\` is \`'x'\`, \`'y'\` or \`'xy'\` (the default). |
+| \`enableHeaderHighlight\` | \`false\` | \`true\` highlights the headers of the highlighted columns. |
+
+### Copying
+
+\`createClipboardModule()\` copies with Ctrl+C (Cmd+C on a Mac): the highlighted blocks when there are any, otherwise the focused cell. Every value is copied as the grid shows it, such as a price with its currency symbol or a date in the user's format, with a tab between cells and a line per row, so it pastes into Excel and other spreadsheets as cells. The checkbox column copies as an empty cell.
+
+| Option | Default | Description |
+|---|---|---|
+| \`copyHeadersToClipboard\` | \`false\` | \`true\` copies the column headers as the first line. |
+| \`clipboardDelimiter\` | A tab | What goes between cells. |
+| \`processCellForClipboard\` | None | What a cell copies as. \`params.value\` is the stored value, so \`params => params.value\` copies a price as the plain number \`640\`. |
+| \`processHeaderForClipboard\` | None | What a header copies as. |
+| \`sendToClipboard\` | None | Receives the text to copy, in place of writing it to the clipboard. |
+| \`suppressClipboardPaste\`, \`suppressCutToClipboard\` | \`false\` | \`true\` turns pasting, or cutting, off. |
+| \`processCellFromClipboard\` | None | Changes each pasted text before the grid reads it. |
+
+\`IGridClipboardOptions\` lists the rest of AG Grid's clipboard options it passes on.
+
+{{story: Copy a price list into a spreadsheet}}
+
+### Pasting and clearing
+
+In an editable grid, Ctrl+V pastes into the focused cell, or into the highlighted block; Ctrl+X copies and clears; Delete and Backspace clear the highlighted cells. Each value reaches the record as if it was typed into the cell:
+
+- Locked cells, and columns drawn with \`oneClickEdit\`, are skipped.
+- Text is read as typing it into the cell would read it: numbers and dates in the user's format, durations such as *2 hours*, option sets by their labels (several separated by \`;\`). A lookup takes the record of that name, when exactly one record of that name is already in the column's loaded values.
+- Text a column cannot take, and files and images, leave the cell as it was.
+- Values are validated like any other edit, and with \`autoSave\` each changed record saves once after the paste.
+
+## From your code
+
+The row selection module's service is \`grid.services.find('rowSelection')\`, or \`useGridService('rowSelection')\` in a part the grid draws. It is \`undefined\` without the module.
+
+| Member | Description |
 |---|---|
 | \`getMode()\` | \`'single'\` or \`'multiple'\`. |
 | \`selectRecords(provider, ids)\` | Replaces that provider's selection with \`ids\`, through the interceptor below. In a grouped grid, each group's records have a provider of their own. |
@@ -79,14 +117,14 @@ With row selection on, the editing module draws a row's save status in its check
 | \`events\` | Fires \`onSelectionChanged\`, with the same ids the module option gets. |
 | \`setInterceptor('onSelectRecords', interceptor)\` | Wraps every selection the grid writes. |
 
-The interceptor is handed \`{ provider, recordIds }\` and the default action. Call \`defaultAction\` with the ids to select, or skip it to refuse; a refused row stays unselected. This module keeps approved timesheets out of every selection the grid makes:
+The interceptor receives \`{ provider, recordIds }\` and the default action. Call \`defaultAction\` with the ids to select, or skip it to refuse; a refused row stays unselected. This module keeps approved timesheets out of every selection the grid makes:
 
 \`\`\`tsx
 const APPROVED = 3
 
 //approved timesheets are final
 const keepApprovedUnselectedModule: IGridModule = {
-    onRegister: runtime => runtime.services.find('rowSelection')?.setInterceptor('onSelectRecords', (parameters, defaultAction) => {
+    onRegister: grid => grid.services.find('rowSelection')?.setInterceptor('onSelectRecords', (parameters, defaultAction) => {
         const records = parameters.provider.getRecordsMap()
         const recordIds = parameters.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
         return defaultAction({ ...parameters, recordIds })
@@ -99,46 +137,27 @@ Pass it in \`modules.custom\`.
 - There is room for one interceptor, and the grouping module sets its own. Yours replaces it, so in a grouped grid \`maxGroupLoadsPerSelection\` no longer applies.
 - Unticking the header checkbox does not go through the interceptor, and neither do your own calls to the provider's selection methods.
 
-## Cell ranges and copying
+## Changing how it looks
 
-The cell selection module lets users highlight blocks of cells as in a spreadsheet, and the clipboard module copies them out. Both need AG Grid Enterprise.
+The row selection module adds a checkbox column of its own, keyed \`SELECTION_COLUMN_KEY\`: a checkbox in every row, and one in the header that selects every record. To draw them your own way, set the column's \`cellRenderer\` or \`headerComponent\` in \`colDefs\` to the module's cell or header with \`components\`:
 
-{{story: Copy a price list into a spreadsheet}}
+\`\`\`tsx
+const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
-### Cell ranges
+<Grid
+    modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
+    colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
+\`\`\`
 
-Drag across cells to highlight them, or extend a block from the focused cell with Shift+click and Shift+arrow keys. Ctrl+drag adds another block. \`createCellSelectionModule()\` takes AG Grid's \`CellSelectionOptions\`:
+| Cell | Key | Parts | Description |
+|---|---|---|---|
+| \`SelectionCell\` | \`container\` | \`onRenderContainer\` | The cell the checkbox is drawn in. |
+| \`SelectionCell\` | \`checkbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | A row's checkbox, with \`checked\` and \`onChange\`. |
+| \`SelectionHeader\` | \`headerCheckbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | The checkbox that selects every record. |
 
-| Option | Default | What it does |
-|---|---|---|
-| \`suppressMultiRanges\` | \`false\` | \`true\` keeps one block at a time. |
-| \`handle\` | None | \`{ mode: 'range' }\` draws a handle on the block's corner that resizes it. \`{ mode: 'fill' }\` draws a handle that fills the cells it is dragged over, in an editable grid: numbers continue their series, other values repeat. \`direction\` is \`'x'\`, \`'y'\` or \`'xy'\` (the default). |
-| \`enableHeaderHighlight\` | \`false\` | \`true\` highlights the headers of the highlighted columns. |
+The parts follow the \`components\` rules. See *Replace what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
-### Copying
-
-\`createClipboardModule()\` copies with Ctrl+C (Cmd+C on a Mac): the highlighted blocks when there are any, otherwise the focused cell. Every value is copied as the grid shows it, such as a price with its currency symbol or a date in the user's format, with a tab between cells and a line per row, so it pastes into Excel and other spreadsheets as cells. The checkbox column copies as an empty cell.
-
-| Option | Default | What it does |
-|---|---|---|
-| \`copyHeadersToClipboard\` | \`false\` | \`true\` copies the column headers as the first line. |
-| \`clipboardDelimiter\` | A tab | What goes between cells. |
-| \`processCellForClipboard\` | None | What a cell copies as. \`params.value\` is the stored value, so \`params => params.value\` copies a price as the plain number \`640\`. |
-| \`processHeaderForClipboard\` | None | What a header copies as. |
-| \`sendToClipboard\` | None | Hands you the text to copy, in place of writing it to the clipboard. |
-| \`suppressClipboardPaste\`, \`suppressCutToClipboard\` | \`false\` | \`true\` turns pasting, or cutting, off. |
-| \`processCellFromClipboard\` | None | Changes each pasted text before the grid reads it. |
-
-\`IGridClipboardOptions\` lists the rest of AG Grid's clipboard options it passes on.
-
-### Pasting and clearing
-
-In an editable grid, Ctrl+V pastes into the focused cell, or into the highlighted block; Ctrl+X copies and clears; Delete and Backspace clear the highlighted cells. Each value reaches the record as if it was typed into the cell:
-
-- Locked cells, and columns drawn with \`oneClickEdit\`, are skipped.
-- Text is read as typing it into the cell would read it: numbers and dates in the user's format, durations such as *2 hours*, option sets by their labels (several separated by \`;\`). A lookup takes the record of that name, when exactly one record of that name is already in the column's loaded values.
-- Text a column cannot take, and files and images, leave the cell as it was.
-- Values are validated like any other edit, and with \`autoSave\` each changed record saves once after the paste.
+{{story: Star products to order}}
 `
 
 const meta = {
@@ -163,7 +182,7 @@ export const ApproveTimesheetsInBulk: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A manager signs off last week's timesheets: \`createRowSelectionModule({ mode: 'multiple', onSelectionChanged })\` feeds the message above the grid, and the DatasetControl's ribbon, loaded again with every selection, selects and clears through the provider. Pick *Select all submitted*, then *Approve*, and watch each checkbox cell report its save.`,
+                story: `A manager signs off last week's timesheets: \`onSelectionChanged\` feeds the message above the grid, and the ribbon selects and clears through the provider. Try: pick *Select all submitted*, then *Approve*, and watch each checkbox cell report its save.`,
             },
         },
     },
@@ -175,7 +194,7 @@ export const PickOneProduct: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Picking the product to quote: in \`mode: 'single'\` a click moves the selection, and \`onSelectionChanged\` fills the card beside the grid. Click a few products.`,
+                story: `Picking the product to quote with \`mode: 'single'\`, and \`onSelectionChanged\` filling the card beside the grid. Try: click a few products.`,
             },
         },
     },
@@ -187,7 +206,19 @@ export const CopyAPriceListIntoASpreadsheet: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Part of the price list, copied into a quote: \`createCellSelectionModule()\` highlights a block and \`createClipboardModule({ copyHeadersToClipboard: true })\` copies it with its headers. Drag across a few products, press Ctrl+C and paste into the box under the grid (AG Grid Enterprise).`,
+                story: `\`createCellSelectionModule()\` highlights a block and \`createClipboardModule({ copyHeadersToClipboard: true })\` copies it with its headers. Try: drag across a few products, press Ctrl+C and paste into the box under the grid (AG Grid Enterprise).`,
+            },
+        },
+    },
+}
+
+export const StarProductsToOrder: Story = {
+    name: 'Star products to order',
+    render: () => renderStory(<StarredProductsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The checkbox column's \`cellRenderer\` is \`SelectionCell\` with \`checkbox\` replaced by a star. Try: star a few products.`,
             },
         },
     },
