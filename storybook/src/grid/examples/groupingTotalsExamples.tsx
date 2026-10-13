@@ -112,10 +112,10 @@ export const EXPAND_FROM_RIBBON_CODE = `const createReviewProvider = () => {
 
 const GridExample = () => {
     const timesheets = React.useMemo(createReviewProvider, [])
-    const runtimeRef = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
     const expandTo = (getLevel: (current: number, deepest: number) => number) => {
-        const grouping = runtimeRef.current?.services.get('grouping')
+        const grouping = gridRef.current?.modules.find('grouping')
         if (grouping) {
             grouping.setExpandedLevel(getLevel(grouping.getExpandedLevel(), grouping.getDeepestLevel()))
         }
@@ -141,7 +141,7 @@ const GridExample = () => {
                     aggregation: createAggregationModule(),
                 }}
                 enableOptionSetColors
-                onGridReady={runtime => { runtimeRef.current = runtime }}
+                onReady={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

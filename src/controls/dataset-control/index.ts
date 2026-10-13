@@ -1,7 +1,7 @@
 export * from './namespace';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
-    IDatasetControlView, IDatasetControlProviderState, IEventSubscriber,
+    IDatasetControlView, IDatasetControlProviderState,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';
 export type { IDatasetControlProps, IDatasetControlLabels, IDatasetControlComponents } from './components/adapters/root';

@@ -1,5 +1,5 @@
 import { IPcfContext } from "@interfaces";
-import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
+import { ColDef, ColumnApiModule, GridApi, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
@@ -8,9 +8,11 @@ import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
 import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGrid, IGridEventHandlers, IGridModule, IGridOpenRecordParams } from "../../interfaces";
+import { IGridProps, IGridEventHandlers, IGridModule, IGridOpenRecordParams } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridServiceLocator, IGridServiceMap } from "../interfaces";
+import { IGrid, IGridEvents, IGridModuleLocator } from "./interfaces";
+import type { IGridField } from "../fields";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
 import { GridValidation } from "../validation";
@@ -38,11 +40,6 @@ export interface IGridAgGridOptions {
     options: ManagedGridOptions<IRecord>;
 }
 
-export interface IGridRuntimeEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
-    /** Fired when the grid is torn down. */
-    onDestroyed: () => void;
-}
-
 /** A hook over the options AG Grid reads only once, when it is created. */
 export type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
@@ -51,7 +48,7 @@ export type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
 
 export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
-    onGetProps: () => IGrid;
+    onGetProps: () => IGridProps;
     /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
     /** The host context. */
@@ -64,9 +61,9 @@ export interface IGridRuntimeParameters {
     datasetControl?: IDatasetControlRuntime;
 }
 
-/** The running grid with its services and AG Grid options. */
-export interface IGridRuntime<TServices extends IGridServiceMap = IGridServiceMap> {
-    readonly events: IEventEmitter<IGridRuntimeEvents>;
+/** The running grid with its services and AG Grid options, as modules build on it. */
+export interface IGridRuntime<TServices extends IGridServiceMap = IGridServiceMap> extends IGrid {
+    readonly events: IEventEmitter<IGridEvents>;
     readonly services: IGridServiceLocator<TServices>;
     /**
      * Registers a hook over the options AG Grid reads only once, when it is created.
@@ -82,20 +79,18 @@ export interface IGridRuntime<TServices extends IGridServiceMap = IGridServiceMa
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
-    /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
-    openRecord(params: IGridOpenRecordParams): void;
 }
 
 export class GridRuntime implements IGridRuntime {
     private _services = new ServiceLocator<IGridServiceMap>();
-    private _onGetProps: () => IGrid;
+    private _onGetProps: () => IGridProps;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
     private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
     private _columnDefs?: ColDef<IRecord>[];
-    public readonly events: IEventEmitter<IGridRuntimeEvents> = new EventEmitter<IGridRuntimeEvents>();
+    public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
     constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
@@ -147,6 +142,30 @@ export class GridRuntime implements IGridRuntime {
 
     public get services(): IGridServiceLocator {
         return this._services;
+    }
+
+    public get modules(): IGridModuleLocator {
+        return this._services;
+    }
+
+    public getProvider(): IDataProvider {
+        return this._provider;
+    }
+
+    public getField(record: IRecord, columnName: string): IGridField {
+        return this._services.get('fields').get(record, columnName);
+    }
+
+    public renderCells(): void {
+        this._services.get('cells').render();
+    }
+
+    public renderHeaders(): void {
+        this._services.get('columns').headers.render();
+    }
+
+    public getAgGridApi(): GridApi<IRecord> | undefined {
+        return this._services.find('gridApi');
     }
 
     public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
@@ -256,7 +275,7 @@ export class GridRuntime implements IGridRuntime {
 
     private _onGridReady = (event: GridReadyEvent<IRecord>): void => {
         this._services.register('gridApi', () => event.api);
-        this._onGetProps().onGridReady?.(this);
+        this._onGetProps().onReady?.(this);
     };
 
     private _onGridPreDestroyed = (): void => {

@@ -126,7 +126,7 @@ Both modules' options are read at mount: see *Props* on [**Props and events**](?
 
 ## The grouping and aggregation services
 
-\`runtime.services.find('grouping')\` and \`find('aggregation')\` in a module or from \`onGridReady\`, or \`useGridService\` in a part the grid draws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
+\`grid.modules.find('grouping')\` and \`find('aggregation')\` on the grid \`onReady\` hands you, \`runtime.services.find(...)\` in a module, or \`useGridService\` in a part the grid draws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
 
 | \`grouping\` | What it does |
 |---|---|
@@ -225,7 +225,7 @@ export const ExpandAndCollapseFromTheRibbon: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Timesheets by status, then by employee. The DatasetControl's ribbon keeps the runtime from \`onGridReady\` and calls \`grouping.setExpandedLevel\` with \`getExpandedLevel()\` and \`getDeepestLevel()\`. Expand one level, then expand all.`,
+                story: `Timesheets by status, then by employee. The DatasetControl's ribbon keeps the grid from \`onReady\` and calls \`grouping.setExpandedLevel\` with \`getExpandedLevel()\` and \`getDeepestLevel()\`. Expand one level, then expand all.`,
             },
         },
     },

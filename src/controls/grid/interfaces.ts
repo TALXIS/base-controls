@@ -2,7 +2,7 @@ import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
-import type { IGridRuntime } from "./services/runtime";
+import type { IGrid, IGridRuntime } from "./services/runtime";
 import type { IGridServiceMap } from "./services/interfaces";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
@@ -76,7 +76,7 @@ export interface IGridEventHandlers {
 }
 
 /** The grid reads its provider from `DataProviderContext`, once, at mount. */
-export interface IGrid extends Partial<IGridEventHandlers> {
+export interface IGridProps extends Partial<IGridEventHandlers> {
     /** What this grid is made of; read once, at mount. */
     modules: IGridModules;
     /** Whether a double click on a row opens its record; read once, at mount. */
@@ -106,8 +106,8 @@ export interface IGrid extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
-    /** Fired once AG Grid is ready, with its api among the runtime's services. */
-    onGridReady?: (runtime: IGridRuntime) => void;
-    /** Fired before the grid tears down, while its api still answers. */
-    onDestroyed?: (runtime: IGridRuntime) => void;
+    /** Hands you the grid once AG Grid is ready. */
+    onReady?: (grid: IGrid) => void;
+    /** Hands you the grid before it tears down, while AG Grid still answers. */
+    onDestroyed?: (grid: IGrid) => void;
 }

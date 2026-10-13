@@ -5,7 +5,7 @@ import { useTheme } from "@fluentui/react";
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { getClassNames, useDataProvider, usePcfContext, ThemeProvider } from "@utils";
-import { IGrid } from "./interfaces";
+import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
@@ -19,7 +19,7 @@ const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
 const NO_COMPONENTS: IGridComponents = {};
 /** Reads the PCF context off `PcfContextProvider` and the provider off `DataProviderContext`. */
-export const GridRoot = (props: IGrid) => {
+export const GridRoot = (props: IGridProps) => {
     const pcfContext = usePcfContext();
     const provider = useDataProvider();
     const theme = useTheme();

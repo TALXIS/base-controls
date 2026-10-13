@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { createClientSideRowModelModule, createEditingModule, Grid, IGrid, IGridLabels, IGridModules } from "@controls/grid";
+import { createClientSideRowModelModule, createEditingModule, Grid, IGridProps, IGridLabels, IGridModules } from "@controls/grid";
 import { ICheckListLabels } from "./labels";
 import { createCheckListModule, ICheckListFieldMapping } from "./module";
 
 /** The grid modules that work with a checklist; the others reorder or hide rows, or block dragging. */
 export type ICheckListModules = Pick<IGridModules, 'license' | 'editing' | 'rowSelection' | 'clipboard' | 'aggregation' | 'legacyClientApiCompatibility' | 'custom'>;
 
-export interface ICheckListProps extends Omit<IGrid, 'modules' | 'labels'> {
+export interface ICheckListProps extends Omit<IGridProps, 'modules' | 'labels'> {
     /** Which of the provider's columns carry the label, the order and the completion state; read once, at mount. */
     fieldMapping: ICheckListFieldMapping;
     /** Merged over an auto-saving `editing` module; `editing: undefined` makes the list read-only. Read once, at mount. */

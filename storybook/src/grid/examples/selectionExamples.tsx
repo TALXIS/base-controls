@@ -7,14 +7,14 @@ const REJECTED = 4
 
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
     const selectedEntries = selectedIds.map(id => provider.getRecordsMap()[id])
     const selectedHours = selectedEntries.reduce((total, entry) => total + Number(entry.getValue('hours') ?? 0), 0)
     const hasSelection = selectedEntries.length > 0
 
     const setStatus = (entries: IRecord[], status: number) => {
         entries.forEach(entry => {
-            runtime.current?.services.get('fields').get(entry, 'status').setValue(status)
+            gridRef.current?.getField(entry, 'status').setValue(status)
         })
         provider.clearSelectedRecordIds()
     }
@@ -52,7 +52,7 @@ const GridExample = () => {
                     sorting: createSortingModule(),
                 }}
                 enableOptionSetColors
-                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                onReady={grid => gridRef.current = grid}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

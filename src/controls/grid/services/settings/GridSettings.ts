@@ -1,12 +1,12 @@
 import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGrid } from "../../interfaces";
+import { IGridProps } from "../../interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;
 const DEFAULT_MAX_VISIBLE_ROWS = 15;
 
 export interface IGridSettingsParameters {
     /** The current props: the mount-only ones are read once, the rest on demand. */
-    onGetProps: () => IGrid;
+    onGetProps: () => IGridProps;
     /** The DatasetControl the grid is inside, if any. */
     datasetControl?: IDatasetControlRuntime;
 }
@@ -26,14 +26,14 @@ export interface IGridSettings {
     /** How tall the grid is, as a CSS length, or `undefined` while it grows with its rows. */
     getHeight(): string | undefined;
     /** The caller's changes to the columns, by id, read on every build. */
-    getColDefs(): NonNullable<IGrid['colDefs']>;
+    getColDefs(): NonNullable<IGridProps['colDefs']>;
     /** The caller's per-row callbacks, read on every ask. */
-    getRowSettings(): NonNullable<IGrid['rowSettings']>;
+    getRowSettings(): NonNullable<IGridProps['rowSettings']>;
 }
 
 export class GridSettings implements IGridSettings {
-    private _getProps: () => IGrid;
-    private _mountProps: IGrid;
+    private _getProps: () => IGridProps;
+    private _mountProps: IGridProps;
     private _datasetControl?: IDatasetControlRuntime;
 
     constructor(parameters: IGridSettingsParameters) {
@@ -71,11 +71,11 @@ export class GridSettings implements IGridSettings {
         return this._getProps().height ?? undefined;
     }
 
-    public getColDefs(): NonNullable<IGrid['colDefs']> {
+    public getColDefs(): NonNullable<IGridProps['colDefs']> {
         return this._getProps().colDefs ?? {};
     }
 
-    public getRowSettings(): NonNullable<IGrid['rowSettings']> {
+    public getRowSettings(): NonNullable<IGridProps['rowSettings']> {
         return this._getProps().rowSettings ?? {};
     }
 }

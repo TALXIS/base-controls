@@ -210,11 +210,11 @@ const reviewModule: IGridModule = {
 }
 
 const GridExample = () => {
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
     const discard = () => {
         provider.clearChanges()
-        runtime.current?.services.get('columns').headers.render()
+        gridRef.current?.renderHeaders()
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
@@ -232,7 +232,7 @@ const GridExample = () => {
             <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
                 colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
-                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                onReady={grid => gridRef.current = grid}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>

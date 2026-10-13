@@ -1,5 +1,6 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator, IDatasetControlView, IEventSubscriber } from "../../../runtime/interfaces";
+import { IEventSubscriber } from "@utils";
+import { IDatasetControlServiceLocator, IDatasetControlView } from "../../../runtime/interfaces";
 
 /** What the view switcher raises. */
 export interface IDatasetControlViewSwitcherEvents {

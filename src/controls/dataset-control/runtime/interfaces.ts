@@ -1,5 +1,5 @@
 import type { IDataProvider } from "@talxis/client-libraries";
-import type { ILocalizationService, IServiceLocator } from "@utils";
+import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
 import type { IDatasetControlLabels } from "../components/adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
@@ -9,14 +9,6 @@ import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } 
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
 import type { IRibbonRuntime } from "@controls/ribbon";
-
-/** Subscribing to an emitter's events, without dispatching them. */
-export interface IEventSubscriber<T extends { [K in keyof T]: (...args: any[]) => any }> {
-    /** Calls `callback` every time `event` is raised. */
-    addEventListener<K extends keyof T>(event: K, callback: T[K]): void;
-    /** Stops calling `callback`, which must be the function that was added. */
-    removeEventListener<K extends keyof T>(event: K, callbackToRemove: T[K]): void;
-}
 
 /** A view the user can switch to. */
 export interface IDatasetControlView {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckList, ICheckListFieldMapping, IGridRuntime } from '@talxis/base-controls'
+import { CheckList, ICheckListFieldMapping, IGrid } from '@talxis/base-controls'
 import { DatasetControl, PcfContextProvider, sortCheckListProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
@@ -41,10 +41,10 @@ export const ScratchCheckList = () => {
         }
     }, [entries])
 
-    //parked on window so the provider and the runtime can be poked at from the browser console
-    const onGridReady = React.useCallback((runtime: IGridRuntime) => {
-        Object.assign(window, { checkListProvider: provider, checkListRuntime: runtime })
-        log('onGridReady', `${provider.getRecords().length} items`)
+    //parked on window so the provider and the grid can be poked at from the browser console
+    const onReady = React.useCallback((grid: IGrid) => {
+        Object.assign(window, { checkListProvider: provider, checkListGrid: grid })
+        log('onReady', `${provider.getRecords().length} items`)
     }, [])
 
     return (
@@ -81,7 +81,7 @@ export const ScratchCheckList = () => {
                     <DatasetControl.Body>
                         <CheckList
                             fieldMapping={FIELD_MAPPING}
-                            onGridReady={onGridReady}
+                            onReady={onReady}
                             onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
                             onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
                             onError={message => log('onError', message)} />

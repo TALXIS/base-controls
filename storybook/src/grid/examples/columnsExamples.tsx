@@ -158,7 +158,7 @@ const isDiscontinued = (product: IRecord) => product.getValue('discontinued') ==
 
 const GridExample = () => {
     const [status, setStatus] = React.useState('Hover a product to see what you can do with it.')
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
     const reorder = (product: IRecord) => {
         setStatus('Ordered ' + product.getValue('reorderlevel') + ' more of ' + product.getFormattedValue('name') + ' from ' + product.getFormattedValue('supplier') + '.')
@@ -171,7 +171,7 @@ const GridExample = () => {
     }
 
     const discontinue = (product: IRecord) => {
-        runtime.current?.services.get('fields').get(product, 'discontinued').setValue(true)
+        gridRef.current?.getField(product, 'discontinued').setValue(true)
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
@@ -200,7 +200,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onGridReady={gridRuntime => runtime.current = gridRuntime}
+                onReady={grid => gridRef.current = grid}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -219,7 +219,7 @@ const styles = mergeStyleSets({
 })
 
 const GridExample = () => {
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
     const activeFilter = React.useRef<string>()
 
     const applyQuickFilter = (key?: string) => {
@@ -230,7 +230,7 @@ const GridExample = () => {
     }
 
     //a header does not watch the values of the records
-    const redrawHeaders = () => runtime.current?.services.get('columns').headers.render()
+    const redrawHeaders = () => gridRef.current?.renderHeaders()
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
@@ -260,7 +260,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                onReady={grid => { gridRef.current = grid }}
                 onRecordValueChanged={redrawHeaders}
                 height='440px' />
         </DatasetControl.Body>

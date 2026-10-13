@@ -1,3 +1,4 @@
+import { IEventSubscriber } from "@utils";
 import { createElement } from "react";
 import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
@@ -23,6 +24,13 @@ import { getRowNode } from "../../services/rows/getRowNode";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
+        editing: IGridEditingService;
+    }
+}
+
+declare module "../../services/runtime/interfaces" {
+    interface IGridModuleMap {
+        /** Which cell the user is editing, and whether an edit saves itself. */
         editing: IGridEditing;
     }
 }
@@ -44,11 +52,19 @@ export interface IGridEditingParameters {
 
 /** Which cell the user is editing and the keys that start and end it. */
 export interface IGridEditing {
+    /** Subscribe to the editing events. */
+    readonly events: IEventSubscriber<IGridEditingEvents>;
+    /** Whether the user is editing this cell, in place or in the editor AG Grid opened. */
+    isEditing(record: IRecord, columnName: string): boolean;
+    /** Whether an edit saves its record straight away. */
+    isAutoSaveEnabled(): boolean;
+}
+
+/** Editing as the grid's own parts and modules use it. */
+export interface IGridEditingService extends IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
     /** Whether a column, a record's row or a cell is locked. */
     readonly locks: IGridLocks;
-    /** Whether the user is editing this cell, in place or in the editor AG Grid opened. */
-    isEditing(record: IRecord, columnName: string): boolean;
     /** Whether the user is editing this cell, counting an editor from the moment it is drawn. */
     isBeingEdited(cell: IGridCell): boolean;
     /** Whether an editor may be opened over this cell. */
@@ -57,11 +73,9 @@ export interface IGridEditing {
     start(cell: IGridCell): void;
     /** Ends the edit and brings the highlight back. */
     finish(cell: IGridCell): void;
-    /** Whether an edit saves its record straight away. */
-    isAutoSaveEnabled(): boolean;
 }
 
-export class GridEditing implements IGridEditing {
+export class GridEditing implements IGridEditingService {
     private _services: IGridServiceLocator;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;

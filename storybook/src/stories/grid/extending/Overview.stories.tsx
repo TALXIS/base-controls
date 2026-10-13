@@ -7,22 +7,33 @@ The grid is made of services, and their decisions run through hooks you can regi
 
 This page is the reference. [**Hooks**](?path=/docs/grid-extending-hooks--overview) shows each common hook solving a real problem, [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) builds a module from start to finish, and [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) covers what no hook does.
 
-## The runtime
+## The grid and its runtime
 
-Each mounted grid has one runtime, an \`IGridRuntime\`. You are handed it in three places:
+Your code reaches a mounted grid in two ways:
 
-| Where | When | What it is for |
-|---|---|---|
-| A module's \`onRegister(runtime)\` | Once, as the grid mounts: before AG Grid exists and before the first row is drawn | Registering hooks, services and listeners. Pass the module in \`modules.custom\`. |
-| \`onGridReady(runtime)\` on \`<Grid />\` | Once, when AG Grid is ready | Keeping the runtime for code outside the grid, such as a ribbon command. |
-| \`onDestroyed(runtime)\` on \`<Grid />\` | Once, as the grid unmounts, while AG Grid still answers | Reading what you want to keep. See [**Props and events**](?path=/docs/grid-get-started-props-and-events--overview). |
+| Where | You get | When | What it is for |
+|---|---|---|---|
+| \`onReady(grid)\` and \`onDestroyed(grid)\` on \`<Grid />\` | \`IGrid\` | When AG Grid is ready, and as the grid unmounts while AG Grid still answers | Driving the grid from code outside it, such as a ribbon command. |
+| A module's \`onRegister(runtime)\` | \`IGridRuntime\` | Once, as the grid mounts: before AG Grid exists and before the first row is drawn | Registering hooks, services and listeners. Pass the module in \`modules.custom\`. |
+
+\`IGrid\` is what the grid offers its consumer:
+
+| Member | What it is |
+|---|---|
+| \`getProvider()\` | The provider the grid shows. |
+| \`getField(record, columnName)\` | A record's field: its \`setValue\` saves as a cell would. |
+| \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
+| \`renderCells()\`, \`renderHeaders()\` | Draws the cells or the headers again, after something outside the grid changed them. |
+| \`modules\` | The modules the grid runs, by key: \`grid.modules.find('sorting')\`. Each one's page lists what it offers. |
+| \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
+| \`getAgGridApi()\` | AG Grid's own api, as a last resort. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
+
+\`IGridRuntime\` is all of that, plus what a module builds with:
 
 | Member | What it is |
 |---|---|
 | \`services\` | Every part of the grid, by key. See *Services* below. |
-| \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
-| \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
 
 Inside anything the grid draws, such as a custom cell, a header part, an overlay or a surface, read a service with \`useGridService(key)\`:
 
@@ -156,9 +167,9 @@ The grid asks your hooks for their answers when it draws; nothing tells it that 
 
 | What the hook decides | When the grid asks | After a change, call |
 |---|---|---|
-| A cell's colours, loading, commands, control or parameters; a cell's lock and validation | Each time the cell draws | \`runtime.services.get('cells').render()\` for every cell on screen, or \`render()\` on one cell: \`cells.getCell(record, columnName)\`, or \`useGridCell()\` inside it |
+| A cell's colours, loading, commands, control or parameters; a cell's lock and validation | Each time the cell draws | \`grid.renderCells()\` for every cell on screen, or \`render()\` on one cell: \`cells.getCell(record, columnName)\`, or \`useGridCell()\` inside it |
 | A record's lock | Each time the grid checks one of its cells; the dimmed row when one of the record's values changes or the provider reloads | \`cells.render()\`. The dimmed row follows on the record's next change or the next load. |
-| A column's lock, a header's adornments or colours | Each time the header draws | \`runtime.services.get('columns').headers.render()\` |
+| A column's lock, a header's adornments or colours | Each time the header draws | \`grid.renderHeaders()\` |
 | A column's menu | Each time the menu opens | Nothing |
 | A row's height | When AG Grid lays the row out | \`resetRowHeights()\` on the \`gridApi\` service |
 | The column definitions | When the grid is ready, then on every load of the provider | \`provider.refresh()\` |

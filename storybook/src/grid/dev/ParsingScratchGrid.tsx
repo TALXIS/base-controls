@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGrid, IGridCellParams, IGridModules, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGridProps, IGridCellParams, IGridModules, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -91,7 +91,7 @@ const StoredCell = (props: IGridCellParams) => {
     </Grid.Cell.Root>
 }
 
-const COL_DEFS: NonNullable<IGrid['colDefs']> = {
+const COL_DEFS: NonNullable<IGridProps['colDefs']> = {
     name: { pinned: 'left' },
     [STORED_COLUMN]: {
         colId: STORED_COLUMN,

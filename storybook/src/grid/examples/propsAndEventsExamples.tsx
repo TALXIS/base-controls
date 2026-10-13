@@ -137,7 +137,7 @@ const GridExample = () => {
                         key={mountCount + String(isAutoSaveOn)}
                         modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
                         height='440px'
-                        onGridReady={() => log('onGridReady')}
+                        onReady={() => log('onReady')}
                         onDestroyed={() => log('onDestroyed')}
                         onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
                         onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}

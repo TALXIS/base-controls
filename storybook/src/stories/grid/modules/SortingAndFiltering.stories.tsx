@@ -83,7 +83,7 @@ Neither module raises an event when the sort or the filter changes: to follow wh
 
 ## The sorting and filtering services
 
-\`runtime.services.find('sorting')\` and \`find('filtering')\` in a module or from \`onGridReady\`, or \`useGridService\` in a part the grid draws. Both are \`undefined\` without the module.
+\`grid.modules.find('sorting')\` and \`find('filtering')\` on the grid \`onReady\` hands you, \`runtime.services.find(...)\` in a module, or \`useGridService\` in a part the grid draws. Both are \`undefined\` without the module.
 
 | \`sorting\` | What it does |
 |---|---|

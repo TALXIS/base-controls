@@ -1862,14 +1862,49 @@ interface IGridTheme {
 }
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
-interface IGridRuntimeEvents {
+/** What the grid raises as it loads and goes. */
+interface IGridEvents {
     onDataLoaded: () => void;
+    /** The grid is tearing down. */
     onDestroyed: () => void;
 }
 
-/** The running grid with its services and AG Grid options. */
-interface IGridRuntime {
-    readonly events: IEventEmitter<IGridRuntimeEvents>;
+/** The modules the grid runs, each there only when the grid was given it. */
+interface IGridModuleMap {
+    sorting: Pick<IGridSorting, 'getSorting' | 'isColumnSortable' | 'isSorted' | 'isSortedDescending' | 'sortColumn' | 'clearColumnSorting'>;
+    filtering: Pick<IGridFiltering, 'events' | 'getFiltering' | 'isColumnFilterable' | 'isFiltered' | 'getColumnFilter' | 'removeColumnFilter' | 'openFilter' | 'closeFilter'>;
+    grouping: Pick<IGridGrouping, 'events' | 'isColumnGrouped' | 'canColumnBeGrouped' | 'toggleColumnGroup' | 'getExpandedLevel' | 'getDeepestLevel' | 'setExpandedLevel'>;
+    aggregation: Pick<IGridAggregation, 'canColumnBeAggregated' | 'addAggregation' | 'removeAggregation'>;
+    rowSelection: Pick<IGridRowSelection, 'events' | 'getMode' | 'selectRecords' | 'toggleRecord'>;
+    editing: Pick<IGridEditing, 'events' | 'isEditing' | 'isAutoSaveEnabled'>;
+}
+
+/** The grid as its consumer drives it: what onReady and onDestroyed hand you. */
+interface IGrid {
+    readonly events: IEventSubscriber<IGridEvents>;
+    readonly modules: {
+        /** Throws when the grid was not given the module. */
+        get<K extends keyof IGridModuleMap>(key: K): IGridModuleMap[K];
+        find<K extends keyof IGridModuleMap>(key: K): IGridModuleMap[K] | undefined;
+        whenAvailable<K extends keyof IGridModuleMap>(key: K, callback: (module: IGridModuleMap[K]) => void): void;
+    };
+    /** The provider the grid shows. */
+    getProvider(): IDataProvider;
+    /** A record's field, whose setValue saves as a cell would. */
+    getField(record: IRecord, columnName: string): IGridField;
+    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
+    openRecord(params: IGridOpenRecordParams): void;
+    /** Draws the cells again, such as after something outside the grid changed how they look. */
+    renderCells(): void;
+    /** Draws the column headers again. */
+    renderHeaders(): void;
+    /** AG Grid's own api, once AG Grid is ready; a last resort. */
+    getAgGridApi(): GridApi | undefined;
+}
+
+/** The running grid with its services and AG Grid options, as modules build on it. */
+interface IGridRuntime extends Omit<IGrid, 'events'> {
+    readonly events: IEventEmitter<IGridEvents>;
     readonly services: IGridServiceLocator;
     /** A hook over the options AG Grid reads once, when it is created. */
     registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
@@ -1877,8 +1912,6 @@ interface IGridRuntime {
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
-    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
-    openRecord(params: IGridOpenRecordParams): void;
 }
 
 interface IGridOpenRecordParams {
@@ -2955,7 +2988,7 @@ interface IGridEventHandlers {
     onColumnsChanged: (columns: IColumn[]) => void;
 }
 
-interface IGrid extends Partial<IGridEventHandlers> {
+interface IGridProps extends Partial<IGridEventHandlers> {
     /** Read once, at mount. */
     modules: IGridModules;
     /** True by default and read once, at mount. */
@@ -2982,10 +3015,10 @@ interface IGrid extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
-    /** Fired once gridApi is among the runtime's services. */
-    onGridReady?: (runtime: IGridRuntime) => void;
-    /** Fired before the grid tears down. */
-    onDestroyed?: (runtime: IGridRuntime) => void;
+    /** Hands you the grid once AG Grid is ready. */
+    onReady?: (grid: IGrid) => void;
+    /** Hands you the grid before it tears down, while AG Grid still answers. */
+    onDestroyed?: (grid: IGrid) => void;
 }
 
 /** The parts a grid is drawn from, attached to the grid itself. */
@@ -2996,7 +3029,7 @@ interface IGridParts {
     Row: IGridRowNamespace;
 }
 
-declare const Grid: ((props: IGrid) => JSX.Element) & IGridParts;
+declare const Grid: ((props: IGridProps) => JSX.Element) & IGridParts;
 
 interface IRowSelectionUiCheckboxComponents {
     /** What the checkbox is drawn in, and what takes the click. */
@@ -3403,7 +3436,7 @@ declare const CHECK_LIST_LABELS: ICheckListLabels;
 /** The grid modules that work with a checklist; the others reorder or hide rows, or block dragging. */
 type ICheckListModules = Pick<IGridModules, 'license' | 'editing' | 'rowSelection' | 'clipboard' | 'aggregation' | 'legacyClientApiCompatibility' | 'custom'>;
 
-interface ICheckListProps extends Omit<IGrid, 'modules' | 'labels'> {
+interface ICheckListProps extends Omit<IGridProps, 'modules' | 'labels'> {
     /** Read once, at mount. */
     fieldMapping: ICheckListFieldMapping;
     /** Merged over an auto-saving editing module; editing: undefined makes the list read-only. Read once, at mount. */

@@ -27,7 +27,7 @@ The provider, with the records, the columns and the paging, is not a prop: the g
 | \`stateKey\` | \`string\` | None | At mount | The key the grid keeps where the user was scrolled, which groups were open and which cell had focus under; per view inside a DatasetControl. See [**State**](?path=/docs/grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Whenever the grid asks | \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). \`onGetHeight\` sets \`result.height\`, in pixels, for one row. |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | None: the provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Gets \`{ record, reference, columnName }\`. |
-| \`onGridReady\`, \`onDestroyed\` | \`(runtime: IGridRuntime) => void\` | None | Live | Hand you the grid's runtime when AG Grid is ready, and as the grid unmounts. |
+| \`onReady\`, \`onDestroyed\` | \`(grid: IGrid) => void\` | None | Live | Hand you the grid when AG Grid is ready, and as the grid unmounts. See *The grid and its runtime* on [**Extending**](?path=/docs/grid-extending--overview). |
 | \`onDataLoaded\`, \`onRowClicked\` and the other events | Functions | None | Live | See *Events* below. |
 
 A prop read at mount keeps the value the grid mounted with. To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`. The grid then starts over, without the save status of its rows, and without its scroll position, open groups and focus unless it has a \`stateKey\`.
@@ -57,7 +57,7 @@ Every event of the grid itself is a prop; a module's events come in through its 
 
 | Event | Arguments | When it fires |
 |---|---|---|
-| \`onDataLoaded\` | None | After every load of the provider, such as \`refresh()\`, a page, a sort or a filter, once the grid has its new columns and rows. At mount, a provider that has already loaded fires it once, before \`onGridReady\`. |
+| \`onDataLoaded\` | None | After every load of the provider, such as \`refresh()\`, a page, a sort or a filter, once the grid has its new columns and rows. At mount, a provider that has already loaded fires it once, before \`onReady\`. |
 | \`onLoadingChanged\` | \`isLoading: boolean\` | When the provider starts or stops loading. |
 | \`onRecordValueChanged\` | \`record: IRecord\`, \`columnName: string\`, \`newValue: any\` | When a value in a record changes, whether the user edited it or your code called \`record.setValue()\`. |
 | \`onBeforeRecordSaved\` | \`record: IRecord\` | When a record starts to save, before its values are checked. |
@@ -68,8 +68,8 @@ Every event of the grid itself is a prop; a module's events come in through its 
 | \`onRowClicked\` | \`record: IRecord\` | When the user clicks a row. Group rows and the totals row fire it too. With the row selection module, a click on the checkbox, on a cell's commands, or a plain click on a group row does not. |
 | \`onFocusedCellChanged\` | \`record?: IRecord\`, \`columnName?: string\` | Each time a cell takes focus, even one that already had it. Both are \`undefined\` when the focus lands outside the rows. |
 | \`onColumnsChanged\` | \`columns: IColumn[]\` | After the user resizes or moves a column, with the provider's columns, which hold the new \`visualSizeFactor\` or \`order\`. |
-| \`onGridReady\` | \`runtime: IGridRuntime\` | Once, when AG Grid is ready. |
-| \`onDestroyed\` | \`runtime: IGridRuntime\` | Once, as the grid unmounts, while AG Grid still answers. |
+| \`onReady\` | \`grid: IGrid\` | Once, when AG Grid is ready. |
+| \`onDestroyed\` | \`grid: IGrid\` | Once, as the grid unmounts, while AG Grid still answers. |
 
 {{story: Watch every event}}
 
@@ -123,7 +123,7 @@ export const WatchEveryEvent: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support queue with editing on, beside a log of every event prop as it fires. Edit a ticket with Auto-save on, then off and press Save all; sort or resize a column; press Remount to see \`onDestroyed\`, then \`onDataLoaded\` before \`onGridReady\`.`,
+                story: `A support queue with editing on, beside a log of every event prop as it fires. Edit a ticket with Auto-save on, then off and press Save all; sort or resize a column; press Remount to see \`onDestroyed\`, then \`onDataLoaded\` before \`onReady\`.`,
             },
         },
     },

@@ -1,3 +1,4 @@
+import { IEventSubscriber } from "@utils";
 import { createElement } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, DataTypes, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
@@ -13,6 +14,13 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
+        /** Filtering the grid by a column. */
+        filtering: IGridFilteringService;
+    }
+}
+
+declare module "../../services/runtime/interfaces" {
+    interface IGridModuleMap {
         /** Filtering the grid by a column. */
         filtering: IGridFiltering;
     }
@@ -46,21 +54,33 @@ export interface IGridFilteringParameters {
 
 /** Filtering the grid by a column. */
 export interface IGridFiltering {
+    /** Subscribe to the filter callout's events. */
+    readonly events: IEventSubscriber<IGridFilteringEvents>;
+    /** The filters applied, column by column. */
+    getFiltering(): Filtering;
+    /** Whether the user may filter by the column. */
+    isColumnFilterable(column: IColumn): boolean;
+    /** Whether the grid is filtered by the column. */
+    isFiltered(column: IColumn): boolean;
+    /** The column's filter, applied or not. */
+    getColumnFilter(columnName: string): ColumnFilter;
+    /** Removes the column's filter. */
+    removeColumnFilter(columnName: string, saveToDataset?: boolean): void;
+    /** @param target What to draw the filter against, where the caller knows. */
+    openFilter(columnName: string, target?: HTMLElement): void;
+    /** Closes the filter callout. */
+    closeFilter(): void;
+}
+
+/** Filtering as the grid's own parts and modules use it. */
+export interface IGridFilteringService extends IGridFiltering {
     readonly events: IEventEmitter<IGridFilteringEvents>;
     /** The strings this module renders, for its own components. */
     getLabels(): ILocalizationService<IGridFilteringLabels>;
-    getFiltering(): Filtering;
-    isColumnFilterable(column: IColumn): boolean;
-    isFiltered(column: IColumn): boolean;
-    getColumnFilter(columnName: string): ColumnFilter;
-    removeColumnFilter(columnName: string, saveToDataset?: boolean): void;
     /** Which column's filter callout is open, if any. */
     getOpenColumnName(): string | undefined;
     /** What the open filter is drawn against: the header it was opened from. */
     getOpenTarget(): HTMLElement | undefined;
-    /** @param target What to draw the filter against, where the caller knows. */
-    openFilter(columnName: string, target?: HTMLElement): void;
-    closeFilter(): void;
     /**
      * Registers a hook over the parameters the filter callout's controls are handed.
      *
@@ -73,7 +93,7 @@ export interface IGridFiltering {
     readonly components: IGridFilteringComponents;
 }
 
-export class GridFiltering implements IGridFiltering {
+export class GridFiltering implements IGridFilteringService {
     private _services: IGridFilteringServiceLocator;
     private _filtering: Filtering;
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();

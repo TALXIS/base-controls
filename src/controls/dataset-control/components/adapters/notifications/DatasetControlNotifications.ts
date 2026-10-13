@@ -1,6 +1,7 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
 import { INotificationMessage } from "@ui/notifications";
-import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
+import { IEventSubscriber } from "@utils";
+import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the notifications raise. */
 export interface IDatasetControlNotificationsEvents {

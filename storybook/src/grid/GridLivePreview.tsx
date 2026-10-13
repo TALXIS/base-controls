@@ -1,7 +1,7 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
-import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IDatasetControlProps, IGrid, useDataProvider } from '@talxis/base-controls'
+import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IDatasetControlProps, IGridProps, useDataProvider } from '@talxis/base-controls'
 import { GRID_SANDBOX_SCOPE } from './gridSandboxScope'
 
 const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider']
@@ -14,7 +14,7 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
         const provider = useDataProvider()
         React.useEffect(() => onProviderRendered(provider), [provider])
     }
-    const ReportingGrid = (props: IGrid) => {
+    const ReportingGrid = (props: IGridProps) => {
         useReportProvider()
         return <Grid {...props} />
     }

@@ -34,7 +34,7 @@ A column colours its cells with \`context.cell.onGetTheme(theme, { record })\`. 
 - \`theme.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow.
 - Changing \`background\` does not change the text colour, so set \`text\` as well. To get a text colour that is readable on your background, call \`getTextColorForBackground(background)\` from \`@talxis/base-controls\`.
 - Colours are strings Fluent can parse: hex, \`rgb()\`, \`hsl()\` or a colour name, not CSS variables.
-- The theme is applied again whenever the record changes. If it also depends on something else, such as a toggle in your app, call \`runtime.services.get('cells').render()\` when that changes to redraw the cells.
+- The theme is applied again whenever the record changes. If it also depends on something else, such as a toggle in your app, call \`grid.renderCells()\` when that changes to redraw the cells.
 
 ### Which colour wins
 
@@ -61,7 +61,7 @@ Grouping and totals run late, so a hook at the default priority loses its colour
 A column colours its header with \`context.header.onGetTheme(theme)\`. To colour any header, register \`runtime.services.get('columns').headers.registerColumnHeaderTheme(hook, priority)\` in a module; \`onGetTheme\` runs after it.
 
 - Everything in the header takes the colours: the name, the required marker and the module icons. Its menu keeps the grid's theme.
-- Headers redraw after every load. If the colour depends on something else, call \`runtime.services.get('columns').headers.render()\` when it changes.
+- Headers redraw after every load. If the colour depends on something else, call \`grid.renderHeaders()\` when it changes.
 
 {{story: Show which columns need a review}}
 

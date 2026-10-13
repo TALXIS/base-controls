@@ -1,17 +1,17 @@
 import { IColumn, IDataProviderEventListeners, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
-import { IGrid } from "./interfaces";
-import { IGridRuntime, IGridRuntimeEvents } from "./services/runtime";
+import { IGridProps } from "./interfaces";
+import { IGridRuntime, IGridEvents } from "./services/runtime";
 import { IGridColumnsEvents } from "./services/columns";
 import { IGridRowsEvents } from "./services/rows";
 import { IGridCellsEvents } from "./services/cells";
 
 /** Hands what the grid's parts dispatch to the event props of the same name. */
-export const useGridEventHandlers = (runtime: IGridRuntime, props: IGrid) => {
+export const useGridEventHandlers = (runtime: IGridRuntime, props: IGridProps) => {
     const provider = runtime.services.get('provider');
     const columns = runtime.services.get('columns');
     const rows = runtime.services.get('rows');
-    useEventEmitter<IGridRuntimeEvents>(runtime.events, 'onDataLoaded', () => props.onDataLoaded?.());
+    useEventEmitter<IGridEvents>(runtime.events, 'onDataLoaded', () => props.onDataLoaded?.());
     useEventEmitter<IDataProviderEventListeners>(provider, 'onLoading', (isLoading: boolean) => props.onLoadingChanged?.(isLoading));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordColumnValueChanged', (record: IRecord, columnName: string, newValue: any) => props.onRecordValueChanged?.(record, columnName, newValue));
     useEventEmitter<IDataProviderEventListeners>(provider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));

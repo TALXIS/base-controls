@@ -49,7 +49,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 | From | Reach it with |
 |---|---|
 | A module's \`onRegister\` | \`runtime.services.whenAvailable('gridApi', gridApi => ...)\`. \`find('gridApi')\` is still \`undefined\` there. |
-| Code outside the grid, such as a ribbon command | Keep the runtime that \`onGridReady\` hands you, and call \`runtime.services.find('gridApi')\` |
+| Code outside the grid, such as a ribbon command | Keep the grid that \`onReady\` hands you, and call \`grid.getAgGridApi()\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
 - Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`.
@@ -65,13 +65,13 @@ The grid registers only the AG Grid modules its own modules use. \`agGridModules
 
 \`\`\`tsx
 import { CsvExportModule } from 'ag-grid-community'
-import { IGridModule, IGridRuntime } from '@talxis/base-controls'
+import { IGrid, IGridModule } from '@talxis/base-controls'
 
 export const csvExportModule: IGridModule = {
     agGridModules: [CsvExportModule],
 }
 
-export const exportQueue = (runtime: IGridRuntime) => runtime.services.find('gridApi')?.exportDataAsCsv({ fileName: 'ticket-queue.csv' })
+export const exportQueue = (grid: IGrid) => grid.getAgGridApi()?.exportDataAsCsv({ fileName: 'ticket-queue.csv' })
 \`\`\`
 
 - The grid registers them with AG Grid as it mounts, before AG Grid is created.
@@ -115,7 +115,7 @@ export const JumpToTheNewestTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The queue is sorted by *Respond by*, so a new ticket lands wherever its deadline puts it. The DatasetControl's ribbon keeps the runtime from \`onGridReady\` and calls the \`gridApi\` service: \`autoSizeAllColumns()\` fits the columns, and \`ensureNodeVisible()\` with \`flashCells()\` scrolls to the newest ticket and flashes it. \`flashCells\` needs AG Grid's \`HighlightChangesModule\`, so a module lists it in \`agGridModules\`. Press *Jump to the newest ticket*.`,
+                story: `The queue is sorted by *Respond by*, so a new ticket lands wherever its deadline puts it. The DatasetControl's ribbon keeps the grid from \`onReady\` and calls \`grid.getAgGridApi()\`: \`autoSizeAllColumns()\` fits the columns, and \`ensureNodeVisible()\` with \`flashCells()\` scrolls to the newest ticket and flashes it. \`flashCells\` needs AG Grid's \`HighlightChangesModule\`, so a module lists it in \`agGridModules\`. Press *Jump to the newest ticket*.`,
             },
         },
     },

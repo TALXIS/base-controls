@@ -1,5 +1,6 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
+import { IEventSubscriber } from "@utils";
+import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 import { DatasetControlEditColumnsSession, IDatasetControlEditColumnsLoaders } from "./DatasetControlEditColumnsSession";
 
 /** What the column editor raises. */

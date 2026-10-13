@@ -1,3 +1,4 @@
+import { IEventSubscriber } from "@utils";
 import { createElement } from "react";
 import { ColDef, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
@@ -20,6 +21,13 @@ import { GridLockHook } from "../editing/GridLocks";
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
+        /** Grouping the rows by a column. */
+        grouping: IGridGroupingService;
+    }
+}
+
+declare module "../../services/runtime/interfaces" {
+    interface IGridModuleMap {
         /** Grouping the rows by a column. */
         grouping: IGridGrouping;
     }
@@ -68,14 +76,30 @@ export interface IGridGroupingParameters {
 
 /** Grouping the rows by a column, on whichever row model the grid runs. */
 export interface IGridGrouping {
+    /** Subscribe to the grouping events. */
+    readonly events: IEventSubscriber<IGridGroupingEvents>;
+    /** Whether the rows are grouped by the column. */
+    isColumnGrouped(column: IColumn): boolean;
+    /** Whether the rows may be grouped by the column. */
+    canColumnBeGrouped(column: IColumn): boolean;
+    /** How many levels of groups are open. */
+    getExpandedLevel(): number;
+    /** The deepest level there is to open. */
+    getDeepestLevel(): number;
+    /** Opens the groups down to a level and closes the rest. */
+    setExpandedLevel(level: number): void;
+    /** Groups the rows by the column, or stops grouping by it. */
+    toggleColumnGroup(columnName: string): void;
+}
+
+/** Grouping as the grid's own parts and modules use it. */
+export interface IGridGroupingService extends IGridGrouping {
     readonly events: IEventEmitter<IGridGroupingEvents>;
     getMaxGroupLoadsPerSelection(): number;
     isGroupSelectionLimitDialogOpen(): boolean;
     closeGroupSelectionLimitDialog(): void;
     /** The strings this module renders, for its own components. */
     getLabels(): ILocalizationService<IGridGroupingLabels>;
-    isColumnGrouped(column: IColumn): boolean;
-    canColumnBeGrouped(column: IColumn): boolean;
     /** Whether the row stands for a group rather than for a record. */
     isGroupRow(node: IRowNode<IRecord>): boolean;
     /** The name a row holds a grouped column's value under. */
@@ -86,19 +110,12 @@ export interface IGridGrouping {
     isColumnExpandable(record: IRecord, columnName: string): boolean;
     /** Whether the row stands for a group of this column. */
     isRowGroupedBy(record: IRecord, columnName: string): boolean;
-    /** How many levels of groups are open. */
-    getExpandedLevel(): number;
-    /** The deepest level there is to open. */
-    getDeepestLevel(): number;
-    /** Opens the groups down to a level and closes the rest. */
-    setExpandedLevel(level: number): void;
     toggleGroup(node: IRowNode<IRecord>): void;
-    toggleColumnGroup(columnName: string): void;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridGroupingComponents;
 }
 
-export class GridGrouping implements IGridGrouping {
+export class GridGrouping implements IGridGroupingService {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;

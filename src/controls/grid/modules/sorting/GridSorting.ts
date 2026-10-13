@@ -11,6 +11,13 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
         /** Sorting the grid by a column. */
+        sorting: IGridSortingService;
+    }
+}
+
+declare module "../../services/runtime/interfaces" {
+    interface IGridModuleMap {
+        /** Sorting the grid by a column. */
         sorting: IGridSorting;
     }
 }
@@ -22,20 +29,32 @@ export interface IGridSortingParameters {
 
 /** Sorting the grid by a column. */
 export interface IGridSorting {
+    /** The columns the grid is sorted by, in order. */
     getSorting(): Sorting;
+    /** Whether the user may sort by the column. */
     isColumnSortable(column: IColumn): boolean;
+    /** Whether the grid is sorted by the column. */
     isSorted(column: IColumn): boolean;
+    /** Whether the grid is sorted by the column, descending. */
     isSortedDescending(column: IColumn): boolean;
-    /** @param appendToExisting Adds to the sorting already applied. */
+    /**
+     * Sorts by the column.
+     * @param appendToExisting Adds to the sorting already applied.
+     */
     sortColumn(columnName: string, descending?: boolean, appendToExisting?: boolean): void;
+    /** Stops sorting by the column. */
     clearColumnSorting(columnName: string): void;
+}
+
+/** Sorting as the grid's own parts and modules use it. */
+export interface IGridSortingService extends IGridSorting {
     /** What sorting a column reads as, by the type it holds. */
     getSortingLabel(columnName: string, descending?: boolean): string;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridSortingComponents;
 }
 
-export class GridSorting implements IGridSorting {
+export class GridSorting implements IGridSortingService {
     private _services: IGridSortingServiceLocator;
     private _sorting: Sorting;
 

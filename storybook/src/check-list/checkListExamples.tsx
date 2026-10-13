@@ -42,10 +42,10 @@ const lockWhenDone = (result: IGridLock, { record }: { record: IRecord }) => {
 }
 
 const GridExample = () => {
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
     const assignToMe = (record: IRecord) => {
-        runtime.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
+        gridRef.current?.getField(record, 'owner').setValue('John Doe')
     }
 
     return <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
@@ -80,7 +80,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onGridReady={gridRuntime => runtime.current = gridRuntime} />
+                onReady={grid => gridRef.current = grid} />
         </DatasetControl.Body>
     </DatasetControl>
 }

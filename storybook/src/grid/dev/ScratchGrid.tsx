@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGrid, IGridModules, DatasetControl } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridProps, IGridModules, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -336,7 +336,7 @@ const validateEstimate = (result: IFieldValidationResult, { record }: { record: 
 }
 
 /** The columns the story adds or changes, beyond what the provider holds. */
-const SCRATCH_COL_DEFS: NonNullable<IGrid['colDefs']> = {
+const SCRATCH_COL_DEFS: NonNullable<IGridProps['colDefs']> = {
     //a grouped status stays where grouping pins it
     status: colDef => ({ pinned: colDef?.pinned ?? 'right', context: { ...colDef?.context, alignment: 'right' } }),
     //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
@@ -471,7 +471,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     enableOptionSetColors={props.enableOptionSetColors}
                     rowHeight={props.rowHeight}
                     stateKey='scratch-grid'
-                    onGridReady={runtime => { (window as any).__scratchGridApi = runtime.services.get('gridApi'); (window as any).__scratchGridRuntime = runtime }} />
+                    onReady={grid => { (window as any).__scratchGridApi = grid.getAgGridApi(); (window as any).__scratchGrid = grid }} />
             </DatasetControl.Body>
         </DatasetControl>
     </div>

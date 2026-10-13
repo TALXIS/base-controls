@@ -1,5 +1,6 @@
 import { EventEmitter, IDataProvider, IColumn, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IDatasetControlServiceLocator, IEventSubscriber } from "../../../runtime/interfaces";
+import { IEventSubscriber } from "@utils";
+import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the quick find raises. */
 export interface IDatasetControlQuickFindEvents {

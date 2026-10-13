@@ -1,3 +1,4 @@
+import { IEventSubscriber } from "@utils";
 import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
 import { EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
@@ -10,6 +11,13 @@ import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/components/ui/toggle/sty
 
 declare module "../../services/interfaces" {
     interface IGridModuleServiceMap {
+        /** Which records are selected. */
+        rowSelection: IGridRowSelectionService;
+    }
+}
+
+declare module "../../services/runtime/interfaces" {
+    interface IGridModuleMap {
         /** Which records are selected. */
         rowSelection: IGridRowSelection;
     }
@@ -44,14 +52,20 @@ export interface IGridRowSelectionParameters {
 
 /** Keeps the grid's and the providers' selection in sync. */
 export interface IGridRowSelection {
-    readonly events: IEventEmitter<IGridRowSelectionEvents>;
+    /** Subscribe to the selection events. */
+    readonly events: IEventSubscriber<IGridRowSelectionEvents>;
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
-    setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
     /** Selects the records, through whatever intercepts `onSelectRecords`. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     /** Selects the record, or deselects it, through whatever intercepts `onSelectRecords`. */
     toggleRecord(record: IRecord): Promise<void>;
+}
+
+/** Row selection as the grid's own parts and modules use it. */
+export interface IGridRowSelectionService extends IGridRowSelection {
+    readonly events: IEventEmitter<IGridRowSelectionEvents>;
+    setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
     /** How a row's checkbox should read. */
@@ -60,7 +74,7 @@ export interface IGridRowSelection {
     isRecordSelectionDisabled(record: IRecord): boolean;
 }
 
-export class GridRowSelection implements IGridRowSelection {
+export class GridRowSelection implements IGridRowSelectionService {
     private _services: IGridRowSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
     /** The persisted selection waiting for its records to load. */

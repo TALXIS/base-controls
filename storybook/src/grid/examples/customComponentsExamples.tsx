@@ -56,19 +56,18 @@ const WinChanceCell = (props: IGridCellParams) => <Grid.Cell.Field record={props
 const FORECAST_DELAY = 1200
 
 const GridExample = () => {
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
     const [forecasting] = React.useState(() => new Set<string>())
 
     //stands in for a forecasting service
     const forecast = async (deal: IRecord) => {
-        const cells = runtime.current!.services.get('cells')
         forecasting.add(deal.getRecordId())
-        cells.render()
+        gridRef.current!.renderCells()
         await new Promise(resolve => window.setTimeout(resolve, FORECAST_DELAY))
         forecasting.delete(deal.getRecordId())
         const chance = Number(deal.getValue('stage')) * 25 - 15 + Math.round(Math.random() * 20)
-        await runtime.current!.services.get('fields').get(deal, 'probability').setValue(chance)
-        cells.render()
+        await gridRef.current!.getField(deal, 'probability').setValue(chance)
+        gridRef.current!.renderCells()
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -107,7 +106,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                onReady={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -201,13 +200,13 @@ const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
 </Grid.ColumnHeader.Root>
 
 const GridExample = () => {
-    const runtime = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
     //the totals load on their own, so the headers are redrawn once they arrive
     React.useEffect(() => {
         totals.getDataProvider().addEventListener('onLoading', isLoading => {
             if (!isLoading) {
-                runtime.current?.services.get('columns').headers.render()
+                gridRef.current?.renderHeaders()
             }
         })
     }, [])
@@ -220,7 +219,7 @@ const GridExample = () => {
                     value: { headerComponent: SummaryHeader },
                     probability: { headerComponent: SummaryHeader },
                 }}
-                onGridReady={gridRuntime => { runtime.current = gridRuntime }}
+                onReady={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

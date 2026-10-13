@@ -6,6 +6,7 @@ export * from './dataset';
 export * from './error-handling';
 export * from './hook-registry';
 export * from './service-locator';
+export * from './events';
 export * from './localization';
 export * from './adapters';
 export * from './stack-rank';

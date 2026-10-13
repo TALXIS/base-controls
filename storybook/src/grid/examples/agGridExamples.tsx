@@ -19,13 +19,13 @@ const GridExample = () => {
     const [isArranging, setIsArranging] = React.useState(false)
     const [order, setOrder] = React.useState('')
     const isArrangingRef = React.useRef(isArranging)
-    const runtimeRef = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
     const columnOrderLock = React.useMemo(() => createColumnOrderLock(() => isArrangingRef.current), [])
 
     const toggleArranging = (checked: boolean) => {
         isArrangingRef.current = checked
         setIsArranging(checked)
-        runtimeRef.current?.refreshAgGridOptions()
+        gridRef.current?.refreshAgGridOptions()
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -38,7 +38,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
-                onGridReady={runtime => { runtimeRef.current = runtime }}
+                onReady={grid => { gridRef.current = grid }}
                 onColumnsChanged={columns => setOrder(describeOrder(columns))}
                 height='420px' />
         </DatasetControl.Body>
@@ -54,12 +54,12 @@ const isNewer = (ticket: IRecord, other: IRecord) => dayjs(ticket.getValue('crea
 const getNewestTicket = (tickets: IRecord[]) => tickets.reduce<IRecord | undefined>((newest, ticket) => !newest || isNewer(ticket, newest) ? ticket : newest, undefined)
 
 const GridExample = () => {
-    const runtimeRef = React.useRef<IGridRuntime>()
+    const gridRef = React.useRef<IGrid>()
 
-    const fitColumns = () => runtimeRef.current?.services.find('gridApi')?.autoSizeAllColumns()
+    const fitColumns = () => gridRef.current?.getAgGridApi()?.autoSizeAllColumns()
 
     const jumpToNewestTicket = () => {
-        const gridApi = runtimeRef.current?.services.find('gridApi')
+        const gridApi = gridRef.current?.getAgGridApi()
         const newest = getNewestTicket(provider.getRecords())
         const node = newest && gridApi?.getRowNode(newest.getRecordId())
         if (!gridApi || !node) {
@@ -85,7 +85,7 @@ const GridExample = () => {
             <Grid
                 modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
                 enableOptionSetColors
-                onGridReady={runtime => { runtimeRef.current = runtime }}
+                onReady={grid => { gridRef.current = grid }}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>
