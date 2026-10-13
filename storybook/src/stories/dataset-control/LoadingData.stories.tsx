@@ -1,10 +1,10 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
-import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { FailedLoadExample, WaitingExample } from '../../../dataset-control/examples/loadingDataExamples'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { FailedLoadExample, WaitingExample } from '../../dataset-control/examples/loadingDataExamples'
 
-const DESCRIPTION = `DatasetControl gets its provider from \`onLoad\`. Load whatever the provider needs there, such as the view's definition, metadata or settings. A placeholder stands in for the control until the provider has loaded its first page.
+const DESCRIPTION = `DatasetControl gets its records from \`onLoad\`. Load whatever the view needs there, such as its definition, metadata or settings, and return a provider.
 
 \`\`\`tsx
 const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
@@ -17,40 +17,46 @@ const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatase
 
 ## onLoad
 
-\`onLoad\` is called when the control mounts, on every view switch, and on \`loadView()\` and \`reload()\`. Each call returns a new provider.
+\`onLoad\` is called when the control mounts, whenever the user switches the view, and when your code calls \`control.loadView()\` or \`control.reload()\`. Each call returns a new provider, and the control destroys the one it replaces.
 
-- It is called with the \`viewId\` to load: the view the user picked, or on the first load the one the control kept. With no \`viewId\`, pick the default view, and return its id beside the provider.
-- Before showing the provider, the control puts back what it kept for the view, such as its sorting and search. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview).
+| Parameter | Description |
+|---|---|
+| \`viewId\` | The view to load: the one the user picked, or on the first load the one the control kept. \`undefined\` when there is none, so \`onLoad\` picks the default. |
+
+| Result | Default | Description |
+|---|---|---|
+| \`provider\` | Required | The provider every part works on. |
+| \`viewId\` | The \`viewId\` it was called with | The view \`provider\` shows. Return it when \`onLoad\` picked the default. |
+
+- Before showing the provider, the control puts back what it kept for the view, such as its sorting and search. See [**State**](?path=/docs/datasetcontrol-state--overview).
 - It then loads the provider's first page, so the parts show records straight away. A provider \`onLoad\` already started loading isn't loaded again.
-- The views to switch between come from the view switcher: see [**Views**](?path=/docs/datasetcontrol-parts-views--overview).
-
-The parameters and the result are on [**Hooks and types**](?path=/docs/datasetcontrol-api-hooks-and-types--overview).
+- The list of views the user can switch to comes from the view switcher. See [**Views**](?path=/docs/datasetcontrol-parts-views--overview).
 
 ## While loading
 
-Everything inside \`DatasetControl\` waits for the provider: a placeholder stands in for it on the first load and on every view switch. Anything that should show straight away, such as a title, goes outside the control.
+Everything inside \`DatasetControl\` waits for the provider: a placeholder stands in for it on the first load and on every view switch. Anything that should show straight away, such as a page title, goes outside the control.
 
 {{story: Wait for the deals}}
 
 ## When loading fails
 
-When \`onLoad\` throws, or the provider fails to load, the control shows the error in place of its parts and destroys the provider that failed.
+When \`onLoad\` throws, or the provider fails to load, the control shows the error in place of its parts.
 
 - The error's \`message\` is the title.
-- *Details* opens the error dialog with the error's \`cause\`, or its stack when it has no cause.
-- *Try again* runs the load that failed again.
+- *Details* opens the error dialog with the error's \`cause\`, or its stack when it has none.
+- *Try again* runs the load that failed again, as \`control.retry()\` does.
 
-The same happens when a part throws while rendering, and *Try again* then mounts the parts again. To change how the error looks, see [**Appearance**](?path=/docs/datasetcontrol-customization-appearance--overview).
+A part that throws while rendering is shown the same way, and *Try again* mounts the parts again. To change how the error looks, see [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
 
 {{story: The deals service is down}}
 
 ## A shared provider
 
-The control destroys every provider it lets go of: on unmount, on a view switch, and after a failed load. When \`onLoad\` returns a provider that lives on after the control, such as one shared with another part of your page, pass \`destroyProviderOnUnmount={false}\`.
+The control destroys every provider it lets go of: on unmount, on a view switch, and after a failed load. When \`onLoad\` returns a provider that lives on after the control, pass \`destroyProviderOnUnmount={false}\`.
 `
 
 const meta = {
-    title: 'DatasetControl/Get started/Loading data',
+    title: 'DatasetControl/Loading data',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

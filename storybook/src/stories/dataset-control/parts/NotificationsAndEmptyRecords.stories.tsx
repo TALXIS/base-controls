@@ -6,13 +6,18 @@ import { EmptyRecordsExample, NotificationsExample } from '../../../dataset-cont
 
 const DESCRIPTION = `## Notifications
 
-\`DatasetControl.Notifications\` shows the provider's load error, next to the \`messages\` you pass, in the same notification bar as on [**Form**](?path=/docs/form-get-started--overview). Put it between the header and the body.
+\`DatasetControl.Notifications\` shows the provider's load error, next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/form-get-started--overview). Put it between the header and the body.
 
 \`\`\`tsx
 <DatasetControl.Notifications messages={[{ text: 'Deals are synced every night.', level: 'INFO' }]} />
 \`\`\`
 
-A message is \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| \`messages\` | \`{ text, level: 'ERROR' \\| 'WARNING' \\| 'INFO' }[]\` | None | Messages of your own. |
+| \`labels\`, \`components\` | | | See [**Localization**](?path=/docs/datasetcontrol-localization--overview) and [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+
+From your code, \`control.parts.get('notifications').getMessages()\` returns the provider's error while there is one, and its \`events\` raise \`onNotificationsChanged\` when that changes.
 
 {{story: The deals service is unreachable}}
 
@@ -28,7 +33,7 @@ A message is \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'
 </DatasetControl.Body>
 \`\`\`
 
-All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
+It takes \`labels\` and \`components\`: see [**Localization**](?path=/docs/datasetcontrol-localization--overview) and [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
 
 {{story: Nothing matches}}
 `

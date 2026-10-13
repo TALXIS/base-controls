@@ -15,15 +15,38 @@ const loadColumns = async (scope?: IAvailableRelatedColumn): Promise<IColumn[]> 
 </DatasetControl.Header.End>
 \`\`\`
 
-- The columns the user can add are what \`onLoadColumns\` returns. It is called with no scope for the records' own entity, and with the picked scope for a related one.
-- With \`onLoadScopes\`, a scope selector lets the user add columns of related records too; without it, there is none.
+- The columns the user can add are what \`onLoadColumns\` returns: called with no scope for the records' own columns, and with the picked scope for a related entity's.
+- With \`onLoadScopes\`, a scope selector lets the user add columns of related records too. Without it, there is none.
 - Both are called every time the editor needs them: when it opens, on every search and on every scope picked. While they run, the pickers say *Loading...*. When one throws, its error shows in place of the pickers, with *Details* and *Try again*.
 - *Cancel*, or closing the panel, drops the changes.
-- To open the editor from your own code, call \`control.parts.get('editColumns').open()\`. See [**Your own parts**](?path=/docs/datasetcontrol-customization-your-own-parts--overview).
-
-All its props are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
+- The columns the user chose are kept per view. See [**State**](?path=/docs/datasetcontrol-state--overview).
 
 {{story: Choose the columns}}
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| \`onLoadColumns\` | \`(scope?: IAvailableRelatedColumn) => Promise<IColumn[]>\` | Required | The columns the user can add. |
+| \`onLoadScopes\` | \`() => Promise<IAvailableRelatedColumn[]>\` | None | The related entities columns can come from, the records' own among them. Shows the scope selector. |
+| \`labels\` | \`Partial<IEditColumnsLabels>\` | English | Read once, at mount. See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
+| \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+
+## From your code
+
+The editor is \`control.parts.get('editColumns')\`. Open it from a button of your own:
+
+\`\`\`tsx
+<DefaultButton text='Columns' onClick={() => control.parts.get('editColumns').open()} />
+\`\`\`
+
+| Member | Description |
+|---|---|
+| \`open()\` | Opens the editor over the provider's columns. |
+| \`close()\` | Closes the editor and drops what was not saved. |
+| \`save()\` | Sets the columns on the provider, which loads again, and closes the editor. |
+| \`isOpen()\` | Whether the editor is open. |
+| \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 `
 
 const meta = {

@@ -27,7 +27,7 @@ Below is an example of a sales pipeline. Pick a preset or open **Features & Modu
 
 The grid draws the records of a data provider, and finds that provider around it. Render it in one of two places:
 
-- **Inside a [DatasetControl](?path=/docs/datasetcontrol-get-started-overview--overview)** — recommended. The control loads the provider and hands it to the grid, and brings the header, the paging, the views, the loading and error states, and the state kept per view.
+- **Inside a [DatasetControl](?path=/docs/datasetcontrol-get-started--overview)** — recommended. The control loads the provider and hands it to the grid, and brings the header, the paging, the views, the loading and error states, and the state kept per view.
 - **Inside a [DataProviderContextProvider](?path=/docs/providers-dataprovidercontextprovider--overview)**, for a grid on its own: you load the provider yourself and hand it over.
 
 Without either, the grid throws.

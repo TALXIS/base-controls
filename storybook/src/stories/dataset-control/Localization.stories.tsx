@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
-import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { CzechExample } from '../../../dataset-control/examples/localizationExamples'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { CzechExample } from '../../dataset-control/examples/localizationExamples'
 
 const DESCRIPTION = `Every string a part shows can be replaced through its \`labels\`. What you leave out keeps its English default, exported for each part. A label with \`{{ name }}\` in it is filled in.
 
@@ -23,7 +23,7 @@ The grid's strings are the grid's own \`labels\`: see [**Localization**](?path=/
 `
 
 const meta = {
-    title: 'DatasetControl/Customization/Localization',
+    title: 'DatasetControl/Localization',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
-import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../../dataset-control/examples/stateExamples'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../dataset-control/examples/stateExamples'
 
 const DESCRIPTION = `A DatasetControl puts every view back the way the user left it: the records sorted, filtered, searched and paged as they were, the columns they chose, and the grid scrolled where it was.
 
@@ -29,7 +29,7 @@ const DESCRIPTION = `A DatasetControl puts every view back the way the user left
 
 - A grid keeps its state only with a \`stateKey\` of its own, unique within the control. What it keeps is on [**State**](?path=/docs/grid-state--overview) of the grid.
 - A view the user hasn't been on yet starts from what \`onLoad\` returns.
-- \`reload()\` of the view shown keeps its setup too, since the view is left and loaded again.
+- \`control.reload()\` keeps the setup of the view shown too, since the view is left and loaded again.
 
 ## Inside the store
 
@@ -53,11 +53,11 @@ const OnlyMineToggle = () => {
 }
 \`\`\`
 
-A gallery that keeps its scroll this way is on [**Your own collection view**](?path=/docs/datasetcontrol-customization-your-own-parts--overview).
+A gallery that keeps its scroll this way is on [**Your own collection view**](?path=/docs/datasetcontrol-your-own-parts--overview).
 `
 
 const meta = {
-    title: 'DatasetControl/Get started/State',
+    title: 'DatasetControl/State',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
-import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { YourOwnPiecesExample } from '../../../dataset-control/examples/appearanceExamples'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { YourOwnPiecesExample } from '../../dataset-control/examples/appearanceExamples'
 
 const DESCRIPTION = `Every part takes \`components\`, which replaces pieces of what it draws. A piece is handed the props its default would get, so you can change them and render the default, or render something of your own.
 
@@ -34,7 +34,7 @@ const DESCRIPTION = `Every part takes \`components\`, which replaces pieces of w
 `
 
 const meta = {
-    title: 'DatasetControl/Customization/Appearance',
+    title: 'DatasetControl/Appearance',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

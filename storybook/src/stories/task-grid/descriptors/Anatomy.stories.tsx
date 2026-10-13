@@ -128,7 +128,7 @@ interface ITaskGridServiceLocator {
 }
 \`\`\`
 
-Always registered: \`taskGrid\` (the runtime), \`datasetControl\` (the [**DatasetControl**](?path=/docs/datasetcontrol-customization-your-own-parts--overview) it runs in),
+Always registered: \`taskGrid\` (the runtime), \`datasetControl\` (the [**DatasetControl**](?path=/docs/datasetcontrol-your-own-parts--overview) it runs in),
 \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`savedQueryDataProvider\`,
 and the view's \`taskDataProvider\` and \`taskExpansion\`, which are replaced with every view.
 

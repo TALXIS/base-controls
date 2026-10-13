@@ -4,7 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ViewsExample } from '../../../dataset-control/examples/partsExamples'
 
-const DESCRIPTION = `\`DatasetControl.ViewSwitcher\` shows the current view's name, and opens the list of views your \`onLoad\` returns. Picking a view loads it.
+const DESCRIPTION = `\`DatasetControl.ViewSwitcher\` shows the view the user is on, and lists the views your \`onLoad\` returns. Picking one loads it.
 
 \`\`\`tsx
 const loadViews = async (): Promise<IDatasetControlView[]> => {
@@ -17,18 +17,42 @@ const loadViews = async (): Promise<IDatasetControlView[]> => {
 </DatasetControl.Header.Start>
 \`\`\`
 
-- A view is \`{ id, name, group? }\`. Views are listed under their \`group\`, in the order the groups first appear. Views without one are listed under *System views*.
-- The current view is the one the control's own \`onLoad\` loaded, and it is highlighted.
-- While the views load, a shimmer stands in for the switcher. When \`onLoad\` throws, the switcher shows the error, with *Details* and *Try again*.
-- Picking a view calls the control's \`onLoad\` with its \`viewId\`, shows the placeholder while it runs, then shows the new provider and destroys the old one. See [**Loading data**](?path=/docs/datasetcontrol-get-started-loading-data--overview).
+- A view is \`{ id, name, group? }\`. Views are listed under their \`group\`, in the order the groups first appear, and views without one under *System views*.
+- Picking a view calls the control's \`onLoad\` with its \`id\`, behind the placeholder. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
 - When the records have unsaved changes, the control asks first, and stays on the view if the user cancels.
-- Switching back to a view puts it back as the user left it: sorted, searched, paged and scrolled. See [**State**](?path=/docs/datasetcontrol-get-started-state--overview).
-- To switch views from your own code, call \`control.loadView(viewId)\`. See [**Your own parts**](?path=/docs/datasetcontrol-customization-your-own-parts--overview).
-- To list the views again, such as after the user saved a new one, call \`reload()\` on the switcher \`onReady\` hands you.
-
-All its props, and what \`control.parts.get('viewSwitcher')\` offers, are on [**Parts**](?path=/docs/datasetcontrol-api-parts--overview) of the API.
+- Switching back to a view puts it back as the user left it: sorted, searched, paged and scrolled. See [**State**](?path=/docs/datasetcontrol-state--overview).
+- While the views load, a shimmer stands in for the switcher. When \`onLoad\` throws, the switcher shows the error, with *Details* and *Try again*.
 
 {{story: Switch the view}}
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| \`onLoad\` | \`() => Promise<IDatasetControlView[]>\` | Required | Returns the views to list. Called at mount, after every view loads, and on \`reload()\`. |
+| \`onReady\` | \`(viewSwitcher: IDatasetControlViewSwitcher) => void\` | None | Hands you the switcher once it exists, before its first load. |
+| \`labels\` | \`Partial<IViewSwitcherLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
+| \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+
+## From your code
+
+To load a view, call \`control.loadView(viewId)\`: see [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). The switcher itself is \`control.parts.get('viewSwitcher')\`. Call its \`reload()\` to list the views again, such as after the user saved a new one:
+
+\`\`\`tsx
+const saveView = async () => {
+    await saveDealView(...)
+    control.parts.get('viewSwitcher').reload()
+}
+\`\`\`
+
+| Member | Description |
+|---|---|
+| \`getViews()\` | The views \`onLoad\` returned; \`undefined\` until it first finishes. |
+| \`getCurrentView()\` | The view shown; \`undefined\` when it is not among the views. |
+| \`select(viewId)\` | Loads the view, as picking it does. |
+| \`reload()\` | Calls \`onLoad\` again. |
+| \`getError()\` | What the last \`onLoad\` threw, until the next one starts. |
+| \`events\` | \`onBeforeLoad\` and \`onLoaded\`, around every \`onLoad\`. |
 `
 
 const meta = {

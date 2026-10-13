@@ -33,7 +33,7 @@ export const MyTaskGridPage = () => (
 
 The grid reads the \`ComponentFramework.Context\` — navigation, formatting, error dialogs — off \`PcfContextProvider\`, so render it inside one. Pass your host's context to the provider; without one it builds a sample context.
 
-Task Grid is a [**DatasetControl**](?path=/docs/datasetcontrol-get-started-overview--overview) with a task tree inside: the header, the loading skeleton, the error with its retry and the view switching are the DatasetControl's, and so is the state it keeps.
+Task Grid is a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview) with a task tree inside: the header, the loading skeleton, the error with its retry and the view switching are the DatasetControl's, and so is the state it keeps.
 
 ### \`<TaskGrid />\` props
 
