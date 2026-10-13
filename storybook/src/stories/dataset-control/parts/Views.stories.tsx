@@ -30,7 +30,6 @@ const loadViews = async (): Promise<IDatasetControlView[]> => {
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`onLoad\` | \`() => Promise<IDatasetControlView[]>\` | Required | Returns the views to list. Called at mount, after every view loads, and on \`reload()\`. |
-| \`onReady\` | \`(viewSwitcher: IDatasetControlViewSwitcher) => void\` | None | Hands you the switcher once it exists, before its first load. |
 | \`labels\` | \`Partial<IViewSwitcherLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
 | \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
 

@@ -3458,8 +3458,6 @@ interface IDatasetControlViewSwitcher {
 interface IViewSwitcherProps {
     /** Called at mount and on every reload(); returns the views to list. */
     onLoad: () => Promise<IDatasetControlView[]>;
-    /** Called with the switcher once it exists, before the first load. */
-    onReady?: (viewSwitcher: IDatasetControlViewSwitcher) => void;
     labels?: Partial<IViewSwitcherLabels>;
     components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> & {
         /** Its container is a shimmer the size of the button by default. */

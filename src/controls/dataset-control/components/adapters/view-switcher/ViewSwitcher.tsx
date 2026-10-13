@@ -9,7 +9,7 @@ import { IDatasetControlView } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { IViewSwitcherLabels, VIEW_SWITCHER_LABELS } from "./labels";
-import { DatasetControlViewSwitcher, IDatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from "./DatasetControlViewSwitcher";
+import { DatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from "./DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
 import { getViewSwitcherStyles } from "./styles";
 
@@ -17,8 +17,6 @@ import { getViewSwitcherStyles } from "./styles";
 export interface IViewSwitcherProps {
     /** Called at mount and on every `reload()`; returns the views to list. */
     onLoad: () => Promise<IDatasetControlView[]>;
-    /** Called with the switcher once it exists, before the first load. */
-    onReady?: (viewSwitcher: IDatasetControlViewSwitcher) => void;
     /** Overrides for the switcher's strings. */
     labels?: Partial<IViewSwitcherLabels>;
     /** Replacements for the switcher's pieces. */
@@ -40,7 +38,6 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
     useEventEmitter<IDatasetControlViewSwitcherEvents>(viewSwitcher.events, ['onBeforeLoad', 'onLoaded'], rerender);
 
     useEffect(() => {
-        propsRef.current.onReady?.(viewSwitcher);
         viewSwitcher.reload();
         return () => viewSwitcher.destroy();
     }, []);
