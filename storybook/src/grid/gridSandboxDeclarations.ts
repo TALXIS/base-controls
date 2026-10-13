@@ -3606,6 +3606,7 @@ interface IDatasetControlNotifications {
 /** The parts rendered inside the control, each there only while it is rendered. */
 interface IDatasetControlPartMap {
     viewSwitcher: IDatasetControlViewSwitcher;
+    ribbon: IRibbonRuntime;
     quickFind: IDatasetControlQuickFind;
     pagination: IDatasetControlPagination;
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
@@ -3701,7 +3702,8 @@ interface IDatasetControlNamespace {
     };
     ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
-    Ribbon: (props: IRibbonProps) => JSX.Element;
+    /** Reach it through control.parts.get('ribbon'). */
+    Ribbon: (props: Omit<IRibbonProps, 'onReady'>) => JSX.Element;
     QuickFind: (props: {
         labels?: Partial<IQuickFindLabels>;
         components?: Partial<{

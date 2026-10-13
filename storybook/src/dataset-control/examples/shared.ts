@@ -54,14 +54,14 @@ export const RIBBON_FILE: IGridExampleFile = {
 //which buttons show depends on what is selected; DatasetControl.Ribbon loads them again on every selection
 export const DealsRibbon = () => {
     const provider = useDataProvider()
-    const ribbonRef = React.useRef<IRibbonRuntime>()
+    const control = useDatasetControl()
 
     const setStage = async (recordIds: string[], stage: number) => {
         //stands in for a server call, during which the button is disabled
         await new Promise(resolve => setTimeout(resolve, 1500))
         recordIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', stage))
         //the selection is the same, but which buttons apply to it is not
-        ribbonRef.current?.reload()
+        control.parts.get('ribbon').reload()
     }
 
     const onLoad = async (): Promise<IRibbonCommand[]> => {
@@ -85,7 +85,7 @@ export const DealsRibbon = () => {
         return commands
     }
 
-    return <DatasetControl.Ribbon onLoad={onLoad} onReady={ribbon => ribbonRef.current = ribbon} />
+    return <DatasetControl.Ribbon onLoad={onLoad} />
 }
 `,
 }

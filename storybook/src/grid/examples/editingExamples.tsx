@@ -7,7 +7,7 @@ export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provide
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change the hours of an entry: it saves as soon as you leave the cell.')
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })} onReady={datasetControl => control.current = datasetControl}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
@@ -23,7 +23,7 @@ const GridExample = () => {
 export const REVIEW_CHANGES_CODE = `const entries = (count: number) => count === 1 ? '1 entry' : \`\${count} entries\`
 
 const GridExample = () => {
-    const ribbon = React.useRef<IRibbonRuntime>()
+    const control = React.useRef<IDatasetControl>()
     const [message, setMessage] = React.useState('')
 
     const saveAll = async () => {
@@ -46,12 +46,12 @@ const GridExample = () => {
     }
 
     //the ribbon reloads on its own only when the selection changes
-    const reloadCommands = () => ribbon.current?.reload()
+    const reloadCommands = () => control.current?.parts.find('ribbon')?.reload()
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} onReady={runtime => ribbon.current = runtime} />
+                <DatasetControl.Ribbon onLoad={loadCommands} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}

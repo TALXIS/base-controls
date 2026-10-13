@@ -8,6 +8,7 @@ import type { DatasetControlPagination, IDatasetControlPagination } from "../com
 import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "../components/adapters/page-size-switcher/DatasetControlPageSizeSwitcher";
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
+import type { IRibbonRuntime } from "@controls/ribbon";
 
 /** Subscribing to an emitter's events, without dispatching them. */
 export interface IEventSubscriber<T extends { [K in keyof T]: (...args: any[]) => any }> {
@@ -43,6 +44,8 @@ export interface IDatasetControlEvents {
 export interface IDatasetControlPartMap {
     /** `DatasetControl.ViewSwitcher`. */
     viewSwitcher: IDatasetControlViewSwitcher;
+    /** `DatasetControl.Ribbon`. */
+    ribbon: IRibbonRuntime;
     /** `DatasetControl.QuickFind`. */
     quickFind: IDatasetControlQuickFind;
     /** `DatasetControl.Pagination`. */

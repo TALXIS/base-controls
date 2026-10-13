@@ -27,7 +27,7 @@ const createInvoiceLines = () => new MemoryDataProvider({
 const GridExample = () => {
     const lines = React.useMemo(createInvoiceLines, [])
     const lineCount = React.useRef(3)
-    const ribbon = React.useRef<IRibbonRuntime>()
+    const control = React.useRef<IDatasetControl>()
     const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
 
     const showLines = async (count: number) => {
@@ -35,7 +35,7 @@ const GridExample = () => {
         lineCount.current = count
         await lines.refresh()
         //the ribbon reloads on its own only when the selection changes
-        ribbon.current?.reload()
+        control.current?.parts.find('ribbon')?.reload()
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
@@ -43,10 +43,10 @@ const GridExample = () => {
         { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: lines })}>
+    return <DatasetControl onLoad={async () => ({ provider: lines })} onReady={datasetControl => control.current = datasetControl}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} onReady={runtime => ribbon.current = runtime} />
+                <DatasetControl.Ribbon onLoad={loadCommands} />
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
