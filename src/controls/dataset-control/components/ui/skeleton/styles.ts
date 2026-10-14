@@ -1,7 +1,8 @@
 import { ITheme, keyframes, mergeStyleSets } from '@fluentui/react';
+import { HEADER_PART_HEIGHT } from "../layout";
 
 //the same row and gap below as the header it stands in for
-const HEADER_HEIGHT = 44;
+const HEADER_HEIGHT = HEADER_PART_HEIGHT;
 const HEADER_GAP = 15;
 const COLUMN_HEADER_HEIGHT = 42;
 const ROW_HEIGHT = 42;

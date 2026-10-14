@@ -10,3 +10,6 @@ export const HIDDEN_LAYER_HOSTS = {
         display: 'none',
     },
 };
+
+//the height of the header's parts, as tall as a text field
+export const HEADER_PART_HEIGHT = 32;

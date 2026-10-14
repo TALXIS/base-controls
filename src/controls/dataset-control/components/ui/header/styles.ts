@@ -1,5 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { HEADER_CONTAINER } from "../layout";
+import { HEADER_CONTAINER, HEADER_PART_HEIGHT } from "../layout";
 
 export const getHeaderUiStyles = () => mergeStyleSets({
     datasetControlHeader: {
@@ -10,7 +10,7 @@ export const getHeaderUiStyles = () => mergeStyleSets({
         justifyContent: 'flex-end',
         gap: 8,
         marginBottom: 15,
-        minHeight: 44,
+        minHeight: HEADER_PART_HEIGHT,
         //only the body gives way when the records need more height than the container has
         flexShrink: 0,
         containerType: 'inline-size',

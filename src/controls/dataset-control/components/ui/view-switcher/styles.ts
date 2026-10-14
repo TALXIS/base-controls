@@ -1,9 +1,10 @@
 import { mergeStyleSets } from "@fluentui/react";
+import { HEADER_PART_HEIGHT } from "../layout";
 import { ITheme } from "@theme";
 
 export const getViewSwitcherUiStyles = (theme: ITheme) => mergeStyleSets({
     viewSwitcher: {
-        height: 44,
+        height: HEADER_PART_HEIGHT,
         minWidth: 0,
         maxWidth: '100%',
     },
