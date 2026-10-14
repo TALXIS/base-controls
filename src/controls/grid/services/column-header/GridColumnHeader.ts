@@ -3,7 +3,7 @@ import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-li
 import { IContextualMenuItem } from "@fluentui/react";
 import { IAlignment } from "@utils";
 import { IGridInternalServiceLocator } from "../../services";
-import { getColumnContext, IGridColumnContext } from "../columns";
+import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
 import { IColumnHeaderAdornment } from "./GridColumnHeaders";
 

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { ICommandBarItemProps, MessageBarType, useTheme } from "@fluentui/react";
 import { ThemeContext, useThemeGenerator } from "@theme";
-import { LocalizationService, usePcfContext } from "@utils";
+import { LocalizationService } from "@utils/localization";
+import { usePcfContext } from "@utils/adapters/pcf-context/context";
 import { ErrorMessageBarComponents, IErrorMessageBarComponents } from "./components";
 import { ERROR_MESSAGE_BAR_LABELS, IErrorMessageBarLabels } from "./labels";
 import { getErrorMessageBarStyles } from "./styles";

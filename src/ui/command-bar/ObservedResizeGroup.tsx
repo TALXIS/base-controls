@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { IComponentAsProps, IResizeGroup, IResizeGroupProps, mergeStyles, ResizeGroup } from "@fluentui/react";
-import { useResizeObserver } from "@legacy";
+import { useResizeObserver } from "@legacy/hooks/useResizeObserver";
 import { getCommandBarStyles } from "./styles";
 
 //Fluent re-fits a command bar only when the window resizes, not when its own box does
