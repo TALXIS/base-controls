@@ -32,7 +32,7 @@ Every part takes \`components\`, which replaces pieces of what it draws. A piece
 | \`Ribbon\` | Top level | \`onRenderCommandBar\`, whose \`items\` are the commands |
 | \`Ribbon\` | \`loadingBoundary\` | What shows while the commands load |
 | \`Ribbon\` | \`errorMessage\` | The error when the ribbon's \`onLoad\` throws |
-| \`QuickFind\` | Top level | \`onRenderTextField\`, \`onRenderCallout\` |
+| \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\`, \`onRenderCallout\` |
 | \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` |
 | \`EditColumns\` | \`button\` | \`onRenderButton\` |
 | \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` (empty by default) |

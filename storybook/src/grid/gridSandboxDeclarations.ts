@@ -3687,6 +3687,7 @@ interface IDatasetControlNamespace {
     QuickFind: (props: {
         labels?: Partial<IQuickFindLabels>;
         components?: Partial<{
+            onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
             onRenderTextField: (props: any) => JSX.Element | null;
             onRenderCallout: (props: any) => JSX.Element | null;
             /** Handed to onRenderCallout as its components. */
