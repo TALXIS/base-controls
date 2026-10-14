@@ -10,6 +10,17 @@ import { DealsRibbon } from './DealsRibbon'
 
 const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Page size', 'Pagination']
 
+//only its icon while the header is compact, like the built-in parts
+const ExportButton = () => {
+    const isCompact = useCompact()
+    if (isCompact) {
+        return <TooltipHost content='Export to Excel'>
+            <IconButton iconProps={{ iconName: 'ExcelDocument' }} ariaLabel='Export to Excel' />
+        </TooltipHost>
+    }
+    return <DefaultButton text='Export to Excel' iconProps={{ iconName: 'ExcelDocument' }} />
+}
+
 const GridExample = () => {
     const [parts, setParts] = React.useState<string[]>(PARTS)
     const [width, setWidth] = React.useState(100)
@@ -32,7 +43,7 @@ const GridExample = () => {
                         {has('Ribbon') && has('View switcher') && <DealsRibbon />}
                         {has('Edit columns') && <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />}
                         {has('Quick find') && <DatasetControl.QuickFind />}
-                        {has('Your own button') && <DefaultButton text='Export to Excel' iconProps={{ iconName: 'ExcelDocument' }} />}
+                        {has('Your own button') && <ExportButton />}
                     </DatasetControl.Header.End>
                 </DatasetControl.Header>
                 <DatasetControl.Body>

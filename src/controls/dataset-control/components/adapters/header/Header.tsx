@@ -6,8 +6,6 @@ import { HeaderEnd } from "./HeaderEnd";
 export interface IHeaderProps {
     /** `Header.Start` and `Header.End`. */
     children?: React.ReactNode;
-    /** The widest header, in pixels, whose parts draw compact. Defaults to `DEFAULT_MAX_COMPACT_WIDTH`. */
-    maxCompactWidth?: number;
     /** Added to the header's box. */
     className?: string;
     /** Replacements for the header's slots. */

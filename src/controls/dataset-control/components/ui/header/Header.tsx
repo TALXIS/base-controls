@@ -9,8 +9,6 @@ import { getHeaderUiStyles } from "./styles";
 export interface IHeaderUiProps {
     /** The start and end regions. */
     children?: React.ReactNode;
-    /** The widest header, in pixels, whose parts draw compact. Defaults to `DEFAULT_MAX_COMPACT_WIDTH`. */
-    maxCompactWidth?: number;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
@@ -30,7 +28,6 @@ export const Header = (props: IHeaderUiProps) => {
     return <DatasetControlHeaderContext.Provider value={header}>
         {components.onRenderContainer({
             className: getClassNames([styles.datasetControlHeader, props.className]),
-            maxCompactWidth: props.maxCompactWidth,
             children: <HeaderItems>{props.children}</HeaderItems>,
         })}
     </DatasetControlHeaderContext.Provider>;

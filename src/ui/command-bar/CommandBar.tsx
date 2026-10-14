@@ -15,7 +15,7 @@ export interface ICommandBarProps extends ICommandBarPropsBase {
     align?: 'start' | 'end';
 }
 
-/** A command bar whose menus and tooltips are drawn in the application's theme rather than in the bar's, fitted to its own box; inside a compact `CompactProvider` its buttons show only their icons. */
+/** A command bar whose menus and tooltips are drawn in the application's theme rather than in the bar's, fitted to its own box; inside a compact provider, such as `WrapCompactProvider`, its buttons show only their icons. */
 export const CommandBar = (props: ICommandBarProps) => {
     const { items, farItems, overflowItems, overflowButtonProps, styles, resizeGroupAs, align = 'start', ...commandBarProps } = props;
     const theme = useSurfaceTheme();

@@ -3719,6 +3719,8 @@ interface IDatasetControlNamespace {
 }
 
 declare const DatasetControl: IDatasetControlNamespace;
+/** Whether the nearest compact provider, such as the DatasetControl header, asks for compact parts; false outside one. */
+declare const useCompact: () => boolean;
 /** The header the component is inside of, or undefined outside one. */
 declare const useDatasetControlHeader: () => {
     /** Hides everything in the header except the element with className and what holds it. */
