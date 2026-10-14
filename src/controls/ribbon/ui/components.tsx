@@ -1,5 +1,4 @@
-import { ICommandBarProps } from "@fluentui/react";
-import { CommandBar } from "@ui/command-bar";
+import { CommandBar, ICommandBarProps } from "@ui/command-bar";
 
 /** The replaceable pieces of the ribbon's command bar. */
 export interface IRibbonUiComponents {
