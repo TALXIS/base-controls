@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { IColumn } from "@talxis/client-libraries";
-import { useCompact } from "@utils";
+import { getClassNames, useCompact } from "@utils";
 import { IQuickFindUiComponents, IQuickFindUiLabels, QuickFindUiComponents } from "./components";
 import { QuickFindCallout } from "./callout";
 import { QuickFindCompactButton } from "./compact-button";
+import { useDatasetControlHeader } from "../header/context";
 import { getQuickFindUiStyles } from "./styles";
 
 /** Props for the quick find, as plain UI. */
@@ -38,12 +39,22 @@ export const QuickFind = (props: IQuickFindUiProps) => {
     const [isCalloutVisible, setIsCalloutVisible] = useState(false);
     const isCompact = useCompact();
     const [isExpanded, setIsExpanded] = useState(false);
+    const header = useDatasetControlHeader();
+    const isTakingOver = isCompact && isExpanded;
 
     useEffect(() => {
         if (!isCompact) {
             setIsExpanded(false);
         }
     }, [isCompact]);
+
+    useLayoutEffect(() => {
+        if (!isTakingOver || !header) {
+            return;
+        }
+        header.showOnly(styles.expandedQuickFind);
+        return () => header.showAll();
+    }, [isTakingOver, header]);
 
     const search = () => {
         setIsCalloutVisible(false);
@@ -76,7 +87,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
 
     return components.onRenderContainer({
         id,
-        className: styles.datasetControlQuickFind,
+        className: getClassNames([styles.datasetControlQuickFind, isTakingOver ? styles.expandedQuickFind : undefined]),
         onBlur,
         children: <>
             {components.onRenderTextField({

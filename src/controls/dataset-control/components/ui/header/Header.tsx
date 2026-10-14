@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { HeaderItems } from "../header-item";
 import { getClassNames } from "@utils";
 import { HeaderUiComponents, IHeaderUiComponents } from "./components";
+import { DatasetControlHeaderContext, IDatasetControlHeader } from "./context";
 import { getHeaderUiStyles } from "./styles";
 
 /** Props for the header, as plain UI. */
@@ -18,6 +20,18 @@ export interface IHeaderUiProps {
 /** The row above the records, holding the view switcher, ribbon, quick find and other commands. */
 export const Header = (props: IHeaderUiProps) => {
     const components = { ...HeaderUiComponents, ...props.components };
-    const styles = useMemo(() => getHeaderUiStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeader, props.className]), maxCompactWidth: props.maxCompactWidth, children: props.children });
+    const [isolatedClassName, setIsolatedClassName] = useState<string>();
+    const styles = useMemo(() => getHeaderUiStyles(isolatedClassName), [isolatedClassName]);
+    const header = useMemo((): IDatasetControlHeader => ({
+        showOnly: className => setIsolatedClassName(className),
+        showAll: () => setIsolatedClassName(undefined),
+    }), []);
+
+    return <DatasetControlHeaderContext.Provider value={header}>
+        {components.onRenderContainer({
+            className: getClassNames([styles.datasetControlHeader, props.className]),
+            maxCompactWidth: props.maxCompactWidth,
+            children: <HeaderItems>{props.children}</HeaderItems>,
+        })}
+    </DatasetControlHeaderContext.Provider>;
 };

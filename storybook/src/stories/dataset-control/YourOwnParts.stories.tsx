@@ -15,6 +15,7 @@ A part of your own is any component you put inside the control: a total in the f
 | \`useDatasetControl()\` | The control, to switch views or reach the built-in parts. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
 | \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See *Keep your own part's state* on [**State**](?path=/docs/datasetcontrol-state--overview). |
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
+| \`useDatasetControlHeader()\` | Inside the header, \`showOnly(className)\` hides everything in the header except the element with that class, such as while a part needs the whole line, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 
 ## A part in a region
 

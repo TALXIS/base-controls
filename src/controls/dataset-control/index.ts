@@ -4,6 +4,8 @@ export type {
     IDatasetControlView, IDatasetControlProviderState,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';
+export { useDatasetControlHeader } from './components/ui/header';
+export type { IDatasetControlHeader } from './components/ui/header';
 export type { IDatasetControlProps, IDatasetControlLabels, IDatasetControlComponents } from './components/adapters/root';
 export { DATASET_CONTROL_LABELS } from './components/adapters/root';
 export { VIEW_SWITCHER_LABELS } from './components/adapters/view-switcher';

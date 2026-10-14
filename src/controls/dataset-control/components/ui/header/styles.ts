@@ -1,7 +1,10 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { HEADER_CONTAINER, HEADER_PART_HEIGHT } from "../layout";
+import { getHeaderItemStyles } from "../header-item/styles";
 
-export const getHeaderUiStyles = () => mergeStyleSets({
+const { headerItem } = getHeaderItemStyles();
+
+export const getHeaderUiStyles = (isolatedClassName?: string) => mergeStyleSets({
     datasetControlHeader: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -15,5 +18,11 @@ export const getHeaderUiStyles = () => mergeStyleSets({
         flexShrink: 0,
         containerType: 'inline-size',
         containerName: HEADER_CONTAINER,
+        //every item that does not hold the isolated element; :has() only runs on the items
+        ...(isolatedClassName && {
+            [`& .${headerItem}:not(:has(.${isolatedClassName}))`]: {
+                display: 'none',
+            },
+        }),
     },
 });

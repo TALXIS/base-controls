@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { HeaderItems } from "../header-item";
 import { getClassNames } from "@utils";
 import { HeaderEndUiComponents, IHeaderEndUiComponents } from "./components";
 import { getHeaderEndUiStyles } from "./styles";
@@ -17,5 +18,5 @@ export interface IHeaderEndUiProps {
 export const HeaderEnd = (props: IHeaderEndUiProps) => {
     const components = { ...HeaderEndUiComponents, ...props.components };
     const styles = useMemo(() => getHeaderEndUiStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeaderEnd, props.className]), children: props.children });
+    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeaderEnd, props.className]), children: <HeaderItems>{props.children}</HeaderItems> });
 };

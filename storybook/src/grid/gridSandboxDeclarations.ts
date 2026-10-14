@@ -3719,6 +3719,13 @@ interface IDatasetControlNamespace {
 }
 
 declare const DatasetControl: IDatasetControlNamespace;
+/** The header the component is inside of, or undefined outside one. */
+declare const useDatasetControlHeader: () => {
+    /** Hides everything in the header except the element with className and what holds it. */
+    showOnly: (className: string) => void;
+    /** Shows everything showOnly hid. */
+    showAll: () => void;
+} | undefined;
 /** The DatasetControl the component is inside of; throws outside one. */
 declare const useDatasetControl: () => IDatasetControl;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
