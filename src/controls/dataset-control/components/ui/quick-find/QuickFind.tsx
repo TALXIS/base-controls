@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { IColumn } from "@talxis/client-libraries";
-import { getClassNames, useCompact } from "@utils";
+import { useCompact } from "@utils";
 import { IQuickFindUiComponents, IQuickFindUiLabels, QuickFindUiComponents } from "./components";
 import { QuickFindCallout } from "./callout";
 import { QuickFindCompactButton } from "./compact-button";
@@ -34,13 +34,13 @@ export interface IQuickFindUiProps {
 /** A search field, and a callout explaining how it matches while the field is focused; a search button while compact. */
 export const QuickFind = (props: IQuickFindUiProps) => {
     const components = { ...QuickFindUiComponents, ...props.components };
-    const styles = useMemo(() => getQuickFindUiStyles(), []);
     const id = useMemo(() => `quickfind-${crypto.randomUUID()}`, []);
     const [isCalloutVisible, setIsCalloutVisible] = useState(false);
     const isCompact = useCompact();
     const [isExpanded, setIsExpanded] = useState(false);
     const header = useDatasetControlHeader();
     const isTakingOver = isCompact && isExpanded;
+    const styles = useMemo(() => getQuickFindUiStyles(isTakingOver), [isTakingOver]);
 
     useEffect(() => {
         if (!isCompact) {
@@ -52,7 +52,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
         if (!isTakingOver || !header) {
             return;
         }
-        header.showOnly(styles.expandedQuickFind);
+        header.showOnly(styles.datasetControlQuickFind);
         return () => header.showAll();
     }, [isTakingOver, header]);
 
@@ -64,6 +64,13 @@ export const QuickFind = (props: IQuickFindUiProps) => {
     const clear = () => {
         setIsCalloutVisible(false);
         props.onClear();
+    };
+
+    //focus moving to the field's own buttons keeps it expanded
+    const onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+        if (isExpanded && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsExpanded(false);
+        }
     };
 
     if (isCompact && !isExpanded) {
@@ -78,16 +85,10 @@ export const QuickFind = (props: IQuickFindUiProps) => {
         });
     }
 
-    //focus moving to the field's own buttons keeps it expanded
-    const onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-        if (isExpanded && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
-            setIsExpanded(false);
-        }
-    };
 
     return components.onRenderContainer({
         id,
-        className: getClassNames([styles.datasetControlQuickFind, isTakingOver ? styles.expandedQuickFind : undefined]),
+        className: styles.datasetControlQuickFind,
         onBlur,
         children: <>
             {components.onRenderTextField({
