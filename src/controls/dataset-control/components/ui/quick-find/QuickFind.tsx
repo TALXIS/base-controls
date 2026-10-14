@@ -44,25 +44,29 @@ export const QuickFind = (props: IQuickFindUiProps) => {
         props.onClear();
     };
 
-    return <div id={id} className={styles.datasetControlQuickFind}>
-        {components.onRenderTextField({
-            value: props.value,
-            placeholder: props.placeholder,
-            disabled: props.disabled || props.columns.length === 0,
-            onClick: () => setIsCalloutVisible(true),
-            onBlur: () => setIsCalloutVisible(false),
-            onChange: (_, value) => props.onChange(value ?? ''),
-            onKeyUp: event => event.key === 'Enter' && search(),
-            deleteButtonProps: props.value ? { key: 'clear', iconProps: { iconName: 'Cancel' }, onClick: clear } : undefined,
-            suffixItems: [{ key: 'search', iconProps: { iconName: 'Search' }, onClick: search }],
-        })}
-        {isCalloutVisible && (props.columns.length > 0 || props.isLikeQuery) && components.onRenderCallout({
-            target: `#${id}`,
-            columns: props.columns,
-            isLikeQuery: props.isLikeQuery,
-            labels: props.labels,
-            onDismiss: () => setIsCalloutVisible(false),
-            components: components.callout,
-        })}
-    </div>;
+    return components.onRenderContainer({
+        id,
+        className: styles.datasetControlQuickFind,
+        children: <>
+            {components.onRenderTextField({
+                value: props.value,
+                placeholder: props.placeholder,
+                disabled: props.disabled || props.columns.length === 0,
+                onClick: () => setIsCalloutVisible(true),
+                onBlur: () => setIsCalloutVisible(false),
+                onChange: (_, value) => props.onChange(value ?? ''),
+                onKeyUp: event => event.key === 'Enter' && search(),
+                deleteButtonProps: props.value ? { key: 'clear', iconProps: { iconName: 'Cancel' }, onClick: clear } : undefined,
+                suffixItems: [{ key: 'search', iconProps: { iconName: 'Search' }, onClick: search }],
+            })}
+            {isCalloutVisible && (props.columns.length > 0 || props.isLikeQuery) && components.onRenderCallout({
+                target: `#${id}`,
+                columns: props.columns,
+                isLikeQuery: props.isLikeQuery,
+                labels: props.labels,
+                onDismiss: () => setIsCalloutVisible(false),
+                components: components.callout,
+            })}
+        </>,
+    });
 };

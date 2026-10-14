@@ -15,6 +15,8 @@ export interface IQuickFindUiLabels {
 
 /** The replaceable pieces of the quick find. */
 export interface IQuickFindUiComponents {
+    /** The box around the field, which the callout points at. */
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** The search field. */
     onRenderTextField: (props: ITextFieldProps) => JSX.Element | null;
     /** What explains how the search matches, under the field. */
@@ -25,6 +27,7 @@ export interface IQuickFindUiComponents {
 
 /** The defaults for {@link IQuickFindUiComponents}. */
 export const QuickFindUiComponents: IQuickFindUiComponents = {
+    onRenderContainer: props => <div {...props} />,
     onRenderTextField: props => <TextField {...props} />,
     onRenderCallout: props => <QuickFindCallout {...props} />,
 };
