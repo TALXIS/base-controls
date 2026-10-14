@@ -3656,7 +3656,7 @@ interface IDatasetControlContainerComponents { onRenderContainer: (props: React.
 interface IDatasetControlListColumn { column: IColumn; text: string; commands: ICommandBarItemProps[] }
 
 interface IEditColumnsComponents {
-    button?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    button?: Partial<{ onRenderTooltip: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null; onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
     panel?: Partial<{ onRenderPanel: (props: any) => JSX.Element | null; onRenderFooter: (props: any) => JSX.Element | null; onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }>;
     scopeSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: any; text: string }) => JSX.Element | null }>;
     columnSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: IColumn; text: string }) => JSX.Element | null }>;

@@ -35,7 +35,7 @@ Every part takes \`components\`, which replaces pieces of what it draws. A piece
 | \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\` |
 | \`QuickFind\` | \`compact\` | \`onRenderButton\`: the search button while the header is compact |
 | \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` |
-| \`EditColumns\` | \`button\` | \`onRenderButton\` |
+| \`EditColumns\` | \`button\` | \`onRenderButton\`, and \`onRenderTooltip\`, which shows its text while the header is compact |
 | \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` (empty by default) |
 | \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` |
 | \`EditColumns\` | \`columnList\` | \`onRenderColumn\`, whose \`commands\` hold the remove button |
