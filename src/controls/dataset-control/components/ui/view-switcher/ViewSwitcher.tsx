@@ -27,9 +27,11 @@ export const ViewSwitcher = (props: IViewSwitcherUiProps) => {
 
     return components.onRenderButton({
         text: props.text,
+        title: props.text,
         menuProps,
         styles: {
             root: styles.viewSwitcher,
+            textContainer: styles.textContainer,
             label: styles.label,
             menuIcon: styles.menuIcon,
             menuIconExpanded: styles.menuIconExpanded,

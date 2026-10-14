@@ -1,33 +1,31 @@
-import { useRef, useState } from "react";
+import { createContext, useCallback, useContext, useLayoutEffect, useRef, useState } from "react";
 import { CompactContext } from "./context";
 import { useResizeEffect } from "./useResizeEffect";
 
 export type IWrapCompactProviderProps = React.HTMLAttributes<HTMLDivElement>;
 
-//the items laid out in the box's own lines; a display: contents wrapper lays out what it holds instead
-const getLineItems = (element: Element): Element[] => [...element.children].flatMap(child => {
-    const style = getComputedStyle(child);
-    if (style.display === 'contents') {
-        return getLineItems(child);
-    }
-    //an item given a line of its own, such as a title, is not a sign of running out of room
-    return style.display === 'none' || style.flexBasis === '100%' ? [] : [child];
-});
+const CompactItemRemovedContext = createContext<(() => void) | undefined>(undefined);
 
-const isWrapping = (element: HTMLElement) => {
-    const rects = getLineItems(element).map(item => item.getBoundingClientRect()).filter(rect => rect.width > 0);
-    return rects.some(rect => rects.some(other => rect.top >= other.bottom));
+/** Marks the component as an item of the nearest {@link WrapCompactProvider}; removing one lets the rest try full size again. */
+export const useCompactItem = () => {
+    const onItemRemoved = useContext(CompactItemRemovedContext);
+    useLayoutEffect(() => () => onItemRemoved?.(), [onItemRemoved]);
 };
 
-/** A box that tells everything inside it to draw compact once it no longer fits on one line, until the box gets wider or loses an item. */
+/** A box that tells everything inside it to draw compact once it grows taller than one line of compact content, until it gets wider or loses an item. */
 export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
     const { children, ...divProps } = props;
-    const [isCompact, setIsCompact] = useState(false);
+    //starts compact, so the first layout measures how tall one line is
+    const [isCompact, setIsCompact] = useState(true);
     const elementRef = useRef<HTMLDivElement>(null);
+    const lineHeightRef = useRef(0);
     //the width the box had when its content wrapped; compact holds until the box is wider
     const wrappedAtWidthRef = useRef<number>();
-    //the items drawn compact; one of them leaving means the rest may fit at full size again
-    const compactItemsRef = useRef<Element[]>();
+
+    const onItemRemoved = useCallback(() => {
+        wrappedAtWidthRef.current = undefined;
+        setIsCompact(false);
+    }, []);
 
     useResizeEffect(elementRef, () => {
         const element = elementRef.current;
@@ -35,31 +33,27 @@ export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
             return;
         }
         const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        if (!isCompact) {
+            //full-size parts are as tall as compact ones, so a taller box has wrapped
+            if (height > lineHeightRef.current) {
+                wrappedAtWidthRef.current = width;
+                setIsCompact(true);
+            }
+            return;
+        }
+        lineHeightRef.current = height;
         if (wrappedAtWidthRef.current !== undefined && width > wrappedAtWidthRef.current) {
             wrappedAtWidthRef.current = undefined;
         }
-        if (!isCompact) {
-            compactItemsRef.current = undefined;
-        }
-        else if (!compactItemsRef.current) {
-            compactItemsRef.current = getLineItems(element);
-        }
-        //hidden items stay in the page, so only a removed one counts
-        else if (compactItemsRef.current.some(item => !item.isConnected)) {
-            wrappedAtWidthRef.current = undefined;
-            compactItemsRef.current = undefined;
-        }
-        //only content drawn at full size tells whether full size fits
-        if (!isCompact && isWrapping(element)) {
-            wrappedAtWidthRef.current = width;
-        }
-        const nextIsCompact = wrappedAtWidthRef.current !== undefined;
-        if (nextIsCompact !== isCompact) {
-            setIsCompact(nextIsCompact);
+        if (wrappedAtWidthRef.current === undefined) {
+            setIsCompact(false);
         }
     });
 
     return <div {...divProps} ref={elementRef}>
-        <CompactContext.Provider value={isCompact}>{children}</CompactContext.Provider>
+        <CompactItemRemovedContext.Provider value={onItemRemoved}>
+            <CompactContext.Provider value={isCompact}>{children}</CompactContext.Provider>
+        </CompactItemRemovedContext.Provider>
     </div>;
 };

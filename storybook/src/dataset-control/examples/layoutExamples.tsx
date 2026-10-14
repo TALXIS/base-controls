@@ -3,12 +3,37 @@ import { mergeStyleSets, Text } from '@fluentui/react'
 import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { loadDealColumns, loadDeals, loadDealViews } from '../dealViews'
-import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
+import { VIEWS_FILE, withFiles } from './shared'
+
+//enough commands that narrowing the control folds some into the overflow menu
+const LAYOUT_RIBBON_FILE: IGridExampleFile = {
+    name: 'DealsRibbon.tsx',
+    code: `//stands in for a server call, during which the button is disabled
+const serverCall = () => new Promise<void>(resolve => setTimeout(resolve, 1000))
+
+export const DealsRibbon = () => {
+    const provider = useDataProvider()
+
+    const onLoad = async (): Promise<IRibbonCommand[]> => [
+        { id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
+        { id: 'newDeal', label: 'New deal', iconName: 'Add', onExecute: serverCall },
+        { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: serverCall },
+        { id: 'share', label: 'Share', iconName: 'Share', onExecute: serverCall },
+        { id: 'follow', label: 'Follow', iconName: 'FavoriteStar', onExecute: serverCall },
+        { id: 'email', label: 'Email a link', iconName: 'Mail', onExecute: serverCall },
+        { id: 'flow', label: 'Run flow', iconName: 'Flow', onExecute: serverCall },
+    ]
+
+    return <DatasetControl.Ribbon onLoad={onLoad} />
+}
+`,
+}
 
 const PICK_PARTS_CODE = `import { loadDealColumns, loadDeals, loadDealViews } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
-const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Page size', 'Pagination']
+const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Notifications', 'Page size', 'Pagination']
 
 //only its icon while the header is compact, like the built-in parts
 const ExportButton = () => {
@@ -46,6 +71,7 @@ const GridExample = () => {
                         {has('Your own button') && <ExportButton />}
                     </DatasetControl.Header.End>
                 </DatasetControl.Header>
+                {has('Notifications') && <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />}
                 <DatasetControl.Body>
                     <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
                 </DatasetControl.Body>
@@ -63,7 +89,7 @@ const GridExample = () => {
 }
 `
 
-export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, RIBBON_FILE)} />
+export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, LAYOUT_RIBBON_FILE)} />
 
 const FullPageRibbon = () => {
     const provider = useDataProvider()

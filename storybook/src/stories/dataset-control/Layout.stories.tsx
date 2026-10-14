@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FullPageExample, PickPartsExample } from '../../dataset-control/examples/layoutExamples'
 
 const DESCRIPTION = `
-The control is laid out in *regions*: a header above the records, a body that holds them and a footer below them. The header and the footer each have a start and an end, so every part keeps its place whatever else you leave out.
+The control is laid out in *regions*: a header above the records, a body that holds them and a footer below them. The header and the footer each have a start and an end.
 
 \`\`\`tsx
 <DatasetControl onLoad={loadDeals} height='600px'>
@@ -34,10 +34,10 @@ The control is laid out in *regions*: a header above the records, a body that ho
 | Region | Description |
 |---|---|
 | \`Header\` | The row above the records. |
-| \`Header.Start\`, \`Header.End\` | The header's left side, sized to what it holds, and its right side, taking the rest of the row. |
+| \`Header.Start\`, \`Header.End\` | The header's left and right side. They only decide where a part sits; every part sizes itself. |
 | \`Body\` | Fills the height the header and footer leave. Put what shows the records here. |
 | \`Footer\` | The row below the records, with a line above it. |
-| \`Footer.Start\`, \`Footer.End\` | The footer's left and right sides. |
+| \`Footer.Start\`, \`Footer.End\` | The footer's left and right side. |
 
 - Each region takes \`className\`, and \`components\` to replace its box: see [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
 - A region takes your own content too, such as a page title placed directly in \`Header\`, as the full-page example below does.
@@ -59,22 +59,40 @@ A grid in the body takes its height from the control, so it needs none of its ow
 
 ## Place the parts
 
-- The view switcher goes in \`Header.Start\`; Edit columns and the quick find in \`Header.End\`, the quick find last.
-- The ribbon goes in \`Header.End\`, next to the search. Without a view switcher, put it in \`Header.Start\`, so its commands start on the left.
-- The page size switcher goes in \`Footer.Start\`, and the paging in \`Footer.End\`.
+Any part works in any region. \`Start\` puts it on the left and \`End\` on the right, and the parts keep the order you write them in. A part that lines up its buttons, such as the ribbon or the paging, starts them on the left in \`Start\` and on the right in \`End\`.
 
-A part's look follows its region: the ribbon and the paging draw their buttons against the left in \`Start\` and against the right in \`End\`.
+The examples here put the view switcher in \`Header.Start\`, the ribbon, Edit columns and the quick find in \`Header.End\`, the page size switcher in \`Footer.Start\` and the paging in \`Footer.End\`.
 
 ## Fit a narrow screen
 
 The layout follows the control's own width, not the window's. As it narrows:
 
-1. The ribbon's commands move into its overflow menu, down to the menu alone.
-2. The quick find shrinks from 230px to 160px, and a long view name is cut with an ellipsis.
-3. The parts of \`Header.End\` wrap onto the next line one by one, from the last, still on the right. Below 480px, the quick find fills its line.
+1. The view switcher and the ribbon share the free space. A long view name is cut with an ellipsis, and the ribbon moves its commands into its overflow menu.
+2. The quick find shrinks from 230px to 160px.
+3. Once the header's parts no longer fit on one line, the header turns *compact*:
+    - the ribbon and Edit columns show only their icons, with their names in a tooltip;
+    - the quick find becomes a search button, with a dot while the field holds text. Clicking it opens the field across the whole header, and the other parts come back once you leave it.
 4. The footer's \`End\` moves onto a line of its own.
 
-A region takes any number of parts, and nothing runs out of the control.
+The header stays compact until the control is wider than it was when the parts ran out of room, or until you take a part out.
+
+### Your own part in a compact header
+
+\`useCompact()\` tells your part whether the header is compact, so it can shrink the way the built-in parts do:
+
+\`\`\`tsx
+const ExportButton = () => {
+    const isCompact = useCompact()
+    if (isCompact) {
+        return <TooltipHost content='Export to Excel'>
+            <IconButton iconProps={{ iconName: 'ExcelDocument' }} ariaLabel='Export to Excel' />
+        </TooltipHost>
+    }
+    return <DefaultButton text='Export to Excel' iconProps={{ iconName: 'ExcelDocument' }} />
+}
+\`\`\`
+
+To keep one part at full size, or always compact, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
 
 {{story: Pick your parts}}
 `
@@ -101,7 +119,7 @@ export const PickYourParts: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Each part keeps its side, and the rows keep their height. Try: turn parts on and off, add a button of your own, then narrow the control with the slider to watch the ribbon fold its commands and the header parts wrap.`,
+                story: `Each part keeps its side, and the rows keep their height. Try: narrow the control with the slider until the header turns compact, open the search, then turn parts off to see the header go back to full size.`,
             },
         },
     },

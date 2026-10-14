@@ -52,7 +52,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
         if (!isTakingOver || !header) {
             return;
         }
-        header.showOnly(styles.datasetControlQuickFind);
+        header.showOnly();
         return () => header.showAll();
     }, [isTakingOver, header]);
 

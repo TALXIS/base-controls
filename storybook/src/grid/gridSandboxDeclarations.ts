@@ -3723,8 +3723,8 @@ declare const DatasetControl: IDatasetControlNamespace;
 declare const useCompact: () => boolean;
 /** The header the component is inside of, or undefined outside one. */
 declare const useDatasetControlHeader: () => {
-    /** Hides everything in the header except the element with className and what holds it. */
-    showOnly: (className: string) => void;
+    /** Hides everything in the header except the part calling it. */
+    showOnly: () => void;
     /** Shows everything showOnly hid. */
     showAll: () => void;
 } | undefined;

@@ -7,4 +7,7 @@ export const getHeaderItemStyles = () => mergeStyleSets({
         ...HIDDEN_LAYER_HOSTS,
         display: 'contents',
     },
+    hidden: {
+        display: 'none',
+    },
 });

@@ -1,16 +1,8 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { HEADER_PART_HEIGHT } from "../layout";
 
 export const getHeaderStartUiStyles = () => mergeStyleSets({
-    //grows, so a ribbon inside it has room; a command bar has no content width to size it by
+    //its parts share the header's lines, so each sizes itself beside Header.End's
     datasetControlHeaderStart: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        gap: 8,
-        minHeight: HEADER_PART_HEIGHT,
-        flex: '1 1 auto',
-        minWidth: 0,
+        display: 'contents',
     },
 });

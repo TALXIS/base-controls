@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { HeaderItems } from "../header-item";
 import { getClassNames } from "@utils";
 import { HeaderUiComponents, IHeaderUiComponents } from "./components";
-import { DatasetControlHeaderContext, IDatasetControlHeader } from "./context";
+import { SetIsolatedHeaderItemContext, IsolatedHeaderItemContext } from "./context";
 import { getHeaderUiStyles } from "./styles";
 
 /** Props for the header, as plain UI. */
@@ -18,17 +18,15 @@ export interface IHeaderUiProps {
 /** The row above the records, holding the view switcher, ribbon, quick find and other commands. */
 export const Header = (props: IHeaderUiProps) => {
     const components = { ...HeaderUiComponents, ...props.components };
-    const [isolatedClassName, setIsolatedClassName] = useState<string>();
-    const styles = useMemo(() => getHeaderUiStyles(isolatedClassName), [isolatedClassName]);
-    const header = useMemo((): IDatasetControlHeader => ({
-        showOnly: className => setIsolatedClassName(className),
-        showAll: () => setIsolatedClassName(undefined),
-    }), []);
+    const [isolated, setIsolated] = useState<Element>();
+    const styles = useMemo(() => getHeaderUiStyles(), []);
 
-    return <DatasetControlHeaderContext.Provider value={header}>
-        {components.onRenderContainer({
-            className: getClassNames([styles.datasetControlHeader, props.className]),
-            children: <HeaderItems>{props.children}</HeaderItems>,
-        })}
-    </DatasetControlHeaderContext.Provider>;
+    return <SetIsolatedHeaderItemContext.Provider value={setIsolated}>
+        <IsolatedHeaderItemContext.Provider value={isolated}>
+            {components.onRenderContainer({
+                className: getClassNames([styles.datasetControlHeader, props.className]),
+                children: <HeaderItems>{props.children}</HeaderItems>,
+            })}
+        </IsolatedHeaderItemContext.Provider>
+    </SetIsolatedHeaderItemContext.Provider>;
 };
