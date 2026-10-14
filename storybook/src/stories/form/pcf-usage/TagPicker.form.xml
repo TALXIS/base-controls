@@ -31,6 +31,24 @@
           <enableNavigation type="Enum" static="true">false</enableNavigation>
         </parameters>
       </customControl>
+      <customControl name="talxis_TALXIS.PCF.TagPicker" formFactor="1">
+        <parameters>
+          <binding type="SingleLine.Text">text</binding>
+          <entityName type="SingleLine.Text" static="true">account</entityName>
+          <recordId type="SingleLine.Text" static="true">20000000-0000-4000-8000-000000000002</recordId>
+          <outputSelectedTagInstances type="Enum" static="true">true</outputSelectedTagInstances>
+          <enableNavigation type="Enum" static="true">false</enableNavigation>
+        </parameters>
+      </customControl>
+      <customControl name="talxis_TALXIS.PCF.TagPicker" formFactor="2">
+        <parameters>
+          <binding type="SingleLine.Text">text</binding>
+          <entityName type="SingleLine.Text" static="true">account</entityName>
+          <recordId type="SingleLine.Text" static="true">20000000-0000-4000-8000-000000000002</recordId>
+          <outputSelectedTagInstances type="Enum" static="true">true</outputSelectedTagInstances>
+          <enableNavigation type="Enum" static="true">false</enableNavigation>
+        </parameters>
+      </customControl>
     </controlDescription>
   </controlDescriptions>
 </form>

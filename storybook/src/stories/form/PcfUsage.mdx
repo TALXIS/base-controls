@@ -14,7 +14,8 @@ control bound to that field.
 ## Supported Configuration
 
 - One field binding referencing the control's `datafieldname`: `SingleLine.Text`, `Whole.None` or `Lookup.Simple`.
-- Static inputs: `SingleLine.Text`, `Enum` or `Whole.None`.
+- Static inputs: `SingleLine.Text`, `Enum`, `Whole.None`, `Decimal`, `Currency`, `FP` or `TwoOptions`
+  (`true` / `false` or `1` / `0`). Numbers must be valid numbers (`Whole.None` a whole number); `FP` is passed as `Decimal`.
 
 ## Required onInit Handshake
 
@@ -28,5 +29,9 @@ deliver later `updateView(...)` calls:
 ## Running the Sample
 
 On `storybook` / `build-storybook`, `npm run prepare:pcf` downloads the TagPicker
-solution package from the TALXIS NuGet feed and extracts its bundle into
-`public/pcf/` (git-ignored). Bump the version in `scripts/prepare-pcf.mjs` to update it.
+solution package from the TALXIS NuGet feed and extracts the resources its manifest
+declares (bundle, resx translations, CSS, images) into `public/pcf/` (git-ignored).
+Bump the version in `scripts/prepare-pcf.mjs` to update it.
+
+The sample serves the control's own resx strings through `context.resources.getString`,
+in the user's language with English as fallback.

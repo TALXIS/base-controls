@@ -15,16 +15,6 @@ export const initialTagPickerValue = JSON.stringify([
 ])
 
 export function createTagPickerData(parent: ComponentFramework.Context<IPublishedPcfInputs>) {
-    const strings: Record<string, string> = {
-        tag: 'Tag',
-        initializationErrorMessage: 'Something went wrong during initialization.',
-        refreshErrorMessage: 'Something went wrong during refresh.',
-        onSearchErrorMessage: 'Something went wrong during searching tags.',
-        onSelectErrorMessage: 'Something went wrong during selecting tag.',
-        onDeselectErrorMessage: 'Something went wrong during removing tag.',
-        onUpdateErrorMessage: 'Something went wrong during updating tag.',
-        saveFormMessage: 'Save the form to manage tags',
-    }
     const tags = [
         { [FIELD.id]: '30000000-0000-4000-8000-000000000001', [FIELD.name]: 'Priority', [FIELD.color]: '#D13438' },
         { [FIELD.id]: '30000000-0000-4000-8000-000000000002', [FIELD.name]: 'Customer', [FIELD.color]: '#107C10' },
@@ -54,10 +44,6 @@ export function createTagPickerData(parent: ComponentFramework.Context<IPublishe
     }
     return {
         webAPI,
-        resources: {
-            ...parent.resources,
-            getString: (key: string) => strings[key] ?? key,
-        },
         utils: {
             ...parent.utils,
             getEntityMetadata: async (entity: string, attributes?: string[]) => {

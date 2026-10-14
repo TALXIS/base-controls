@@ -26,6 +26,30 @@ interface IFactoryOptions {
     onError(error: unknown): void
 }
 
+export function createPublishedPcfResources(assets: IPublishedPcfAssets, languageId: number): ComponentFramework.Resources {
+    // Like Dataverse: user's language first, then English, then whatever the control ships with
+    const strings = assets.translations[languageId] ?? assets.translations[1033] ?? Object.values(assets.translations)[0] ?? {}
+    return {
+        getString: id => strings[id] ?? id,
+        getResource: (id, success, failure) => {
+            const path = assets.resources.find(path => path.endsWith(id))
+            if (!path) return failure()
+            fetch(`${assets.base}${path}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+                    return response.blob()
+                })
+                .then(blob => new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
+                    reader.onerror = () => reject(reader.error)
+                    reader.readAsDataURL(blob)
+                }))
+                .then(success, () => failure())
+        },
+    }
+}
+
 export function createStoryPcfFactory({ assets, controlName, parameter, getParent, onError }: IFactoryOptions) {
     const components = new Map<string, IComponent>()
     const factory: ISampleFactory = {

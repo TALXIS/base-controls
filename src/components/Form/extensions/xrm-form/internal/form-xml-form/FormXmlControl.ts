@@ -109,16 +109,30 @@ export class FormXmlControl implements IFormXmlControl {
     private _getStaticXmlBinding(parameter: MetadataFormXmlOpaqueElement): IBinding {
         const value = this._getParameterText(parameter);
         const type = parameter.attributes.type;
-        if (type === 'Whole.None') {
-            if (parameter.name === 'value') throw new Error('Static parameter "value" is reserved for the field binding.');
-            const number = Number(value);
-            if (!value.trim() || !Number.isInteger(number)) throw new Error(`Parameter "${parameter.name}" must be a whole number.`);
-            return { type, isStatic: true, value: number };
+        if (parameter.name === 'value') throw new Error('Static parameter "value" is reserved for the field binding.');
+        switch (type) {
+            case 'Whole.None':
+            case 'Decimal':
+            case 'Currency':
+            case 'FP': {
+                const number = Number(value);
+                if (!value.trim() || !Number.isFinite(number)) throw new Error(`Parameter "${parameter.name}" must be a number.`);
+                if (type === 'Whole.None' && !Number.isInteger(number)) throw new Error(`Parameter "${parameter.name}" must be a whole number.`);
+                // client-libraries has no FP data type, floating point numbers are represented as Decimal
+                return { type: type === 'FP' ? 'Decimal' : type, isStatic: true, value: number };
+            }
+            case 'TwoOptions': {
+                const normalized = value.trim().toLowerCase();
+                if (!['true', 'false', '1', '0'].includes(normalized)) throw new Error(`Parameter "${parameter.name}" must be true or false.`);
+                return { type, isStatic: true, value: normalized === 'true' || normalized === '1' };
+            }
+            case undefined:
+            case 'SingleLine.Text':
+            case 'Enum':
+                return this._getDirectBinding(parameter.name, value);
+            default:
+                throw new Error('Only SingleLine.Text, Enum, Whole.None, Decimal, Currency, FP or TwoOptions static parameters are supported; lookup parameters must be field-bound.');
         }
-        if (type && type !== 'SingleLine.Text' && type !== 'Enum') {
-            throw new Error('Only SingleLine.Text, Enum or Whole.None static parameters are supported; lookup parameters must be field-bound.');
-        }
-        return this._getDirectBinding(parameter.name, value);
     }
 
     private _getParameterText(parameter: MetadataFormXmlOpaqueElement): string {

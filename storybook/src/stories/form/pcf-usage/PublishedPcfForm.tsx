@@ -3,13 +3,13 @@ import { XrmForm, XrmMemoryStrategy } from '@talxis/base-controls/components/For
 import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils'
 import { formMetadata, getFormColumns } from '../../../form/shared/formModel'
 import { loadPublishedPcf, IPublishedPcfAssets, IPublishedPcfInputs, PublishedControlName } from './publishedPcfAssets'
-import { createStoryPcfFactory } from './storyPcfFactory'
+import { createPublishedPcfResources, createStoryPcfFactory } from './storyPcfFactory'
 
 const FIELD = 'text'
 const ID_FIELD = 'id'
 
 type PublishedPcfContext = ComponentFramework.Context<IPublishedPcfInputs>
-export type PublishedPcfData = Pick<PublishedPcfContext, 'webAPI'> & Partial<Pick<PublishedPcfContext, 'resources' | 'utils'>>
+export type PublishedPcfData = Pick<PublishedPcfContext, 'webAPI'> & Partial<Pick<PublishedPcfContext, 'utils'>>
 
 export interface IPublishedPcfFormProps {
     name: PublishedControlName
@@ -45,6 +45,8 @@ const LoadedPcfForm = ({ assets, xml, controlName, parameter, initialValue, crea
         return {
             ...parent,
             ...data,
+            // The form context, not the child one, is what NestedControl hands to the control's updateView
+            resources: createPublishedPcfResources(assets, parent.userSettings.languageId),
             factory: host.factory,
             webAPI: {
                 ...data.webAPI,
