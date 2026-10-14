@@ -43,17 +43,20 @@ export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
+            minWidth: 0,
         },
         headerRight: {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
+            minWidth: 0,
         },
+        //shrinks down to the size of a compact part
         headerPill: {
             ...shimmerBase,
             height: 26,
             borderRadius: 2,
-            flexShrink: 0,
+            minWidth: HEADER_PART_HEIGHT,
         },
         columnHeaderRow: {
             height: COLUMN_HEADER_HEIGHT,
