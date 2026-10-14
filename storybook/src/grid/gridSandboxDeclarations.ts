@@ -3689,8 +3689,9 @@ interface IDatasetControlNamespace {
         components?: Partial<{
             onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
             onRenderTextField: (props: any) => JSX.Element | null;
-            onRenderCallout: (props: any) => JSX.Element | null;
-            /** Handed to onRenderCallout as its components. */
+            /** The search button drawn in place of the field while the quick find is compact. */
+            compact: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+            /** What explains how the search matches, under the field. */
             callout: Partial<{
                 onRenderCallout: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
                 onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;

@@ -8,7 +8,7 @@ export { FooterUiComponents } from './footer';
 export { FooterStartUiComponents } from './footer-start';
 export { FooterEndUiComponents } from './footer-end';
 export { ViewSwitcherUiComponents } from './view-switcher';
-export { QuickFindUiComponents, QuickFindCalloutComponents } from './quick-find';
+export { QuickFindUiComponents, QuickFindCalloutComponents, QuickFindCompactButtonComponents } from './quick-find';
 export { PaginationUiComponents } from './pagination';
 export { PageSizeSwitcherUiComponents } from './page-size-switcher';
 export { EditColumnsButtonUiComponents } from './edit-columns-button';

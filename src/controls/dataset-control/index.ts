@@ -36,6 +36,6 @@ export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColu
 export * from './components/ui';
 export {
     ContainerUiComponents, SkeletonUiComponents, HeaderUiComponents, BodyUiComponents, FooterUiComponents, ViewSwitcherUiComponents,
-    QuickFindUiComponents, QuickFindCalloutComponents, PaginationUiComponents, PageSizeSwitcherUiComponents, EmptyRecordsUiComponents, HeaderStartUiComponents, HeaderEndUiComponents, FooterStartUiComponents, FooterEndUiComponents, EditColumnsButtonUiComponents, EditColumnsPanelUiComponents,
+    QuickFindUiComponents, QuickFindCalloutComponents, QuickFindCompactButtonComponents, PaginationUiComponents, PageSizeSwitcherUiComponents, EmptyRecordsUiComponents, HeaderStartUiComponents, HeaderEndUiComponents, FooterStartUiComponents, FooterEndUiComponents, EditColumnsButtonUiComponents, EditColumnsPanelUiComponents,
     EditColumnsSelectorUiComponents, EditColumnsColumnListUiComponents,
 } from './components/ui/components';

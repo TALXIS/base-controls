@@ -10,4 +10,7 @@ export const getQuickFindUiStyles = () => mergeStyleSets({
             flex: '1 1 100%',
         },
     },
+    compactQuickFind: {
+        flexShrink: 0,
+    },
 });

@@ -1,5 +1,6 @@
 import { ITextFieldProps, TextField } from "@legacy";
-import { IQuickFindCalloutComponents, IQuickFindCalloutProps, QuickFindCallout } from "./callout";
+import { IQuickFindCalloutComponents } from "./callout";
+import { IQuickFindCompactButtonComponents } from "./compact-button";
 
 /** The strings of the quick find's callout. */
 export interface IQuickFindUiLabels {
@@ -19,9 +20,9 @@ export interface IQuickFindUiComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** The search field. */
     onRenderTextField: (props: ITextFieldProps) => JSX.Element | null;
+    /** The search button drawn in place of the field while the quick find is compact. */
+    compact?: Partial<IQuickFindCompactButtonComponents>;
     /** What explains how the search matches, under the field. */
-    onRenderCallout: (props: IQuickFindCalloutProps) => JSX.Element | null;
-    /** Handed to `onRenderCallout` as its `components`. */
     callout?: Partial<IQuickFindCalloutComponents>;
 }
 
@@ -29,5 +30,4 @@ export interface IQuickFindUiComponents {
 export const QuickFindUiComponents: IQuickFindUiComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderTextField: props => <TextField {...props} />,
-    onRenderCallout: props => <QuickFindCallout {...props} />,
 };

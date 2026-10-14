@@ -8,7 +8,7 @@ import { Footer } from './footer';
 import { FooterStart } from './footer-start';
 import { FooterEnd } from './footer-end';
 import { ViewSwitcher } from './view-switcher';
-import { QuickFind, QuickFindCallout } from './quick-find';
+import { QuickFind, QuickFindCallout, QuickFindCompactButton } from './quick-find';
 import { Pagination } from './pagination';
 import { PageSizeSwitcher } from './page-size-switcher';
 import { EmptyRecords } from './empty-records';
@@ -29,7 +29,7 @@ export type { IFooterUiProps, IFooterUiComponents } from './footer';
 export type { IFooterStartUiProps, IFooterStartUiComponents } from './footer-start';
 export type { IFooterEndUiProps, IFooterEndUiComponents } from './footer-end';
 export type { IViewSwitcherUiProps, IViewSwitcherUiComponents } from './view-switcher';
-export type { IQuickFindUiProps, IQuickFindUiComponents, IQuickFindUiLabels, IQuickFindCalloutProps, IQuickFindCalloutComponents, IQuickFindCalloutColumnProps } from './quick-find';
+export type { IQuickFindUiProps, IQuickFindUiComponents, IQuickFindUiLabels, IQuickFindCalloutProps, IQuickFindCalloutComponents, IQuickFindCalloutColumnProps, IQuickFindCompactButtonProps, IQuickFindCompactButtonComponents } from './quick-find';
 export type { IPaginationUiProps, IPaginationUiComponents, IPaginationUiLabels } from './pagination';
 export type { IPageSizeSwitcherUiProps, IPageSizeSwitcherUiComponents } from './page-size-switcher';
 export type { IEmptyRecordsUiProps, IEmptyRecordsUiComponents } from './empty-records';
@@ -66,6 +66,8 @@ export interface IDatasetControlUi {
     QuickFind: typeof QuickFind;
     /** The callout that explains how the search matches. */
     QuickFindCallout: typeof QuickFindCallout;
+    /** The search button that stands in for the quick find while it is compact. */
+    QuickFindCompactButton: typeof QuickFindCompactButton;
     /** The page buttons. */
     Pagination: typeof Pagination;
     /** The record range and the page size menu. */
@@ -102,6 +104,7 @@ export const DatasetControlUi: IDatasetControlUi = {
     ViewSwitcher,
     QuickFind,
     QuickFindCallout,
+    QuickFindCompactButton,
     Pagination,
     PageSizeSwitcher,
     EmptyRecords,
