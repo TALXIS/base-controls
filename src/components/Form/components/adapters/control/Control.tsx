@@ -7,10 +7,13 @@ import { useField } from "../field";
 import { useDisabledContext } from "@components/Form/components/ui/cell";
 import { ControlComponents, IControlComponents } from "./components";
 import { ControlComponentContext, useControlComponents } from "./context";
+import type { IBinding } from "@components/NestedControlRenderer/interfaces";
 
 export interface IControlProps {
     id?: string;
     disabled?: boolean;
+    customControlName?: string;
+    customControlParameters?: Record<string, IBinding>;
     components?: Partial<IControlComponents>;
 }
 

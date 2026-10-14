@@ -4,6 +4,7 @@ import { useField, useForm } from "@components/Form/hooks";
 import { BaseControls, usePcfContext } from "@utils";
 import { IColumn } from "@talxis/client-libraries";
 import { Sanitizer } from "@talxis/client-libraries";
+import { MessageBar, MessageBarType } from "@fluentui/react";
 
 const getControlValue = (column: IColumn, value: any): any => {
     switch (column.dataType) {
@@ -41,18 +42,27 @@ export const ControlRenderer = (props: IControlProps) => {
     const context = usePcfContext();
     const validationResult = form.saveOperationPerformed ? field.isValid() : null;
 
-    const onNotifyOutputChanged = (outputs: any) => {
-        field.setValue(outputs.value);
+    const onNotifyOutputChanged = (outputs: Record<string, unknown>) => {
+        if (Object.prototype.hasOwnProperty.call(outputs, 'value') && outputs.value !== undefined) {
+            field.setValue(outputs.value);
+        }
+    }
+
+    if (props.customControlName && column.dataType !== 'SingleLine.Text' && column.dataType !== 'Whole.None' && column.dataType !== 'Lookup.Simple') {
+        return <MessageBar messageBarType={MessageBarType.error}>
+            Custom PCFs are only supported for SingleLine.Text, Whole.None or Lookup.Simple fields.
+        </MessageBar>;
     }
 
     return <NestedControlRenderer
         context={context}
         parameters={{
-            ControlName: BaseControls.GetControlNameForDataType(column.dataType),
+            ControlName: props.customControlName ?? BaseControls.GetControlNameForDataType(column.dataType),
             ControlStates: {
                 isControlDisabled: disabled
             },
             Bindings: {
+                ...props.customControlParameters,
                 value: {
                     type: column.dataType,
                     value: getControlValue(column, field.getValue()),

@@ -38,6 +38,7 @@
     "@types/react-window": "1.8.8",
     "@types/validator": "^13.11.9",
     "@types/xrm": "^9.0.81",
+    "@xmldom/xmldom": "^0.9.12",
     "babel-loader": "^8.2.3",
     "esbuild": "^0.13.9",
     "glob": "^11.0.0",

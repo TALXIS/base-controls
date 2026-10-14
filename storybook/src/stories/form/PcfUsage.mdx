@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Form/Xrm/PCF Usage" />
+
+# PCF Usage
+
+`XrmForm` can render published PCFs declared in formXML. A field control gets a
+`controlDescriptions/customControl` entry, and the form hosts the PCF as a nested
+control bound to that field.
+
+- [TagPicker](?path=/story/form-xrm-pcf-usage--tags): live sample using the published TagPicker bundle.
+- [Unsupported PCFs](?path=/docs/form-xrm-pcf-usage-unsupported-pcfs--overview): how to render PCFs outside the supported configuration.
+
+## Supported Configuration
+
+- One field binding referencing the control's `datafieldname`: `SingleLine.Text`, `Whole.None` or `Lookup.Simple`.
+- Static inputs: `SingleLine.Text`, `Enum` or `Whole.None`.
+
+## Required onInit Handshake
+
+The PCF must expose its instance from `init(...)`, synchronously, so the form can
+deliver later `updateView(...)` calls:
+
+```typescript
+(context.factory as any).fireEvent('onInit', this);
+```
+
+## Running the Sample
+
+On `storybook` / `build-storybook`, `npm run prepare:pcf` downloads the TagPicker
+solution package from the TALXIS NuGet feed and extracts its bundle into
+`public/pcf/` (git-ignored). Bump the version in `scripts/prepare-pcf.mjs` to update it.

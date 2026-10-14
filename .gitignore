@@ -13,3 +13,6 @@ storybook/node_modules
 storybook/storybook-static
 
 .chrome-profile
+
+# PCF bundles downloaded by scripts/prepare-pcf.mjs
+storybook/public/pcf/

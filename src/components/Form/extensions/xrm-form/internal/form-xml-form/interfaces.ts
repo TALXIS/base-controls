@@ -26,6 +26,7 @@ import type {
     RequiredLevelEnum,
 } from "@talxis/client-metadata";
 import type { IForm } from "@components/Form/internal/FormModel";
+import type { IBinding } from "@components/NestedControlRenderer/interfaces";
 
 export interface IFormXmlFormProps {
     formXml: string;
@@ -104,6 +105,7 @@ export interface IFormXmlControlEvents {
 }
 
 export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'control'> {
+    formXmlModel: IFormXmlModel;
     control?: IFormXmlControl;
     events: IEventEmitter<IFormXmlCellEvents>;
     getLabel: () => string | null;
@@ -117,6 +119,13 @@ export interface IFormXmlControl extends MetadataFormXmlControl {
     setDisabled: (disabled: boolean) => void;
     getDisabled: () => boolean;
     getCell: () => IFormXmlCell;
+    getControlName: (clientFormFactor: number) => string | undefined;
+    getControlParameters: (clientFormFactor: number) => Record<string, IBinding> | undefined;
+}
+
+export interface IFormXmlControlConfiguration {
+    name?: string;
+    parameters: Record<string, IBinding>;
 }
 
 export interface IFormXmlFormEvents {

@@ -1,0 +1,36 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import wrapperSource from './XrmCustomControlsPreview.tsx?raw';
+
+<Meta title="Form/Xrm/PCF Usage/Unsupported PCFs" />
+
+# Unsupported PCFs
+
+Multiple bindings, other-field references, datasets, unbound controls, virtual/React PCFs, static lookups
+and nested parameters are not supported in formXML. Don't declare such a PCF as a
+`customControl`; render it from React instead.
+
+## 1. Keep a plain field control in XML
+
+```xml
+<control id="customLeadName"
+         classid="{4273EDBD-AC1D-40D3-9FB2-095C621B552D}"
+         datafieldname="text" />
+```
+
+## 2. Replace it via `onRenderControl`
+
+Pass `components.control.onRenderControl` to `XrmForm`. For the matching `props.id`
+return your own component that hosts the PCF; for everything else return
+`ControlComponents.onRenderControl(props)`.
+
+Inside that component use `useField()` and read/write through `field.getValue()` /
+`field.setValue(...)` so changes go through the form's save workflow. Honor
+`props.disabled` and `props.readOnly`.
+
+Your component owns the PCF lifecycle: loading, `init` / `updateView` / `destroy`,
+input mapping and any dataset or multi-binding contract.
+
+See the [Replace control presentation](?path=/story/form-xrm-custom-components--replace-control-presentation)
+preview; its source:
+
+<Source code={wrapperSource} language="tsx" />

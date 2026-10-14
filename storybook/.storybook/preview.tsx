@@ -82,6 +82,7 @@ const preview: Preview = {
     options: {
       showPanel: false,
       storySort: {
+        includeNames: true,
         order: [
           'Form',
           [
@@ -95,6 +96,8 @@ const preview: Preview = {
               'FormXml Builder',
               'Custom Components',
               ['Form Context', 'Overview', 'Samples'],
+              'PCF Usage',
+              ['Overview', 'TagPicker', 'Unsupported PCFs'],
             ],
           ],
           'Task Grid',

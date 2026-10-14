@@ -3,7 +3,10 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
+    "prepare:pcf": "node ./scripts/prepare-pcf.mjs",
+    "prestorybook": "npm run prepare:pcf",
     "storybook": "storybook dev -p 6006",
+    "prebuild-storybook": "npm run prepare:pcf",
     "build-storybook": "storybook build"
   },
   "dependencies": {
