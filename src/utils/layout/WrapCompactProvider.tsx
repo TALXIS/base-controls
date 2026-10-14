@@ -19,13 +19,15 @@ const isWrapping = (element: HTMLElement) => {
     return rects.some(rect => rects.some(other => rect.top >= other.bottom));
 };
 
-/** A box that tells everything inside it to draw compact once it no longer fits on one line, until the box gets wider than it was then. */
+/** A box that tells everything inside it to draw compact once it no longer fits on one line, until the box gets wider or loses an item. */
 export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
     const { children, ...divProps } = props;
     const [isCompact, setIsCompact] = useState(false);
     const elementRef = useRef<HTMLDivElement>(null);
     //the width the box had when its content wrapped; compact holds until the box is wider
     const wrappedAtWidthRef = useRef<number>();
+    //the items drawn compact; one of them leaving means the rest may fit at full size again
+    const compactItemsRef = useRef<Element[]>();
 
     useResizeEffect(elementRef, () => {
         const element = elementRef.current;
@@ -35,6 +37,17 @@ export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
         const width = element.offsetWidth;
         if (wrappedAtWidthRef.current !== undefined && width > wrappedAtWidthRef.current) {
             wrappedAtWidthRef.current = undefined;
+        }
+        if (!isCompact) {
+            compactItemsRef.current = undefined;
+        }
+        else if (!compactItemsRef.current) {
+            compactItemsRef.current = getLineItems(element);
+        }
+        //hidden items stay in the page, so only a removed one counts
+        else if (compactItemsRef.current.some(item => !item.isConnected)) {
+            wrappedAtWidthRef.current = undefined;
+            compactItemsRef.current = undefined;
         }
         //only content drawn at full size tells whether full size fits
         if (!isCompact && isWrapping(element)) {
