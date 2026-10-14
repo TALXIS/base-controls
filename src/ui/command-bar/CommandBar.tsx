@@ -7,8 +7,15 @@ import { useSurfaceMenuProps } from "../surfaces";
 import { getCommandBarStyles } from "./styles";
 import { ObservedResizeGroup } from "./ObservedResizeGroup";
 
-//Fluent already shows an icon-only button's text in a tooltip, so a native `title` would show a second one
-const toIconOnly = (item: ICommandBarItemProps): ICommandBarItemProps => ({ ...item, iconOnly: true, title: undefined, ariaLabel: item.ariaLabel ?? item.text });
+const toIconOnly = (item: ICommandBarItemProps): ICommandBarItemProps => ({
+    ...item,
+    iconOnly: true,
+    //Fluent already shows an icon-only button's text in a tooltip, so a native `title` would add one
+    title: undefined,
+    ariaLabel: item.ariaLabel ?? item.text,
+    //Fluent caches measured widths by `cacheKey`, so icon-only widths need a key of their own
+    cacheKey: `${item.cacheKey ?? item.key}-icon`,
+});
 
 export interface ICommandBarProps extends ICommandBarPropsBase {
     /** Which side the commands are drawn against; defaults to `'start'`. */

@@ -6,8 +6,6 @@ export const getHeaderUiStyles = () => mergeStyleSets({
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        //the lines Header.End's parts wrap onto stay on the right
-        justifyContent: 'flex-end',
         gap: 8,
         marginBottom: 15,
         minHeight: HEADER_PART_HEIGHT,
