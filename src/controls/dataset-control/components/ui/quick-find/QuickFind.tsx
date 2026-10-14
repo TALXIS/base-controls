@@ -91,6 +91,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
         onBlur,
         children: <>
             {components.onRenderTextField({
+                className: isTakingOver ? styles.expandedField : undefined,
                 value: props.value,
                 placeholder: props.placeholder,
                 disabled: props.disabled || props.columns.length === 0,

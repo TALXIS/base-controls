@@ -1,4 +1,4 @@
-import { mergeStyleSets } from "@fluentui/react";
+import { AnimationVariables, mergeStyleSets } from "@fluentui/react";
 import { compactQuery, HEADER_CONTAINER } from "../layout";
 
 export const getQuickFindUiStyles = () => mergeStyleSets({
@@ -16,5 +16,18 @@ export const getQuickFindUiStyles = () => mergeStyleSets({
     //alone in the header while the rest is hidden
     expandedQuickFind: {
         flex: '1 1 100%',
+    },
+    //the box is reused from the compact button, so the entry runs on the field, which is new
+    expandedField: {
+        clipPath: 'inset(0 0 0 0)',
+        opacity: 1,
+        transition: `clip-path ${AnimationVariables.durationValue2} ${AnimationVariables.easeFunction1}, opacity ${AnimationVariables.durationValue2} ${AnimationVariables.easeFunction1}`,
+        '@starting-style': {
+            clipPath: 'inset(0 0 0 calc(100% - 32px))',
+            opacity: 0,
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+            transition: 'none',
+        },
     },
 });
