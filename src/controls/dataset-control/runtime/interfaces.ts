@@ -67,11 +67,11 @@ export interface IDatasetControl {
     isLoading(): boolean;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
-    /** Loads the view on a new provider; asks first when there are unsaved changes. */
+    /** Mounts the control anew on the view; asks first when there are unsaved changes. */
     loadView(viewId: string): Promise<void>;
-    /** Loads the current view again on a new provider; asks first when there are unsaved changes. */
+    /** Mounts the control anew on the current view; asks first when there are unsaved changes. */
     reload(): Promise<void>;
-    /** Runs the load that failed again. */
+    /** Mounts the control anew on the view that failed to load. */
     retry(): Promise<void>;
 }
 

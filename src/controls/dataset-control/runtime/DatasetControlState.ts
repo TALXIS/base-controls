@@ -41,9 +41,13 @@ export class DatasetControlState {
         this._store = parameters.store;
     }
 
-    /** The view the control was on, to load first. */
+    /** The view the control is on, to load first. */
     public getViewId(): string | undefined {
         return this._store.get<string>(VIEW_ID_KEY);
+    }
+
+    public setViewId(viewId: string | undefined): void {
+        this._store.set(VIEW_ID_KEY, viewId);
     }
 
     /** What the parts keep while the view is shown. */
@@ -67,9 +71,8 @@ export class DatasetControlState {
         provider.setSelectedRecordIds(state.selectedRecordIds);
     }
 
-    /** Keeps the provider's setup for the view it shows, and that view as the one the control is on. */
+    /** Keeps the provider's setup for the view it shows. */
     public save(provider: IDataProvider, viewId: string | undefined): void {
-        this._store.set(VIEW_ID_KEY, viewId);
         this._getView(viewId).set<IDatasetControlProviderState>(PROVIDER_KEY, {
             columns: provider.getColumns(),
             linking: provider.getLinking(),

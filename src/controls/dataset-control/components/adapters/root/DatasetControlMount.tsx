@@ -1,0 +1,56 @@
+import { useEffect, useMemo } from "react";
+import { useEventEmitter, useLatest } from "@hooks";
+import { useRerender } from "@legacy";
+import { DataProviderContext, ErrorBoundary } from "@utils";
+import { DatasetControlRuntime, IDatasetControlEvents } from "../../../runtime";
+import type { DatasetControlState } from "../../../runtime/DatasetControlState";
+import { DatasetControlRuntimeContext } from "./context";
+import { DatasetControlUi } from "../../ui";
+import { Skeleton } from "../skeleton/Skeleton";
+import type { IDatasetControlProps } from "./Root";
+
+const LOAD_EVENTS: (keyof IDatasetControlEvents)[] = ['onLoadStarted', 'onLoaded', 'onLoadFailed'];
+
+export interface IDatasetControlMountProps extends IDatasetControlProps {
+    state: DatasetControlState;
+    onRemount: () => void;
+}
+
+/** One mount of the control: its runtime, its one load and the parts on it. */
+export const DatasetControlMount = (props: IDatasetControlMountProps) => {
+    const propsRef = useLatest(props);
+    const runtime = useMemo(() => new DatasetControlRuntime({
+        onGetProps: () => propsRef.current,
+        state: props.state,
+        onRemount: () => propsRef.current.onRemount(),
+    }), []);
+    const { rerender } = useRerender();
+
+    useEventEmitter<IDatasetControlEvents>(runtime.events, LOAD_EVENTS, rerender);
+
+    useEffect(() => {
+        propsRef.current.onReady?.(runtime);
+        runtime.load();
+        return () => {
+            propsRef.current.onDestroyed?.(runtime);
+            runtime.destroy();
+        };
+    }, []);
+
+    const { errorMessage, skeleton, ...container } = props.components ?? {};
+
+    return <DatasetControlRuntimeContext.Provider value={runtime}>
+        <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
+            <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
+                <ErrorBoundary
+                    error={runtime.getError()}
+                    onRetry={() => runtime.retry()}
+                    components={errorMessage}>
+                    <Skeleton components={skeleton}>
+                        {props.children}
+                    </Skeleton>
+                </ErrorBoundary>
+            </DatasetControlUi.Container>
+        </DataProviderContext.Provider>
+    </DatasetControlRuntimeContext.Provider>;
+};

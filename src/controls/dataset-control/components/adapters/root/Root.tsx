@@ -1,15 +1,10 @@
-import { useEffect, useMemo } from "react";
-import { useEventEmitter, useLatest } from "@hooks";
-import { useRerender } from "@legacy";
-import { DataProviderContext, ErrorBoundary, useStateStore } from "@utils";
-import { DatasetControlRuntime, IDatasetControl, IDatasetControlEvents, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "../../../runtime";
-import { DatasetControlRuntimeContext } from "./context";
+import { useMemo, useState } from "react";
+import { StateStore, useStateStore } from "@utils";
+import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "../../../runtime";
+import { DatasetControlState } from "../../../runtime/DatasetControlState";
 import { IDatasetControlLabels } from "./labels";
 import { IDatasetControlComponents } from "./components";
-import { DatasetControlUi } from "../../ui";
-import { Skeleton } from "../skeleton/Skeleton";
-
-const LOAD_EVENTS: (keyof IDatasetControlEvents)[] = ['onLoadStarted', 'onLoaded', 'onLoadFailed'];
+import { DatasetControlMount } from "./DatasetControlMount";
 
 /** Props for `DatasetControl`. */
 export interface IDatasetControlProps {
@@ -29,45 +24,18 @@ export interface IDatasetControlProps {
     labels?: Partial<IDatasetControlLabels>;
     /** Replacements for the box, the skeleton and the error. */
     components?: IDatasetControlComponents;
-    /** Called once the control exists, before the first load. */
+    /** Called on every mount, before its load; a view switch, reload or retry mounts the control anew. */
     onReady?: (control: IDatasetControl) => void;
-    /** Called as the control unmounts, while its provider still holds its data. */
+    /** Called as each mount goes, while its provider still holds its data. */
     onDestroyed?: (control: IDatasetControl) => void;
 }
 
-/** Loads the provider and holds every part of the control. */
+/** Loads the provider and holds every part of the control; every load mounts it anew. */
 export const Root = (props: IDatasetControlProps) => {
     const stateStore = useStateStore();
-    const propsRef = useLatest(props);
-    const runtime = useMemo(() => new DatasetControlRuntime({ onGetProps: () => propsRef.current, stateStore }), []);
-    const { rerender } = useRerender();
+    const state = useMemo(() => new DatasetControlState({ store: props.stateKey ? stateStore.scope(props.stateKey) : new StateStore() }), []);
+    //React keys can't be symbols
+    const [mountKey, setMountKey] = useState(() => crypto.randomUUID());
 
-    useEventEmitter<IDatasetControlEvents>(runtime.events, LOAD_EVENTS, rerender);
-
-    useEffect(() => {
-        propsRef.current.onReady?.(runtime);
-        runtime.load();
-        return () => {
-            propsRef.current.onDestroyed?.(runtime);
-            runtime.destroy();
-        };
-    }, []);
-
-    const { errorMessage, skeleton, ...container } = props.components ?? {};
-
-    return <DatasetControlRuntimeContext.Provider value={runtime}>
-        <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
-            <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-                <ErrorBoundary
-                    error={runtime.getError()}
-                    onRetry={() => runtime.retry()}
-                    components={errorMessage}>
-                    {/* a new provider mounts the parts anew */}
-                    <Skeleton key={runtime.getProviderKey()} components={skeleton}>
-                        {props.children}
-                    </Skeleton>
-                </ErrorBoundary>
-            </DatasetControlUi.Container>
-        </DataProviderContext.Provider>
-    </DatasetControlRuntimeContext.Provider>;
+    return <DatasetControlMount key={mountKey} {...props} state={state} onRemount={() => setMountKey(crypto.randomUUID())} />;
 };

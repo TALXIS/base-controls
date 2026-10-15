@@ -1,5 +1,5 @@
 import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IStateStore, LocalizationService, ServiceLocator, StateStore } from "@utils";
+import { IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
 import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap } from "./interfaces";
@@ -24,8 +24,6 @@ export interface IDatasetControlLoadResult {
 export interface IDatasetControlRuntime extends IDatasetControl {
     readonly events: IEventEmitter<IDatasetControlEvents>;
     readonly services: IDatasetControlServiceLocator;
-    /** Changes with every provider, for keying what renders it. */
-    getProviderKey(): number;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
@@ -34,8 +32,10 @@ export interface IDatasetControlRuntime extends IDatasetControl {
 
 export interface IDatasetControlRuntimeParameters {
     onGetProps: () => IDatasetControlProps;
-    /** Where the control keeps its state, under its `id`. */
-    stateStore: IStateStore;
+    /** The control's state, which outlives the runtime. */
+    state: DatasetControlState;
+    /** Mounts the control anew on the view the state is on. */
+    onRemount: () => void;
 }
 
 export class DatasetControlRuntime implements IDatasetControlRuntime {
@@ -43,8 +43,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
     private _onGetProps: () => IDatasetControlProps;
     private _state: DatasetControlState;
+    private _onRemount: () => void;
     private _provider?: IDataProvider;
-    private _providerKey = 0;
     private _viewId?: string;
     private _requestedViewId?: string;
     private _isLoading = false;
@@ -55,7 +55,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         const props = parameters.onGetProps();
         const labels = new LocalizationService({ ...DATASET_CONTROL_LABELS, ...props.labels });
         this._onGetProps = parameters.onGetProps;
-        this._state = new DatasetControlState({ store: props.stateKey ? parameters.stateStore.scope(props.stateKey) : new StateStore() });
+        this._state = parameters.state;
+        this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
         this._services.register('labels', () => labels);
         new DatasetControlUnsavedChangesGuard({ runtime: this, labels });
@@ -71,10 +72,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getProvider(): IDataProvider | undefined {
         return this._provider;
-    }
-
-    public getProviderKey(): number {
-        return this._providerKey;
     }
 
     public getViewId(): string | undefined {
@@ -102,15 +99,17 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public async loadView(viewId: string): Promise<void> {
-        await this._loadBehindBlocker({ viewId });
+        await this._remountBehindBlocker(viewId);
     }
 
     public async reload(): Promise<void> {
-        await this._loadBehindBlocker({ viewId: this._viewId });
+        await this._remountBehindBlocker(this._viewId);
     }
 
     public async retry(): Promise<void> {
-        await this._loadBehindBlocker({ viewId: this._requestedViewId });
+        if (!this._isDestroyed) {
+            this._remount(this._requestedViewId);
+        }
     }
 
     public destroy(): void {
@@ -124,21 +123,25 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._services.destroy();
     }
 
-    private async _loadBehindBlocker(parameters: IDatasetControlLoadParameters): Promise<void> {
+    private async _remountBehindBlocker(viewId: string | undefined): Promise<void> {
         const provider = this._provider as IInternalDataProvider | undefined;
-        if (!provider) {
-            await this._load(parameters);
+        if (this._isDestroyed) {
             return;
         }
-        //resolves without loading when the user keeps their unsaved changes
-        await provider.executeWithUnsavedChangesBlocker(() => this._load(parameters));
+        if (!provider) {
+            this._remount(viewId);
+            return;
+        }
+        //resolves without remounting when the user keeps their unsaved changes
+        await provider.executeWithUnsavedChangesBlocker(() => this._remount(viewId));
+    }
+
+    private _remount(viewId: string | undefined): void {
+        this._state.setViewId(viewId);
+        this._onRemount();
     }
 
     private async _load(parameters: IDatasetControlLoadParameters): Promise<void> {
-        //the view being left comes back as it was the next time it loads
-        if (this._provider) {
-            this._state.save(this._provider, this._viewId);
-        }
         this._isLoading = true;
         this._requestedViewId = parameters.viewId;
         this._error = undefined;
@@ -169,16 +172,12 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private _onLoaded(result: IDatasetControlLoadResult, parameters: IDatasetControlLoadParameters): void {
-        const previous = this._provider;
         this._provider = result.provider;
-        this._providerKey++;
         this._viewId = result.viewId ?? parameters.viewId;
+        //onLoad may have picked the view
+        this._state.setViewId(this._viewId);
         this._isLoading = false;
         this.events.dispatchEvent('onLoaded', result.provider);
-        //onLoaded has remounted every part on the new provider
-        if (previous) {
-            this._releaseProvider(previous);
-        }
     }
 
     private _onLoadFailed(error: unknown): void {
