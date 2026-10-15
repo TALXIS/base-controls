@@ -7,8 +7,6 @@ import type { ITaskDataProvider } from "../provider";
 export interface ITaskExpansionDelta {
     recordIds: string[];
     expanded: boolean;
-    /** Whether it covers the whole tree rather than one row. */
-    isBulk: boolean;
 }
 
 export interface ITaskExpansionEvents {
@@ -22,8 +20,12 @@ export interface ITaskExpansion {
     isExpanded(recordId: string): boolean;
     setExpanded(recordId: string, expanded: boolean): void;
     toggle(recordId: string): void;
-    expandAll(): void;
-    collapseAll(): void;
+    /** Expands the shallowest collapsed tasks on display. */
+    expandLevel(): void;
+    /** Collapses the deepest expanded tasks on display. */
+    collapseLevel(): void;
+    canExpandLevel(): boolean;
+    canCollapseLevel(): boolean;
     getExpandedIds(): string[];
 }
 
@@ -37,6 +39,12 @@ export interface ITaskExpansionParameters {
     provider: ITaskDataProvider;
     state: IStateStore;
     onIsFlatList: () => boolean;
+}
+
+interface IDisplayedParent {
+    recordId: string;
+    level: number;
+    isExpanded: boolean;
 }
 
 export const TASK_TREE_STATE_KEY = 'taskTree';
@@ -84,23 +92,31 @@ export class TaskExpansion implements ITaskExpansion {
         }
         this._intent.set(recordId, expanded);
         this._store();
-        this._apply({ recordIds: [recordId], expanded, isBulk: false });
+        this._apply({ recordIds: [recordId], expanded });
     }
 
     public toggle(recordId: string): void {
         this.setExpanded(recordId, !this.isExpanded(recordId));
     }
 
-    public expandAll(): void {
-        if (this._onIsFlatList()) {
-            return;
-        }
-        const view = this._provider.getRecordTree().view;
-        this._change(view.getOrderedIds().filter(recordId => view.hasChildren(recordId) && this._intent.get(recordId) !== true), true);
+    public expandLevel(): void {
+        const collapsed = this._getDisplayedParents().filter(parent => !parent.isExpanded);
+        const level = Math.min(...collapsed.map(parent => parent.level));
+        this._change(collapsed.filter(parent => parent.level === level).map(parent => parent.recordId), true);
     }
 
-    public collapseAll(): void {
-        this._change(this.getExpandedIds(), false);
+    public collapseLevel(): void {
+        const expanded = this._getDisplayedParents().filter(parent => parent.isExpanded);
+        const level = Math.max(...expanded.map(parent => parent.level));
+        this._change(expanded.filter(parent => parent.level === level).map(parent => parent.recordId), false);
+    }
+
+    public canExpandLevel(): boolean {
+        return this._getDisplayedParents().some(parent => !parent.isExpanded);
+    }
+
+    public canCollapseLevel(): boolean {
+        return this._getDisplayedParents().some(parent => parent.isExpanded);
     }
 
     public getExpandedIds(): string[] {
@@ -124,7 +140,30 @@ export class TaskExpansion implements ITaskExpansion {
         }
         recordIds.forEach(recordId => this._intent.set(recordId, expanded));
         this._store();
-        this._apply({ recordIds, expanded, isBulk: true });
+        this._apply({ recordIds, expanded });
+    }
+
+    private _getDisplayedParents(): IDisplayedParent[] {
+        const parents: IDisplayedParent[] = [];
+        if (this._onIsFlatList()) {
+            return parents;
+        }
+        const view = this._provider.getRecordTree().view;
+        const visit = (parentId: string | null, level: number): void => {
+            for (const child of view.getChildren(parentId)) {
+                const recordId = child.getRecordId();
+                if (!view.hasChildren(recordId)) {
+                    continue;
+                }
+                const isExpanded = this.isExpanded(recordId);
+                parents.push({ recordId, level, isExpanded });
+                if (isExpanded) {
+                    visit(recordId, level + 1);
+                }
+            }
+        };
+        visit(null, 0);
+        return parents;
     }
 
     private _apply(delta: ITaskExpansionDelta): void {
@@ -135,10 +174,6 @@ export class TaskExpansion implements ITaskExpansion {
         }
         this._isApplying = true;
         try {
-            if (delta.isBulk) {
-                delta.expanded ? this._gridApi.expandAll() : this._gridApi.collapseAll();
-                return;
-            }
             this._setNodesExpanded(this._gridApi, new Set(delta.recordIds), delta.expanded);
             this._gridApi.onGroupExpandedOrCollapsed();
         }

@@ -9,8 +9,8 @@ export interface ITaskGridLabels extends IGridLabels {
     showHierarchy: string;
     hideInactiveTasks: string;
     addChild: string;
-    expandAll: string;
-    collapseAll: string;
+    expandLevel: string;
+    collapseLevel: string;
     confirmDeleteTasks: string;
 }
 
@@ -23,7 +23,7 @@ export const TASK_GRID_LABELS: Omit<ITaskGridLabels, keyof IGridLabels> = {
     showHierarchy: 'Show hierarchy',
     hideInactiveTasks: 'Hide inactive tasks',
     addChild: 'Add a subtask',
-    expandAll: 'Expand all',
-    collapseAll: 'Collapse all',
+    expandLevel: 'Expand one level',
+    collapseLevel: 'Collapse one level',
     confirmDeleteTasks: 'Do you want to delete the selected tasks and everything under them?',
 };

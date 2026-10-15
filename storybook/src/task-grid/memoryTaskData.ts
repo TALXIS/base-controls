@@ -189,20 +189,35 @@ function parentRef(taskId: string, name: string) {
 }
 
 /** Generates a deterministic UUID from a compact numeric key. */
-function tid(epic: number, l1 = 0, l2 = 0): string {
+function tid(epic: number, ...levels: number[]): string {
+    const [l1 = 0, l2 = 0, l3 = 0, l4 = 0, l5 = 0, l6 = 0] = levels;
+    const pad = (value: number, length: number) => value.toString().padStart(length, '0');
     return [
-        epic.toString().padStart(2, '0') +
-        l1.toString().padStart(3, '0') +
-        l2.toString().padStart(3, '0'),
-        '0000',
-        '0000',
+        pad(epic, 2) + pad(l1, 3) + pad(l2, 3),
+        pad(l3, 2) + pad(l4, 2),
+        pad(l5, 2) + pad(l6, 2),
         '0000',
         '000000000000',
     ].join('-');
 }
 
+/** A task below the third level, its status following how far along it is. */
+function deepTask(path: number[], subject: string, parentSubject: string, start: string, end: string, estimatedeffort: number, percentcomplete: number, person: string, tags: string[], description: string): IRawRecord {
+    const [epic, ...rest] = path;
+    const statuscode = percentcomplete === 100 ? 5 : percentcomplete === 0 ? 1 : 2;
+    return {
+        [PRIMARY_ID]: tid(epic, ...rest), subject, [PARENT_ID_COL]: parentRef(tid(epic, ...rest.slice(0, -1)), parentSubject),
+        [STACK_RANK_COL]: SEED_RANKS[rest[rest.length - 1] - 1], [STATE_CODE_COL]: statuscode === 5 ? 1 : 0,
+        statuscode, priority: 1, percentcomplete,
+        scheduledstart: start, scheduledend: end,
+        estimatedeffort, actualeffort: Math.round(estimatedeffort * percentcomplete / 100),
+        assignedto: [personRef(person)], tags: tags.map(tagRef),
+        description,
+    };
+}
 
-// ─── Raw task records (108 tasks) ─────────────────────────────────────────────
+
+// ─── Raw task records (137 tasks) ─────────────────────────────────────────────
 
 export const TASKS: IRawRecord[] = [
     // ═════════════════════════════════════════════════════════════════════════
@@ -1247,6 +1262,44 @@ const rollUpEfforts = (columnNames: string[]) => {
         }
     }
 };
+
+/** Subtrees that go down to the seventh level. */
+const DEEP_TASKS: IRawRecord[] = [
+    // under Checkout flow
+    deepTask([1, 3, 4, 1], 'Cart', 'Checkout flow', '2026-01-08', '2026-01-10', 12, 0, 'Alex Chen', ['frontend'], 'Everything the shopper does before paying.'),
+    deepTask([1, 3, 4, 1, 1], 'Cart state management', 'Cart', '2026-01-08', '2026-01-09', 4, 0, 'Alex Chen', ['frontend', 'react'], 'Persist the cart across sessions and devices.'),
+    deepTask([1, 3, 4, 1, 2], 'Cart page UI', 'Cart', '2026-01-09', '2026-01-10', 8, 0, 'Alex Chen', ['frontend', 'ui'], 'The cart page with its line items and totals.'),
+    deepTask([1, 3, 4, 1, 2, 1], 'Line item component', 'Cart page UI', '2026-01-09', '2026-01-09', 3, 0, 'Alex Chen', ['ui'], 'Quantity stepper, price and remove button for one product.'),
+    deepTask([1, 3, 4, 1, 2, 2], 'Promo code field', 'Cart page UI', '2026-01-10', '2026-01-10', 5, 0, 'Chris Kim', ['ui', 'payments'], 'Apply and remove promotional codes.'),
+    deepTask([1, 3, 4, 1, 2, 2, 1], 'Promo validation errors', 'Promo code field', '2026-01-10', '2026-01-10', 2, 0, 'Chris Kim', ['ui'], 'Explain why a code was rejected.'),
+    deepTask([1, 3, 4, 1, 2, 2, 2], 'Stacked promotions', 'Promo code field', '2026-01-10', '2026-01-10', 3, 0, 'Chris Kim', ['payments'], 'Decide which codes can be combined.'),
+    deepTask([1, 3, 4, 2], 'Payment', 'Checkout flow', '2026-01-11', '2026-01-14', 20, 0, 'Maya Patel', ['payments'], 'Take the payment for the order.'),
+    deepTask([1, 3, 4, 2, 1], 'Payment provider integration', 'Payment', '2026-01-11', '2026-01-13', 14, 0, 'Maya Patel', ['payments', 'backend'], 'Connect checkout to the payment provider.'),
+    deepTask([1, 3, 4, 2, 1, 1], 'Card tokenisation', 'Payment provider integration', '2026-01-11', '2026-01-12', 6, 0, 'Maya Patel', ['payments', 'security'], 'Never let card numbers touch our servers.'),
+    deepTask([1, 3, 4, 2, 1, 2], '3-D Secure challenge', 'Payment provider integration', '2026-01-12', '2026-01-13', 8, 0, 'Maya Patel', ['payments', 'security'], 'Handle the bank challenge step in the browser.'),
+    deepTask([1, 3, 4, 2, 2], 'Payment error handling', 'Payment', '2026-01-13', '2026-01-14', 6, 0, 'Chris Kim', ['payments', 'ux'], 'Recover from declined and timed-out payments.'),
+    deepTask([1, 3, 4, 3], 'Order confirmation', 'Checkout flow', '2026-01-15', '2026-01-15', 4, 0, 'Jamie Walsh', ['frontend'], 'Confirmation page and email.'),
+    // under Products & catalog endpoints
+    deepTask([2, 3, 2, 1], 'Product search', 'Products & catalog endpoints', '2025-12-16', '2025-12-31', 24, 100, 'Maya Patel', ['api', 'catalog'], 'Search across the catalog.'),
+    deepTask([2, 3, 2, 1, 1], 'Full-text index', 'Product search', '2025-12-16', '2025-12-23', 12, 100, 'Maya Patel', ['database'], 'Index product names and descriptions.'),
+    deepTask([2, 3, 2, 1, 2], 'Faceted filters', 'Product search', '2025-12-24', '2025-12-31', 12, 100, 'Maya Patel', ['api'], 'Filter results by category, brand and price.'),
+    deepTask([2, 3, 2, 2], 'Pricing rules', 'Products & catalog endpoints', '2026-01-02', '2026-01-15', 30, 40, 'Riley Thompson', ['api', 'billing'], 'Work out the price a customer pays.'),
+    deepTask([2, 3, 2, 2, 1], 'Volume discounts', 'Pricing rules', '2026-01-02', '2026-01-07', 10, 80, 'Riley Thompson', ['billing'], 'Tiered prices for larger quantities.'),
+    deepTask([2, 3, 2, 2, 2], 'Regional price lists', 'Pricing rules', '2026-01-08', '2026-01-15', 20, 0, 'Riley Thompson', ['billing', 'i18n'], 'Different prices per market.'),
+    deepTask([2, 3, 2, 2, 2, 1], 'Currency conversion', 'Regional price lists', '2026-01-08', '2026-01-11', 8, 0, 'Riley Thompson', ['billing'], 'Daily exchange rates with rounding rules.'),
+    deepTask([2, 3, 2, 2, 2, 2], 'Tax inclusion rules', 'Regional price lists', '2026-01-12', '2026-01-15', 12, 0, 'Taylor Morgan', ['billing', 'legal'], 'Show prices with or without tax per market.'),
+    deepTask([2, 3, 2, 2, 2, 2, 1], 'EU VAT rates', 'Tax inclusion rules', '2026-01-12', '2026-01-13', 6, 0, 'Taylor Morgan', ['legal'], 'Rates for every EU member state.'),
+    deepTask([2, 3, 2, 2, 2, 2, 2], 'US sales tax', 'Tax inclusion rules', '2026-01-14', '2026-01-15', 6, 0, 'Taylor Morgan', ['legal'], 'Tax added at checkout by state.'),
+    // under Kubernetes cluster setup
+    deepTask([4, 2, 1, 1], 'Node pools', 'Kubernetes cluster setup', '2025-10-01', '2025-10-20', 20, 100, 'Jordan Lee', ['kubernetes'], 'The machines the cluster runs on.'),
+    deepTask([4, 2, 1, 1, 1], 'System pool', 'Node pools', '2025-10-01', '2025-10-10', 8, 100, 'Jordan Lee', ['kubernetes'], 'Nodes for the cluster add-ons.'),
+    deepTask([4, 2, 1, 1, 2], 'Workload pool', 'Node pools', '2025-10-11', '2025-10-20', 12, 100, 'Jordan Lee', ['kubernetes', 'cloud'], 'Autoscaling nodes for the services.'),
+    deepTask([4, 2, 1, 2], 'Ingress controller', 'Kubernetes cluster setup', '2025-10-21', '2025-11-15', 24, 100, 'Jordan Lee', ['networking'], 'Route outside traffic into the cluster.'),
+    deepTask([4, 2, 1, 2, 1], 'TLS certificates', 'Ingress controller', '2025-10-21', '2025-11-05', 12, 100, 'Jordan Lee', ['security', 'networking'], 'Serve every host over HTTPS.'),
+    deepTask([4, 2, 1, 2, 1, 1], 'cert-manager setup', 'TLS certificates', '2025-10-21', '2025-11-05', 12, 100, 'Jordan Lee', ['automation'], 'Issue and renew certificates automatically.'),
+];
+
+TASKS.push(...DEEP_TASKS);
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);
 

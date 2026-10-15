@@ -11,7 +11,7 @@ export interface IExpansionHeaderProps extends IColumnHeaderParams {
     components?: IExpansionHeaderComponents;
 }
 
-/** Expands or collapses every task at once. */
+/** Expands or collapses the tasks a level at a time. */
 export const ExpansionHeader = (props: IExpansionHeaderProps) => {
     const { runtime, components: taskGridComponents } = useTaskGridContext();
     const expansion = useTaskGridService('taskExpansion');
@@ -25,12 +25,12 @@ export const ExpansionHeader = (props: IExpansionHeaderProps) => {
     return <Grid.ColumnHeader.Root {...props}>
         <Grid.ColumnHeader.Theme>
             <GroupingUi.ExpandCollapse
-                expandTitle={labels.getLocalizedString('expandAll')}
-                collapseTitle={labels.getLocalizedString('collapseAll')}
-                canExpand={true}
-                canCollapse={expansion.getExpandedIds().length > 0}
-                onExpand={() => expansion.expandAll()}
-                onCollapse={() => expansion.collapseAll()}
+                expandTitle={labels.getLocalizedString('expandLevel')}
+                collapseTitle={labels.getLocalizedString('collapseLevel')}
+                canExpand={expansion.canExpandLevel()}
+                canCollapse={expansion.canCollapseLevel()}
+                onExpand={() => expansion.expandLevel()}
+                onCollapse={() => expansion.collapseLevel()}
                 components={components.expandCollapse} />
         </Grid.ColumnHeader.Theme>
     </Grid.ColumnHeader.Root>;
