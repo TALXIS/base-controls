@@ -235,7 +235,5 @@ export class TaskTree {
         this._provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        this._expansion.destroy();
-        this._dragging.destroy();
     };
 }

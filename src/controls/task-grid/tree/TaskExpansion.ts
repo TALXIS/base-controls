@@ -118,11 +118,6 @@ export class TaskExpansion implements ITaskExpansion {
         this._store();
     }
 
-    public destroy(): void {
-        this._gridApi?.removeEventListener('rowGroupOpened', this._onRowGroupOpened);
-        this.events.clearEventListeners();
-    }
-
     private _change(recordIds: string[], expanded: boolean): void {
         if (recordIds.length === 0) {
             return;

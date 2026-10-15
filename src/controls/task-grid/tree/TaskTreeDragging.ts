@@ -30,6 +30,7 @@ export class TaskTreeDragging {
     constructor(parameters: ITaskTreeDraggingParameters) {
         this._services = parameters.services;
         this._onIsEnabled = parameters.onIsEnabled;
+        this._services.get('grid').events.addEventListener('onDestroyed', () => clearTimeout(this._autoExpandTimeout));
     }
 
     public attach(gridApi: GridApi<IRecord>): void {
@@ -54,10 +55,6 @@ export class TaskTreeDragging {
             return null;
         }
         return operation.section;
-    }
-
-    public destroy(): void {
-        clearTimeout(this._autoExpandTimeout);
     }
 
     private _onRowDragMove = (event: RowDragEvent<IRecord>): void => {

@@ -6,7 +6,7 @@ export * from './strategies';
 export * from './services';
 export * from './tree';
 export * from './modules';
-export type { ITaskGrid, ITaskGridEvents, ITaskGridSetting, TaskGridSettingsHook } from './runtime';
+export type { ITaskGrid, ITaskGridSetting, TaskGridSettingsHook } from './runtime';
 export type { ISettingsProps, ISettingsComponents } from './parts';
 export { SettingsComponents } from './parts';
 export { useTaskGrid, useTaskGridService, useTaskGridServices } from './useTaskGrid';

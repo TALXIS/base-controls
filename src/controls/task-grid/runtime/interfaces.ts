@@ -1,12 +1,8 @@
 import type { IGrid } from "@controls/grid";
-import type { IEventSubscriber, ILocalizationService } from "@utils";
+import type { ILocalizationService } from "@utils";
 import type { ICreateTaskOptions, ITaskDataProvider } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskGridLabels } from "../labels";
-
-export interface ITaskGridEvents {
-    onDestroyed: () => void;
-}
 
 /** A toggle in `TaskGridDatasetControl.Settings`. */
 export interface ITaskGridSetting {
@@ -21,7 +17,6 @@ export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
 
 /** The running task grid: what `onReady` hands you and what `control.parts.get('taskGrid')` returns; its commands are on the control's ribbon. */
 export interface ITaskGrid {
-    readonly events: IEventSubscriber<ITaskGridEvents>;
     /** The grid underneath, there from the moment the modules register. */
     readonly grid: IGrid<ITaskGridServiceMap>;
     getProvider(): ITaskDataProvider;

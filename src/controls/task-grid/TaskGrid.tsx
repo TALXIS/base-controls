@@ -61,7 +61,6 @@ export const TaskGridRoot = (props: ITaskGridProps) => {
             if (services?.find('taskGrid') === runtime) {
                 services.unregister('taskGrid');
             }
-            runtime.destroy();
         };
     }, []);
 

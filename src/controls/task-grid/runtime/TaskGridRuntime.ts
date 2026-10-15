@@ -1,4 +1,3 @@
-import { EventEmitter } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import type { IRibbonCommand, IRibbonRuntime } from "@controls/ribbon";
 import { IPcfContext } from "@interfaces";
@@ -7,7 +6,7 @@ import { ErrorHelper } from "@utils/error-handling";
 import type { ICreateTaskOptions, ITaskDataProvider } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskGridLabels } from "../labels";
-import { ITaskGrid, ITaskGridEvents, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
+import { ITaskGrid, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
 
 /** What the runtime reads of the tree module. */
 export interface ITaskGridTree {
@@ -31,7 +30,6 @@ export class TaskGridRuntime implements ITaskGrid {
     private _grid?: IGrid<ITaskGridServiceMap>;
     private _tree?: ITaskGridTree;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
-    public readonly events = new EventEmitter<ITaskGridEvents>();
 
     constructor(parameters: ITaskGridRuntimeParameters) {
         this._provider = parameters.provider;
@@ -104,11 +102,6 @@ export class TaskGridRuntime implements ITaskGrid {
         const settings: ITaskGridSetting[] = [];
         this._settingsHooks.apply(settings);
         return settings;
-    }
-
-    public destroy(): void {
-        this.events.dispatchEvent('onDestroyed');
-        this.events.clearEventListeners();
     }
 
     //ahead of the consumer's own commands
