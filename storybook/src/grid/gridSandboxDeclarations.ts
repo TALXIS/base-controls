@@ -3806,6 +3806,8 @@ declare const TaskGridDatasetControl: {
 
 /** The sample tasks: 108 tasks over seven projects. */
 declare const TASKS: IRawRecord[];
+/** Builds a deterministic tree of count tasks up to eight levels deep, with uneven branching. */
+declare const createStressTasks: (count: number) => IRawRecord[];
 declare const TASK_COLUMNS: IColumn[];
 declare const TASK_METADATA: IMemoryProviderEntityMetadata;
 /** Every task column, with the ones not named hidden. */

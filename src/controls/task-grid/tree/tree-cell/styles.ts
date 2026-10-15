@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
+import { LEVEL_INDENT } from "../constants";
 
-const LEVEL_INDENT = 24;
 //as wide as the chevron, so a task without children lines up with its siblings
 const TOGGLE_WIDTH = 28;
 

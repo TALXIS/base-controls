@@ -14,7 +14,6 @@ export interface ITreeCellProps extends ICellRendererParams<IRecord> {
 
 /** The subject cell: indented by its level, with the chevron that opens the task. */
 export const TreeCell = (props: ITreeCellProps) => {
-    const provider = useTaskGridService('provider');
     const expansion = useTaskGridService('taskExpansion');
     const { runtime, components: taskGridComponents } = useTaskGridContext();
     const components = { ...taskGridComponents.treeCell, ...props.components };
@@ -22,12 +21,18 @@ export const TreeCell = (props: ITreeCellProps) => {
     const node = props.node;
     const record = props.data!;
     const isFlatList = runtime.isFlatList();
-    const hasToggle = !isFlatList && provider.getRecordTree().view.hasChildren(record.getRecordId());
+    const hasToggle = !isFlatList && !!node.group;
     const styles = useMemo(() => getTreeCellStyles(isFlatList ? 0 : node.level, hasToggle || isFlatList), [isFlatList, node.level, hasToggle]);
 
     useEffect(() => {
         node.addEventListener('expandedChanged', rerender);
-        return () => node.removeEventListener('expandedChanged', rerender);
+        node.addEventListener('groupChanged', rerender);
+        node.addEventListener('uiLevelChanged', rerender);
+        return () => {
+            node.removeEventListener('expandedChanged', rerender);
+            node.removeEventListener('groupChanged', rerender);
+            node.removeEventListener('uiLevelChanged', rerender);
+        };
     }, [node]);
 
     return <Grid.Cell.Field record={record} name={props.colDef!.colId!}>

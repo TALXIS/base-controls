@@ -1,6 +1,5 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
-import { IRawStyle, ITheme } from "@fluentui/react";
 import { IGridAgGridInitialOptions, IGridAgGridOptions, IGridStyles, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
@@ -28,7 +27,6 @@ export class TaskTree {
     private _runtime: TaskGridRuntime;
     private _provider: ITaskDataProvider;
     private _expansion: TaskExpansion;
-    private _dragging: TaskTreeDragging;
     private _isFlatList: boolean;
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
@@ -40,7 +38,7 @@ export class TaskTree {
         this._provider = services.get('provider');
         this._isFlatList = this._getState().isFlatList ?? this._provider.getView()?.isFlatList ?? false;
         this._expansion = new TaskExpansion({ provider: this._provider, state: services.get('state'), onIsFlatList: () => this._isFlatList });
-        this._dragging = new TaskTreeDragging({ services, onIsEnabled: () => parameters.onIsRowDraggingEnabled() && !this._isFlatList });
+        new TaskTreeDragging({ grid: this._grid, onIsEnabled: () => parameters.onIsRowDraggingEnabled() && !this._isFlatList });
         parameters.runtime.attach(this._grid, this);
         services.register('taskGrid', () => parameters.runtime);
         services.register('taskExpansion', () => this._expansion);
@@ -84,7 +82,6 @@ export class TaskTree {
 
     private _onGridApi = (gridApi: GridApi<IRecord>): void => {
         this._expansion.attach(gridApi);
-        this._dragging.attach(gridApi);
     };
 
     private _onAgGridInitialOptions = (result: IGridAgGridInitialOptions): void => {
@@ -98,7 +95,6 @@ export class TaskTree {
         }
         result.options.groupDisplayType = 'custom';
         result.options.isGroupOpenByDefault = params => !!params.rowNode.id && this._expansion.isExpanded(params.rowNode.id);
-        result.options.rowDragEntireRow = this._dragging.canDrag();
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
@@ -135,18 +131,11 @@ export class TaskTree {
         const rows = this._grid.services.get('rows');
         const tree = this._provider.getRecordTree();
         rows.registerRowClass(TASK_ROW_CLASS_NAMES.unmatchedParent, ({ record }) => !tree.view.isMatching(record.getRecordId()));
-        rows.registerRowClass(TASK_ROW_CLASS_NAMES.dragOverTop, ({ record }) => this._dragging.getDragSection(record) === 'top');
-        rows.registerRowClass(TASK_ROW_CLASS_NAMES.dragOverMiddle, ({ record }) => this._dragging.getDragSection(record) === 'middle');
-        rows.registerRowClass(TASK_ROW_CLASS_NAMES.dragOverBottom, ({ record }) => this._dragging.getDragSection(record) === 'bottom');
     }
 
-    private _onStyles = (result: IGridStyles, theme: ITheme): void => {
-        const dropLine: IRawStyle = { content: "''", position: 'absolute', left: 0, right: 0, borderTop: `2px solid ${theme.semanticColors.inputFocusBorderAlt}`, pointerEvents: 'none' };
+    private _onStyles = (result: IGridStyles): void => {
         result.styles.push({
             selectors: {
-                [`.${TASK_ROW_CLASS_NAMES.dragOverTop}::after`]: { ...dropLine, top: 0 },
-                [`.${TASK_ROW_CLASS_NAMES.dragOverBottom}::after`]: { ...dropLine, bottom: 0 },
-                [`.${TASK_ROW_CLASS_NAMES.dragOverMiddle}::after`]: { content: "''", position: 'absolute', inset: 0, backgroundColor: theme.palette.themePrimary, opacity: 0.2, pointerEvents: 'none' },
                 [`.${TASK_ROW_CLASS_NAMES.unmatchedParent} .ag-cell`]: { fontStyle: 'italic' },
             },
         });

@@ -11,6 +11,11 @@ import { createDocsDataset, IGridDocsDataset } from './data'
 initializeIcons()
 
 const styles = mergeStyleSets({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+    },
     toolbar: {
         display: 'flex',
         alignItems: 'center',
@@ -24,6 +29,10 @@ const styles = mergeStyleSets({
         display: 'flex',
         alignItems: 'center',
         gap: 4,
+    },
+    preview: {
+        flex: 1,
+        minHeight: 0,
     },
     edited: {
         color: '#605e5c',
@@ -115,7 +124,9 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
             case 'preview':
                 return <>
                     {props.renderAbovePreview?.()}
-                    <GridLivePreview key={revision} files={debouncedFiles} provider={provider} previewProps={props.previewProps} onError={setPreviewError} onProviderRendered={setRenderedProvider} />
+                    <div className={styles.preview}>
+                        <GridLivePreview key={revision} files={debouncedFiles} provider={provider} previewProps={props.previewProps} onError={setPreviewError} onProviderRendered={setRenderedProvider} />
+                    </div>
                 </>
             case 'code':
                 return <>
@@ -131,7 +142,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
         }
     }
 
-    return <div>
+    return <div className={styles.root}>
         <div className={styles.toolbar}>
             <Pivot headersOnly selectedKey={tab} onLinkClick={item => setTab(item?.props.itemKey as IRunnerTab)}>
                 <PivotItem itemKey='preview' headerText='Preview' itemIcon='View' />
