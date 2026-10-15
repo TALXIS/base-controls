@@ -25,6 +25,8 @@ const createViewProvider = (view: IDealView) => {
     })
     provider.setSorting(view.sorting ?? [])
     provider.setFiltering(view.filtering ?? null)
+    //every deal column can be added back in Edit columns
+    provider.onGetAvailableColumns = async () => DEAL_COLUMNS
     return provider
 }
 
@@ -34,9 +36,6 @@ export const loadDeals = async (params: IDatasetControlLoadParameters): Promise<
     const view = VIEWS.find(view => view.id === params.viewId) ?? VIEWS[0]
     return { provider: createViewProvider(view), viewId: view.id }
 }
-
-//every deal column can be added back in Edit columns
-export const loadDealColumns = async (): Promise<IColumn[]> => DEAL_COLUMNS
 
 //what the view switcher lists
 export const loadDealViews = async (): Promise<IDatasetControlView[]> => {

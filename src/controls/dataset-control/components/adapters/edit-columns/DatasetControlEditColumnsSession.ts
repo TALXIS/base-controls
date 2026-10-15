@@ -6,17 +6,11 @@ export interface IDatasetControlEditColumnsSessionEvents {
     onScopeChanged: () => void;
     /** A column or scope load threw; `getError()` holds what. */
     onLoadFailed: () => void;
+    /** The related entities the provider offers are known. */
+    onScopesLoaded: () => void;
 }
 
-/** Where the column editor gets what it offers. */
-export interface IDatasetControlEditColumnsLoaders {
-    /** The columns a scope offers: the provider's own entity when `scope` is undefined. */
-    onLoadColumns: (scope?: IAvailableRelatedColumn) => Promise<IColumn[]>;
-    /** The related entities columns can be added from; without it, there is no scope to pick. */
-    onLoadScopes?: () => Promise<IAvailableRelatedColumn[]>;
-}
-
-export interface IDatasetControlEditColumnsSessionParameters extends IDatasetControlEditColumnsLoaders {
+export interface IDatasetControlEditColumnsSessionParameters {
     provider: IDataProvider;
 }
 
@@ -29,16 +23,14 @@ export class DatasetControlEditColumnsSession {
     //keyed by the related entity's id attribute and the lookup it is reached through
     private _linking: Map<string, ILinkEntityExposedExpression>;
     private _scope?: IAvailableRelatedColumn;
-    private _onLoadColumns: IDatasetControlEditColumnsLoaders['onLoadColumns'];
-    private _onLoadScopes?: IDatasetControlEditColumnsLoaders['onLoadScopes'];
+    private _relatedScopes: IAvailableRelatedColumn[] = [];
     private _error?: unknown;
 
     constructor(parameters: IDatasetControlEditColumnsSessionParameters) {
         this._provider = parameters.provider;
-        this._onLoadColumns = parameters.onLoadColumns;
-        this._onLoadScopes = parameters.onLoadScopes;
         this._columns = this._provider.getColumns().map(column => ({ ...column }));
         this._linking = new Map(this._provider.getLinking().map(link => [`${link.from}_${link.to}`, link]));
+        this._loadRelatedScopes();
     }
 
     /** The visible columns, in order; hidden ones are kept and saved untouched. */
@@ -53,22 +45,18 @@ export class DatasetControlEditColumnsSession {
     /** The columns of the current scope; `[]` when the load threw. */
     public async getAvailableColumns(query?: string): Promise<IColumn[]> {
         const scope = this._scope;
-        const columns = await this._load(() => this._onLoadColumns(scope));
+        const columns = await this._load(() => this._provider.getAvailableColumns(scope ? { entityName: scope.relatedEntityName } : undefined));
         return query ? columns.filter(column => this._matches(column.displayName, query)) : columns;
     }
 
-    /** Whether there are scopes to pick from. */
+    /** Whether the provider offers related entities to add columns from; false until they have loaded. */
     public hasScopes(): boolean {
-        return !!this._onLoadScopes;
+        return this._relatedScopes.length > 0;
     }
 
-    /** The entities columns can be added from; `[]` when the load threw. */
+    /** The provider's own entity, then the related ones. */
     public async getScopes(query?: string): Promise<IAvailableRelatedColumn[]> {
-        const onLoadScopes = this._onLoadScopes;
-        if (!onLoadScopes) {
-            return [];
-        }
-        const scopes = await this._load(onLoadScopes);
+        const scopes = [this.getMainScope(), ...this._relatedScopes];
         return query ? scopes.filter(scope => this._matches(scope.displayName, query)) : scopes;
     }
 
@@ -144,6 +132,13 @@ export class DatasetControlEditColumnsSession {
     private _toScopedColumn(column: IColumn, scope: IAvailableRelatedColumn): IColumn {
         const link = this._getLink(scope);
         return { ...column, name: `${link.alias}.${column.name}`, displayName: `${column.displayName} (${scope.displayName})` };
+    }
+
+    private async _loadRelatedScopes(): Promise<void> {
+        this._relatedScopes = await this._load(() => this._provider.getAvailableRelatedColumns());
+        if (this._relatedScopes.length > 0) {
+            this.events.dispatchEvent('onScopesLoaded');
+        }
     }
 
     private async _load<T>(load: () => Promise<T[]>): Promise<T[]> {

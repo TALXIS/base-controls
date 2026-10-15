@@ -39,7 +39,7 @@ Every part takes \`components\`, which replaces pieces of what it draws. A piece
 | \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` (empty by default) |
 | \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` |
 | \`EditColumns\` | \`columnList\` | \`onRenderColumn\`, whose \`commands\` hold the remove button |
-| \`EditColumns\` | \`errorMessage\` | The error when \`onLoadColumns\` or \`onLoadScopes\` throws |
+| \`EditColumns\` | \`errorMessage\` | The error when loading the provider's available columns or related entities throws |
 | \`Notifications\` | Top level | \`onRenderNotifications\` |
 | \`EmptyRecords\` | Top level | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` |
 | \`Pagination\` | Top level | \`onRenderCommandBar\` |

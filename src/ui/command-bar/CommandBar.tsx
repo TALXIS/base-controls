@@ -42,6 +42,9 @@ export const CommandBar = (props: ICommandBarProps) => {
     //what the bar moves into its overflow menu is merged into these, so the theme survives the move
     const overflowMenuProps = useSurfaceMenuProps({ items: [], ...overflowButtonProps?.menuProps });
 
+    if (!items?.length && !farItems?.length && !overflowItems?.length) {
+        return <></>;
+    }
     return <CommandBarBase
         {...commandBarProps}
         styles={(styleProps: ICommandBarStyleProps) => concatStyleSetsWithProps(styleProps, { root: barStyles.root, primarySet: barStyles.primarySet }, styles)}

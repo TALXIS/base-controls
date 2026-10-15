@@ -18,7 +18,8 @@ import {
 } from '@talxis/base-controls'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider } from '@talxis/base-controls'
+import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, MemoryTaskStrategy, TaskDataProvider, TaskGrid, TaskGridDatasetControl } from '@talxis/base-controls'
+import { COLUMNS as TASK_COLUMNS, ENTITY_METADATA as TASK_METADATA, getQueryColumns as getTaskColumns, TASKS } from '../task-grid/memoryTaskData'
 import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
@@ -125,6 +126,14 @@ export const GRID_SANDBOX_SCOPE = {
     CheckList,
     sortCheckListProvider,
     CHECK_LIST_LABELS,
+    TaskGrid,
+    TaskGridDatasetControl,
+    TaskDataProvider,
+    MemoryTaskStrategy,
+    TASKS,
+    TASK_COLUMNS,
+    TASK_METADATA,
+    getTaskColumns,
     DataProvider,
     MemoryDataProvider,
     TotalRow,

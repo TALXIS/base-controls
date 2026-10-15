@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const DRIVE_CODE = `import { loadDealColumns, loadDeals, loadDealViews } from './views'
+const DRIVE_CODE = `import { loadDeals, loadDealViews } from './views'
 
 //a toolbar of your own: it talks to the control, and through it to the parts
 const Shortcuts = () => {
@@ -28,7 +28,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} he
             <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
-            <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />
+            <DatasetControl.EditColumns />
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>

@@ -8,17 +8,23 @@ const DESCRIPTION = `
 \`DatasetControl.EditColumns\` is a button that opens the column editor. The user adds, reorders and removes columns, and saving sets them on the provider, which loads again.
 
 \`\`\`tsx
-//the columns of the records themselves, or of a related entity picked in the scope selector
-const loadColumns = async (scope?: IAvailableRelatedColumn): Promise<IColumn[]> => fetchColumns(scope?.relatedEntityName ?? 'deal')
-
 <DatasetControl.Header.End>
-    <DatasetControl.EditColumns onLoadColumns={loadColumns} onLoadScopes={fetchRelatedEntities} />
+    <DatasetControl.EditColumns />
 </DatasetControl.Header.End>
 \`\`\`
 
-- The columns the user can add are what \`onLoadColumns\` returns: called with no scope for the records' own columns, and with the picked scope for a related entity's.
-- With \`onLoadScopes\`, a scope selector lets the user add columns of related records too; without it, there is none. The selector lists exactly what it returns, so include the records' own entity for the user to switch back to.
-- Both are called every time the editor needs them: when it opens, on every search and on every scope picked. The search itself filters what they returned. While they run, the pickers say *Loading...*; when one throws, its error shows in place of the pickers, with *Details* and *Try again*.
+What it offers comes from the provider:
+
+\`\`\`tsx
+//the records' own columns, or a related entity's when entityName is given
+provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => fetchColumns(options?.entityName ?? 'deal')
+//the related entities columns can come from
+provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
+\`\`\`
+
+- The columns the user can add are what the provider's \`getAvailableColumns\` returns: with no entity for the records' own columns, and with the picked entity's name for a related entity's. Code outside the provider can change them through its \`onGetAvailableColumns\` interceptor.
+- When \`getAvailableRelatedColumns\` returns any entities, a scope selector lets the user add columns of related records too. It lists the records' own entity first, to switch back to.
+- The columns are loaded every time the editor needs them: when it opens, on every search and on every scope picked. The search filters what came back. The related entities are loaded once, as the editor opens. While a load runs, the pickers say *Loading...*; when one throws, its error shows in place of the pickers, with *Details* and *Try again*.
 - *Cancel*, or closing the panel, drops the changes.
 - Saving sets the columns on the provider, which loads again and clears the selection. The columns the user chose are kept per view: see [**State**](?path=/docs/datasetcontrol-state--overview).
 
@@ -28,8 +34,6 @@ const loadColumns = async (scope?: IAvailableRelatedColumn): Promise<IColumn[]> 
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`onLoadColumns\` | \`(scope?: IAvailableRelatedColumn) => Promise<IColumn[]>\` | Required | The columns the user can add. |
-| \`onLoadScopes\` | \`() => Promise<IAvailableRelatedColumn[]>\` | None | The entities columns can come from, the records' own included. Shows the scope selector. |
 | \`labels\` | \`Partial<IEditColumnsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
 | \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
 

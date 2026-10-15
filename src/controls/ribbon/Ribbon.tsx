@@ -15,8 +15,8 @@ import { RibbonUi } from "./ui";
 const SHIMMER_WIDTH = 208;
 
 export interface IRibbonProps {
-    /** Called at mount and on every `reload()`. */
-    onLoad: () => Promise<IRibbonCommand[]>;
+    /** Called at mount and on every `reload()`; the commands registered through `registerCommands` follow. */
+    onLoad?: () => Promise<IRibbonCommand[]>;
     /** Disables every command, such as while the data behind them loads. */
     disabled?: boolean;
     /** Which side the commands are drawn against; defaults to `'start'`. */
@@ -32,7 +32,7 @@ export interface IRibbonProps {
 /** A command bar of the commands `onLoad` returns, each run when clicked. */
 export const Ribbon = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
-    const runtime = useMemo(() => new RibbonRuntime({ onLoad: () => propsRef.current.onLoad() }), []);
+    const runtime = useMemo(() => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (() => propsRef.current.onLoad!()) }), []);
     const styles = useMemo(() => getRibbonStyles(props.align ?? 'start'), [props.align]);
     const { rerender } = useRerender();
     const { loadingBoundary, errorMessage, ...commandBar } = props.components ?? {};

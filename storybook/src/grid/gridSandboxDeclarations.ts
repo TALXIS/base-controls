@@ -3493,11 +3493,13 @@ interface IRibbonRuntime {
     isRunning(commandId: string): boolean;
     /** Calls onLoad again; the latest call's commands win. */
     reload(): Promise<void>;
+    /** Registers a hook over the commands, run after onLoad on every load; call reload to apply it now. A higher priority gets the later word. Returns what takes it back off. */
+    registerCommands(hook: (commands: IRibbonCommand[]) => void, priority?: number): () => void;
 }
 
 interface IRibbonProps {
-    /** Called at mount and on every reload(). */
-    onLoad: () => Promise<IRibbonCommand[]>;
+    /** Called at mount and on every reload(); the commands registered through registerCommands follow. */
+    onLoad?: () => Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
     /** Disables every command, such as while the data behind them loads. */
@@ -3708,10 +3710,6 @@ interface IDatasetControlNamespace {
     EmptyRecords: (props: { children?: React.ReactNode; labels?: Partial<{ noRecordsFound: string }>; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: (props: {
-        /** The columns the user can add: the records' own when scope is undefined. */
-        onLoadColumns: (scope?: IAvailableRelatedColumn) => Promise<IColumn[]>;
-        /** The related entities columns can come from; shows the scope selector. */
-        onLoadScopes?: () => Promise<IAvailableRelatedColumn[]>;
         labels?: Partial<IEditColumnsLabels>;
         components?: IEditColumnsComponents;
     }) => JSX.Element;
@@ -3733,5 +3731,84 @@ declare const useDatasetControl: () => IDatasetControl;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
 /** The view switcher's default slots, to render the default button with your own items. */
 declare const ViewSwitcherUiComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };
+
+
+/** Which columns of a task record hold what the task grid works with. */
+interface IFieldMapping {
+    /** The lookup to the parent task, which makes the tree. */
+    parentId: string;
+    subject: string;
+    /** The order among siblings, compared as text. */
+    stackRank: string;
+    /** 0 is active. */
+    stateCode: string;
+    startDate?: string;
+    endDate?: string;
+    percentComplete?: string;
+}
+
+/** A view of the tasks: what the view switcher lists and what the provider starts with. */
+interface ITaskView extends IDatasetControlView {
+    columns: IColumn[];
+    sorting?: { name: string; sortDirection: number }[];
+    filtering?: any;
+    quickFindColumns?: string[];
+    /** Lists the matching tasks on their own, without the tree, until the user changes it. */
+    isFlatList?: boolean;
+}
+
+/** Where the tasks come from and how changing them is persisted. */
+interface ITaskStrategy {
+    onGetAvailableColumns(): Promise<IColumn[]>;
+    [member: string]: any;
+}
+
+/** Every task of a view, loaded at once through a strategy and shown as a tree. */
+declare class TaskDataProvider {
+    constructor(parameters: { strategy: ITaskStrategy; fieldMapping: IFieldMapping; view?: ITaskView; rootTaskId?: string });
+}
+
+/** Tasks held in memory; what the user changes stays for every view this strategy loads. */
+declare class MemoryTaskStrategy implements ITaskStrategy {
+    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; onGetNewTaskDefaults?: (parentId?: string) => Partial<IRawRecord> });
+    onGetAvailableColumns(): Promise<IColumn[]>;
+    getRecords(): IRawRecord[];
+}
+
+/** The running task grid. */
+interface ITaskGrid {
+    readonly grid: IGrid;
+    createTask(parentId?: string): Promise<void>;
+    deleteTasks(taskIds: string[]): Promise<void>;
+    openTasks(taskIds: string[]): Promise<void>;
+    isFlatList(): boolean;
+    setFlatList(isFlatList: boolean): void;
+}
+
+interface ITaskGridProps extends Omit<IGridProps, 'modules' | 'onReady' | 'onDestroyed'> {
+    /** The grid's modules except the row model, grouping and aggregation. */
+    modules?: Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation'>;
+    /** Whether tasks can be moved by dragging their rows. */
+    enableRowDragging?: boolean;
+    /** Whether the New command and the add-task buttons are there. */
+    enableTaskCreation?: boolean;
+    onReady?: (taskGrid: ITaskGrid) => void;
+    onDestroyed?: (taskGrid: ITaskGrid) => void;
+}
+
+/** A grid of tasks shown as a tree; reads its TaskDataProvider from the DatasetControl around it. */
+declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
+/** The parts of a DatasetControl that wraps a task grid. */
+declare const TaskGridDatasetControl: {
+    /** A menu of the task grid's toggles, such as Show hierarchy; goes in the header. */
+    Settings: (props: {}) => JSX.Element;
+};
+
+/** The sample tasks: 108 tasks over seven projects. */
+declare const TASKS: IRawRecord[];
+declare const TASK_COLUMNS: IColumn[];
+declare const TASK_METADATA: IMemoryProviderEntityMetadata;
+/** Every task column, with the ones not named hidden. */
+declare const getTaskColumns: (...visibleColumnNames: string[]) => IColumn[];
 
 `

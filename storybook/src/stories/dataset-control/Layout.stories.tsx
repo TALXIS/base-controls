@@ -15,7 +15,7 @@ The control is laid out in *regions*: a header above the records, a body that ho
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.Ribbon onLoad={loadCommands} />
-            <DatasetControl.EditColumns onLoadColumns={loadColumns} />
+            <DatasetControl.EditColumns />
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>

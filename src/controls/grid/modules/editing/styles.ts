@@ -7,11 +7,12 @@ export const getGridEditingStyles = (theme: ITheme): IStyle => ({
     '.ag-cell.ag-cell-inline-editing .ag-cell-wrapper > *': {
         height: '100%',
     },
-    //a record locked as a whole is dimmed as one row, over its cells
+    //above the pinned cells' wrapper, which AG Grid stacks at 2 over the row
     [`.ag-row.${LOCKED_RECORD_ROW_CLASS}::after`]: {
         content: '""',
         position: 'absolute',
         inset: 0,
+        zIndex: 3,
         pointerEvents: 'none',
         backgroundColor: theme.semanticColors.disabledBackground,
         opacity: 0.3,

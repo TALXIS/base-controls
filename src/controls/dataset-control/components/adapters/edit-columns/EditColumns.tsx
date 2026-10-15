@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { DatasetConstants, IAvailableRelatedColumn, IColumn } from "@talxis/client-libraries";
-import { useEventEmitter, useLatest } from "@hooks";
+import { useEventEmitter } from "@hooks";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
@@ -8,7 +8,7 @@ import { ErrorBoundary, LocalizationService, useDataProvider } from "@utils";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { EDIT_COLUMNS_LABELS, IEditColumnsLabels } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "./DatasetControlEditColumns";
-import { IDatasetControlEditColumnsLoaders, IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
+import { IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
 
 /** Replacements for the pieces of the column editor. */
 export interface IEditColumnsComponents {
@@ -26,8 +26,8 @@ export interface IEditColumnsComponents {
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }
 
-/** Props for `DatasetControl.EditColumns`. */
-export interface IEditColumnsProps extends IDatasetControlEditColumnsLoaders {
+/** Props for `DatasetControl.EditColumns`; the columns and related entities it offers come from the provider. */
+export interface IEditColumnsProps {
     /** Overrides for the editor's strings; read once, at mount. */
     labels?: Partial<IEditColumnsLabels>;
     /** Replacements for the editor's pieces. */
@@ -40,13 +40,7 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProvider();
-    const propsRef = useLatest(props);
-    const editColumns = useMemo(() => new DatasetControlEditColumns({
-        services: runtime.services,
-        provider,
-        onLoadColumns: scope => propsRef.current.onLoadColumns(scope),
-        onLoadScopes: props.onLoadScopes && (() => propsRef.current.onLoadScopes!()),
-    }), []);
+    const editColumns = useMemo(() => new DatasetControlEditColumns({ services: runtime.services, provider }), []);
     const labels = useMemo(() => new LocalizationService<IEditColumnsLabels>({ ...EDIT_COLUMNS_LABELS, ...props.labels }), [props.labels]);
     const components = props.components ?? NO_COMPONENTS;
     const { rerender } = useRerender();
@@ -61,6 +55,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onColumnAdded', setAddedColumn);
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onScopeChanged', () => setScopeVersion(version => version + 1));
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onLoadFailed', rerender);
+    useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onScopesLoaded', rerender);
     useEffect(() => () => editColumns.destroy(), []);
 
     const retry = () => {

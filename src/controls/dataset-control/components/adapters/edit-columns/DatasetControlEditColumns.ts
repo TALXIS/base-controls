@@ -1,7 +1,7 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
 import { IEventSubscriber } from "@utils";
 import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
-import { DatasetControlEditColumnsSession, IDatasetControlEditColumnsLoaders } from "./DatasetControlEditColumnsSession";
+import { DatasetControlEditColumnsSession } from "./DatasetControlEditColumnsSession";
 
 /** What the column editor raises. */
 export interface IDatasetControlEditColumnsEvents {
@@ -9,7 +9,7 @@ export interface IDatasetControlEditColumnsEvents {
     onOpenChanged: () => void;
 }
 
-export interface IDatasetControlEditColumnsParameters extends IDatasetControlEditColumnsLoaders {
+export interface IDatasetControlEditColumnsParameters {
     services: IDatasetControlServiceLocator;
     provider: IDataProvider;
 }
@@ -34,12 +34,10 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;
     private _session?: DatasetControlEditColumnsSession;
-    private _loaders: IDatasetControlEditColumnsLoaders;
 
     constructor(parameters: IDatasetControlEditColumnsParameters) {
         this._services = parameters.services;
         this._provider = parameters.provider;
-        this._loaders = { onLoadColumns: parameters.onLoadColumns, onLoadScopes: parameters.onLoadScopes };
         this._services.register('editColumns', () => this);
     }
 
@@ -52,7 +50,7 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         if (this._session) {
             return;
         }
-        this._session = new DatasetControlEditColumnsSession({ provider: this._provider, ...this._loaders });
+        this._session = new DatasetControlEditColumnsSession({ provider: this._provider });
         this.events.dispatchEvent('onOpenChanged');
     }
 

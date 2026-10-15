@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const SELECTED_VALUE_CODE = `import { loadDealColumns, loadDeals, loadDealViews } from './views'
+const SELECTED_VALUE_CODE = `import { loadDeals, loadDealViews } from './views'
 
 //a part of your own: the total value of the selected deals
 const SelectedValue = () => {
@@ -17,7 +17,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} he
             <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
-            <DatasetControl.EditColumns onLoadColumns={loadDealColumns} />
+            <DatasetControl.EditColumns />
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
