@@ -1,6 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
-import { IGridAgGridInitialOptions, IGridAgGridOptions, IGridStyles, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { ThemeBuilder } from "@theme";
+import { IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
@@ -11,7 +12,7 @@ import { TaskTreeDragging } from "./TaskTreeDragging";
 import { TreeCell } from "./tree-cell";
 import { AddTaskCell } from "./add-task-cell";
 import { ExpansionHeader } from "./expansion-header";
-import { ADD_TASK_COLUMN_KEY, TASK_ROW_CLASS_NAMES } from "./constants";
+import { ADD_TASK_COLUMN_KEY } from "./constants";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
 
@@ -46,8 +47,7 @@ export class TaskTree {
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_MODULE_PRIORITY.tree);
         this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_MODULE_PRIORITY.tree);
         services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_MODULE_PRIORITY.tree);
-        services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_MODULE_PRIORITY.tree);
-        this._registerRowClasses();
+        services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_MODULE_PRIORITY.tree);
         parameters.runtime.registerSettings(this._addSettings);
 
         services.whenAvailable('gridApi', this._onGridApi);
@@ -127,18 +127,11 @@ export class TaskTree {
         columnDefs.sort((left, right) => getOrder(left) - getOrder(right));
     };
 
-    private _registerRowClasses(): void {
-        const rows = this._grid.services.get('rows');
-        const tree = this._provider.getRecordTree();
-        rows.registerRowClass(TASK_ROW_CLASS_NAMES.unmatchedParent, ({ record }) => !tree.view.isMatching(record.getRecordId()));
-    }
-
-    private _onStyles = (result: IGridStyles): void => {
-        result.styles.push({
-            selectors: {
-                [`.${TASK_ROW_CLASS_NAMES.unmatchedParent} .ag-cell`]: { fontStyle: 'italic' },
-            },
-        });
+    //an unmatched parent is shown only because something under it matched
+    private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
+        if (params.columnName === this._provider.getFieldMapping().subject && !this._provider.getRecordTree().view.isMatching(params.record.getRecordId())) {
+            theme.edit('taskGrid|unmatchedParent', result => { result.fonts.medium.fontStyle = 'italic'; });
+        }
     };
 
     //the same array until the rows change, so AG Grid is not handed new rows on every refresh
