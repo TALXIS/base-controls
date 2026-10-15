@@ -3637,6 +3637,8 @@ interface IDatasetControlProps {
     destroyProviderOnUnmount?: boolean;
     labels?: Partial<IDatasetControlLabels>;
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
+    /** A stable component wrapping each mount's content, rendered before its load. */
+    scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called once the control exists, before the first load. */
     onReady?: (control: IDatasetControl) => void;
     onDestroyed?: (control: IDatasetControl) => void;

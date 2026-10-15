@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { DataProviderContext, ErrorBoundary } from "@utils";
@@ -38,19 +38,22 @@ export const DatasetControlMount = (props: IDatasetControlMountProps) => {
     }, []);
 
     const { errorMessage, skeleton, ...container } = props.components ?? {};
+    const Scope = props.scope ?? Fragment;
 
     return <DatasetControlRuntimeContext.Provider value={runtime}>
         <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
-            <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-                <ErrorBoundary
-                    error={runtime.getError()}
-                    onRetry={() => runtime.retry()}
-                    components={errorMessage}>
-                    <Skeleton components={skeleton}>
-                        {props.children}
-                    </Skeleton>
-                </ErrorBoundary>
-            </DatasetControlUi.Container>
+            <Scope>
+                <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
+                    <ErrorBoundary
+                        error={runtime.getError()}
+                        onRetry={() => runtime.retry()}
+                        components={errorMessage}>
+                        <Skeleton components={skeleton}>
+                            {props.children}
+                        </Skeleton>
+                    </ErrorBoundary>
+                </DatasetControlUi.Container>
+            </Scope>
         </DataProviderContext.Provider>
     </DatasetControlRuntimeContext.Provider>;
 };

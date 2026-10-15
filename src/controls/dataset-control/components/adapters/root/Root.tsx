@@ -24,6 +24,8 @@ export interface IDatasetControlProps {
     labels?: Partial<IDatasetControlLabels>;
     /** Replacements for the box, the skeleton and the error. */
     components?: IDatasetControlComponents;
+    /** A stable component wrapping each mount's content, rendered before its load. */
+    scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called on every mount, before its load; a view switch, reload or retry mounts the control anew. */
     onReady?: (control: IDatasetControl) => void;
     /** Called as each mount goes, while its provider still holds its data. */
