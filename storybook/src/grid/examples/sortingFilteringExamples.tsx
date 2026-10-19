@@ -89,18 +89,18 @@ const SAVED_VIEWS: ISavedView[] = [
 
 //every view loads a provider of its own, sorted and filtered the way the view says
 const loadView = async (parameters: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-    const view = SAVED_VIEWS.find(view => view.id === parameters.viewId) ?? SAVED_VIEWS[0]
+    const view = SAVED_VIEWS.find(view => view.id === parameters.view?.id) ?? SAVED_VIEWS[0]
     const tickets = createTicketsProvider()
     view.apply(tickets)
-    return { provider: tickets, viewId: view.id }
+    return { provider: tickets }
 }
 
 const loadViews = async (): Promise<IDatasetControlView[]> => SAVED_VIEWS.map(view => ({ id: view.id, name: view.name }))
 
-const GridExample = () => <DatasetControl stateKey='ticket-views' onLoad={loadView}>
+const GridExample = () => <DatasetControl onLoadViews={loadViews} stateKey='ticket-views' onLoad={loadView}>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>

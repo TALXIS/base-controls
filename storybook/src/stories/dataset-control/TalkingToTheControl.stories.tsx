@@ -31,8 +31,9 @@ const controlRef = React.useRef<IDatasetControl>()
 | Member | Description |
 |---|---|
 | \`loadView(viewId)\` | Loads the view through \`onLoad\`, as picking it in the view switcher does. |
-| \`reload()\` | Loads the view shown again, on a new provider. |
+| \`reload()\` | Loads the views and the view shown again, on a new provider. |
 | \`retry()\` | Runs the load that failed again. |
+| \`getViews()\` | The views \`onLoadViews\` returned for this mount. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
 | \`getViewId()\` | The view shown. |
 | \`getProvider()\` | The provider shown. Inside the control, \`useDataProvider()\` returns it too. |
 | \`isLoading()\` | Whether a load is running. |
@@ -56,7 +57,7 @@ quickFind.search()
 
 | Key | Part | Description |
 |---|---|---|
-| \`viewSwitcher\` | [**Views**](?path=/docs/datasetcontrol-parts-views--overview) | List the views, pick one, load the list again. |
+| \`viewSwitcher\` | [**Views**](?path=/docs/datasetcontrol-views--overview) | List the views and pick one. |
 | \`ribbon\` | [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview) | Load the commands again, see which are running. |
 | \`quickFind\` | [**Quick find**](?path=/docs/datasetcontrol-parts-quick-find--overview) | Set the query and search. |
 | \`editColumns\` | [**Edit columns**](?path=/docs/datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor. |

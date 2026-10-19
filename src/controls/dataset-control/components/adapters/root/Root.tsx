@@ -1,15 +1,19 @@
 import { useMemo, useState } from "react";
 import { StateStore, useStateStore } from "@utils";
-import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "../../../runtime";
+import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModules, IDatasetControlView } from "../../../runtime";
 import { DatasetControlState } from "../../../runtime/DatasetControlState";
 import { IDatasetControlLabels } from "./labels";
 import { IDatasetControlComponents } from "./components";
 import { DatasetControlMount } from "./DatasetControlMount";
 
 /** Props for `DatasetControl`. */
-export interface IDatasetControlProps {
-    /** Loads the provider for the view and whatever it needs, behind the skeleton; called at mount and on every view switch. */
-    onLoad: (parameters: IDatasetControlLoadParameters) => Promise<IDatasetControlLoadResult>;
+export interface IDatasetControlProps<TData = unknown> {
+    /** The control's modules; read on every mount. */
+    modules?: IDatasetControlModules<TData>;
+    /** The views to switch between; called before `onLoad` on every mount. */
+    onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
+    /** Loads the provider for the view the control resolved, behind the skeleton; called on every mount. */
+    onLoad: (parameters: IDatasetControlLoadParameters<TData>) => Promise<IDatasetControlLoadResult>;
     /** The parts, laid out in its header, body and footer. */
     children: React.ReactNode;
     /** `'100%'` fills the parent; the content's height when left out. */
@@ -27,17 +31,18 @@ export interface IDatasetControlProps {
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called on every mount, before its load; a view switch, reload or retry mounts the control anew. */
-    onReady?: (control: IDatasetControl) => void;
+    onReady?: (control: IDatasetControl<TData>) => void;
     /** Called as each mount goes, while its provider still holds its data. */
-    onDestroyed?: (control: IDatasetControl) => void;
+    onDestroyed?: (control: IDatasetControl<TData>) => void;
 }
 
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
-export const Root = (props: IDatasetControlProps) => {
+export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
     const stateStore = useStateStore();
     const state = useMemo(() => new DatasetControlState({ store: props.stateKey ? stateStore.scope(props.stateKey) : new StateStore() }), []);
     //React keys can't be symbols
     const [mountKey, setMountKey] = useState(() => crypto.randomUUID());
 
-    return <DatasetControlMount key={mountKey} {...props} state={state} onRemount={() => setMountKey(crypto.randomUUID())} />;
+    //the mount never reads view data
+    return <DatasetControlMount key={mountKey} {...props as IDatasetControlProps} state={state} onRemount={() => setMountKey(crypto.randomUUID())} />;
 };

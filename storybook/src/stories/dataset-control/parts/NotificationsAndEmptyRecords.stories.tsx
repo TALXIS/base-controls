@@ -39,7 +39,7 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 |---|---|---|---|
 | \`messages\` | \`INotificationMessage[]\` | None | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
 | \`labels\` | \`Partial<IDatasetControlNotificationsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 \`EmptyRecords\`:
 
@@ -47,7 +47,7 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 |---|---|---|---|
 | \`children\` | \`ReactNode\` | None | What shows the records, drawn while there are some. |
 | \`labels\` | \`Partial<IEmptyRecordsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 

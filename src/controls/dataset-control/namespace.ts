@@ -10,6 +10,7 @@ import { Pagination } from './components/adapters/pagination';
 import { PageSizeSwitcher } from './components/adapters/page-size-switcher';
 import { EmptyRecords } from './components/adapters/empty-records';
 import { EditColumns } from './components/adapters/edit-columns';
+import { UserQueries } from './modules/user-queries/components/adapters/user-queries';
 import { DatasetControlUi, IDatasetControlUi } from './components/ui';
 
 /** The parts of the control, attached to the control itself. */
@@ -36,6 +37,8 @@ export interface IDatasetControlParts {
     EmptyRecords: typeof EmptyRecords;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: typeof EditColumns;
+    /** Saving and managing the user's own views; goes inside `ViewSwitcher`, with the user queries module. */
+    UserQueries: typeof UserQueries;
     /** The parts as plain UI, with no control behind them. */
     Ui: IDatasetControlUi;
 }
@@ -56,5 +59,6 @@ export const DatasetControl: IDatasetControlNamespace = Object.assign(Root, {
     PageSizeSwitcher,
     EmptyRecords,
     EditColumns,
+    UserQueries,
     Ui: DatasetControlUi,
 });

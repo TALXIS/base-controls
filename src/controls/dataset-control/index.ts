@@ -1,7 +1,10 @@
 export * from './namespace';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQuerySaveParameters, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
-    IDatasetControlView, IDatasetControlProviderState,
+    IDatasetControlView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModules,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';
 export { useDatasetControlHeader } from './components/ui/header';
@@ -28,7 +31,7 @@ export type { IDatasetControlRegion } from './components/adapters/region';
 export { useDatasetControlRegion } from './components/adapters/region';
 export type { IBodyProps as IDatasetControlBodyProps } from './components/adapters/body';
 export type { IFooterProps as IDatasetControlFooterProps, IFooterStartProps as IDatasetControlFooterStartProps, IFooterEndProps as IDatasetControlFooterEndProps } from './components/adapters/footer';
-export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from './components/adapters/view-switcher';
+export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcher, ViewSwitcherItemsHook } from './components/adapters/view-switcher';
 export type { IDatasetControlRibbonProps } from './components/adapters/ribbon';
 export type { IQuickFindProps, IDatasetControlQuickFind, IDatasetControlQuickFindEvents } from './components/adapters/quick-find';
 export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotifications, IDatasetControlNotificationsEvents } from './components/adapters/notifications';

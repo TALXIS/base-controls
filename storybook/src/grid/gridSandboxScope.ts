@@ -14,9 +14,11 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderContextProvider, DatasetControl, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useCompact, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
+    CommandBar, DataProviderContextProvider, DatasetControl, createUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useCompact, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridService, usePcfContext,
 } from '@talxis/base-controls'
+import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
+import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, MemoryTaskStrategy, TaskDataProvider, TaskGrid, TaskGridDatasetControl } from '@talxis/base-controls'
 import { COLUMNS as TASK_COLUMNS, ENTITY_METADATA as TASK_METADATA, getQueryColumns as getTaskColumns, TASKS } from '../task-grid/memoryTaskData'
@@ -40,6 +42,7 @@ export const GRID_SANDBOX_SCOPE = {
     useDataProvider,
     useDataProviderEvents,
     DatasetControl,
+    createUserQueriesModule,
     useDatasetControl,
     useCompact,
     useDatasetControlHeader,
@@ -176,4 +179,11 @@ export const GRID_SANDBOX_SCOPE = {
     TextField,
     Toggle,
     TooltipHost,
+}
+
+/** The packages a snippet may import by name, as real code would. */
+export const GRID_SANDBOX_PACKAGES: { [name: string]: { [name: string]: unknown } } = {
+    '@fluentui/react-components': FluentV9,
+    //the icons the examples use, so the whole icon set stays out of the bundle
+    '@fluentui/react-icons': { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular },
 }

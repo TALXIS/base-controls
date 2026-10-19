@@ -16,7 +16,24 @@ const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 };
 
+//Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
+const guardPrototypeFocus = () => {
+  const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'focus');
+  if (!descriptor?.get || descriptor.get.name === 'guardedFocus') {
+    return {};
+  }
+  const get = descriptor.get;
+  Object.defineProperty(HTMLElement.prototype, 'focus', {
+    ...descriptor,
+    get: function guardedFocus(this: HTMLElement) {
+      return get.call(this === HTMLElement.prototype ? document.createElement('div') : this);
+    },
+  });
+  return {};
+};
+
 const preview: Preview = {
+  loaders: [guardPrototypeFocus],
   decorators: [
     (Story) => (
       <PcfContextProvider>
@@ -107,14 +124,15 @@ const preview: Preview = {
           [
             'Get started',
             'Loading data',
+            'Error handling',
+            'Views',
             'Layout',
             'Talking to the control',
             'Parts',
-            ['Views', 'Ribbon', 'Quick find', 'Edit columns', 'Paging', 'Notifications and empty records'],
+            ['Ribbon', 'Quick find', 'Edit columns', 'Paging', 'Notifications and empty records'],
             'State',
+            'Your own UI',
             'Localization',
-            'Appearance',
-            'Your own parts',
             'Dev',
           ],
           'Task Grid',

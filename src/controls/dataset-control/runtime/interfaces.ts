@@ -9,15 +9,25 @@ import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } 
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
 import type { IRibbonRuntime } from "@controls/ribbon";
+import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
+import type { IUserQueriesModule } from "../modules/user-queries/interfaces";
+
+/** A header views are listed under in the view switcher. */
+export interface IDatasetControlViewGroup {
+    id: string;
+    name: string;
+}
 
 /** A view the user can switch to. */
-export interface IDatasetControlView {
+export interface IDatasetControlView<TData = unknown> {
     /** The id `onLoad` is called with. */
     id: string;
     /** Shown in the view switcher. */
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
-    group?: string;
+    group?: IDatasetControlViewGroup;
+    /** What `onLoad` needs to build the view, user views included. */
+    data?: TData;
 }
 
 /** What the control raises as it loads and goes. */
@@ -53,14 +63,31 @@ export interface IDatasetControlPartMap {
 /** Looks up the parts rendered right now. */
 export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'whenAvailable'>;
 
+/** A feature of the control, registered on every mount. */
+export interface IDatasetControlModule {
+    onRegister?(datasetControl: IDatasetControlRuntime): void;
+}
+
+/** The modules a DatasetControl is given. */
+export interface IDatasetControlModules<TData = unknown> {
+    /** The user's own views. */
+    userQueries?: IUserQueriesModule<TData>;
+    /** Registered after the named modules, in order. */
+    custom?: IDatasetControlModule[];
+}
+
 /** The DatasetControl as its consumer drives it. */
-export interface IDatasetControl {
+export interface IDatasetControl<TData = unknown> {
     /** Subscribe to the control's events. */
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     /** The parts rendered inside the control. */
     readonly parts: IDatasetControlPartLocator;
+    /** What modules draw in the control. */
+    readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, from the last load that succeeded. */
     getProvider(): IDataProvider | undefined;
+    /** The views of this mount, from `onLoadViews`; empty before they loaded. */
+    getViews(): IDatasetControlView<TData>[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** Whether a load is running. */
@@ -78,6 +105,7 @@ export interface IDatasetControl {
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     runtime: IDatasetControlRuntime;
     labels: ILocalizationService<IDatasetControlLabels>;
+    surfaces: DatasetControlSurfaces;
     viewSwitcher: DatasetControlViewSwitcher;
     quickFind: DatasetControlQuickFind;
     pagination: DatasetControlPagination;

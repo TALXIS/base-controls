@@ -26,6 +26,7 @@ Every string the control and its parts show can be replaced through their \`labe
 |---|---|---|
 | \`DatasetControl\` | \`unsavedChangesConfirmation\` | \`DATASET_CONTROL_LABELS\` |
 | \`ViewSwitcher\` | \`ungroupedViewsHeader\` | \`VIEW_SWITCHER_LABELS\` |
+| \`createUserQueriesModule\` | \`myViewsHeader\`, \`saveChanges\`, \`saveAsNewView\`, \`manageViews\`, \`viewName\` (the prompt for a new view's name), \`save\`, \`delete\`, \`confirmDeleteViews\`, \`close\`, \`saveFailed\` and \`deleteFailed\` (when a failed save or delete gives no reason) | \`USER_QUERIES_LABELS\` |
 | \`QuickFind\` | \`searchPlaceholder\` (with \`{{ collection }}\`), \`defaultCollectionName\`, \`leadingWildcardWarning\`, \`columnsHintStart\`, \`columnsHintOperator\`, \`columnsHintEnd\` | \`QUICK_FIND_LABELS\` |
 | \`EditColumns\` | \`editColumns\`, \`save\`, \`cancel\`, \`scopeSelectorLabel\`, \`columnSelectorPlaceholder\`, \`customColumnTooltip\`, \`unnamed\`, \`noResults\`, \`loading\` | \`EDIT_COLUMNS_LABELS\` |
 | \`Notifications\` | \`groupedNotificationsSummary\` (with \`{{ count }}\`) | \`DATASET_CONTROL_NOTIFICATIONS_LABELS\` |
@@ -33,7 +34,7 @@ Every string the control and its parts show can be replaced through their \`labe
 | \`Pagination\` | \`firstPageTooltip\`, \`previousPageTooltip\`, \`nextPageTooltip\`, \`currentPage\` (with \`{{ number }}\`) | \`PAGINATION_LABELS\` |
 | \`PageSizeSwitcher\` | \`recordRange\` (with \`{{ start }}\` and \`{{ end }}\`), \`recordTotal\` (with \`{{ total }}\`), \`pageSizeTooltip\` | \`PAGE_SIZE_SWITCHER_LABELS\` |
 
-The grid's strings are the grid's own \`labels\`: see [**Grid › Localization**](?path=/docs/grid-localization--overview). View names come from the view switcher's \`onLoad\`, and column names from the provider.
+The grid's strings are the grid's own \`labels\`: see [**Grid › Localization**](?path=/docs/grid-localization--overview). View names come from \`onLoadViews\`, and column names from the provider.
 `
 
 const meta = {

@@ -2,20 +2,6 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const VIEWS_CODE = `import { loadDeals, loadDealViews } from './views'
-
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
-        </DatasetControl.Header.Start>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: false }) }} />
-    </DatasetControl.Body>
-</DatasetControl>
-`
-
 const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
 const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
@@ -51,10 +37,10 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadSearchabl
 
 const EDIT_COLUMNS_CODE = `import { loadDeals, loadDealViews } from './views'
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns />
@@ -122,7 +108,6 @@ const PAGING_CODE = `const GridExample = () => <DatasetControl stateKey='deals' 
 </DatasetControl>
 `
 
-export const ViewsExample = () => <GridExampleRunner seedCode={withFiles(VIEWS_CODE, VIEWS_FILE)} />
 export const RibbonExample = () => <GridExampleRunner seedCode={withFiles(RIBBON_CODE, RIBBON_FILE)} />
 export const QuickFindExample = () => <GridExampleRunner seedCode={QUICK_FIND_CODE} />
 export const EditColumnsExample = () => <GridExampleRunner seedCode={withFiles(EDIT_COLUMNS_CODE, VIEWS_FILE)} />

@@ -16,7 +16,7 @@ export const useRequiredDatasetControlRuntime = (): IDatasetControlRuntime => {
     return useContextWithNullCheck(DatasetControlRuntimeContext);
 };
 
-/** The `DatasetControl` the component is inside of; throws outside one. */
-export const useDatasetControl = (): IDatasetControl => {
-    return useRequiredDatasetControlRuntime();
+/** The `DatasetControl` the component is inside of, typed by its views' data; throws outside one. */
+export const useDatasetControl = <TData = unknown>(): IDatasetControl<TData> => {
+    return useRequiredDatasetControlRuntime() as IDatasetControl<TData>;
 };

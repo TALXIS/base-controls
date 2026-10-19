@@ -2,22 +2,21 @@ import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } fro
 import { IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
+import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
 /** What `onLoad` is called with. */
-export interface IDatasetControlLoadParameters {
-    /** The view to load; `undefined` on a first load with none kept, for `onLoad` to pick the default. */
-    viewId?: string;
+export interface IDatasetControlLoadParameters<TData = unknown> {
+    /** The view to load: the one asked for or kept, else the first view; `undefined` only when there are no views. */
+    view?: IDatasetControlView<TData>;
 }
 
 /** What `onLoad` returns. */
 export interface IDatasetControlLoadResult {
     /** The provider every part works on. */
     provider: IDataProvider;
-    /** The view `provider` shows, when `onLoad` picked the default. */
-    viewId?: string;
 }
 
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
@@ -41,10 +40,12 @@ export interface IDatasetControlRuntimeParameters {
 export class DatasetControlRuntime implements IDatasetControlRuntime {
     public readonly events: IEventEmitter<IDatasetControlEvents> = new EventEmitter<IDatasetControlEvents>();
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
+    private _surfaces = new DatasetControlSurfaces();
     private _onGetProps: () => IDatasetControlProps;
     private _state: DatasetControlState;
     private _onRemount: () => void;
     private _provider?: IDataProvider;
+    private _views: IDatasetControlView[] = [];
     private _viewId?: string;
     private _requestedViewId?: string;
     private _isLoading = false;
@@ -59,7 +60,12 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
         this._services.register('labels', () => labels);
+        this._services.register('surfaces', () => this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this, labels });
+        const { userQueries, custom = [] } = props.modules ?? {};
+        for (const module of [userQueries, ...custom]) {
+            module?.onRegister?.(this);
+        }
     }
 
     public get services(): IDatasetControlServiceLocator {
@@ -70,8 +76,16 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._services;
     }
 
+    public get surfaces(): IDatasetControlSurfaces {
+        return this._surfaces;
+    }
+
     public getProvider(): IDataProvider | undefined {
         return this._provider;
+    }
+
+    public getViews(): IDatasetControlView[] {
+        return this._views;
     }
 
     public getViewId(): string | undefined {
@@ -95,7 +109,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public async load(): Promise<void> {
-        await this._load({ viewId: this._state.getViewId() });
+        await this._load(this._state.getViewId());
     }
 
     public async loadView(viewId: string): Promise<void> {
@@ -141,16 +155,23 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._onRemount();
     }
 
-    private async _load(parameters: IDatasetControlLoadParameters): Promise<void> {
+    private async _load(requestedViewId: string | undefined): Promise<void> {
         this._isLoading = true;
-        this._requestedViewId = parameters.viewId;
+        this._requestedViewId = requestedViewId;
         this._error = undefined;
         this.events.dispatchEvent('onLoadStarted');
         let result: IDatasetControlLoadResult | undefined;
+        let viewId: string | undefined;
         try {
-            result = await this._onGetProps().onLoad(parameters);
+            this._views = await this._onGetProps().onLoadViews?.() ?? [];
+            const userQueries = this._services.find('userQueries');
+            if (userQueries) {
+                this._views = [...this._views, ...await userQueries.load()];
+            }
+            viewId = this._resolveViewId(requestedViewId);
+            result = await this._onGetProps().onLoad({ view: this._views.find(view => view.id === viewId) });
             const provider = result.provider;
-            this._state.restore(provider, result.viewId ?? parameters.viewId);
+            this._state.restore(provider, viewId);
             //onLoad may have prepared and started the first load itself
             if (!provider.isFirstLoadRequested()) {
                 await provider.preload();
@@ -168,14 +189,18 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             this._releaseProvider(result.provider);
             return;
         }
-        this._onLoaded(result, parameters);
+        this._onLoaded(result, viewId);
     }
 
-    private _onLoaded(result: IDatasetControlLoadResult, parameters: IDatasetControlLoadParameters): void {
+    //a kept view may have been removed since
+    private _resolveViewId(viewId: string | undefined): string | undefined {
+        return this._views.some(view => view.id === viewId) ? viewId : this._views[0]?.id;
+    }
+
+    private _onLoaded(result: IDatasetControlLoadResult, viewId: string | undefined): void {
         this._provider = result.provider;
-        this._viewId = result.viewId ?? parameters.viewId;
-        //onLoad may have picked the view
-        this._state.setViewId(this._viewId);
+        this._viewId = viewId;
+        this._state.setViewId(viewId);
         this._isLoading = false;
         this.events.dispatchEvent('onLoaded', result.provider);
     }

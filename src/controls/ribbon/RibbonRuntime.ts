@@ -8,6 +8,8 @@ export interface IRibbonRuntimeEvents {
     /** Fired when a load finishes, whether it returned commands or threw. */
     onLoaded: () => void;
     onBeforeExecute: (command: IRibbonCommand) => void;
+    /** Fired when `onExecute` throws, before `onAfterExecute`. */
+    onExecuteFailed: (command: IRibbonCommand, error: unknown) => void;
     /** Fired once `onExecute` settles, whether it resolved or threw. */
     onAfterExecute: (command: IRibbonCommand) => void;
 }
@@ -95,7 +97,7 @@ export class RibbonRuntime implements IRibbonRuntime {
             await command.onExecute();
         }
         catch (error) {
-            console.error(error);
+            this.events.dispatchEvent('onExecuteFailed', command, error);
         }
         this._runningCommandIds.delete(command.id);
         this.events.dispatchEvent('onAfterExecute', command);

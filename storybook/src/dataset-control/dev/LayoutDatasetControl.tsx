@@ -26,7 +26,7 @@ const loadCommands = async () => COMMANDS
 export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
     const modules = React.useMemo(() => ({ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }), [])
     const ribbon = <DatasetControl.Ribbon onLoad={loadCommands} />
-    const start = [props.viewSwitcher && <DatasetControl.ViewSwitcher key='viewSwitcher' onLoad={loadDealViews} />, props.ribbon === 'start' && React.cloneElement(ribbon, { key: 'ribbon' })].filter(Boolean)
+    const start = [props.viewSwitcher && <DatasetControl.ViewSwitcher key='viewSwitcher' />, props.ribbon === 'start' && React.cloneElement(ribbon, { key: 'ribbon' })].filter(Boolean)
     const footerIn = (region: 'start' | 'end') => [props.pagination === region && <DatasetControl.Pagination key='pagination' />, props.pageSizeSwitcher === region && <DatasetControl.PageSizeSwitcher key='pageSizeSwitcher' />].filter(Boolean)
     const footerStart = footerIn('start')
     const footerEnd = footerIn('end')
@@ -34,7 +34,7 @@ export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
 
     return <PcfContextProvider>
         <div style={{ width: props.width }}>
-            <DatasetControl stateKey='deals' onLoad={loadDeals} height='520px'>
+            <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='520px'>
                 {(start.length > 0 || end.length > 0) && <DatasetControl.Header>
                     {start.length > 0 && <DatasetControl.Header.Start>{start}</DatasetControl.Header.Start>}
                     {end.length > 0 && <DatasetControl.Header.End>{end}</DatasetControl.Header.End>}

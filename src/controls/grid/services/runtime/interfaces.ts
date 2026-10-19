@@ -32,3 +32,10 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
     /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
 }
+
+declare module "@controls/dataset-control/runtime/interfaces" {
+    interface IDatasetControlPartMap {
+        /** The Grid in the body, while one is drawn. */
+        grid: IGrid;
+    }
+}

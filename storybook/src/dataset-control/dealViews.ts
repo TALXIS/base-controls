@@ -16,7 +16,7 @@ const DEAL_VIEWS: IDealView[] = [
         columns: ['name', 'owner', 'value', 'closedate'],
         filtering: { filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: '4' }] },
     },
-    { id: 'biggest', name: 'Biggest deals', group: 'My views', columns: ['name', 'value', 'stage'], sorting: [{ name: 'value', sortDirection: 1 }] },
+    { id: 'biggest', name: 'Biggest deals', group: { id: 'reports', name: 'Reports' }, columns: ['name', 'value', 'stage'], sorting: [{ name: 'value', sortDirection: 1 }] },
 ]
 
 const ACCOUNT_SCOPE = {
@@ -53,8 +53,8 @@ const createViewProvider = (view: IDealView) => {
 /** A deals provider for the view asked for, the first view when none is; loads like a server would. */
 export const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
     await new Promise(resolve => setTimeout(resolve, 600))
-    const view = DEAL_VIEWS.find(view => view.id === params.viewId) ?? DEAL_VIEWS[0]
-    return { provider: createViewProvider(view), viewId: view.id }
+    const view = DEAL_VIEWS.find(view => view.id === params.view?.id) ?? DEAL_VIEWS[0]
+    return { provider: createViewProvider(view) }
 }
 
 /** The deal views, for the view switcher; loads like a server would. */

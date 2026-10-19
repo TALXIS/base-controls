@@ -1,74 +1,61 @@
-import { useEffect, useMemo } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
-import { ErrorBoundary, LocalizationService } from "@utils";
-import { Shimmer } from "@ui/shimmer";
-import { ILoadingBoundaryComponents, LoadingBoundary } from "@ui/loading-boundary";
-import { IDatasetControlView } from "../../../runtime";
+import { LocalizationService } from "@utils";
+import { IDatasetControlView, IDatasetControlViewGroup } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { IViewSwitcherLabels, VIEW_SWITCHER_LABELS } from "./labels";
-import { DatasetControlViewSwitcher, IDatasetControlViewSwitcherEvents } from "./DatasetControlViewSwitcher";
+import { DatasetControlViewSwitcher } from "./DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
-import { getViewSwitcherStyles } from "./styles";
 
 /** Props for `DatasetControl.ViewSwitcher`. */
 export interface IViewSwitcherProps {
-    /** Called at mount and on every `reload()`; returns the views to list. */
-    onLoad: () => Promise<IDatasetControlView[]>;
     /** Overrides for the switcher's strings. */
     labels?: Partial<IViewSwitcherLabels>;
     /** Replacements for the switcher's pieces. */
     components?: IViewSwitcherComponents;
+    /** What adds to the switcher, such as `DatasetControl.UserQueries`. */
+    children?: ReactNode;
 }
 
-/** Switches the control between the views its `onLoad` returns, listed by their group. */
+/** Switches the control between the views its `onLoadViews` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
-    const propsRef = useLatest(props);
-    const viewSwitcher = useMemo(() => new DatasetControlViewSwitcher({ services: runtime.services, onLoad: () => propsRef.current.onLoad() }), []);
+    const viewSwitcher = useMemo(() => new DatasetControlViewSwitcher({ services: runtime.services }), []);
     const labels = useMemo(() => new LocalizationService<IViewSwitcherLabels>({ ...VIEW_SWITCHER_LABELS, ...props.labels }), [props.labels]);
-    const styles = useMemo(() => getViewSwitcherStyles(), []);
-    const { rerender } = useRerender();
-    const { loadingBoundary, errorMessage, ...button } = props.components ?? {};
     const views = viewSwitcher.getViews();
     const currentView = viewSwitcher.getCurrentView();
+    const { rerender } = useRerender();
 
-    useEventEmitter<IDatasetControlViewSwitcherEvents>(viewSwitcher.events, ['onBeforeLoad', 'onLoaded'], rerender);
+    useEffect(() => () => viewSwitcher.destroy(), []);
 
-    useEffect(() => {
-        viewSwitcher.reload();
-        return () => viewSwitcher.destroy();
-    }, []);
-
-    const loadingBoundaryComponents: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <Shimmer className={styles.shimmer} styles={{ shimmerWrapper: styles.shimmerWrapper }} />,
-        ...loadingBoundary,
-    };
-
-    const getGroups = (): Map<string, IDatasetControlView[]> => {
-        const groups = new Map<string, IDatasetControlView[]>();
-        for (const view of views ?? []) {
-            const group = view.group ?? labels.getLocalizedString('ungroupedViewsHeader');
-            groups.set(group, [...groups.get(group) ?? [], view]);
+    const getGroups = (): Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }> => {
+        const ungrouped: IDatasetControlViewGroup = { id: 'ungrouped', name: labels.getLocalizedString('ungroupedViewsHeader') };
+        const groups = new Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }>();
+        for (const view of views) {
+            const group = view.group ?? ungrouped;
+            const entry = groups.get(group.id) ?? { group, views: [] };
+            entry.views.push(view);
+            groups.set(group.id, entry);
         }
         return groups;
     };
 
-    const items: IContextualMenuItem[] = [...getGroups()].flatMap(([group, groupViews], index) => [
-        ...(index > 0 ? [{ key: `${group}-divider`, itemType: ContextualMenuItemType.Divider }] : []),
-        { key: `${group}-header`, itemType: ContextualMenuItemType.Header, iconProps: { iconName: 'ViewList' }, text: group },
+    const viewItems: IContextualMenuItem[] = [...getGroups().values()].flatMap(({ group, views: groupViews }, index) => [
+        ...(index > 0 ? [{ key: `${group.id}-divider`, itemType: ContextualMenuItemType.Divider }] : []),
+        { key: `${group.id}-header`, itemType: ContextualMenuItemType.Header, iconProps: { iconName: 'ViewList' }, text: group.name },
         ...groupViews.map(view => ({ key: view.id, text: view.name, onClick: () => viewSwitcher.select(view.id) })),
     ]);
 
-    return <ErrorBoundary error={viewSwitcher.getError()} onRetry={() => viewSwitcher.reload()} components={errorMessage}>
-        <LoadingBoundary isLoading={views === undefined} components={loadingBoundaryComponents}>
-            <DatasetControlUi.ViewSwitcher
-                text={currentView?.name ?? ''}
-                items={items}
-                selectedKey={currentView?.id}
-                components={button} />
-        </LoadingBoundary>
-    </ErrorBoundary>;
+    return <>
+        <DatasetControlUi.ViewSwitcher
+            text={currentView?.name ?? ''}
+            items={viewSwitcher.getItems(viewItems)}
+            selectedKey={currentView?.id}
+            //the items are read as the menu opens, so what children registered is in it
+            onMenuClick={rerender}
+            components={props.components} />
+        {props.children}
+    </>;
 };

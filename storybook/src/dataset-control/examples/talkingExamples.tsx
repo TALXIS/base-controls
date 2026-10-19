@@ -22,10 +22,10 @@ const Shortcuts = () => {
     </Stack>
 }
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns />
@@ -64,10 +64,10 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => controlRef.current?.loadView('won')} />
             <DefaultButton text='Remount' onClick={() => setMountKey(key => key + 1)} />
         </Stack>
-        <DatasetControl stateKey='deals' key={mountKey} onLoad={loadDeals} onReady={onReady} onDestroyed={() => write('onDestroyed')} height='380px'>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='deals' key={mountKey} onLoad={loadDeals} onReady={onReady} onDestroyed={() => write('onDestroyed')} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+                    <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>

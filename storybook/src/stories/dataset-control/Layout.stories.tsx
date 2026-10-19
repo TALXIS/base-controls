@@ -8,10 +8,10 @@ const DESCRIPTION = `
 The control is laid out in *regions*: a header above the records, a body that holds them and a footer below them. The header and the footer each have a start and an end.
 
 \`\`\`tsx
-<DatasetControl onLoad={loadDeals} height='600px'>
+<DatasetControl onLoadViews={loadViews} onLoad={loadDeals} height='600px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.Ribbon onLoad={loadCommands} />
@@ -39,7 +39,7 @@ The control is laid out in *regions*: a header above the records, a body that ho
 | \`Footer\` | The row below the records, with a line above it. |
 | \`Footer.Start\`, \`Footer.End\` | The footer's left and right side. |
 
-- Each region takes \`className\`, and \`components\` to replace its box: see [**Appearance**](?path=/docs/datasetcontrol-appearance--overview).
+- Each region takes \`className\`, and \`components\` to replace its box: see *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
 - A region takes your own content too, such as a page title placed directly in \`Header\`, as the full-page example below does.
 - Anything else you put inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
 

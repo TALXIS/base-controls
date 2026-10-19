@@ -21,6 +21,7 @@ const DealsRibbon = () => {
 - Commands are shown in the order they are returned. Commands that do not fit move into the overflow menu.
 - While a command's \`onExecute\` runs, its button is disabled.
 - While the commands load, a shimmer shows in their place. When the ribbon's \`onLoad\` throws, it shows the error, with *Details* and *Try again*.
+- When a command's \`onExecute\` throws, the error dialog opens. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
 - In \`Header.End\` the commands sit against the right; in \`Header.Start\`, against the left. See *Place the parts* on [**Layout**](?path=/docs/datasetcontrol-layout--overview).
 - The same ribbon, without the reload on selection, is exported as \`Ribbon\`, for a command bar outside DatasetControl.
 
@@ -33,7 +34,7 @@ const DealsRibbon = () => {
 | \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | Required | Returns the commands. Called at mount, whenever the selection changes, and on \`reload()\`. |
 | \`disabled\` | \`boolean\` | \`false\` | Disables every command. |
 | \`className\` | \`string\` | None | Added to the ribbon's box. |
-| \`components\` | \`IRibbonComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`IRibbonComponents\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 An \`IRibbonCommand\`:
 
@@ -63,7 +64,7 @@ const markWon = async (ids: string[]) => {
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Calls \`onLoad\` again. |
 | \`getError()\` | What the last \`onLoad\` threw, until the next one starts. |
-| \`events\` | \`onBeforeLoad\`, \`onLoaded\`, \`onBeforeExecute(command)\` and \`onAfterExecute(command)\`. |
+| \`events\` | \`onBeforeLoad\`, \`onLoaded\`, \`onBeforeExecute(command)\`, \`onExecuteFailed(command, error)\` and \`onAfterExecute(command)\`. |
 `
 
 const meta = {

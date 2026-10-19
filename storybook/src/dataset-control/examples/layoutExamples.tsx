@@ -58,10 +58,10 @@ const GridExample = () => {
         </Stack>
         <Slider label='Width (%)' min={30} max={100} value={width} onChange={setWidth} />
         <div style={{ width: \`\${width}%\` }}>
-            <DatasetControl stateKey='deals' onLoad={loadDeals} height='420px'>
+            <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
-                        {has('View switcher') && <DatasetControl.ViewSwitcher onLoad={loadDealViews} />}
+                        {has('View switcher') && <DatasetControl.ViewSwitcher />}
                         {has('Ribbon') && !has('View switcher') && <DealsRibbon />}
                     </DatasetControl.Header.Start>
                     <DatasetControl.Header.End>
@@ -109,11 +109,11 @@ const pageStyles = mergeStyleSets({
 
 /** A page that is all the control, filling the window with `height='100%'`, its title in the header. */
 export const FullPageExample = () => <div className={pageStyles.page}>
-    <DatasetControl stateKey='deals' onLoad={loadDeals} height='100%'>
+    <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='100%'>
         <DatasetControl.Header className={pageStyles.header}>
             <Text variant='xLarge' className={pageStyles.title}>Sales pipeline</Text>
             <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+                <DatasetControl.ViewSwitcher />
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <FullPageRibbon />

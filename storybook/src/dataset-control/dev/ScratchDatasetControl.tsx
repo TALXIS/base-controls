@@ -71,10 +71,10 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
         <button onClick={() => setMountKey(key => key + 1)}>Remount</button>
         <button onClick={() => failNextLoadRef.current = true}>Fail next load</button>
         <button onClick={() => setIsThrowing(true)}>Throw while rendering</button>
-        <DatasetControl key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onReady={onReady} height="640px">
+        <DatasetControl onLoadViews={loadDealViews} key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onReady={onReady} height="640px">
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
+                    <DatasetControl.ViewSwitcher components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <ScratchRibbon />

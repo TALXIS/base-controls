@@ -26,7 +26,7 @@ const DESCRIPTION = `
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`labels\` | \`Partial<IQuickFindLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 

@@ -32,7 +32,7 @@ const DESCRIPTION = `
 |---|---|---|---|
 | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. Read at mount. |
 | \`labels\` | \`Partial<IPageSizeSwitcherLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 \`Pagination\` takes \`labels\` and \`components\` the same way.
 

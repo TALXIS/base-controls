@@ -11,10 +11,10 @@ const SelectedValue = () => {
     return <Text styles={{ root: { alignSelf: 'center' } }}>Selected: {total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</Text>
 }
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DatasetControl.EditColumns />

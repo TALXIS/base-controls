@@ -3,6 +3,7 @@ import { HEADER_PART_HEIGHT } from "../layout";
 import { ITheme } from "@theme";
 
 const MIN_LABEL_WIDTH = 80;
+const GROUP_MAX_HEIGHT = 216;
 
 export const getViewSwitcherUiStyles = (theme: ITheme) => mergeStyleSets({
     //shares the free space with a ribbon, up to its name and down to the label's minimum
@@ -28,6 +29,15 @@ export const getViewSwitcherUiStyles = (theme: ITheme) => mergeStyleSets({
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+    },
+    menu: {
+        selectors: {
+            '.ms-ContextualMenu-list .ms-ContextualMenu-list': {
+                maxHeight: GROUP_MAX_HEIGHT,
+                overflowY: 'auto',
+                scrollbarWidth: 'thin',
+            },
+        },
     },
     selectedItem: {
         backgroundColor: theme.semanticColors.buttonBackgroundPressed,

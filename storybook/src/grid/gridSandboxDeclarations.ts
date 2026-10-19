@@ -2083,6 +2083,9 @@ declare const MemoryStrategy: typeof import('@talxis/base-controls').MemoryStrat
 
 declare const FluentProvider: typeof import('@fluentui/react-components').FluentProvider;
 declare const webLightTheme: typeof import('@fluentui/react-components').webLightTheme;
+/** Fluent UI v9 and its icons, imported by name in a snippet. */
+declare module '@fluentui/react-components';
+declare module '@fluentui/react-icons';
 declare const Toaster: typeof import('@fluentui/react-components').Toaster;
 declare const Toast: typeof import('@fluentui/react-components').Toast;
 declare const ToastTitle: typeof import('@fluentui/react-components').ToastTitle;
@@ -3402,22 +3405,22 @@ declare const sortCheckListProvider: <TProvider extends IDataProvider>(provider:
 declare const ContextualMenuItemType: typeof import('@fluentui/react').ContextualMenuItemType;
 
 /** A view the user can switch to. */
-interface IDatasetControlView {
+interface IDatasetControlView<TData = unknown> {
     id: string;
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
-    group?: string;
+    group?: { id: string; name: string };
+    /** What onLoad needs to build the view, user views included. */
+    data?: TData;
 }
 
-interface IDatasetControlLoadParameters {
-    /** The view to load; undefined on a first load, for onLoad to pick the default. */
-    viewId?: string;
+interface IDatasetControlLoadParameters<TData = unknown> {
+    /** The view to load: the one asked for or kept, else the first view; undefined only when there are no views. */
+    view?: IDatasetControlView<TData>;
 }
 
 interface IDatasetControlLoadResult {
     provider: IDataProvider;
-    /** The view the provider shows, when onLoad picked the default. */
-    viewId?: string;
 }
 
 interface IDatasetControlLabels { unsavedChangesConfirmation: string }
@@ -3425,28 +3428,52 @@ interface IViewSwitcherLabels { ungroupedViewsHeader: string }
 
 /** The views the switcher's onLoad returns, and switching between them. */
 interface IDatasetControlViewSwitcher {
-    readonly events: { addEventListener(event: 'onBeforeLoad' | 'onLoaded', listener: () => void): void; removeEventListener(event: 'onBeforeLoad' | 'onLoaded', listener: () => void): void };
-    /** undefined until the first load finishes. */
-    getViews(): IDatasetControlView[] | undefined;
-    /** What the last load threw, until the next one starts. */
-    getError(): unknown;
+    /** The views of this mount, from the control's onLoadViews. */
+    getViews(): IDatasetControlView[];
     getCurrentView(): IDatasetControlView | undefined;
-    /** Calls onLoad again; the latest call's views win. */
-    reload(): Promise<void>;
-    /** Reloads the control for the view. */
+    /** Loads the control for the view. */
     select(viewId: string): void;
 }
 
 interface IViewSwitcherProps {
-    /** Called at mount and on every reload(); returns the views to list. */
-    onLoad: () => Promise<IDatasetControlView[]>;
     labels?: Partial<IViewSwitcherLabels>;
-    components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> & {
-        /** Its container is a shimmer the size of the button by default. */
-        loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }>;
-        errorMessage?: Partial<IErrorMessageBarComponents>;
-    };
+    components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    /** What adds to the switcher, such as DatasetControl.UserQueries. */
+    children?: React.ReactNode;
 }
+
+/** A feature of the control, registered on every mount. */
+interface IDatasetControlModule {
+    onRegister?(datasetControl: any): void;
+}
+
+interface IDatasetControlModules {
+    /** The user's own views. */
+    userQueries?: IDatasetControlModule;
+    custom?: IDatasetControlModule[];
+}
+
+/** What onBeforeSave is called with. */
+interface IUserQuerySaveParameters<TData = unknown> {
+    /** The view, unsaved; isNew() tells a new view from an existing one. */
+    record: IRecord;
+    /** The control the view is saved from, showing what the user set up. */
+    datasetControl: IDatasetControl<TData>;
+}
+
+/** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
+declare const createUserQueriesModule: <TData>(parameters: {
+    /** The user's views, one record per view. */
+    provider: IDataProvider;
+    /** Reads what a user view keeps from its record, as onLoad gets it in view.data. */
+    getViewData: (record: IRecord) => TData;
+    /** Overrides for every string of the user queries. */
+    labels?: Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
+    /** Called before a view is saved, new or existing; fill in what the view keeps. */
+    onBeforeSave?: (parameters: IUserQuerySaveParameters<TData>) => Promise<void> | void;
+}) => IDatasetControlModule;
+
+
 interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: string; leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }
 interface IPaginationLabels { firstPageTooltip: string; previousPageTooltip: string; nextPageTooltip: string; currentPage: string }
 interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pageSizeTooltip: string }
@@ -3480,6 +3507,7 @@ interface IRibbonRuntimeEvents {
     onBeforeLoad: () => void;
     onLoaded: () => void;
     onBeforeExecute: (command: IRibbonCommand) => void;
+    onExecuteFailed: (command: IRibbonCommand, error: unknown) => void;
     onAfterExecute: (command: IRibbonCommand) => void;
 }
 
@@ -3606,11 +3634,27 @@ interface IDatasetControlPartLocator {
 }
 
 /** The DatasetControl as its consumer drives it. */
-interface IDatasetControl {
+/** Something a module draws in the DatasetControl. */
+interface IDatasetControlSurface {
+    key: string;
+    onRender: () => JSX.Element | null;
+}
+
+type DatasetControlSurfacesHook = (surfaces: IDatasetControlSurface[]) => void;
+
+interface IDatasetControlSurfaces {
+    registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void;
+}
+
+interface IDatasetControl<TData = unknown> {
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     readonly parts: IDatasetControlPartLocator;
+    /** What modules draw in the control. */
+    readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, from the last load that succeeded. */
     getProvider(): IDataProvider | undefined;
+    /** The views of this mount, from onLoadViews; empty before they loaded. */
+    getViews(): IDatasetControlView<TData>[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     isLoading(): boolean;
@@ -3624,9 +3668,13 @@ interface IDatasetControl {
     retry(): Promise<void>;
 }
 
-interface IDatasetControlProps {
-    /** Loads the provider for the view and whatever it needs; called at mount and on every view switch. */
-    onLoad: (parameters: IDatasetControlLoadParameters) => Promise<IDatasetControlLoadResult>;
+interface IDatasetControlProps<TData = unknown> {
+    /** The control's modules; read on every mount. */
+    modules?: IDatasetControlModules;
+    /** The views to switch between; called before onLoad on every mount. */
+    onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
+    /** Loads the provider for the view the control resolved; called on every mount. */
+    onLoad: (parameters: IDatasetControlLoadParameters<TData>) => Promise<IDatasetControlLoadResult>;
     children: React.ReactNode;
     /** '100%' fills the parent; the content's height when left out. */
     height?: string;
@@ -3640,8 +3688,8 @@ interface IDatasetControlProps {
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called once the control exists, before the first load. */
-    onReady?: (control: IDatasetControl) => void;
-    onDestroyed?: (control: IDatasetControl) => void;
+    onReady?: (control: IDatasetControl<TData>) => void;
+    onDestroyed?: (control: IDatasetControl<TData>) => void;
 }
 
 interface IErrorMessageBarComponents {
@@ -3671,7 +3719,7 @@ interface IEditColumnsComponents {
 
 /** Loads the provider through onLoad and holds every part inside it; the parts are attached to it. */
 interface IDatasetControlNamespace {
-    (props: IDatasetControlProps): JSX.Element;
+    <TData = unknown>(props: IDatasetControlProps<TData>): JSX.Element;
     /** The row above the records; Start and End are its left and right regions. */
     Header: ((props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element) & {
         Start: (props: { children?: React.ReactNode; className?: string; components?: Partial<IDatasetControlContainerComponents> }) => JSX.Element;
@@ -3715,6 +3763,8 @@ interface IDatasetControlNamespace {
         labels?: Partial<IEditColumnsLabels>;
         components?: IEditColumnsComponents;
     }) => JSX.Element;
+    /** Saving and managing the user's own views; goes inside ViewSwitcher, with the user queries module. */
+    UserQueries: (props: { components?: any }) => JSX.Element;
     Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyRecords: (props: IEmptyRecordsUiProps) => JSX.Element | null; [part: string]: any };
 }
 
@@ -3729,7 +3779,7 @@ declare const useDatasetControlHeader: () => {
     showAll: () => void;
 } | undefined;
 /** The DatasetControl the component is inside of; throws outside one. */
-declare const useDatasetControl: () => IDatasetControl;
+declare const useDatasetControl: <TData = unknown>() => IDatasetControl<TData>;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
 /** The view switcher's default slots, to render the default button with your own items. */
 declare const ViewSwitcherUiComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };

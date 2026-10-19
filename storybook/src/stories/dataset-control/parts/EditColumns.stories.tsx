@@ -22,9 +22,8 @@ provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => fe
 provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 \`\`\`
 
-- The columns the user can add are what the provider's \`getAvailableColumns\` returns: with no entity for the records' own columns, and with the picked entity's name for a related entity's. Code outside the provider can change them through its \`onGetAvailableColumns\` interceptor.
-- When \`getAvailableRelatedColumns\` returns any entities, a scope selector lets the user add columns of related records too. It lists the records' own entity first, to switch back to.
-- The columns are loaded every time the editor needs them: when it opens, on every search and on every scope picked. The search filters what came back. The related entities are loaded once, as the editor opens. While a load runs, the pickers say *Loading...*; when one throws, its error shows in place of the pickers, with *Details* and *Try again*.
+- The user can add the columns \`getAvailableColumns\` returns. When \`getAvailableRelatedColumns\` returns any entities, a scope selector lets them add columns of related records too.
+- While the columns load, the pickers say *Loading...*. When loading throws, the error shows in place of the pickers, with *Details* and *Try again*.
 - *Cancel*, or closing the panel, drops the changes.
 - Saving sets the columns on the provider, which loads again and clears the selection. The columns the user chose are kept per view: see [**State**](?path=/docs/datasetcontrol-state--overview).
 
@@ -35,7 +34,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`labels\` | \`Partial<IEditColumnsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Appearance**](?path=/docs/datasetcontrol-appearance--overview). |
+| \`components\` | \`IEditColumnsComponents\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 

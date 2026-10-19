@@ -1,23 +1,23 @@
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
-/** Three views of the deals, one of them personal, loaded the way a server would. */
+/** Three views of the deals, one of them a report, each carrying what it shows in its data. */
 export const VIEWS_FILE: IGridExampleFile = {
     name: 'views.ts',
-    code: `interface IDealView extends IDatasetControlView {
+    code: `/** What each view shows, kept in its data for onLoad. */
+export interface IDealViewData {
     columns: string[]
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression
 }
 
-//each view shows its own columns, filter and sorting
-const VIEWS: IDealView[] = [
-    { id: 'all', name: 'All deals', columns: ['name', 'owner', 'stage', 'value', 'probability', 'closedate'] },
-    { id: 'won', name: 'Won deals', columns: ['name', 'owner', 'value', 'closedate'], filtering: { filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: '4' }] } },
-    { id: 'biggest', name: 'Biggest deals', group: 'My views', columns: ['name', 'value', 'stage'], sorting: [{ name: 'value', sortDirection: 1 }] },
+const VIEWS: IDatasetControlView<IDealViewData>[] = [
+    { id: 'all', name: 'All deals', data: { columns: ['name', 'owner', 'stage', 'value', 'probability', 'closedate'] } },
+    { id: 'won', name: 'Won deals', data: { columns: ['name', 'owner', 'value', 'closedate'], filtering: { filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: '4' }] } } },
+    { id: 'biggest', name: 'Biggest deals', group: { id: 'reports', name: 'Reports' }, data: { columns: ['name', 'value', 'stage'], sorting: [{ name: 'value', sortDirection: 1 }] } },
 ]
 
 //the deals as one view shows them
-const createViewProvider = (view: IDealView) => {
+const createViewProvider = (view: IDealViewData) => {
     const provider = new MemoryDataProvider({
         dataSource: DEAL_ROWS.map(row => ({ ...row })),
         metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
@@ -30,17 +30,59 @@ const createViewProvider = (view: IDealView) => {
     return provider
 }
 
-export const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-    //stands in for fetching the view and the metadata from a server
+export const loadDeals = async (params: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+    //stands in for fetching the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
-    const view = VIEWS.find(view => view.id === params.viewId) ?? VIEWS[0]
-    return { provider: createViewProvider(view), viewId: view.id }
+    return { provider: createViewProvider(params.view?.data ?? VIEWS[0].data!) }
 }
 
-//what the view switcher lists
-export const loadDealViews = async (): Promise<IDatasetControlView[]> => {
+//the views to switch between, with what each one shows
+export const loadDealViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => {
     await new Promise(resolve => setTimeout(resolve, 400))
-    return VIEWS.map(({ id, name, group }) => ({ id, name, group }))
+    return VIEWS
+}
+`,
+}
+
+/** The products as photo cards that select on click, scrolled back where they were per view. */
+export const PRODUCT_GALLERY_FILE: IGridExampleFile = {
+    name: 'ProductGallery.tsx',
+    code: `const styles = mergeStyleSets({
+    gallery: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', alignContent: 'start', gap: 12, paddingBottom: 12, height: '100%', overflow: 'auto', boxSizing: 'border-box' },
+    card: { maxWidth: 'none', minWidth: 0 },
+    selectedCard: { outline: '2px solid #0f6cbd', outlineOffset: -2 },
+})
+
+//shows the products DatasetControl loaded as a gallery; clicking a card selects it
+export const ProductGallery = () => {
+    const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
+    //per view inside the DatasetControl, so each view comes back scrolled where it was
+    const store = useControlStateStore('gallery')
+    const galleryRef = React.useRef<HTMLDivElement>(null)
+
+    React.useLayoutEffect(() => {
+        galleryRef.current!.scrollTop = store.get<number>('scrollTop') ?? 0
+    }, [])
+
+    const selectedIds = provider.getSelectedRecordIds()
+    const toggle = (id: string) => provider.setSelectedRecordIds(selectedIds.includes(id) ? selectedIds.filter(selectedId => selectedId !== id) : [...selectedIds, id])
+
+    return <div ref={galleryRef} className={styles.gallery} onScroll={event => store.set('scrollTop', event.currentTarget.scrollTop)}>
+        {provider.getRecords().map(product => {
+            const photo = product.getValue('photo')
+            const inStock = product.getValue('instock')
+            return <DocumentCard
+                key={product.getRecordId()}
+                className={selectedIds.includes(product.getRecordId()) ? \`\${styles.card} \${styles.selectedCard}\` : styles.card}
+                onClick={() => toggle(product.getRecordId())}>
+                <DocumentCardImage height={160} imageFit={ImageFit.cover} imageSrc={photo?.fileUrl ?? photo?.thumbnailUrl} />
+                <DocumentCardDetails>
+                    <DocumentCardTitle title={product.getFormattedValue('name')} shouldTruncate />
+                    <DocumentCardTitle title={\`\${product.getFormattedValue('price')} · \${inStock > 0 ? \`\${inStock} in stock\` : 'Out of stock'}\`} showAsSecondaryTitle />
+                </DocumentCardDetails>
+            </DocumentCard>
+        })}
+    </div>
 }
 `,
 }

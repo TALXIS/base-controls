@@ -5,10 +5,10 @@ import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 const SHOWCASE_CODE = `import { loadDeals, loadDealViews } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='560px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+            <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
             <DealsRibbon />

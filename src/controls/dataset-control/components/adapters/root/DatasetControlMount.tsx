@@ -7,7 +7,9 @@ import type { DatasetControlState } from "../../../runtime/DatasetControlState";
 import { DatasetControlRuntimeContext } from "./context";
 import { DatasetControlUi } from "../../ui";
 import { Skeleton } from "../skeleton/Skeleton";
+import { Surfaces } from "../surfaces/Surfaces";
 import type { IDatasetControlProps } from "./Root";
+import { DatasetControl } from "@controls/dataset-control/namespace";
 
 const LOAD_EVENTS: (keyof IDatasetControlEvents)[] = ['onLoadStarted', 'onLoaded', 'onLoadFailed'];
 
@@ -50,6 +52,7 @@ export const DatasetControlMount = (props: IDatasetControlMountProps) => {
                         components={errorMessage}>
                         <Skeleton components={skeleton}>
                             {props.children}
+                            <Surfaces />
                         </Skeleton>
                     </ErrorBoundary>
                 </DatasetControlUi.Container>

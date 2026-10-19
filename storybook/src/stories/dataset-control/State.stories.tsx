@@ -24,7 +24,7 @@ A DatasetControl puts every view back the way the user left it: the records sort
 
 | What | Kept | Put back |
 |---|---|---|
-| The view the user is on | When they leave it, and when the control unmounts | On the next mount: \`onLoad\` is called with its \`viewId\`. |
+| The view the user is on | When they leave it, and when the control unmounts | On the next mount: \`onLoad\` is called with that view, when it is still among the views. |
 | Per view: the records' columns and the related tables they come from, sorting, filtering, page, page size, search and selection | When the user leaves the view, and when the control unmounts | Whenever the view loads again, onto the provider \`onLoad\` returns, before its first page loads. |
 | Per view: what the parts keep, such as where a grid is scrolled | As the user works | Whenever the view is shown again. |
 
@@ -54,7 +54,7 @@ const OnlyMineToggle = () => {
 }
 \`\`\`
 
-A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own parts**](?path=/docs/datasetcontrol-your-own-parts--overview).
+A gallery that keeps its scroll this way is in the example under *Your own collection view* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
 `
 
 const meta = {

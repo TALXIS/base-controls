@@ -51,7 +51,7 @@ Write condition values the way the filter callout does, or it opens with nothing
 
 Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required: an OR becomes an AND, and nested filters or conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
-Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/datasetcontrol-parts-views--overview).
+Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/datasetcontrol-views--overview).
 
 {{story: Switch between saved views}}
 

@@ -9,10 +9,10 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Show the deals' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
-        {isShown && <DatasetControl stateKey='deals' onLoad={loadDeals} height='400px'>
+        {isShown && <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+                    <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <DatasetControl.QuickFind />
@@ -54,10 +54,10 @@ const GridExample = () => {
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <Stack.Item grow styles={{ root: { minWidth: 0 } }}>
             <StateProvider store={store}>
-                <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
+                <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='440px'>
                     <DatasetControl.Header>
                         <DatasetControl.Header.Start>
-                            <DatasetControl.ViewSwitcher onLoad={loadDealViews} />
+                            <DatasetControl.ViewSwitcher />
                         </DatasetControl.Header.Start>
                         <DatasetControl.Header.End>
                             <DatasetControl.QuickFind />

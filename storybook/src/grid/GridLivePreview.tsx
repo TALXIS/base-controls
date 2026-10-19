@@ -2,7 +2,7 @@ import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
 import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IDatasetControlProps, IGridProps, useDataProvider } from '@talxis/base-controls'
-import { GRID_SANDBOX_SCOPE } from './gridSandboxScope'
+import { GRID_SANDBOX_PACKAGES, GRID_SANDBOX_SCOPE } from './gridSandboxScope'
 
 const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider']
 
@@ -75,6 +75,10 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
     const modules = new Map<string, ISnippetModule>()
 
     const load = (path: string): ISnippetModule => {
+        const sandboxPackage = GRID_SANDBOX_PACKAGES[path]
+        if (sandboxPackage) {
+            return { exports: sandboxPackage }
+        }
         const file = files.find(candidate => withoutExtension(candidate.name) === withoutExtension(path))
         if (!file) {
             throw new Error(`There is no file '${path}' in this example.`)
