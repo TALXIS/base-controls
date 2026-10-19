@@ -1,0 +1,156 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Form/React compose/Custom Components/Nested Control Renderer" />
+
+# Nested Control Renderer
+
+`NestedControlRenderer` renders a control, either a Base Control or a custom PCF, from inside React. You give it a parent PCF context, a control name and bindings. It mounts the control and keeps it in sync with every React render. The form's `Form.Control` is built on it, and [Custom PCF controls](?path=/docs/form-react-compose-custom-components-custom-pcf-controls--overview) shows how to use it in a form.
+
+> Hosting a custom PCF relies on a private, unsupported Power Apps API (`context.factory.createComponent` and related methods). The renderer wraps it so you don't call it directly.
+
+## Basic usage
+
+```tsx
+import { NestedControlRenderer } from '@talxis/base-controls';
+import { DataTypes } from '@talxis/client-libraries';
+
+const [value, setValue] = React.useState<number | null>(null);
+
+<NestedControlRenderer
+  context={props.context}
+  parameters={{
+    ControlName: 'talxis_TALXIS.PCF.ColorfulOptionSet',
+    Bindings: {
+      binding: {
+        isStatic: false,
+        type: DataTypes.OptionSet,
+        value: value,
+        onNotifyOutputChanged: (newValue) => setValue(newValue),
+      },
+    },
+  }}
+/>
+```
+
+When the control reports a change, `onNotifyOutputChanged` stores the new value in state. The next render pushes it back into the control through `updateView`. To the parent this works like a controlled React component.
+
+## Parameters
+
+- **`ControlName`**: a Base Control name (`TextField`, `OptionSet`, `MultiSelectOptionSet`, `TwoOptions`, `Lookup`, `Decimal`, `Duration`, `DateTime`, ...) or a custom PCF name in the form `<prefix>_<namespace>.<constructor>`.
+- **`Bindings`**: the control's parameters, keyed by property name. See *Bindings* below.
+- **`ControlStates`**: `{ isControlDisabled }`. Exposed to the control as `context.mode.isControlDisabled`.
+- **`LoadingType`**: `'spinner'` (default), `'shimmer'` or `'none'`. Shown until the control has loaded.
+
+The component also accepts `onNotifyOutputChanged(outputs)` for all outputs at once, `onOverrideComponentProps` (see *Customization* below) and `translations` for its own labels.
+
+## Bindings
+
+```ts
+interface IBinding {
+  type: DataType;               // DataTypes.SingleLineText, DataTypes.OptionSet, ...
+  isStatic: boolean;            // true = input value, false = bound value the control can change
+  value: any;
+  formattedValue?: string | null; // computed from value + metadata when omitted
+  error?: boolean;
+  errorMessage?: string;
+  metadata?: {
+    entityName?: string;
+    attributeName?: string;
+    onOverrideMetadata?: (metadata: any) => any;
+  };
+  onNotifyOutputChanged?: (newValue: any) => void;
+}
+```
+
+The binding `type` decides how the value is turned into a PCF parameter (`raw`, `formatted`, `attributes`, and `getAllViews` for lookups). Use the value shape the matching PCF property type expects. For example, lookups take an array of entity references.
+
+**Key names.**
+
+- **Base Controls** read and write a single binding called `value`.
+- **Custom PCFs**: name each binding after a property in the PCF's manifest. If no binding matches the manifest's first `bound` property, the first non-static binding is used for it. Bindings with no matching manifest property are passed as extra static parameters.
+
+### Metadata
+
+When you set `metadata.entityName` and `metadata.attributeName`, the renderer fetches the attribute metadata with `context.utils.getEntityMetadata`. For an option set, that loads its options from Dataverse. The control waits until the metadata is loaded.
+
+`onOverrideMetadata` lets you change the metadata or supply it yourself. Without `entityName` / `attributeName` it receives an empty object. When you're adjusting fetched metadata, spread it so you don't lose fields:
+
+```ts
+metadata: {
+  entityName: 'talxis_field',
+  attributeName: 'talxis_optionsetcolorful',
+  onOverrideMetadata: (metadata) => ({
+    ...metadata,
+    OptionSet: [...metadata.OptionSet, { Label: 'Hello', Value: 1, Color: 'green' }],
+  }),
+}
+```
+
+For a Base Control this is how you avoid the metadata request entirely. `Form.Control` returns `column.metadata` from `onOverrideMetadata`.
+
+## Lifecycle
+
+### Base Controls
+
+A Base Control is a normal React child of the renderer. On every render, the renderer rebuilds its props (context, parameters, `onNotifyOutputChanged`) from the current bindings, and React updates it. It doesn't need the factory and works anywhere a PCF context is available, including this Storybook.
+
+### Custom PCFs
+
+1. **Manifest.** The renderer loads `ControlManifest.xml` from the `customcontrol` table (`name eq '<ControlName>'`) and caches it per name. If no control has that name, it shows the error state.
+2. **Create.** It builds the platform properties from the manifest and your bindings: `Static`, `Primary`, `Type`, `Value`, `Usage`, `Attributes` and a `Callback` per property. Then it calls `factory.createComponent` and `factory.bindDOMElement` on the parent context.
+3. **Handshake.** The PCF's `init` must call `factory.fireEvent('onInit', this)`. That is how the renderer gets the control instance and finishes loading. If the PCF's DOM appears without that event, the renderer unbinds it and reports an error.
+4. **Update.** The renderer wraps the instance's `updateView`. Every later render of the renderer calls `updateView` with a fresh context: the current bindings as `parameters`, `mode.isControlDisabled` from `ControlStates`, and `resources` / `events` from the context the platform gave the control. You don't have to unbind and bind again to pass new values.
+5. **Output.** When the PCF calls `notifyOutputChanged`, the platform calls the property's `Callback`. That calls the binding's `onNotifyOutputChanged` with the new value, and the component-level `onNotifyOutputChanged` with all bound outputs.
+6. **Unmount.** When the renderer unmounts, it calls `factory.unbindDOMComponent`, and the platform calls the PCF's `destroy`. If `ControlName` changes, the old control is unmounted and the new one goes through the steps from 1.
+
+The loading indicator is shown only the first time a given control name loads on the page. Later instances skip it.
+
+## Customization
+
+`onOverrideComponentProps` receives the default component props and returns the ones to use. Always spread the incoming props:
+
+```tsx
+<NestedControlRenderer
+  context={context}
+  parameters={{ ControlName: 'talxis_TALXIS.PCF.ColorfulOptionSet', LoadingType: 'shimmer', Bindings: { /* ... */ } }}
+  onOverrideComponentProps={(props) => ({
+    ...props,
+    loadingProps: {
+      ...props.loadingProps,
+      spinnerProps: { ...props.loadingProps.spinnerProps, size: SpinnerSize.large },
+    },
+  })}
+/>
+```
+
+- **`rootContainerProps`, `controlContainerProps`**: add attributes or classes to the wrapper and to the element the control is mounted into.
+- **`loadingProps`**: configure the spinner, the shimmer and their container.
+- **`messageBarProps`**: configure the error message bar and its *Detail* button.
+- **`onOverrideControlProps`**: change the props (including `context`) handed to the control. For a Base Control, this is also where you reach its own `onOverrideComponentProps`.
+- **`onOverrideRender`, `onOverrideUnmount`**: wrap or replace the default render and unmount steps.
+- **`onOverrideIsLoading`**: keep the control in the loading state, for example until your own data is ready.
+
+Customizing a Base Control rendered through the renderer:
+
+```tsx
+onOverrideComponentProps={(props) => ({
+  ...props,
+  onOverrideControlProps: (controlProps) => ({
+    ...controlProps,
+    onOverrideComponentProps: (baseControlProps) => ({
+      ...baseControlProps,
+      // Base Control component props
+    }),
+  }),
+})}
+```
+
+## Errors
+
+If the control can't be loaded (unknown name, a failure in `createComponent`, or a missing `onInit` handshake), the renderer hides the control container and shows a message bar: *Control **&lt;name&gt;** failed to load*. The *Detail* button opens `Xrm.Navigation.openErrorDialog` with the error, or `alert` where `Xrm` isn't available. The error is also logged to the console.
+
+## Limitations
+
+- Custom PCFs need a host whose context provides `factory.createComponent`, `bindDOMElement` and `unbindDOMComponent` (model-driven apps, TALXIS Portal). This is a private API and may change.
+- A custom PCF needs at least one non-static binding.
+- `ControlStates` only supports `isControlDisabled`.

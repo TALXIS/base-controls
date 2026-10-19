@@ -1,0 +1,143 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Form/React compose/Custom Components/Custom PCF controls" />
+
+# Custom PCF controls
+
+A React compose form can host any PCF that is deployed to the environment, not only the Base Controls it renders by default. You can do thi via supported React approach: replace one field's control with a [`NestedControlRenderer`](?path=/docs/form-react-compose-custom-components-nested-control-renderer--overview) that points at your PCF and binds it to the form field.
+
+> **Why not formXML?** Current version could only cover PCFs with a single field binding and simple static inputs. Datasets, more than one binding, references to other fields, unbound and virtual PCFs, and static lookups and every unsupported case needed a React appraoch anyway. React composition handles all of them with one pattern, so that is the supported way as of now.
+
+## How the default control works
+
+Every `Form.Control` already renders through `NestedControlRenderer`. The built-in renderer reads the field with `useField()`, picks the Base Control for the column's data type (`TextField`, `OptionSet`, `Lookup`, ...) and binds it like this:
+
+```tsx
+<NestedControlRenderer
+  context={context}
+  parameters={{
+    ControlName: BaseControls.GetControlNameForDataType(column.dataType),
+    ControlStates: { isControlDisabled: disabled },
+    Bindings: {
+      value: {
+        type: column.dataType,
+        value: field.getValue(),
+        formattedValue: field.getFormattedValue(),
+        isStatic: false,
+        error: validationResult?.error,
+        errorMessage: validationResult?.errorMessage,
+      },
+    },
+  }}
+  onNotifyOutputChanged={(outputs) => field.setValue(outputs.value)}
+/>
+```
+
+A custom PCF uses the same structure. You change `ControlName` and name the bindings after the properties in the PCF's manifest.
+
+## Requirements on the PCF
+- **Exposes its instance from `init`.** Without this, the renderer can't deliver `updateView` and rejects the control (see the snippet below).
+
+```ts
+public init(context, notifyOutputChanged, state, container) {
+  (context as any).factory.fireEvent('onInit', this);
+  // ...
+}
+```
+
+## Write a control component
+
+The component runs inside `Form.Field`, so `useField()` gives you the bound field. Read the value from the field and write it back through `field.setValue(...)`. That way the change goes through the form's dirty tracking, validation and save flow.
+
+```tsx
+import { NestedControlRenderer } from '@talxis/base-controls';
+import { useField, useForm } from '@talxis/base-controls/components/Form';
+import { usePcfContext } from '@talxis/base-controls/utils';
+import { DataTypes } from '@talxis/client-libraries';
+
+const TagPickerControl = (props: { disabled?: boolean }) => {
+  const field = useField()!;
+  const form = useForm();
+  const context = usePcfContext();
+  // Same rule as the default renderer: show validation only after a save attempt
+  const validation = form.saveOperationPerformed ? field.isValid() : null;
+
+  return (
+    <NestedControlRenderer
+      context={context}
+      parameters={{
+        // <publisher prefix>_<namespace>.<constructor>, as in the customcontrol table
+        ControlName: 'talxis_TALXIS.PCF.TagPicker',
+        ControlStates: { isControlDisabled: props.disabled ?? false },
+        Bindings: {
+          // Key = property name from the PCF's ControlManifest.xml
+          binding: {
+            isStatic: false,
+            type: DataTypes.SingleLineText,
+            value: field.getValue(),
+            error: validation?.error,
+            errorMessage: validation?.errorMessage,
+            onNotifyOutputChanged: (value) => field.setValue(value),
+          },
+        },
+      }}
+    />
+  );
+};
+```
+
+## Put it on the field
+
+Pass the component through `Form.Control components.onRenderControl`. The field keeps its label, layout, required indicator and the validation message rendered under the control.
+
+```tsx
+<Form.Field name="tags">
+  <Form.Cell label="Tags">
+    <Form.Control components={{ onRenderControl: (props) => <TagPickerControl {...props} /> }} />
+  </Form.Cell>
+</Form.Field>
+```
+
+## Static inputs and more bindings
+
+Each manifest property you want to set needs one entry in `Bindings`:
+
+- **Static input** (`usage="input"`): set `isStatic: true` and pass the value. Manifest inputs you leave out get their `default-value`.
+- **More bound properties** (`usage="bound"`): add another `isStatic: false` binding. You can feed it from a different field with `useField('otherField')`.
+- **Outputs**: each binding gets its own `onNotifyOutputChanged`. Write the value into whichever field it belongs to.
+
+```tsx
+// Property names are illustrative; use the ones from your control's manifest
+const start = useField('startdate')!;
+const end = useField('enddate')!;
+
+<NestedControlRenderer
+  context={context}
+  parameters={{
+    ControlName: 'contoso_Contoso.PCF.DateRange',
+    Bindings: {
+      startDate: {
+        isStatic: false,
+        type: DataTypes.DateAndTimeDateOnly,
+        value: start.getValue(),
+        onNotifyOutputChanged: (value) => start.setValue(value),
+      },
+      endDate: {
+        isStatic: false,
+        type: DataTypes.DateAndTimeDateOnly,
+        value: end.getValue(),
+        onNotifyOutputChanged: (value) => end.setValue(value),
+      },
+      maxDays: { isStatic: true, type: DataTypes.WholeNone, value: 30 },
+    },
+  }}
+/>
+```
+
+Bindings whose key doesn't match any manifest property are still passed to the PCF as static parameters.
+
+## Requirements on the host
+
+`NestedControlRenderer` mounts custom PCFs through the parent context's `factory.createComponent`, `bindDOMElement` and `unbindDOMComponent`. These are private Power Apps APIs. Model-driven apps and the TALXIS Portal provide them. The generated context in this Storybook does not, which is why there is no live custom PCF preview here.
+
+Base Controls don't need the factory. They render as plain React children, so every other form story works without it.
