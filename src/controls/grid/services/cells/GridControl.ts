@@ -106,7 +106,7 @@ export class GridControl implements IGridControl {
     /** What a cell hands whatever draws it, before the hooks have their say. */
     private _getCellParameters(control: ICustomColumnControl): IGridValueRendererParameters {
         const parameters: IGridValueRendererParameters = {
-            value: undefined,
+            value: { raw: undefined },
             ColumnAlignment: { raw: this._cell.getAlignment() },
             CellType: { raw: this._takesInput ? 'editor' : 'renderer' },
             EnableNavigation: { raw: false, type: DataTypes.TwoOptions },

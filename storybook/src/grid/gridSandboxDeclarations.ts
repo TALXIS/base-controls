@@ -2366,7 +2366,7 @@ interface IGridValueRendererComponents {
 
 /** The parameters a cell's control is handed. */
 interface IGridValueRendererParameters extends IParameters {
-    value: any;
+    value: { raw: any };
     ColumnAlignment: { raw: IAlignment };
     CellType: { raw: 'renderer' | 'editor' };
     EnableNavigation: { raw: boolean; type?: string };

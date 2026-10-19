@@ -10,6 +10,7 @@ import { TASK_GRID_MODULE_PRIORITY } from "../modules/priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
 import { AddTaskCell } from "./add-task-cell";
+import { PercentCompleteCell } from "./percent-complete-cell";
 import { ExpansionHeader } from "./expansion-header";
 import { ADD_TASK_COLUMN_KEY } from "./constants";
 
@@ -96,11 +97,15 @@ export class TaskTree {
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        const subject = this._provider.getFieldMapping().subject;
+        const { subject, percentComplete } = this._provider.getFieldMapping();
         const subjectColDef = columnDefs.find(colDef => colDef.colId === subject);
         if (subjectColDef) {
             subjectColDef.cellRenderer = TreeCell;
             subjectColDef.pinned = 'left';
+        }
+        const percentCompleteColDef = percentComplete ? columnDefs.find(colDef => colDef.colId === percentComplete) : undefined;
+        if (percentCompleteColDef) {
+            percentCompleteColDef.cellRenderer = PercentCompleteCell;
         }
         columnDefs.push({
             colId: ADD_TASK_COLUMN_KEY,

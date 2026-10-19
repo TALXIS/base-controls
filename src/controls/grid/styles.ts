@@ -28,10 +28,6 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
             '.ag-grid-pinned-left-cells::before, .ag-grid-scrolling-cells::before, .ag-grid-pinned-right-cells::before': {
                 zIndex: 1,
             },
-            //the focused cell shows its own colours, as AG Grid does for the editing one
-            '.ag-cell-focus': {
-                zIndex: 1,
-            },
             //the overlay below stops short of the cell's border
             '.ag-cell-range-selected:not(.ag-cell-focus)': {
                 borderColor: 'var(--ag-range-selection-background-color)',

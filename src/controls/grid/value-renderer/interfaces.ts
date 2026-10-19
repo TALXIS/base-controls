@@ -17,7 +17,7 @@ export interface IFileValue {
 }
 
 export interface IGridValueRendererParameters extends IParameters {
-    value: any;
+    value: { raw: any };
     ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<IAlignment>, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<'renderer' | 'editor'>, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;

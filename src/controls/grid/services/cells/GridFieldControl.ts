@@ -64,7 +64,7 @@ export class GridFieldControl implements IGridFieldControl {
     public getParameters(): Partial<IGridValueRendererParameters> {
         const column = this.getColumn();
         return {
-            value: this._field.getValue(),
+            value: { raw: this._field.getValue() },
             Column: { raw: column },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
         };
