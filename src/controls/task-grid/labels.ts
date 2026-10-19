@@ -10,6 +10,8 @@ export interface ITaskGridLabels {
     expandLevel: string;
     collapseLevel: string;
     confirmDeleteTasks: string;
+    /** Shown while new tasks the filter or quick find does not match are shown anyway. */
+    newTasksShown: string;
 }
 
 /** The English defaults for {@link ITaskGridLabels}. */
@@ -24,4 +26,5 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     expandLevel: 'Expand one level',
     collapseLevel: 'Collapse one level',
     confirmDeleteTasks: 'Do you want to delete the selected tasks and everything under them?',
+    newTasksShown: 'New tasks are shown regardless of the filter.',
 };

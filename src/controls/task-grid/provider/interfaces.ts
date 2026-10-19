@@ -149,6 +149,8 @@ export interface ITaskDataProvider extends IDataProvider {
     createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
     /** Adds tasks that already exist, such as ones a template created. */
     addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[];
+    /** Whether the task was created in this load; it shows whatever the filter. */
+    isNewTask(taskId: string): boolean;
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
     /** @returns Whether the task moved. */
     moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<boolean>;

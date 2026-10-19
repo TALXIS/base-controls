@@ -21,6 +21,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _rootTaskId?: string;
     private _tree: RecordTree;
     private _hasLoaded = false;
+    private _newTaskIds = new Set<string>();
     private _columnCatalogue = new Map<string, IColumn>();
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
@@ -135,11 +136,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[] {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
         const records = rawRecords.map(rawData => this.newRecord({ rawData, recordId: rawData[primaryIdAttribute] }));
+        records.forEach(record => this._newTaskIds.add(record.getRecordId()));
         if (records.length > 0) {
             this._rebuildTree();
             this.taskEvents.dispatchEvent('onTasksCreated', records, parentId);
         }
         return records;
+    }
+
+    public isNewTask(taskId: string): boolean {
+        return this._newTaskIds.has(taskId);
     }
 
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
