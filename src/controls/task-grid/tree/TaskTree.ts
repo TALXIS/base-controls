@@ -14,6 +14,7 @@ import { ExpansionHeader } from "./expansion-header";
 import { ADD_TASK_COLUMN_KEY } from "./constants";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
+const NEW_TASK_FOCUS_ATTEMPTS = 3;
 
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
@@ -177,20 +178,30 @@ export class TaskTree {
         if (parentId) {
             this._expansion.setExpanded(parentId, true);
         }
+        if (records.length === 1) {
+            this._focusNewTask(records[0].getRecordId(), NEW_TASK_FOCUS_ATTEMPTS);
+        }
+    };
+
+    //AG Grid draws a new row in a later frame, and an edit needs the drawn cell
+    private _focusNewTask(recordId: string, attemptsLeft: number): void {
         const gridApi = this._gridApi;
-        const node = records.length === 1 ? gridApi?.getRowNode(records[0].getRecordId()) : undefined;
-        if (!gridApi || node?.rowIndex == null) {
+        const node = gridApi?.getRowNode(recordId);
+        if (!gridApi || gridApi.isDestroyed() || node?.rowIndex == null) {
             return;
         }
         const subject = this._provider.getFieldMapping().subject;
         gridApi.ensureNodeVisible(node);
-        if (this._grid.services.find('editing')) {
-            gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });
+        gridApi.setFocusedCell(node.rowIndex, subject);
+        if (!this._grid.services.find('editing')) {
+            return;
         }
-        else {
-            gridApi.setFocusedCell(node.rowIndex, subject);
+        gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });
+        const isEditing = gridApi.getEditingCells().some(cell => cell.rowIndex === node.rowIndex && cell.colId === subject);
+        if (!isEditing && attemptsLeft > 1) {
+            requestAnimationFrame(() => this._focusNewTask(recordId, attemptsLeft - 1));
         }
-    };
+    }
 
     private _onTasksUpdated = (records: IRecord[]): void => {
         const recordIds = new Set(records.map(record => record.getRecordId()));
