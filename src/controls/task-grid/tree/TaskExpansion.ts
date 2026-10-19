@@ -87,7 +87,8 @@ export class TaskExpansion implements ITaskExpansion {
     }
 
     public setExpanded(recordId: string, expanded: boolean): void {
-        if (this._intent.get(recordId) === expanded) {
+        const isShownExpanded = this._isShownExpanded(recordId);
+        if (this._intent.get(recordId) === expanded && (isShownExpanded === undefined || isShownExpanded === expanded)) {
             return;
         }
         this._intent.set(recordId, expanded);
@@ -95,8 +96,9 @@ export class TaskExpansion implements ITaskExpansion {
         this._apply({ recordIds: [recordId], expanded });
     }
 
+    //flips what the row shows, which a parent kept open for its matches overrides
     public toggle(recordId: string): void {
-        this.setExpanded(recordId, !this.isExpanded(recordId));
+        this.setExpanded(recordId, !(this._isShownExpanded(recordId) ?? this.isExpanded(recordId)));
     }
 
     public expandLevel(): void {
@@ -180,6 +182,10 @@ export class TaskExpansion implements ITaskExpansion {
         finally {
             this._isApplying = false;
         }
+    }
+
+    private _isShownExpanded(recordId: string): boolean | undefined {
+        return this._gridApi?.getRowNode(recordId)?.expanded;
     }
 
     //one walk of the rows: a lookup by id walks them all
