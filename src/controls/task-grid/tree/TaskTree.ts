@@ -127,7 +127,11 @@ export class TaskTree {
 
     //an unmatched parent is shown only because something under it matched
     private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
-        if (params.columnName === this._provider.getFieldMapping().subject && !this._provider.getRecordTree().view.isMatching(params.record.getRecordId())) {
+        if (params.columnName !== this._provider.getFieldMapping().subject) {
+            return;
+        }
+        theme.edit('taskGrid|subject', result => { result.fonts.medium.fontWeight = 600; });
+        if (!this._provider.getRecordTree().view.isMatching(params.record.getRecordId())) {
             theme.edit('taskGrid|unmatchedParent', result => { result.fonts.medium.fontStyle = 'italic'; });
         }
     };

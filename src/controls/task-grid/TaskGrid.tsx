@@ -18,6 +18,6 @@ export const TaskGridRoot = (props: ITaskGridProps) => {
     const context = useMemo((): ITaskGridContext => ({ runtime, components: props.components ?? {} }), [props.components]);
 
     return <TaskGridContext.Provider value={context}>
-        <Grid enableZebra={false} {...props} modules={modules} />
+        <Grid enableZebra={false} enableOptionSetColors {...props} modules={modules} />
     </TaskGridContext.Provider>;
 };
