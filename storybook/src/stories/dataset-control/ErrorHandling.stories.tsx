@@ -52,7 +52,7 @@ const syncToCrm = async () => {
 <DatasetControl.Ribbon onLoad={async () => [{ id: 'sync', label: 'Sync to CRM', onExecute: syncToCrm }]} />
 \`\`\`
 
-- A user view counts as failed when \`onBeforeSave\` throws, or when the save or delete reports \`success: false\`. The dialog then shows the record's errors, or the \`saveFailed\` and \`deleteFailed\` labels when it gives none. See [**Localization**](?path=/docs/datasetcontrol-localization--overview).
+- A user view counts as failed when \`onWriteViewData\` throws, or when the save or delete reports \`success: false\`. The dialog then shows the record's errors, or the \`saveFailed\` and \`deleteFailed\` labels when it gives none. See [**Localization**](?path=/docs/datasetcontrol-localization--overview).
 
 {{story: Show a failed action}}
 

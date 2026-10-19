@@ -3453,8 +3453,8 @@ interface IDatasetControlModules {
     custom?: IDatasetControlModule[];
 }
 
-/** What onBeforeSave is called with. */
-interface IUserQuerySaveParameters<TData = unknown> {
+/** What onWriteViewData is called with. */
+interface IUserQueryWriteParameters<TData = unknown> {
     /** The view, unsaved; isNew() tells a new view from an existing one. */
     record: IRecord;
     /** The control the view is saved from, showing what the user set up. */
@@ -3466,11 +3466,11 @@ declare const createUserQueriesModule: <TData>(parameters: {
     /** The user's views, one record per view. */
     provider: IDataProvider;
     /** Reads what a user view keeps from its record, as onLoad gets it in view.data. */
-    getViewData: (record: IRecord) => TData;
+    onGetViewData: (record: IRecord) => TData;
     /** Overrides for every string of the user queries. */
     labels?: Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
-    /** Called before a view is saved, new or existing; fill in what the view keeps. */
-    onBeforeSave?: (parameters: IUserQuerySaveParameters<TData>) => Promise<void> | void;
+    /** Writes what the control shows onto a view's record before it is saved; throw to stop the save. */
+    onWriteViewData?: (parameters: IUserQueryWriteParameters<TData>) => Promise<void> | void;
 }) => IDatasetControlModule;
 
 
@@ -3799,37 +3799,35 @@ interface IFieldMapping {
     percentComplete?: string;
 }
 
-/** A view of the tasks: what the view switcher lists and what the provider starts with. */
-interface ITaskView extends IDatasetControlView {
+/** What a task view starts the provider with. */
+interface ITaskViewData {
     columns: IColumn[];
     sorting?: { name: string; sortDirection: number }[];
     filtering?: any;
+    linking?: any[];
     quickFindColumns?: string[];
+    searchQuery?: string;
     /** Lists the matching tasks on their own, without the tree, until the user changes it. */
     isFlatList?: boolean;
 }
 
-/** Where the tasks come from and how changing them is persisted. */
-interface ITaskStrategy {
-    onGetAvailableColumns(): Promise<IColumn[]>;
-    [member: string]: any;
+/** A view of the tasks, user views included. */
+type ITaskView = IDatasetControlView<ITaskViewData>;
+
+/** The tasks of one view, loaded at once and shown as a tree. */
+interface ITaskDataProvider extends IDataProvider {
+    getFieldMapping(): IFieldMapping;
 }
 
-/** Every task of a view, loaded at once through a strategy and shown as a tree. */
-declare class TaskDataProvider {
-    constructor(parameters: { strategy: ITaskStrategy; fieldMapping: IFieldMapping; view?: ITaskView; rootTaskId?: string });
-}
-
-/** Tasks held in memory; what the user changes stays for every view this strategy loads. */
-declare class MemoryTaskStrategy implements ITaskStrategy {
-    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; onGetNewTaskDefaults?: (parentId?: string) => Partial<IRawRecord> });
-    onGetAvailableColumns(): Promise<IColumn[]>;
-    getRecords(): IRawRecord[];
-}
-
-/** The running task grid. */
-interface ITaskGrid {
-    readonly grid: IGrid;
+/** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
+interface ITaskDatasetControlRuntime {
+    readonly services: { get(key: string): any; find(key: string): any; whenAvailable(key: string, callback: (service: any) => void): void; register(key: string, resolve: () => any): void };
+    readonly events: { addEventListener(event: 'onDestroyed', listener: () => void): void };
+    getProvider(): ITaskDataProvider;
+    /** The view this mount loaded. */
+    getView(): ITaskView | undefined;
+    /** What the view shows right now, as task view data to save. */
+    getCurrentViewData(): ITaskViewData;
     createTask(parentId?: string): Promise<void>;
     deleteTasks(taskIds: string[]): Promise<void>;
     openTasks(taskIds: string[]): Promise<void>;
@@ -3837,24 +3835,58 @@ interface ITaskGrid {
     setFlatList(isFlatList: boolean): void;
 }
 
-interface ITaskGridProps extends Omit<IGridProps, 'modules' | 'onReady' | 'onDestroyed'> {
-    /** The grid's modules except the row model, grouping and aggregation. */
-    modules?: Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation'>;
-    /** Whether tasks can be moved by dragging their rows. */
-    enableRowDragging?: boolean;
-    /** Whether the New command and the add-task buttons are there. */
-    enableTaskCreation?: boolean;
-    onReady?: (taskGrid: ITaskGrid) => void;
-    onDestroyed?: (taskGrid: ITaskGrid) => void;
+interface IDatasetControlPartMap {
+    /** The task dataset control the parts are drawn in. */
+    taskDatasetControl: ITaskDatasetControlRuntime;
 }
 
-/** A grid of tasks shown as a tree; reads its TaskDataProvider from the DatasetControl around it. */
+/** A feature of a task grid, registered on every load. */
+interface ITaskGridModule {
+    onRegister?(taskDatasetControl: ITaskDatasetControlRuntime): void;
+}
+
+/** Where the tasks come from: carries the provider built for the view, and whatever its platform draws. */
+interface ITaskDataSourceModule extends ITaskGridModule {
+    readonly provider: ITaskDataProvider;
+}
+
+/** What a TaskDatasetControl's onLoad is called with. */
+type ITaskGridLoadParameters = IDatasetControlLoadParameters<ITaskViewData>;
+
+/** What a TaskDatasetControl's onLoad returns. */
+interface ITaskGridLoadResult {
+    modules: { dataSource: ITaskDataSourceModule; custom?: ITaskGridModule[] };
+}
+
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope'> {
+    /** Loads the data source for the view and the task modules; called on every mount, so on every view switch. */
+    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** Whether the New command and the add-task buttons are there. */
+    enableTaskCreation?: boolean;
+    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
+    onTasksDeleted?: (taskIds: string[]) => void;
+    onTaskMoved?: (params: any) => void;
+    onTasksUpdated?: (records: IRecord[]) => void;
+}
+
+interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
+    /** Read once, at mount; the task tree and the client-side row model are always added. */
+    modules?: Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation'>;
+}
+
+/** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
-/** The parts of a DatasetControl that wraps a task grid. */
-declare const TaskGridDatasetControl: {
-    /** A menu of the task grid's toggles, such as Show hierarchy; goes in the header. */
+/** Moves tasks by dragging their rows: between rows, sideways between levels, or onto another task; not in a flat list. */
+declare const createTaskDraggingModule: () => IGridModule;
+
+/** A DatasetControl of tasks, drawn as a tree in its body. */
+declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
+    /** A menu of the task grid's toggles, such as Show hierarchy. */
     Settings: (props: {}) => JSX.Element;
 };
+
+/** Tasks held in memory, opened in a form drawn over the control. */
+declare const createMemoryTaskDataSource: (parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; fieldMapping: IFieldMapping }) => ITaskDataSourceModule;
 
 /** The sample tasks: 108 tasks over seven projects. */
 declare const TASKS: IRawRecord[];

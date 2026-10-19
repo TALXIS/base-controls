@@ -1,13 +1,14 @@
 import { TaskGridRoot } from "./TaskGrid";
-import { Settings } from "./parts/settings";
+import { TaskDatasetControlRoot } from "./dataset-control/TaskDatasetControl";
+import { Settings } from "./dataset-control/settings";
 
-/** A grid of tasks shown as a tree; goes in a DatasetControl's body. */
-export const TaskGrid = TaskGridRoot;
-
-export interface ITaskGridDatasetControlNamespace {
-    /** A menu of the task grid's toggles, such as Show hierarchy; goes in the header. */
+export interface ITaskDatasetControlParts {
+    /** A menu of the task grid's toggles, such as Show hierarchy. */
     Settings: typeof Settings;
 }
 
-/** The parts of a DatasetControl that wraps a task grid. */
-export const TaskGridDatasetControl: ITaskGridDatasetControlNamespace = { Settings };
+/** A DatasetControl of tasks, drawn as a tree in its body. */
+export const TaskDatasetControl: typeof TaskDatasetControlRoot & ITaskDatasetControlParts = Object.assign(TaskDatasetControlRoot, { Settings });
+
+/** The tasks of a `TaskDatasetControl`, drawn as a tree; goes in its body. */
+export const TaskGrid = TaskGridRoot;

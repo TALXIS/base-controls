@@ -18,17 +18,21 @@ export interface IFieldMapping {
     percentComplete?: string;
 }
 
-/** A view of the tasks: what the view switcher lists and what the provider starts with. */
-export interface ITaskView extends IDatasetControlView {
+/** What a task view starts the provider with. */
+export interface ITaskViewData {
     columns: IColumn[];
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
     linking?: ILinkEntityExposedExpression[];
     /** The columns quick find searches, by name. */
     quickFindColumns?: string[];
+    searchQuery?: string;
     /** Lists the matching tasks on their own, without the tree, until the user changes it. */
     isFlatList?: boolean;
 }
+
+/** A view of the tasks, user views included. */
+export type ITaskView = IDatasetControlView<ITaskViewData>;
 
 /** One record an operation could not complete, and why. */
 export interface IFailedRecord {
@@ -136,8 +140,8 @@ export interface ITaskDataProvider extends IDataProvider {
     getRecordTree(): IRecordTree;
     /** The task the tree is scoped to, if any. */
     getRootTaskId(): string | undefined;
-    /** The view the provider was created for. */
-    getView(): ITaskView | undefined;
+    /** The columns quick find searches, by name; the subject when none are set. */
+    setQuickFindColumns(columnNames: string[]): void;
     areInactiveTasksHidden(): boolean;
     setInactiveTasksHidden(isHidden: boolean): void;
     isRecordActive(recordId: string): boolean;

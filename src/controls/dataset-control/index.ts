@@ -1,6 +1,7 @@
 export * from './namespace';
-export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents } from './modules/user-queries';
-export type { IUserQueriesModule, IUserQuerySaveParameters, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, TalxisUserQueriesProvider } from './modules/user-queries';
+export type { ITalxisUserQueriesProviderParameters } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQueryWriteParameters, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,

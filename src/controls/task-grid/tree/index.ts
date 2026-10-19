@@ -3,3 +3,4 @@ export * from './constants';
 export * from './tree-cell';
 export * from './add-task-cell';
 export * from './expansion-header';
+export * from './createTaskDraggingModule';

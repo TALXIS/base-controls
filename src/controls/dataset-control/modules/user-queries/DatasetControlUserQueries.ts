@@ -4,7 +4,7 @@ import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime
 import type { IDatasetControlView } from "../../runtime/interfaces";
 import type { IEventSubscriber, ILocalizationService } from "@utils";
 import type { IUserQueriesLabels } from "./labels";
-import type { IUserQuerySaveParameters } from "./interfaces";
+import type { IUserQueryWriteParameters } from "./interfaces";
 
 /** The id of the group the user's views are listed under. */
 export const USER_QUERIES_GROUP = 'userQueries';
@@ -13,8 +13,8 @@ export interface IDatasetControlUserQueriesParameters {
     datasetControl: IDatasetControlRuntime;
     provider: IDataProvider;
     labels: ILocalizationService<IUserQueriesLabels>;
-    getViewData: (record: IRecord) => unknown;
-    onBeforeSave?: (parameters: IUserQuerySaveParameters) => Promise<void> | void;
+    onGetViewData: (record: IRecord) => unknown;
+    onWriteViewData?: (parameters: IUserQueryWriteParameters) => Promise<void> | void;
 }
 
 export interface IDatasetControlUserQueriesEvents {
@@ -30,15 +30,15 @@ export class DatasetControlUserQueries {
     private _datasetControl: IDatasetControlRuntime;
     private _provider: IDataProvider;
     private _labels: ILocalizationService<IUserQueriesLabels>;
-    private _getViewData: (record: IRecord) => unknown;
-    private _onBeforeSave?: (parameters: IUserQuerySaveParameters) => Promise<void> | void;
+    private _onGetViewData: (record: IRecord) => unknown;
+    private _onWriteViewData?: (parameters: IUserQueryWriteParameters) => Promise<void> | void;
 
     constructor(parameters: IDatasetControlUserQueriesParameters) {
         this._datasetControl = parameters.datasetControl;
         this._provider = parameters.provider;
         this._labels = parameters.labels;
-        this._getViewData = parameters.getViewData;
-        this._onBeforeSave = parameters.onBeforeSave;
+        this._onGetViewData = parameters.onGetViewData;
+        this._onWriteViewData = parameters.onWriteViewData;
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
     }
 
@@ -59,7 +59,7 @@ export class DatasetControlUserQueries {
     public async load(): Promise<IDatasetControlView[]> {
         await this._provider.refresh();
         const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        return this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._getViewData(record) }));
+        return this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onGetViewData(record) }));
     }
 
     /** The user view's record; `undefined` when the view is not a user view. */
@@ -123,7 +123,7 @@ export class DatasetControlUserQueries {
     };
 
     private async _save(record: IRecord): Promise<void> {
-        await this._onBeforeSave?.({ record, datasetControl: this._datasetControl });
+        await this._onWriteViewData?.({ record, datasetControl: this._datasetControl });
         this._throwIfSaveFailed([await record.save()]);
     }
 

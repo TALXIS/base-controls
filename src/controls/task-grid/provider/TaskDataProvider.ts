@@ -1,13 +1,12 @@
 import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProviderEventListeners, IEventBubbleOptions, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { ICreateTaskOptions, IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, ITaskView } from "./interfaces";
+import { mergeColumn } from "./mergeColumn";
+import { ICreateTaskOptions, IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     strategy: ITaskStrategy;
     fieldMapping: IFieldMapping;
-    /** The view the provider starts with: its columns, sorting and filtering. */
-    view?: ITaskView;
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
 }
@@ -18,7 +17,7 @@ const ACTIVE_STATE_CODE = 0;
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _strategy: ITaskStrategy;
     private _fieldMapping: IFieldMapping;
-    private _view?: ITaskView;
+    private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
     private _tree: RecordTree;
     private _hasLoaded = false;
@@ -31,15 +30,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
         this._strategy = parameters.strategy;
         this._fieldMapping = parameters.fieldMapping;
-        this._view = parameters.view;
         this._rootTaskId = parameters.rootTaskId;
         this._tree = new RecordTree(this);
-        if (this._view) {
-            this.setColumns(this._view.columns);
-            this.setSorting(this._view.sorting ?? []);
-            this.setFiltering(this._view.filtering ?? null);
-            this.setLinking(this._view.linking ?? []);
-        }
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -73,7 +65,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getQuickFindColumns(): IColumn[] {
-        const columnNames = this._view?.quickFindColumns ?? [this._fieldMapping.subject];
+        const columnNames = this._quickFindColumnNames.length > 0 ? this._quickFindColumnNames : [this._fieldMapping.subject];
         return columnNames.map(columnName => this.getColumnsMap()[columnName]).filter((column): column is IColumn => !!column);
     }
 
@@ -90,8 +82,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         super.setColumns(this._withMappedColumns(columns));
     }
 
-    public getView(): ITaskView | undefined {
-        return this._view;
+    public setQuickFindColumns(columnNames: string[]): void {
+        this._quickFindColumnNames = columnNames;
     }
 
     public areInactiveTasksHidden(): boolean {
@@ -214,7 +206,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public createNewDataProvider(_eventBubbleOptions?: IEventBubbleOptions): TaskDataProvider {
-        return new TaskDataProvider({ strategy: this._strategy, fieldMapping: this._fieldMapping, view: this._view, rootTaskId: this._rootTaskId });
+        return new TaskDataProvider({ strategy: this._strategy, fieldMapping: this._fieldMapping, rootTaskId: this._rootTaskId });
     }
 
     public dispatchEvent<K extends keyof IDataProviderEventListeners>(event: K, ...args: Parameters<IDataProviderEventListeners[K]>): boolean {
@@ -249,7 +241,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.setEntityName(metadata.LogicalName ?? '');
         this.setDataSource(rawData);
         //what was set before the load may have lacked definitions the catalogue now has
-        const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name));
+        const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
     }
@@ -263,6 +255,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _getVisibleRecords(): IRecord[] {
         const recordsMap = this.getRecordsMap();
         return this._tree.view.getOrderedIds().map(recordId => recordsMap[recordId]).filter((record): record is IRecord => !!record);
+    }
+
+    private _withDefinition(column: IColumn): IColumn {
+        const definition = this._columnCatalogue.get(column.name);
+        return definition ? mergeColumn(definition, column) : column;
     }
 
     private _isMappedColumn(columnName: string): boolean {

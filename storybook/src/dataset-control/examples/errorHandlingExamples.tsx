@@ -30,7 +30,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 `
 
 const FAILED_ACTIONS_CODE = `import { loadDealViews } from './views'
-import { DealView, getViewData, loadView, onBeforeSave, userViews } from './userViews'
+import { DealView, getViewData, loadView, writeViewData, userViews } from './userViews'
 
 //stands in for your server, which the toggle takes down
 const server = { isDown: false }
@@ -44,16 +44,16 @@ const syncToCrm = async () => {
 
 const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync to CRM', iconName: 'Sync', onExecute: syncToCrm }]
 
-const saveWhileUp = (parameters: IUserQuerySaveParameters<DealView>) => {
+const saveWhileUp = (parameters: IUserQueryWriteParameters<DealView>) => {
     if (server.isDown) {
         throw new Error('The view could not be saved while the server is down.')
     }
-    onBeforeSave(parameters)
+    writeViewData(parameters)
 }
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, getViewData, onBeforeSave: saveWhileUp }) }), [])
+    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: saveWhileUp }) }), [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked

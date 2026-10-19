@@ -5,10 +5,9 @@ import { IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, 
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
-import type { ITaskGridSetting, TaskGridRuntime } from "../runtime";
+import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
 import { TASK_GRID_MODULE_PRIORITY } from "../modules/priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
-import { TaskTreeDragging } from "./TaskTreeDragging";
 import { TreeCell } from "./tree-cell";
 import { AddTaskCell } from "./add-task-cell";
 import { ExpansionHeader } from "./expansion-header";
@@ -18,14 +17,13 @@ const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KE
 
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
-    runtime: TaskGridRuntime;
-    onIsRowDraggingEnabled: () => boolean;
+    runtime: ITaskDatasetControlRuntime;
 }
 
 /** Draws the tasks as a tree on the grid: the rows, the subject column, dragging and expansion. */
 export class TaskTree {
     private _grid: IGrid<ITaskGridServiceMap>;
-    private _runtime: TaskGridRuntime;
+    private _runtime: ITaskDatasetControlRuntime;
     private _provider: ITaskDataProvider;
     private _expansion: TaskExpansion;
     private _isFlatList: boolean;
@@ -37,11 +35,10 @@ export class TaskTree {
         this._runtime = parameters.runtime;
         const services = this._grid.services;
         this._provider = services.get('provider');
-        this._isFlatList = this._getState().isFlatList ?? this._provider.getView()?.isFlatList ?? false;
+        this._isFlatList = this._getState().isFlatList ?? parameters.runtime.getView()?.data?.isFlatList ?? false;
         this._expansion = new TaskExpansion({ provider: this._provider, state: services.get('state'), onIsFlatList: () => this._isFlatList });
-        new TaskTreeDragging({ grid: this._grid, onIsEnabled: () => parameters.onIsRowDraggingEnabled() && !this._isFlatList });
-        parameters.runtime.attach(this._grid, this);
-        services.register('taskGrid', () => parameters.runtime);
+        parameters.runtime.services.register('taskTree', () => this);
+        services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_MODULE_PRIORITY.tree);
@@ -211,6 +208,9 @@ export class TaskTree {
     };
 
     private _onDestroyed = (): void => {
+        if (this._runtime.services.find('taskTree') === this) {
+            this._runtime.services.unregister('taskTree');
+        }
         this._provider.taskEvents.removeEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
         this._provider.taskEvents.removeEventListener('onTasksCreated', this._onTasksCreated);

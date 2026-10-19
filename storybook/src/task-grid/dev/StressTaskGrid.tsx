@@ -12,41 +12,40 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
 }
 
 const VIEWS: ITaskView[] = [
-    { id: 'all', name: 'All tasks', columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') },
-    { id: 'planning', name: 'Planning', columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] },
-    { id: 'flat', name: 'Every task on its own', columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] },
+    { id: 'all', name: 'All tasks', data: { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') } },
+    { id: 'planning', name: 'Planning', data: { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } },
+    { id: 'flat', name: 'Every task on its own', data: { columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] } },
 ]
 
 const GridExample = () => {
-    const strategy = React.useMemo(() => new MemoryTaskStrategy({ records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS }), [])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
         sorting: createSortingModule(),
         filtering: createFilteringModule(),
+        custom: [createTaskDraggingModule()],
     }), [])
 
-    const onLoad = async ({ viewId }: { viewId?: string }) => {
-        const view = VIEWS.find(view => view.id === viewId) ?? VIEWS[0]
-        return { provider: new TaskDataProvider({ strategy, fieldMapping, view }), viewId: view.id }
-    }
+    const onLoad = async (): Promise<ITaskGridLoadResult> => ({
+        modules: { dataSource: createMemoryTaskDataSource({ records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS, fieldMapping }) },
+    })
 
-    return <DatasetControl stateKey='devStressTasks' height='100%' onLoad={onLoad}>
+    return <TaskDatasetControl onLoadViews={async () => VIEWS} stateKey='devStressTasks' height='100%' onLoad={onLoad} enableTaskCreation>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher onLoad={async () => VIEWS} />
+                <DatasetControl.ViewSwitcher />
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <DatasetControl.Ribbon />
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
-                <TaskGridDatasetControl.Settings />
+                <TaskDatasetControl.Settings />
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <TaskGrid stateKey='stressTaskGrid' enableRowDragging enableTaskCreation modules={modules} />
+            <TaskGrid stateKey='stressTaskGrid' modules={modules} />
         </DatasetControl.Body>
-    </DatasetControl>
+    </TaskDatasetControl>
 }
 `
 

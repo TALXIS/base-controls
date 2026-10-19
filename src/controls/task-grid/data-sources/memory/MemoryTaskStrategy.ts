@@ -1,6 +1,7 @@
 import { IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
+import type { MemoryTaskForm } from "./MemoryTaskForm";
 
 export interface IMemoryTaskStrategyParameters {
     /** The tasks to start with; copied, so changes never reach this array. */
@@ -9,25 +10,18 @@ export interface IMemoryTaskStrategyParameters {
     metadata: IMemoryProviderEntityMetadata;
     /** Every column a view or Edit columns may use. */
     columns: IColumn[];
-    /** Values a new task starts with, under what the caller asks for. */
-    onGetNewTaskDefaults?: (parentId?: string) => Partial<IRawRecord>;
-    /** Opens records, which memory data has no forms for. */
-    onOpenRecords?: (references: ComponentFramework.EntityReference[], isTask: boolean) => Promise<IOpenTasksResult | null>;
 }
 
-/** Tasks held in memory; what the user changes stays for every view this strategy loads. */
+/** Tasks held in memory, opened in the memory form. */
 export class MemoryTaskStrategy implements ITaskStrategy {
     private _parameters: IMemoryTaskStrategyParameters;
+    private _form: MemoryTaskForm;
     private _store: IRawRecord[];
 
-    constructor(parameters: IMemoryTaskStrategyParameters) {
+    constructor(parameters: IMemoryTaskStrategyParameters, form: MemoryTaskForm) {
         this._parameters = parameters;
+        this._form = form;
         this._store = structuredClone(parameters.records);
-    }
-
-    /** The tasks as they are now. */
-    public getRecords(): IRawRecord[] {
-        return this._store;
     }
 
     public async onLoad(): Promise<ITaskLoadResult> {
@@ -44,12 +38,11 @@ export class MemoryTaskStrategy implements ITaskStrategy {
 
     public async onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null> {
         const { fieldMapping, metadata } = params;
-        const parentId = params.parentRecord?.getRecordId();
         const task: IRawRecord = {};
         for (const column of params.columns) {
             task[column.name] = null;
         }
-        Object.assign(task, this._parameters.onGetNewTaskDefaults?.(parentId), params.data);
+        Object.assign(task, params.data);
         task[metadata.PrimaryIdAttribute!] = crypto.randomUUID();
         task[fieldMapping.parentId] = this._getParentReference(params.parentRecord);
         task[fieldMapping.stackRank] = this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping);
@@ -91,12 +84,27 @@ export class MemoryTaskStrategy implements ITaskStrategy {
     }
 
     public async onOpenRecords(references: ComponentFramework.EntityReference[], isTask: boolean): Promise<IOpenTasksResult | null> {
-        return this._parameters.onOpenRecords?.(references, isTask) ?? null;
+        if (!isTask) {
+            return null;
+        }
+        const updatedRecords: IRawRecord[] = [];
+        for (const reference of references) {
+            const task = this._find(reference.id.guid);
+            const saved = task && await this._form.open(structuredClone(task));
+            if (saved) {
+                Object.assign(task, saved);
+                updatedRecords.push(structuredClone(saved));
+            }
+        }
+        return updatedRecords.length > 0 ? { success: true, updatedRecords } : null;
+    }
+
+    private _find(taskId: string): IRawRecord | undefined {
+        return this._store.find(task => task[this._parameters.metadata.PrimaryIdAttribute!] === taskId);
     }
 
     private _write(taskId: string, values: IRawRecord): void {
-        const primaryIdAttribute = this._parameters.metadata.PrimaryIdAttribute!;
-        const task = this._store.find(task => task[primaryIdAttribute] === taskId);
+        const task = this._find(taskId);
         if (task) {
             Object.assign(task, structuredClone(values));
         }

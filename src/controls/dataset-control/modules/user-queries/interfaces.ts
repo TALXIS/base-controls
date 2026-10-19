@@ -1,8 +1,8 @@
 import type { IRecord } from "@talxis/client-libraries";
 import type { IDatasetControl, IDatasetControlModule } from "../../runtime/interfaces";
 
-/** What `onBeforeSave` is called with. */
-export interface IUserQuerySaveParameters<TData = unknown> {
+/** What `onWriteViewData` is called with. */
+export interface IUserQueryWriteParameters<TData = unknown> {
     /** The view, unsaved; `isNew()` tells a new view from an existing one. */
     record: IRecord;
     /** The control the view is saved from, showing what the user set up. */

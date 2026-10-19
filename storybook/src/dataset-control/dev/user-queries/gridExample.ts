@@ -3,12 +3,12 @@ import type { IGridExampleFile } from '../../../grid/GridLivePreview'
 export const GRID_EXAMPLE_FILE: IGridExampleFile = {
     name: 'GridExample.tsx',
     code: `import { getDefinition, loadDeals, loadSystemViews } from './views'
-import { createUserQueriesProvider, getViewData, onBeforeSave } from './userQueries'
+import { createUserQueriesProvider, getViewData, writeViewData } from './userQueries'
 import { DealsBody } from './DealsBody'
 
 const GridExample = () => {
     const userQueriesProvider = React.useMemo(() => createUserQueriesProvider(), [])
-    const datasetControlModules = React.useMemo(() => ({ userQueries: createUserQueriesModule({ provider: userQueriesProvider, getViewData, onBeforeSave }) }), [])
+    const datasetControlModules = React.useMemo(() => ({ userQueries: createUserQueriesModule({ provider: userQueriesProvider, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
 
     //every view, system or saved by the user, carries what it shows in its data
     const onLoad = async (params: IDatasetControlLoadParameters) => ({ provider: await loadDeals(getDefinition(params.view)) })

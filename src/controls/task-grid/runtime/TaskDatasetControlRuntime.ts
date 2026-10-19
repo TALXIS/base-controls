@@ -1,97 +1,110 @@
-import type { IGrid } from "@controls/grid";
-import type { IRibbonCommand, IRibbonRuntime } from "@controls/ribbon";
-import { IPcfContext } from "@interfaces";
-import { HookRegistry, ILocalizationService } from "@utils";
+import { EventEmitter, IColumn } from "@talxis/client-libraries";
+import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
+import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
+import type { IRibbonCommand } from "@controls/ribbon";
+import type { IPcfContext } from "@interfaces";
+import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions, ITaskDataProvider } from "../provider";
-import type { ITaskGridServiceMap } from "../services";
+import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import { mergeColumn } from "../provider/mergeColumn";
+import { USER_QUERIES_GROUP } from "@controls/dataset-control/modules/user-queries/DatasetControlUserQueries";
 import type { ITaskGridLabels } from "../labels";
-import { ITaskGrid, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
+import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
+import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
 
-/** What the runtime reads of the tree module. */
-export interface ITaskGridTree {
-    isFlatList(): boolean;
-    setFlatList(isFlatList: boolean): void;
-}
-
-export interface ITaskGridRuntimeParameters {
-    provider: ITaskDataProvider;
-    pcfContext: IPcfContext;
+export interface ITaskDatasetControlRuntimeParameters {
+    datasetControl: IDatasetControlRuntime;
     labels: ILocalizationService<ITaskGridLabels>;
-    /** Whether the New command and the add-task column are there. */
-    onIsTaskCreationEnabled: () => boolean;
+    pcfContext: IPcfContext;
+    /** The `TaskDatasetControl`'s current props. */
+    onGetProps: () => ITaskDatasetControlProps;
 }
 
-export class TaskGridRuntime implements ITaskGrid {
-    private _provider: ITaskDataProvider;
-    private _pcfContext: IPcfContext;
-    private _labels: ILocalizationService<ITaskGridLabels>;
-    private _onIsTaskCreationEnabled: () => boolean;
-    private _grid?: IGrid<ITaskGridServiceMap>;
-    private _tree?: ITaskGridTree;
+export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
+    public readonly services = new ServiceLocator<ITaskDatasetControlRuntimeServiceMap>();
+    public readonly events = new EventEmitter<ITaskDatasetControlRuntimeEvents>();
+    private _onGetProps: () => ITaskDatasetControlProps;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
+    private _view?: ITaskView;
 
-    constructor(parameters: ITaskGridRuntimeParameters) {
-        this._provider = parameters.provider;
-        this._pcfContext = parameters.pcfContext;
-        this._labels = parameters.labels;
-        this._onIsTaskCreationEnabled = parameters.onIsTaskCreationEnabled;
+    constructor(parameters: ITaskDatasetControlRuntimeParameters) {
+        const datasetControl = parameters.datasetControl;
+        this._onGetProps = parameters.onGetProps;
+        this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
+        this.services.register('labels', () => parameters.labels);
+        this.services.register('pcfContext', () => parameters.pcfContext);
         this._settingsHooks.register(this._addCoreSettings);
+        datasetControl.parts.whenAvailable('ribbon', ribbon => ribbon.registerCommands(this._addCoreCommands));
     }
 
-    public get grid(): IGrid<ITaskGridServiceMap> {
-        if (!this._grid) {
-            throw new Error('The task grid is reached before its modules registered.');
+    public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
+        this._view = parameters.view;
+        const { modules } = await this._onGetProps().onLoad(parameters);
+        const provider = modules.dataSource.provider;
+        if (this._view?.data) {
+            this._applyView(provider, this._view.data);
         }
-        return this._grid;
+        this.services.register('provider', () => provider);
+        for (const module of [modules.dataSource, ...modules.custom ?? []]) {
+            module.onRegister?.(this);
+        }
+        return { provider };
     }
 
-    /** Hands over the grid and its tree once the modules register. */
-    public attach(grid: IGrid<ITaskGridServiceMap>, tree: ITaskGridTree): void {
-        this._grid = grid;
-        this._tree = tree;
+    public getView(): ITaskView | undefined {
+        return this._view;
     }
 
-    public isFlatList(): boolean {
-        return this._tree?.isFlatList() ?? false;
+    public getCurrentViewData(): ITaskViewData {
+        const provider = this.getProvider();
+        return {
+            columns: provider.getColumns().map(column => this._toSavedColumn(column)),
+            sorting: provider.getSorting(),
+            filtering: provider.getFiltering(),
+            linking: provider.getLinking(),
+            quickFindColumns: provider.getQuickFindColumns().map(column => column.name),
+            searchQuery: provider.getSearchQuery() || undefined,
+            isFlatList: this.isFlatList(),
+        };
     }
 
-    public setFlatList(isFlatList: boolean): void {
-        this._tree?.setFlatList(isFlatList);
+    public getFieldMapping(): IFieldMapping {
+        return this.getProvider().getFieldMapping();
     }
 
     public getProvider(): ITaskDataProvider {
-        return this._provider;
+        return this.services.get('provider');
     }
 
     public getLabels(): ILocalizationService<ITaskGridLabels> {
-        return this._labels;
+        return this.services.get('labels');
     }
 
     public isTaskCreationEnabled(): boolean {
-        return this._onIsTaskCreationEnabled();
+        return !!this._onGetProps().enableTaskCreation;
+    }
+
+    public isFlatList(): boolean {
+        return this.services.find('taskTree')?.isFlatList() ?? false;
+    }
+
+    public setFlatList(isFlatList: boolean): void {
+        this.services.find('taskTree')?.setFlatList(isFlatList);
     }
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
-        await this._execute(() => this._provider.createTask(parentId, options));
+        await this._execute(() => this.getProvider().createTask(parentId, options));
     }
 
     public async deleteTasks(taskIds: string[]): Promise<void> {
-        const confirmation = await this._pcfContext.navigation.openConfirmDialog({ text: this._labels.getLocalizedString('confirmDeleteTasks') });
+        const confirmation = await this.services.get('pcfContext').navigation.openConfirmDialog({ text: this.getLabels().getLocalizedString('confirmDeleteTasks') });
         if (confirmation.confirmed) {
-            await this._execute(() => this._provider.deleteTasks(taskIds));
+            await this._execute(() => this.getProvider().deleteTasks(taskIds));
         }
     }
 
     public async openTasks(taskIds: string[]): Promise<void> {
-        await this._execute(() => this._provider.openTasks(taskIds));
-    }
-
-    /** Puts New, Edit and Delete on the control's ribbon. */
-    public attachRibbon(ribbon: IRibbonRuntime): () => void {
-        const unregister = ribbon.registerCommands(this._addCoreCommands);
-        ribbon.reload();
-        return unregister;
+        await this._execute(() => this.getProvider().openTasks(taskIds));
     }
 
     public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
@@ -104,28 +117,68 @@ export class TaskGridRuntime implements ITaskGrid {
         return settings;
     }
 
+    /** Called as the mount goes. */
+    public destroy(): void {
+        this.events.dispatchEvent('onDestroyed');
+        this.events.clearEventListeners();
+        this.services.destroy();
+    }
+
+    private _applyView(provider: ITaskDataProvider, view: ITaskViewData): void {
+        //a saved column keeps only its layout
+        const definitions = this._getSystemViewColumns();
+        provider.setColumns(view.columns.map(column => {
+            const definition = definitions.get(column.name);
+            return definition ? mergeColumn(definition, column) : column;
+        }));
+        provider.setSorting(view.sorting ?? []);
+        provider.setFiltering(view.filtering ?? null);
+        provider.setLinking(view.linking ?? []);
+        provider.setQuickFindColumns(view.quickFindColumns ?? []);
+        provider.setSearchQuery(view.searchQuery);
+    }
+
+    //the first system view to define a column wins
+    private _getSystemViewColumns(): Map<string, IColumn> {
+        const columns = new Map<string, IColumn>();
+        const views = this.services.get('datasetControl').getViews().filter(view => view.group?.id !== USER_QUERIES_GROUP);
+        for (const column of views.flatMap(view => view.data?.columns ?? [])) {
+            if (!columns.has(column.name)) {
+                columns.set(column.name, column);
+            }
+        }
+        return columns;
+    }
+
+    private _toSavedColumn(column: IColumn): IColumn {
+        const { name, isHidden, dataType, order, visualSizeFactor, isVirtual } = column;
+        return { name, isHidden, dataType, order, visualSizeFactor, isVirtual };
+    }
+
     //ahead of the consumer's own commands
     private _addCoreCommands = (commands: IRibbonCommand[]): void => {
-        const selectedIds = this._provider.getSelectedRecordIds();
+        const labels = this.getLabels();
+        const selectedIds = this.getProvider().getSelectedRecordIds();
         const coreCommands: IRibbonCommand[] = [];
         if (this.isTaskCreationEnabled()) {
-            coreCommands.push({ id: 'new', label: this._labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
+            coreCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
         }
         if (selectedIds.length > 0) {
             coreCommands.push(
-                { id: 'edit', label: this._labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.openTasks(selectedIds) },
-                { id: 'delete', label: this._labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) },
+                { id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.openTasks(selectedIds) },
+                { id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) },
             );
         }
         commands.unshift(...coreCommands);
     };
 
     private _addCoreSettings = (settings: ITaskGridSetting[]): void => {
+        const provider = this.getProvider();
         settings.push({
             key: 'hideInactiveTasks',
-            label: this._labels.getLocalizedString('hideInactiveTasks'),
-            isChecked: this._provider.areInactiveTasksHidden(),
-            onChange: isChecked => this._provider.setInactiveTasksHidden(isChecked),
+            label: this.getLabels().getLocalizedString('hideInactiveTasks'),
+            isChecked: provider.areInactiveTasksHidden(),
+            onChange: isChecked => provider.setInactiveTasksHidden(isChecked),
         });
     };
 
@@ -134,7 +187,7 @@ export class TaskGridRuntime implements ITaskGrid {
             await operation();
         }
         catch (error) {
-            await this._pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: error instanceof Error ? error.stack : undefined });
+            await this.services.get('pcfContext').navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: error instanceof Error ? error.stack : undefined });
         }
     }
 }

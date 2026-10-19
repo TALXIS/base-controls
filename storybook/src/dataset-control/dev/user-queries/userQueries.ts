@@ -32,7 +32,7 @@ export const createUserQueriesProvider = () => new MemoryDataProvider({
 export const getViewData = (record: IRecord): IDealViewData => ({ definition: JSON.parse(record.getValue('definition')) })
 
 /** Saving a view, new or changed, keeps what the control shows, drawn the way the current view draws it. */
-export const onBeforeSave = ({ record, datasetControl }: IUserQuerySaveParameters) => {
+export const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters) => {
     const provider = datasetControl.getProvider()
     if (provider) {
         const layout = getDefinition(getCurrentView(datasetControl)).layout

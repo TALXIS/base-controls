@@ -1,7 +1,7 @@
 import { CommandBarButton, IButtonProps, ITooltipHostProps } from "@fluentui/react";
 import { TooltipHost } from "@ui";
 
-/** The replaceable pieces of `TaskGridDatasetControl.Settings`. */
+/** The replaceable pieces of `TaskDatasetControl.Settings`. */
 export interface ISettingsComponents {
     /** The tooltip around the button, which shows its text while the header is compact. */
     onRenderTooltip: (props: ITooltipHostProps) => JSX.Element | null;

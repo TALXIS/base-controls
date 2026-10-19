@@ -1,18 +1,18 @@
 import type { IGridServiceLocator, IGridServiceMap } from "@controls/grid";
 import type { ITaskDataProvider } from "../provider";
-import type { ITaskGrid } from "../runtime";
 import type { ITaskExpansion } from "../tree";
+import type { ITaskGridTree } from "../runtime";
 
-/** The services task modules register; a module adds its own by augmenting this. */
+/** The services a task grid's grid modules register; a module adds its own by augmenting this. */
 export interface ITaskGridModuleServiceMap { }
 
-/** Everything a task grid is made of: the grid's services and the task grid's own. */
+/** What a task grid's grid modules see: the grid's services and the tasks' own, nothing outside the grid. */
 export interface ITaskGridServiceMap extends IGridServiceMap, ITaskGridModuleServiceMap {
     provider: ITaskDataProvider;
-    /** The running task grid. */
-    taskGrid: ITaskGrid;
     /** Which tasks are expanded. */
     taskExpansion: ITaskExpansion;
+    /** How the tasks are drawn: as a tree or as a flat list. */
+    taskTree: ITaskGridTree;
 }
 
 export type ITaskGridServiceLocator = IGridServiceLocator<ITaskGridServiceMap>;

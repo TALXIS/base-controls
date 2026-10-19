@@ -3,24 +3,24 @@ import { IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useSurfaceMenuProps } from "@ui";
 import { useCompact } from "@utils";
-import { useTaskGridPart } from "../useTaskGridPart";
+import { useTaskDatasetControl } from "../context";
 import { ISettingsComponents, SettingsComponents } from "./components";
 import { getSettingsStyles } from "./styles";
 
-/** Props for `TaskGridDatasetControl.Settings`. */
+/** Props for `TaskDatasetControl.Settings`. */
 export interface ISettingsProps {
     components?: Partial<ISettingsComponents>;
 }
 
 /** A menu of the task grid's toggles, such as Show hierarchy, and those its modules add. */
 export const Settings = (props: ISettingsProps) => {
-    const taskGrid = useTaskGridPart();
+    const taskDatasetControl = useTaskDatasetControl();
     const components = { ...SettingsComponents, ...props.components };
     const styles = useMemo(() => getSettingsStyles(), []);
     const isCompact = useCompact();
     const { rerender } = useRerender();
 
-    const items = (taskGrid?.getSettings() ?? []).map((setting): IContextualMenuItem => ({
+    const items = taskDatasetControl.getSettings().map((setting): IContextualMenuItem => ({
         key: setting.key,
         text: setting.label,
         canCheck: true,
@@ -32,10 +32,10 @@ export const Settings = (props: ISettingsProps) => {
     }));
     const menuProps = useSurfaceMenuProps({ items });
 
-    if (!taskGrid || items.length === 0) {
+    if (items.length === 0) {
         return null;
     }
-    const text = taskGrid.getLabels().getLocalizedString('settings');
+    const text = taskDatasetControl.getLabels().getLocalizedString('settings');
     return components.onRenderTooltip({
         content: isCompact ? text : undefined,
         setAriaDescribedBy: false,

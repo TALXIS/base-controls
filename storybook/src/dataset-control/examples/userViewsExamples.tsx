@@ -4,10 +4,10 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
 const USER_VIEWS_CODE = `import { loadDealViews } from './views'
-import { DealView, getViewData, loadView, onBeforeSave, userViews } from './userViews'
+import { DealView, getViewData, loadView, writeViewData, userViews } from './userViews'
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, getViewData, onBeforeSave }) }), [])
+    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadView} stateKey='userViews' height='480px'>
         <DatasetControl.Header>
@@ -84,7 +84,7 @@ export const loadView = async ({ view }: IDatasetControlLoadParameters<DealView>
 }
 
 //keeps what the control shows on the view being saved, new or changed
-export const onBeforeSave = ({ record, datasetControl }: IUserQuerySaveParameters<DealView>) => {
+export const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters<DealView>) => {
     const provider = datasetControl.getProvider()!
     const current = datasetControl.getViews().find(view => view.id === datasetControl.getViewId())
     const currentData = current?.data

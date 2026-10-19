@@ -1,7 +1,5 @@
-import { IGridLabels } from "@controls/grid";
-
-/** Every string the task grid renders, the grid's own included. */
-export interface ITaskGridLabels extends IGridLabels {
+/** The strings the task dataset control renders beside the grid's own. */
+export interface ITaskGridLabels {
     new: string;
     edit: string;
     delete: string;
@@ -14,8 +12,8 @@ export interface ITaskGridLabels extends IGridLabels {
     confirmDeleteTasks: string;
 }
 
-/** The English defaults for {@link ITaskGridLabels}, without the grid's own. */
-export const TASK_GRID_LABELS: Omit<ITaskGridLabels, keyof IGridLabels> = {
+/** The English defaults for {@link ITaskGridLabels}. */
+export const TASK_GRID_LABELS: ITaskGridLabels = {
     new: 'New',
     edit: 'Edit',
     delete: 'Delete',
