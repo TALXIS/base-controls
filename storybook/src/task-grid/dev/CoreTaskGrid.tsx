@@ -41,7 +41,10 @@ const GridExample = () => {
         filtering: createFilteringModule(),
         custom: [createTaskDraggingModule()],
     }), [])
-    const datasetControlModules = React.useMemo(() => ({ userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
+    const datasetControlModules = React.useMemo(() => ({
+        userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }),
+        project: createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
+    }), [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskDataProvider> => createMemoryTaskDataSource({ taskDatasetControl, records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS, fieldMapping })
 

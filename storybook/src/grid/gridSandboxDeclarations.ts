@@ -3849,7 +3849,33 @@ interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskVie
     taskDatasetControl: ITaskDatasetControlRuntime;
 }
 
-interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope'> {
+/** The project the tasks belong to. */
+interface IProject<TData = { [key: string]: unknown }> {
+    id: string;
+    name?: string;
+    /** The table the project lives in, for code that writes a lookup to it. */
+    entityName?: string;
+    startDate?: import('dayjs').Dayjs;
+    endDate?: import('dayjs').Dayjs;
+    /** What else the project carries, such as its own columns. */
+    data?: TData;
+}
+
+/** Loads the project the tasks belong to; goes in TaskDatasetControl's modules.project. */
+interface IProjectModule extends IDatasetControlModule { }
+
+/** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
+declare const createProjectModule: <TData>(parameters: { onLoadProject: () => Promise<IProject<TData>> }) => IProjectModule;
+
+/** The modules a TaskDatasetControl is given. */
+interface ITaskDatasetControlModules extends IDatasetControlModules {
+    /** The project the tasks belong to. */
+    project?: IProjectModule;
+}
+
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
+    /** The control's modules; read on every mount. */
+    modules?: ITaskDatasetControlModules;
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
     onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called on every mount once its load succeeded. */

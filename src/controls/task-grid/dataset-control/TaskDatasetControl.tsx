@@ -4,16 +4,25 @@ import { LocalizationService, usePcfContext } from "@utils";
 import { Root as DatasetControl } from "@controls/dataset-control/components/adapters/root/Root";
 import type { IDatasetControlProps } from "@controls/dataset-control/components/adapters/root/Root";
 import type { IDatasetControlLabels } from "@controls/dataset-control/components/adapters/root/labels";
-import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
+import type { IDatasetControl, IDatasetControlModules } from "@controls/dataset-control/runtime/interfaces";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
 import type { ITaskGridEventHandlers, ITaskGridLoadParameters } from "../interfaces";
 import type { ITaskDataProvider, ITaskViewData } from "../provider";
 import type { ITaskDatasetControlRuntime } from "../runtime";
+import type { IProjectModule } from "../modules/project";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
-export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels'>, Partial<ITaskGridEventHandlers> {
+/** The modules a TaskDatasetControl is given. */
+export interface ITaskDatasetControlModules extends IDatasetControlModules<ITaskViewData> {
+    /** The project the tasks belong to. */
+    project?: IProjectModule;
+}
+
+export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'>, Partial<ITaskGridEventHandlers> {
+    /** The control's modules; read on every mount. */
+    modules?: ITaskDatasetControlModules;
     /** Returns the provider for the view; called on every mount, so on every view switch. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskDataProvider>;
     /** The control's and the task grid's strings; read once, at mount. */
@@ -28,7 +37,7 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
 }
 
-/** A DatasetControl of tasks: `onLoad` hands it the data source and the modules; `TaskGrid` goes in its body. */
+/** A DatasetControl of tasks: `onLoad` returns the provider for the view; `TaskGrid` goes in its body. */
 export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     const propsRef = useLatest(props);
     const pcfContext = usePcfContext();
