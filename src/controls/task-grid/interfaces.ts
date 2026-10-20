@@ -3,26 +3,9 @@ import type { IGridComponents, IGridModule, IGridModules, IGridProps } from "@co
 import type { ITaskGridServiceMap } from "./services";
 import type { ITaskDatasetControlRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import type { IDeleteTasksResult, ITaskDataProvider, ITaskMoveParams, ITaskViewData } from "./provider";
+import type { IDeleteTasksResult, ITaskMoveParams, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IAddTaskCellComponents, IExpansionHeaderComponents } from "./tree";
 
-/** A feature of a task grid, loaded on every mount. */
-export interface ITaskGridModule {
-    /** Registers what the module adds, once the provider is registered; may wait for what it needs first. */
-    onLoad?(taskDatasetControl: ITaskDatasetControlRuntime): Promise<void> | void;
-}
-
-/** Where the tasks come from: carries the provider built for the view, and whatever its platform draws. */
-export interface ITaskDataSourceModule extends ITaskGridModule {
-    readonly provider: ITaskDataProvider;
-}
-
-/** The modules a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridModules {
-    dataSource: ITaskDataSourceModule;
-    /** Registered after the data source, in order. */
-    custom?: ITaskGridModule[];
-}
 
 /** The grid modules of a task grid; the row model is always client-side, and grouping does not mix with a tree. */
 export interface ITaskGridGridModules extends Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation' | 'custom'> {
@@ -31,12 +14,11 @@ export interface ITaskGridGridModules extends Omit<IGridModules, 'rowModel' | 'g
 }
 
 /** What a `TaskDatasetControl`'s `onLoad` is called with. */
-export type ITaskGridLoadParameters = IDatasetControlLoadParameters<ITaskViewData>;
-
-/** What a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridLoadResult {
-    modules: ITaskGridModules;
+export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
+    /** The mount the provider is loaded for, to register what the provider's platform adds. */
+    taskDatasetControl: ITaskDatasetControlRuntime;
 }
+
 
 /** What a task grid does, for a consumer to react to. */
 export interface ITaskGridEventHandlers {

@@ -3843,23 +3843,10 @@ interface IDatasetControlPartMap {
     taskDatasetControl: ITaskDatasetControlRuntime;
 }
 
-/** A feature of a task grid, registered on every load. */
-interface ITaskGridModule {
-    /** Registers what the module adds, once the provider is registered; may wait for what it needs first. */
-    onLoad?(taskDatasetControl: ITaskDatasetControlRuntime): Promise<void> | void;
-}
-
-/** Where the tasks come from: carries the provider built for the view, and whatever its platform draws. */
-interface ITaskDataSourceModule extends ITaskGridModule {
-    readonly provider: ITaskDataProvider;
-}
-
 /** What a TaskDatasetControl's onLoad is called with. */
-type ITaskGridLoadParameters = IDatasetControlLoadParameters<ITaskViewData>;
-
-/** What a TaskDatasetControl's onLoad returns. */
-interface ITaskGridLoadResult {
-    modules: { dataSource: ITaskDataSourceModule; custom?: ITaskGridModule[] };
+interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
+    /** The mount the provider is loaded for, to register what the provider's platform adds. */
+    taskDatasetControl: ITaskDatasetControlRuntime;
 }
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope'> {
@@ -3869,8 +3856,8 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
-    /** Loads the data source for the view and the task modules; called on every mount, so on every view switch. */
-    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** Returns the provider for the view; called on every mount, so on every view switch. */
+    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskDataProvider>;
     /** Whether the New command and the add-task buttons are there. */
     enableTaskCreation?: boolean;
     onTasksCreated?: (records: IRecord[], parentId?: string) => void;
@@ -3898,7 +3885,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
 };
 
 /** Tasks held in memory, opened in a form drawn over the control. */
-declare const createMemoryTaskDataSource: (parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; fieldMapping: IFieldMapping }) => ITaskDataSourceModule;
+declare const createMemoryTaskDataSource: (parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; fieldMapping: IFieldMapping; taskDatasetControl: ITaskDatasetControlRuntime }) => ITaskDataProvider;
 
 /** The sample tasks: 108 tasks over seven projects. */
 declare const TASKS: IRawRecord[];

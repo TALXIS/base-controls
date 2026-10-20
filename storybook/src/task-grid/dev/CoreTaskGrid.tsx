@@ -43,9 +43,7 @@ const GridExample = () => {
     }), [])
     const datasetControlModules = React.useMemo(() => ({ userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
 
-    const onLoad = async (): Promise<ITaskGridLoadResult> => ({
-        modules: { dataSource: createMemoryTaskDataSource({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS, fieldMapping }) },
-    })
+    const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskDataProvider> => createMemoryTaskDataSource({ taskDatasetControl, records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS, fieldMapping })
 
     return <TaskDatasetControl modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devTasks' height='600px' onLoad={onLoad} enableTaskCreation>
         <DatasetControl.Header>

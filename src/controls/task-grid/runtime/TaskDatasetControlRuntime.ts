@@ -39,15 +39,11 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
         this._view = parameters.view;
-        const { modules } = await this._onGetProps().onLoad(parameters);
-        const provider = modules.dataSource.provider;
+        const provider = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
         if (this._view?.data) {
             this._applyView(provider, this._view.data);
         }
         this.services.register('provider', () => provider);
-        for (const module of [modules.dataSource, ...modules.custom ?? []]) {
-            await module.onLoad?.(this);
-        }
         return { provider };
     }
 

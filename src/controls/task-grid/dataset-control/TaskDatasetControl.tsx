@@ -7,15 +7,15 @@ import type { IDatasetControlLabels } from "@controls/dataset-control/components
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
-import type { ITaskGridEventHandlers, ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
-import type { ITaskViewData } from "../provider";
+import type { ITaskGridEventHandlers, ITaskGridLoadParameters } from "../interfaces";
+import type { ITaskDataProvider, ITaskViewData } from "../provider";
 import type { ITaskDatasetControlRuntime } from "../runtime";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels'>, Partial<ITaskGridEventHandlers> {
-    /** Loads the data source for the view and the task modules; called on every mount, so on every view switch. */
-    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** Returns the provider for the view; called on every mount, so on every view switch. */
+    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskDataProvider>;
     /** The control's and the task grid's strings; read once, at mount. */
     labels?: Partial<IDatasetControlLabels & ITaskGridLabels>;
     /** Whether the New command and the add-task buttons are there. */
