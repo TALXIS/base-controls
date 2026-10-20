@@ -95,7 +95,7 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         const updatedRecords: IRawRecord[] = [];
         for (const reference of references) {
             const task = this._find(reference.id.guid);
-            const saved = task && await this._getForm().open(structuredClone(task));
+            const saved = task && await this._getForm().open(structuredClone(task), { isReadOnly: this._isTaskLocked(reference.id.guid) });
             if (saved) {
                 Object.assign(task, saved);
                 updatedRecords.push(structuredClone(saved));
@@ -121,6 +121,13 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
 
     protected _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
         return StackRank.between(previousSibling?.getValue(fieldMapping.stackRank), nextSibling?.getValue(fieldMapping.stackRank));
+    }
+
+    //without the editing module the grid edits nothing
+    protected _isTaskLocked(taskId: string): boolean {
+        const record = this._taskDatasetControl.getProvider().getRecordsMap()[taskId];
+        const editing = this._taskDatasetControl.services.get('datasetControl').parts.find('grid')?.services.find('editing');
+        return !record || !editing || editing.locks.get({ record }).isLocked;
     }
 
     protected _getForm(): MemoryTaskForm {

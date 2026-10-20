@@ -17,6 +17,7 @@ export const MemoryTaskFormDialog = () => {
     useEventEmitter<IMemoryTaskFormEvents>(form.events, 'onChanged', rerender);
 
     const task = form.getTask();
+    const isReadOnly = form.isReadOnly();
     const subject = provider.getFieldMapping().subject;
     //the in-memory form has no records to look up from
     const columns = provider.getColumns().filter(column => !column.isHidden && !column.dataType.startsWith('Lookup'));
@@ -31,12 +32,12 @@ export const MemoryTaskFormDialog = () => {
     }
     return <Panel isOpen type={PanelType.medium} headerText={task[subject]} onDismiss={() => form.dismiss()}>
         <Form.Root strategy={strategy} onAfterSave={({ success }) => success && form.save()}>
-            <Form.Ribbon />
+            {!isReadOnly && <Form.Ribbon />}
             <Form.Notifications />
             <Form.Section>
                 {columns.map(column =>
                     <Form.Field key={column.name} name={column.name}>
-                        <Form.Cell><Form.Control /></Form.Cell>
+                        <Form.Cell><Form.Control disabled={isReadOnly} /></Form.Cell>
                     </Form.Field>)}
             </Form.Section>
         </Form.Root>

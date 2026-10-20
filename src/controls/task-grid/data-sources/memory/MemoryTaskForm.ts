@@ -8,11 +8,13 @@ export interface IMemoryTaskFormEvents {
 export class MemoryTaskForm {
     public readonly events = new EventEmitter<IMemoryTaskFormEvents>();
     private _task?: IRawRecord;
+    private _isReadOnly = false;
     private _resolve?: (task: IRawRecord | null) => void;
 
     /** Shows the task; resolves with it saved, or `null` when dismissed. */
-    public open(task: IRawRecord): Promise<IRawRecord | null> {
+    public open(task: IRawRecord, options?: { isReadOnly?: boolean }): Promise<IRawRecord | null> {
         this._task = task;
+        this._isReadOnly = !!options?.isReadOnly;
         this.events.dispatchEvent('onChanged');
         return new Promise(resolve => this._resolve = resolve);
     }
@@ -20,6 +22,10 @@ export class MemoryTaskForm {
     /** The copy the form edits; `undefined` while closed. */
     public getTask(): IRawRecord | undefined {
         return this._task;
+    }
+
+    public isReadOnly(): boolean {
+        return this._isReadOnly;
     }
 
     public save(): void {
