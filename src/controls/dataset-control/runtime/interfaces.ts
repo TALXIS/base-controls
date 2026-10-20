@@ -63,9 +63,10 @@ export interface IDatasetControlPartMap {
 /** Looks up the parts rendered right now. */
 export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'whenAvailable'>;
 
-/** A feature of the control, registered on every mount. */
+/** A feature of the control, loaded on every mount. */
 export interface IDatasetControlModule {
-    onRegister?(datasetControl: IDatasetControlRuntime): void;
+    /** Registers what the module adds, on every load before `onLoadViews`; may wait for what it needs first. */
+    onLoad?(datasetControl: IDatasetControlRuntime): Promise<void> | void;
 }
 
 /** The modules a DatasetControl is given. */

@@ -29,9 +29,10 @@ export const DatasetControlMount = (props: IDatasetControlMountProps) => {
     const { rerender } = useRerender();
 
     useEventEmitter<IDatasetControlEvents>(runtime.events, LOAD_EVENTS, rerender);
+    useEventEmitter<IDatasetControlEvents>(runtime.events, 'onLoaded', () => propsRef.current.onReady?.(runtime));
 
     useEffect(() => {
-        propsRef.current.onReady?.(runtime);
+        propsRef.current.onMounted?.(runtime);
         runtime.load();
         return () => {
             propsRef.current.onDestroyed?.(runtime);

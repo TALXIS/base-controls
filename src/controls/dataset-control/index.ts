@@ -6,6 +6,7 @@ export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSur
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
     IDatasetControlView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModules,
+    IDatasetControlRuntime, DatasetControlViewsHook,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';
 export { useDatasetControlHeader } from './components/ui/header';

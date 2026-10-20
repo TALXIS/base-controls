@@ -7,7 +7,7 @@ export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provide
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change the hours of an entry: it saves as soon as you leave the cell.')
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })} onReady={datasetControl => control.current = datasetControl}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })} onMounted={datasetControl => control.current = datasetControl}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid

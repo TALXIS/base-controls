@@ -46,7 +46,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         }
         this.services.register('provider', () => provider);
         for (const module of [modules.dataSource, ...modules.custom ?? []]) {
-            module.onRegister?.(this);
+            await module.onLoad?.(this);
         }
         return { provider };
     }

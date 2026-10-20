@@ -6,9 +6,10 @@ import type { IDatasetControlLoadParameters } from "@controls/dataset-control/ru
 import type { IDeleteTasksResult, ITaskDataProvider, ITaskMoveParams, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IAddTaskCellComponents, IExpansionHeaderComponents } from "./tree";
 
-/** A feature of a task grid, registered on every load. */
+/** A feature of a task grid, loaded on every mount. */
 export interface ITaskGridModule {
-    onRegister?(taskDatasetControl: ITaskDatasetControlRuntime): void;
+    /** Registers what the module adds, once the provider is registered; may wait for what it needs first. */
+    onLoad?(taskDatasetControl: ITaskDatasetControlRuntime): Promise<void> | void;
 }
 
 /** Where the tasks come from: carries the provider built for the view, and whatever its platform draws. */

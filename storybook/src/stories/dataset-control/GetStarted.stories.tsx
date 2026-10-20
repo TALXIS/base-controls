@@ -58,7 +58,7 @@ You should see a placeholder while the deals load, then the grid with *All deals
 2. **The parts work on that provider.** Place them in the header, body and footer regions and leave out the ones you don't need. \`Grid\` takes no provider of its own: it uses the control's. See [**Layout**](?path=/docs/datasetcontrol-layout--overview).
 3. **The views come from the control's \`onLoadViews\`,** each carrying what \`onLoad\` needs to load it, and the ribbon's commands from the ribbon's own \`onLoad\`. See [**Views**](?path=/docs/datasetcontrol-views--overview) and [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview).
 4. **Throw when something fails.** The control shows the error to the user, with *Try again* where it can. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
-5. **Your code talks to the control** through \`useDatasetControl()\` inside it, or \`onReady\` outside: switch views, reload, follow every load, and reach any part, such as \`control.parts.get('quickFind').search()\`. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+5. **Your code talks to the control** through \`useDatasetControl()\` inside it, or \`onMounted\` outside: switch views, reload, follow every load, and reach any part, such as \`control.parts.get('quickFind').search()\`. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
 
 \`PcfContextProvider\` must wrap the control. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 
@@ -77,7 +77,8 @@ You should see a placeholder while the deals load, then the grid with *All deals
 | \`labels\` | \`Partial<IDatasetControlLabels>\` | English | The control's own strings. Read at mount. See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
 | \`components\` | \`IDatasetControlComponents\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 | \`scope\` | \`ComponentType<{ children: ReactNode }>\` | None | Wraps everything inside the control, such as in a context provider of yours. Pass the same component on every render. |
-| \`onReady\` | \`(control: IDatasetControl) => void\` | None | Passes you the control once it exists, before the first load. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
+| \`onMounted\` | \`(control: IDatasetControl) => void\` | None | Passes you the control on every mount, before its load. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
+| \`onReady\` | \`(control: IDatasetControl) => void\` | None | Passes you the control on every mount, once its load succeeded. |
 | \`onDestroyed\` | \`(control: IDatasetControl) => void\` | None | Passes you the control as it unmounts, while its provider still holds its data. |
 
 ## Where next

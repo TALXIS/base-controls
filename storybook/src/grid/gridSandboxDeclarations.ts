@@ -3444,7 +3444,8 @@ interface IViewSwitcherProps {
 
 /** A feature of the control, registered on every mount. */
 interface IDatasetControlModule {
-    onRegister?(datasetControl: any): void;
+    /** Registers what the module adds, on every load before onLoadViews; may wait for what it needs first. */
+    onLoad?(datasetControl: any): Promise<void> | void;
 }
 
 interface IDatasetControlModules {
@@ -3687,7 +3688,9 @@ interface IDatasetControlProps<TData = unknown> {
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
-    /** Called once the control exists, before the first load. */
+    /** Called on every mount once the control exists, before its load; subscribe to its events here. */
+    onMounted?: (control: IDatasetControl<TData>) => void;
+    /** Called on every mount once its load succeeded. */
     onReady?: (control: IDatasetControl<TData>) => void;
     onDestroyed?: (control: IDatasetControl<TData>) => void;
 }
@@ -3842,7 +3845,8 @@ interface IDatasetControlPartMap {
 
 /** A feature of a task grid, registered on every load. */
 interface ITaskGridModule {
-    onRegister?(taskDatasetControl: ITaskDatasetControlRuntime): void;
+    /** Registers what the module adds, once the provider is registered; may wait for what it needs first. */
+    onLoad?(taskDatasetControl: ITaskDatasetControlRuntime): Promise<void> | void;
 }
 
 /** Where the tasks come from: carries the provider built for the view, and whatever its platform draws. */
@@ -3858,8 +3862,10 @@ interface ITaskGridLoadResult {
     modules: { dataSource: ITaskDataSourceModule; custom?: ITaskGridModule[] };
 }
 
-interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onReady' | 'onDestroyed' | 'scope'> {
-    /** Called on every mount with its task runtime, before its load. */
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope'> {
+    /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
+    onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    /** Called on every mount once its load succeeded. */
     onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;

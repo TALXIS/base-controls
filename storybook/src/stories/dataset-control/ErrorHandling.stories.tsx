@@ -68,7 +68,7 @@ The dialog opens either way. To also log a failure, or show it elsewhere, listen
 The ribbon mounts anew on every load, so add its listener once each load finishes:
 
 \`\`\`tsx
-const onReady = (control: IDatasetControl) => {
+const onMounted = (control: IDatasetControl) => {
     control.events.addEventListener('onLoadFailed', error => logError('load', error))
     control.events.addEventListener('onLoaded', () => {
         control.parts.whenAvailable('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => logError(command.id, error)))

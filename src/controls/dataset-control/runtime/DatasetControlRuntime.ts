@@ -1,5 +1,5 @@
 import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
-import { IStateStore, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
 import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
@@ -19,6 +19,9 @@ export interface IDatasetControlLoadResult {
     provider: IDataProvider;
 }
 
+/** A hook over the views `onLoadViews` returned, which it adds to or changes in place. */
+export type DatasetControlViewsHook = (views: IDatasetControlView[]) => void;
+
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
 export interface IDatasetControlRuntime extends IDatasetControl {
     readonly events: IEventEmitter<IDatasetControlEvents>;
@@ -27,6 +30,11 @@ export interface IDatasetControlRuntime extends IDatasetControl {
     getHeight(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
     getViewStateStore(viewId?: string): IStateStore;
+    /**
+     * Registers a hook over the views, applied on every load after `onLoadViews`.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerViews(hook: DatasetControlViewsHook, priority?: number): () => void;
 }
 
 export interface IDatasetControlRuntimeParameters {
@@ -46,6 +54,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _onRemount: () => void;
     private _provider?: IDataProvider;
     private _views: IDatasetControlView[] = [];
+    private _viewsHooks = new HookRegistry<DatasetControlViewsHook>();
     private _viewId?: string;
     private _requestedViewId?: string;
     private _isLoading = false;
@@ -62,10 +71,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._services.register('labels', () => labels);
         this._services.register('surfaces', () => this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this, labels });
-        const { userQueries, custom = [] } = props.modules ?? {};
-        for (const module of [userQueries, ...custom]) {
-            module?.onRegister?.(this);
-        }
     }
 
     public get services(): IDatasetControlServiceLocator {
@@ -98,6 +103,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public isLoading(): boolean {
         return this._isLoading;
+    }
+
+    public registerViews(hook: DatasetControlViewsHook, priority?: number): () => void {
+        return this._viewsHooks.register(hook, priority);
     }
 
     public getHeight(): string | undefined {
@@ -163,11 +172,14 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         let result: IDatasetControlLoadResult | undefined;
         let viewId: string | undefined;
         try {
-            this._views = await this._onGetProps().onLoadViews?.() ?? [];
-            const userQueries = this._services.find('userQueries');
-            if (userQueries) {
-                this._views = [...this._views, ...await userQueries.load()];
+            const { custom = [], ...named } = this._onGetProps().modules ?? {};
+            for (const module of [...Object.values(named), ...custom]) {
+                await module?.onLoad?.(this);
             }
+            //a copy: the hooks change it in place
+            const views = [...await this._onGetProps().onLoadViews?.() ?? []];
+            this._viewsHooks.apply(views);
+            this._views = views;
             viewId = this._resolveViewId(requestedViewId);
             result = await this._onGetProps().onLoad({ view: this._views.find(view => view.id === viewId) });
             const provider = result.provider;

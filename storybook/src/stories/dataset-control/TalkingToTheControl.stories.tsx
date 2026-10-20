@@ -18,12 +18,15 @@ const WonDealsButton = () => {
 }
 \`\`\`
 
-Outside it, \`onReady\` hands it to the code that mounts the control, before the first load:
+Outside it, two props hand it to the code that mounts the control, on every mount:
+
+- \`onMounted\` as soon as the control exists, before its load. Subscribe to its events here.
+- \`onReady\` once its load succeeded, as the control's \`onLoaded\` event does. A failed load doesn't call it.
 
 \`\`\`tsx
 const controlRef = React.useRef<IDatasetControl>()
 
-<DatasetControl onLoad={loadDeals} onReady={control => controlRef.current = control}>...</DatasetControl>
+<DatasetControl onLoad={loadDeals} onMounted={control => controlRef.current = control}>...</DatasetControl>
 \`\`\`
 
 ## Views and loading
@@ -79,10 +82,10 @@ Every load mounts the parts anew on the new provider: the first load, a view swi
 
 ## Events
 
-\`control.events\` tells you when loads start, finish and fail. Subscribe in \`onReady\`, so you don't miss the first load:
+\`control.events\` tells you when loads start, finish and fail. Subscribe in \`onMounted\`, so you don't miss the first load:
 
 \`\`\`tsx
-const onReady = (control: IDatasetControl) => {
+const onMounted = (control: IDatasetControl) => {
     control.events.addEventListener('onLoaded', () => setViewInUrl(control.getViewId()))
 }
 \`\`\`
@@ -133,7 +136,7 @@ export const WatchTheControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The control's events and its \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view, press *Show won deals*, which calls \`loadView('won')\`, then *Remount*.`,
+                story: `The control's events and its \`onMounted\`, \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view, press *Show won deals*, which calls \`loadView('won')\`, then *Remount*.`,
             },
         },
     },

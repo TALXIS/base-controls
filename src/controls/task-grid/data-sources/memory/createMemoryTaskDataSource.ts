@@ -16,7 +16,7 @@ export const createMemoryTaskDataSource = (parameters: IMemoryTaskDataSourcePara
     const strategy = new MemoryTaskStrategy(parameters, form);
     return {
         provider: new TaskDataProvider({ strategy, fieldMapping: parameters.fieldMapping }),
-        onRegister: taskDatasetControl => {
+        onLoad: taskDatasetControl => {
             taskDatasetControl.services.register('memoryTaskForm', () => form);
             taskDatasetControl.services.get('datasetControl').surfaces.registerSurface(surfaces => {
                 surfaces.push({ key: 'memoryTaskForm', onRender: () => createElement(MemoryTaskFormDialog) });

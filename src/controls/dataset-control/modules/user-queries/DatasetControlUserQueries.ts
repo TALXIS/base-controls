@@ -39,6 +39,7 @@ export class DatasetControlUserQueries {
         this._labels = parameters.labels;
         this._onGetViewData = parameters.onGetViewData;
         this._onWriteViewData = parameters.onWriteViewData;
+        this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
     }
 
@@ -55,11 +56,9 @@ export class DatasetControlUserQueries {
         return this._provider;
     }
 
-    /** Loads the user's views, listed in their own group. */
-    public async load(): Promise<IDatasetControlView[]> {
+    /** Loads the user's views. */
+    public async load(): Promise<void> {
         await this._provider.refresh();
-        const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        return this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onGetViewData(record) }));
     }
 
     /** The user view's record; `undefined` when the view is not a user view. */
@@ -109,6 +108,12 @@ export class DatasetControlUserQueries {
             }
         });
     }
+
+    //listed after the control's own, in their own group
+    private _addViews = (views: IDatasetControlView[]): void => {
+        const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
+        views.push(...this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onGetViewData(record) })));
+    };
 
     //the switcher reads its items as its menu opens
     private _addViewSwitcherItems = (items: IContextualMenuItem[]): void => {

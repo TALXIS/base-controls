@@ -30,7 +30,9 @@ export interface IDatasetControlProps<TData = unknown> {
     components?: IDatasetControlComponents;
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
-    /** Called on every mount, before its load; a view switch, reload or retry mounts the control anew. */
+    /** Called on every mount once the control exists, before its load; subscribe to its events here. */
+    onMounted?: (control: IDatasetControl<TData>) => void;
+    /** Called on every mount once its load succeeded. */
     onReady?: (control: IDatasetControl<TData>) => void;
     /** Called as each mount goes, while its provider still holds its data. */
     onDestroyed?: (control: IDatasetControl<TData>) => void;

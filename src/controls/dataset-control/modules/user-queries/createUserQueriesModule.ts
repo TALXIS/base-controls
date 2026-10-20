@@ -17,9 +17,10 @@ export interface IUserQueriesModuleParameters<TData> {
 
 /** The user's own views: listed with the control's, and added and deleted through `DatasetControl.UserQueries`. */
 export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => ({
-    onRegister: datasetControl => {
+    onLoad: async datasetControl => {
         const labels = new LocalizationService<IUserQueriesLabels>({ ...USER_QUERIES_LABELS, ...parameters.labels });
         const userQueries = new DatasetControlUserQueries({ datasetControl, provider: parameters.provider, labels, onGetViewData: parameters.onGetViewData, onWriteViewData: parameters.onWriteViewData as IUserQueriesModuleParameters<unknown>['onWriteViewData'] });
         datasetControl.services.register('userQueries', () => userQueries);
+        return userQueries.load();
     },
 });

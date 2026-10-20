@@ -51,9 +51,9 @@ const GridExample = () => {
     const controlRef = React.useRef<IDatasetControl>()
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 8))
 
-    const onReady = (control: IDatasetControl) => {
+    const onMounted = (control: IDatasetControl) => {
         controlRef.current = control
-        write('onReady')
+        write('onMounted')
         control.events.addEventListener('onLoadStarted', () => write('onLoadStarted'))
         control.events.addEventListener('onLoaded', () => write(\`onLoaded, view \${control.getViewId()}\`))
         control.events.addEventListener('onLoadFailed', () => write('onLoadFailed'))
@@ -64,7 +64,7 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => controlRef.current?.loadView('won')} />
             <DefaultButton text='Remount' onClick={() => setMountKey(key => key + 1)} />
         </Stack>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='deals' key={mountKey} onLoad={loadDeals} onReady={onReady} onDestroyed={() => write('onDestroyed')} height='380px'>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='deals' key={mountKey} onLoad={loadDeals} onMounted={onMounted} onReady={() => write('onReady')} onDestroyed={() => write('onDestroyed')} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
