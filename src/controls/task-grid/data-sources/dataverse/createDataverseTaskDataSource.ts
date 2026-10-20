@@ -18,7 +18,3 @@ export const createDataverseTaskDataSource = (parameters: IDataverseTaskDataSour
     strategy.onInitialize(taskDatasetControl);
     return new Provider({ strategy });
 };
-
-createDataverseTaskDataSource({
-    strategy
-})

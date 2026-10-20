@@ -27,7 +27,7 @@ export const FieldLink = (props: IFieldLinkProps) => {
     };
 
     return <Link
-        elementRef={ref}
+        ref={ref}
         className={styles.link}
         href={props.href}
         //the frame the host put the grid in is rarely where an address belongs
