@@ -1,6 +1,7 @@
 import { IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
+import type { ITaskDatasetControlRuntime } from "../../runtime";
 import type { MemoryTaskForm } from "./MemoryTaskForm";
 
 export interface IMemoryTaskStrategyParameters {
@@ -12,16 +13,24 @@ export interface IMemoryTaskStrategyParameters {
     columns: IColumn[];
 }
 
-/** Tasks held in memory, opened in the memory form. */
-export class MemoryTaskStrategy implements ITaskStrategy {
-    private _parameters: IMemoryTaskStrategyParameters;
-    private _form: MemoryTaskForm;
-    private _store: IRawRecord[];
+/** A strategy over tasks held in memory, handed its mount by `createMemoryTaskDataSource`. */
+export interface IMemoryTaskStrategy extends ITaskStrategy {
+    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
+}
 
-    constructor(parameters: IMemoryTaskStrategyParameters, form: MemoryTaskForm) {
+/** Tasks held in memory, opened in the memory form. */
+export class MemoryTaskStrategy implements IMemoryTaskStrategy {
+    protected _parameters: IMemoryTaskStrategyParameters;
+    protected _store: IRawRecord[];
+    protected _taskDatasetControl!: ITaskDatasetControlRuntime;
+
+    constructor(parameters: IMemoryTaskStrategyParameters) {
         this._parameters = parameters;
-        this._form = form;
         this._store = structuredClone(parameters.records);
+    }
+
+    public onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void {
+        this._taskDatasetControl = taskDatasetControl;
     }
 
     public async onLoad(): Promise<ITaskLoadResult> {
@@ -52,14 +61,10 @@ export class MemoryTaskStrategy implements ITaskStrategy {
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
-        const deletedTaskIds = new Set<string>();
-        for (const taskId of params.taskIds) {
-            deletedTaskIds.add(taskId);
-            params.tree.structure.getDescendants(taskId).forEach(record => deletedTaskIds.add(record.getRecordId()));
-        }
+        const deletedTaskIds = new Set(params.taskIds);
         const primaryIdAttribute = this._parameters.metadata.PrimaryIdAttribute!;
         this._store = this._store.filter(task => !deletedTaskIds.has(task[primaryIdAttribute]));
-        return { success: true, deletedTaskIds: [...deletedTaskIds] };
+        return { success: true, deletedTaskIds: params.taskIds };
     }
 
     public async onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null> {
@@ -90,7 +95,7 @@ export class MemoryTaskStrategy implements ITaskStrategy {
         const updatedRecords: IRawRecord[] = [];
         for (const reference of references) {
             const task = this._find(reference.id.guid);
-            const saved = task && await this._form.open(structuredClone(task));
+            const saved = task && await this._getForm().open(structuredClone(task));
             if (saved) {
                 Object.assign(task, saved);
                 updatedRecords.push(structuredClone(saved));
@@ -99,22 +104,26 @@ export class MemoryTaskStrategy implements ITaskStrategy {
         return updatedRecords.length > 0 ? { success: true, updatedRecords } : null;
     }
 
-    private _find(taskId: string): IRawRecord | undefined {
+    protected _find(taskId: string): IRawRecord | undefined {
         return this._store.find(task => task[this._parameters.metadata.PrimaryIdAttribute!] === taskId);
     }
 
-    private _write(taskId: string, values: IRawRecord): void {
+    protected _write(taskId: string, values: IRawRecord): void {
         const task = this._find(taskId);
         if (task) {
             Object.assign(task, structuredClone(values));
         }
     }
 
-    private _getParentReference(parent?: IRecord): ComponentFramework.EntityReference[] | null {
+    protected _getParentReference(parent?: IRecord): ComponentFramework.EntityReference[] | null {
         return parent ? [parent.getNamedReference()] : null;
     }
 
-    private _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
+    protected _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
         return StackRank.between(previousSibling?.getValue(fieldMapping.stackRank), nextSibling?.getValue(fieldMapping.stackRank));
+    }
+
+    protected _getForm(): MemoryTaskForm {
+        return this._taskDatasetControl.services.get('memoryTaskForm');
     }
 }

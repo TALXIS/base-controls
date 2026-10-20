@@ -2,13 +2,10 @@ import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProv
 import { ErrorHelper } from "@utils/error-handling";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ICreateTaskOptions, IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     strategy: ITaskStrategy;
-    fieldMapping: IFieldMapping;
-    /** Scopes the tree to the subtree under this task. */
-    rootTaskId?: string;
 }
 
 const ACTIVE_STATE_CODE = 0;
@@ -16,7 +13,7 @@ const ACTIVE_STATE_CODE = 0;
 /** Every task of a view, loaded at once through a strategy and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _strategy: ITaskStrategy;
-    private _fieldMapping: IFieldMapping;
+    private _fieldMapping?: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
     private _tree: RecordTree;
@@ -30,12 +27,18 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
         this._strategy = parameters.strategy;
-        this._fieldMapping = parameters.fieldMapping;
-        this._rootTaskId = parameters.rootTaskId;
         this._tree = new RecordTree(this);
     }
 
+    public initialize(parameters: ITaskDataProviderInitializeParameters): void {
+        this._fieldMapping = parameters.fieldMapping;
+        this._rootTaskId = parameters.rootTaskId;
+    }
+
     public getFieldMapping(): IFieldMapping {
+        if (!this._fieldMapping) {
+            throw new Error('The task provider has no field mapping until the task runtime initializes it.');
+        }
         return this._fieldMapping;
     }
 
@@ -66,7 +69,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getQuickFindColumns(): IColumn[] {
-        const columnNames = this._quickFindColumnNames.length > 0 ? this._quickFindColumnNames : [this._fieldMapping.subject];
+        const columnNames = this._quickFindColumnNames.length > 0 ? this._quickFindColumnNames : [this.getFieldMapping().subject];
         return columnNames.map(columnName => this.getColumnsMap()[columnName]).filter((column): column is IColumn => !!column);
     }
 
@@ -93,9 +96,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public setInactiveTasksHidden(isHidden: boolean): void {
         const filtering = this.getFiltering();
-        const conditions = (filtering?.conditions ?? []).filter(condition => condition.attributeName !== this._fieldMapping.stateCode);
+        const conditions = (filtering?.conditions ?? []).filter(condition => condition.attributeName !== this.getFieldMapping().stateCode);
         if (isHidden) {
-            conditions.push({ attributeName: this._fieldMapping.stateCode, conditionOperator: Operators.Equal.Value, value: `${ACTIVE_STATE_CODE}` });
+            conditions.push({ attributeName: this.getFieldMapping().stateCode, conditionOperator: Operators.Equal.Value, value: `${ACTIVE_STATE_CODE}` });
         }
         this.setFiltering({ filterOperator: filtering?.filterOperator ?? 0, filters: filtering?.filters ?? [], conditions });
         this.refresh();
@@ -106,7 +109,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public onIsRecordActive(recordId: string): boolean {
-        return this.getRecordsMap()[recordId]?.getValue(this._fieldMapping.stateCode) == ACTIVE_STATE_CODE;
+        return this.getRecordsMap()[recordId]?.getValue(this.getFieldMapping().stateCode) == ACTIVE_STATE_CODE;
     }
 
     public async onGetAvailableColumns(): Promise<IColumn[]> {
@@ -122,7 +125,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        const isTask = !context?.columnName || context.columnName === this._fieldMapping.subject;
+        const isTask = !context?.columnName || context.columnName === this.getFieldMapping().subject;
         await this._open([entityReference], isTask);
     }
 
@@ -148,17 +151,47 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._newTaskIds.has(taskId);
     }
 
+    public getDeletion(taskIds: string[]): ITaskDeletion {
+        const { structure } = this._tree;
+        const candidateIds = new Set(taskIds.flatMap(taskId => [taskId, ...structure.getDescendants(taskId).map(record => record.getRecordId())]));
+        const refusedTaskIds = [...candidateIds].filter(taskId => this._strategy.onCanDeleteTask?.(this.getRecordsMap()[taskId]) === false);
+        const keptIds = new Set(refusedTaskIds.flatMap(taskId => structure.getAncestorIds(taskId)));
+        return { deletableTaskIds: [...candidateIds].filter(taskId => !keptIds.has(taskId)), refusedTaskIds };
+    }
+
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
         return this._execute(async () => {
-            const result = await this._strategy.onDeleteTasks({ taskIds, tree: this._tree });
-            if (result && result.deletedTaskIds.length > 0) {
-                const deletedTaskIds = new Set(result.deletedTaskIds);
-                await this.deleteRecords(result.deletedTaskIds);
-                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedTaskIds.has(id)));
-                this._rebuildTree();
-                this.taskEvents.dispatchEvent('onTasksDeleted', result.deletedTaskIds);
+            const { structure } = this._tree;
+            const keptIds = new Set<string>();
+            const deletedTaskIds: string[] = [];
+            const errors: IFailedRecord[] = [];
+            for (const level of this._getLevelsDeepestFirst(this.getDeletion(taskIds).deletableTaskIds)) {
+                const levelIds = level.filter(taskId => !structure.getChildren(taskId).some(child => keptIds.has(child.getRecordId())));
+                level.filter(taskId => !levelIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
+                if (levelIds.length === 0) {
+                    continue;
+                }
+                const result = await this._strategy.onDeleteTasks({ taskIds: levelIds, tree: this._tree });
+                if (!result) {
+                    break;
+                }
+                deletedTaskIds.push(...result.deletedTaskIds);
+                levelIds.filter(taskId => !result.deletedTaskIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
+                if (!result.success) {
+                    errors.push(...result.errors);
+                }
             }
-            return result;
+            if (deletedTaskIds.length === 0 && errors.length === 0) {
+                return null;
+            }
+            if (deletedTaskIds.length > 0) {
+                const deletedIds = new Set(deletedTaskIds);
+                await this.deleteRecords(deletedTaskIds);
+                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
+                this._rebuildTree();
+                this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
+            }
+            return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
         });
     }
 
@@ -185,7 +218,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public updateTaskData(rawRecords: IRawRecord[]): void {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
-        const { parentId, stackRank } = this._fieldMapping;
+        const { parentId, stackRank } = this.getFieldMapping();
         const records: IRecord[] = [];
         let isTreeChanged = false;
         for (const rawRecord of rawRecords) {
@@ -212,7 +245,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public createNewDataProvider(_eventBubbleOptions?: IEventBubbleOptions): TaskDataProvider {
-        return new TaskDataProvider({ strategy: this._strategy, fieldMapping: this._fieldMapping, rootTaskId: this._rootTaskId });
+        const provider = new TaskDataProvider({ strategy: this._strategy });
+        provider.initialize({ fieldMapping: this.getFieldMapping(), rootTaskId: this._rootTaskId });
+        return provider;
     }
 
     public dispatchEvent<K extends keyof IDataProviderEventListeners>(event: K, ...args: Parameters<IDataProviderEventListeners[K]>): boolean {
@@ -269,13 +304,13 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     private _isMappedColumn(columnName: string): boolean {
-        return Object.values(this._fieldMapping).includes(columnName);
+        return Object.values(this.getFieldMapping()).includes(columnName);
     }
 
     //the tree reads these whatever the view shows
     private _withMappedColumns(columns: IColumn[]): IColumn[] {
         const columnNames = new Set(columns.map(column => column.name));
-        const missing = Object.values(this._fieldMapping)
+        const missing = Object.values(this.getFieldMapping())
             .filter((columnName): columnName is string => !!columnName && !columnNames.has(columnName))
             .map((columnName): IColumn => ({
                 ...(this._columnCatalogue.get(columnName) ?? { name: columnName, displayName: columnName, dataType: 'SingleLine.Text', order: -1, visualSizeFactor: 100 }),
@@ -285,7 +320,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     private _getStateCodeCondition() {
-        return this.getFiltering()?.conditions.find(condition => condition.attributeName === this._fieldMapping.stateCode
+        return this.getFiltering()?.conditions.find(condition => condition.attributeName === this.getFieldMapping().stateCode
             && condition.conditionOperator === Operators.Equal.Value && condition.value === `${ACTIVE_STATE_CODE}`);
     }
 
@@ -308,7 +343,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             previousSibling: options?.previousTaskId ? recordsMap[options.previousTaskId] : undefined,
             nextSibling: options?.nextTaskId ? recordsMap[options.nextTaskId] : (options?.previousTaskId ? undefined : siblings[0]),
             data: options?.data,
-            fieldMapping: this._fieldMapping,
+            fieldMapping: this.getFieldMapping(),
             columns: this.getColumns(),
             metadata: this.getMetadata(),
         };
@@ -337,8 +372,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             siblings,
             previousSibling,
             nextSibling,
-            fieldMapping: this._fieldMapping,
+            fieldMapping: this.getFieldMapping(),
         };
+    }
+
+    private _getLevelsDeepestFirst(taskIds: string[]): string[][] {
+        const levels: string[][] = [];
+        for (const taskId of taskIds) {
+            (levels[this._tree.structure.getAncestorIds(taskId).length] ??= []).push(taskId);
+        }
+        return levels.filter(Boolean).reverse();
     }
 
     private _execute<T>(operation: () => Promise<T>): Promise<T> {

@@ -26,7 +26,7 @@ const GridExample = () => {
         custom: [createTaskDraggingModule()],
     }), [])
 
-    const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskDataProvider> => createMemoryTaskDataSource({ taskDatasetControl, records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS, fieldMapping })
+    const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
 
     return <TaskDatasetControl onLoadViews={async () => VIEWS} stateKey='devStressTasks' height='100%' onLoad={onLoad} enableTaskCreation>
         <DatasetControl.Header>

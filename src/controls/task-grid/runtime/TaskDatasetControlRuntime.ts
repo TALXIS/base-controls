@@ -39,7 +39,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
         this._view = parameters.view;
-        const provider = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
+        const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
+        provider.initialize({ fieldMapping, rootTaskId });
         if (this._view?.data) {
             this._applyView(provider, this._view.data);
         }
@@ -93,10 +94,32 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     }
 
     public async deleteTasks(taskIds: string[]): Promise<void> {
-        const confirmation = await this.services.get('pcfContext').navigation.openConfirmDialog({ text: this.getLabels().getLocalizedString('confirmDeleteTasks') });
-        if (confirmation.confirmed) {
-            await this._execute(() => this.getProvider().deleteTasks(taskIds));
+        const navigation = this.services.get('pcfContext').navigation;
+        const labels = this.getLabels();
+        const provider = this.getProvider();
+        const { deletableTaskIds, refusedTaskIds } = provider.getDeletion(taskIds);
+        if (deletableTaskIds.length === 0) {
+            await navigation.openErrorDialog({ message: labels.getLocalizedString('tasksCannotBeDeleted') });
+            return;
         }
+        const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
+        const text = subtaskCount > 0 ? labels.getLocalizedString('confirmDeleteTasksWithSubtasks', { count: String(subtaskCount) }) : labels.getLocalizedString('confirmDeleteTasks');
+        const confirmation = await navigation.openConfirmDialog({ text });
+        if (!confirmation.confirmed) {
+            return;
+        }
+        await this._execute(async () => {
+            const result = await provider.deleteTasks(taskIds);
+            const failures = [
+                ...(result?.success === false ? result.errors : []),
+                ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
+            ];
+            if (failures.length > 0) {
+                const subject = this.getFieldMapping().subject;
+                const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
+                await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
+            }
+        });
     }
 
     public async openTasks(taskIds: string[]): Promise<void> {

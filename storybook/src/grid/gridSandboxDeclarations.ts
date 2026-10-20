@@ -3849,6 +3849,15 @@ interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskVie
     taskDatasetControl: ITaskDatasetControlRuntime;
 }
 
+/** What a TaskDatasetControl's onLoad returns. */
+interface ITaskGridLoadResult {
+    /** The provider for the view. */
+    provider: ITaskDataProvider;
+    fieldMapping: IFieldMapping;
+    /** Scopes the tree to the subtree under this task. */
+    rootTaskId?: string;
+}
+
 /** The project the tasks belong to. */
 interface IProject<TData = { [key: string]: unknown }> {
     id: string;
@@ -3882,8 +3891,8 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
-    /** Returns the provider for the view; called on every mount, so on every view switch. */
-    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskDataProvider>;
+    /** Returns the view's provider and field mapping; called on every mount. */
+    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** Whether the New command and the add-task buttons are there. */
     enableTaskCreation?: boolean;
     onTasksCreated?: (records: IRecord[], parentId?: string) => void;
@@ -3911,7 +3920,20 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
 };
 
 /** Tasks held in memory, opened in a form drawn over the control. */
-declare const createMemoryTaskDataSource: (parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[]; fieldMapping: IFieldMapping; taskDatasetControl: ITaskDatasetControlRuntime }) => ITaskDataProvider;
+declare const createMemoryTaskDataSource: (parameters: { taskDatasetControl: ITaskDatasetControlRuntime; strategy: IMemoryTaskStrategy; provider?: new (parameters: { strategy: any }) => ITaskDataProvider }) => ITaskDataProvider;
+
+/** A strategy over tasks held in memory, handed its mount by createMemoryTaskDataSource. */
+interface IMemoryTaskStrategy {
+    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
+    [operation: string]: any;
+}
+
+/** The built-in strategy over tasks held in memory. */
+declare class MemoryTaskStrategy implements IMemoryTaskStrategy {
+    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
+    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
+    [operation: string]: any;
+}
 
 /** The sample tasks: 108 tasks over seven projects. */
 declare const TASKS: IRawRecord[];

@@ -44,7 +44,7 @@ export interface ITaskDatasetControlRuntimeEvents {
 export interface ITaskDatasetControlRuntime {
     readonly services: IServiceLocator<ITaskDatasetControlRuntimeServiceMap>;
     readonly events: IEventSubscriber<ITaskDatasetControlRuntimeEvents>;
-    /** Calls `onLoad` and registers the provider it returns. */
+    /** Calls `onLoad`, then initializes and registers the provider it returns. */
     load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;

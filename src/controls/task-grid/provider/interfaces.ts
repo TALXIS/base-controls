@@ -80,7 +80,15 @@ export interface ITaskMoveParams extends ITaskSiblingContext {
     position: ITaskMovePosition;
 }
 
-/** What to delete, with the whole tree to find descendants in. */
+/** What deleting tasks would remove, and what the strategy keeps. */
+export interface ITaskDeletion {
+    /** The tasks and their subtrees, less refused tasks and the ancestors of those. */
+    deletableTaskIds: string[];
+    /** The tasks the strategy refused. */
+    refusedTaskIds: string[];
+}
+
+/** Tasks with no subtasks left to delete, with the whole tree they are in. */
 export interface ITaskDeleteParams {
     taskIds: string[];
     tree: IRecordTree;
@@ -110,7 +118,12 @@ export interface ITaskStrategy {
     onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
     /** @returns The created record, or `null` when the user cancelled. */
     onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;
-    /** @returns Which tasks went, or `null` when the user cancelled. */
+    /** Whether a task may be deleted; every task may when left out. */
+    onCanDeleteTask?(task: IRecord): boolean;
+    /**
+     * Called level by level, deepest first, so no task it gets has subtasks left.
+     * @returns Which tasks went, or `null` when the user cancelled.
+     */
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
     /** @returns The records the move changed, or `null` when the user cancelled. */
     onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null>;
@@ -131,8 +144,18 @@ export interface ITaskDataProviderEvents {
 }
 
 /** A provider of tasks: every task loaded at once and shown as a tree. */
+/** What the task runtime hands a task provider before it loads. */
+export interface ITaskDataProviderInitializeParameters {
+    fieldMapping: IFieldMapping;
+    /** Scopes the tree to the subtree under this task. */
+    rootTaskId?: string;
+}
+
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
+    /** Takes the control's field mapping and root task before the provider loads. */
+    initialize(parameters: ITaskDataProviderInitializeParameters): void;
+    /** @throws Before `initialize`. */
     getFieldMapping(): IFieldMapping;
     getStrategy(): ITaskStrategy;
     /** Every loaded task, whatever the view shows. */
@@ -151,6 +174,8 @@ export interface ITaskDataProvider extends IDataProvider {
     addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[];
     /** Whether the task was created in this load; it shows whatever the filter. */
     isNewTask(taskId: string): boolean;
+    getDeletion(taskIds: string[]): ITaskDeletion;
+    /** Deletes the tasks and their subtrees bottom-up, keeping the ancestors of a refused or failed task. */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
     /** @returns Whether the task moved. */
     moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<boolean>;

@@ -3,7 +3,7 @@ import type { IGridComponents, IGridModule, IGridModules, IGridProps } from "@co
 import type { ITaskGridServiceMap } from "./services";
 import type { ITaskDatasetControlRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import type { IDeleteTasksResult, ITaskMoveParams, ITaskViewData } from "./provider";
+import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskMoveParams, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IAddTaskCellComponents, IExpansionHeaderComponents } from "./tree";
 
 
@@ -17,6 +17,12 @@ export interface ITaskGridGridModules extends Omit<IGridModules, 'rowModel' | 'g
 export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
     /** The mount the provider is loaded for, to register what the provider's platform adds. */
     taskDatasetControl: ITaskDatasetControlRuntime;
+}
+
+/** What a `TaskDatasetControl`'s `onLoad` returns. */
+export interface ITaskGridLoadResult extends ITaskDataProviderInitializeParameters {
+    /** The provider for the view. */
+    provider: ITaskDataProvider;
 }
 
 
