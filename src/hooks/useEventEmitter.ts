@@ -9,16 +9,20 @@ export const useEventEmitter = <T extends { [K in keyof T]: (...args: any[]) => 
         callbackRef.current(...args);
     }, []);
 
+    const events = Array.isArray(event) ? event : [event];
+    //callers pass inline array literals, so the effect keys off the names rather than the array identity
+    const eventKey = events.map(String).join('|');
+
     useEffect(() => {
         if (!emitter) return;
-        const events = Array.isArray(event) ? event : [event];
-        events.map(event => {
-            emitter.addEventListener(event, memoizedCallback as T[keyof T]);
-        })
+        for (const name of events) {
+            emitter.addEventListener(name, memoizedCallback as T[keyof T]);
+        }
         return () => {
-            events.map(event => {
-                emitter.removeEventListener(event, memoizedCallback as T[keyof T]);
-            })
+            for (const name of events) {
+                emitter.removeEventListener(name, memoizedCallback as T[keyof T]);
+            }
         };
-    }, [emitter, event, memoizedCallback]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [emitter, eventKey, memoizedCallback]);
 };
