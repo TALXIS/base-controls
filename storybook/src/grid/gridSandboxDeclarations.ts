@@ -3920,6 +3920,8 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     Settings: (props: {}) => JSX.Element;
     /** DatasetControl.Notifications, also saying when new tasks are shown regardless of the filter. */
     Notifications: IDatasetControlNamespace['Notifications'];
+    /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
+    PageSizeSwitcher: (props: {}) => JSX.Element;
 };
 
 /** Tasks held in memory, opened in a form drawn over the control. */

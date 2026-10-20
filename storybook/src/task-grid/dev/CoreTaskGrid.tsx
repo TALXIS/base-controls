@@ -66,6 +66,11 @@ const GridExample = () => {
         <DatasetControl.Body>
             <TaskGrid stateKey='taskGrid' modules={modules} />
         </DatasetControl.Body>
+        <DatasetControl.Footer>
+            <DatasetControl.Footer.Start>
+                <TaskDatasetControl.PageSizeSwitcher />
+            </DatasetControl.Footer.Start>
+        </DatasetControl.Footer>
     </TaskDatasetControl>
 }
 `
