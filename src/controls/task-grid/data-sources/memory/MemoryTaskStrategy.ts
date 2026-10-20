@@ -123,11 +123,9 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         return StackRank.between(previousSibling?.getValue(fieldMapping.stackRank), nextSibling?.getValue(fieldMapping.stackRank));
     }
 
-    //without the editing module the grid edits nothing
     protected _isTaskLocked(taskId: string): boolean {
-        const record = this._taskDatasetControl.getProvider().getRecordsMap()[taskId];
-        const editing = this._taskDatasetControl.services.get('datasetControl').parts.find('grid')?.services.find('editing');
-        return !record || !editing || editing.locks.get({ record }).isLocked;
+        const isEditingEnabled = !!this._taskDatasetControl.services.find('taskOperations')?.isEditingEnabled();
+        return !isEditingEnabled || !this._taskDatasetControl.getProvider().isRecordActive(taskId);
     }
 
     protected _getForm(): MemoryTaskForm {
