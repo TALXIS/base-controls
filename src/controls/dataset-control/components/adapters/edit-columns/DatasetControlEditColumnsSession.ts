@@ -115,13 +115,12 @@ export class DatasetControlEditColumnsSession {
         this.events.dispatchEvent('onColumnsChanged');
     }
 
-    /** Sets the columns and linking on the provider and refreshes it. */
+    /** Sets the columns and linking on the provider and clears its selection. */
     public save(): void {
         const provider = this._provider;
         provider.setColumns(this._columns.map((column, order) => ({ ...column, order })));
         provider.setLinking([...this._linking.values()]);
         provider.clearSelectedRecordIds();
-        provider.refresh();
     }
 
     public destroy(): void {

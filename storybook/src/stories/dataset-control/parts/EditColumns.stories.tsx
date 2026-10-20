@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EditColumnsExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.EditColumns\` is a button that opens the column editor. The user adds, reorders and removes columns, and saving sets them on the provider, which loads again.
+\`DatasetControl.EditColumns\` is a button that opens the column editor. The user adds, reorders and removes columns, and saving mounts the control anew with them.
 
 \`\`\`tsx
 <DatasetControl.Header.End>
@@ -25,7 +25,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 - The user can add the columns \`getAvailableColumns\` returns. When \`getAvailableRelatedColumns\` returns any entities, a scope selector lets them add columns of related records too.
 - While the columns load, the pickers say *Loading...*. When loading throws, the error shows in place of the pickers, with *Details* and *Try again*.
 - *Cancel*, or closing the panel, drops the changes.
-- Saving sets the columns on the provider, which loads again and clears the selection. The columns the user chose are kept per view: see [**State**](?path=/docs/datasetcontrol-state--overview).
+- Saving mounts the control anew with the new columns, as switching the view does, and clears the selection. The columns the user chose are kept per view: see [**State**](?path=/docs/datasetcontrol-state--overview).
 
 {{story: Choose the columns of a view}}
 
@@ -48,7 +48,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 |---|---|
 | \`open()\` | Opens the editor over the provider's columns. |
 | \`close()\` | Closes the editor and drops what was not saved. |
-| \`save()\` | Sets the columns on the provider, which loads again and clears the selection, and closes the editor. |
+| \`save()\` | Closes the editor and mounts the control anew with the columns, clearing the selection. |
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 `

@@ -24,7 +24,7 @@ export interface IDatasetControlEditColumns {
     open(): void;
     /** Closes the editor and drops whatever was not saved. */
     close(): void;
-    /** Writes the edit to the provider and closes the editor. */
+    /** Writes the edit to the provider, closes the editor and mounts the control anew with it. */
     save(): void;
 }
 
@@ -68,6 +68,8 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     public save(): void {
         this._session?.save();
         this.close();
+        //the next mount restores the setup this one keeps as it goes
+        this._services.get('runtime').reload();
     }
 
     /** The edit in progress; there only while the editor is open. */
