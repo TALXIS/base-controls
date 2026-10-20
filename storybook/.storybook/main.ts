@@ -106,6 +106,11 @@ const config: StorybookConfig = {
     // prevents infinite or excessive watch recursion without breaking local source resolution.
     config.server.watch ??= {};
     config.server.watch.followSymlinks = false;
+    if (process.env.STORYBOOK_POLL_WATCHER === '1') {
+      config.server.watch.usePolling = true;
+      config.server.watch.interval = 1000;
+      config.server.watch.binaryInterval = 2000;
+    }
     return config;
   },
 };
