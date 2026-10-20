@@ -5,7 +5,7 @@ export type { IUserQueriesModule, IUserQueryWriteParameters, IUserQueriesLabels,
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
-    IDatasetControlView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModules,
+    IDatasetControlView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
     IDatasetControlRuntime, DatasetControlViewsHook,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';

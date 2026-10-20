@@ -2,7 +2,7 @@ import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } fro
 import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
@@ -48,6 +48,8 @@ export interface IDatasetControlRuntimeParameters {
 export class DatasetControlRuntime implements IDatasetControlRuntime {
     public readonly events: IEventEmitter<IDatasetControlEvents> = new EventEmitter<IDatasetControlEvents>();
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
+    private _modules = new ServiceLocator<IDatasetControlModuleMap>();
+    private _loadedModules: { module: IDatasetControlModule; instance: unknown }[] = [];
     private _surfaces = new DatasetControlSurfaces();
     private _onGetProps: () => IDatasetControlProps;
     private _state: DatasetControlState;
@@ -79,6 +81,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public get parts(): IDatasetControlPartLocator {
         return this._services;
+    }
+
+    public get modules(): IDatasetControlModuleLocator {
+        return this._modules;
     }
 
     public get surfaces(): IDatasetControlSurfaces {
@@ -138,12 +144,14 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     public destroy(): void {
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
+        this._destroyModules();
         if (this._provider) {
             this._state.save(this._provider, this._viewId);
             this._releaseProvider(this._provider);
         }
         this.events.clearEventListeners();
         this._services.destroy();
+        this._modules.destroy();
     }
 
     private async _remountBehindBlocker(viewId: string | undefined): Promise<void> {
@@ -172,10 +180,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         let result: IDatasetControlLoadResult | undefined;
         let viewId: string | undefined;
         try {
-            const { custom = [], ...named } = this._onGetProps().modules ?? {};
-            for (const module of [...Object.values(named), ...custom]) {
-                await module?.onLoad?.(this);
-            }
+            await this._loadModules();
             //a copy: the hooks change it in place
             const views = [...await this._onGetProps().onLoadViews?.() ?? []];
             this._viewsHooks.apply(views);
@@ -202,6 +207,29 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             return;
         }
         this._onLoaded(result, viewId);
+    }
+
+    //a retried load starts the modules again from scratch
+    private async _loadModules(): Promise<void> {
+        this._destroyModules();
+        const names = new Set<string>();
+        for (const module of this._onGetProps().modules ?? []) {
+            if (names.has(module.name)) {
+                throw new Error(`Module "${module.name}" is registered twice.`);
+            }
+            names.add(module.name);
+            const instance = await module.onLoad(this);
+            this._loadedModules.push({ module, instance });
+            this._modules.register(module.name, () => instance as IDatasetControlModuleMap[typeof module.name]);
+        }
+    }
+
+    private _destroyModules(): void {
+        for (const { module, instance } of this._loadedModules) {
+            module.onDestroy?.(instance as never);
+            this._modules.unregister(module.name);
+        }
+        this._loadedModules = [];
     }
 
     //a kept view may have been removed since

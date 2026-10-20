@@ -142,11 +142,11 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     protected _isEditingEnabled(): boolean {
-        return !!this._taskDatasetControl.services.find('taskOperations')?.isEditingEnabled();
+        return !!this._taskDatasetControl.services.get('datasetControl').modules.find('operations')?.isEditingEnabled();
     }
 
     protected _renderFetchXml(): string {
-        const project = this._taskDatasetControl.services.find('project');
+        const project = this._taskDatasetControl.services.get('datasetControl').modules.find('project');
         const sourceRecord = this._parameters.sourceRecord;
         return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
             project: project && { id: project.id, name: project.name, entityName: project.entityName, ...project.data as object },
@@ -156,7 +156,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
     //the task lookup to the project's table
     protected async _resolveProjectLookup(fetchXml: string): Promise<{ columnName: string; reference: ComponentFramework.EntityReference } | undefined> {
-        const project = this._taskDatasetControl.services.find('project');
+        const project = this._taskDatasetControl.services.get('datasetControl').modules.find('project');
         if (!project?.entityName) {
             return undefined;
         }

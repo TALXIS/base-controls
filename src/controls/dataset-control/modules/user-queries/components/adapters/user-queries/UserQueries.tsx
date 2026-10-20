@@ -22,7 +22,7 @@ export interface IUserQueriesProps {
 export const UserQueries = (props: IUserQueriesProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const pcfContext = usePcfContext();
-    const userQueries = runtime.services.find('userQueries');
+    const userQueries = runtime.modules.find('userQueries');
     if (!userQueries) {
         throw new Error('DatasetControl.UserQueries needs the userQueries module.');
     }

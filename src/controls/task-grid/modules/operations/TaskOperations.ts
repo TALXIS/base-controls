@@ -8,7 +8,7 @@ import type { ICreateTaskOptions } from "../../provider";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
 import { ADD_TASK_COLUMN_KEY } from "../../tree/constants";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { AddTaskCell } from "./add-task-cell";
+import { AddTaskCell } from "./components";
 import { ITaskOperationsLabels, TASK_OPERATIONS_LABELS } from "./labels";
 
 export interface ITaskOperationsParameters {
@@ -32,23 +32,22 @@ export interface ITaskOperations {
     createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void>;
     /** Deletes the tasks and everything under them, once the user confirms. */
     deleteTasks(taskIds: string[]): Promise<void>;
+    /** Takes back what the module registered; the module calls it as the mount goes. */
+    destroy(): void;
 }
 
 export class TaskOperations implements ITaskOperations {
     private _taskDatasetControl: ITaskDatasetControlRuntime;
     private _parameters: ITaskOperationsParameters;
     private _labels: ILocalizationService<ITaskOperationsLabels>;
+    private _unregisterCommands?: () => void;
 
     constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITaskOperationsParameters) {
         this._taskDatasetControl = taskDatasetControl;
         this._parameters = parameters;
         this._labels = new LocalizationService<ITaskOperationsLabels>({ ...TASK_OPERATIONS_LABELS, ...parameters.labels });
-        taskDatasetControl.services.register('taskOperations', () => this);
         const parts = taskDatasetControl.services.get('datasetControl').parts;
-        parts.whenAvailable('ribbon', ribbon => {
-            const unregister = ribbon.registerCommands(this._onAddCommands);
-            taskDatasetControl.events.addEventListener('onDestroyed', unregister);
-        });
+        parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._onAddCommands));
         //after the tree, which adds the column the add-task buttons go in
         parts.whenAvailable('grid', grid => {
             grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 10);
@@ -66,6 +65,10 @@ export class TaskOperations implements ITaskOperations {
 
     public isDeletionEnabled(): boolean {
         return !!this._parameters.enableDeletion;
+    }
+
+    public destroy(): void {
+        this._unregisterCommands?.();
     }
 
     public getLabels(): ILocalizationService<ITaskOperationsLabels> {
@@ -143,9 +146,9 @@ export class TaskOperations implements ITaskOperations {
     };
 }
 
-declare module "../../runtime/interfaces" {
-    interface ITaskDatasetControlRuntimeModuleServiceMap {
-        /** What the operations module allows. */
-        taskOperations: ITaskOperations;
+declare module "@controls/dataset-control/runtime/interfaces" {
+    interface IDatasetControlModuleMap {
+        /** Which of creating, editing and deleting tasks a mount allows. */
+        operations: ITaskOperations;
     }
 }

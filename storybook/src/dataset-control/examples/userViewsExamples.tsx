@@ -7,7 +7,7 @@ const USER_VIEWS_CODE = `import { loadDealViews } from './views'
 import { DealView, readViewData, loadView, writeViewData, userViews } from './userViews'
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
+    const modules = React.useMemo(() => [createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData })], [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadView} stateKey='userViews' height='480px'>
         <DatasetControl.Header>

@@ -152,8 +152,8 @@ export class DatasetControlUserQueries {
 }
 
 declare module "../../runtime/interfaces" {
-    interface IDatasetControlServiceMap {
-        /** The user's own views, when the user queries module is there. */
+    interface IDatasetControlModuleMap {
+        /** The user's own views. */
         userQueries: DatasetControlUserQueries;
     }
 }

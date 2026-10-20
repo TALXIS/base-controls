@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { StateStore, useStateStore } from "@utils";
-import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModules, IDatasetControlView } from "../../../runtime";
+import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModule, IDatasetControlView } from "../../../runtime";
 import { DatasetControlState } from "../../../runtime/DatasetControlState";
 import { IDatasetControlLabels } from "./labels";
 import { IDatasetControlComponents } from "./components";
@@ -9,7 +9,7 @@ import { DatasetControlMount } from "./DatasetControlMount";
 /** Props for `DatasetControl`. */
 export interface IDatasetControlProps<TData = unknown> {
     /** The control's modules; read on every mount. */
-    modules?: IDatasetControlModules<TData>;
+    modules?: IDatasetControlModule[];
     /** The views to switch between; called before `onLoad` on every mount. */
     onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
     /** Loads the provider for the view the control resolved, behind the skeleton; called on every mount. */

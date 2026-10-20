@@ -4,7 +4,7 @@ import { LocalizationService, usePcfContext } from "@utils";
 import { Root as DatasetControl } from "@controls/dataset-control/components/adapters/root/Root";
 import type { IDatasetControlProps } from "@controls/dataset-control/components/adapters/root/Root";
 import type { IDatasetControlLabels } from "@controls/dataset-control/components/adapters/root/labels";
-import type { IDatasetControl, IDatasetControlModules } from "@controls/dataset-control/runtime/interfaces";
+import type { IDatasetControl, IDatasetControlModule } from "@controls/dataset-control/runtime/interfaces";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
 import type { ITaskGridEventHandlers, ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
@@ -13,12 +13,10 @@ import type { ITaskDatasetControlRuntime } from "../runtime";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
-/** The modules a TaskDatasetControl is given; each module adds its own key. */
-export interface ITaskDatasetControlModules extends IDatasetControlModules<ITaskViewData> { }
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'>, Partial<ITaskGridEventHandlers> {
     /** The control's modules; read on every mount. */
-    modules?: ITaskDatasetControlModules;
+    modules?: IDatasetControlModule[];
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** The control's and the task grid's strings; read once, at mount. */

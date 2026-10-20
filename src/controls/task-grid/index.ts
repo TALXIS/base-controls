@@ -8,6 +8,6 @@ export * from './modules';
 export * from './priorities';
 export * from './data-sources';
 export type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeServiceMap, ITaskDatasetControlRuntimeModuleServiceMap, ITaskDatasetControlRuntimeEvents, ITaskGridSetting, TaskGridSettingsHook } from './runtime';
-export type { ITaskDatasetControlProps, ITaskDatasetControlModules, ISettingsProps, ISettingsComponents, ITaskNotificationsProps } from './dataset-control';
+export type { ITaskDatasetControlProps, ISettingsProps, ISettingsComponents, ITaskNotificationsProps } from './dataset-control';
 export { SettingsComponents, useTaskDatasetControl } from './dataset-control';
 export { useTaskGridService, useTaskGridServices } from './useTaskGrid';

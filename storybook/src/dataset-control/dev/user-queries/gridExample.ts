@@ -8,7 +8,7 @@ import { DealsBody } from './DealsBody'
 
 const GridExample = () => {
     const userQueriesProvider = React.useMemo(() => createUserQueriesProvider(), [])
-    const datasetControlModules = React.useMemo(() => ({ userQueries: createUserQueriesModule({ provider: userQueriesProvider, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
+    const datasetControlModules = React.useMemo(() => [createUserQueriesModule({ provider: userQueriesProvider, onReadViewData: readViewData, onWriteViewData: writeViewData })], [])
 
     //every view, system or saved by the user, carries what it shows in its data
     const onLoad = async (params: IDatasetControlLoadParameters) => ({ provider: await loadDeals(getDefinition(params.view)) })

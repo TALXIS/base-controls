@@ -10,7 +10,6 @@ import type { DatasetControlNotifications, IDatasetControlNotifications } from "
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
 import type { IRibbonRuntime } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
-import type { IUserQueriesModule } from "../modules/user-queries/interfaces";
 
 /** A header views are listed under in the view switcher. */
 export interface IDatasetControlViewGroup {
@@ -63,19 +62,21 @@ export interface IDatasetControlPartMap {
 /** Looks up the parts rendered right now. */
 export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'whenAvailable'>;
 
+/** The modules a DatasetControl loaded, by name; each module adds its own entry. */
+export interface IDatasetControlModuleMap { }
+
 /** A feature of the control, loaded on every mount. */
-export interface IDatasetControlModule {
-    /** Registers what the module adds, on every load before `onLoadViews`; may wait for what it needs first. */
-    onLoad?(datasetControl: IDatasetControlRuntime): Promise<void> | void;
+export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> {
+    /** Unique within the control; what `onLoad` returns is registered under it. */
+    name: TName;
+    /** Registers what the module adds, on every load before `onLoadViews`. */
+    onLoad(datasetControl: IDatasetControlRuntime): IDatasetControlModuleMap[TName] | Promise<IDatasetControlModuleMap[TName]>;
+    /** Called as the mount goes, with what `onLoad` returned, before the provider is released. */
+    onDestroy?(instance: IDatasetControlModuleMap[TName]): void;
 }
 
-/** The modules a DatasetControl is given. */
-export interface IDatasetControlModules<TData = unknown> {
-    /** The user's own views. */
-    userQueries?: IUserQueriesModule<TData>;
-    /** Registered after the named modules, in order. */
-    custom?: IDatasetControlModule[];
-}
+/** Looks up the modules the control loaded. */
+export type IDatasetControlModuleLocator = Pick<IServiceLocator<IDatasetControlModuleMap>, 'get' | 'find' | 'whenAvailable'>;
 
 /** The DatasetControl as its consumer drives it. */
 export interface IDatasetControl<TData = unknown> {
@@ -83,6 +84,8 @@ export interface IDatasetControl<TData = unknown> {
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     /** The parts rendered inside the control. */
     readonly parts: IDatasetControlPartLocator;
+    /** The modules the control loaded, by name. */
+    readonly modules: IDatasetControlModuleLocator;
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, from the last load that succeeded. */

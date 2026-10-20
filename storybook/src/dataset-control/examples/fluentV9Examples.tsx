@@ -21,7 +21,7 @@ const onLoad = async (params: IDatasetControlLoadParameters<DealView>) => {
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
+    const modules = React.useMemo(() => [createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData })], [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>

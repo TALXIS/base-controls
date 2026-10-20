@@ -3445,16 +3445,13 @@ interface IViewSwitcherProps {
     children?: React.ReactNode;
 }
 
-/** A feature of the control, registered on every mount. */
+/** A feature of the control, loaded on every mount. */
 interface IDatasetControlModule {
-    /** Registers what the module adds, on every load before onLoadViews; may wait for what it needs first. */
-    onLoad?(datasetControl: any): Promise<void> | void;
-}
-
-interface IDatasetControlModules {
-    /** The user's own views. */
-    userQueries?: IDatasetControlModule;
-    custom?: IDatasetControlModule[];
+    /** Unique within the control; what onLoad returns is registered under it, for datasetControl.modules. */
+    name: string;
+    onLoad(datasetControl: any): any;
+    /** Called as the mount goes, with what onLoad returned. */
+    onDestroy?(instance: any): void;
 }
 
 /** What onWriteViewData is called with. */
@@ -3653,6 +3650,8 @@ interface IDatasetControlSurfaces {
 interface IDatasetControl<TData = unknown> {
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     readonly parts: IDatasetControlPartLocator;
+    /** The modules the control loaded, by name. */
+    readonly modules: { get(name: string): any; find(name: string): any; whenAvailable(name: string, callback: (module: any) => void): void };
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, from the last load that succeeded. */
@@ -3673,8 +3672,8 @@ interface IDatasetControl<TData = unknown> {
 }
 
 interface IDatasetControlProps<TData = unknown> {
-    /** The control's modules; read on every mount. */
-    modules?: IDatasetControlModules;
+    /** The control's modules, each with a unique name; read on every mount. */
+    modules?: IDatasetControlModule[];
     /** The views to switch between; called before onLoad on every mount. */
     onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
     /** Loads the provider for the view the control resolved; called on every mount. */
@@ -3873,13 +3872,13 @@ interface IProject<TData = { [key: string]: unknown }> {
     data?: TData;
 }
 
-/** Loads the project the tasks belong to; goes in TaskDatasetControl's modules.project. */
+/** Loads the project the tasks belong to; goes in TaskDatasetControl's modules. */
 interface IProjectModule extends IDatasetControlModule { }
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
 declare const createProjectModule: <TData>(parameters: { onLoadProject: () => Promise<IProject<TData>> }) => IProjectModule;
 
-/** Creating, editing and deleting tasks; goes in TaskDatasetControl's modules.operations. */
+/** Creating, editing and deleting tasks; goes in TaskDatasetControl's modules. */
 interface ITaskOperationsModule extends IDatasetControlModule { }
 
 /** Turns on the task operations its flags name. */
@@ -3894,19 +3893,9 @@ declare const createTaskOperationsModule: (parameters: {
     labels?: { [key: string]: string };
 }) => ITaskOperationsModule;
 
-/** The modules a TaskDatasetControl is given. */
-interface ITaskDatasetControlModules extends IDatasetControlModules {
-    /** The project the tasks belong to. */
-    project?: IProjectModule;
-    /** The task operations a mount allows, each off until its flag turns it on. */
-    operations?: ITaskOperationsModule;
-    /** Moving tasks by dragging their rows. */
-    dragging?: IDatasetControlModule;
-}
-
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
-    modules?: ITaskDatasetControlModules;
+    modules?: IDatasetControlModule[];
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
     onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called on every mount once its load succeeded. */

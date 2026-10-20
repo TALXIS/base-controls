@@ -42,7 +42,7 @@ export interface IManageViewsProps {
 /** The user's views as an editable, sortable and filterable DatasetControl. */
 export const ManageViews = (props: IManageViewsProps) => {
     //the control the panel is opened from, not the one it draws
-    const userQueries = useRequiredDatasetControlRuntime().services.get('userQueries');
+    const userQueries = useRequiredDatasetControlRuntime().modules.get('userQueries');
     const styles = useMemo(() => getManageViewsStyles(), []);
     const modules = useMemo(() => ({
         rowModel: createClientSideRowModelModule(),

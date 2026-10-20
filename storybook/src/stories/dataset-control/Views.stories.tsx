@@ -80,7 +80,7 @@ const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters<IDe
     record.setValue('definition', JSON.stringify(readDefinition(datasetControl.getProvider()!)))
 }
 
-const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDealViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
+const modules = React.useMemo(() => [createUserQueriesModule<IDealViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData })], [])
 
 <DatasetControl modules={modules} onLoadViews={loadViews} onLoad={loadDeals}>
     ...
@@ -110,12 +110,12 @@ const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDea
 Any provider can hold the views, such as a \`MemoryDataProvider\` as in the example. \`createTalxisUserQueriesModule\` keeps them as \`talxis_userquery\` records of an entity, with each view's data as JSON in \`talxis_layoutjson\`:
 
 \`\`\`tsx
-const modules = React.useMemo(() => ({
-    userQueries: createTalxisUserQueriesModule<IDealViewData>({
+const modules = React.useMemo(() => [
+    createTalxisUserQueriesModule<IDealViewData>({
         entityName: 'deal',
         onCaptureViewData: datasetControl => readDefinition(datasetControl.getProvider()!),
     }),
-}), [])
+], [])
 \`\`\`
 
 | Parameter | Description |

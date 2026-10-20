@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getAddTaskCellStyles = () => mergeStyleSets({
+export const getAddTaskButtonStyles = () => mergeStyleSets({
     //only on the row the user is on
     addTaskButton: {
         width: '100%',

@@ -68,7 +68,7 @@ You should see a placeholder while the deals load, then the grid with *All deals
 |---|---|---|---|
 | \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | Returns the provider for a view. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview). |
 | \`onLoadViews\` | \`() => Promise<IDatasetControlView<TData>[]>\` | None | Returns the views to switch between, before every \`onLoad\`. \`TData\` is the type of every view's \`data\`. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
-| \`modules\` | \`IDatasetControlModules\` | None | Features added to the control, such as \`userQueries\` for the user's own views. Read on every load. See *Let users save their own views* on [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as \`createUserQueriesModule\` for the user's own views. Read on every load. See *Let users save their own views* on [**Views**](?path=/docs/datasetcontrol-views--overview). |
 | \`children\` | \`ReactNode\` | Required | The regions and the parts. See [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
 | \`height\` | \`string\` | None | The control's height. See *Size the control* on [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
 | \`className\` | \`string\` | None | Added to the control's box. |

@@ -10,4 +10,4 @@ export interface IUserQueryWriteParameters<TData = unknown> {
 }
 
 /** The user's own views, listed with the control's and managed through `DatasetControl.UserQueries`. */
-export interface IUserQueriesModule<TData = unknown> extends IDatasetControlModule { }
+export interface IUserQueriesModule<TData = unknown> extends IDatasetControlModule<'userQueries'> { }

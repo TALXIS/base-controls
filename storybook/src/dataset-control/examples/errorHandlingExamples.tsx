@@ -53,7 +53,7 @@ const saveWhileUp = (parameters: IUserQueryWriteParameters<DealView>) => {
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: saveWhileUp }) }), [])
+    const modules = React.useMemo(() => [createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: saveWhileUp })], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked
