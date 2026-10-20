@@ -5,4 +5,6 @@ const AFTER_GRID = Math.max(...Object.values(GRID_MODULE_PRIORITY)) + 10;
 /** Where the task grid's hooks run: after every grid module's, so the tree has the later word. */
 export const TASK_GRID_MODULE_PRIORITY = {
     tree: AFTER_GRID,
+    //after the tree, which adds the column the add-task buttons go in
+    operations: AFTER_GRID + 10,
 };

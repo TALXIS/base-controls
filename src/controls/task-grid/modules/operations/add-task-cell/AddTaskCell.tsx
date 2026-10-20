@@ -3,8 +3,8 @@ import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { Grid } from "@controls/grid";
-import { useTaskGridService } from "../../useTaskGrid";
-import { useTaskGridContext } from "../../context";
+import { useTaskGridService } from "../../../useTaskGrid";
+import { useTaskGridContext } from "../../../context";
 import { AddTaskButtonComponents, IAddTaskCellComponents } from "./components";
 import { getAddTaskCellStyles } from "./styles";
 
@@ -22,13 +22,14 @@ export const AddTaskCell = (props: IAddTaskCellProps) => {
     const components = { ...taskGridComponents.addTaskCell, ...props.components };
     const button = { ...AddTaskButtonComponents, ...components.button };
     const recordId = props.data?.getRecordId();
+    const operations = runtime.services.get('taskOperations');
     //the lock column already says an inactive task cannot change
-    const canAddTask = !!recordId && !props.node.rowPinned && runtime.isTaskCreationEnabled() && provider.isRecordActive(recordId);
+    const canAddTask = !!recordId && !props.node.rowPinned && provider.isRecordActive(recordId);
 
     if (!canAddTask) {
         return <Grid.Cell.EmptyRenderer {...props} components={{ container: components.container }} />;
     }
-    const label = runtime.getLabels().getLocalizedString('addChild');
+    const label = operations.getLabels().getLocalizedString('addChild');
     return <Grid.Cell.Root {...props}>
         <Grid.Cell.Theme theme={props.theme}>
             <Grid.Cell.Container components={components.container}>
@@ -37,7 +38,7 @@ export const AddTaskCell = (props: IAddTaskCellProps) => {
                     title: label,
                     ariaLabel: label,
                     iconProps: { iconName: 'Add' },
-                    onClick: () => runtime.createTask(recordId),
+                    onClick: () => operations.createTask(recordId),
                 })}
             </Grid.Cell.Container>
         </Grid.Cell.Theme>

@@ -1,4 +1,4 @@
-/** The column holding each row's add-task button and, in its header, expand and collapse all. */
+/** The column holding expand and collapse all in its header, and the operations module's add-task buttons. */
 export const ADD_TASK_COLUMN_KEY = 'addTask__virtual';
 
 /** How far each level of the tree is indented. */

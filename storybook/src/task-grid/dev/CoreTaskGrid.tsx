@@ -43,12 +43,13 @@ const GridExample = () => {
     }), [])
     const datasetControlModules = React.useMemo(() => ({
         userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }),
+        operations: createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
         project: createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
     }), [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
 
-    return <TaskDatasetControl modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devTasks' height='600px' onLoad={onLoad} enableTaskCreation>
+    return <TaskDatasetControl modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devTasks' height='600px' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

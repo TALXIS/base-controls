@@ -4,7 +4,8 @@ import type { ITaskGridServiceMap } from "./services";
 import type { ITaskDatasetControlRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskMoveParams, ITaskViewData } from "./provider";
-import type { ITreeCellComponents, IAddTaskCellComponents, IExpansionHeaderComponents } from "./tree";
+import type { ITreeCellComponents, IExpansionHeaderComponents } from "./tree";
+import type { IAddTaskCellComponents } from "./modules/operations";
 
 
 /** The grid modules of a task grid; the row model is always client-side, and grouping does not mix with a tree. */

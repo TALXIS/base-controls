@@ -1,7 +1,8 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
@@ -9,7 +10,6 @@ import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
 import { TASK_GRID_MODULE_PRIORITY } from "../modules/priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
-import { AddTaskCell } from "./add-task-cell";
 import { PercentCompleteCell } from "./percent-complete-cell";
 import { ExpansionHeader } from "./expansion-header";
 import { ADD_TASK_COLUMN_KEY } from "./constants";
@@ -51,6 +51,7 @@ export class TaskTree {
         parameters.runtime.registerSettings(this._addSettings);
 
         services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_MODULE_PRIORITY.tree));
+        services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_MODULE_PRIORITY.tree));
 
         services.whenAvailable('gridApi', this._onGridApi);
         //ahead of row selection's listener, which redraws the checkboxes
@@ -123,7 +124,7 @@ export class TaskTree {
             resizable: false,
             suppressMovable: true,
             suppressSizeToFit: true,
-            cellRenderer: AddTaskCell,
+            cellRenderer: Grid.Cell.EmptyRenderer,
             headerComponent: ExpansionHeader,
         });
         const getOrder = (colDef: ColDef<IRecord>): number => {
@@ -177,6 +178,16 @@ export class TaskTree {
     private _onRecordsSelected = (): void => {
         this._partiallySelectedIds = undefined;
     };
+
+    private _onLock: GridLockHook = (result, context) => {
+        if (context.record && !context.columnName && !this._isEditingEnabled()) {
+            result.isLocked = true;
+        }
+    };
+
+    private _isEditingEnabled(): boolean {
+        return !!this._runtime.services.find('taskOperations')?.isEditingEnabled();
+    }
 
     private _onSelectionState: GridSelectionStateHook = (result, context) => {
         if (!this._isFlatList && result.state === 'unchecked' && this._getPartiallySelectedIds().has(context.record.getRecordId())) {
@@ -237,7 +248,7 @@ export class TaskTree {
         const subject = this._provider.getFieldMapping().subject;
         gridApi.ensureNodeVisible(node);
         gridApi.setFocusedCell(node.rowIndex, subject);
-        if (!this._grid.services.find('editing')) {
+        if (!this._grid.services.find('editing') || !this._isEditingEnabled()) {
             return;
         }
         gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });

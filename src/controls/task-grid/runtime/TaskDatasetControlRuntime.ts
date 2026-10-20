@@ -1,11 +1,10 @@
 import { EventEmitter, IColumn } from "@talxis/client-libraries";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
-import type { IRibbonCommand } from "@controls/ribbon";
 import type { IPcfContext } from "@interfaces";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { mergeColumn } from "../provider/mergeColumn";
 import { USER_QUERIES_GROUP } from "@controls/dataset-control/modules/user-queries/DatasetControlUserQueries";
 import type { ITaskGridLabels } from "../labels";
@@ -34,7 +33,6 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.register('labels', () => parameters.labels);
         this.services.register('pcfContext', () => parameters.pcfContext);
         this._settingsHooks.register(this._addCoreSettings);
-        datasetControl.parts.whenAvailable('ribbon', ribbon => ribbon.registerCommands(this._addCoreCommands));
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
@@ -77,10 +75,6 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         return this.services.get('labels');
     }
 
-    public isTaskCreationEnabled(): boolean {
-        return !!this._onGetProps().enableTaskCreation;
-    }
-
     public isFlatList(): boolean {
         return this.services.find('taskTree')?.isFlatList() ?? false;
     }
@@ -89,41 +83,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.find('taskTree')?.setFlatList(isFlatList);
     }
 
-    public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
-        await this._execute(() => this.getProvider().createTask(parentId, options));
-    }
-
-    public async deleteTasks(taskIds: string[]): Promise<void> {
-        const navigation = this.services.get('pcfContext').navigation;
-        const labels = this.getLabels();
-        const provider = this.getProvider();
-        const { deletableTaskIds, refusedTaskIds } = provider.getDeletion(taskIds);
-        if (deletableTaskIds.length === 0) {
-            await navigation.openErrorDialog({ message: labels.getLocalizedString('tasksCannotBeDeleted') });
-            return;
-        }
-        const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
-        const text = subtaskCount > 0 ? labels.getLocalizedString('confirmDeleteTasksWithSubtasks', { count: String(subtaskCount) }) : labels.getLocalizedString('confirmDeleteTasks');
-        const confirmation = await navigation.openConfirmDialog({ text });
-        if (!confirmation.confirmed) {
-            return;
-        }
-        await this._execute(async () => {
-            const result = await provider.deleteTasks(taskIds);
-            const failures = [
-                ...(result?.success === false ? result.errors : []),
-                ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
-            ];
-            if (failures.length > 0) {
-                const subject = this.getFieldMapping().subject;
-                const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
-                await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
-            }
-        });
-    }
-
     public async openTasks(taskIds: string[]): Promise<void> {
-        await this._execute(() => this.getProvider().openTasks(taskIds));
+        await this.execute(() => this.getProvider().openTasks(taskIds));
     }
 
     public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
@@ -174,23 +135,6 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         return { name, isHidden, dataType, order, visualSizeFactor, isVirtual };
     }
 
-    //ahead of the consumer's own commands
-    private _addCoreCommands = (commands: IRibbonCommand[]): void => {
-        const labels = this.getLabels();
-        const selectedIds = this.getProvider().getSelectedRecordIds();
-        const coreCommands: IRibbonCommand[] = [];
-        if (this.isTaskCreationEnabled()) {
-            coreCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
-        }
-        if (selectedIds.length > 0) {
-            coreCommands.push(
-                { id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.openTasks(selectedIds) },
-                { id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) },
-            );
-        }
-        commands.unshift(...coreCommands);
-    };
-
     private _addCoreSettings = (settings: ITaskGridSetting[]): void => {
         const provider = this.getProvider();
         settings.push({
@@ -201,7 +145,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         });
     };
 
-    private async _execute(operation: () => Promise<unknown>): Promise<void> {
+    public async execute(operation: () => Promise<unknown>): Promise<void> {
         try {
             await operation();
         }

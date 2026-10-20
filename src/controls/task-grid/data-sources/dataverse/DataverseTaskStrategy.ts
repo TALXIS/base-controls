@@ -88,7 +88,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public async onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null> {
         const placement = this._getPlacement(params);
         const defaults = { ...await this._parameters.onGetNewTaskDefaults?.(params), ...params.data };
-        return this._isGridEditable() ? this._createThroughWebApi({ ...defaults, ...placement }) : this._createThroughForm(defaults, placement);
+        return this._isEditingEnabled() ? this._createThroughWebApi({ ...defaults, ...placement }) : this._createThroughForm(defaults, placement);
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
@@ -122,7 +122,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         const taskIds = references.map(reference => reference.id.guid);
         if (taskIds.length === 1) {
             await this._navigate('edit', {
-                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isGridEditable() } },
+                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskDatasetControl.getProvider().isRecordActive(taskIds[0]) } },
                 navigationOptions: SIDE_DIALOG,
             });
         }
@@ -140,8 +140,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return this._taskDatasetControl.services.get('pcfContext');
     }
 
-    protected _isGridEditable(): boolean {
-        return !!this._taskDatasetControl.services.get('datasetControl').parts.find('grid')?.services.find('editing');
+    protected _isEditingEnabled(): boolean {
+        return !!this._taskDatasetControl.services.find('taskOperations')?.isEditingEnabled();
     }
 
     protected _renderFetchXml(): string {

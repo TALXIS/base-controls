@@ -11,6 +11,7 @@ import type { ITaskGridEventHandlers, ITaskGridLoadParameters, ITaskGridLoadResu
 import type { ITaskViewData } from "../provider";
 import type { ITaskDatasetControlRuntime } from "../runtime";
 import type { IProjectModule } from "../modules/project";
+import type { ITaskOperationsModule } from "../modules/operations";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
@@ -18,6 +19,8 @@ import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 export interface ITaskDatasetControlModules extends IDatasetControlModules<ITaskViewData> {
     /** The project the tasks belong to. */
     project?: IProjectModule;
+    /** The task operations a mount allows, each off until its flag turns it on. */
+    operations?: ITaskOperationsModule;
 }
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'>, Partial<ITaskGridEventHandlers> {
@@ -27,8 +30,6 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** The control's and the task grid's strings; read once, at mount. */
     labels?: Partial<IDatasetControlLabels & ITaskGridLabels>;
-    /** Whether the New command and the add-task buttons are there. */
-    enableTaskCreation?: boolean;
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
     onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Called on every mount once its load succeeded. */
@@ -64,7 +65,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskDatasetControl').load(parameters);
 
-    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableTaskCreation: _enableTaskCreation, onTasksCreated: _onTasksCreated, onTasksDeleted: _onTasksDeleted, onTaskMoved: _onTaskMoved, onTasksUpdated: _onTasksUpdated, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, onTasksCreated: _onTasksCreated, onTasksDeleted: _onTasksDeleted, onTaskMoved: _onTaskMoved, onTasksUpdated: _onTasksUpdated, ...datasetControlProps } = props;
 
     return <TaskDatasetControlPropsContext.Provider value={propsContext}>
         <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onReady={onReady} onDestroyed={onDestroyed} onLoad={onLoad} />

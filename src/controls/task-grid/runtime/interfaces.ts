@@ -1,7 +1,7 @@
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@interfaces";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
-import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskGridLabels } from "../labels";
 
 /** A toggle in `TaskDatasetControl.Settings`. */
@@ -53,15 +53,12 @@ export interface ITaskDatasetControlRuntime {
     getFieldMapping(): IFieldMapping;
     getProvider(): ITaskDataProvider;
     getLabels(): ILocalizationService<ITaskGridLabels>;
-    isTaskCreationEnabled(): boolean;
     /** Whether the matching tasks are listed on their own, without the tree; remembered per view. */
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
-    /** Creates a task, opens its parent, and starts editing its name when the grid edits. */
-    createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void>;
-    /** Deletes the tasks and everything under them, once the user confirms. */
-    deleteTasks(taskIds: string[]): Promise<void>;
     openTasks(taskIds: string[]): Promise<void>;
+    /** Runs the operation, showing the error dialog when it throws. */
+    execute(operation: () => Promise<unknown>): Promise<void>;
     /**
      * Registers a hook over the toggles `TaskDatasetControl.Settings` shows.
      *

@@ -3879,10 +3879,27 @@ interface IProjectModule extends IDatasetControlModule { }
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
 declare const createProjectModule: <TData>(parameters: { onLoadProject: () => Promise<IProject<TData>> }) => IProjectModule;
 
+/** Creating, editing and deleting tasks; goes in TaskDatasetControl's modules.operations. */
+interface ITaskOperationsModule extends IDatasetControlModule { }
+
+/** Turns on the task operations its flags name. */
+declare const createTaskOperationsModule: (parameters: {
+    /** The New command and the add-subtask buttons. */
+    enableCreation?: boolean;
+    /** The Edit command, and editing tasks in the grid and in their forms. */
+    enableEditing?: boolean;
+    /** The Delete command. */
+    enableDeletion?: boolean;
+    /** Overrides for the module's strings, such as new, edit, delete and addChild. */
+    labels?: { [key: string]: string };
+}) => ITaskOperationsModule;
+
 /** The modules a TaskDatasetControl is given. */
 interface ITaskDatasetControlModules extends IDatasetControlModules {
     /** The project the tasks belong to. */
     project?: IProjectModule;
+    /** The task operations a mount allows, each off until its flag turns it on. */
+    operations?: ITaskOperationsModule;
 }
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
@@ -3896,8 +3913,6 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
-    /** Whether the New command and the add-task buttons are there. */
-    enableTaskCreation?: boolean;
     onTasksCreated?: (records: IRecord[], parentId?: string) => void;
     onTasksDeleted?: (taskIds: string[]) => void;
     onTaskMoved?: (params: any) => void;
