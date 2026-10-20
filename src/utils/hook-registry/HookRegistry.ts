@@ -37,4 +37,11 @@ export class HookRegistry<THook extends (...args: any[]) => void> {
             hook(...args);
         }
     }
+
+    /** Runs every hook in order, awaiting each one before the next. */
+    public async applyAsync(...args: Parameters<THook>): Promise<void> {
+        for (const { hook } of this._hooks) {
+            await hook(...args);
+        }
+    }
 }

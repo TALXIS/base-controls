@@ -1863,15 +1863,17 @@ interface IGridOpenRecordParams {
 
 type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 
-interface IGridSelectRecordsParameters {
-    provider: IDataProvider;
+/** The selection about to be written; a hook may change the ids or cancel it. */
+interface IGridRecordsSelection {
     recordIds: string[];
+    isCancelled: boolean;
 }
 
-interface IGridRowSelectionInterceptors {
-    /** Writes a selection to the provider that owns the records. */
-    onSelectRecords: (parameters: IGridSelectRecordsParameters) => Promise<void>;
-}
+/** Runs before a selection is written, awaited in priority order. */
+type GridSelectRecordsHook = (selection: IGridRecordsSelection, context: { provider: IDataProvider }) => void | Promise<void>;
+
+/** Adjusts how a row's checkbox reads, starting from whether the row is selected. */
+type GridSelectionStateHook = (result: { state: IGridRowSelectionState }, context: { node: IRowNode<IRecord>; record: IRecord }) => void;
 
 interface IGridRowSelectionEvents {
     onSelectionChanged: (selectedRecordIds: string[]) => void;
@@ -1880,8 +1882,9 @@ interface IGridRowSelectionEvents {
 interface IGridRowSelection {
     readonly events: IEventEmitter<IGridRowSelectionEvents>;
     getMode(): 'single' | 'multiple';
-    setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
-    /** Selects the records through the onSelectRecords interceptor. */
+    registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void;
+    registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void;
+    /** Selects the records through the registerSelectRecords hooks. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     toggleRecord(record: IRecord): Promise<void>;
     isSelectionColumn(columnName: string | undefined): boolean;

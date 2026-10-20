@@ -1,7 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
@@ -31,6 +31,7 @@ export class TaskTree {
     private _isFlatList: boolean;
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
+    private _partiallySelectedIds?: Set<string>;
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -49,7 +50,11 @@ export class TaskTree {
         services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_MODULE_PRIORITY.tree);
         parameters.runtime.registerSettings(this._addSettings);
 
+        services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_MODULE_PRIORITY.tree));
+
         services.whenAvailable('gridApi', this._onGridApi);
+        //ahead of row selection's listener, which redraws the checkboxes
+        this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         this._provider.taskEvents.addEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
         this._provider.taskEvents.addEventListener('onTasksCreated', this._onTasksCreated);
@@ -164,9 +169,39 @@ export class TaskTree {
         return this._grid.services.get('state').get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
     }
 
-    private _onNewDataLoaded = (): void => this._expansion.prune();
+    private _onNewDataLoaded = (): void => {
+        this._partiallySelectedIds = undefined;
+        this._expansion.prune();
+    };
+
+    private _onRecordsSelected = (): void => {
+        this._partiallySelectedIds = undefined;
+    };
+
+    private _onSelectionState: GridSelectionStateHook = (result, context) => {
+        if (!this._isFlatList && result.state === 'unchecked' && this._getPartiallySelectedIds().has(context.record.getRecordId())) {
+            result.state = 'indeterminate';
+        }
+    };
+
+    //the ancestors of the shown tasks that are selected
+    private _getPartiallySelectedIds(): Set<string> {
+        if (!this._partiallySelectedIds) {
+            const { view, structure } = this._provider.getRecordTree();
+            const shownIds = new Set(view.getOrderedIds());
+            const partiallySelectedIds = new Set<string>();
+            for (const taskId of this._provider.getSelectedRecordIds()) {
+                if (shownIds.has(taskId)) {
+                    structure.getAncestorIds(taskId).filter(ancestorId => ancestorId !== taskId).forEach(ancestorId => partiallySelectedIds.add(ancestorId));
+                }
+            }
+            this._partiallySelectedIds = partiallySelectedIds;
+        }
+        return this._partiallySelectedIds;
+    }
 
     private _onTreeChanged = (): void => {
+        this._partiallySelectedIds = undefined;
         this._expansion.prune();
         this._grid.services.get('rowModel').refresh();
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
@@ -231,6 +266,7 @@ export class TaskTree {
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }
+        this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
         this._provider.taskEvents.removeEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
         this._provider.taskEvents.removeEventListener('onTasksCreated', this._onTasksCreated);

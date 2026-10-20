@@ -1,6 +1,6 @@
-import { IEventSubscriber } from "@utils";
+import { HookRegistry, IEventSubscriber } from "@utils";
 import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
-import { EventEmitter, IDataProvider, IEventEmitter, IInterceptor, Interceptors, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./services";
@@ -20,16 +20,31 @@ declare module "../../services/interfaces" {
 /** How a row's checkbox reads: its own state, or its children's. */
 export type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 
-export interface IGridSelectRecordsParameters {
-    provider: IDataProvider;
+/** The selection about to be written; a hook may change the ids or cancel it. */
+export interface IGridRecordsSelection {
     recordIds: string[];
+    isCancelled: boolean;
 }
 
-/** What another module can wrap, deciding whether the default action runs at all. */
-export interface IGridRowSelectionInterceptors {
-    /** Writes a selection to the provider that owns the records. */
-    onSelectRecords: (parameters: IGridSelectRecordsParameters) => Promise<void>;
+export interface IGridSelectRecordsContext {
+    /** The provider the selection is written to. */
+    provider: IDataProvider;
 }
+
+/** Runs before a selection is written, awaited in priority order. */
+export type GridSelectRecordsHook = (selection: IGridRecordsSelection, context: IGridSelectRecordsContext) => void | Promise<void>;
+
+export interface IGridSelectionStateResult {
+    state: IGridRowSelectionState;
+}
+
+export interface IGridSelectionStateContext {
+    node: IRowNode<IRecord>;
+    record: IRecord;
+}
+
+/** Adjusts how a row's checkbox reads, starting from whether the row is selected. */
+export type GridSelectionStateHook = (result: IGridSelectionStateResult, context: IGridSelectionStateContext) => void;
 
 export interface IGridRowSelectionEvents {
     /** Fired when the selected records change, with the ids now selected. */
@@ -50,11 +65,12 @@ export interface IGridRowSelection {
     readonly events: IEventSubscriber<IGridRowSelectionEvents>;
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
-    /** Selects the records, through whatever intercepts `onSelectRecords`. */
+    /** Selects the records, through the `registerSelectRecords` hooks. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
-    /** Selects the record, or deselects it, through whatever intercepts `onSelectRecords`. */
+    /** Selects the record, or deselects it, through the `registerSelectRecords` hooks. */
     toggleRecord(record: IRecord): Promise<void>;
-    setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void;
+    registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void;
+    registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
     /** How a row's checkbox should read. */
@@ -70,7 +86,8 @@ export class GridRowSelection implements IGridRowSelection {
     private _pendingRestoreRecordIds: string[] = [];
     /** Tokens that let only the latest selection per provider write. */
     private _selectionTokens: WeakMap<IDataProvider, number> = new WeakMap();
-    private _interceptors = new Interceptors<IGridRowSelectionInterceptors>();
+    private _selectRecordsHooks = new HookRegistry<GridSelectRecordsHook>();
+    private _selectionStateHooks = new HookRegistry<GridSelectionStateHook>();
     public readonly events: IEventEmitter<IGridRowSelectionEvents> = new EventEmitter<IGridRowSelectionEvents>();
 
     constructor(parameters: IGridRowSelectionParameters) {
@@ -85,8 +102,12 @@ export class GridRowSelection implements IGridRowSelection {
         return this._mode;
     }
 
-    public setInterceptor<K extends keyof IGridRowSelectionInterceptors>(event: K, interceptor: IInterceptor<IGridRowSelectionInterceptors, K>): void {
-        this._interceptors.setInterceptor(event, interceptor);
+    public registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void {
+        return this._selectRecordsHooks.register(hook, priority);
+    }
+
+    public registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void {
+        return this._selectionStateHooks.register(hook, priority);
     }
 
     public toggleRecord(record: IRecord): Promise<void> {
@@ -104,18 +125,17 @@ export class GridRowSelection implements IGridRowSelection {
     public async selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void> {
         const token = (this._selectionTokens.get(provider) ?? 0) + 1;
         this._selectionTokens.set(provider, token);
-        let isApplied = false;
-        await this._interceptors.execute('onSelectRecords', { provider, recordIds }, async parameters => {
-            if (this._selectionTokens.get(provider) !== token) {
-                return;
-            }
-            isApplied = true;
-            parameters.provider.setSelectedRecordIds(parameters.recordIds);
-        });
-        //a refused click has already ticked the checkbox
-        if (!isApplied && this._selectionTokens.get(provider) === token) {
-            this._onProviderSelectionChanged();
+        const selection: IGridRecordsSelection = { recordIds, isCancelled: false };
+        await this._selectRecordsHooks.applyAsync(selection, { provider });
+        if (this._selectionTokens.get(provider) !== token) {
+            return;
         }
+        if (selection.isCancelled) {
+            //a refused click has already ticked the checkbox
+            this._onProviderSelectionChanged();
+            return;
+        }
+        provider.setSelectedRecordIds(selection.recordIds);
     }
 
     public isSelectionColumn(columnName: string | undefined): boolean {
@@ -123,15 +143,9 @@ export class GridRowSelection implements IGridRowSelection {
     }
 
     public getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState {
-        const record = node.data!;
-        const childDataProvider = record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId());
-        if (!childDataProvider) {
-            return node.isSelected() ? 'checked' : 'unchecked';
-        }
-        if (node.isSelected()) {
-            return 'checked';
-        }
-        return childDataProvider.getSelectedRecordIds().length === 0 ? 'unchecked' : 'indeterminate';
+        const result: IGridSelectionStateResult = { state: node.isSelected() ? 'checked' : 'unchecked' };
+        this._selectionStateHooks.apply(result, { node, record: node.data! });
+        return result.state;
     }
 
     public isRecordSelectionDisabled(record: IRecord): boolean {

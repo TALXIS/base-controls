@@ -2,7 +2,7 @@ import { IEventSubscriber } from "@utils";
 import { createElement } from "react";
 import { ColDef, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
-import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IInterceptor, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { ThemeBuilder } from "@theme";
 import { IGridGroupingLabels } from "./labels";
@@ -15,7 +15,7 @@ import { GroupCell } from "./components/group-cell/GroupCell";
 import { GroupSelectionLimitDialog } from "./components/group-selection-limit-dialog/GroupSelectionLimitDialog";
 import { IGridRowModelGrouping } from "../../services/row-model";
 import { IGridSurface } from "../../services/surfaces";
-import { IGridRowSelectionInterceptors } from "../row-selection";
+import type { GridSelectionStateHook, GridSelectRecordsHook } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { GridLockHook } from "../editing/GridLocks";
 
@@ -155,7 +155,10 @@ export class GridGrouping implements IGridGrouping {
         columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.whenAvailable('rowSelection', selection => selection.setInterceptor('onSelectRecords', this._onSelectRecords));
+        this._gridServices.whenAvailable('rowSelection', selection => {
+            selection.registerSelectRecords(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
+            selection.registerSelectionState(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
+        });
     }
 
     public getMaxGroupLoadsPerSelection(): number {
@@ -171,13 +174,20 @@ export class GridGrouping implements IGridGrouping {
     }
 
     /** Loads the groups a selection adds before it is written, within the limit. */
-    private _onSelectRecords: IInterceptor<IGridRowSelectionInterceptors, 'onSelectRecords'> = async (parameters, defaultAction) => {
+    private _onSelectRecords: GridSelectRecordsHook = async (selection, context) => {
         //the provider selects a loaded group without fetching
-        if (await this._loadNewlySelectedGroups(parameters.provider, parameters.recordIds)) {
-            await defaultAction(parameters);
-            return;
+        if (!await this._loadNewlySelectedGroups(context.provider, selection.recordIds)) {
+            selection.isCancelled = true;
+            this._setGroupSelectionLimitDialogOpen(true);
         }
-        this._setGroupSelectionLimitDialogOpen(true);
+    };
+
+    /** A group with some of its records selected reads as partly selected. */
+    private _onSelectionState: GridSelectionStateHook = (result, context) => {
+        const childDataProvider = context.record.getDataProvider().getGroupedRecordDataProvider(context.record.getRecordId());
+        if (result.state !== 'checked' && childDataProvider && childDataProvider.getSelectedRecordIds().length > 0) {
+            result.state = 'indeterminate';
+        }
     };
 
     /** Loads the groups the ids add to the selection, a level at a time, within the limit. */
