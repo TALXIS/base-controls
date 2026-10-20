@@ -1,12 +1,13 @@
 import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
+import type { GridLockHook } from "@controls/grid";
 import type { IRibbonCommand } from "@controls/ribbon";
 import { ILocalizationService, LocalizationService } from "@utils";
 import { ErrorHelper } from "@utils/error-handling";
 import type { ICreateTaskOptions } from "../../provider";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
 import { ADD_TASK_COLUMN_KEY } from "../../tree/constants";
-import { TASK_GRID_MODULE_PRIORITY } from "../priorities";
+import { TASK_GRID_PRIORITY } from "../../priorities";
 import { AddTaskCell } from "./add-task-cell";
 import { ITaskOperationsLabels, TASK_OPERATIONS_LABELS } from "./labels";
 
@@ -48,7 +49,11 @@ export class TaskOperations implements ITaskOperations {
             const unregister = ribbon.registerCommands(this._onAddCommands);
             taskDatasetControl.events.addEventListener('onDestroyed', unregister);
         });
-        parts.whenAvailable('grid', grid => grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_MODULE_PRIORITY.operations));
+        //after the tree, which adds the column the add-task buttons go in
+        parts.whenAvailable('grid', grid => {
+            grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 10);
+            grid.services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree + 10));
+        });
     }
 
     public isCreationEnabled(): boolean {
@@ -105,6 +110,12 @@ export class TaskOperations implements ITaskOperations {
             }
         });
     }
+
+    private _onLock: GridLockHook = (result, context) => {
+        if (context.record && !context.columnName && !this.isEditingEnabled()) {
+            result.isLocked = true;
+        }
+    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const addTaskColDef = columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_KEY);

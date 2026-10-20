@@ -38,7 +38,8 @@ export interface IDataverseTaskStrategy extends ITaskStrategy {
     onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
 }
 
-const LIQUID = new Liquid();
+//the values land inside FetchXML attributes
+const LIQUID = new Liquid({ outputEscape: 'escape' });
 const MAX_IDS_PER_REQUEST = 800;
 const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
 

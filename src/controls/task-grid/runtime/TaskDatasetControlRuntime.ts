@@ -2,11 +2,12 @@ import { EventEmitter, IColumn } from "@talxis/client-libraries";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
+import type { IGrid, IGridModule } from "@controls/grid";
+import type { ITaskGridServiceMap } from "../services";
+import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
-import { ErrorHelper } from "@utils/error-handling";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { mergeColumn } from "../provider/mergeColumn";
-import { USER_QUERIES_GROUP } from "@controls/dataset-control/modules/user-queries/DatasetControlUserQueries";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
 import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
@@ -25,6 +26,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     private _onGetProps: () => ITaskDatasetControlProps;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
     private _view?: ITaskView;
+    private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
 
     constructor(parameters: ITaskDatasetControlRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
@@ -33,6 +35,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.register('labels', () => parameters.labels);
         this.services.register('pcfContext', () => parameters.pcfContext);
         this._settingsHooks.register(this._addCoreSettings);
+        //ahead of the modules, which attach to the grid after the tree
+        datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this }));
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
@@ -87,6 +91,14 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         await this.execute(() => this.getProvider().openTasks(taskIds));
     }
 
+    public registerGridModule(module: IGridModule<ITaskGridServiceMap>): void {
+        this._gridModules.push(module);
+    }
+
+    public getGridModules(): IGridModule<ITaskGridServiceMap>[] {
+        return this._gridModules;
+    }
+
     public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
         return this._settingsHooks.register(hook, priority);
     }
@@ -121,8 +133,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     //the first system view to define a column wins
     private _getSystemViewColumns(): Map<string, IColumn> {
         const columns = new Map<string, IColumn>();
-        const views = this.services.get('datasetControl').getViews().filter(view => view.group?.id !== USER_QUERIES_GROUP);
-        for (const column of views.flatMap(view => view.data?.columns ?? [])) {
+        //what modules add, such as saved user views, comes after the system views
+        for (const column of this.services.get('datasetControl').getViews().flatMap(view => view.data?.columns ?? [])) {
             if (!columns.has(column.name)) {
                 columns.set(column.name, column);
             }
@@ -145,12 +157,11 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         });
     };
 
+    //the provider's notification already shows the failure
     public async execute(operation: () => Promise<unknown>): Promise<void> {
         try {
             await operation();
         }
-        catch (error) {
-            await this.services.get('pcfContext').navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: error instanceof Error ? error.stack : undefined });
-        }
+        catch { }
     }
 }

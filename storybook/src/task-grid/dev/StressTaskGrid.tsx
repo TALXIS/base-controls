@@ -23,10 +23,10 @@ const GridExample = () => {
         editing: createEditingModule({ autoSave: true }),
         sorting: createSortingModule(),
         filtering: createFilteringModule(),
-        custom: [createTaskDraggingModule()],
     }), [])
     const datasetControlModules = React.useMemo(() => ({
         operations: createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
+        dragging: createTaskDraggingModule(),
     }), [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })

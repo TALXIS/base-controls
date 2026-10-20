@@ -3900,6 +3900,8 @@ interface ITaskDatasetControlModules extends IDatasetControlModules {
     project?: IProjectModule;
     /** The task operations a mount allows, each off until its flag turns it on. */
     operations?: ITaskOperationsModule;
+    /** Moving tasks by dragging their rows. */
+    dragging?: IDatasetControlModule;
 }
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
@@ -3924,10 +3926,10 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     modules?: Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation'>;
 }
 
-/** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body. */
+/** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
 /** Moves tasks by dragging their rows: between rows, sideways between levels, or onto another task; not in a flat list. */
-declare const createTaskDraggingModule: () => IGridModule;
+declare const createTaskDraggingModule: () => IDatasetControlModule;
 
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {

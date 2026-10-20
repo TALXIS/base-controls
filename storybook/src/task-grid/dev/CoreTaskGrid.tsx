@@ -39,11 +39,11 @@ const GridExample = () => {
         editing: createEditingModule({ autoSave: true }),
         sorting: createSortingModule(),
         filtering: createFilteringModule(),
-        custom: [createTaskDraggingModule()],
     }), [])
     const datasetControlModules = React.useMemo(() => ({
         userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }),
         operations: createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
+        dragging: createTaskDraggingModule(),
         project: createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
     }), [])
 

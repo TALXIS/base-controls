@@ -1,18 +1,24 @@
-import { useMemo } from "react";
-import { createClientSideRowModelModule, Grid, IGridModules } from "@controls/grid";
-import { createTaskTreeModule } from "./tree/createTaskTreeModule";
+import { useContext, useMemo } from "react";
+import { RowGroupingModule, TreeDataModule } from "ag-grid-enterprise";
+import { createClientSideRowModelModule, Grid, IGridModule, IGridModules } from "@controls/grid";
 import { ITaskGridProps } from "./interfaces";
 import { ITaskGridContext, TaskGridContext } from "./context";
-import { useTaskDatasetControl } from "./dataset-control/context";
+import { TaskDatasetControlContext } from "./dataset-control/context";
+
+//what the tree needs of AG Grid; the tree attaches from the TaskDatasetControl
+const TREE_AG_GRID_MODULES: IGridModule = { agGridModules: [RowGroupingModule, TreeDataModule] };
 
 /** The tasks of a `TaskDatasetControl`, drawn as a tree; goes in its body. */
 export const TaskGridRoot = (props: ITaskGridProps) => {
-    const runtime = useTaskDatasetControl();
+    const runtime = useContext(TaskDatasetControlContext);
+    if (!runtime) {
+        throw new Error('TaskGrid must be rendered inside a TaskDatasetControl.');
+    }
 
     const modules = useMemo((): IGridModules => ({
         ...props.modules,
         rowModel: createClientSideRowModelModule(),
-        custom: [createTaskTreeModule({ runtime }), ...props.modules?.custom ?? []],
+        custom: [TREE_AG_GRID_MODULES, ...runtime.getGridModules(), ...props.modules?.custom ?? []],
     }), []);
 
     const context = useMemo((): ITaskGridContext => ({ runtime, components: props.components ?? {} }), [props.components]);

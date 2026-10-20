@@ -1,5 +1,7 @@
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
+import type { IGridModule } from "@controls/grid";
 import type { IPcfContext } from "@interfaces";
+import type { ITaskGridServiceMap } from "../services";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskGridLabels } from "../labels";
@@ -57,7 +59,10 @@ export interface ITaskDatasetControlRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     openTasks(taskIds: string[]): Promise<void>;
-    /** Runs the operation, showing the error dialog when it throws. */
+    /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
+    registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
+    getGridModules(): IGridModule<ITaskGridServiceMap>[];
+    /** Runs the operation; a failure shows in the control's notifications, not as a rejection. */
     execute(operation: () => Promise<unknown>): Promise<void>;
     /**
      * Registers a hook over the toggles `TaskDatasetControl.Settings` shows.

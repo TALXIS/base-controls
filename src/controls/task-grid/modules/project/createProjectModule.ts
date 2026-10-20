@@ -1,5 +1,6 @@
 import type { Dayjs } from "dayjs";
 import type { IDatasetControlModule } from "@controls/dataset-control/runtime/interfaces";
+import { TaskProject } from "./TaskProject";
 
 /** The project the tasks belong to. */
 export interface IProject<TData = { [key: string]: unknown }> {
@@ -24,10 +25,16 @@ export interface IProjectModuleParameters<TData> {
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as `project`. */
 export const createProjectModule = <TData,>(parameters: IProjectModuleParameters<TData>): IProjectModule<TData> => ({
     onLoad: async datasetControl => {
-        const project = await parameters.onLoadProject();
-        datasetControl.parts.get('taskDatasetControl').services.register('project', () => project);
+        new TaskProject(datasetControl.parts.get('taskDatasetControl'), await parameters.onLoadProject());
     },
 });
+
+declare module "../../dataset-control/TaskDatasetControl" {
+    interface ITaskDatasetControlModules {
+        /** The project the tasks belong to. */
+        project?: IProjectModule;
+    }
+}
 
 declare module "../../runtime/interfaces" {
     interface ITaskDatasetControlRuntimeModuleServiceMap {

@@ -1,22 +1,18 @@
 import { IRecord } from "@talxis/client-libraries";
-import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
+import { GridApi, IRowDragItem, RowDragModule, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
-import type { ITaskDataProvider, ITaskMovePosition } from "../provider";
-import type { ITaskGridServiceMap } from "../services";
-import { TASK_GRID_MODULE_PRIORITY } from "../modules/priorities";
-import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "./constants";
-import type { ITaskExpansion } from "./TaskExpansion";
+import type { ITaskDataProvider, ITaskMovePosition } from "../../provider";
+import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskGridServiceMap } from "../../services";
+import { TASK_GRID_PRIORITY } from "../../priorities";
+import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "../../tree/constants";
+import type { ITaskExpansion } from "../../tree/TaskExpansion";
 
 //AG Grid would open a hovered parent on its own once this runs out
 const NEVER_MS = 2 ** 31 - 1;
 const DROP_INTO_ON_HOVER_MS = 400;
 const EXPAND_ON_HOVER_MS = 700;
-
-export interface ITaskTreeDraggingParameters {
-    grid: IGrid<ITaskGridServiceMap>;
-    onIsEnabled: () => boolean;
-}
 
 interface IDragStart {
     record: IRecord;
@@ -31,9 +27,9 @@ interface IGap {
 }
 
 /** Moves a task by dragging its row: between rows, sideways between levels, or onto another task. */
-export class TaskTreeDragging {
-    private _grid: IGrid<ITaskGridServiceMap>;
-    private _onIsEnabled: () => boolean;
+export class TaskDragging {
+    private _grid!: IGrid<ITaskGridServiceMap>;
+    private _taskDatasetControl: ITaskDatasetControlRuntime;
     private _isEditing = false;
     private _dragStart?: IDragStart;
     private _dropInto?: IRowNode<IRecord>;
@@ -41,13 +37,17 @@ export class TaskTreeDragging {
     private _dropIntoTimer?: number;
     private _expandTimer?: number;
 
-    constructor(parameters: ITaskTreeDraggingParameters) {
-        this._grid = parameters.grid;
-        this._onIsEnabled = parameters.onIsEnabled;
-        const services = this._grid.services;
-        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_MODULE_PRIORITY.tree);
-        this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_MODULE_PRIORITY.tree);
-        services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_MODULE_PRIORITY.tree);
+    constructor(taskDatasetControl: ITaskDatasetControlRuntime) {
+        this._taskDatasetControl = taskDatasetControl;
+        taskDatasetControl.registerGridModule({ agGridModules: [RowDragModule], onRegister: grid => this._onGridRegistered(grid) });
+    }
+
+    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
+        this._grid = grid;
+        const services = grid.services;
+        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_PRIORITY.tree);
         services.get('rows').registerRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
         services.whenAvailable('editing', editing => editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged));
         services.whenAvailable('gridApi', this._onGridApiAvailable);
@@ -92,10 +92,19 @@ export class TaskTreeDragging {
         });
     };
 
+    private _isEditingEnabled(): boolean {
+        return !!this._taskDatasetControl.services.find('taskOperations')?.isEditingEnabled();
+    }
+
+    //a refused task snaps back
+    private _canMoveTask(taskId: string): boolean {
+        return this._isEditingEnabled() && this._provider.isRecordActive(taskId);
+    }
+
     private _canDrag(): boolean {
         const sorting = this._provider.getSorting();
         const isSortedByStackRank = sorting.length === 0 || sorting[0].name === this._provider.getFieldMapping().stackRank;
-        return this._onIsEnabled() && isSortedByStackRank && !this._isEditing;
+        return !this._taskDatasetControl.isFlatList() && this._isEditingEnabled() && isSortedByStackRank && !this._isEditing;
     }
 
     private _getRowDragText = (params: IRowDragItem): string => {
@@ -329,8 +338,11 @@ export class TaskTreeDragging {
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
         let isMoved = false;
         try {
-            isMoved = await this._provider.moveTask(record.getRecordId(), targetId, position);
+            //a refused task snaps back
+            isMoved = this._canMoveTask(record.getRecordId()) && await this._provider.moveTask(record.getRecordId(), targetId, position);
         }
+        //the provider's notification already shows the failure
+        catch { }
         finally {
             if (!isMoved) {
                 this._restoreRows(record);

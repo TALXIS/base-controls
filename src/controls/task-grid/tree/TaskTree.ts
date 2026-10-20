@@ -1,13 +1,13 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
-import { TASK_GRID_MODULE_PRIORITY } from "../modules/priorities";
+import { TASK_GRID_PRIORITY } from "../priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
 import { PercentCompleteCell } from "./percent-complete-cell";
@@ -32,6 +32,7 @@ export class TaskTree {
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
+    private _unregisterSettings: () => void;
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -44,14 +45,14 @@ export class TaskTree {
         services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
-        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_MODULE_PRIORITY.tree);
-        this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_MODULE_PRIORITY.tree);
-        services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_MODULE_PRIORITY.tree);
-        services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_MODULE_PRIORITY.tree);
-        parameters.runtime.registerSettings(this._addSettings);
+        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
+        services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
+        //ahead of the runtime's own settings
+        this._unregisterSettings = parameters.runtime.registerSettings(this._addSettings, -1);
 
-        services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_MODULE_PRIORITY.tree));
-        services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_MODULE_PRIORITY.tree));
+        services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
 
         services.whenAvailable('gridApi', this._onGridApi);
         //ahead of row selection's listener, which redraws the checkboxes
@@ -158,7 +159,7 @@ export class TaskTree {
     }
 
     private _addSettings = (settings: ITaskGridSetting[]): void => {
-        settings.unshift({
+        settings.push({
             key: 'showHierarchy',
             label: this._runtime.getLabels().getLocalizedString('showHierarchy'),
             isChecked: !this._isFlatList,
@@ -178,16 +179,6 @@ export class TaskTree {
     private _onRecordsSelected = (): void => {
         this._partiallySelectedIds = undefined;
     };
-
-    private _onLock: GridLockHook = (result, context) => {
-        if (context.record && !context.columnName && !this._isEditingEnabled()) {
-            result.isLocked = true;
-        }
-    };
-
-    private _isEditingEnabled(): boolean {
-        return !!this._runtime.services.find('taskOperations')?.isEditingEnabled();
-    }
 
     private _onSelectionState: GridSelectionStateHook = (result, context) => {
         if (!this._isFlatList && result.state === 'unchecked' && this._getPartiallySelectedIds().has(context.record.getRecordId())) {
@@ -248,7 +239,8 @@ export class TaskTree {
         const subject = this._provider.getFieldMapping().subject;
         gridApi.ensureNodeVisible(node);
         gridApi.setFocusedCell(node.rowIndex, subject);
-        if (!this._grid.services.find('editing') || !this._isEditingEnabled()) {
+        //a locked task refuses the editor on its own
+        if (!this._grid.services.find('editing')) {
             return;
         }
         gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });
@@ -274,6 +266,7 @@ export class TaskTree {
     };
 
     private _onDestroyed = (): void => {
+        this._unregisterSettings();
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }

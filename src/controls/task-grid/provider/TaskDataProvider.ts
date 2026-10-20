@@ -1,4 +1,4 @@
-import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProviderEventListeners, IEventBubbleOptions, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
+import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
@@ -131,8 +131,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
         return this._execute(async () => {
-            const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId, options));
-            return rawRecord ? this.addTasks([rawRecord], parentId)[0] : null;
+            const resolvedParentId = parentId ?? this._rootTaskId;
+            const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(resolvedParentId, options));
+            return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
         });
     }
 
@@ -187,8 +188,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             if (deletedTaskIds.length > 0) {
                 const deletedIds = new Set(deletedTaskIds);
                 await this.deleteRecords(deletedTaskIds);
-                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
                 this._rebuildTree();
+                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
                 this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
             }
             return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
@@ -244,10 +245,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.setDataSource(this.getDataSource());
     }
 
-    public createNewDataProvider(_eventBubbleOptions?: IEventBubbleOptions): TaskDataProvider {
-        const provider = new TaskDataProvider({ strategy: this._strategy });
-        provider.initialize({ fieldMapping: this.getFieldMapping(), rootTaskId: this._rootTaskId });
-        return provider;
+    //export and totals read a copy of the loaded tasks; loading them again would rerun the strategy
+    public createNewDataProvider(_eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
+        return new MemoryDataProvider({
+            dataSource: this.getDataSource(),
+            metadata: this.getMetadata() as IMemoryProviderEntityMetadata,
+            columns: this.getColumns(),
+            sorting: this.getSorting(),
+            filtering: this.getFiltering() ?? undefined,
+            searchQuery: this.getSearchQuery(),
+        });
     }
 
     public dispatchEvent<K extends keyof IDataProviderEventListeners>(event: K, ...args: Parameters<IDataProviderEventListeners[K]>): boolean {

@@ -10,18 +10,11 @@ import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
 import type { ITaskGridEventHandlers, ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
 import type { ITaskViewData } from "../provider";
 import type { ITaskDatasetControlRuntime } from "../runtime";
-import type { IProjectModule } from "../modules/project";
-import type { ITaskOperationsModule } from "../modules/operations";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
-/** The modules a TaskDatasetControl is given. */
-export interface ITaskDatasetControlModules extends IDatasetControlModules<ITaskViewData> {
-    /** The project the tasks belong to. */
-    project?: IProjectModule;
-    /** The task operations a mount allows, each off until its flag turns it on. */
-    operations?: ITaskOperationsModule;
-}
+/** The modules a TaskDatasetControl is given; each module adds its own key. */
+export interface ITaskDatasetControlModules extends IDatasetControlModules<ITaskViewData> { }
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'>, Partial<ITaskGridEventHandlers> {
     /** The control's modules; read on every mount. */
