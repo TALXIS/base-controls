@@ -3858,7 +3858,11 @@ interface ITaskGridLoadResult {
     modules: { dataSource: ITaskDataSourceModule; custom?: ITaskGridModule[] };
 }
 
-interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope'> {
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onReady' | 'onDestroyed' | 'scope'> {
+    /** Called on every mount with its task runtime, before its load. */
+    onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    /** Called as each mount goes, while its provider still holds its data. */
+    onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Loads the data source for the view and the task modules; called on every mount, so on every view switch. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** Whether the New command and the add-task buttons are there. */
