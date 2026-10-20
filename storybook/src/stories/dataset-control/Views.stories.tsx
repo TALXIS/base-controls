@@ -74,13 +74,13 @@ A view's \`data\` can also pick how the body draws it, such as a grid or cards. 
 The user queries module lists the user's own views under *My views*. They come from a provider of yours, one record per view.
 
 \`\`\`tsx
-const getViewData = (record: IRecord): IDealViewData => JSON.parse(record.getValue('definition'))
+const readViewData = (record: IRecord): IDealViewData => JSON.parse(record.getValue('definition'))
 
 const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters<IDealViewData>) => {
     record.setValue('definition', JSON.stringify(readDefinition(datasetControl.getProvider()!)))
 }
 
-const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDealViewData>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
+const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDealViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
 
 <DatasetControl modules={modules} onLoadViews={loadViews} onLoad={loadDeals}>
     ...
@@ -91,7 +91,7 @@ const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDea
 </DatasetControl>
 \`\`\`
 
-- \`onGetViewData(record)\` turns a user view's record into its \`data\`, so \`onLoad\` loads a user view the same way as any other.
+- \`onReadViewData(record)\` turns a user view's record into its \`data\`, so \`onLoad\` loads a user view the same way as any other.
 - \`onWriteViewData({ record, datasetControl })\` runs before a view is saved: write onto the record what the control shows. \`record.isNew()\` tells a new view from a changed one.
 - The switcher gets *Save changes*, *Save as new view* and *Manage views*.
 - A user view that fails to save or delete opens the error dialog. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
@@ -101,29 +101,31 @@ const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<IDea
 | Parameter | Description |
 |---|---|
 | \`provider\` | Required. The user's views; *Manage views* shows its columns. |
-| \`onGetViewData\` | Required. Reads a user view's \`data\` from its record. |
+| \`onReadViewData\` | Required. Reads a user view's \`data\` from its record. |
 | \`onWriteViewData\` | Fills in the record before it is saved. Throw to stop the save. |
 | \`labels\` | Every string, from the *My views* header to the panel. See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
 
 ### Keep the views in Dataverse
 
-Any provider can hold the views, such as a \`MemoryDataProvider\` as in the example. \`TalxisUserQueriesProvider\` keeps them as \`talxis_userquery\` records of an entity, and fills in the entity and record on a new view:
+Any provider can hold the views, such as a \`MemoryDataProvider\` as in the example. \`createTalxisUserQueriesModule\` keeps them as \`talxis_userquery\` records of an entity, with each view's data as JSON in \`talxis_layoutjson\`:
 
 \`\`\`tsx
-const userViews = new TalxisUserQueriesProvider({ entityName: 'deal' })
-
-createUserQueriesModule<IDealViewData>({
-    provider: userViews,
-    onGetViewData: record => JSON.parse(record.getValue('talxis_layoutjson')),
-    onWriteViewData: ({ record, datasetControl }) => record.setValue('talxis_layoutjson', JSON.stringify(readDefinition(datasetControl.getProvider()!))),
-})
+const modules = React.useMemo(() => ({
+    userQueries: createTalxisUserQueriesModule<IDealViewData>({
+        entityName: 'deal',
+        onCaptureViewData: datasetControl => readDefinition(datasetControl.getProvider()!),
+    }),
+}), [])
 \`\`\`
 
 | Parameter | Description |
 |---|---|
 | \`entityName\` | Required. The entity the views are of. |
+| \`onCaptureViewData\` | Required. What the control shows right now, saved as the view's data. |
+| \`onReadViewData\` | Reads a view's data from its record. Parses \`talxis_layoutjson\` when left out. |
 | \`recordId\` | Only the views of this record; only views of no record when left out. |
 | \`ownerId\` | Only the views this user owns. |
+| \`labels\` | Every string, as for \`createUserQueriesModule\`. |
 
 ## Switching views
 

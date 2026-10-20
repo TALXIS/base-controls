@@ -29,7 +29,7 @@ export const createUserQueriesProvider = () => new MemoryDataProvider({
 })
 
 /** A user view carries its definition the way a system view does. */
-export const getViewData = (record: IRecord): IDealViewData => ({ definition: JSON.parse(record.getValue('definition')) })
+export const readViewData = (record: IRecord): IDealViewData => ({ definition: JSON.parse(record.getValue('definition')) })
 
 /** Saving a view, new or changed, keeps what the control shows, drawn the way the current view draws it. */
 export const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters) => {

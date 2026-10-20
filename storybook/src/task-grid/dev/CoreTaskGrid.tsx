@@ -27,7 +27,7 @@ const userViews = new MemoryDataProvider({
     ],
 })
 
-const getViewData = (record: IRecord): ITaskViewData => JSON.parse(record.getValue('definition'))
+const readViewData = (record: IRecord): ITaskViewData => JSON.parse(record.getValue('definition'))
 
 const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters<ITaskViewData>) => {
     record.setValue('definition', JSON.stringify(datasetControl.parts.get('taskDatasetControl').getCurrentViewData()))
@@ -42,7 +42,7 @@ const GridExample = () => {
         custom: [createTaskDraggingModule()],
     }), [])
     const datasetControlModules = React.useMemo(() => ({
-        userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }),
+        userQueries: createUserQueriesModule<ITaskViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }),
         project: createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
     }), [])
 

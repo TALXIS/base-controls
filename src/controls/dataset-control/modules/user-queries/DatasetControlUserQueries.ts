@@ -13,7 +13,7 @@ export interface IDatasetControlUserQueriesParameters {
     datasetControl: IDatasetControlRuntime;
     provider: IDataProvider;
     labels: ILocalizationService<IUserQueriesLabels>;
-    onGetViewData: (record: IRecord) => unknown;
+    onReadViewData: (record: IRecord) => unknown;
     onWriteViewData?: (parameters: IUserQueryWriteParameters) => Promise<void> | void;
 }
 
@@ -30,14 +30,14 @@ export class DatasetControlUserQueries {
     private _datasetControl: IDatasetControlRuntime;
     private _provider: IDataProvider;
     private _labels: ILocalizationService<IUserQueriesLabels>;
-    private _onGetViewData: (record: IRecord) => unknown;
+    private _onReadViewData: (record: IRecord) => unknown;
     private _onWriteViewData?: (parameters: IUserQueryWriteParameters) => Promise<void> | void;
 
     constructor(parameters: IDatasetControlUserQueriesParameters) {
         this._datasetControl = parameters.datasetControl;
         this._provider = parameters.provider;
         this._labels = parameters.labels;
-        this._onGetViewData = parameters.onGetViewData;
+        this._onReadViewData = parameters.onReadViewData;
         this._onWriteViewData = parameters.onWriteViewData;
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
@@ -112,7 +112,7 @@ export class DatasetControlUserQueries {
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
         const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        views.push(...this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onGetViewData(record) })));
+        views.push(...this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onReadViewData(record) })));
     };
 
     //the switcher reads its items as its menu opens

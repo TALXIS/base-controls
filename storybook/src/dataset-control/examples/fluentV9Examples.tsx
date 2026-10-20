@@ -5,7 +5,7 @@ import { VIEWS_FILE, withFiles } from './shared'
 import { USER_VIEWS_FILE } from './userViewsExamples'
 
 const FLUENT_V9_CODE = `import { loadDealViews } from './views'
-import { DealView, getViewData, loadView, writeViewData, userViews } from './userViews'
+import { DealView, readViewData, loadView, writeViewData, userViews } from './userViews'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
@@ -21,7 +21,7 @@ const onLoad = async (params: IDatasetControlLoadParameters<DealView>) => {
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
+    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>

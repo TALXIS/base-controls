@@ -4,10 +4,10 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
 const USER_VIEWS_CODE = `import { loadDealViews } from './views'
-import { DealView, getViewData, loadView, writeViewData, userViews } from './userViews'
+import { DealView, readViewData, loadView, writeViewData, userViews } from './userViews'
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onGetViewData: getViewData, onWriteViewData: writeViewData }) }), [])
+    const modules = React.useMemo(() => ({ userQueries: createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }) }), [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadView} stateKey='userViews' height='480px'>
         <DatasetControl.Header>
@@ -62,7 +62,7 @@ export type DealView = IDealViewData | ISavedView
 const isSaved = (data: DealView | undefined): data is ISavedView => !!data && 'viewId' in data
 
 /** What a user view keeps, read from its record. */
-export const getViewData = (record: IRecord): ISavedView => JSON.parse(record.getValue('definition'))
+export const readViewData = (record: IRecord): ISavedView => JSON.parse(record.getValue('definition'))
 
 //a user view loads the deal view it was saved from, as the user had set it up
 export const loadView = async ({ view }: IDatasetControlLoadParameters<DealView>) => {
@@ -88,7 +88,7 @@ export const writeViewData = ({ record, datasetControl }: IUserQueryWriteParamet
     const provider = datasetControl.getProvider()!
     const current = datasetControl.getViews().find(view => view.id === datasetControl.getViewId())
     const currentData = current?.data
-    const viewId = record.isNew() ? (isSaved(currentData) ? currentData.viewId : current?.id) : getViewData(record).viewId
+    const viewId = record.isNew() ? (isSaved(currentData) ? currentData.viewId : current?.id) : readViewData(record).viewId
     record.setValue('definition', JSON.stringify({ viewId, sorting: provider.getSorting(), filtering: provider.getFiltering(), searchQuery: provider.getSearchQuery() }))
 }
 `,

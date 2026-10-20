@@ -3467,7 +3467,7 @@ declare const createUserQueriesModule: <TData>(parameters: {
     /** The user's views, one record per view. */
     provider: IDataProvider;
     /** Reads what a user view keeps from its record, as onLoad gets it in view.data. */
-    onGetViewData: (record: IRecord) => TData;
+    onReadViewData: (record: IRecord) => TData;
     /** Overrides for every string of the user queries. */
     labels?: Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
     /** Writes what the control shows onto a view's record before it is saved; throw to stop the save. */

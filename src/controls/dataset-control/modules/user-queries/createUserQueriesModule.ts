@@ -8,7 +8,7 @@ export interface IUserQueriesModuleParameters<TData> {
     /** The user's views, one record per view. */
     provider: IDataProvider;
     /** Reads what a user view keeps from its record, as `onLoad` gets it in `view.data`. */
-    onGetViewData: (record: IRecord) => TData;
+    onReadViewData: (record: IRecord) => TData;
     /** Overrides for every string of the user queries: the header, the commands and the panel. */
     labels?: Partial<IUserQueriesLabels>;
     /** Writes what the control shows onto a view's record before it is saved; throw to stop the save. */
@@ -19,7 +19,7 @@ export interface IUserQueriesModuleParameters<TData> {
 export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => ({
     onLoad: async datasetControl => {
         const labels = new LocalizationService<IUserQueriesLabels>({ ...USER_QUERIES_LABELS, ...parameters.labels });
-        const userQueries = new DatasetControlUserQueries({ datasetControl, provider: parameters.provider, labels, onGetViewData: parameters.onGetViewData, onWriteViewData: parameters.onWriteViewData as IUserQueriesModuleParameters<unknown>['onWriteViewData'] });
+        const userQueries = new DatasetControlUserQueries({ datasetControl, provider: parameters.provider, labels, onReadViewData: parameters.onReadViewData, onWriteViewData: parameters.onWriteViewData as IUserQueriesModuleParameters<unknown>['onWriteViewData'] });
         datasetControl.services.register('userQueries', () => userQueries);
         return userQueries.load();
     },
