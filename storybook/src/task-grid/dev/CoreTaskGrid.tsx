@@ -12,7 +12,7 @@ const CORE_CODE = `const fieldMapping: IFieldMapping = {
 }
 
 const VIEWS: ITaskView[] = [
-    { id: 'all', name: 'All tasks', data: { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') } },
+    { id: 'all', name: 'All tasks', data: { columns: getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') } },
     { id: 'planning', name: 'Planning', data: { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } },
     { id: 'flat', name: 'Every task on its own', data: { columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] } },
 ]
@@ -49,7 +49,7 @@ const GridExample = () => {
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
 
-    return <TaskDatasetControl modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devTasks' height='600px' onLoad={onLoad}>
+    return <TaskDatasetControl modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devTasks' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

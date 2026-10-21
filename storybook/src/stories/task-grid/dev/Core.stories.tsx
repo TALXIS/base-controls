@@ -22,7 +22,8 @@ type Story = StoryObj<typeof meta>
 /** The tree over 108 memory tasks, with three views, the ribbon, quick find, edit columns and the settings. */
 export const Core: Story = {
     name: 'Core',
-    render: () => <div style={{ padding: 18 }}><CoreTaskGrid /></div>,
+    parameters: { layout: 'fullscreen' },
+    render: () => <div style={{ height: '100vh', padding: 18, boxSizing: 'border-box' }}><CoreTaskGrid /></div>,
 }
 
 /** The grid scoped to a root task, which a dropdown above it changes. */

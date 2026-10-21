@@ -2244,7 +2244,7 @@ interface ICellUiFieldErrorComponents {
 interface ICellUiResizeGripComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What the drag is started from. */
-    onRenderGrip: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderGrip: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 type ICellUiContainerProps = React.HTMLAttributes<HTMLDivElement> & {
