@@ -5,6 +5,7 @@ import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, 
 import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
+import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
@@ -80,6 +81,7 @@ export class TaskTree {
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([ADD_TASK_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
+        this._runtime.execute(() => this._syncPathColumn(isFlatList));
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -156,6 +158,31 @@ export class TaskTree {
             this._flatRows = treeRows.filter(record => view.isMatching(record.getRecordId()));
         }
         return this._flatRows;
+    }
+
+    //runs only on a switch
+    private async _syncPathColumn(isFlatList: boolean): Promise<void> {
+        const provider = this._provider;
+        //not the columns map, which keeps a column once defined
+        const pathColumn = provider.getColumns().find(column => column.name === PATH_COLUMN_NAME);
+        const columns = provider.getColumns().filter(column => column.name !== PATH_COLUMN_NAME);
+        if (isFlatList && (!pathColumn || pathColumn.isHidden)) {
+            const definition = (await provider.getAvailableColumns()).find(column => column.name === PATH_COLUMN_NAME);
+            if (!definition) {
+                return;
+            }
+            const ordered = [...columns].sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
+            const subjectIndex = ordered.findIndex(column => column.name === provider.getFieldMapping().subject);
+            ordered.splice(subjectIndex + 1, 0, { ...definition, isHidden: false });
+            provider.setColumns(ordered.map((column, order) => ({ ...column, order })));
+        }
+        else if (!isFlatList && pathColumn) {
+            provider.setColumns(columns);
+        }
+        else {
+            return;
+        }
+        await provider.refresh();
     }
 
     private _addSettings = (settings: ITaskGridSetting[]): void => {
