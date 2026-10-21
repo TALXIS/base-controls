@@ -1,4 +1,4 @@
-import type { IAvailableRelatedColumn, IColumn, IDataProvider, ILinkEntityExposedExpression, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import type { IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlResolvedView } from "@controls/dataset-control";
 import type { IEventSubscriber } from "@utils";
 import type { IRecordTree } from "./record-tree";
@@ -18,12 +18,10 @@ export interface IFieldMapping {
     percentComplete?: string;
 }
 
-/** What a task view starts the provider with. */
+/** What a task view starts the provider with, beside its columns and linking. */
 export interface ITaskViewData {
-    columns: IColumn[];
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
-    linking?: ILinkEntityExposedExpression[];
     /** The columns quick find searches, by name. */
     quickFindColumns?: string[];
     searchQuery?: string;

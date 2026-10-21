@@ -7,7 +7,6 @@ import type { ITaskGridServiceMap } from "../services";
 import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
-import { mergeColumn } from "../provider/mergeColumn";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
@@ -46,7 +45,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         provider.initialize({ fieldMapping, rootTaskId });
         provider.registerAvailableColumns(this._addPathColumn);
         if (this._view?.data) {
-            await this._applyView(provider, this._view.data);
+            this._applyView(provider, this._view.data);
         }
         this.services.register('provider', () => provider);
         return { provider };
@@ -59,10 +58,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     public getCurrentViewData(): ITaskViewData {
         const provider = this.getProvider();
         return {
-            columns: provider.getColumns().map(column => this._toSavedColumn(column)),
             sorting: provider.getSorting(),
             filtering: provider.getFiltering(),
-            linking: provider.getLinking(),
             quickFindColumns: provider.getQuickFindColumns().map(column => column.name),
             searchQuery: provider.getSearchQuery() || undefined,
             isFlatList: this.isFlatList(),
@@ -118,36 +115,11 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.destroy();
     }
 
-    private async _applyView(provider: ITaskDataProvider, view: ITaskViewData): Promise<void> {
-        //a saved column keeps only its layout
-        const definitions = await this._getSystemViewColumns();
-        provider.setColumns(view.columns.map(column => {
-            const definition = definitions.get(column.name);
-            return definition ? mergeColumn(definition, column) : column;
-        }));
+    private _applyView(provider: ITaskDataProvider, view: ITaskViewData): void {
         provider.setSorting(view.sorting ?? []);
         provider.setFiltering(view.filtering ?? null);
-        provider.setLinking(view.linking ?? []);
         provider.setQuickFindColumns(view.quickFindColumns ?? []);
         provider.setSearchQuery(view.searchQuery);
-    }
-
-    //the first system view to define a column wins
-    private async _getSystemViewColumns(): Promise<Map<string, IColumn>> {
-        const columns = new Map<string, IColumn>();
-        const systemViews = this.services.get('datasetControl').getViews().filter(view => !view.group);
-        const definitions = await Promise.all(systemViews.map(view => view.resolve()));
-        for (const column of definitions.flatMap(definition => definition.data?.columns ?? [])) {
-            if (!columns.has(column.name)) {
-                columns.set(column.name, column);
-            }
-        }
-        return columns;
-    }
-
-    private _toSavedColumn(column: IColumn): IColumn {
-        const { name, isHidden, dataType, order, visualSizeFactor, isVirtual } = column;
-        return { name, isHidden, dataType, order, visualSizeFactor, isVirtual };
     }
 
     private _addPathColumn = (columns: IColumn[]): void => {

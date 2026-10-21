@@ -11,13 +11,13 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
     percentComplete: 'percentcomplete',
 }
 
-//the control sets a view's columns; the task grid also reads them from its data
-const taskView = (id: string, name: string, data: ITaskViewData): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns: data.columns, data }) })
+//the control sets a view's columns; the task grid sets up the rest from its data
+const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') }),
-    taskView('planning', 'Planning', { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', { columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] }),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto')),
+    taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
+    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
 
 const GridExample = () => {

@@ -3857,12 +3857,10 @@ interface IFieldMapping {
     percentComplete?: string;
 }
 
-/** What a task view starts the provider with. */
+/** What a task view starts the provider with, beside its columns and linking. */
 interface ITaskViewData {
-    columns: IColumn[];
     sorting?: { name: string; sortDirection: number }[];
     filtering?: any;
-    linking?: any[];
     quickFindColumns?: string[];
     searchQuery?: string;
     /** Lists the matching tasks on their own, without the tree, until the user changes it. */

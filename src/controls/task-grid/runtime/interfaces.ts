@@ -50,7 +50,7 @@ export interface ITaskDatasetControlRuntime {
     load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
-    /** What the view shows right now, as task view data to save. */
+    /** What the view is set up with right now beside its columns, as task view data to save. */
     getCurrentViewData(): ITaskViewData;
     getFieldMapping(): IFieldMapping;
     getProvider(): ITaskDataProvider;
