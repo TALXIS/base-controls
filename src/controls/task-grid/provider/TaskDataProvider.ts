@@ -1,7 +1,7 @@
-import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
-import { IRecordTree, RecordTree } from "./record-tree";
+import { IRecordTree, PATH_COLUMN_NAME, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
 import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook } from "./interfaces";
 
@@ -336,6 +336,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 ...(this._columnCatalogue.get(columnName) ?? { name: columnName, displayName: columnName, dataType: 'SingleLine.Text', order: -1, visualSizeFactor: 100 }),
                 isHidden: true,
             }));
+        if (!columnNames.has(PATH_COLUMN_NAME)) {
+            missing.push({ name: PATH_COLUMN_NAME, displayName: PATH_COLUMN_NAME, dataType: DataTypes.Multiple, isVirtual: true, isHidden: true, order: -1, visualSizeFactor: 300 });
+        }
         return [...columns, ...missing];
     }
 

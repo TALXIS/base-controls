@@ -9,6 +9,8 @@ export interface ITaskGridLabels {
     newTasksShown: string;
     /** The task table has several lookups to the project's table, listed in `{{ columns }}`. */
     projectLookupAmbiguous: string;
+    /** The column listing a task's ancestors, shown in a flat list. */
+    path: string;
 }
 
 /** The English defaults for {@link ITaskGridLabels}. */
@@ -20,4 +22,5 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     collapseLevel: 'Collapse one level',
     newTasksShown: 'New tasks are shown regardless of the filter.',
     projectLookupAmbiguous: 'Several task columns link to the project ({{ columns }}); filter the FetchXML by one of them.',
+    path: 'Path',
 };
