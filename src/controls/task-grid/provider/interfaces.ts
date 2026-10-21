@@ -151,6 +151,9 @@ export interface ITaskDataProviderInitializeParameters {
     rootTaskId?: string;
 }
 
+/** Changes the columns Edit columns offers, in place. */
+export type TaskAvailableColumnsHook = (columns: IColumn[]) => void;
+
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     /** Takes the control's field mapping and root task before the provider loads. */
@@ -182,4 +185,6 @@ export interface ITaskDataProvider extends IDataProvider {
     openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Writes changed raw data onto the records it belongs to. */
     updateTaskData(rawRecords: IRawRecord[]): void;
+    /** Changes the available columns, also read as definitions for saved views that list them. */
+    registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
 }

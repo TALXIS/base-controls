@@ -3822,6 +3822,8 @@ type ITaskView = IDatasetControlView<ITaskViewData>;
 /** The tasks of one view, loaded at once and shown as a tree. */
 interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
+    /** Changes the available columns, also read as definitions for saved views that list them. */
+    registerAvailableColumns(hook: (columns: IColumn[]) => void, priority?: number): () => void;
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */

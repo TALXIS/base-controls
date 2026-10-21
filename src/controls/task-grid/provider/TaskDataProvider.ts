@@ -1,8 +1,9 @@
 import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
+import { HookRegistry } from "@utils";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     strategy: ITaskStrategy;
@@ -20,6 +21,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _hasLoaded = false;
     private _newTaskIds = new Set<string>();
     private _columnCatalogue = new Map<string, IColumn>();
+    private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
     public readonly taskEvents = new EventEmitter<ITaskDataProviderEvents>();
@@ -113,7 +115,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onGetAvailableColumns(): Promise<IColumn[]> {
-        return this._strategy.onGetAvailableColumns();
+        return this._withHookColumns(await this._strategy.onGetAvailableColumns());
+    }
+
+    public registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void {
+        return this._availableColumnsHooks.register(hook, priority);
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
@@ -285,7 +291,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     private async _load(): Promise<void> {
         const { rawData, metadata, columns } = await this._strategy.onLoad(this);
-        this._columnCatalogue = new Map(columns.map(column => [column.name, column]));
+        this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
         this.setMetadata(metadata);
         this.setEntityName(metadata.LogicalName ?? '');
         this.setDataSource(rawData);
@@ -293,6 +299,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
+    }
+
+    private _withHookColumns(columns: IColumn[]): IColumn[] {
+        const result = [...columns];
+        this._availableColumnsHooks.apply(result);
+        return result;
     }
 
     private _rebuildTree(): void {
