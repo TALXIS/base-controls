@@ -112,7 +112,7 @@ export class DatasetControlUserQueries {
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
         const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        views.push(...this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, data: this._onReadViewData(record) })));
+        views.push(...this._provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getNamedReference().name ?? '', group, columns: [], data: this._onReadViewData(record) })));
     };
 
     //the switcher reads its items as its menu opens

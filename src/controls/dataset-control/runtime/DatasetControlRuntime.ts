@@ -186,8 +186,12 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             this._viewsHooks.apply(views);
             this._views = views;
             viewId = this._resolveViewId(requestedViewId);
-            result = await this._onGetProps().onLoad({ view: this._views.find(view => view.id === viewId) });
+            const view = this._views.find(view => view.id === viewId);
+            result = await this._onGetProps().onLoad({ view });
             const provider = result.provider;
+            if (view) {
+                provider.setColumns(view.columns);
+            }
             this._state.restore(provider, viewId);
             //onLoad may have prepared and started the first load itself
             if (!provider.isFirstLoadRequested()) {

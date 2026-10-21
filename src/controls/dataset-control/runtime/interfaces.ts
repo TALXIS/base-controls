@@ -1,4 +1,4 @@
-import type { IDataProvider } from "@talxis/client-libraries";
+import type { IColumn, IDataProvider } from "@talxis/client-libraries";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
 import type { IDatasetControlLabels } from "../components/adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
@@ -25,6 +25,8 @@ export interface IDatasetControlView<TData = unknown> {
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: IDatasetControlViewGroup;
+    /** The columns the view shows, set on the provider `onLoad` returns. */
+    columns: IColumn[];
     /** What `onLoad` needs to build the view, user views included. */
     data?: TData;
 }
