@@ -2,26 +2,24 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
-import { USER_VIEWS_FILE } from './userViewsExamples'
 
-const FLUENT_V9_CODE = `import { loadDealViews } from './views'
-import { DealView, readViewData, loadView, writeViewData, userViews } from './userViews'
+const FLUENT_V9_CODE = `import { captureViewData, getDealColumn, IDealViewData, loadDeals, loadDealViews } from './views'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
 
 //fails once after the ribbon asks it to, to show the error in Fluent v9 too
-const onLoad = async (params: IDatasetControlLoadParameters<DealView>) => {
+const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
     if (failNextLoad.current) {
         failNextLoad.current = false
         await new Promise(resolve => setTimeout(resolve, 600))
         throw new Error('The deals service is not reachable.')
     }
-    return loadView(params)
+    return loadDeals(params)
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => [createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews', onGetViewData: captureViewData, onGetColumn: getDealColumn })], [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>
@@ -409,4 +407,4 @@ export const V9 = {
 `,
 }
 
-export const FluentV9Example = () => <GridExampleRunner seedCode={withFiles(FLUENT_V9_CODE, VIEWS_FILE, USER_VIEWS_FILE, DEALS_RIBBON_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} />
+export const FluentV9Example = () => <GridExampleRunner seedCode={withFiles(FLUENT_V9_CODE, VIEWS_FILE, DEALS_RIBBON_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} />

@@ -68,11 +68,14 @@ export interface IProductViewData {
     category?: number
 }
 
+//the product name is what the quick find searches
+const COLUMNS = createProductsProvider().getColumns().map(column => ({ ...column, isPrimary: column.name === 'name' }))
+
 const VIEWS: IDatasetControlView<IProductViewData>[] = [
-    { id: 'all', name: 'All products', group: TABLES, data: { ui: 'grid' } },
-    { id: 'priceList', name: 'Price list', group: TABLES, data: { ui: 'datagrid' } },
-    { id: 'seating', name: 'Seating', group: GALLERIES, data: { ui: 'gallery', category: 2 } },
-    { id: 'lighting', name: 'Lighting', group: GALLERIES, data: { ui: 'gallery', category: 3 } },
+    { id: 'all', name: 'All products', group: TABLES, resolve: () => ({ columns: COLUMNS, data: { ui: 'grid' } }) },
+    { id: 'priceList', name: 'Price list', group: TABLES, resolve: () => ({ columns: COLUMNS, data: { ui: 'datagrid' } }) },
+    { id: 'seating', name: 'Seating', group: GALLERIES, resolve: () => ({ columns: COLUMNS, data: { ui: 'gallery', category: 2 } }) },
+    { id: 'lighting', name: 'Lighting', group: GALLERIES, resolve: () => ({ columns: COLUMNS, data: { ui: 'gallery', category: 3 } }) },
 ]
 
 export const loadProductViews = async (): Promise<IDatasetControlView<IProductViewData>[]> => VIEWS
@@ -80,8 +83,6 @@ export const loadProductViews = async (): Promise<IDatasetControlView<IProductVi
 export const loadProducts = async (params: IDatasetControlLoadParameters<IProductViewData>): Promise<IDatasetControlLoadResult> => {
     const category = params.view?.data?.category
     const provider = createProductsProvider()
-    //the product name is what the quick find searches
-    provider.setColumns(provider.getColumns().map(column => ({ ...column, isPrimary: column.name === 'name' })))
     provider.setFiltering(category ? { filterOperator: 0, conditions: [{ attributeName: 'category', conditionOperator: 0, value: \`\${category}\` }] } : null)
     return { provider }
 }
@@ -105,8 +106,7 @@ const UIS: { [ui in ProductUi]: () => JSX.Element } = {
 //the control mounts anew for every view, so the view's UI is picked once
 export const ProductsBody = () => {
     const control = useDatasetControl<IProductViewData>()
-    const view = control.getViews().find(view => view.id === control.getViewId())
-    const Ui = UIS[view?.data?.ui ?? 'grid']
+    const Ui = UIS[control.getView()?.data?.ui ?? 'grid']
 
     //what shows instead of the UI when nothing matches
     return <DatasetControl.EmptyRecords>

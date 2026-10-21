@@ -36,8 +36,9 @@ const controlRef = React.useRef<IDatasetControl>()
 | \`loadView(viewId)\` | Loads the view through \`onLoad\`, as picking it in the view switcher does. |
 | \`reload()\` | Loads the views and the view shown again, on a new provider. |
 | \`retry()\` | Runs the load that failed again. |
-| \`getViews()\` | The views \`onLoadViews\` returned for this mount. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`getViews()\` | The views as listed for this mount. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
 | \`getViewId()\` | The view shown. |
+| \`getView()\` | The view shown, as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown. Inside the control, \`useDataProvider()\` returns it too. |
 | \`isLoading()\` | Whether a load is running. |
 | \`getError()\` | What the last load threw, until the next one starts. |

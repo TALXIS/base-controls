@@ -1,7 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
-import { USER_VIEWS_FILE } from './userViewsExamples'
 
 const FAILED_LOAD_CODE = `import { IDealViewData, loadDeals, loadDealViews } from './views'
 
@@ -29,8 +28,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-const FAILED_ACTIONS_CODE = `import { loadDealViews } from './views'
-import { DealView, readViewData, loadView, writeViewData, userViews } from './userViews'
+const FAILED_ACTIONS_CODE = `import { captureViewData, getDealColumn, IDealViewData, loadDeals, loadDealViews } from './views'
 
 //stands in for your server, which the toggle takes down
 const server = { isDown: false }
@@ -44,16 +42,17 @@ const syncToCrm = async () => {
 
 const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync to CRM', iconName: 'Sync', onExecute: syncToCrm }]
 
-const saveWhileUp = (parameters: IUserQueryWriteParameters<DealView>) => {
+//throwing stops the save
+const captureWhileUp = (datasetControl: IDatasetControl<IDealViewData>) => {
     if (server.isDown) {
         throw new Error('The view could not be saved while the server is down.')
     }
-    writeViewData(parameters)
+    return captureViewData(datasetControl)
 }
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => [createUserQueriesModule<DealView>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: saveWhileUp })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews', onGetViewData: captureWhileUp, onGetColumn: getDealColumn })], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked
@@ -62,7 +61,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel checked={isDown} onChange={(_, checked) => toggleServer(!!checked)} />
-        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadView} stateKey='failingDeals' height='420px'>
+        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} stateKey='failingDeals' height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>
@@ -82,4 +81,4 @@ const GridExample = () => {
 `
 
 export const FailedLoadExample = () => <GridExampleRunner seedCode={withFiles(FAILED_LOAD_CODE, VIEWS_FILE)} />
-export const FailedActionsExample = () => <GridExampleRunner seedCode={withFiles(FAILED_ACTIONS_CODE, VIEWS_FILE, USER_VIEWS_FILE)} />
+export const FailedActionsExample = () => <GridExampleRunner seedCode={withFiles(FAILED_ACTIONS_CODE, VIEWS_FILE)} />

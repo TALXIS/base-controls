@@ -2,7 +2,7 @@ import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } fro
 import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
@@ -10,7 +10,7 @@ import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetContro
 /** What `onLoad` is called with. */
 export interface IDatasetControlLoadParameters<TData = unknown> {
     /** The view to load: the one asked for or kept, else the first view; `undefined` only when there are no views. */
-    view?: IDatasetControlView<TData>;
+    view?: IDatasetControlResolvedView<TData>;
 }
 
 /** What `onLoad` returns. */
@@ -58,6 +58,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _views: IDatasetControlView[] = [];
     private _viewsHooks = new HookRegistry<DatasetControlViewsHook>();
     private _viewId?: string;
+    private _view?: IDatasetControlResolvedView;
     private _requestedViewId?: string;
     private _isLoading = false;
     private _isDestroyed = false;
@@ -101,6 +102,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getViewId(): string | undefined {
         return this._viewId;
+    }
+
+    public getView(): IDatasetControlResolvedView | undefined {
+        return this._view;
     }
 
     public getViewStateStore(viewId: string | undefined = this._viewId): IStateStore {
@@ -179,6 +184,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this.events.dispatchEvent('onLoadStarted');
         let result: IDatasetControlLoadResult | undefined;
         let viewId: string | undefined;
+        let view: IDatasetControlResolvedView | undefined;
         try {
             await this._loadModules();
             //a copy: the hooks change it in place
@@ -186,10 +192,13 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             this._viewsHooks.apply(views);
             this._views = views;
             viewId = this._resolveViewId(requestedViewId);
-            const view = this._views.find(view => view.id === viewId);
+            const listed = this._views.find(view => view.id === viewId);
+            view = listed ? { ...listed, ...await listed.resolve() } : undefined;
             result = await this._onGetProps().onLoad({ view });
             const provider = result.provider;
             if (view) {
+                //before the columns, which a related column is resolved through
+                provider.setLinking(view.linking ?? provider.getLinking());
                 provider.setColumns(view.columns);
             }
             this._state.restore(provider, viewId);
@@ -210,7 +219,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             this._releaseProvider(result.provider);
             return;
         }
-        this._onLoaded(result, viewId);
+        this._onLoaded(result, viewId, view);
     }
 
     //a retried load starts the modules again from scratch
@@ -241,9 +250,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._views.some(view => view.id === viewId) ? viewId : this._views[0]?.id;
     }
 
-    private _onLoaded(result: IDatasetControlLoadResult, viewId: string | undefined): void {
+    private _onLoaded(result: IDatasetControlLoadResult, viewId: string | undefined, view: IDatasetControlResolvedView | undefined): void {
         this._provider = result.provider;
         this._viewId = viewId;
+        this._view = view;
         this._state.setViewId(viewId);
         this._isLoading = false;
         this.events.dispatchEvent('onLoaded', result.provider);

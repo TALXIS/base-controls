@@ -97,9 +97,8 @@ The parts work on the provider, not on the grid, so anything that shows records 
 \`\`\`tsx
 const ProductsBody = () => {
     const control = useDatasetControl<IProductViewData>()
-    const view = control.getViews().find(view => view.id === control.getViewId())
     return <DatasetControl.EmptyRecords>
-        {view?.data?.ui === 'gallery' ? <ProductGallery /> : <Grid stateKey='grid' modules={modules} />}
+        {control.getView()?.data?.ui === 'gallery' ? <ProductGallery /> : <Grid stateKey='grid' modules={modules} />}
     </DatasetControl.EmptyRecords>
 }
 \`\`\`

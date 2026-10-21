@@ -3407,19 +3407,35 @@ declare const sortCheckListProvider: <TProvider extends IDataProvider>(provider:
 
 declare const ContextualMenuItemType: typeof import('@fluentui/react').ContextualMenuItemType;
 
+/** A related entity a view's columns come from. */
+type ILinkEntityExposedExpression = import('@talxis/client-libraries').ILinkEntityExposedExpression;
+
+/** What a view sets up, resolved only when it is opened. */
+interface IDatasetControlViewDefinition<TData = unknown> {
+    /** The columns the view shows, set on the provider onLoad returns. */
+    columns: IColumn[];
+    /** The related entities the view's columns come from, set on the provider with them. */
+    linking?: ILinkEntityExposedExpression[];
+    /** What else onLoad needs to build the view, user views included. */
+    data?: TData;
+}
+
 /** A view the user can switch to. */
 interface IDatasetControlView<TData = unknown> {
     id: string;
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: { id: string; name: string };
-    /** What onLoad needs to build the view, user views included. */
-    data?: TData;
+    /** Resolves what the view sets up, called each time it is opened. */
+    resolve: () => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
+
+/** A view as it is opened, with what it sets up. */
+type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
 interface IDatasetControlLoadParameters<TData = unknown> {
     /** The view to load: the one asked for or kept, else the first view; undefined only when there are no views. */
-    view?: IDatasetControlView<TData>;
+    view?: IDatasetControlResolvedView<TData>;
 }
 
 interface IDatasetControlLoadResult {
@@ -3454,24 +3470,59 @@ interface IDatasetControlModule {
     onDestroy?(instance: any): void;
 }
 
-/** What onWriteViewData is called with. */
-interface IUserQueryWriteParameters<TData = unknown> {
-    /** The view, unsaved; isNew() tells a new view from an existing one. */
-    record: IRecord;
-    /** The control the view is saved from, showing what the user set up. */
-    datasetControl: IDatasetControl<TData>;
+/** What a user view keeps of a column; the provider fills in the rest. */
+type IUserQueryColumn = Pick<IColumn, 'name' | 'isHidden' | 'order' | 'visualSizeFactor' | 'grouping' | 'aggregation'>;
+
+/** What a user view keeps. */
+interface IUserQueryView<TData = unknown> {
+    columns: IUserQueryColumn[];
+    /** The related entities its columns come from. */
+    linking?: ILinkEntityExposedExpression[];
+    data?: TData;
 }
+
+/** A user view as the view switcher lists it. */
+interface IUserQueryListItem {
+    id: string;
+    name: string;
+}
+
+/** Where the user's views are kept. */
+interface IUserQueriesStore<TData = unknown> {
+    /** The user's views, sorted as listed. */
+    getViews(): Promise<IUserQueryListItem[]>;
+    getView(viewId: string): Promise<IUserQueryView<TData>>;
+    /** Saves a new view and returns its id. */
+    createView(name: string, view: IUserQueryView<TData>): Promise<string>;
+    updateView(viewId: string, view: IUserQueryView<TData>): Promise<void>;
+    /** The views as records Manage views renames and deletes. */
+    createManageProvider(): IDataProvider;
+}
+
+type IUserQueriesLabelOverrides = Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
 
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
 declare const createUserQueriesModule: <TData>(parameters: {
-    /** The user's views, one record per view. */
-    provider: IDataProvider;
-    /** Reads what a user view keeps from its record, as onLoad gets it in view.data. */
-    onReadViewData: (record: IRecord) => TData;
+    /** Where the user's views are kept. */
+    store: IUserQueriesStore<TData>;
+    /** The view's own data as it is saved, beside its columns; throw to stop the save. */
+    onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
+    /** The definition of a column a user view keeps; a column without one is left out. */
+    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
     /** Overrides for every string of the user queries. */
-    labels?: Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
-    /** Writes what the control shows onto a view's record before it is saved; throw to stop the save. */
-    onWriteViewData?: (parameters: IUserQueryWriteParameters<TData>) => Promise<void> | void;
+    labels?: IUserQueriesLabelOverrides;
+}) => IDatasetControlModule;
+
+/** The user's views kept in the browser's localStorage, with their columns and data as JSON. */
+declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
+    /** The localStorage entry the views are kept in; one per control. */
+    storageKey: string;
+    /** The view's own data as it is saved, beside its columns; throw to stop the save. */
+    onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
+    /** The definition of a column a user view keeps; a column without one is left out. */
+    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
+    /** Overrides for every string of the user queries. */
+    labels?: IUserQueriesLabelOverrides;
 }) => IDatasetControlModule;
 
 
@@ -3660,6 +3711,8 @@ interface IDatasetControl<TData = unknown> {
     getViews(): IDatasetControlView<TData>[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
+    /** That view as it was resolved, with its columns and data. */
+    getView(): IDatasetControlResolvedView<TData> | undefined;
     isLoading(): boolean;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
@@ -3817,7 +3870,7 @@ interface ITaskViewData {
 }
 
 /** A view of the tasks, user views included. */
-type ITaskView = IDatasetControlView<ITaskViewData>;
+type ITaskView = IDatasetControlResolvedView<ITaskViewData>;
 
 /** The tasks of one view, loaded at once and shown as a tree. */
 interface ITaskDataProvider extends IDataProvider {

@@ -57,7 +57,7 @@ export const ManageViews = (props: IManageViewsProps) => {
 
     const { header, body, footer, ribbon, quickFind, pagination, ...datasetControl } = props.components?.datasetControl ?? {};
 
-    const onLoad = async (): Promise<{ provider: IDataProvider }> => ({ provider: props.userQueries.getProvider() });
+    const onLoad = async (): Promise<{ provider: IDataProvider }> => ({ provider: props.userQueries.getManageProvider() });
 
     return <DatasetControl onLoad={onLoad} destroyProviderOnUnmount={false} height='100%' className={styles.datasetControl} components={datasetControl}>
         <Header className={styles.header} components={header}>

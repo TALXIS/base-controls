@@ -4,7 +4,7 @@ import {
     createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControl,
     IRibbonCommand, PcfContextProvider, useDataProvider, ViewSwitcherUiComponents,
 } from '@talxis/base-controls'
-import { loadDeals, loadDealViews } from '../dealViews'
+import { IDealViewData, loadDeals, loadDealViews } from '../dealViews'
 
 interface IScratchDatasetControlProps {
     /** Whether the parts' slots are replaced, to see the overrides take effect. */
@@ -58,7 +58,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
     //parked on window so the control can be poked at from the browser console
     const onMounted = (control: IDatasetControl) => Object.assign(window, { datasetControl: control })
 
-    const onLoad = async (params: IDatasetControlLoadParameters) => {
+    const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
         if (failNextLoadRef.current) {
             failNextLoadRef.current = false
             await new Promise(resolve => setTimeout(resolve, 600))

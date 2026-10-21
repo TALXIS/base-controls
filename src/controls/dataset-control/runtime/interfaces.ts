@@ -1,4 +1,4 @@
-import type { IColumn, IDataProvider } from "@talxis/client-libraries";
+import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
 import type { IDatasetControlLabels } from "../components/adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
@@ -17,6 +17,16 @@ export interface IDatasetControlViewGroup {
     name: string;
 }
 
+/** What a view sets up, resolved only when it is opened. */
+export interface IDatasetControlViewDefinition<TData = unknown> {
+    /** The columns the view shows, set on the provider `onLoad` returns. */
+    columns: IColumn[];
+    /** The related entities the view's columns come from, set on the provider with them. */
+    linking?: ILinkEntityExposedExpression[];
+    /** What `onLoad` needs to build the view, user views included. */
+    data?: TData;
+}
+
 /** A view the user can switch to. */
 export interface IDatasetControlView<TData = unknown> {
     /** The id `onLoad` is called with. */
@@ -25,11 +35,12 @@ export interface IDatasetControlView<TData = unknown> {
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: IDatasetControlViewGroup;
-    /** The columns the view shows, set on the provider `onLoad` returns. */
-    columns: IColumn[];
-    /** What `onLoad` needs to build the view, user views included. */
-    data?: TData;
+    /** Resolves what the view sets up, called each time it is opened. */
+    resolve: () => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
+
+/** A view as it is opened, with what it sets up. */
+export type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
 /** What the control raises as it loads and goes. */
 export interface IDatasetControlEvents {
@@ -96,6 +107,8 @@ export interface IDatasetControl<TData = unknown> {
     getViews(): IDatasetControlView<TData>[];
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
+    /** That view as it was resolved, with its columns and data. */
+    getView(): IDatasetControlResolvedView<TData> | undefined;
     /** Whether a load is running. */
     isLoading(): boolean;
     /** What the last load threw, until the next one starts. */

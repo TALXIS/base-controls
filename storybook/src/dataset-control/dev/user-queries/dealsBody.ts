@@ -2,7 +2,7 @@ import type { IGridExampleFile } from '../../../grid/GridLivePreview'
 
 export const DEALS_BODY_FILE: IGridExampleFile = {
     name: 'DealsBody.tsx',
-    code: `import { DealLayout, getCurrentView, getDefinition } from './views'
+    code: `import { DealLayout, IDealViewData } from './views'
 import { DealGallery } from './DealGallery'
 import { DealBoard } from './DealBoard'
 import { DealTimeline } from './DealTimeline'
@@ -28,8 +28,8 @@ const LAYOUTS: { [layout in DealLayout]: () => JSX.Element } = {
 
 //the control mounts anew for every view, so the layout is read once
 export const DealsBody = () => {
-    const control = useDatasetControl()
-    const Layout = React.useMemo(() => LAYOUTS[getDefinition(getCurrentView(control)).layout ?? 'grid'], [])
+    const control = useDatasetControl<IDealViewData>()
+    const Layout = React.useMemo(() => LAYOUTS[control.getView()?.data?.layout ?? 'grid'], [])
     return <Layout />
 }
 `,

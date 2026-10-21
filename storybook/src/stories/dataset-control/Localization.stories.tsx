@@ -26,7 +26,7 @@ Every string the control and its parts show can be replaced through their \`labe
 |---|---|---|
 | \`DatasetControl\` | \`unsavedChangesConfirmation\` | \`DATASET_CONTROL_LABELS\` |
 | \`ViewSwitcher\` | \`ungroupedViewsHeader\` | \`VIEW_SWITCHER_LABELS\` |
-| \`createUserQueriesModule\` | \`myViewsHeader\`, \`saveChanges\`, \`saveAsNewView\`, \`manageViews\`, \`viewName\` (the prompt for a new view's name), \`save\`, \`delete\`, \`confirmDeleteViews\`, \`close\`, \`saveFailed\` and \`deleteFailed\` (when a failed save or delete gives no reason) | \`USER_QUERIES_LABELS\` |
+| \`createLocalStorageUserQueriesModule\`, \`createTalxisUserQueriesModule\`, \`createUserQueriesModule\` | \`myViewsHeader\`, \`saveChanges\`, \`saveAsNewView\`, \`manageViews\`, \`viewName\` (the prompt for a new view's name), \`save\`, \`delete\`, \`confirmDeleteViews\`, \`close\`, \`saveFailed\` and \`deleteFailed\` (when a failed save or delete gives no reason) | \`USER_QUERIES_LABELS\` |
 | \`QuickFind\` | \`searchPlaceholder\` (with \`{{ collection }}\`), \`defaultCollectionName\`, \`leadingWildcardWarning\`, \`columnsHintStart\`, \`columnsHintOperator\`, \`columnsHintEnd\` | \`QUICK_FIND_LABELS\` |
 | \`EditColumns\` | \`editColumns\`, \`save\`, \`cancel\`, \`scopeSelectorLabel\`, \`columnSelectorPlaceholder\`, \`customColumnTooltip\`, \`unnamed\`, \`noResults\`, \`loading\` | \`EDIT_COLUMNS_LABELS\` |
 | \`Notifications\` | \`groupedNotificationsSummary\` (with \`{{ count }}\`) | \`DATASET_CONTROL_NOTIFICATIONS_LABELS\` |

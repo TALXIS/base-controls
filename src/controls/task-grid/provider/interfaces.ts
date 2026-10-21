@@ -1,5 +1,5 @@
 import type { IAvailableRelatedColumn, IColumn, IDataProvider, ILinkEntityExposedExpression, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { IDatasetControlView } from "@controls/dataset-control";
+import type { IDatasetControlResolvedView } from "@controls/dataset-control";
 import type { IEventSubscriber } from "@utils";
 import type { IRecordTree } from "./record-tree";
 
@@ -32,7 +32,7 @@ export interface ITaskViewData {
 }
 
 /** A view of the tasks, user views included. */
-export type ITaskView = IDatasetControlView<ITaskViewData>;
+export type ITaskView = IDatasetControlResolvedView<ITaskViewData>;
 
 /** One record an operation could not complete, and why. */
 export interface IFailedRecord {

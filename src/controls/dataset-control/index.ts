@@ -1,11 +1,11 @@
 export * from './namespace';
-export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule } from './modules/user-queries';
-export type { ITalxisUserQueriesModuleParameters } from './modules/user-queries';
-export type { IUserQueriesModule, IUserQueryWriteParameters, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, getDataverseColumn, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
+export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModuleParameters, IDataverseUserQueriesTable, ILocalStorageUserQueriesModuleParameters } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
-    IDatasetControlView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
+    IDatasetControlView, IDatasetControlViewDefinition, IDatasetControlResolvedView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
     IDatasetControlRuntime, DatasetControlViewsHook,
 } from './runtime';
 export { useDatasetControl, useControlStateStore } from './components/adapters/root';

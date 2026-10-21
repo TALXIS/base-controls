@@ -20,8 +20,8 @@ A *provider* holds the records and everything about them: their columns, sorting
 import { createClientSideRowModelModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlView, PcfContextProvider } from '@talxis/base-controls'
 
 const loadViews = async (): Promise<IDatasetControlView[]> => [
-    { id: 'all', name: 'All deals' },
-    { id: 'won', name: 'Won deals', data: { stage: 'won' } },
+    { id: 'all', name: 'All deals', resolve: () => ({ columns: DEAL_COLUMNS }) },
+    { id: 'won', name: 'Won deals', resolve: () => ({ columns: DEAL_COLUMNS, data: { stage: 'won' } }) },
 ]
 
 const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
@@ -56,7 +56,7 @@ You should see a placeholder while the deals load, then the grid with *All deals
 
 1. **The control's \`onLoad\` returns a provider for the view the user is on.** The control calls it at mount and on every view switch, and shows a placeholder until the provider's first page is in. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
 2. **The parts work on that provider.** Place them in the header, body and footer regions and leave out the ones you don't need. \`Grid\` takes no provider of its own: it uses the control's. See [**Layout**](?path=/docs/datasetcontrol-layout--overview).
-3. **The views come from the control's \`onLoadViews\`,** each carrying what \`onLoad\` needs to load it, and the ribbon's commands from the ribbon's own \`onLoad\`. See [**Views**](?path=/docs/datasetcontrol-views--overview) and [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview).
+3. **The views come from the control's \`onLoadViews\`,** each listed by name and resolving what \`onLoad\` needs only when it is opened, and the ribbon's commands from the ribbon's own \`onLoad\`. See [**Views**](?path=/docs/datasetcontrol-views--overview) and [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview).
 4. **Throw when something fails.** The control shows the error to the user, with *Try again* where it can. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
 5. **Your code talks to the control** through \`useDatasetControl()\` inside it, or \`onMounted\` outside: switch views, reload, follow every load, and reach any part, such as \`control.parts.get('quickFind').search()\`. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
 
@@ -68,7 +68,7 @@ You should see a placeholder while the deals load, then the grid with *All deals
 |---|---|---|---|
 | \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | Returns the provider for a view. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview). |
 | \`onLoadViews\` | \`() => Promise<IDatasetControlView<TData>[]>\` | None | Returns the views to switch between, before every \`onLoad\`. \`TData\` is the type of every view's \`data\`. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
-| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as \`createUserQueriesModule\` for the user's own views. Read on every load. See *Let users save their own views* on [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as \`createLocalStorageUserQueriesModule\` for the user's own views. Read on every load. See *Let users save their own views* on [**Views**](?path=/docs/datasetcontrol-views--overview). |
 | \`children\` | \`ReactNode\` | Required | The regions and the parts. See [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
 | \`height\` | \`string\` | None | The control's height. See *Size the control* on [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
 | \`className\` | \`string\` | None | Added to the control's box. |

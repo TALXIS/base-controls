@@ -95,7 +95,10 @@ const loadView = async (parameters: IDatasetControlLoadParameters): Promise<IDat
     return { provider: tickets }
 }
 
-const loadViews = async (): Promise<IDatasetControlView[]> => SAVED_VIEWS.map(view => ({ id: view.id, name: view.name }))
+//every view shows every ticket column
+const TICKET_COLUMNS = createTicketsProvider().getColumns()
+
+const loadViews = async (): Promise<IDatasetControlView[]> => SAVED_VIEWS.map(view => ({ id: view.id, name: view.name, resolve: () => ({ columns: TICKET_COLUMNS }) }))
 
 const GridExample = () => <DatasetControl onLoadViews={loadViews} stateKey='ticket-views' onLoad={loadView}>
     <DatasetControl.Header>

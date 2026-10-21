@@ -11,8 +11,11 @@ const ROOT_CODE = `const fieldMapping: IFieldMapping = {
     percentComplete: 'percentcomplete',
 }
 
-const VIEWS: ITaskView[] = [
-    { id: 'all', name: 'All tasks', data: { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete') } },
+//the control sets a view's columns; the task grid also reads them from its data
+const taskView = (id: string, name: string, data: ITaskViewData): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns: data.columns, data }) })
+
+const VIEWS: IDatasetControlView<ITaskViewData>[] = [
+    taskView('all', 'All tasks', { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete') }),
 ]
 
 const getParentId = (task: IRawRecord): string | undefined => task.parentid?.[0]?.id.guid

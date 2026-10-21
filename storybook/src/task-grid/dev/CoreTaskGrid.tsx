@@ -11,27 +11,14 @@ const CORE_CODE = `const fieldMapping: IFieldMapping = {
     percentComplete: 'percentcomplete',
 }
 
-const VIEWS: ITaskView[] = [
-    { id: 'all', name: 'All tasks', data: { columns: getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') } },
-    { id: 'planning', name: 'Planning', data: { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } },
-    { id: 'flat', name: 'Every task on its own', data: { columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] } },
+//the control sets a view's columns; the task grid also reads them from its data
+const taskView = (id: string, name: string, data: ITaskViewData): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns: data.columns, data }) })
+
+const VIEWS: IDatasetControlView<ITaskViewData>[] = [
+    taskView('all', 'All tasks', { columns: getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto') }),
+    taskView('planning', 'Planning', { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
+    taskView('flat', 'Every task on its own', { columns: getTaskColumns('subject', 'statuscode', 'assignedto'), isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
-
-//the user's own task views, one record each, with what the view shows kept as JSON
-const userViews = new MemoryDataProvider({
-    dataSource: [],
-    metadata: { PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'name', QuickFindColumns: ['name'] },
-    columns: [
-        { name: 'name', displayName: 'View name', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 },
-        { name: 'definition', displayName: 'Definition', dataType: DataTypes.Multiple, isHidden: true },
-    ],
-})
-
-const readViewData = (record: IRecord): ITaskViewData => JSON.parse(record.getValue('definition'))
-
-const writeViewData = ({ record, datasetControl }: IUserQueryWriteParameters<ITaskViewData>) => {
-    record.setValue('definition', JSON.stringify(datasetControl.parts.get('taskDatasetControl').getCurrentViewData()))
-}
 
 const GridExample = () => {
     const modules = React.useMemo(() => ({
@@ -41,7 +28,7 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
-        createUserQueriesModule<ITaskViewData>({ provider: userViews, onReadViewData: readViewData, onWriteViewData: writeViewData }),
+        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskDatasetControl').getCurrentViewData(), onGetColumn: name => ({ name }) as IColumn }),
         createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
         createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
         createTaskDraggingModule(),

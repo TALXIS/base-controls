@@ -46,7 +46,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         provider.initialize({ fieldMapping, rootTaskId });
         provider.registerAvailableColumns(this._addPathColumn);
         if (this._view?.data) {
-            this._applyView(provider, this._view.data);
+            await this._applyView(provider, this._view.data);
         }
         this.services.register('provider', () => provider);
         return { provider };
@@ -118,9 +118,9 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.destroy();
     }
 
-    private _applyView(provider: ITaskDataProvider, view: ITaskViewData): void {
+    private async _applyView(provider: ITaskDataProvider, view: ITaskViewData): Promise<void> {
         //a saved column keeps only its layout
-        const definitions = this._getSystemViewColumns();
+        const definitions = await this._getSystemViewColumns();
         provider.setColumns(view.columns.map(column => {
             const definition = definitions.get(column.name);
             return definition ? mergeColumn(definition, column) : column;
@@ -133,10 +133,11 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     }
 
     //the first system view to define a column wins
-    private _getSystemViewColumns(): Map<string, IColumn> {
+    private async _getSystemViewColumns(): Promise<Map<string, IColumn>> {
         const columns = new Map<string, IColumn>();
-        //what modules add, such as saved user views, comes after the system views
-        for (const column of this.services.get('datasetControl').getViews().flatMap(view => view.data?.columns ?? [])) {
+        const systemViews = this.services.get('datasetControl').getViews().filter(view => !view.group);
+        const definitions = await Promise.all(systemViews.map(view => view.resolve()));
+        for (const column of definitions.flatMap(definition => definition.data?.columns ?? [])) {
             if (!columns.has(column.name)) {
                 columns.set(column.name, column);
             }
