@@ -37,7 +37,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.register('pcfContext', () => parameters.pcfContext);
         this._settingsHooks.register(this._addCoreSettings);
         //ahead of the modules, which attach to the grid after the tree
-        datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this }));
+        datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this, state: datasetControl.getViewStateStore() }));
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {

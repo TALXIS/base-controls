@@ -4,6 +4,7 @@ import { ThemeBuilder } from "@theme";
 import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
+import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
@@ -21,12 +22,15 @@ const NEW_TASK_FOCUS_ATTEMPTS = 3;
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
     runtime: ITaskDatasetControlRuntime;
+    /** The view's store in the dataset control. */
+    state: IStateStore;
 }
 
 /** Draws the tasks as a tree on the grid: the rows, the subject column, dragging and expansion. */
 export class TaskTree {
     private _grid: IGrid<ITaskGridServiceMap>;
     private _runtime: ITaskDatasetControlRuntime;
+    private _state: IStateStore;
     private _provider: ITaskDataProvider;
     private _expansion: TaskExpansion;
     private _isFlatList: boolean;
@@ -38,10 +42,11 @@ export class TaskTree {
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
         this._runtime = parameters.runtime;
+        this._state = parameters.state;
         const services = this._grid.services;
         this._provider = services.get('provider');
         this._isFlatList = this._getState().isFlatList ?? parameters.runtime.getView()?.data?.isFlatList ?? false;
-        this._expansion = new TaskExpansion({ provider: this._provider, state: services.get('state'), onIsFlatList: () => this._isFlatList });
+        this._expansion = new TaskExpansion({ provider: this._provider, state: this._state, onIsFlatList: () => this._isFlatList });
         parameters.runtime.services.register('taskTree', () => this);
         services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
@@ -77,7 +82,7 @@ export class TaskTree {
             return;
         }
         this._isFlatList = isFlatList;
-        this._grid.services.get('state').set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), isFlatList });
+        this._state.set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), isFlatList });
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([ADD_TASK_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
@@ -195,7 +200,7 @@ export class TaskTree {
     };
 
     private _getState(): ITaskTreeState {
-        return this._grid.services.get('state').get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
+        return this._state.get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
     }
 
     private _onNewDataLoaded = (): void => {
