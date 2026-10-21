@@ -5,7 +5,6 @@ import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, 
 import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
-import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
@@ -81,9 +80,6 @@ export class TaskTree {
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([ADD_TASK_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
-        if (this._isPathFollowingFlatList()) {
-            this._gridApi?.setColumnsVisible([PATH_COLUMN_NAME], isFlatList);
-        }
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -113,11 +109,6 @@ export class TaskTree {
         if (subjectColDef) {
             subjectColDef.cellRenderer = TreeCell;
             subjectColDef.pinned = 'left';
-        }
-        const pathColDef = columnDefs.find(colDef => colDef.colId === PATH_COLUMN_NAME);
-        if (pathColDef) {
-            pathColDef.headerName = this._runtime.getLabels().getLocalizedString('path');
-            pathColDef.hide = this._isPathFollowingFlatList() ? !this._isFlatList : pathColDef.hide;
         }
         const percentCompleteColDef = percentComplete ? columnDefs.find(colDef => colDef.colId === percentComplete) : undefined;
         if (percentCompleteColDef) {
@@ -156,11 +147,6 @@ export class TaskTree {
             theme.edit('taskGrid|unmatchedParent', result => { result.fonts.medium.fontStyle = 'italic'; });
         }
     };
-
-    //a view that shows the path itself keeps it
-    private _isPathFollowingFlatList(): boolean {
-        return this._provider.getColumnsMap()[PATH_COLUMN_NAME]?.isHidden !== false;
-    }
 
     //the same array until the rows change, so AG Grid is not handed new rows on every refresh
     private _getFlatRows(treeRows: IRecord[]): IRecord[] {

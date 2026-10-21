@@ -1,4 +1,4 @@
-import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, ColumnVisibleEvent, GridApi } from "ag-grid-community";
+import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridInternalServiceLocator } from "../../services";
 import { DEFAULT_COLUMN_WIDTH } from "../columns/GridColumns";
@@ -24,7 +24,6 @@ export class GridColumnLayout {
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
         gridApi.addEventListener('columnResized', this._onColumnResized);
         gridApi.addEventListener('columnMoved', this._onColumnMoved);
-        gridApi.addEventListener('columnVisible', this._onColumnVisible);
         gridApi.addEventListener('gridSizeChanged', () => this._applyLayout(gridApi));
         gridApi.addEventListener('displayedColumnsChanged', () => this._applyLayout(gridApi));
         this._applyLayout(gridApi);
@@ -98,17 +97,6 @@ export class GridColumnLayout {
         if (this._provider.getColumnsMap()[event.column?.getColId()!]?.grouping?.isGrouped) {
             this._provider.refresh();
         }
-    };
-
-    //what code shows or hides is not the user's view
-    private _onColumnVisible = (event: ColumnVisibleEvent<IRecord>): void => {
-        if (event.source === 'api') {
-            return;
-        }
-        const visibility = new Map((event.columns ?? []).map(column => [column.getColId(), column.isVisible()]));
-        this._writeColumns(column => visibility.has(column.name)
-            ? { ...column, isHidden: !visibility.get(column.name) }
-            : column);
     };
 
     private _writeColumns(update: (column: IColumn) => IColumn): void {

@@ -75,7 +75,7 @@ export class GridColumns implements IGridColumnsInternal {
     }
 
     public getColumnDefinitions(): ColDef<IRecord>[] {
-        const columnDefs = this._provider.getColumns().map(column => this._getColumnDefinition(column));
+        const columnDefs = this._provider.getColumns().filter(column => !column.isHidden).map(column => this._getColumnDefinition(column));
         const own = new Set(columnDefs);
         this._hooks.apply(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
@@ -126,7 +126,6 @@ export class GridColumns implements IGridColumnsInternal {
             colId: column.name,
             field: column.name as any,
             headerName: column.displayName,
-            hide: !!column.isHidden,
             //the width and the flex are the column layout's
             initialWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
             minWidth: MIN_COLUMN_WIDTH,
