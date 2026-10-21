@@ -2,7 +2,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowDragItem, RowDragModule, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
-import type { ITaskDataProvider, ITaskMovePosition } from "../../provider";
+import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../provider";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -26,10 +26,17 @@ interface IGap {
     next?: IRowNode<IRecord>;
 }
 
+export interface ITaskDraggingParameters {
+    /** Called after a dragged task is moved. */
+    onTaskMoved?(params: ITaskMoveParams): void;
+}
+
 /** Moves a task by dragging its row: between rows, sideways between levels, or onto another task. */
 export class TaskDragging {
     private _grid!: IGrid<ITaskGridServiceMap>;
     private _taskDatasetControl: ITaskDatasetControlRuntime;
+    private _parameters: ITaskDraggingParameters;
+    private _taskProvider?: ITaskDataProvider;
     private _isEditing = false;
     private _dragStart?: IDragStart;
     private _dropInto?: IRowNode<IRecord>;
@@ -37,9 +44,15 @@ export class TaskDragging {
     private _dropIntoTimer?: number;
     private _expandTimer?: number;
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime) {
+    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITaskDraggingParameters) {
         this._taskDatasetControl = taskDatasetControl;
+        this._parameters = parameters;
+        taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
         taskDatasetControl.registerGridModule({ agGridModules: [RowDragModule], onRegister: grid => this._onGridRegistered(grid) });
+    }
+
+    public destroy(): void {
+        this._taskProvider?.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
     }
 
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
@@ -265,6 +278,13 @@ export class TaskDragging {
         gridApi.addEventListener('dragStopped', this._restoreDraggedRow);
         gridApi.addEventListener('rowDragCancel', this._restoreDraggedRow);
     };
+
+    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
+        this._taskProvider = provider;
+        provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
+    };
+
+    private _onTaskMoved = (params: ITaskMoveParams): void => this._parameters.onTaskMoved?.(params);
 
     private _onDestroyed = (): void => {
         window.clearTimeout(this._dropIntoTimer);

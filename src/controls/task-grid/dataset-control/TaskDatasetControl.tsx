@@ -7,14 +7,14 @@ import type { IDatasetControlLabels } from "@controls/dataset-control/components
 import type { IDatasetControl, IDatasetControlModule } from "@controls/dataset-control/runtime/interfaces";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
-import type { ITaskGridEventHandlers, ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
+import type { ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
 import type { ITaskViewData } from "../provider";
 import type { ITaskDatasetControlRuntime } from "../runtime";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
 
-export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'>, Partial<ITaskGridEventHandlers> {
+export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Returns the view's provider and field mapping; called on every mount. */
@@ -56,7 +56,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskDatasetControl').load(parameters);
 
-    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, onTasksCreated: _onTasksCreated, onTasksDeleted: _onTasksDeleted, onTaskMoved: _onTaskMoved, onTasksUpdated: _onTasksUpdated, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, ...datasetControlProps } = props;
 
     return <TaskDatasetControlPropsContext.Provider value={propsContext}>
         <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onReady={onReady} onDestroyed={onDestroyed} onLoad={onLoad} />

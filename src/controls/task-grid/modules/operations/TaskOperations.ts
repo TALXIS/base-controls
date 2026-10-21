@@ -4,7 +4,7 @@ import type { GridLockHook } from "@controls/grid";
 import type { IRibbonCommand } from "@controls/ribbon";
 import { ILocalizationService, LocalizationService } from "@utils";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions } from "../../provider";
+import type { ICreateTaskOptions, ITaskDataProvider } from "../../provider";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
 import { ADD_TASK_COLUMN_KEY } from "../../tree/constants";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -20,6 +20,12 @@ export interface ITaskOperationsParameters {
     enableDeletion?: boolean;
     /** Overrides for the module's strings. */
     labels?: Partial<ITaskOperationsLabels>;
+    /** Called after tasks are created, with the parent they went under. */
+    onTasksCreated?(records: IRecord[], parentId?: string): void;
+    /** Called after tasks are deleted. */
+    onTasksDeleted?(taskIds: string[]): void;
+    /** Called after tasks change, from a form save or a move. */
+    onTasksUpdated?(records: IRecord[]): void;
 }
 
 /** Which of creating, editing and deleting tasks a mount allows. */
@@ -41,11 +47,13 @@ export class TaskOperations implements ITaskOperations {
     private _parameters: ITaskOperationsParameters;
     private _labels: ILocalizationService<ITaskOperationsLabels>;
     private _unregisterCommands?: () => void;
+    private _provider?: ITaskDataProvider;
 
     constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITaskOperationsParameters) {
         this._taskDatasetControl = taskDatasetControl;
         this._parameters = parameters;
         this._labels = new LocalizationService<ITaskOperationsLabels>({ ...TASK_OPERATIONS_LABELS, ...parameters.labels });
+        taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
         const parts = taskDatasetControl.services.get('datasetControl').parts;
         parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._onAddCommands));
         //after the tree, which adds the column the add-task buttons go in
@@ -69,6 +77,9 @@ export class TaskOperations implements ITaskOperations {
 
     public destroy(): void {
         this._unregisterCommands?.();
+        this._provider?.taskEvents.removeEventListener('onTasksCreated', this._onTasksCreated);
+        this._provider?.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted);
+        this._provider?.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
     }
 
     public getLabels(): ILocalizationService<ITaskOperationsLabels> {
@@ -113,6 +124,19 @@ export class TaskOperations implements ITaskOperations {
             }
         });
     }
+
+    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
+        this._provider = provider;
+        provider.taskEvents.addEventListener('onTasksCreated', this._onTasksCreated);
+        provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
+        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
+    };
+
+    private _onTasksCreated = (records: IRecord[], parentId?: string): void => this._parameters.onTasksCreated?.(records, parentId);
+
+    private _onTasksDeleted = (taskIds: string[]): void => this._parameters.onTasksDeleted?.(taskIds);
+
+    private _onTasksUpdated = (records: IRecord[]): void => this._parameters.onTasksUpdated?.(records);
 
     private _onLock: GridLockHook = (result, context) => {
         if (context.record && !context.columnName && !this.isEditingEnabled()) {

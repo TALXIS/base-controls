@@ -3891,6 +3891,12 @@ declare const createTaskOperationsModule: (parameters: {
     enableDeletion?: boolean;
     /** Overrides for the module's strings, such as new, edit, delete and addChild. */
     labels?: { [key: string]: string };
+    /** Called after tasks are created, with the parent they went under. */
+    onTasksCreated?(records: IRecord[], parentId?: string): void;
+    /** Called after tasks are deleted. */
+    onTasksDeleted?(taskIds: string[]): void;
+    /** Called after tasks change, from a form save or a move. */
+    onTasksUpdated?(records: IRecord[]): void;
 }) => ITaskOperationsModule;
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
@@ -3904,10 +3910,6 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
-    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
-    onTasksDeleted?: (taskIds: string[]) => void;
-    onTaskMoved?: (params: any) => void;
-    onTasksUpdated?: (records: IRecord[]) => void;
 }
 
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
@@ -3918,7 +3920,10 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
 /** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
 /** Moves tasks by dragging their rows: between rows, sideways between levels, or onto another task; not in a flat list. */
-declare const createTaskDraggingModule: () => IDatasetControlModule;
+declare const createTaskDraggingModule: (parameters?: {
+    /** Called after a dragged task is moved. */
+    onTaskMoved?(params: any): void;
+}) => IDatasetControlModule;
 
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {

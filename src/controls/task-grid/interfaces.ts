@@ -1,9 +1,8 @@
-import type { IRecord } from "@talxis/client-libraries";
 import type { IGridComponents, IGridModule, IGridModules, IGridProps } from "@controls/grid";
 import type { ITaskGridServiceMap } from "./services";
 import type { ITaskDatasetControlRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskMoveParams, ITaskViewData } from "./provider";
+import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents } from "./tree";
 
 
@@ -25,14 +24,6 @@ export interface ITaskGridLoadResult extends ITaskDataProviderInitializeParamete
     provider: ITaskDataProvider;
 }
 
-
-/** What a task grid does, for a consumer to react to. */
-export interface ITaskGridEventHandlers {
-    onTasksCreated: (records: IRecord[], parentId?: string) => void;
-    onTasksDeleted: (taskIds: string[]) => void;
-    onTaskMoved: (params: ITaskMoveParams) => void;
-    onTasksUpdated: (records: IRecord[]) => void;
-}
 
 /** The replaceable pieces of what a task grid draws, the grid's own included. */
 export interface ITaskGridComponents extends IGridComponents {
