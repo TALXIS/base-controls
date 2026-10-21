@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
-import type { GridLockHook } from "@controls/grid";
+import type { GridLockHook, IGrid } from "@controls/grid";
 import type { IRibbonCommand } from "@controls/ribbon";
 import { ILocalizationService, LocalizationService } from "@utils";
 import { ErrorHelper } from "@utils/error-handling";
@@ -56,11 +56,7 @@ export class TaskOperations implements ITaskOperations {
         taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
         const parts = taskDatasetControl.services.get('datasetControl').parts;
         parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._onAddCommands));
-        //after the tree, which adds the column the add-task buttons go in
-        parts.whenAvailable('grid', grid => {
-            grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 10);
-            grid.services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree + 10));
-        });
+        parts.whenAvailable('grid', this._onGridAvailable);
     }
 
     public isCreationEnabled(): boolean {
@@ -137,6 +133,12 @@ export class TaskOperations implements ITaskOperations {
     private _onTasksDeleted = (taskIds: string[]): void => this._parameters.onTasksDeleted?.(taskIds);
 
     private _onTasksUpdated = (records: IRecord[]): void => this._parameters.onTasksUpdated?.(records);
+
+    //after the tree, which adds the column the add-task buttons go in
+    private _onGridAvailable = (grid: IGrid): void => {
+        grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 10);
+        grid.services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree + 10));
+    };
 
     private _onLock: GridLockHook = (result, context) => {
         if (context.record && !context.columnName && !this.isEditingEnabled()) {

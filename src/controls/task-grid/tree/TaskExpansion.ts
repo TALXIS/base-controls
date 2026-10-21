@@ -16,7 +16,7 @@ export interface ITaskExpansionEvents {
 /** Which tasks are expanded; every surface draws what this says and reports what the user did. */
 export interface ITaskExpansion {
     readonly events: IEventSubscriber<ITaskExpansionEvents>;
-    /** Whether the row is drawn expanded: never in a flat list, always for an unmatched ancestor of a match. */
+    /** Whether the row is drawn expanded. */
     isExpanded(recordId: string): boolean;
     setExpanded(recordId: string, expanded: boolean): void;
     toggle(recordId: string): void;

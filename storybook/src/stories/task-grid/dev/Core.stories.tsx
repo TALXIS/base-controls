@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { CoreTaskGrid } from '../../../task-grid/dev/CoreTaskGrid'
+import { RootTaskGrid } from '../../../task-grid/dev/RootTaskGrid'
 import { StressTaskGrid } from '../../../task-grid/dev/StressTaskGrid'
 
 const meta = {
@@ -22,6 +23,12 @@ type Story = StoryObj<typeof meta>
 export const Core: Story = {
     name: 'Core',
     render: () => <div style={{ padding: 18 }}><CoreTaskGrid /></div>,
+}
+
+/** The grid scoped to a root task, which a dropdown above it changes. */
+export const RootTask: Story = {
+    name: 'Root task',
+    render: () => <div style={{ padding: 18 }}><RootTaskGrid /></div>,
 }
 
 /** The same grid over 10,000 generated tasks, up to eight levels deep, as a stress test. */

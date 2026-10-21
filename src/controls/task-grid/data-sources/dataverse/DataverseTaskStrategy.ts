@@ -71,8 +71,9 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._entityName = this._fetchXmlProvider.getEntityName();
         this._entitySetName = metadata.EntitySetName;
         this._primaryIdAttribute = metadata.PrimaryIdAttribute;
-        this._projectLookup = await this._resolveProjectLookup(fetchXml);
-        const webApiRecords = new Map((await this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())).map(record => [record[this._primaryIdAttribute], record]));
+        const [projectLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
+        this._projectLookup = projectLookup;
+        const webApiRecords = new Map(webApiRawRecords.map(record => [record[this._primaryIdAttribute], record]));
         //the FetchXML values win
         const rawData = this._fetchXmlProvider.getRawData().map(record => ({ ...webApiRecords.get(record[this._primaryIdAttribute]), ...record }));
         return { rawData, metadata: metadata as IMemoryProviderEntityMetadata, columns: this._fetchXmlProvider.getColumns() };

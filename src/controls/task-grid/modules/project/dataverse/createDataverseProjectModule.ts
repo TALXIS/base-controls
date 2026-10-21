@@ -20,10 +20,11 @@ export const createDataverseProjectModule = (parameters: IDataverseProjectModule
     const toDate = (value: string | null | undefined) => value ? dayjs(value) : undefined;
 
     return createProjectModule({
-        onLoadProject: async () => {
-            const nameColumn = (await window.Xrm.Utility.getEntityMetadata(entityName, [])).PrimaryNameAttribute;
+        onLoadProject: async taskDatasetControl => {
+            const pcfContext = taskDatasetControl.services.get('pcfContext');
+            const nameColumn = (await pcfContext.utils.getEntityMetadata(entityName, [])).PrimaryNameAttribute;
             const select = [nameColumn, startDateColumn, endDateColumn, ...columns].filter((column): column is string => !!column);
-            const record = await window.Xrm.WebApi.retrieveRecord(entityName, id, `?$select=${select.join(',')}`);
+            const record = await pcfContext.webAPI.retrieveRecord(entityName, id, `?$select=${select.join(',')}`);
             return {
                 id,
                 name: record[nameColumn],

@@ -229,7 +229,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             }
             const previousParentId = record.getValue(parentId)?.[0]?.id?.guid;
             const previousStackRank = record.getValue(stackRank);
-            record.setRawData(rawRecord);
+            //a strategy may return fewer columns than were loaded, such as no linked-entity values
+            record.setRawData({ ...record.getRawData(), ...rawRecord });
             isTreeChanged ||= previousParentId !== record.getValue(parentId)?.[0]?.id?.guid || previousStackRank !== record.getValue(stackRank);
             records.push(record);
         }
@@ -342,13 +343,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     private _resolveCreate(parentId?: string, options?: ICreateTaskOptions): ITaskCreateParams {
-        const siblings = this._tree.structure.getChildren(parentId ?? null);
+        const { structure } = this._tree;
+        const siblings = structure.getChildren(parentId ?? null);
         const recordsMap = this.getRecordsMap();
+        const previousTaskId = options?.previousTaskId;
+        const nextTaskId = options?.nextTaskId;
         return {
             parentRecord: parentId ? recordsMap[parentId] : undefined,
             siblings,
-            previousSibling: options?.previousTaskId ? recordsMap[options.previousTaskId] : undefined,
-            nextSibling: options?.nextTaskId ? recordsMap[options.nextTaskId] : (options?.previousTaskId ? undefined : siblings[0]),
+            previousSibling: previousTaskId ? recordsMap[previousTaskId] : nextTaskId ? structure.getNeighbours(nextTaskId).previous : undefined,
+            nextSibling: nextTaskId ? recordsMap[nextTaskId] : previousTaskId ? structure.getNeighbours(previousTaskId).next : siblings[0],
             data: options?.data,
             fieldMapping: this.getFieldMapping(),
             columns: this.getColumns(),

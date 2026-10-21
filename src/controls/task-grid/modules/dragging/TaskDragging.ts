@@ -349,10 +349,15 @@ export class TaskDragging {
         if (parent) {
             this._expansion.setExpanded(parent.getRecordId(), true);
         }
-        const [targetId, position]: [string, ITaskMovePosition] = previous ? [previous.getRecordId(), 'below']
+        const target: [string, ITaskMovePosition] | undefined = previous ? [previous.getRecordId(), 'below']
             : next ? [next.getRecordId(), 'above']
-            : [parent!.getRecordId(), 'child'];
-        await this._moveTask(record, targetId, position);
+            : parent ? [parent.getRecordId(), 'child']
+            : undefined;
+        if (!target) {
+            this._restoreRows(record);
+            return;
+        }
+        await this._moveTask(record, ...target);
     }
 
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
@@ -370,12 +375,17 @@ export class TaskDragging {
         }
     }
 
+    //AG Grid's siblings leave out hidden and out-of-scope tasks
     private _isUnmoved(record: IRecord, parent?: IRecord, previous?: IRecord, next?: IRecord): boolean {
-        const structure = this._provider.getRecordTree().structure;
-        const neighbours = structure.getNeighbours(record.getRecordId());
-        return structure.getParent(record.getRecordId()) === (parent ?? null)
-            && neighbours.previous === previous
-            && neighbours.next === next;
+        const view = this._provider.getRecordTree().view;
+        const recordId = record.getRecordId();
+        const path = view.getPath(recordId);
+        const parentId = path.length > 1 ? path[path.length - 2] : null;
+        const siblings = view.getChildren(parentId);
+        const index = siblings.findIndex(sibling => sibling.getRecordId() === recordId);
+        return parentId === (parent?.getRecordId() ?? null)
+            && siblings[index - 1] === previous
+            && siblings[index + 1] === next;
     }
 
     //AG Grid reads a row's path again only when told the row was updated

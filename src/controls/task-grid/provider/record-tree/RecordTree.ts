@@ -93,7 +93,7 @@ export class RecordTree implements IRecordTree {
         this.structure = this._createStructure();
     }
 
-    /** Resolves the tree from the provider's records; run after every load and every change to the tree. */
+    /** Resolves the tree from the provider's records. */
     public build(): void {
         const index = this._buildIndex();
         this._index = index;
@@ -323,7 +323,8 @@ export class RecordTree implements IRecordTree {
     private _buildMatchingIds(index: IHierarchyIndex): Set<string> {
         const filtering = this._provider.getFiltering();
         //turning "hide inactive" off leaves an empty expression behind
-        if ((!filtering || filtering.conditions.length === 0) && !this._provider.getSearchQuery()) {
+        const isUnfiltered = !filtering || (filtering.conditions.length === 0 && (filtering.filters ?? []).length === 0);
+        if (isUnfiltered && !this._provider.getSearchQuery()) {
             return new Set(index.records.map(record => record.getRecordId()));
         }
         const provider = this._createBaseProvider(index.records);

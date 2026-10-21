@@ -3876,7 +3876,7 @@ interface IProject<TData = { [key: string]: unknown }> {
 interface IProjectModule extends IDatasetControlModule { }
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
-declare const createProjectModule: <TData>(parameters: { onLoadProject: () => Promise<IProject<TData>> }) => IProjectModule;
+declare const createProjectModule: <TData>(parameters: { onLoadProject: (taskDatasetControl: ITaskDatasetControlRuntime) => Promise<IProject<TData>> }) => IProjectModule;
 
 /** Creating, editing and deleting tasks; goes in TaskDatasetControl's modules. */
 interface ITaskOperationsModule extends IDatasetControlModule { }
