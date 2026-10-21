@@ -1,4 +1,4 @@
-import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
+import { EventEmitter, IColumn } from "@talxis/client-libraries";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
@@ -8,7 +8,6 @@ import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { mergeColumn } from "../provider/mergeColumn";
-import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
 import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
@@ -44,7 +43,6 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this._view = parameters.view;
         const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
         provider.initialize({ fieldMapping, rootTaskId });
-        provider.registerAvailableColumns(this._addPathColumn);
         if (this._view?.data) {
             this._applyView(provider, this._view.data);
         }
@@ -148,13 +146,6 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         const { name, isHidden, dataType, order, visualSizeFactor, isVirtual } = column;
         return { name, isHidden, dataType, order, visualSizeFactor, isVirtual };
     }
-
-    private _addPathColumn = (columns: IColumn[]): void => {
-        if (columns.some(column => column.name === PATH_COLUMN_NAME)) {
-            return;
-        }
-        columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels().getLocalizedString('path'), dataType: DataTypes.Multiple, isVirtual: true, visualSizeFactor: 300 });
-    };
 
     private _addCoreSettings = (settings: ITaskGridSetting[]): void => {
         const provider = this.getProvider();

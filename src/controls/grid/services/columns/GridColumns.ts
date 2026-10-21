@@ -126,6 +126,7 @@ export class GridColumns implements IGridColumnsInternal {
             colId: column.name,
             field: column.name as any,
             headerName: column.displayName,
+            hide
             //the width and the flex are the column layout's
             initialWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
             minWidth: MIN_COLUMN_WIDTH,
