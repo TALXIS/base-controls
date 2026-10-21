@@ -13,6 +13,8 @@ import type { ITaskExpansion } from "../../tree/TaskExpansion";
 const NEVER_MS = 2 ** 31 - 1;
 const DROP_INTO_ON_HOVER_MS = 400;
 const EXPAND_ON_HOVER_MS = 700;
+//AG Grid's default slide trails behind the pointer
+const ROW_SLIDE_MS = 120;
 
 interface IDragStart {
     record: IRecord;
@@ -43,6 +45,8 @@ export class TaskDragging {
     private _hoveredRow?: IRowNode<IRecord>;
     private _dropIntoTimer?: number;
     private _expandTimer?: number;
+    private _isAnimating = false;
+    private _animationTimer?: number;
 
     constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITaskDraggingParameters) {
         this._taskDatasetControl = taskDatasetControl;
@@ -88,7 +92,8 @@ export class TaskDragging {
         result.options.rowDragManaged = true;
         result.options.rowDragInsertDelay = NEVER_MS;
         result.options.rowDragEntireRow = true;
-        result.options.animateRows = true;
+        //only while the other rows make way for a dragged one
+        result.options.animateRows = this._isAnimating;
         result.options.suppressRowDrag = !this._canDrag();
         result.options.isRowValidDropPosition = this._isRowValidDropPosition;
     };
@@ -99,8 +104,7 @@ export class TaskDragging {
                 [`.${TASK_ROW_CLASS_NAMES.dropTarget}`]: { outline: `1px solid ${theme.palette.themePrimary}`, outlineOffset: '-1px' },
                 //above the pinned cells, which AG Grid stacks over the row
                 [`.${TASK_ROW_CLASS_NAMES.dropTarget}::before`]: { content: "''", position: 'absolute', inset: 0, zIndex: 3, backgroundColor: theme.palette.themePrimary, opacity: 0.12, pointerEvents: 'none' },
-                //AG Grid's default slide trails behind the pointer
-                '.ag-row': { transitionDuration: '0.12s' },
+                '.ag-row': { transitionDuration: `${ROW_SLIDE_MS}ms` },
             },
         });
     };
@@ -289,6 +293,7 @@ export class TaskDragging {
     private _onDestroyed = (): void => {
         window.clearTimeout(this._dropIntoTimer);
         window.clearTimeout(this._expandTimer);
+        window.clearTimeout(this._animationTimer);
         this._provider.removeEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
     };
 
@@ -298,6 +303,7 @@ export class TaskDragging {
             return;
         }
         this._dragStart = { record: node.data, pointerX: event.event.clientX, level: node.level, pointerLevel: node.level };
+        this._setAnimating(true);
         if (node.expanded) {
             this._expansion.setExpanded(node.id!, false);
         }
@@ -307,7 +313,10 @@ export class TaskDragging {
     private _onRowDragEnd = (event: RowDragEndEvent<IRecord>): void => {
         const dropInto = this._dropInto;
         this._endDrag();
-        queueMicrotask(() => dropInto ? this._moveInto(event.node, dropInto) : this._moveDroppedRow(event.node));
+        queueMicrotask(async () => {
+            await (dropInto ? this._moveInto(event.node, dropInto) : this._moveDroppedRow(event.node));
+            this._stopAnimating();
+        });
     };
 
     //a drag that ends outside the grid has still moved its row
@@ -315,6 +324,7 @@ export class TaskDragging {
         const start = this._endDrag();
         if (start) {
             this._restoreRows(start.record);
+            this._stopAnimating();
         }
     };
 
@@ -324,6 +334,20 @@ export class TaskDragging {
         this._setHoveredRow(undefined);
         this._setDropInto(undefined);
         return start;
+    }
+
+    private _setAnimating(isAnimating: boolean): void {
+        window.clearTimeout(this._animationTimer);
+        if (this._isAnimating !== isAnimating) {
+            this._isAnimating = isAnimating;
+            this._grid.refreshAgGridOptions();
+        }
+    }
+
+    //after the dropped rows have slid into place
+    private _stopAnimating(): void {
+        window.clearTimeout(this._animationTimer);
+        this._animationTimer = window.setTimeout(() => this._setAnimating(false), ROW_SLIDE_MS);
     }
 
     private async _moveInto(node: IRowNode<IRecord>, parent: IRowNode<IRecord>): Promise<void> {
