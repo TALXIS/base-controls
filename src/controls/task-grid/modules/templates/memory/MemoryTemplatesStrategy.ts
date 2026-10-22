@@ -1,9 +1,9 @@
 import { DataTypes, IMemoryProviderEntityMetadata, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import type { ITaskDataProvider } from "../../../provider";
+import type { ICreateTaskTree, ITaskDataProvider } from "../../../provider";
 import type { ICreateTasksFromTemplateParameters, ICreateTemplateFromTaskParameters, ITemplatesStrategy } from "../Templates";
 
 /** One task of a memory template, with its subtree. */
-export interface IMemoryTemplateTask {
+export interface IMemoryTemplateTask extends ICreateTaskTree {
     /** Column values of the task; its id, parent and position are always the grid's. */
     data?: { [columnName: string]: unknown };
     children?: IMemoryTemplateTask[];
@@ -52,10 +52,7 @@ export class MemoryTemplatesStrategy implements ITemplatesStrategy {
             return;
         }
         const provider = taskDatasetControl.getProvider();
-        const root = await provider.createTask(parentId, { data: { ...template.data, [provider.getFieldMapping().subject]: template.name } });
-        if (root) {
-            await this._createChildren(provider, template.children ?? [], root.getRecordId());
-        }
+        await provider.createTasks([{ data: { ...template.data, [provider.getFieldMapping().subject]: template.name }, children: template.children }], parentId);
     }
 
     public async onCreateTemplateFromTask({ task, taskDatasetControl }: ICreateTemplateFromTaskParameters): Promise<void> {
@@ -64,19 +61,6 @@ export class MemoryTemplatesStrategy implements ITemplatesStrategy {
         const subject = provider.getFieldMapping().subject;
         const { [subject]: name, ...rootData } = data ?? {};
         this._templates.push({ id: crypto.randomUUID(), name: (name as string | null) ?? '', data: rootData, children });
-    }
-
-    //each after the sibling created before it, so the template's order holds
-    private async _createChildren(provider: ITaskDataProvider, tasks: IMemoryTemplateTask[], parentId: string): Promise<void> {
-        let previousTaskId: string | undefined;
-        for (const task of tasks) {
-            const created = await provider.createTask(parentId, { data: task.data, previousTaskId });
-            if (!created) {
-                return;
-            }
-            previousTaskId = created.getRecordId();
-            await this._createChildren(provider, task.children ?? [], previousTaskId);
-        }
     }
 
     //the whole subtree, whatever the view hides

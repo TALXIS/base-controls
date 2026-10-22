@@ -100,6 +100,12 @@ export interface ICreateTaskOptions {
     data?: { [columnName: string]: any };
 }
 
+/** A task to create, with the tasks to create under it. */
+export interface ICreateTaskTree {
+    data?: { [columnName: string]: any };
+    children?: ICreateTaskTree[];
+}
+
 /** What the tasks were loaded with. */
 export interface ITaskLoadResult {
     rawData: IRawRecord[];
@@ -180,6 +186,8 @@ export interface ITaskDataProvider extends IDataProvider {
     isRecordActive(recordId: string): boolean;
     /** Creates a task under `parentId`, first among its siblings unless `options` say otherwise. */
     createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
+    /** Creates the tasks with their subtrees under `parentId`, first among its children, as one creation. */
+    createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null>;
     /** Adds tasks that already exist, such as ones a template created. */
     addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[];
     /** Whether the task was created in this load; it shows whatever the filter. */

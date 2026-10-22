@@ -6,6 +6,8 @@ export interface ITemplatesLabels {
     saveAsTemplate: string;
     searchTemplates: string;
     noTemplates: string;
+    creatingTasksFromTemplate: string;
+    savingTemplate: string;
     /** Titles the dialog an operation on a template failed with. */
     templatesFailed: string;
 }
@@ -17,5 +19,7 @@ export const TEMPLATES_LABELS: ITemplatesLabels = {
     saveAsTemplate: 'Save as template',
     searchTemplates: 'Search templates',
     noTemplates: 'No templates found',
+    creatingTasksFromTemplate: 'Creating tasks from template...',
+    savingTemplate: 'Saving template...',
     templatesFailed: 'The template could not be used.',
 };

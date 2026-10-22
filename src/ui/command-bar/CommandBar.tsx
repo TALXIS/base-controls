@@ -30,7 +30,7 @@ export const CommandBar = (props: ICommandBarProps) => {
     const compacted = (bar?: ICommandBarItemProps[]) => isCompact ? bar?.map(item => item.iconProps && item.iconOnly === undefined ? toIconOnly(item) : item) : bar;
     const barStyles = React.useMemo(() => getCommandBarStyles(align), [align]);
     const themed = React.useCallback(
-        (bar?: ICommandBarItemProps[]) => bar && (getThemedContextualItems(bar, theme) as ICommandBarItemProps[]).map(item => ({
+        (bar?: ICommandBarItemProps[], isInMenu = false) => bar && (getThemedContextualItems(bar, theme, isInMenu) as ICommandBarItemProps[]).map(item => ({
             ...item,
             tooltipHostProps: {
                 ...item.tooltipHostProps,
@@ -50,7 +50,7 @@ export const CommandBar = (props: ICommandBarProps) => {
         styles={(styleProps: ICommandBarStyleProps) => concatStyleSetsWithProps(styleProps, { root: barStyles.root, primarySet: barStyles.primarySet }, styles)}
         items={themed(compacted(items)) ?? []}
         farItems={themed(compacted(farItems))}
-        overflowItems={themed(overflowItems)}
+        overflowItems={themed(overflowItems, true)}
         overflowButtonProps={{ ...overflowButtonProps, menuProps: overflowMenuProps }}
         resizeGroupAs={resizeGroupAs ? composeComponentAs(resizeGroupAs, ObservedResizeGroup) : ObservedResizeGroup} />;
 };

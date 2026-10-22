@@ -3,7 +3,7 @@ import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     strategy: ITaskStrategy;
@@ -155,10 +155,21 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         });
     }
 
+    public async createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null> {
+        return this._execute(async () => {
+            const resolvedParentId = parentId ?? this._rootTaskId;
+            const records = await this._createTaskTrees(tasks, resolvedParentId);
+            if (records.length === 0) {
+                return null;
+            }
+            this._rebuildTree();
+            this.taskEvents.dispatchEvent('onTasksCreated', records, resolvedParentId);
+            return records;
+        });
+    }
+
     public addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[] {
-        const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
-        const records = rawRecords.map(rawData => this.newRecord({ rawData, recordId: rawData[primaryIdAttribute] }));
-        records.forEach(record => this._newTaskIds.add(record.getRecordId()));
+        const records = this._addRecords(rawRecords);
         if (records.length > 0) {
             this._rebuildTree();
             this.taskEvents.dispatchEvent('onTasksCreated', records, parentId);
@@ -334,6 +345,30 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const result = [...columns];
         this._availableColumnsHooks.apply(result);
         return result;
+    }
+
+    private _addRecords(rawRecords: IRawRecord[]): IRecord[] {
+        const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
+        const records = rawRecords.map(rawData => this.newRecord({ rawData, recordId: rawData[primaryIdAttribute] }));
+        records.forEach(record => this._newTaskIds.add(record.getRecordId()));
+        return records;
+    }
+
+    //the tree is built after each task so its children are placed under it
+    private async _createTaskTrees(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[]> {
+        const created: IRecord[] = [];
+        let previousTaskId: string | undefined;
+        for (const task of tasks) {
+            const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId, { data: task.data, previousTaskId }));
+            if (!rawRecord) {
+                break;
+            }
+            const [record] = this._addRecords([rawRecord]);
+            this._tree.build();
+            previousTaskId = record.getRecordId();
+            created.push(record, ...await this._createTaskTrees(task.children ?? [], previousTaskId));
+        }
+        return created;
     }
 
     private _rebuildTree(): void {

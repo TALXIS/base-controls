@@ -77,11 +77,11 @@ export class Templates implements ITemplates {
     }
 
     public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<void> {
-        await this._run(() => this._strategy.onCreateTasksFromTemplate({ templateId, parentId, taskDatasetControl: this._taskDatasetControl }));
+        await this._run('creatingTasksFromTemplate', () => this._strategy.onCreateTasksFromTemplate({ templateId, parentId, taskDatasetControl: this._taskDatasetControl }));
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
-        await this._run(async () => this._strategy.onCreateTemplateFromTask?.({ task, taskDatasetControl: this._taskDatasetControl }));
+        await this._run('savingTemplate', async () => this._strategy.onCreateTemplateFromTask?.({ task, taskDatasetControl: this._taskDatasetControl }));
     }
 
     public destroy(): void {
@@ -162,12 +162,17 @@ export class Templates implements ITemplates {
     }
 
     //the commands do not await them
-    private async _run(operation: () => Promise<void>): Promise<void> {
+    private async _run(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<void>): Promise<void> {
+        const provider = this._taskDatasetControl.getProvider();
+        provider.setLoading(true, this._labels.getLocalizedString(loadingLabel));
         try {
             await operation();
         }
         catch (error) {
             await this._taskDatasetControl.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('templatesFailed'), details: ErrorHelper.getMessageFromError(error) });
+        }
+        finally {
+            provider.setLoading(false);
         }
     }
 }
