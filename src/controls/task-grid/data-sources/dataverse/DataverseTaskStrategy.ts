@@ -1,4 +1,4 @@
-import { FetchXmlDataProvider, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
+import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { StackRank } from "@utils/stack-rank";
 import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
@@ -79,8 +79,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return { rawData, metadata: metadata as IMemoryProviderEntityMetadata, columns: this._fetchXmlProvider.getColumns() };
     }
 
-    public async onGetAvailableColumns(): Promise<IColumn[]> {
-        return this._fetchXmlProvider.getAvailableColumns();
+    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+        return this._fetchXmlProvider.getAvailableColumns(options);
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {

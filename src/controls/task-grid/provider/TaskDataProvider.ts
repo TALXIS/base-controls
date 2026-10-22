@@ -1,4 +1,4 @@
-import { EventEmitter, GetDataEvent, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
+import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
 import { IRecordTree, RecordTree } from "./record-tree";
@@ -114,8 +114,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this.getRecordsMap()[recordId]?.getValue(this.getFieldMapping().stateCode) == ACTIVE_STATE_CODE;
     }
 
-    public async onGetAvailableColumns(): Promise<IColumn[]> {
-        return this._withHookColumns(await this._strategy.onGetAvailableColumns());
+    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+        const columns = await this._strategy.onGetAvailableColumns(options);
+        //the hooks add columns of the tasks, such as Path
+        return this._isRelatedEntity(options) ? columns : this._withHookColumns(columns);
     }
 
     public registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void {
@@ -299,6 +301,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
+    }
+
+    private _isRelatedEntity(options?: IAvailableColumnOptions): boolean {
+        return !!options?.entityName && options.entityName !== this.getEntityName();
     }
 
     private _withHookColumns(columns: IColumn[]): IColumn[] {

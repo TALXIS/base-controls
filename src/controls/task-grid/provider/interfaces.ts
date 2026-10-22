@@ -1,4 +1,4 @@
-import type { IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlResolvedView } from "@controls/dataset-control";
 import type { IEventSubscriber } from "@utils";
 import type { IRecordTree } from "./record-tree";
@@ -111,8 +111,8 @@ export interface ITaskLoadResult {
 export interface ITaskStrategy {
     /** Loads every task of the view the provider was created for. */
     onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult>;
-    /** The columns Edit columns offers. */
-    onGetAvailableColumns(): Promise<IColumn[]>;
+    /** The columns Edit columns offers: the tasks' own, or those of `options.entityName` when given. */
+    onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
     onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
     /** @returns The created record, or `null` when the user cancelled. */
     onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;

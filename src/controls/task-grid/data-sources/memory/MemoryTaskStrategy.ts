@@ -1,4 +1,4 @@
-import { IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
@@ -37,7 +37,10 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         return { rawData: structuredClone(this._store), metadata: this._parameters.metadata, columns: this._parameters.columns };
     }
 
-    public async onGetAvailableColumns(): Promise<IColumn[]> {
+    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+        if (options?.entityName && options.entityName !== this._parameters.metadata.LogicalName) {
+            return [];
+        }
         return this._parameters.columns.map(column => ({ ...column, isHidden: false }));
     }
 
