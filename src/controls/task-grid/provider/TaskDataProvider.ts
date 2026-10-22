@@ -303,10 +303,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     private async _load(): Promise<void> {
         const { rawData, metadata, columns } = await this._strategy.onLoad(this);
-        await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
-        this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
+        //the handlers read which entity the tasks are
         this.setMetadata(metadata);
         this.setEntityName(metadata.LogicalName ?? '');
+        await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
+        this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
         this.setDataSource(rawData);
         //what was set before the load may have lacked definitions the catalogue now has
         const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));

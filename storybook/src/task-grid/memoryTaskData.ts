@@ -1,6 +1,6 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { LexoRank } from "lexorank";
-import { personRef, tagRef } from "./memoryLookupManyData";
+import { personRef, tagRef, teamRefs } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────
 
@@ -105,18 +105,10 @@ export const COLUMNS: IColumn[] = [
         displayName: 'Assigned To',
         visualSizeFactor: 150,
         metadata: {
-            LookupMany: true,
             //declared empty on purpose: a lookup can only be filtered when it is bound to an actual
             //Dataverse entity, and these candidates are local fixtures
             SupportedFilterConditionOperators: [],
         },
-        controls: [{
-            name: 'PeopleLookupMany',
-            appliesTo: 'both' as const,
-            bindings: {
-                ImageUrlPropertyName: { value: 'imageurl', type: 'SingleLine.Text' as const },
-            },
-        }],
     },
     {
         name: 'tags',
@@ -124,18 +116,19 @@ export const COLUMNS: IColumn[] = [
         displayName: 'Tags',
         visualSizeFactor: 200,
         metadata: {
-            LookupMany: true,
             //declared empty on purpose: a lookup can only be filtered when it is bound to an actual
             //Dataverse entity, and these candidates are local fixtures
             SupportedFilterConditionOperators: [],
         },
-        controls: [{
-            name: 'ColorfulLookupMany',
-            appliesTo: 'both' as const,
-            bindings: {
-                ColorPropertyName: { value: 'color', type: 'SingleLine.Text' as const },
-            },
-        }],
+    },
+    {
+        name: 'teams',
+        dataType: 'Lookup.Simple',
+        displayName: 'Teams',
+        visualSizeFactor: 180,
+        metadata: {
+            SupportedFilterConditionOperators: [],
+        },
     },
     // ── Native (hidden) columns ──────────────────────────────────────────────
     { name: PRIMARY_ID, dataType: 'SingleLine.Text', displayName: 'ID', visualSizeFactor: 280, isHidden: true },
@@ -1300,6 +1293,10 @@ const DEEP_TASKS: IRawRecord[] = [
 ];
 
 TASKS.push(...DEEP_TASKS);
+
+for (const task of TASKS) {
+    task.teams = teamRefs(task.tags as ComponentFramework.EntityReference[]);
+}
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);
 

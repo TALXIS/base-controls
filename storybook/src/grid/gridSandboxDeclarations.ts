@@ -4017,6 +4017,74 @@ declare const createIndexedDbCustomColumnsModule: (parameters: {
     labels?: { [key: string]: string };
 }) => IDatasetControlModule;
 
+/** How a lookup-many column draws its records. */
+type LookupManyAppearance =
+    | { type: 'plain' }
+    | { type: 'colorful'; /** The record field holding each pill's colour; color when left out. */ colorPropertyName?: string }
+    | { type: 'people'; /** The record field holding each person's picture; imageurl when left out. */ imageUrlPropertyName?: string };
+
+/** One lookup-many column, as the module's columns maps it. */
+interface ILookupManyColumn {
+    /** The entity the column's records are of. */
+    entityName: string;
+    /** Plain when left out. */
+    appearance?: LookupManyAppearance;
+}
+
+/** What a lookup-many module is handed to create a column's options provider. */
+interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn = ILookupManyColumn> {
+    record: IRecord;
+    column: IColumn;
+    /** What the module's columns maps the column to. */
+    settings: TColumn;
+    taskDatasetControl: ITaskDatasetControlRuntime;
+}
+
+/** Strings of the lookup-many picker. */
+type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string }>;
+
+/** The task columns in columns, drawn as pills and picked in a pop-out editor. */
+declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {
+    /** The lookup-many columns by name. */
+    columns: { [columnName: string]: TColumn };
+    /** A provider over the records the column can take; undefined leaves the cell read-only. */
+    onCreateOptionsProvider: (parameters: ILookupManyOptionsParameters<TColumn>) => IDataProvider | undefined;
+    labels?: LookupManyLabels;
+}) => IDatasetControlModule;
+
+/** Lookup-many columns over records held in memory; their values stay on the tasks. */
+declare const createMemoryLookupManyModule: (parameters: {
+    /** The sources by entity name, matched against each column's entityName. */
+    sources: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
+    columns: { [columnName: string]: ILookupManyColumn };
+    labels?: LookupManyLabels;
+}) => IDatasetControlModule;
+
+/** One Dataverse lookup-many column: the relationship it is reached through, and what it offers. */
+interface IDataverseLookupManyColumn extends ILookupManyColumn {
+    /** Either side's navigation property of the 1:N or N:N relationship. */
+    navigationPropertyName: string;
+    /** The related records' columns to read, comma separated. */
+    select?: string;
+    /** Set when the relationship goes through an intersection entity of your own. */
+    customIntersection?: { navigationPropertyName: string };
+    /** Liquid FetchXML over task, project and currentRecord for the records offered; read-only without it. */
+    fetchXml?: string;
+}
+
+/** Lookup-many columns of Dataverse tasks, loaded and saved through their relationships. */
+declare const createDataverseLookupManyModule: (parameters: {
+    columns: { [columnName: string]: IDataverseLookupManyColumn };
+    /** The record the grid sits on, as currentRecord in a column's FetchXML. */
+    sourceRecord?: any;
+    labels?: LookupManyLabels;
+}) => IDatasetControlModule;
+
+/** The people, tags and teams the sample tasks' lookup-many columns pick from. */
+declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
+/** The sample tasks' lookup-many columns, as the module maps them. */
+declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
+
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */

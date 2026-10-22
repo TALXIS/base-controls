@@ -1,4 +1,5 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
+import type { ILookupManyColumn } from "@talxis/base-controls";
 
 // ─── People entity ────────────────────────────────────────────────────────────
 
@@ -146,6 +147,50 @@ export const TAGS: IRawRecord[] = [
     { [TAGS_PRIMARY_ID]: '00020087-0000-0000-0000-000000000000', name: 'workshop',       color: C.docs      },
 ];
 
+// ─── Teams entity ─────────────────────────────────────────────────────────────
+
+export const TEAMS_ENTITY_NAME = 'mem_team';
+export const TEAMS_PRIMARY_ID = 'mem_teamid';
+
+export const TEAMS_METADATA: IMemoryProviderEntityMetadata = {
+    PrimaryIdAttribute: TEAMS_PRIMARY_ID,
+    PrimaryNameAttribute: 'name',
+    LogicalName: TEAMS_ENTITY_NAME,
+    QuickFindColumns: ['name'],
+};
+
+export const TEAMS_COLUMNS: IColumn[] = [
+    { name: 'name', dataType: 'SingleLine.Text', displayName: 'Name', visualSizeFactor: 200, isPrimary: true },
+];
+
+export const TEAMS: IRawRecord[] = ['Design', 'Frontend', 'Backend', 'Platform', 'Quality', 'Content', 'Security', 'Data']
+    .map((name, index) => ({ [TEAMS_PRIMARY_ID]: `0003000${index + 1}-0000-0000-0000-000000000000`, name }));
+
+//the team that owns the work a tag describes
+const TEAM_BY_TAG: { [tag: string]: string } = {
+    design: 'Design', ux: 'Design', ui: 'Design', wireframe: 'Design', research: 'Design', 'design-system': 'Design',
+    frontend: 'Frontend', react: 'Frontend', 'react-native': 'Frontend', mobile: 'Frontend', ios: 'Frontend', android: 'Frontend',
+    backend: 'Backend', api: 'Backend', database: 'Backend', payments: 'Backend', billing: 'Backend', catalog: 'Backend', auth: 'Backend',
+    devops: 'Platform', infrastructure: 'Platform', kubernetes: 'Platform', cloud: 'Platform', networking: 'Platform', 'ci-cd': 'Platform', monitoring: 'Platform',
+    testing: 'Quality', qa: 'Quality', performance: 'Quality',
+    content: 'Content', seo: 'Content', docs: 'Content', training: 'Content',
+    security: 'Security', compliance: 'Security', gdpr: 'Security', audit: 'Security',
+    analytics: 'Data', data: 'Data', etl: 'Data', reports: 'Data', dashboard: 'Data',
+};
+
+export const LOOKUP_MANY_SOURCES = {
+    [PEOPLE_ENTITY_NAME]: { records: PEOPLE, metadata: PEOPLE_METADATA, columns: PEOPLE_COLUMNS },
+    [TAGS_ENTITY_NAME]: { records: TAGS, metadata: TAGS_METADATA, columns: TAGS_COLUMNS },
+    [TEAMS_ENTITY_NAME]: { records: TEAMS, metadata: TEAMS_METADATA, columns: TEAMS_COLUMNS },
+};
+
+/** The sample tasks' lookup-many columns, as the module maps them. */
+export const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn } = {
+    assignedto: { entityName: PEOPLE_ENTITY_NAME, appearance: { type: 'people' } },
+    tags: { entityName: TAGS_ENTITY_NAME, appearance: { type: 'colorful' } },
+    teams: { entityName: TEAMS_ENTITY_NAME },
+};
+
 // ─── Reference helpers ────────────────────────────────────────────────────────
 
 const _personByName = new Map<string, IRawRecord>(PEOPLE.map(p => [p.name as string, p]));
@@ -173,4 +218,13 @@ export function tagRef(slug: string): ComponentFramework.EntityReference {
         etn: TAGS_ENTITY_NAME,
         rawData:    { color: t.color },
     } as any
+}
+
+/** The teams owning the work the tags describe, as EntityReferences. */
+export function teamRefs(tags: ComponentFramework.EntityReference[]): ComponentFramework.EntityReference[] {
+    const names = [...new Set(tags.map(tag => TEAM_BY_TAG[tag.name as string]).filter(Boolean))];
+    return names.map(name => {
+        const team = TEAMS.find(candidate => candidate.name === name)!;
+        return { id: { guid: team[TEAMS_PRIMARY_ID] as string }, name, etn: TEAMS_ENTITY_NAME } as ComponentFramework.EntityReference;
+    });
 }

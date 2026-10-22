@@ -15,7 +15,7 @@ const CORE_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto')),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams')),
     taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
     taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
@@ -38,6 +38,7 @@ const GridExample = () => {
             enableEditing: true,
             enableDeletion: true,
         }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
     ], [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
