@@ -31,6 +31,13 @@ const GridExample = () => {
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskDatasetControl').getCurrentViewData() }),
         createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
         createTaskDraggingModule(),
+        createIndexedDbCustomColumnsModule({
+            databaseName: 'devTasks.customColumns',
+            columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
+            enableCreation: true,
+            enableEditing: true,
+            enableDeletion: true,
+        }),
     ], [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })

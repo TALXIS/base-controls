@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import type { ICommandBarItemProps } from "@legacy";
 import { EditColumnsPanelUiComponents, IEditColumnsPanelUiComponents } from "./components";
 import { getEditColumnsPanelUiStyles } from "./styles";
 
@@ -16,6 +17,8 @@ export interface IEditColumnsPanelUiProps {
     onSave: () => void;
     /** Called by the cancel button and on closing the panel. */
     onDismiss: () => void;
+    /** Drawn above the selectors. */
+    commands?: ICommandBarItemProps[];
     /** The selectors and the column list. */
     children?: React.ReactNode;
     /** Replacements for its slots. */
@@ -26,12 +29,22 @@ export interface IEditColumnsPanelUiProps {
 export const EditColumnsPanel = (props: IEditColumnsPanelUiProps) => {
     const components = { ...EditColumnsPanelUiComponents, ...props.components };
     const styles = useMemo(() => getEditColumnsPanelUiStyles(), []);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    //a panel or dialog opened from the editor sits in a layer of its own
+    const onOuterClick = (event?: React.MouseEvent<HTMLDivElement>) => {
+        const layer = (event?.target as HTMLElement | undefined)?.closest('.ms-Layer');
+        if (!layer || layer.contains(contentRef.current)) {
+            props.onDismiss();
+        }
+    };
 
     return components.onRenderPanel({
         headerText: props.title,
         isOpen: true,
         //Escape would drop the edit without asking
         onDismiss: event => (event as KeyboardEvent | undefined)?.key === 'Escape' ? event?.preventDefault() : props.onDismiss(),
+        onOuterClick,
         onRenderFooterContent: () => components.onRenderFooter({
             saveText: props.saveText,
             cancelText: props.cancelText,
@@ -39,8 +52,8 @@ export const EditColumnsPanel = (props: IEditColumnsPanelUiProps) => {
             onSave: props.onSave,
             onCancel: props.onDismiss,
         }),
-        children: <div className={styles.content}>
-            {components.onRenderCommandBar({ items: [] })}
+        children: <div ref={contentRef} className={styles.content}>
+            {components.onRenderCommandBar({ items: props.commands ?? [] })}
             {props.children}
         </div>,
     });

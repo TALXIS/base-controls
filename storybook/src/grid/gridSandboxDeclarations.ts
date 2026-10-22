@@ -3972,6 +3972,51 @@ declare const createTaskDraggingModule: (parameters?: {
     onTaskMoved?(params: any): void;
 }) => IDatasetControlModule;
 
+/** Where custom column definitions and values are kept. */
+interface ICustomColumnsStrategy {
+    onLoadColumns(): Promise<IColumn[]>;
+    onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<any>;
+    onCreateColumn(): Promise<string | null>;
+    onUpdateColumn(columnName: string): Promise<string | null>;
+    onDeleteColumn(columnName: string): Promise<string | null>;
+}
+
+/** The user's own task columns, loaded on every mount before the tasks. */
+declare const createCustomColumnsModule: (parameters: {
+    strategy: ICustomColumnsStrategy;
+    /** The Add custom column command in Edit columns. */
+    enableCreation?: boolean;
+    /** The edit command on each custom column in Edit columns. */
+    enableEditing?: boolean;
+    /** The delete command on each custom column in Edit columns. */
+    enableDeletion?: boolean;
+    labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
+}) => IDatasetControlModule;
+
+/** What the IndexedDB form asks for a custom column. */
+interface ICustomColumnDefinition {
+    displayName: string;
+    dataType: string;
+    isRequired?: boolean;
+    /** Decimal places, for a decimal or currency column. */
+    precision?: number;
+    /** The labels of a choice column's options, in order. */
+    options?: string[];
+}
+
+/** The user's own task columns kept in the browser's IndexedDB, defined in a form drawn over the control. */
+declare const createIndexedDbCustomColumnsModule: (parameters: {
+    /** The IndexedDB database the columns and their values are kept in; one per control. */
+    databaseName: string;
+    /** The columns a new database starts with. */
+    columns?: ICustomColumnDefinition[];
+    enableCreation?: boolean;
+    enableEditing?: boolean;
+    enableDeletion?: boolean;
+    labels?: { [key: string]: string };
+}) => IDatasetControlModule;
+
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */

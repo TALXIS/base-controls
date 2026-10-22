@@ -47,13 +47,13 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
         provider.initialize({ fieldMapping, rootTaskId });
         provider.registerAvailableColumns(this._addPathColumn);
-        //after the Path column is available, which a user view may keep
+        //modules waiting for it add their columns, which a user view may keep
+        this.services.register('provider', () => provider);
         if (parameters.view) {
             const definition = await parameters.view.resolve(provider);
             this._view = { ...parameters.view, ...definition };
             this._applyView(provider, definition.data ?? {});
         }
-        this.services.register('provider', () => provider);
         return { provider };
     }
 

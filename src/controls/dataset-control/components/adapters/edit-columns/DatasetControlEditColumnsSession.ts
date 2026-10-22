@@ -43,11 +43,21 @@ export class DatasetControlEditColumnsSession {
         return this._provider.getMetadata()?.DisplayCollectionName;
     }
 
-    /** The columns of the current scope; `[]` when the load threw. */
+    /** The columns of the current scope, fetched anew; `[]` when the load threw. */
     public async getAvailableColumns(query?: string): Promise<IColumn[]> {
         const scope = this._scope;
         const columns = await this._load(() => this._provider.getAvailableColumns(scope ? { entityName: scope.relatedEntityName } : undefined));
         return query ? columns.filter(column => this._matches(column.displayName, query)) : columns;
+    }
+
+    /** Gives the chosen columns the provider's current definitions, keeping their place and width. */
+    public async refreshColumns(): Promise<void> {
+        const definitions = new Map((await this._load(() => this._provider.getAvailableColumns())).map(column => [column.name, column]));
+        this._columns = this._columns.map(column => {
+            const definition = definitions.get(column.name);
+            return definition ? { ...column, displayName: definition.displayName, dataType: definition.dataType, metadata: definition.metadata } : column;
+        });
+        this.events.dispatchEvent('onColumnsChanged');
     }
 
     /** Whether the provider offers related entities to add columns from; false until they have loaded. */

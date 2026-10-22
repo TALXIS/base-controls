@@ -23,7 +23,7 @@ export interface IEditColumnsPanelUiComponents {
     onRenderPanel: (props: IPanelProps & { children?: React.ReactNode }) => JSX.Element | null;
     /** The save and cancel buttons. */
     onRenderFooter: (props: IEditColumnsPanelFooterProps) => JSX.Element | null;
-    /** Above the selectors; empty, and so not drawn, unless an override adds items. */
+    /** Above the selectors; not drawn without items. */
     onRenderCommandBar: (props: ICommandBarProps) => JSX.Element | null;
 }
 

@@ -85,6 +85,8 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
         loadOptions={query => props.onLoadOptions(query)}
         onInputChange={onInputChange}
         onKeyDown={event => event.key === 'Enter' && ref.current?.openMenu('first')}
+        //what the provider offers can change while the editor is open
+        onMenuOpen={loadDefaultOptions}
         onChange={onChange}
         components={props.components} />;
 };

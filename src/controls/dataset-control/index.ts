@@ -39,7 +39,7 @@ export type { IQuickFindProps, IDatasetControlQuickFind, IDatasetControlQuickFin
 export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotifications, IDatasetControlNotificationsEvents } from './components/adapters/notifications';
 export type { IPaginationProps, IDatasetControlPagination, IDatasetControlPaginationEvents } from './components/adapters/pagination';
 export type { IPageSizeSwitcherProps, IDatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents, IDatasetControlRecordRange } from './components/adapters/page-size-switcher';
-export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumns, IDatasetControlEditColumnsEvents } from './components/adapters/edit-columns';
+export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumns, IDatasetControlEditColumnsEvents, EditColumnsCommandsHook, EditColumnsColumnCommandsHook, DatasetControlEditColumnsSession } from './components/adapters/edit-columns';
 export * from './components/ui';
 export {
     ContainerUiComponents, SkeletonUiComponents, HeaderUiComponents, BodyUiComponents, FooterUiComponents, ViewSwitcherUiComponents,

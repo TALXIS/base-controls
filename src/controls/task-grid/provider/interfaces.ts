@@ -152,6 +152,15 @@ export interface ITaskDataProviderInitializeParameters {
 /** Changes the columns Edit columns offers, in place. */
 export type TaskAvailableColumnsHook = (columns: IColumn[]) => void;
 
+/** Loads and saves columns whose values are kept apart from the tasks, such as custom columns. */
+export interface ITaskColumnHandler {
+    /** Whether the handler loads and saves the column. */
+    isHandledColumn(columnName: string): boolean;
+    /** The handled columns' values of these tasks, by task id and column name. */
+    onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
+}
+
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     /** Takes the control's field mapping and root task before the provider loads. */
@@ -185,4 +194,6 @@ export interface ITaskDataProvider extends IDataProvider {
     updateTaskData(rawRecords: IRawRecord[]): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
+    /** Loads and saves the columns the handler claims in place of the strategy. */
+    registerColumnHandler(handler: ITaskColumnHandler): () => void;
 }

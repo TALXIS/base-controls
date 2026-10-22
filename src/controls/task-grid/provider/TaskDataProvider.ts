@@ -3,7 +3,7 @@ import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     strategy: ITaskStrategy;
@@ -22,6 +22,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _newTaskIds = new Set<string>();
     private _columnCatalogue = new Map<string, IColumn>();
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
+    private _columnHandlers: ITaskColumnHandler[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
     public readonly taskEvents = new EventEmitter<ITaskDataProviderEvents>();
@@ -124,12 +125,21 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._availableColumnsHooks.register(hook, priority);
     }
 
+    public registerColumnHandler(handler: ITaskColumnHandler): () => void {
+        this._columnHandlers.push(handler);
+        return () => this._columnHandlers = this._columnHandlers.filter(registered => registered !== handler);
+    }
+
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return this._strategy.onGetAvailableRelatedColumns();
     }
 
     public onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        return this._strategy.onSaveRecord(record);
+        //tasks save as the user edits, one field at a time
+        const dirtyField = record.getFields().find(field => field.isDirty());
+        const column = dirtyField?.getColumn();
+        const handler = column && this._columnHandlers.find(handler => handler.isHandledColumn(column.name));
+        return handler ? handler.onSaveValue(record, column, dirtyField!.getValue()) : this._strategy.onSaveRecord(record);
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
@@ -293,6 +303,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     private async _load(): Promise<void> {
         const { rawData, metadata, columns } = await this._strategy.onLoad(this);
+        await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
         this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
         this.setMetadata(metadata);
         this.setEntityName(metadata.LogicalName ?? '');
@@ -301,6 +312,17 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
+    }
+
+    //the strategy never returns these, so later task updates keep what is merged here
+    private async _loadHandledValues(rawData: IRawRecord[], primaryIdAttribute: string): Promise<void> {
+        const taskIds = rawData.map(rawRecord => rawRecord[primaryIdAttribute]);
+        const valueMaps = await Promise.all(this._columnHandlers.map(handler => handler.onLoadValues(taskIds)));
+        for (const rawRecord of rawData) {
+            for (const values of valueMaps) {
+                Object.assign(rawRecord, values.get(rawRecord[primaryIdAttribute]));
+            }
+        }
     }
 
     private _isRelatedEntity(options?: IAvailableColumnOptions): boolean {

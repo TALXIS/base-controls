@@ -51,6 +51,21 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 | \`save()\` | Closes the editor and mounts the control anew with the columns, clearing the selection. |
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
+| \`getSession()\` | The edit in progress, while the editor is open. |
+| \`registerCommands(hook, priority?)\` | Adds commands above the pickers: \`hook(commands, session)\` changes the Fluent \`ICommandBarItemProps\` in place. Returns a function that removes it. |
+| \`registerColumnCommands(hook, priority?)\` | Adds commands to each chosen column: \`hook(commands, column, session)\`, with Remove first. A column's commands act on mouse up. |
+
+## Add your own commands
+
+A module adds what it needs through the two hooks, such as a command that creates a column:
+
+\`\`\`ts
+control.parts.whenAvailable('editColumns', editColumns => editColumns.registerCommands((commands, session) => {
+    commands.push({ key: 'addColumn', text: 'Add column', iconProps: { iconName: 'Add' }, onClick: () => { addColumn(session) } })
+}))
+\`\`\`
+
+The session holds the edit until it is saved, changed through \`addColumn\` and \`removeColumn\`. The picker fetches the provider's available columns each time it opens. After the provider's columns change, \`session.refreshColumns()\` gives the chosen ones their current definitions.
 `
 
 const meta = {

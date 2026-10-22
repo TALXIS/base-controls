@@ -85,6 +85,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             isSaveDisabled={session.getColumns().length === 0}
             onSave={() => editColumns.save()}
             onDismiss={() => editColumns.close()}
+            commands={editColumns.getCommands(session)}
             components={components.panel}>
             <ErrorBoundary error={session.getError()} onRetry={retry} components={components.errorMessage}>
                 {session.hasScopes() && <DatasetControlUi.EditColumnsScopeSelector
@@ -115,7 +116,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     column,
                     text: column.displayName ?? labels.getLocalizedString('unnamed'),
                     //dnd-kit swallows the click, so the remove button acts on mouse up
-                    commands: [{ key: 'remove', iconProps: { iconName: 'Cancel' }, onMouseUp: () => session.removeColumn(column.name) }],
+                    commands: editColumns.getColumnCommands(column, session, { key: 'remove', iconProps: { iconName: 'Cancel' }, onMouseUp: () => session.removeColumn(column.name) }),
                 }))}
                 scrollToName={addedColumn?.name}
                 onMove={(name, targetName) => session.moveColumn(name, targetName)}
