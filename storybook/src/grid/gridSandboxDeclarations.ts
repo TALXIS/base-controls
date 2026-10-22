@@ -3976,8 +3976,6 @@ declare const createTaskDraggingModule: (parameters?: {
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
     Settings: (props: {}) => JSX.Element;
-    /** DatasetControl.Notifications, also saying when new tasks are shown regardless of the filter. */
-    Notifications: IDatasetControlNamespace['Notifications'];
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
 };

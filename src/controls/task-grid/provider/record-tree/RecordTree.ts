@@ -15,8 +15,6 @@ export interface IRecordTreeView {
     getPath(recordId: string): string[];
     /** Whether the record itself matches the filter and quick find, or is a new task. */
     isMatching(recordId: string): boolean;
-    /** The new tasks shown although the filter or quick find does not match them. */
-    getForcedIds(): string[];
     getCount(): number;
     /** Every record the view shows, in the order it shows them. */
     getOrderedIds(): string[];
@@ -56,7 +54,6 @@ interface IHierarchyIndex {
 interface IViewProjection {
     childrenByParent: Map<string | null, IRecord[]>;
     matchingIds: Set<string>;
-    forcedIds: string[];
     orderedIds: string[];
 }
 
@@ -73,7 +70,6 @@ const EMPTY_INDEX: IHierarchyIndex = {
 const EMPTY_PROJECTION: IViewProjection = {
     childrenByParent: new Map(),
     matchingIds: new Set(),
-    forcedIds: [],
     orderedIds: [],
 };
 
@@ -102,9 +98,9 @@ export class RecordTree implements IRecordTree {
         this._patchRecordPaths(index);
         this._sortChildren(index, this._buildSortingMap(index));
         const matchingIds = this._buildMatchingIds(index);
-        const forcedIds = index.records.map(record => record.getRecordId()).filter(recordId => this._provider.isNewTask(recordId) && !matchingIds.has(recordId));
-        forcedIds.forEach(recordId => matchingIds.add(recordId));
-        this._projection = this._project(index, matchingIds, forcedIds);
+        //a new task stays shown whatever the filter
+        index.records.map(record => record.getRecordId()).filter(recordId => this._provider.isNewTask(recordId)).forEach(recordId => matchingIds.add(recordId));
+        this._projection = this._project(index, matchingIds);
         this._isBuilt = true;
     }
 
@@ -118,7 +114,6 @@ export class RecordTree implements IRecordTree {
             hasChildren: recordId => (this._projection.childrenByParent.get(recordId)?.length ?? 0) > 0,
             getPath: recordId => this._getPath(recordId),
             isMatching: recordId => this._projection.matchingIds.has(recordId),
-            getForcedIds: () => this._projection.forcedIds,
             getCount: () => this._projection.orderedIds.length,
             getOrderedIds: () => this._projection.orderedIds,
         };
@@ -272,7 +267,7 @@ export class RecordTree implements IRecordTree {
         index.records.sort(byDisplayOrder);
     }
 
-    private _project(index: IHierarchyIndex, matchingIds: Set<string>, forcedIds: string[]): IViewProjection {
+    private _project(index: IHierarchyIndex, matchingIds: Set<string>): IViewProjection {
         const { records, childrenByParent, unreachable } = index;
 
         //a branch stays while it or anything under it matches
@@ -307,7 +302,6 @@ export class RecordTree implements IRecordTree {
         return {
             childrenByParent: visibleChildrenByParent,
             matchingIds,
-            forcedIds,
             orderedIds: scopedRecords.map(record => record.getRecordId()),
         };
     }

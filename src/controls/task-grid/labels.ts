@@ -5,8 +5,6 @@ export interface ITaskGridLabels {
     hideInactiveTasks: string;
     expandLevel: string;
     collapseLevel: string;
-    /** Shown while new tasks the filter or quick find does not match are shown anyway. */
-    newTasksShown: string;
     /** The task table has several lookups to the project's table, listed in `{{ columns }}`. */
     projectLookupAmbiguous: string;
     /** The virtual column listing a task's ancestors. */
@@ -33,7 +31,6 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     hideInactiveTasks: 'Hide inactive tasks',
     expandLevel: 'Expand one level',
     collapseLevel: 'Collapse one level',
-    newTasksShown: 'New tasks are shown regardless of the filter.',
     projectLookupAmbiguous: 'Several task columns link to the project ({{ columns }}); filter the FetchXML by one of them.',
     path: 'Path',
     new: 'New',
