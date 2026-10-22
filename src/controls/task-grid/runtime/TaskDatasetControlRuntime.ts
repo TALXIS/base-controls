@@ -1,4 +1,6 @@
 import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
+import type { IRibbonCommand } from "@controls/ribbon";
+import { ErrorHelper } from "@utils/error-handling";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
@@ -6,7 +8,7 @@ import type { IGrid, IGridModule } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../services";
 import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
-import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
@@ -27,6 +29,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
+    private _unregisterCommands?: () => void;
 
     constructor(parameters: ITaskDatasetControlRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
@@ -37,6 +40,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this._settingsHooks.register(this._addCoreSettings);
         //ahead of the modules, which attach to the grid after the tree
         datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this, state: datasetControl.getViewStateStore() }));
+        datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
@@ -92,6 +96,56 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         await this.execute(() => this.getProvider().openTasks(taskIds));
     }
 
+    public isCreationEnabled(): boolean {
+        return !!this._onGetProps().enableCreation;
+    }
+
+    public isEditingEnabled(): boolean {
+        return !!this._onGetProps().enableEditing;
+    }
+
+    public isDeletionEnabled(): boolean {
+        return !!this._onGetProps().enableDeletion;
+    }
+
+    public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
+        if (this.isCreationEnabled()) {
+            await this.execute(() => this.getProvider().createTask(parentId, options));
+        }
+    }
+
+    public async deleteTasks(taskIds: string[]): Promise<void> {
+        if (!this.isDeletionEnabled()) {
+            return;
+        }
+        const navigation = this.services.get('pcfContext').navigation;
+        const labels = this.getLabels();
+        const provider = this.getProvider();
+        const { deletableTaskIds, refusedTaskIds } = provider.getDeletion(taskIds);
+        if (deletableTaskIds.length === 0) {
+            await navigation.openErrorDialog({ message: labels.getLocalizedString('tasksCannotBeDeleted') });
+            return;
+        }
+        const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
+        const text = subtaskCount > 0 ? labels.getLocalizedString('confirmDeleteTasksWithSubtasks', { count: String(subtaskCount) }) : labels.getLocalizedString('confirmDeleteTasks');
+        const confirmation = await navigation.openConfirmDialog({ text });
+        if (!confirmation.confirmed) {
+            return;
+        }
+        await this.execute(async () => {
+            const result = await provider.deleteTasks(taskIds);
+            const failures = [
+                ...(result?.success === false ? result.errors : []),
+                ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
+            ];
+            if (failures.length > 0) {
+                const subject = this.getFieldMapping().subject;
+                const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
+                await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
+            }
+        });
+    }
+
     public registerGridModule(module: IGridModule<ITaskGridServiceMap>): void {
         this._gridModules.push(module);
     }
@@ -114,6 +168,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     public destroy(): void {
         this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
+        this._unregisterCommands?.();
         this.services.destroy();
     }
 
@@ -128,6 +183,23 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         if (!columns.some(column => column.name === PATH_COLUMN_NAME)) {
             columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels().getLocalizedString('path'), dataType: DataTypes.Multiple, isVirtual: true, visualSizeFactor: 300 });
         }
+    };
+
+    //ahead of the consumer's own commands
+    private _addCommands = (commands: IRibbonCommand[]): void => {
+        const labels = this.getLabels();
+        const selectedIds = this.getProvider().getSelectedRecordIds();
+        const taskCommands: IRibbonCommand[] = [];
+        if (this.isCreationEnabled()) {
+            taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
+        }
+        if (this.isEditingEnabled() && selectedIds.length > 0) {
+            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.openTasks(selectedIds) });
+        }
+        if (this.isDeletionEnabled() && selectedIds.length > 0) {
+            taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) });
+        }
+        commands.unshift(...taskCommands);
     };
 
     private _addCoreSettings = (settings: ITaskGridSetting[]): void => {

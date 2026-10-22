@@ -43,7 +43,6 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
-        createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
         createTaskDraggingModule(),
     ], [])
 
@@ -56,7 +55,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Root task' styles={{ root: { maxWidth: 360 } }} options={ROOT_OPTIONS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option?.key ?? ''))} />
         {/* the root is read on load */}
-        <TaskDatasetControl key={rootTaskId} modules={datasetControlModules} onLoadViews={async () => VIEWS} stateKey='devRootTasks' height='600px' onLoad={onLoad}>
+        <TaskDatasetControl key={rootTaskId} modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devRootTasks' height='600px' onLoad={onLoad}>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

@@ -6,7 +6,7 @@ export interface ITaskDraggingModule extends IDatasetControlModule<'dragging'> {
 
 declare module "@controls/dataset-control/runtime/interfaces" {
     interface IDatasetControlModuleMap {
-        /** Moving tasks by dragging their rows; needs the operations module with editing on. */
+        /** Moving tasks by dragging their rows; needs `enableEditing`. */
         dragging: TaskDragging;
     }
 }

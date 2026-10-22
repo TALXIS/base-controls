@@ -3885,6 +3885,13 @@ interface ITaskDatasetControlRuntime {
     createTask(parentId?: string): Promise<void>;
     deleteTasks(taskIds: string[]): Promise<void>;
     openTasks(taskIds: string[]): Promise<void>;
+    isCreationEnabled(): boolean;
+    isEditingEnabled(): boolean;
+    isDeletionEnabled(): boolean;
+    /** Creates a task, opens its parent, and starts editing its name when the grid edits. */
+    createTask(parentId?: string): Promise<void>;
+    /** Deletes the tasks and everything under them, once the user confirms. */
+    deleteTasks(taskIds: string[]): Promise<void>;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
 }
@@ -3927,27 +3934,6 @@ interface IProjectModule extends IDatasetControlModule { }
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
 declare const createProjectModule: <TData>(parameters: { onLoadProject: (taskDatasetControl: ITaskDatasetControlRuntime) => Promise<IProject<TData>> }) => IProjectModule;
 
-/** Creating, editing and deleting tasks; goes in TaskDatasetControl's modules. */
-interface ITaskOperationsModule extends IDatasetControlModule { }
-
-/** Turns on the task operations its flags name. */
-declare const createTaskOperationsModule: (parameters: {
-    /** The New command and the add-subtask buttons. */
-    enableCreation?: boolean;
-    /** The Edit command, and editing tasks in the grid and in their forms. */
-    enableEditing?: boolean;
-    /** The Delete command. */
-    enableDeletion?: boolean;
-    /** Overrides for the module's strings, such as new, edit, delete and addChild. */
-    labels?: { [key: string]: string };
-    /** Called after tasks are created, with the parent they went under. */
-    onTasksCreated?(records: IRecord[], parentId?: string): void;
-    /** Called after tasks are deleted. */
-    onTasksDeleted?(taskIds: string[]): void;
-    /** Called after tasks change, from a form save or a move. */
-    onTasksUpdated?(records: IRecord[]): void;
-}) => ITaskOperationsModule;
-
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
@@ -3959,6 +3945,18 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** The New command and the add-subtask buttons. */
+    enableCreation?: boolean;
+    /** The Edit command, and editing tasks in the grid and in their forms. */
+    enableEditing?: boolean;
+    /** The Delete command. */
+    enableDeletion?: boolean;
+    /** Called after tasks are created, with the parent they went under. */
+    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
+    /** Called after tasks are deleted. */
+    onTasksDeleted?: (taskIds: string[]) => void;
+    /** Called after tasks change, from a form save or a move. */
+    onTasksUpdated?: (records: IRecord[]) => void;
 }
 
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {

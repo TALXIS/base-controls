@@ -127,7 +127,7 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
     }
 
     protected _isTaskLocked(taskId: string): boolean {
-        const isEditingEnabled = !!this._taskDatasetControl.services.get('datasetControl').modules.find('operations')?.isEditingEnabled();
+        const isEditingEnabled = this._taskDatasetControl.isEditingEnabled();
         return !isEditingEnabled || !this._taskDatasetControl.getProvider().isRecordActive(taskId);
     }
 

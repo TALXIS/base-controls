@@ -3,7 +3,7 @@ import type { IGridModule } from "@controls/grid";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskGridServiceMap } from "../services";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
-import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskGridLabels } from "../labels";
 
 /** A toggle in `TaskDatasetControl.Settings`. */
@@ -59,6 +59,13 @@ export interface ITaskDatasetControlRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     openTasks(taskIds: string[]): Promise<void>;
+    isCreationEnabled(): boolean;
+    isEditingEnabled(): boolean;
+    isDeletionEnabled(): boolean;
+    /** Creates a task, opens its parent, and starts editing its name when the grid edits. */
+    createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void>;
+    /** Deletes the tasks and everything under them, once the user confirms. */
+    deleteTasks(taskIds: string[]): Promise<void>;
     /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
     registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
     getGridModules(): IGridModule<ITaskGridServiceMap>[];

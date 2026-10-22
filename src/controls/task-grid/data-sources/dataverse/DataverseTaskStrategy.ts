@@ -143,7 +143,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     protected _isEditingEnabled(): boolean {
-        return !!this._taskDatasetControl.services.get('datasetControl').modules.find('operations')?.isEditingEnabled();
+        return this._taskDatasetControl.isEditingEnabled();
     }
 
     protected _renderFetchXml(): string {

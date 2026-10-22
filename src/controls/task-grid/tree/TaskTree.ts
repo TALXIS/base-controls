@@ -1,7 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import { Grid } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@utils";
@@ -14,6 +14,7 @@ import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpans
 import { TreeCell } from "./tree-cell";
 import { PercentCompleteCell } from "./percent-complete-cell";
 import { ExpansionHeader } from "./expansion-header";
+import { AddTaskCell } from "./add-task-cell";
 import { ADD_TASK_COLUMN_KEY } from "./constants";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
@@ -59,6 +60,7 @@ export class TaskTree {
         this._unregisterSettings = parameters.runtime.registerSettings(this._addSettings, -1);
 
         services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
+        services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree));
 
         services.whenAvailable('gridApi', this._onGridApi);
         //ahead of row selection's listener, which redraws the checkboxes
@@ -132,7 +134,7 @@ export class TaskTree {
             resizable: false,
             suppressMovable: true,
             suppressSizeToFit: true,
-            cellRenderer: Grid.Cell.EmptyRenderer,
+            cellRenderer: this._runtime.isCreationEnabled() ? AddTaskCell : Grid.Cell.EmptyRenderer,
             headerComponent: ExpansionHeader,
         });
         const getOrder = (colDef: ColDef<IRecord>): number => {
@@ -142,6 +144,12 @@ export class TaskTree {
             return colDef.colId === ADD_TASK_COLUMN_KEY ? 1 : colDef.colId === subject ? 2 : 3;
         };
         columnDefs.sort((left, right) => getOrder(left) - getOrder(right));
+    };
+
+    private _onLock: GridLockHook = (result, context) => {
+        if (context.record && !context.columnName && !this._runtime.isEditingEnabled()) {
+            result.isLocked = true;
+        }
     };
 
     //an unmatched parent is shown only because something under it matched

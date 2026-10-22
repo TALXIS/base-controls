@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import type { IRecord } from "@talxis/client-libraries";
 import { useLatest } from "@hooks";
 import { LocalizationService, usePcfContext } from "@utils";
 import { Root as DatasetControl } from "@controls/dataset-control/components/adapters/root/Root";
@@ -15,10 +16,22 @@ import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'> {
+    /** The New command and the add-subtask buttons. */
+    enableCreation?: boolean;
+    /** The Edit command, and editing tasks in the grid and in their forms. */
+    enableEditing?: boolean;
+    /** The Delete command. */
+    enableDeletion?: boolean;
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** Called after tasks are created, with the parent they went under. */
+    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
+    /** Called after tasks are deleted. */
+    onTasksDeleted?: (taskIds: string[]) => void;
+    /** Called after tasks change, from a form save or a move. */
+    onTasksUpdated?: (records: IRecord[]) => void;
     /** The control's and the task grid's strings; read once, at mount. */
     labels?: Partial<IDatasetControlLabels & ITaskGridLabels>;
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
@@ -56,7 +69,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskDatasetControl').load(parameters);
 
-    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, enableEditing, enableDeletion, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
 
     return <TaskDatasetControlPropsContext.Provider value={propsContext}>
         <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onReady={onReady} onDestroyed={onDestroyed} onLoad={onLoad} />

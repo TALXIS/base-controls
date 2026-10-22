@@ -110,7 +110,7 @@ export class TaskDragging {
     };
 
     private _isEditingEnabled(): boolean {
-        return !!this._taskDatasetControl.services.get('datasetControl').modules.find('operations')?.isEditingEnabled();
+        return this._taskDatasetControl.isEditingEnabled();
     }
 
     //a refused task snaps back

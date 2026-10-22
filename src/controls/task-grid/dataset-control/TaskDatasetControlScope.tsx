@@ -1,5 +1,8 @@
-import { ReactNode, useEffect, useMemo } from "react";
-import { useContextWithNullCheck } from "@utils";
+import { ReactNode, useContext, useEffect, useMemo } from "react";
+import type { IRecord } from "@talxis/client-libraries";
+import { useEventEmitter } from "@hooks";
+import { DataProviderContext, useContextWithNullCheck } from "@utils";
+import type { ITaskDataProvider, ITaskDataProviderEvents } from "../provider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { TaskDatasetControlRuntime } from "../runtime/TaskDatasetControlRuntime";
 import { TaskDatasetControlContext, TaskDatasetControlPropsContext } from "./context";
@@ -13,6 +16,13 @@ export const TaskDatasetControlScope = (props: { children: ReactNode }) => {
         datasetControl.services.register('taskDatasetControl', () => created);
         return created;
     }, []);
+
+    //the provider of this mount's last load
+    const provider = useContext(DataProviderContext) as ITaskDataProvider | null;
+
+    useEventEmitter<ITaskDataProviderEvents>(provider?.taskEvents, 'onTasksCreated', (records: IRecord[], parentId?: string) => propsRef.current.onTasksCreated?.(records, parentId));
+    useEventEmitter<ITaskDataProviderEvents>(provider?.taskEvents, 'onTasksDeleted', (taskIds: string[]) => propsRef.current.onTasksDeleted?.(taskIds));
+    useEventEmitter<ITaskDataProviderEvents>(provider?.taskEvents, 'onTasksUpdated', (records: IRecord[]) => propsRef.current.onTasksUpdated?.(records));
 
     useEffect(() => () => runtime.destroy(), []);
 
