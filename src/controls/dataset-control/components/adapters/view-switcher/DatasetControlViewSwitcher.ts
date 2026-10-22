@@ -32,7 +32,6 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
 
     constructor(parameters: IDatasetControlViewSwitcherParameters) {
         this._services = parameters.services;
-        this._services.register('viewSwitcher', () => this);
     }
 
     public getViews(): IDatasetControlView[] {
@@ -63,8 +62,5 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
     }
 
     public destroy(): void {
-        if (this._services.find('viewSwitcher') === this) {
-            this._services.unregister('viewSwitcher');
-        }
     }
 }

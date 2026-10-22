@@ -1,6 +1,5 @@
 import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import { IEventSubscriber } from "@utils";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the pagination raises. */
 export interface IDatasetControlPaginationEvents {
@@ -9,7 +8,6 @@ export interface IDatasetControlPaginationEvents {
 }
 
 export interface IDatasetControlPaginationParameters {
-    services: IDatasetControlServiceLocator;
     provider: IDataProvider;
 }
 
@@ -33,15 +31,12 @@ export interface IDatasetControlPagination {
 
 export class DatasetControlPagination implements IDatasetControlPagination {
     public readonly events: IEventEmitter<IDatasetControlPaginationEvents> = new EventEmitter<IDatasetControlPaginationEvents>();
-    private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;
 
     constructor(parameters: IDatasetControlPaginationParameters) {
-        this._services = parameters.services;
         this._provider = parameters.provider as IInternalDataProvider;
         this._provider.addEventListener('onNewDataLoaded', this._onPagingChanged);
         this._provider.addEventListener('onLoading', this._onPagingChanged);
-        this._services.register('pagination', () => this);
     }
 
     public getPageNumber(): number {
@@ -72,9 +67,6 @@ export class DatasetControlPagination implements IDatasetControlPagination {
     public destroy(): void {
         this._provider.removeEventListener('onNewDataLoaded', this._onPagingChanged);
         this._provider.removeEventListener('onLoading', this._onPagingChanged);
-        if (this._services.find('pagination') === this) {
-            this._services.unregister('pagination');
-        }
         this.events.clearEventListeners();
     }
 

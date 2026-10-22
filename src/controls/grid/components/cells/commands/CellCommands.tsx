@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../../services/rows";
-import { useGridInternalService, useGridService } from "../../../useGridService";
+import { useGridInternalService } from "../../../useGridService";
 import { useGridCell } from "../root/context";
 import { CellUi, ICellUiCommandsComponents } from "../ui";
 
@@ -14,7 +14,6 @@ export interface ICellCommandsProps {
 export const CellCommands = (props: ICellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridInternalService('rows');
-    const t = useGridService('rows')
     const { rerender } = useRerender();
     const isHighlighted = rows.isHighlighted(cell.getRecord());
     //what this cell last drew from.

@@ -1,6 +1,5 @@
 import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import { IEventSubscriber } from "@utils";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the page size switcher raises. */
 export interface IDatasetControlPageSizeSwitcherEvents {
@@ -19,7 +18,6 @@ export interface IDatasetControlRecordRange {
 }
 
 export interface IDatasetControlPageSizeSwitcherParameters {
-    services: IDatasetControlServiceLocator;
     provider: IDataProvider;
     /** The sizes the menu offers; {@link DEFAULT_PAGE_SIZES} when left out. */
     pageSizes?: number[];
@@ -48,17 +46,14 @@ export interface IDatasetControlPageSizeSwitcher {
 
 export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSwitcher {
     public readonly events: IEventEmitter<IDatasetControlPageSizeSwitcherEvents> = new EventEmitter<IDatasetControlPageSizeSwitcherEvents>();
-    private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;
     private _pageSizes: number[];
 
     constructor(parameters: IDatasetControlPageSizeSwitcherParameters) {
-        this._services = parameters.services;
         this._provider = parameters.provider as IInternalDataProvider;
         this._pageSizes = parameters.pageSizes ?? DEFAULT_PAGE_SIZES;
         this._provider.addEventListener('onNewDataLoaded', this._onChanged);
         this._provider.addEventListener('onLoading', this._onChanged);
-        this._services.register('pageSizeSwitcher', () => this);
     }
 
     public getPageSize(): number {
@@ -98,9 +93,6 @@ export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSw
     public destroy(): void {
         this._provider.removeEventListener('onNewDataLoaded', this._onChanged);
         this._provider.removeEventListener('onLoading', this._onChanged);
-        if (this._services.find('pageSizeSwitcher') === this) {
-            this._services.unregister('pageSizeSwitcher');
-        }
         this.events.clearEventListeners();
     }
 

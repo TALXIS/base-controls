@@ -1,8 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
-import { Grid } from "@controls/grid";
+import { GridCellCommandsHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
@@ -14,8 +13,8 @@ import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpans
 import { TreeCell } from "./tree-cell";
 import { PercentCompleteCell } from "./percent-complete-cell";
 import { ExpansionHeader } from "./expansion-header";
-import { AddTaskCell } from "./add-task-cell";
-import { ADD_TASK_COLUMN_KEY } from "./constants";
+import { TASK_COMMANDS_COLUMN_KEY } from "./constants";
+import { TaskCommandsCell } from "./task-commands-cell";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
 const NEW_TASK_FOCUS_ATTEMPTS = 3;
@@ -56,6 +55,7 @@ export class TaskTree {
         this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
         services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
+        services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
         //ahead of the runtime's own settings
         this._unregisterSettings = parameters.runtime.registerSettings(this._addSettings, -1);
 
@@ -86,9 +86,13 @@ export class TaskTree {
         this._isFlatList = isFlatList;
         this._state.set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), isFlatList });
         this._grid.refreshAgGridOptions();
-        this._gridApi?.setColumnsVisible([ADD_TASK_COLUMN_KEY], !isFlatList);
+        this._gridApi?.setColumnsVisible([TASK_COMMANDS_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
         this._runtime.execute(() => this._syncPathColumn(isFlatList));
+    }
+
+    public focusNewTask(taskId: string): void {
+        this._focusNewTask(taskId, NEW_TASK_FOCUS_ATTEMPTS);
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -124,7 +128,7 @@ export class TaskTree {
             percentCompleteColDef.cellRenderer = PercentCompleteCell;
         }
         columnDefs.push({
-            colId: ADD_TASK_COLUMN_KEY,
+            colId: TASK_COMMANDS_COLUMN_KEY,
             headerName: '',
             hide: this._isFlatList,
             width: 50,
@@ -134,16 +138,27 @@ export class TaskTree {
             resizable: false,
             suppressMovable: true,
             suppressSizeToFit: true,
-            cellRenderer: this._runtime.isCreationEnabled() ? AddTaskCell : Grid.Cell.EmptyRenderer,
+            cellRenderer: TaskCommandsCell,
             headerComponent: ExpansionHeader,
         });
         const getOrder = (colDef: ColDef<IRecord>): number => {
             if (LEADING_COLUMN_KEYS.has(colDef.colId!)) {
                 return 0;
             }
-            return colDef.colId === ADD_TASK_COLUMN_KEY ? 1 : colDef.colId === subject ? 2 : 3;
+            return colDef.colId === TASK_COMMANDS_COLUMN_KEY ? 1 : colDef.colId === subject ? 2 : 3;
         };
         columnDefs.sort((left, right) => getOrder(left) - getOrder(right));
+    };
+
+    private _onCellCommands: GridCellCommandsHook = (result, { record, columnName }) => {
+        const recordId = record.getRecordId();
+        //a pinned row is not one of the tasks
+        const isTask = !!this._provider.getRecordsMap()[recordId];
+        if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || !this._provider.isRecordActive(recordId)) {
+            return;
+        }
+        const label = this._runtime.getLabels().getLocalizedString('addChild');
+        result.items.push({ key: 'addChild', iconProps: { iconName: 'Add' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => { this._runtime.createTask(recordId); } });
     };
 
     private _onLock: GridLockHook = (result, context) => {
@@ -261,12 +276,9 @@ export class TaskTree {
         this._provider.clearSelectedRecordIds();
     };
 
-    private _onTasksCreated = (records: IRecord[], parentId?: string): void => {
+    private _onTasksCreated = (_records: IRecord[], parentId?: string): void => {
         if (parentId) {
             this._expansion.setExpanded(parentId, true);
-        }
-        if (records.length === 1) {
-            this._focusNewTask(records[0].getRecordId(), NEW_TASK_FOCUS_ATTEMPTS);
         }
     };
 

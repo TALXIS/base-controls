@@ -1,6 +1,5 @@
 import { EventEmitter, IDataProvider, IColumn, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import { IEventSubscriber } from "@utils";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the quick find raises. */
 export interface IDatasetControlQuickFindEvents {
@@ -9,7 +8,6 @@ export interface IDatasetControlQuickFindEvents {
 }
 
 export interface IDatasetControlQuickFindParameters {
-    services: IDatasetControlServiceLocator;
     provider: IDataProvider;
 }
 
@@ -33,15 +31,12 @@ export interface IDatasetControlQuickFind {
 
 export class DatasetControlQuickFind implements IDatasetControlQuickFind {
     public readonly events: IEventEmitter<IDatasetControlQuickFindEvents> = new EventEmitter<IDatasetControlQuickFindEvents>();
-    private _services: IDatasetControlServiceLocator;
     private _provider: IInternalDataProvider;
     private _query: string;
 
     constructor(parameters: IDatasetControlQuickFindParameters) {
-        this._services = parameters.services;
         this._provider = parameters.provider as IInternalDataProvider;
         this._query = this._provider.getSearchQuery() ?? '';
-        this._services.register('quickFind', () => this);
     }
 
     public getQuery(): string {
@@ -78,9 +73,6 @@ export class DatasetControlQuickFind implements IDatasetControlQuickFind {
     }
 
     public destroy(): void {
-        if (this._services.find('quickFind') === this) {
-            this._services.unregister('quickFind');
-        }
         this.events.clearEventListeners();
     }
 }

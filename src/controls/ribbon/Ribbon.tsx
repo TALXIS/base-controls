@@ -61,7 +61,7 @@ export const Ribbon = (props: IRibbonProps) => {
             iconProps: command.iconName ? { iconName: command.iconName } : undefined,
         };
         if (command.commands) {
-            return { ...item, disabled: command.isDisabled || command.commands.length === 0, subMenuProps: { items: command.commands.map(toItem) } };
+            return { ...item, disabled: command.isDisabled, subMenuProps: { items: command.commands.map(toItem) } };
         }
         return { ...item, disabled: command.isDisabled || runtime.isRunning(command.id), onClick: () => { runtime.execute(command); } };
     };

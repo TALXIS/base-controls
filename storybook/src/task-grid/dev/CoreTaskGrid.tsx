@@ -39,6 +39,7 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
+        createMemoryTemplatesModule({ templates: TEMPLATES }),
     ], [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
@@ -51,7 +52,7 @@ const GridExample = () => {
                 </DatasetControl.ViewSwitcher>
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
-                <DatasetControl.Ribbon />
+                <TaskDatasetControl.Ribbon />
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
                 <TaskDatasetControl.Settings />

@@ -18,7 +18,6 @@ export interface IRibbonActionCommand extends IRibbonCommandBase {
 
 /** A command that opens a menu of further commands. */
 export interface IRibbonMenuCommand extends IRibbonCommandBase {
-    /** Drawn disabled when empty. */
     commands: IRibbonCommand[];
     onExecute?: never;
 }

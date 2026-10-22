@@ -4,7 +4,7 @@ import { useRerender } from "@legacy";
 import { LocalizationService } from "@utils";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
-import { useRequiredDatasetControlRuntime } from "../root";
+import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
 import { IViewSwitcherLabels, VIEW_SWITCHER_LABELS } from "./labels";
 import { DatasetControlViewSwitcher } from "./DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
@@ -22,7 +22,7 @@ export interface IViewSwitcherProps {
 /** Switches the control between the views its `onLoadViews` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
-    const viewSwitcher = useMemo(() => new DatasetControlViewSwitcher({ services: runtime.services }), []);
+    const viewSwitcher = useDatasetControlPart('viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
     const labels = useMemo(() => new LocalizationService<IViewSwitcherLabels>({ ...VIEW_SWITCHER_LABELS, ...props.labels }), [props.labels]);
     const views = viewSwitcher.getViews();
     const currentView = viewSwitcher.getCurrentView();

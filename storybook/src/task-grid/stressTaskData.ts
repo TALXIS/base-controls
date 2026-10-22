@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { IRawRecord } from '@talxis/client-libraries'
 import { LexoRank } from 'lexorank'
-import { PEOPLE, personRef } from './memoryLookupManyData'
+import { PEOPLE, personRef, TAGS, tagRef, teamRefs } from './memoryLookupManyData'
 import { ENTITY_NAME, PARENT_ID_COL, PRIMARY_ID, STACK_RANK_COL, STATE_CODE_COL } from './memoryTaskData'
 
 //the most children a task at each depth may get
@@ -13,8 +13,12 @@ const getChildCount = (index: number, level: number) => {
     return (Math.imul(index + 1, 2654435761) >>> 0) % (max + 1)
 }
 
+//one to three tags, spread over the whole list
+const getTags = (index: number) => Array.from({ length: index % 3 + 1 }, (_, offset) => tagRef(TAGS[(index * 7 + offset * 13) % TAGS.length].name as string))
+
 const createTask = (index: number, outline: string, parent: IRawRecord | null, rank: LexoRank): IRawRecord => {
     const statuscode = index % 6 + 1
+    const tags = getTags(index)
     const start = FIRST_START.add(index % 365, 'day')
     return {
         [PRIMARY_ID]: `${index.toString().padStart(8, '0')}-0000-0000-0000-000000000000`,
@@ -30,6 +34,8 @@ const createTask = (index: number, outline: string, parent: IRawRecord | null, r
         estimatedeffort: index % 40 + 8,
         actualeffort: index % 32,
         assignedto: [personRef(PEOPLE[index % PEOPLE.length].name as string)],
+        tags,
+        teams: teamRefs(tags),
         description: `Generated task ${index + 1}.`,
     }
 }

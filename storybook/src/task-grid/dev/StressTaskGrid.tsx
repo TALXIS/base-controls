@@ -15,7 +15,7 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto')),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams')),
     taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
     taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
@@ -28,7 +28,18 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
+        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devStressTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskDatasetControl').getCurrentViewData() }),
+        createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
         createTaskDraggingModule(),
+        createIndexedDbCustomColumnsModule({
+            databaseName: 'devStressTasks.customColumns',
+            columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
+            enableCreation: true,
+            enableEditing: true,
+            enableDeletion: true,
+        }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
+        createMemoryTemplatesModule({ templates: TEMPLATES }),
     ], [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: createStressTasks(10000), metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
@@ -36,15 +47,18 @@ const GridExample = () => {
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devStressTasks' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher />
+                <DatasetControl.ViewSwitcher>
+                    <DatasetControl.UserQueries />
+                </DatasetControl.ViewSwitcher>
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
-                <DatasetControl.Ribbon />
+                <TaskDatasetControl.Ribbon />
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
                 <TaskDatasetControl.Settings />
             </DatasetControl.Header.End>
         </DatasetControl.Header>
+        <DatasetControl.Notifications />
         <DatasetControl.Body>
             <TaskGrid stateKey='stressTaskGrid' modules={modules} />
         </DatasetControl.Body>
@@ -57,5 +71,5 @@ const GridExample = () => {
 }
 `
 
-/** The core task grid over 10,000 generated memory tasks. */
+/** The core task grid, with every module so far, over 10,000 generated memory tasks. */
 export const StressTaskGrid = () => <GridExampleRunner seedCode={STRESS_CODE} />

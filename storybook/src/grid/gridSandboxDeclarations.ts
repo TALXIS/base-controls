@@ -3558,7 +3558,6 @@ interface IRibbonActionCommand extends IRibbonCommandBase {
 
 /** A command that opens a menu of further commands. */
 interface IRibbonMenuCommand extends IRibbonCommandBase {
-    /** Drawn disabled when empty. */
     commands: IRibbonCommand[];
     onExecute?: never;
 }
@@ -3907,6 +3906,8 @@ interface ITaskDatasetControlRuntime {
     deleteTasks(taskIds: string[]): Promise<void>;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
+    /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
+    registerRibbonCommandUi(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
 }
 
 interface IDatasetControlPartMap {
@@ -4098,12 +4099,58 @@ declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: IRawRecord
 /** The sample tasks' lookup-many columns, as the module maps them. */
 declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
 
+/** Strings of the templates module. */
+type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; templatesFailed: string }>;
+
+/** Where templates come from, and how they turn into tasks and back. */
+interface ITemplatesStrategy {
+    /** A provider over the templates, searched by the picker; made each time it opens. */
+    onCreateTemplatesProvider(taskDatasetControl: ITaskDatasetControlRuntime): IDataProvider;
+    onCreateTasksFromTemplate(parameters: { templateId: string; parentId?: string; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+    /** Captures the task and its subtree; Save as template is offered only when implemented. */
+    onCreateTemplateFromTask?(parameters: { task: IRecord; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+}
+
+/** Offers New, From template and Save as template in the ribbon, and From template on each row. */
+declare const createTemplatesModule: (parameters: { strategy: ITemplatesStrategy; labels?: TemplatesLabels }) => IDatasetControlModule;
+
+/** One task of a memory template, with its subtree. */
+interface IMemoryTemplateTask {
+    /** Column values of the task; its id, parent and position are always the grid's. */
+    data?: { [columnName: string]: unknown };
+    children?: IMemoryTemplateTask[];
+}
+
+/** The template's own task, named after it, with its subtree. */
+interface IMemoryTemplate extends IMemoryTemplateTask {
+    id: string;
+    name: string;
+}
+
+/** Templates held in memory, expanded through the task provider like tasks the user creates. */
+declare class MemoryTemplatesStrategy implements ITemplatesStrategy {
+    constructor(parameters: { templates: IMemoryTemplate[] });
+    /** The templates as they are now, the captured ones included. */
+    getTemplates(): IMemoryTemplate[];
+    onCreateTemplatesProvider(): IDataProvider;
+    onCreateTasksFromTemplate(parameters: { templateId: string; parentId?: string; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+    onCreateTemplateFromTask(parameters: { task: IRecord; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+}
+
+/** Task templates held in memory, the ones captured since kept for as long as the module is. */
+declare const createMemoryTemplatesModule: (parameters: { templates: IMemoryTemplate[]; labels?: TemplatesLabels }) => IDatasetControlModule;
+
+/** The sample templates: a bug fix, a feature and a research spike. */
+declare const TEMPLATES: IMemoryTemplate[];
+
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
     Settings: (props: {}) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
+    /** DatasetControl.Ribbon, its items passed through registerRibbonCommandUi. */
+    Ribbon: (props: { className?: string; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 
 /** Tasks held in memory, opened in a form drawn over the control. */

@@ -63,7 +63,6 @@ export interface IGridRuntimeParameters {
 export class GridRuntime implements IGrid {
     private _services = new ServiceLocator<IGridInternalServiceMap>();
     private _onGetProps: () => IGridProps;
-    private _datasetControl?: IDatasetControlRuntime;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
     private _agGridProps?: IGridAgGridInitialOptions['options'];
@@ -118,8 +117,6 @@ export class GridRuntime implements IGrid {
         ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
         //after the modules so their api and provider listeners run first
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
-        this._datasetControl = datasetControl;
-        datasetControl?.services.register('grid', () => this);
     }
 
     public get services(): IGridInternalServiceLocator {
@@ -171,10 +168,6 @@ export class GridRuntime implements IGrid {
     public destroy(): void {
         //the provider outlives the grid
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        //a replacing Grid registers before this one is destroyed
-        if (this._datasetControl?.services.find('grid') === this) {
-            this._datasetControl.services.unregister('grid');
-        }
         this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
         this._services.destroy();

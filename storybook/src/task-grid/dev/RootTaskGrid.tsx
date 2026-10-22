@@ -61,7 +61,7 @@ const GridExample = () => {
                     <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
-                    <DatasetControl.Ribbon />
+                    <TaskDatasetControl.Ribbon />
                     <DatasetControl.QuickFind />
                     <TaskDatasetControl.Settings />
                 </DatasetControl.Header.End>

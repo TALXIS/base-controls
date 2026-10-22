@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IQuickFindUiComponents } from "../../ui";
 import { LocalizationService, useDataProviderEvents } from "@utils";
-import { useRequiredDatasetControlRuntime } from "../root";
+import { useDatasetControlPart } from "../root";
 import { IQuickFindLabels, QUICK_FIND_LABELS } from "./labels";
 import { DatasetControlQuickFind, IDatasetControlQuickFindEvents } from "./DatasetControlQuickFind";
 
@@ -17,9 +17,8 @@ export interface IQuickFindProps {
 
 /** Searches the provider for what the user types. */
 export const QuickFind = (props: IQuickFindProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);
-    const quickFind = useMemo(() => new DatasetControlQuickFind({ services: runtime.services, provider }), []);
+    const quickFind = useDatasetControlPart('quickFind', () => new DatasetControlQuickFind({ provider }));
     const labels = useMemo(() => new LocalizationService<IQuickFindLabels>({ ...QUICK_FIND_LABELS, ...props.labels }), [props.labels]);
     const { rerender } = useRerender();
 

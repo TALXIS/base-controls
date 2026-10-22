@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IPaginationUiComponents } from "../../ui";
 import { LocalizationService, useDataProvider } from "@utils";
-import { useRequiredDatasetControlRuntime } from "../root";
+import { useDatasetControlPart } from "../root";
 import { useDatasetControlRegion } from "../region";
 import { IPaginationLabels, PAGINATION_LABELS } from "./labels";
 import { DatasetControlPagination, IDatasetControlPaginationEvents } from "./DatasetControlPagination";
@@ -18,9 +18,8 @@ export interface IPaginationProps {
 
 /** Moves between the provider's pages. */
 export const Pagination = (props: IPaginationProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProvider();
-    const pagination = useMemo(() => new DatasetControlPagination({ services: runtime.services, provider }), []);
+    const pagination = useDatasetControlPart('pagination', () => new DatasetControlPagination({ provider }));
     const labels = useMemo(() => new LocalizationService<IPaginationLabels>({ ...PAGINATION_LABELS, ...props.labels }), [props.labels]);
     const { rerender } = useRerender();
     const region = useDatasetControlRegion();

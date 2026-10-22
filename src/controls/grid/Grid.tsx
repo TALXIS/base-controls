@@ -4,6 +4,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { useTheme } from "@fluentui/react";
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
+import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
 import { getClassNames, useDataProvider, usePcfContext, ThemeProvider } from "@utils";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
@@ -27,14 +28,14 @@ export const GridRoot = (props: IGridProps) => {
     const datasetControl = useDatasetControlRuntime();
     const propsRef = useLatest(props);
 
-    const runtime = useMemo(() => new GridRuntime({
+    const runtime = useDatasetControlPart('grid', () => new GridRuntime({
         onGetProps: () => propsRef.current,
         provider: provider,
         pcfContext: pcfContext,
         theme: theme,
         state: state,
         datasetControl: datasetControl,
-    }), []);
+    }));
 
     const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();

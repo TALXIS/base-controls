@@ -60,7 +60,6 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     constructor(parameters: IDatasetControlEditColumnsParameters) {
         this._services = parameters.services;
         this._provider = parameters.provider;
-        this._services.register('editColumns', () => this);
     }
 
     public isOpen(): boolean {
@@ -122,9 +121,6 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
 
     public destroy(): void {
         this._session?.destroy();
-        if (this._services.find('editColumns') === this) {
-            this._services.unregister('editColumns');
-        }
         this.events.clearEventListeners();
     }
 }

@@ -1,3 +1,4 @@
+import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IGridModule } from "@controls/grid";
 import type { IPcfContext } from "@interfaces";
@@ -17,10 +18,15 @@ export interface ITaskGridSetting {
 /** A hook over the toggles `TaskDatasetControl.Settings` shows, which it adds to or changes in place. */
 export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
 
+/** A hook over an item `TaskDatasetControl.Ribbon` draws, which it changes in place, such as to give a menu content of its own. */
+export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
+
 /** What the runtime reads of the grid's task tree. */
 export interface ITaskGridTree {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
+    /** Moves to a task the user just created and starts editing its subject. */
+    focusNewTask(taskId: string): void;
 }
 
 /** The services a provider's platform registers; it adds its own by augmenting this. */
@@ -78,6 +84,13 @@ export interface ITaskDatasetControlRuntime {
      */
     registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void;
     getSettings(): ITaskGridSetting[];
+    /**
+     * Registers a hook over every item `TaskDatasetControl.Ribbon` draws, the ones in its menus included.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void;
+    /** Copies of the items with every ribbon command UI hook applied, sub-menus included. */
+    getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
 }
 
 declare module "@controls/dataset-control/runtime/interfaces" {

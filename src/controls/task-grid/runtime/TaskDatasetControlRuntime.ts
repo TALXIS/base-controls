@@ -1,4 +1,5 @@
 import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
+import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
 import { ErrorHelper } from "@utils/error-handling";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
@@ -12,7 +13,7 @@ import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, I
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
-import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook } from "./interfaces";
+import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskDatasetControlRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
@@ -27,6 +28,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     public readonly events = new EventEmitter<ITaskDatasetControlRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
+    private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     private _unregisterCommands?: () => void;
@@ -110,7 +112,12 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
         if (this.isCreationEnabled()) {
-            await this.execute(() => this.getProvider().createTask(parentId, options));
+            await this.execute(async () => {
+                const task = await this.getProvider().createTask(parentId, options);
+                if (task) {
+                    this.services.find('taskTree')?.focusNewTask(task.getRecordId());
+                }
+            });
         }
     }
 
@@ -164,6 +171,14 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         return settings;
     }
 
+    public registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void {
+        return this._ribbonCommandUiHooks.register(hook, priority);
+    }
+
+    public getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[] {
+        return items.map(this._applyRibbonCommandUi);
+    }
+
     /** Called as the mount goes. */
     public destroy(): void {
         this.events.dispatchEvent('onDestroyed');
@@ -178,6 +193,13 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         provider.setQuickFindColumns(view.quickFindColumns ?? []);
         provider.setSearchQuery(view.searchQuery);
     }
+
+    private _applyRibbonCommandUi = (item: IContextualMenuItem): IContextualMenuItem => {
+        const result = { ...item };
+        this._ribbonCommandUiHooks.apply(result);
+        const subItems = result.subMenuProps?.items;
+        return subItems ? { ...result, subMenuProps: { ...result.subMenuProps!, items: subItems.map(this._applyRibbonCommandUi) } } : result;
+    };
 
     private _addPathColumn = (columns: IColumn[]): void => {
         if (!columns.some(column => column.name === PATH_COLUMN_NAME)) {

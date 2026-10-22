@@ -1,7 +1,6 @@
 import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
 import { INotificationMessage } from "@ui/notifications";
 import { IEventSubscriber } from "@utils";
-import { IDatasetControlServiceLocator } from "../../../runtime/interfaces";
 
 /** What the notifications raise. */
 export interface IDatasetControlNotificationsEvents {
@@ -10,7 +9,6 @@ export interface IDatasetControlNotificationsEvents {
 }
 
 export interface IDatasetControlNotificationsParameters {
-    services: IDatasetControlServiceLocator;
     provider: IDataProvider;
 }
 
@@ -24,15 +22,12 @@ export interface IDatasetControlNotifications {
 
 export class DatasetControlNotifications implements IDatasetControlNotifications {
     public readonly events: IEventEmitter<IDatasetControlNotificationsEvents> = new EventEmitter<IDatasetControlNotificationsEvents>();
-    private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;
 
     constructor(parameters: IDatasetControlNotificationsParameters) {
-        this._services = parameters.services;
         this._provider = parameters.provider;
         this._provider.addEventListener('onError', this._onChanged);
         this._provider.addEventListener('onNewDataLoaded', this._onChanged);
-        this._services.register('notifications', () => this);
     }
 
     /** The provider's load error, while there is one. */
@@ -44,9 +39,6 @@ export class DatasetControlNotifications implements IDatasetControlNotifications
     public destroy(): void {
         this._provider.removeEventListener('onError', this._onChanged);
         this._provider.removeEventListener('onNewDataLoaded', this._onChanged);
-        if (this._services.find('notifications') === this) {
-            this._services.unregister('notifications');
-        }
         this.events.clearEventListeners();
     }
 

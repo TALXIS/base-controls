@@ -5,7 +5,7 @@ import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
 import { ErrorBoundary, LocalizationService, useDataProvider } from "@utils";
-import { useRequiredDatasetControlRuntime } from "../root";
+import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
 import { EDIT_COLUMNS_LABELS, IEditColumnsLabels } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "./DatasetControlEditColumns";
 import { IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
@@ -40,7 +40,7 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProvider();
-    const editColumns = useMemo(() => new DatasetControlEditColumns({ services: runtime.services, provider }), []);
+    const editColumns = useDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
     const labels = useMemo(() => new LocalizationService<IEditColumnsLabels>({ ...EDIT_COLUMNS_LABELS, ...props.labels }), [props.labels]);
     const components = props.components ?? NO_COMPONENTS;
     const { rerender } = useRerender();

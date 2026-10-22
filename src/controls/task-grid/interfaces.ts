@@ -29,7 +29,7 @@ export interface ITaskGridLoadResult extends ITaskDataProviderInitializeParamete
 export interface ITaskGridComponents extends IGridComponents {
     /** The subject cell, with the chevron. */
     treeCell?: ITreeCellComponents;
-    /** Expand and collapse all, above the add-task buttons. */
+    /** Expand and collapse all, above the row commands. */
     expansionHeader?: IExpansionHeaderComponents;
 }
 
