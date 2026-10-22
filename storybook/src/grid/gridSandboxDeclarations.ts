@@ -3538,25 +3538,40 @@ interface IDatasetControlEvents {
     onDestroyed: () => void;
 }
 
-/** A command the ribbon draws as a button and runs when clicked. */
-interface IRibbonCommand {
+/** What every ribbon command has. */
+interface IRibbonCommandBase {
     /** Stable across loads. */
     id: string;
     label: string;
     tooltip?: string;
     /** A Fluent icon name. */
     iconName?: string;
-    /** The ribbon also disables a command while it runs. */
+    /** The ribbon also disables an action while it runs. */
     isDisabled?: boolean;
-    onExecute: () => Promise<void> | void;
 }
+
+/** A command the ribbon runs when clicked. */
+interface IRibbonActionCommand extends IRibbonCommandBase {
+    onExecute: () => Promise<void> | void;
+    commands?: never;
+}
+
+/** A command that opens a menu of further commands. */
+interface IRibbonMenuCommand extends IRibbonCommandBase {
+    /** Drawn disabled when empty. */
+    commands: IRibbonCommand[];
+    onExecute?: never;
+}
+
+/** What the ribbon draws: a button that runs, or a menu. */
+type IRibbonCommand = IRibbonActionCommand | IRibbonMenuCommand;
 
 interface IRibbonRuntimeEvents {
     onBeforeLoad: () => void;
     onLoaded: () => void;
-    onBeforeExecute: (command: IRibbonCommand) => void;
-    onExecuteFailed: (command: IRibbonCommand, error: unknown) => void;
-    onAfterExecute: (command: IRibbonCommand) => void;
+    onBeforeExecute: (command: IRibbonActionCommand) => void;
+    onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
+    onAfterExecute: (command: IRibbonActionCommand) => void;
 }
 
 /** The ribbon's commands, and which of them are running. */
@@ -3578,8 +3593,6 @@ interface IRibbonProps {
     onLoad?: () => Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
-    /** Disables every command, such as while the data behind them loads. */
-    disabled?: boolean;
     /** Put on the ribbon's box, and on the shimmer while loading. */
     className?: string;
     /** Called with the runtime once it exists, before the first load. */

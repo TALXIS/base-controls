@@ -1,12 +1,27 @@
-/** A command the ribbon draws as a button and runs when clicked. */
-export interface IRibbonCommand {
+/** What every ribbon command has. */
+export interface IRibbonCommandBase {
     /** Stable across loads. */
     id: string;
     label: string;
     tooltip?: string;
     /** A Fluent icon name. */
     iconName?: string;
-    /** The ribbon also disables a command while it runs. */
+    /** The ribbon also disables an action while it runs. */
     isDisabled?: boolean;
-    onExecute: () => Promise<void> | void;
 }
+
+/** A command the ribbon runs when clicked. */
+export interface IRibbonActionCommand extends IRibbonCommandBase {
+    onExecute: () => Promise<void> | void;
+    commands?: never;
+}
+
+/** A command that opens a menu of further commands. */
+export interface IRibbonMenuCommand extends IRibbonCommandBase {
+    /** Drawn disabled when empty. */
+    commands: IRibbonCommand[];
+    onExecute?: never;
+}
+
+/** What the ribbon draws: a button that runs, or a menu. */
+export type IRibbonCommand = IRibbonActionCommand | IRibbonMenuCommand;

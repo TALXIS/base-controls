@@ -1,17 +1,17 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils/hook-registry";
-import { IRibbonCommand } from "./interfaces";
+import { IRibbonActionCommand, IRibbonCommand } from "./interfaces";
 
 export interface IRibbonRuntimeEvents {
     /** Fired when a load starts, once the previous load's error is cleared. */
     onBeforeLoad: () => void;
     /** Fired when a load finishes, whether it returned commands or threw. */
     onLoaded: () => void;
-    onBeforeExecute: (command: IRibbonCommand) => void;
+    onBeforeExecute: (command: IRibbonActionCommand) => void;
     /** Fired when `onExecute` throws, before `onAfterExecute`. */
-    onExecuteFailed: (command: IRibbonCommand, error: unknown) => void;
+    onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
     /** Fired once `onExecute` settles, whether it resolved or threw. */
-    onAfterExecute: (command: IRibbonCommand) => void;
+    onAfterExecute: (command: IRibbonActionCommand) => void;
 }
 
 /** A hook over the commands the ribbon shows, which it adds to or changes in place. */
@@ -90,7 +90,7 @@ export class RibbonRuntime implements IRibbonRuntime {
         return this._commandsHooks.register(hook, priority);
     }
 
-    public async execute(command: IRibbonCommand): Promise<void> {
+    public async execute(command: IRibbonActionCommand): Promise<void> {
         this._runningCommandIds.add(command.id);
         this.events.dispatchEvent('onBeforeExecute', command);
         try {

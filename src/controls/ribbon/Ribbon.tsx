@@ -17,8 +17,6 @@ const SHIMMER_WIDTH = 208;
 export interface IRibbonProps {
     /** Called at mount and on every `reload()`; the commands registered through `registerCommands` follow. */
     onLoad?: () => Promise<IRibbonCommand[]>;
-    /** Disables every command, such as while the data behind them loads. */
-    disabled?: boolean;
     /** Which side the commands are drawn against; defaults to `'start'`. */
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
@@ -29,7 +27,7 @@ export interface IRibbonProps {
     components?: IRibbonComponents;
 }
 
-/** A command bar of the commands `onLoad` returns, each run when clicked. */
+/** A command bar of the commands `onLoad` returns: actions run when clicked, menus open. */
 export const Ribbon = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
     const runtime = useMemo(() => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (() => propsRef.current.onLoad!()) }), []);
@@ -55,14 +53,20 @@ export const Ribbon = (props: IRibbonProps) => {
     };
 
     const commands = runtime.getCommands();
-    const items = (commands ?? []).map((command): ICommandBarItemProps => ({
-        key: command.id,
-        text: command.label,
-        title: command.tooltip,
-        iconProps: command.iconName ? { iconName: command.iconName } : undefined,
-        disabled: command.isDisabled || props.disabled || runtime.isRunning(command.id),
-        onClick: () => { runtime.execute(command); },
-    }));
+    const toItem = (command: IRibbonCommand): ICommandBarItemProps => {
+        const item: ICommandBarItemProps = {
+            key: command.id,
+            text: command.label,
+            title: command.tooltip,
+            iconProps: command.iconName ? { iconName: command.iconName } : undefined,
+        };
+        if (command.commands) {
+            return { ...item, disabled: command.isDisabled || command.commands.length === 0, subMenuProps: { items: command.commands.map(toItem) } };
+        }
+        return { ...item, disabled: command.isDisabled || runtime.isRunning(command.id), onClick: () => { runtime.execute(command); } };
+    };
+
+    const items = (commands ?? []).map(toItem);
 
     return <ErrorBoundary error={runtime.getError()} onRetry={() => runtime.reload()} components={errorMessage}>
         <LoadingBoundary isLoading={commands === undefined} components={loadingBoundaryComponents}>
