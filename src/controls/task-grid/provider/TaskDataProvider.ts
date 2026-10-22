@@ -11,6 +11,8 @@ export interface ITaskDataProviderParameters {
 
 const ACTIVE_STATE_CODE = 0;
 
+const copyColumn = (column: IColumn): IColumn => ({ ...column, metadata: { ...column.metadata } });
+
 /** Every task of a view, loaded at once through a strategy and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _strategy: ITaskStrategy;
@@ -21,6 +23,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _hasLoaded = false;
     private _newTaskIds = new Set<string>();
     private _columnCatalogue = new Map<string, IColumn>();
+    private _declaredColumns: IColumn[] = [];
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
     private _columnHandlers: ITaskColumnHandler[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
@@ -86,7 +89,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public setColumns(columns: IColumn[]): void {
-        super.setColumns(this._withMappedColumns(columns));
+        //copied, as the base fills its defaults into the columns it is handed
+        this._declaredColumns = columns.map(copyColumn);
+        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(copyColumn(column)))));
     }
 
     public setQuickFindColumns(columnNames: string[]): void {
@@ -320,8 +325,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
         this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
         this.setDataSource(rawData);
-        //what was set before the load may have lacked definitions the catalogue now has
-        const currentColumns = this.getColumns().filter(column => !column.isHidden || !this._isMappedColumn(column.name)).map(column => this._withDefinition(column));
+        //as declared, since the data-type defaults filled in since would override the catalogue's definitions
+        const currentColumns = this._declaredColumns.filter(column => !column.isHidden || !this._isMappedColumn(column.name));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
     }

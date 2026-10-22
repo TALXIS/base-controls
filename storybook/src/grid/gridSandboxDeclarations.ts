@@ -4100,7 +4100,7 @@ declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: IRawRecord
 declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
 
 /** Strings of the templates module. */
-type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; templatesFailed: string }>;
+type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; creatingTasksFromTemplate: string; savingTemplate: string; templatesFailed: string }>;
 
 /** Where templates come from, and how they turn into tasks and back. */
 interface ITemplatesStrategy {
@@ -4142,6 +4142,30 @@ declare const createMemoryTemplatesModule: (parameters: { templates: IMemoryTemp
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
+
+/** Strings of the checklist module. */
+type ChecklistLabels = Partial<{ checklist: string }>;
+
+/** One item of a task's checklist. */
+interface IChecklistItem {
+    id: string;
+    name: string;
+    isCompleted: boolean;
+}
+
+/** Each task's checklist progress as done/total, in a column Edit columns offers. */
+declare const createChecklistModule: (parameters: { onGetItems: (task: IRecord) => IChecklistItem[]; labels?: ChecklistLabels }) => IDatasetControlModule;
+/** Checklists held in memory, by task id. */
+declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]>; labels?: ChecklistLabels }) => IDatasetControlModule;
+/** Checklists stored as JSON on each TALXIS task. */
+declare const createTalxisChecklistModule: (parameters?: { labels?: ChecklistLabels }) => IDatasetControlModule;
+
+/** The checklists of the sample tasks. */
+declare const CHECKLIST_ITEMS: Record<string, IChecklistItem[]>;
+/** The checklist column as a view lists it. */
+declare const CHECKLIST_COLUMN: IColumn;
+/** Checklists for generated tasks, ticked as far as each task's progress. */
+declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, IChecklistItem[]>;
 
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
