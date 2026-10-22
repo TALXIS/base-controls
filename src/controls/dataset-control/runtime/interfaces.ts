@@ -35,8 +35,8 @@ export interface IDatasetControlView<TData = unknown> {
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: IDatasetControlViewGroup;
-    /** Resolves what the view sets up, called each time it is opened. */
-    resolve: () => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
+    /** Returns what the view sets up, read from the provider it is opened on. */
+    resolve: (provider: IDataProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
 
 /** A view as it is opened, with what it sets up. */

@@ -80,9 +80,9 @@ const VIEWS: IDatasetControlView<IProductViewData>[] = [
 
 export const loadProductViews = async (): Promise<IDatasetControlView<IProductViewData>[]> => VIEWS
 
-export const loadProducts = async (params: IDatasetControlLoadParameters<IProductViewData>): Promise<IDatasetControlLoadResult> => {
-    const category = params.view?.data?.category
+export const loadProducts = async ({ view }: IDatasetControlLoadParameters<IProductViewData>): Promise<IDatasetControlLoadResult> => {
     const provider = createProductsProvider()
+    const category = view && (await view.resolve(provider)).data?.category
     provider.setFiltering(category ? { filterOperator: 0, conditions: [{ attributeName: 'category', conditionOperator: 0, value: \`\${category}\` }] } : null)
     return { provider }
 }

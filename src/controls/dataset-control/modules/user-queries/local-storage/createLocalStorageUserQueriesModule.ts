@@ -1,4 +1,3 @@
-import type { IColumn, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import type { IDatasetControl } from "../../../runtime/interfaces";
 import { IUserQueriesLabels, USER_QUERIES_LABELS } from "../labels";
 import type { IUserQueriesModule } from "../interfaces";
@@ -9,11 +8,6 @@ import { LocalStorageUserQueriesStore } from "./LocalStorageUserQueriesStore";
 export interface ILocalStorageUserQueriesModuleParameters<TData> extends Omit<ILocalStorageUserQueriesProviderParameters, 'nameLabel'> {
     /** The view's own data as it is saved, beside its columns. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
-    /**
-     * The definition of a column a user view keeps; a column without one is left out.
-     * @param linking The view's related entities, which a column named by alias comes from.
-     */
-    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
     /** Overrides for every string of the user queries: the header, the commands and the panel. */
     labels?: Partial<IUserQueriesLabels>;
 }
@@ -22,6 +16,5 @@ export interface ILocalStorageUserQueriesModuleParameters<TData> extends Omit<IL
 export const createLocalStorageUserQueriesModule = <TData,>(parameters: ILocalStorageUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => createUserQueriesModule<TData>({
     store: new LocalStorageUserQueriesStore<TData>({ storageKey: parameters.storageKey, nameLabel: parameters.labels?.viewName ?? USER_QUERIES_LABELS.viewName }),
     onGetViewData: parameters.onGetViewData,
-    onGetColumn: parameters.onGetColumn,
     labels: parameters.labels,
 });

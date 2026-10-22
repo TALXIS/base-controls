@@ -1,4 +1,4 @@
-import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlView, IDatasetControlViewDefinition } from '@talxis/base-controls'
+import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlView } from '@talxis/base-controls'
 import { DataTypes, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, MemoryDataProvider } from '@talxis/client-libraries'
 import { DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from '../grid/data'
 
@@ -8,8 +8,9 @@ export interface IDealViewData {
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression
 }
 
-//the full definition of a deal column, by name
-const getDealColumn = (name: string): IColumn => ({ ...DEAL_COLUMNS.find(column => column.name === name)!, isPrimary: name === 'name' })
+//the deal name is what quick find searches
+const DEALS = DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name' }))
+const getDealColumn = (name: string): IColumn => DEALS.find(column => column.name === name)!
 
 //the deal columns a view shows, in the order it shows them
 const columns = (...names: string[]) => names.map((name, order) => ({ ...getDealColumn(name), order }))
@@ -44,27 +45,26 @@ const ACCOUNT_COLUMNS: IColumn[] = [
     { name: 'city', displayName: 'City', dataType: DataTypes.SingleLineText },
 ]
 
-//the deals for one view; the control sets the view's columns on it
-const createViewProvider = (view: IDatasetControlViewDefinition<IDealViewData>) => {
+const createDealsProvider = () => {
     const provider = new MemoryDataProvider({
         dataSource: DEAL_ROWS.map(row => ({ ...row })),
         metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
     })
-    provider.setSorting(view.data?.sorting ?? [])
-    provider.setFiltering(view.data?.filtering ?? null)
     //what Edit columns offers, the columns of a deal's account included
-    provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => options?.entityName === ACCOUNT_SCOPE.relatedEntityName ? ACCOUNT_COLUMNS : DEAL_COLUMNS
+    provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => options?.entityName === ACCOUNT_SCOPE.relatedEntityName ? ACCOUNT_COLUMNS : DEALS
     provider.onGetAvailableRelatedColumns = async () => [ACCOUNT_SCOPE]
     return provider
 }
 
-/** A deals provider for the view asked for, the first view when none is; loads like a server would. */
-export const loadDeals = async (params: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+/** A deals provider for the view; loads like a server would. */
+export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
     await new Promise(resolve => setTimeout(resolve, 600))
-    const view = params.view ?? await DEAL_VIEWS[0].resolve()
-    const provider = createViewProvider(view)
-    if (params.view) {
-        provider.setViewId(params.view.id)
+    const provider = createDealsProvider()
+    if (view) {
+        const { data } = await view.resolve(provider)
+        provider.setSorting(data?.sorting ?? [])
+        provider.setFiltering(data?.filtering ?? null)
+        provider.setViewId(view.id)
     }
     return { provider }
 }

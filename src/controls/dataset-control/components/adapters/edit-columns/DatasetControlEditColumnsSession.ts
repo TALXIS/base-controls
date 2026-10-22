@@ -1,4 +1,5 @@
 import { Attribute, DataTypes, EventEmitter, IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, ILinkEntityExposedExpression } from "@talxis/client-libraries";
+import { toScopedColumn } from "./toScopedColumn";
 
 export interface IDatasetControlEditColumnsSessionEvents {
     onColumnsChanged: () => void;
@@ -91,7 +92,7 @@ export class DatasetControlEditColumnsSession {
     }
 
     public addColumn(column: IColumn): void {
-        const added = this._scope ? this._toScopedColumn(column, this._scope) : column;
+        const added = this._scope ? toScopedColumn(column, this._getLink(this._scope), this._scope) : column;
         this._columns = [added, ...this._columns.filter(existing => existing.name !== added.name)];
         this.events.dispatchEvent('onColumnAdded', added);
         this.events.dispatchEvent('onColumnsChanged');
@@ -127,11 +128,6 @@ export class DatasetControlEditColumnsSession {
         this.events.clearEventListeners();
     }
 
-
-    private _toScopedColumn(column: IColumn, scope: IAvailableRelatedColumn): IColumn {
-        const link = this._getLink(scope);
-        return { ...column, name: `${link.alias}.${column.name}`, displayName: `${column.displayName} (${scope.displayName})` };
-    }
 
     private async _loadRelatedScopes(): Promise<void> {
         this._relatedScopes = await this._load(() => this._provider.getAvailableRelatedColumns());

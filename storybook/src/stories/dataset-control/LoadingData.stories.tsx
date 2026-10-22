@@ -8,8 +8,11 @@ const DESCRIPTION = `
 The control's \`onLoad\` returns the provider for the view the user is on. Load whatever the view needs there, such as metadata or settings, then create the provider and return it. Creating a provider is on [**Data providers**](?path=/docs/data-providers--overview), and the views, with what each one carries for \`onLoad\`, are on [**Views**](?path=/docs/datasetcontrol-views--overview).
 
 \`\`\`tsx
-const loadDeals = async (params: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
-    return { provider: await createDealsProvider(params.view?.data) }
+const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+    const provider = await createDealsProvider()
+    const resolved = view && await view.resolve(provider)
+    applyDealView(provider, resolved?.data)
+    return { provider }
 }
 
 <DatasetControl onLoad={loadDeals}>...</DatasetControl>

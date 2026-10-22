@@ -28,7 +28,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-const FAILED_ACTIONS_CODE = `import { captureViewData, getDealColumn, IDealViewData, loadDeals, loadDealViews } from './views'
+const FAILED_ACTIONS_CODE = `import { captureViewData, IDealViewData, loadDeals, loadDealViews } from './views'
 
 //stands in for your server, which the toggle takes down
 const server = { isDown: false }
@@ -52,7 +52,7 @@ const captureWhileUp = (datasetControl: IDatasetControl<IDealViewData>) => {
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews', onGetViewData: captureWhileUp, onGetColumn: getDealColumn })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews', onGetViewData: captureWhileUp })], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked

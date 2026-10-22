@@ -1,8 +1,9 @@
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { EventEmitter, IColumn, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { EventEmitter, IAvailableRelatedColumn, IColumn, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControl, IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
 import type { IEventSubscriber, ILocalizationService } from "@utils";
+import { toScopedColumn } from "../../components/adapters/edit-columns/toScopedColumn";
 import type { IUserQueriesLabels } from "./labels";
 import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQueryView } from "./interfaces";
 
@@ -14,7 +15,6 @@ export interface IDatasetControlUserQueriesParameters {
     store: IUserQueriesStore;
     labels: ILocalizationService<IUserQueriesLabels>;
     onGetViewData?: (datasetControl: IDatasetControl) => unknown;
-    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
 }
 
 export interface IDatasetControlUserQueriesEvents {
@@ -31,7 +31,6 @@ export class DatasetControlUserQueries {
     private _store: IUserQueriesStore;
     private _labels: ILocalizationService<IUserQueriesLabels>;
     private _onGetViewData?: (datasetControl: IDatasetControl) => unknown;
-    private _onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
     private _views: IUserQueryListItem[] = [];
     private _manageProvider?: IDataProvider;
 
@@ -40,7 +39,6 @@ export class DatasetControlUserQueries {
         this._store = parameters.store;
         this._labels = parameters.labels;
         this._onGetViewData = parameters.onGetViewData;
-        this._onGetColumn = parameters.onGetColumn;
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
     }
@@ -117,18 +115,39 @@ export class DatasetControlUserQueries {
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
         const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: () => this._resolveView(id) })));
+        views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: (provider: IDataProvider) => this._resolveView(id, provider) })));
     };
 
-    private _resolveView = async (viewId: string): Promise<IDatasetControlViewDefinition> => {
+    private _resolveView = async (viewId: string, provider: IDataProvider): Promise<IDatasetControlViewDefinition> => {
         const { columns, linking = [], data } = await this._store.getView(viewId);
-        const definitions = await Promise.all(columns.map(column => this._onGetColumn(column.name, linking)));
-        const definedColumns = columns.map((column, index) => this._toColumn(column, definitions[index])).filter((column): column is IColumn => !!column);
+        const [ownColumns, relatedColumns] = await Promise.all([provider.getAvailableColumns(), this._getRelatedColumns(provider, columns, linking)]);
+        const definitions = new Map([...ownColumns, ...relatedColumns].map(column => [column.name, column]));
+        const definedColumns = columns.map(column => this._toColumn(column, definitions.get(column.name))).filter((column): column is IColumn => !!column);
         return { columns: definedColumns, linking, data };
     };
 
+    //named as Edit columns names them, through the link each was added through
+    private async _getRelatedColumns(provider: IDataProvider, columns: IUserQueryColumn[], linking: ILinkEntityExposedExpression[]): Promise<IColumn[]> {
+        const aliases = new Set(columns.filter(column => column.name.includes('.')).map(column => column.name.split('.')[0]));
+        const links = linking.filter(link => !!link.alias && aliases.has(link.alias));
+        if (links.length === 0) {
+            return [];
+        }
+        const scopes = await provider.getAvailableRelatedColumns();
+        const related = await Promise.all(links.map(async link => {
+            const scope = scopes.find(scope => this._isScopeOf(scope, link));
+            return scope ? (await provider.getAvailableColumns({ entityName: link.name })).map(column => toScopedColumn(column, link, scope)) : [];
+        }));
+        return related.flat();
+    }
+
+    //Edit columns builds a link from the scope's id attribute and lookup
+    private _isScopeOf(scope: IAvailableRelatedColumn, link: ILinkEntityExposedExpression): boolean {
+        return scope.name === link.to && scope.relatedEntityPrimaryIdAttribute === link.from;
+    }
+
     //its own metadata, so the provider setting up one view's column leaves the others alone
-    private _toColumn(saved: IUserQueryColumn, definition: IColumn | null): IColumn | undefined {
+    private _toColumn(saved: IUserQueryColumn, definition: IColumn | undefined): IColumn | undefined {
         return definition ? { ...definition, ...saved, metadata: structuredClone(definition.metadata) } : undefined;
     }
 

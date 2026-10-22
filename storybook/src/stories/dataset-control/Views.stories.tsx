@@ -28,34 +28,36 @@ const loadViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => [
 
 1. \`onLoadViews\` lists the views. The switcher needs only their names.
 2. The user picks one, or the control takes the one they left, else the first.
-3. The control calls that view's \`resolve\`, and only that one's.
-4. \`onLoad\` gets the view with what \`resolve\` returned, and returns a provider for it.
-5. The control sets the view's columns on the provider, then puts back what the user changed in that view, such as Edit columns. See [**State**](?path=/docs/datasetcontrol-state--overview).
+3. \`onLoad\` gets that view as listed. It creates the provider, calls \`view.resolve(provider)\` for the rest of the view, and sets the provider up from it.
+4. The control sets the view's linking and columns on the provider, then puts back what the user changed in that view, such as Edit columns. See [**State**](?path=/docs/datasetcontrol-state--overview).
+
+Only the opened view is resolved, and only once. If \`onLoad\` doesn't call \`resolve\`, the control calls it after \`onLoad\`.
 
 | View field | Description |
 |---|---|
 | \`id\` | Identifies the view. |
 | \`name\` | Shown in the switcher. |
 | \`group\` | \`{ id, name }\`, the header it is listed under. Views without one go under *System views*. |
-| \`resolve()\` | Required. Returns what the view shows, below. Can be async, to fetch it as the view opens. |
+| \`resolve(provider)\` | Required. Returns what the view shows, below, given the provider it opens on. Can be async, to fetch it as the view opens. |
 
-| \`resolve()\` returns | Description |
+| \`resolve(provider)\` returns | Description |
 |---|---|
 | \`columns\` | Required. The columns the view shows, complete and in order. |
 | \`linking\` | The related entities its columns come from. |
-| \`data\` | Anything else \`onLoad\` needs, such as the view's filter. Its type is the control's \`TData\`. |
+| \`data\` | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
 
 If \`onLoadViews\`, \`resolve\` or \`onLoad\` throws, the control shows the error. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
 
 ## Load the view
 
-Read the view's \`data\` in \`onLoad\` and set the provider up with it. Leave the columns alone: the control sets them.
+Create the provider, resolve the view with it, and set the provider up from the view's \`data\`. Leave the columns alone: the control sets them.
 
 \`\`\`tsx
 const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
     const provider = createDealsProvider()
-    if (view?.data?.stage) {
-        provider.setFiltering({ filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: \`\${view.data.stage}\` }] })
+    const { data = {} } = view ? await view.resolve(provider) : {}
+    if (data.stage) {
+        provider.setFiltering({ filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: \`\${data.stage}\` }] })
     }
     return { provider }
 }
@@ -72,7 +74,6 @@ Add a user queries module and put \`DatasetControl.UserQueries\` in the switcher
 \`\`\`tsx
 const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({
     storageKey: 'deals.views',
-    onGetColumn: name => DEAL_COLUMNS.find(column => column.name === name) ?? null,
     onGetViewData: control => ({ sorting: control.getProvider()?.getSorting() }),
 })], [])
 
@@ -89,19 +90,19 @@ A user view opens like any other view, so \`onLoad\` needs nothing new. What it 
 
 | | Saved | Opened |
 |---|---|---|
-| Columns | Each shown column's name, order, width, visibility, grouping and aggregation. | \`onGetColumn(name, linking)\` returns the full column, and the saved layout goes over it. A column it returns \`null\` for is left out. |
-| Data | What \`onGetViewData(control)\` returns. Throw to stop the save. | Comes back as \`view.data\` in \`onLoad\`. |
+| Columns | Each shown column's name, order, width, visibility, grouping and aggregation, and the links its related columns come through. | Looked up among the provider's available columns, the ones Edit columns offers, and the saved layout goes over each. A related column is looked up through its saved link. A column the provider no longer offers is left out. |
+| Data | What \`onGetViewData(control)\` returns. Throw to stop the save. | Comes back as \`data\` from \`view.resolve(provider)\`. |
 
 {{story: Save your own views}}
 
 ## Where user views are kept
 
-| Factory | Keeps the views | \`onGetColumn\` |
-|---|---|---|
-| \`createLocalStorageUserQueriesModule\` | In this browser, under \`storageKey\`. | Required. |
-| \`createTalxisUserQueriesModule\` | As \`talxis_userquery\` records. | Optional, read from Dataverse by default. |
-| \`createDataverseUserQueriesModule\` | As records of a Dataverse table you map. | Optional, read from Dataverse by default. |
-| \`createUserQueriesModule\` | In a store of yours. | Required. |
+| Factory | Keeps the views |
+|---|---|
+| \`createLocalStorageUserQueriesModule\` | In this browser, under \`storageKey\`. |
+| \`createTalxisUserQueriesModule\` | As \`talxis_userquery\` records. |
+| \`createDataverseUserQueriesModule\` | As records of a Dataverse table you map. |
+| \`createUserQueriesModule\` | In a store of yours. |
 
 Every factory also takes \`onGetViewData\`, and \`labels\` for its strings; see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
 
@@ -138,7 +139,7 @@ const store: IUserQueriesStore<IDealViewData> = {
     createManageProvider: () => createSavedViewsProvider(),
 }
 
-createUserQueriesModule<IDealViewData>({ store, onGetColumn: getDealColumn, onGetViewData: captureViewData })
+createUserQueriesModule<IDealViewData>({ store, onGetViewData: captureViewData })
 \`\`\`
 
 | Store member | Description |
@@ -169,7 +170,7 @@ createUserQueriesModule<IDealViewData>({ store, onGetColumn: getDealColumn, onGe
 | \`loadView(viewId)\` | Opens the view, as picking it does. |
 | \`reload()\` | Lists the views and opens the current one again. |
 | \`getViews()\` | The views as listed. |
-| \`getView()\` | The open view, with what \`resolve\` returned. |
+| \`getView()\` | The open view, with what \`resolve(provider)\` returned. |
 
 | On \`control.parts.get('viewSwitcher')\` | Description |
 |---|---|

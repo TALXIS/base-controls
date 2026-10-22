@@ -1,5 +1,5 @@
 export * from './namespace';
-export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, getDataverseColumn, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
 export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModuleParameters, IDataverseUserQueriesTable, ILocalStorageUserQueriesModuleParameters } from './modules/user-queries';
 export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';

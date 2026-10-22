@@ -40,7 +40,7 @@ A provider is often handed columns that carry little more than a name: a view's 
 
 ### What works around it today
 
-- **User queries:** \`createUserQueriesModule\` requires \`onGetColumn\`, so the consumer completes each saved column, and drops it when it returns \`null\`. The Dataverse factories read it from Dataverse by default, and the localStorage factory requires it.
+- **User queries:** a user view completes each saved column from the provider's available columns as it resolves, related ones through its saved links, and drops one the provider no longer offers.
 - **Views docs and dev stories:** a memory provider completes name-only columns in its \`columns\` interceptor, merging \`metadata\` by hand.
 - **Task grid:** \`TaskDataProvider._load\` merges its catalogue into the columns it was given.
 
@@ -70,7 +70,7 @@ So anything a provider adds is lost unless every one of these knows about it. Fo
 
 ### What would use it
 
-- **User queries:** a user view keeps \`provider.getViewState()\` and loads through \`applyViewState\`. Then \`onGetViewData\` is only for data of the consumer's own, and \`onGetColumn\` goes away once requirement 1 is in place. This is the \`TODO\` above \`createUserQueriesModule\`.
+- **User queries:** a user view keeps \`provider.getViewState()\` and loads through \`applyViewState\`. Then \`onGetViewData\` is only for data of the consumer's own, and completing the saved columns moves into \`applyViewState\`. This is the \`TODO\` above \`createUserQueriesModule\`.
 - **The native state:** \`DatasetControlState.save\` and \`restore\` keep the view state, plus page and selection.
 - **The task grid:** \`getCurrentViewData\` and \`_applyView\` become the task provider's own extension of the two methods.
 
@@ -96,7 +96,7 @@ So a custom column only exists in code, added through \`setColumns\` or a \`colu
 ### What would use it
 
 - **Views:** a system or user view declares its custom columns in its FetchXML, instead of every consumer adding them in code.
-- **User queries:** a user view saved as FetchXML keeps its custom columns without \`onGetColumn\` completing them.
+- **User queries:** a user view saved as FetchXML keeps its custom columns, which the provider's available columns don't offer.
 `
 
 const meta = {

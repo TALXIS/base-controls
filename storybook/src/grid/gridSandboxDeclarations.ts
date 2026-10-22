@@ -3426,16 +3426,16 @@ interface IDatasetControlView<TData = unknown> {
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: { id: string; name: string };
-    /** Resolves what the view sets up, called each time it is opened. */
-    resolve: () => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
+    /** Returns what the view sets up, read from the provider it is opened on. */
+    resolve: (provider: IDataProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
 
 /** A view as it is opened, with what it sets up. */
 type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
 interface IDatasetControlLoadParameters<TData = unknown> {
-    /** The view to load: the one asked for or kept, else the first view; undefined only when there are no views. */
-    view?: IDatasetControlResolvedView<TData>;
+    /** The view to load as listed, the one asked for or kept, else the first; view.resolve(provider) returns the rest. */
+    view?: IDatasetControlView<TData>;
 }
 
 interface IDatasetControlLoadResult {
@@ -3507,8 +3507,6 @@ declare const createUserQueriesModule: <TData>(parameters: {
     store: IUserQueriesStore<TData>;
     /** The view's own data as it is saved, beside its columns; throw to stop the save. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
-    /** The definition of a column a user view keeps; a column without one is left out. */
-    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
 }) => IDatasetControlModule;
@@ -3519,8 +3517,6 @@ declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
     storageKey: string;
     /** The view's own data as it is saved, beside its columns; throw to stop the save. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
-    /** The definition of a column a user view keeps; a column without one is left out. */
-    onGetColumn: (columnName: string, linking: ILinkEntityExposedExpression[]) => IColumn | null | Promise<IColumn | null>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
 }) => IDatasetControlModule;

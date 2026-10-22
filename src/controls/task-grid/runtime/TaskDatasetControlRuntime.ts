@@ -40,12 +40,14 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
-        this._view = parameters.view;
         const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
         provider.initialize({ fieldMapping, rootTaskId });
         provider.registerAvailableColumns(this._addPathColumn);
-        if (this._view?.data) {
-            this._applyView(provider, this._view.data);
+        //after the Path column is available, which a user view may keep
+        if (parameters.view) {
+            const definition = await parameters.view.resolve(provider);
+            this._view = { ...parameters.view, ...definition };
+            this._applyView(provider, definition.data ?? {});
         }
         this.services.register('provider', () => provider);
         return { provider };

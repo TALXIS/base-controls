@@ -28,7 +28,7 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
-        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskDatasetControl').getCurrentViewData(), onGetColumn: name => ({ name }) as IColumn }),
+        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskDatasetControl').getCurrentViewData() }),
         createProjectModule({ onLoadProject: async () => ({ id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') }) }),
         createTaskOperationsModule({ enableCreation: true, enableEditing: true, enableDeletion: true }),
         createTaskDraggingModule(),

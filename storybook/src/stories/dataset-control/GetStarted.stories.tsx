@@ -24,8 +24,11 @@ const loadViews = async (): Promise<IDatasetControlView[]> => [
     { id: 'won', name: 'Won deals', resolve: () => ({ columns: DEAL_COLUMNS, data: { stage: 'won' } }) },
 ]
 
-const loadDeals = async (params: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-    return { provider: await createDealsProvider(params.view?.data) }
+const loadDeals = async ({ view }: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
+    const provider = await createDealsProvider()
+    const resolved = view && await view.resolve(provider)
+    applyDealView(provider, resolved?.data)
+    return { provider }
 }
 
 export const Deals = () => <PcfContextProvider>

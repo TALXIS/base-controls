@@ -2,15 +2,15 @@ import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } fro
 import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewDefinition } from "./interfaces";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
 /** What `onLoad` is called with. */
 export interface IDatasetControlLoadParameters<TData = unknown> {
-    /** The view to load: the one asked for or kept, else the first view; `undefined` only when there are no views. */
-    view?: IDatasetControlResolvedView<TData>;
+    /** The view to load as listed, the one asked for or kept, else the first; `view.resolve(provider)` returns the rest. */
+    view?: IDatasetControlView<TData>;
 }
 
 /** What `onLoad` returns. */
@@ -193,10 +193,13 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             this._views = views;
             viewId = this._resolveViewId(requestedViewId);
             const listed = this._views.find(view => view.id === viewId);
-            view = listed ? { ...listed, ...await listed.resolve() } : undefined;
-            result = await this._onGetProps().onLoad({ view });
+            let resolving: Promise<IDatasetControlViewDefinition> | undefined;
+            //onLoad may resolve the view itself; it is resolved once either way
+            const resolve = (provider: IDataProvider) => resolving ??= Promise.resolve(listed!.resolve(provider));
+            result = await this._onGetProps().onLoad({ view: listed && { ...listed, resolve } });
             const provider = result.provider;
-            if (view) {
+            if (listed) {
+                view = { ...listed, ...await resolve(provider) };
                 //before the columns, which a related column is resolved through
                 provider.setLinking(view.linking ?? provider.getLinking());
                 provider.setColumns(view.columns);

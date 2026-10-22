@@ -16,16 +16,14 @@ export interface IDealViewData {
 
 export const where = (attributeName: string, operator: IOperator, value: string) => ({ filterOperator: 0, conditions: [{ attributeName, conditionOperator: operator.Value, value }] })
 
-/** The full definition of a deal column, by name; also completes the columns a user view keeps. */
-export const getDealColumn = (name: string): IColumn | null => {
-    const column = DEAL_COLUMNS.find(column => column.name === name)
-    return column ? { ...column, isPrimary: name === 'name' } : null
-}
+//the deal name is what quick find searches
+const DEALS = DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name' }))
+const getDealColumn = (name: string) => DEALS.find(column => column.name === name)!
 
 //the deal columns a view shows, in the order it shows them
-const columns = (...names: string[]) => names.map((name, order) => ({ ...getDealColumn(name)!, order }))
+const columns = (...names: string[]) => names.map((name, order) => ({ ...getDealColumn(name), order }))
 //what a view filters by without showing it
-const hidden = (...names: string[]) => names.map(name => ({ ...getDealColumn(name)!, isHidden: true }))
+const hidden = (...names: string[]) => names.map(name => ({ ...getDealColumn(name), isHidden: true }))
 
 const WON = '4'
 
@@ -59,15 +57,16 @@ export const captureViewData = (datasetControl: IDatasetControl<IDealViewData>):
 /** The deals as a view shows them; the control sets the view's columns on the provider. */
 export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
     await new Promise(resolve => setTimeout(resolve, 600))
-    const data = view?.data ?? {}
     const provider = new MemoryDataProvider({
         dataSource: DEAL_ROWS.map(row => ({ ...row })),
         metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
     })
+    //what Edit columns offers, and what a user view's columns come back from
+    provider.onGetAvailableColumns = async () => DEALS
+    const { data = {} } = view ? await view.resolve(provider) : {}
     provider.setSorting(data.sorting ?? [])
     provider.setFiltering(data.filtering ?? null)
     provider.setSearchQuery(data.searchQuery)
-    provider.onGetAvailableColumns = async () => DEAL_COLUMNS
     return { provider }
 }
 `,
