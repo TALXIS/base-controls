@@ -1,2 +1,2 @@
-export * from './TalxisCustomColumnsStrategy';
+export * from './TalxisCustomColumnsStore';
 export * from './createTalxisCustomColumnsModule';

@@ -1,2 +1,2 @@
 export * from './createDataverseTaskDataSource';
-export * from './DataverseTaskStrategy';
+export * from './DataverseTaskStore';

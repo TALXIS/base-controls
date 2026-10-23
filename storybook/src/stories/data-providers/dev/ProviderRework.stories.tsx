@@ -56,7 +56,7 @@ Three places each decide what a view keeps, and each picks a different set:
 |---|---|---|
 | \`DatasetControlState\`, the state each view comes back with | Columns, linking, sorting, filtering, page size, page, search, selection | \`restore\`, which calls the setters one by one |
 | User queries | The columns' layout, captured by the module; the rest is whatever the consumer's \`onGetViewData\` returns, such as sorting, filter and search | The consumer's own \`onLoad\`, reading \`view.data\` |
-| \`TaskDatasetControlRuntime\` | \`getCurrentViewData\`: sorting, filtering, quick find columns, search, flat list; the columns and linking go with the user view | \`_applyView\` |
+| \`TaskRuntime\` | \`getCurrentViewData\`: sorting, filtering, quick find columns, search, flat list; the columns and linking go with the user view | \`_applyView\` |
 
 So anything a provider adds is lost unless every one of these knows about it. For example, the task provider's quick find columns are kept by the task runtime but not by the native state, and a provider's search is kept by the native state but not by a user view unless the consumer's \`onGetViewData\` returns it.
 

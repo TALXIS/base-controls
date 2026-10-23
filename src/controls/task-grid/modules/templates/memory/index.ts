@@ -1,2 +1,2 @@
-export * from './MemoryTemplatesStrategy';
+export * from './MemoryTemplatesStore';
 export * from './createMemoryTemplatesModule';

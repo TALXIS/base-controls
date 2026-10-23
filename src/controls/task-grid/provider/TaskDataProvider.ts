@@ -3,19 +3,19 @@ import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStrategy, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
-    strategy: ITaskStrategy;
+    store: ITaskStore;
 }
 
 const ACTIVE_STATE_CODE = 0;
 
 const copyColumn = (column: IColumn): IColumn => ({ ...column, metadata: { ...column.metadata } });
 
-/** Every task of a view, loaded at once through a strategy and shown as a tree. */
+/** Every task of a view, loaded at once through a store and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
-    private _strategy: ITaskStrategy;
+    private _store: ITaskStore;
     private _fieldMapping?: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
@@ -32,7 +32,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
-        this._strategy = parameters.strategy;
+        this._store = parameters.store;
         this._tree = new RecordTree(this);
     }
 
@@ -48,8 +48,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._fieldMapping;
     }
 
-    public getStrategy(): ITaskStrategy {
-        return this._strategy;
+    public getStore(): ITaskStore {
+        return this._store;
     }
 
     public getRecordTree(): IRecordTree {
@@ -121,7 +121,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
-        const columns = await this._strategy.onGetAvailableColumns(options);
+        const columns = await this._store.onGetAvailableColumns(options);
         //the hooks add columns of the tasks, such as Path
         return this._isRelatedEntity(options) ? columns : this._withHookColumns(columns);
     }
@@ -136,7 +136,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
-        return this._strategy.onGetAvailableRelatedColumns();
+        return this._store.onGetAvailableRelatedColumns();
     }
 
     public onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
@@ -144,18 +144,23 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const dirtyField = record.getFields().find(field => field.isDirty());
         const column = dirtyField?.getColumn();
         const handler = column && this._columnHandlers.find(handler => handler.isHandledColumn(column.name));
-        return handler ? handler.onSaveValue(record, column, dirtyField!.getValue()) : this._strategy.onSaveRecord(record);
+        return handler ? handler.onSaveValue(record, column, dirtyField!.getValue()) : this._store.onSaveRecord(record);
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        const isTask = !context?.columnName || context.columnName === this.getFieldMapping().subject;
-        await this._open([entityReference], isTask);
+        const columnName = context?.columnName;
+        if (!columnName || columnName === this.getFieldMapping().subject) {
+            await this.editTasks([entityReference.id.guid]);
+        }
+        else {
+            await this._execute(() => this._store.onOpenRelatedRecord(entityReference, columnName));
+        }
     }
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
         return this._execute(async () => {
             const resolvedParentId = parentId ?? this._rootTaskId;
-            const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(resolvedParentId, options));
+            const rawRecord = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
             return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
         });
     }
@@ -189,7 +194,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public getDeletion(taskIds: string[]): ITaskDeletion {
         const { structure } = this._tree;
         const candidateIds = new Set(taskIds.flatMap(taskId => [taskId, ...structure.getDescendants(taskId).map(record => record.getRecordId())]));
-        const refusedTaskIds = [...candidateIds].filter(taskId => this._strategy.onCanDeleteTask?.(this.getRecordsMap()[taskId]) === false);
+        const refusedTaskIds = [...candidateIds].filter(taskId => this._store.onCanDeleteTask?.(this.getRecordsMap()[taskId]) === false);
         const keptIds = new Set(refusedTaskIds.flatMap(taskId => structure.getAncestorIds(taskId)));
         return { deletableTaskIds: [...candidateIds].filter(taskId => !keptIds.has(taskId)), refusedTaskIds };
     }
@@ -206,7 +211,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 if (levelIds.length === 0) {
                     continue;
                 }
-                const result = await this._strategy.onDeleteTasks({ taskIds: levelIds, tree: this._tree });
+                const result = await this._store.onDeleteTasks({ taskIds: levelIds, tree: this._tree });
                 if (!result) {
                     break;
                 }
@@ -236,7 +241,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             if (!params) {
                 return false;
             }
-            const result = await this._strategy.onMoveTask(params);
+            const result = await this._store.onMoveTask(params);
             if (!result) {
                 return false;
             }
@@ -246,9 +251,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         });
     }
 
-    public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
-        const references = taskIds.map(taskId => this.getRecordsMap()[taskId]?.getNamedReference()).filter((reference): reference is ComponentFramework.EntityReference => !!reference);
-        return this._open(references, true);
+    public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+        return this._execute(async () => {
+            const result = await this._store.onEditTasks(taskIds);
+            if (result) {
+                this.updateTaskData(result.updatedRecords);
+            }
+            return result;
+        });
     }
 
     public updateTaskData(rawRecords: IRawRecord[]): void {
@@ -263,7 +273,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             }
             const previousParentId = record.getValue(parentId)?.[0]?.id?.guid;
             const previousStackRank = record.getValue(stackRank);
-            //a strategy may return fewer columns than were loaded, such as no linked-entity values
+            //a store may return fewer columns than were loaded, such as no linked-entity values
             record.setRawData({ ...record.getRawData(), ...rawRecord });
             isTreeChanged ||= previousParentId !== record.getValue(parentId)?.[0]?.id?.guid || previousStackRank !== record.getValue(stackRank);
             records.push(record);
@@ -280,7 +290,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.setDataSource(this.getDataSource());
     }
 
-    //export and totals read a copy of the loaded tasks; loading them again would rerun the strategy
+    //export and totals read a copy of the loaded tasks; loading them again would rerun the store
     public createNewDataProvider(_eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
         return new MemoryDataProvider({
             dataSource: this.getDataSource(),
@@ -318,7 +328,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     private async _load(): Promise<void> {
-        const { rawData, metadata, columns } = await this._strategy.onLoad(this);
+        const { rawData, metadata, columns } = await this._store.onLoad(this);
         //the handlers read which entity the tasks are
         this.setMetadata(metadata);
         this.setEntityName(metadata.LogicalName ?? '');
@@ -331,7 +341,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._hasLoaded = true;
     }
 
-    //the strategy never returns these, so later task updates keep what is merged here
+    //the store never returns these, so later task updates keep what is merged here
     private async _loadHandledValues(rawData: IRawRecord[], primaryIdAttribute: string): Promise<void> {
         const taskIds = rawData.map(rawRecord => rawRecord[primaryIdAttribute]);
         const valueMaps = await Promise.all(this._columnHandlers.map(handler => handler.onLoadValues(taskIds)));
@@ -364,7 +374,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const created: IRecord[] = [];
         let previousTaskId: string | undefined;
         for (const task of tasks) {
-            const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId, { data: task.data, previousTaskId }));
+            const rawRecord = await this._store.onCreateTask(this._resolveCreate(parentId, { data: task.data, previousTaskId }));
             if (!rawRecord) {
                 break;
             }
@@ -411,16 +421,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _getStateCodeCondition() {
         return this.getFiltering()?.conditions.find(condition => condition.attributeName === this.getFieldMapping().stateCode
             && condition.conditionOperator === Operators.Equal.Value && condition.value === `${ACTIVE_STATE_CODE}`);
-    }
-
-    private async _open(references: ComponentFramework.EntityReference[], isTask: boolean): Promise<IOpenTasksResult | null> {
-        return this._execute(async () => {
-            const result = await this._strategy.onOpenRecords(references, isTask);
-            if (result) {
-                this.updateTaskData(result.updatedRecords);
-            }
-            return result;
-        });
     }
 
     private _resolveCreate(parentId?: string, options?: ICreateTaskOptions): ITaskCreateParams {

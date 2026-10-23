@@ -1,5 +1,6 @@
 import type { IPcfContext } from "@interfaces";
-import type { ITaskDependenciesStrategy, ITaskDependency, ITaskDependencyCreate, TaskDependencyType } from "../Dependencies";
+import type { ITaskRuntime } from "../../../runtime";
+import type { ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate, TaskDependencyType } from "../Dependencies";
 
 /** A Dataverse table of dependencies: two task lookups and an option set of the type. */
 export interface IDataverseDependenciesSchema {
@@ -14,17 +15,17 @@ export interface IDataverseDependenciesSchema {
     dependencyTypeCodes: Record<number, TaskDependencyType>;
 }
 
-export interface IDataverseDependenciesStrategyParameters extends IDataverseDependenciesSchema {
-    pcfContext: IPcfContext;
+export interface IDataverseDependenciesStoreParameters extends IDataverseDependenciesSchema {
+    taskRuntime: ITaskRuntime;
 }
 
 const MAX_IDS_PER_REQUEST = 800;
 
 /** Dependencies kept in a Dataverse table. */
-export class DataverseDependenciesStrategy implements ITaskDependenciesStrategy {
-    private _parameters: IDataverseDependenciesStrategyParameters;
+export class DataverseDependenciesStore implements ITaskDependenciesStore {
+    private _parameters: IDataverseDependenciesStoreParameters;
 
-    constructor(parameters: IDataverseDependenciesStrategyParameters) {
+    constructor(parameters: IDataverseDependenciesStoreParameters) {
         this._parameters = parameters;
     }
 
@@ -58,10 +59,11 @@ export class DataverseDependenciesStrategy implements ITaskDependenciesStrategy 
     }
 
     private async _retrieve(taskIds: string[]): Promise<ComponentFramework.WebApi.Entity[]> {
-        const { pcfContext, entityName, primaryIdAttribute, predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
+        const { entityName, primaryIdAttribute, predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
         const ids = taskIds.map(id => `'${id}'`).join(',');
         const filter = `Microsoft.Dynamics.CRM.In(PropertyName='${predecessorAttribute}',PropertyValues=[${ids}]) or Microsoft.Dynamics.CRM.In(PropertyName='${successorAttribute}',PropertyValues=[${ids}])`;
         const select = [primaryIdAttribute, `_${predecessorAttribute}_value`, `_${successorAttribute}_value`, typeAttribute].join(',');
+        const pcfContext: IPcfContext = this._parameters.taskRuntime.services.get('pcfContext');
         const { entities } = await pcfContext.webAPI.retrieveMultipleRecords(entityName, `?$select=${select}&$filter=${filter}`);
         return entities;
     }

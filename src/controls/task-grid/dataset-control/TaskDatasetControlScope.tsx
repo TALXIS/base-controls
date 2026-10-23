@@ -5,14 +5,14 @@ import { DataProviderContext, useContextWithNullCheck } from "@utils";
 import type { ITaskDataProvider, ITaskDataProviderEvents } from "../provider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
-import { TaskDatasetControlRuntime } from "../runtime/TaskDatasetControlRuntime";
-import { TaskDatasetControlContext, TaskDatasetControlPropsContext } from "./context";
+import { TaskRuntime } from "../runtime/TaskRuntime";
+import { TaskRuntimeContext, TaskDatasetControlPropsContext } from "./context";
 
 /** One mount's task runtime: there before the mount loads, gone with it. */
 export const TaskDatasetControlScope = (props: { children: ReactNode }) => {
     const datasetControl = useRequiredDatasetControlRuntime();
     const { labels, pcfContext, propsRef } = useContextWithNullCheck(TaskDatasetControlPropsContext);
-    const runtime = useDatasetControlPart('taskDatasetControl', () => new TaskDatasetControlRuntime({ datasetControl, labels, pcfContext, onGetProps: () => propsRef.current }));
+    const runtime = useDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, labels, pcfContext, onGetProps: () => propsRef.current }));
 
     //the provider of this mount's last load
     const provider = useContext(DataProviderContext) as ITaskDataProvider | null;
@@ -23,5 +23,5 @@ export const TaskDatasetControlScope = (props: { children: ReactNode }) => {
 
     useEffect(() => () => runtime.destroy(), []);
 
-    return <TaskDatasetControlContext.Provider value={runtime}>{props.children}</TaskDatasetControlContext.Provider>;
+    return <TaskRuntimeContext.Provider value={runtime}>{props.children}</TaskRuntimeContext.Provider>;
 };

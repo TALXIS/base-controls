@@ -5,8 +5,8 @@ import type { IUserQueriesModule, IUserQueriesStore } from "./interfaces";
 import { DatasetControlUserQueries } from "./DatasetControlUserQueries";
 
 export interface IUserQueriesModuleParameters<TData> {
-    /** Where the user's views are kept. */
-    store: IUserQueriesStore<TData>;
+    /** Makes the store the user's views are kept in. */
+    onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
     /** The view's own data as it is saved, beside its columns. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries: the header, the commands and the panel. */
@@ -21,7 +21,7 @@ export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModulePa
         const labels = new LocalizationService<IUserQueriesLabels>({ ...USER_QUERIES_LABELS, ...parameters.labels });
         const userQueries = new DatasetControlUserQueries({
             datasetControl,
-            store: parameters.store as IUserQueriesStore,
+            store: parameters.onCreateStore(datasetControl as IDatasetControl<TData>) as IUserQueriesStore,
             labels,
             onGetViewData: parameters.onGetViewData as IUserQueriesModuleParameters<unknown>['onGetViewData'],
         });

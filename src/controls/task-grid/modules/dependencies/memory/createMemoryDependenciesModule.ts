@@ -1,11 +1,11 @@
-import { Dependencies, IDependenciesParameters, ITaskDependenciesStrategy, ITaskDependency, ITaskDependencyCreate } from "../Dependencies";
-import type { IDependenciesModule } from "../createDependenciesModule";
+import type { IDependenciesParameters, ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate } from "../Dependencies";
+import { createDependenciesModule, IDependenciesModule } from "../createDependenciesModule";
 
-export interface IMemoryDependenciesModuleParameters extends Omit<IDependenciesParameters, 'strategy'> {
+export interface IMemoryDependenciesModuleParameters extends Omit<IDependenciesParameters, 'onCreateStore'> {
     dependencies: ITaskDependency[];
 }
 
-class MemoryDependenciesStrategy implements ITaskDependenciesStrategy {
+class MemoryDependenciesStore implements ITaskDependenciesStore {
     private _dependencies: ITaskDependency[];
 
     constructor(dependencies: ITaskDependency[]) {
@@ -35,9 +35,5 @@ class MemoryDependenciesStrategy implements ITaskDependenciesStrategy {
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */
 export const createMemoryDependenciesModule = (parameters: IMemoryDependenciesModuleParameters): IDependenciesModule => {
     const { dependencies, ...moduleParameters } = parameters;
-    return {
-        name: 'dependencies',
-        onLoad: datasetControl => new Dependencies(datasetControl.parts.get('taskDatasetControl'), { ...moduleParameters, strategy: new MemoryDependenciesStrategy(dependencies) }),
-        onDestroy: instance => instance.destroy(),
-    };
+    return createDependenciesModule({ ...moduleParameters, onCreateStore: () => new MemoryDependenciesStore(dependencies) });
 };

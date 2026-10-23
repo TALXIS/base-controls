@@ -1,7 +1,7 @@
 import { DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { ICustomColumnsStrategy } from "../CustomColumns";
+import type { ICustomColumnsStore } from "../CustomColumns";
 
-/** A custom column as the IndexedDB strategy stores it. */
+/** A custom column as the IndexedDB store keeps it. */
 export interface ICustomColumnDefinition {
     displayName: string;
     dataType: DataType;
@@ -12,7 +12,7 @@ export interface ICustomColumnDefinition {
     options?: string[];
 }
 
-export interface IIndexedDbCustomColumnsStrategyParameters {
+export interface IIndexedDbCustomColumnsStoreParameters {
     /** The IndexedDB database the columns and their values are kept in; one per control. */
     databaseName: string;
     /** The columns a new database starts with. */
@@ -44,11 +44,11 @@ const toPromise = <T,>(request: IDBRequest<T>): Promise<T> => new Promise((resol
 });
 
 /** Custom columns kept in the browser's IndexedDB with their values by task; a new one is a sample text column. */
-export class IndexedDbCustomColumnsStrategy implements ICustomColumnsStrategy {
-    private _parameters: IIndexedDbCustomColumnsStrategyParameters;
+export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
+    private _parameters: IIndexedDbCustomColumnsStoreParameters;
     private _database?: Promise<IDBDatabase>;
 
-    constructor(parameters: IIndexedDbCustomColumnsStrategyParameters) {
+    constructor(parameters: IIndexedDbCustomColumnsStoreParameters) {
         this._parameters = parameters;
     }
 

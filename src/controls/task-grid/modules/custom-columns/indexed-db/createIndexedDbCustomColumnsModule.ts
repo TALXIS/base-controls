@@ -1,8 +1,8 @@
-import type { ICustomColumnsModule } from "../createCustomColumnsModule";
-import { CustomColumns, ICustomColumnsParameters } from "../CustomColumns";
-import { ICustomColumnDefinition, IndexedDbCustomColumnsStrategy } from "./IndexedDbCustomColumnsStrategy";
+import { createCustomColumnsModule, ICustomColumnsModule } from "../createCustomColumnsModule";
+import type { ICustomColumnsParameters } from "../CustomColumns";
+import { ICustomColumnDefinition, IndexedDbCustomColumnsStore } from "./IndexedDbCustomColumnsStore";
 
-export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'strategy'> {
+export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'onCreateStore'> {
     /** The IndexedDB database the columns and their values are kept in; one per control. */
     databaseName: string;
     /** The columns a new database starts with. */
@@ -12,14 +12,5 @@ export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomCol
 /** The user's own task columns kept in the browser's IndexedDB; an example implementation. */
 export const createIndexedDbCustomColumnsModule = (parameters: IIndexedDbCustomColumnsModuleParameters): ICustomColumnsModule => {
     const { databaseName, columns, ...moduleParameters } = parameters;
-    return {
-        name: 'customColumns',
-        onLoad: async datasetControl => {
-            const strategy = new IndexedDbCustomColumnsStrategy({ databaseName, columns });
-            const customColumns = new CustomColumns(datasetControl.parts.get('taskDatasetControl'), { ...moduleParameters, strategy });
-            await customColumns.load();
-            return customColumns;
-        },
-        onDestroy: customColumns => customColumns.destroy(),
-    };
+    return createCustomColumnsModule({ ...moduleParameters, onCreateStore: () => new IndexedDbCustomColumnsStore({ databaseName, columns }) });
 };

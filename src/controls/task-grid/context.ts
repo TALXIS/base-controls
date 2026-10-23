@@ -1,10 +1,10 @@
 import { createContext } from "react";
 import { useContextWithNullCheck } from "@utils";
-import type { ITaskDatasetControlRuntime } from "./runtime";
+import type { ITaskRuntime } from "./runtime";
 import type { ITaskGridComponents } from "./interfaces";
 
 export interface ITaskGridContext {
-    runtime: ITaskDatasetControlRuntime;
+    runtime: ITaskRuntime;
     components: ITaskGridComponents;
 }
 

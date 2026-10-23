@@ -3503,8 +3503,8 @@ type IUserQueriesLabelOverrides = Partial<{ myViewsHeader: string; saveChanges: 
 
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
 declare const createUserQueriesModule: <TData>(parameters: {
-    /** Where the user's views are kept. */
-    store: IUserQueriesStore<TData>;
+    /** Makes the store the user's views are kept in. */
+    onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
     /** The view's own data as it is saved, beside its columns; throw to stop the save. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries. */
@@ -3886,7 +3886,7 @@ interface ITaskDataProvider extends IDataProvider {
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
-interface ITaskDatasetControlRuntime {
+interface ITaskRuntime {
     readonly services: { get(key: string): any; find(key: string): any; whenAvailable(key: string, callback: (service: any) => void): void; register(key: string, resolve: () => any): void };
     readonly events: { addEventListener(event: 'onDestroyed', listener: () => void): void };
     getProvider(): ITaskDataProvider;
@@ -3896,7 +3896,7 @@ interface ITaskDatasetControlRuntime {
     getCurrentViewData(): ITaskViewData;
     createTask(parentId?: string): Promise<void>;
     deleteTasks(taskIds: string[]): Promise<void>;
-    openTasks(taskIds: string[]): Promise<void>;
+    editTasks(taskIds: string[]): Promise<void>;
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
@@ -3911,14 +3911,14 @@ interface ITaskDatasetControlRuntime {
 }
 
 interface IDatasetControlPartMap {
-    /** The task dataset control the parts are drawn in. */
-    taskDatasetControl: ITaskDatasetControlRuntime;
+    /** What runs the task grid inside the control. */
+    taskRuntime: ITaskRuntime;
 }
 
 /** What a TaskDatasetControl's onLoad is called with. */
 interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
     /** The mount the provider is loaded for, to register what the provider's platform adds. */
-    taskDatasetControl: ITaskDatasetControlRuntime;
+    taskRuntime: ITaskRuntime;
 }
 
 /** What a TaskDatasetControl's onLoad returns. */
@@ -3946,17 +3946,17 @@ interface IProject<TData = { [key: string]: unknown }> {
 interface IProjectModule extends IDatasetControlModule { }
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
-declare const createProjectModule: <TData>(parameters: { onLoadProject: (taskDatasetControl: ITaskDatasetControlRuntime) => Promise<IProject<TData>> }) => IProjectModule;
+declare const createProjectModule: <TData>(parameters: { onLoadProject: (taskRuntime: ITaskRuntime) => Promise<IProject<TData>> }) => IProjectModule;
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
-    onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onMounted?: (taskRuntime: ITaskRuntime) => void;
     /** Called on every mount once its load succeeded. */
-    onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onReady?: (taskRuntime: ITaskRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
-    onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onDestroyed?: (taskRuntime: ITaskRuntime) => void;
     /** Returns the view's provider and field mapping; called on every mount. */
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
@@ -3987,7 +3987,7 @@ declare const createTaskDraggingModule: (parameters?: {
 }) => IDatasetControlModule;
 
 /** Where custom column definitions and values are kept. */
-interface ICustomColumnsStrategy {
+interface ICustomColumnsStore {
     onLoadColumns(): Promise<IColumn[]>;
     onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
     onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<any>;
@@ -3998,7 +3998,7 @@ interface ICustomColumnsStrategy {
 
 /** The user's own task columns, loaded on every mount before the tasks. */
 declare const createCustomColumnsModule: (parameters: {
-    strategy: ICustomColumnsStrategy;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
     /** The Add custom column command in Edit columns. */
     enableCreation?: boolean;
     /** The edit command on each custom column in Edit columns. */
@@ -4008,7 +4008,7 @@ declare const createCustomColumnsModule: (parameters: {
     labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
 
-/** A custom column as the IndexedDB strategy stores it. */
+/** A custom column as the IndexedDB store keeps it. */
 interface ICustomColumnDefinition {
     displayName: string;
     dataType: string;
@@ -4051,7 +4051,7 @@ interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn = ILook
     column: IColumn;
     /** What the module's columns maps the column to. */
     settings: TColumn;
-    taskDatasetControl: ITaskDatasetControlRuntime;
+    taskRuntime: ITaskRuntime;
 }
 
 /** Strings of the lookup-many picker. */
@@ -4102,17 +4102,29 @@ declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
 /** Strings of the templates module. */
 type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; creatingTasksFromTemplate: string; savingTemplate: string; templatesFailed: string }>;
 
-/** Where templates come from, and how they turn into tasks and back. */
-interface ITemplatesStrategy {
+/** A task to create, with the tasks to create under it. */
+interface ICreateTaskTree {
+    data?: { [columnName: string]: any };
+    children?: ICreateTaskTree[];
+}
+
+/** A template: its own task, named after it, with the tasks under it. */
+interface ITemplate {
+    name: string;
+    tree: ICreateTaskTree;
+}
+
+/** Where templates are kept. */
+interface ITemplatesStore {
     /** A provider over the templates, searched by the picker; made each time it opens. */
-    onCreateTemplatesProvider(taskDatasetControl: ITaskDatasetControlRuntime): IDataProvider;
-    onCreateTasksFromTemplate(parameters: { templateId: string; parentId?: string; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
-    /** Captures the task and its subtree; Save as template is offered only when implemented. */
-    onCreateTemplateFromTask?(parameters: { task: IRecord; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+    onCreateTemplatesProvider(): IDataProvider;
+    /** The template, or null when there is none with the id. */
+    onGetTemplate(templateId: string): Promise<ITemplate | null>;
+    onCreateTemplate(template: ITemplate): Promise<void>;
 }
 
 /** Offers New, From template and Save as template in the ribbon, and From template on each row. */
-declare const createTemplatesModule: (parameters: { strategy: ITemplatesStrategy; labels?: TemplatesLabels }) => IDatasetControlModule;
+declare const createTemplatesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore; labels?: TemplatesLabels }) => IDatasetControlModule;
 
 /** One task of a memory template, with its subtree. */
 interface IMemoryTemplateTask {
@@ -4127,14 +4139,12 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
     name: string;
 }
 
-/** Templates held in memory, expanded through the task provider like tasks the user creates. */
-declare class MemoryTemplatesStrategy implements ITemplatesStrategy {
+/** Templates held in memory. */
+declare class MemoryTemplatesStore implements ITemplatesStore {
     constructor(parameters: { templates: IMemoryTemplate[] });
-    /** The templates as they are now, the captured ones included. */
-    getTemplates(): IMemoryTemplate[];
     onCreateTemplatesProvider(): IDataProvider;
-    onCreateTasksFromTemplate(parameters: { templateId: string; parentId?: string; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
-    onCreateTemplateFromTask(parameters: { task: IRecord; taskDatasetControl: ITaskDatasetControlRuntime }): Promise<void>;
+    onGetTemplate(templateId: string): Promise<ITemplate | null>;
+    onCreateTemplate(template: ITemplate): Promise<void>;
 }
 
 /** Task templates held in memory, the ones captured since kept for as long as the module is. */
@@ -4183,7 +4193,7 @@ interface ITaskDependency {
 }
 
 /** Where dependencies are kept; a read-only one throws from the writes. */
-interface ITaskDependenciesStrategy {
+interface ITaskDependenciesStore {
     /** The dependencies touching any of these tasks, at either end. */
     onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
     onCreateDependency(dependency: Omit<ITaskDependency, 'id'>): Promise<ITaskDependency>;
@@ -4202,7 +4212,7 @@ interface IDataverseDependenciesSchema {
 }
 
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
-declare const createDependenciesModule: (parameters: { strategy: ITaskDependenciesStrategy; labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITaskDependenciesStore; labels?: DependenciesLabels }) => IDatasetControlModule;
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */
 declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[]; labels?: DependenciesLabels }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
@@ -4227,19 +4237,21 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     Ribbon: (props: { className?: string; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 
-/** Tasks held in memory; opening one shows an alert. */
-declare const createMemoryTaskDataSource: (parameters: { taskDatasetControl: ITaskDatasetControlRuntime; strategy: IMemoryTaskStrategy; provider?: new (parameters: { strategy: any }) => ITaskDataProvider }) => ITaskDataProvider;
-
-/** A strategy over tasks held in memory, handed its mount by createMemoryTaskDataSource. */
-interface IMemoryTaskStrategy {
-    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
+/** Where the tasks come from and how changing them is persisted. */
+interface ITaskStore {
     [operation: string]: any;
 }
 
-/** The built-in strategy over tasks held in memory. */
-declare class MemoryTaskStrategy implements IMemoryTaskStrategy {
-    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
-    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
+/** Tasks held in memory. */
+declare const createMemoryTaskDataSource: (parameters: {
+    taskRuntime: ITaskRuntime;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ITaskStore;
+    provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
+}) => ITaskDataProvider;
+
+/** Tasks held in memory; editing one, or opening a record a lookup points to, shows an alert. */
+declare class MemoryTaskStore implements ITaskStore {
+    constructor(parameters: { taskRuntime: ITaskRuntime; records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
     [operation: string]: any;
 }
 

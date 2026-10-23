@@ -29,12 +29,12 @@ const LIQUID = new Liquid({ outputEscape: 'escape' });
 
 //a column offers what its FetchXML selects, rendered for the task
 const createOptionsProvider = (parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>, sourceRecord?: ISingleRecord) => {
-    const { record, settings, taskDatasetControl } = parameters;
+    const { record, settings, taskRuntime } = parameters;
     const fetchXml = settings.fetchXml;
     if (!fetchXml) {
         return undefined;
     }
-    const project = taskDatasetControl.services.get('datasetControl').modules.find('project');
+    const project = taskRuntime.services.get('datasetControl').modules.find('project');
     return new FetchXmlDataProvider({
         fetchXml: LIQUID.parseAndRenderSync(fetchXml, {
             task: { id: record.getRecordId(), ...record.getRawData() },
@@ -52,9 +52,9 @@ export const createDataverseLookupManyModule = (parameters: IDataverseLookupMany
         ...module,
         onLoad: async datasetControl => {
             const lookupMany = await module.onLoad(datasetControl);
-            const taskDatasetControl = datasetControl.parts.get('taskDatasetControl');
-            const pcfContext = taskDatasetControl.services.get('pcfContext');
-            taskDatasetControl.services.whenAvailable('provider', provider => provider.registerColumnHandler(new DataverseLookupManyHandler({ provider, pcfContext, columns: parameters.columns })));
+            const taskRuntime = datasetControl.parts.get('taskRuntime');
+            const pcfContext = taskRuntime.services.get('pcfContext');
+            taskRuntime.services.whenAvailable('provider', provider => provider.registerColumnHandler(new DataverseLookupManyHandler({ provider, pcfContext, columns: parameters.columns })));
             return lookupMany;
         },
     };

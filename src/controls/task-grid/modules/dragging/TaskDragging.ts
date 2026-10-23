@@ -3,7 +3,7 @@ import { GridApi, IRowDragItem, RowDragModule, IRowNode, IsRowValidDropPositionP
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../provider";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "../../tree/constants";
@@ -36,7 +36,7 @@ export interface ITaskDraggingParameters {
 /** Moves a task by dragging its row: between rows, sideways between levels, or onto another task. */
 export class TaskDragging {
     private _grid!: IGrid<ITaskGridServiceMap>;
-    private _taskDatasetControl: ITaskDatasetControlRuntime;
+    private _taskRuntime: ITaskRuntime;
     private _parameters: ITaskDraggingParameters;
     private _taskProvider?: ITaskDataProvider;
     private _isEditing = false;
@@ -48,11 +48,11 @@ export class TaskDragging {
     private _isAnimating = false;
     private _animationTimer?: number;
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITaskDraggingParameters) {
-        this._taskDatasetControl = taskDatasetControl;
+    constructor(taskRuntime: ITaskRuntime, parameters: ITaskDraggingParameters) {
+        this._taskRuntime = taskRuntime;
         this._parameters = parameters;
-        taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
-        taskDatasetControl.registerGridModule({ agGridModules: [RowDragModule], onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
+        taskRuntime.registerGridModule({ agGridModules: [RowDragModule], onRegister: grid => this._onGridRegistered(grid) });
     }
 
     public destroy(): void {
@@ -110,7 +110,7 @@ export class TaskDragging {
     };
 
     private _isEditingEnabled(): boolean {
-        return this._taskDatasetControl.isEditingEnabled();
+        return this._taskRuntime.isEditingEnabled();
     }
 
     //a refused task snaps back
@@ -121,7 +121,7 @@ export class TaskDragging {
     private _canDrag(): boolean {
         const sorting = this._provider.getSorting();
         const isSortedByStackRank = sorting.length === 0 || sorting[0].name === this._provider.getFieldMapping().stackRank;
-        return !this._taskDatasetControl.isFlatList() && this._isEditingEnabled() && isSortedByStackRank && !this._isEditing;
+        return !this._taskRuntime.isFlatList() && this._isEditingEnabled() && isSortedByStackRank && !this._isEditing;
     }
 
     private _getRowDragText = (params: IRowDragItem): string => {

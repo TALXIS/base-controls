@@ -13,9 +13,9 @@ import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, I
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
-import type { ITaskDatasetControlRuntime, ITaskDatasetControlRuntimeEvents, ITaskDatasetControlRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
 
-export interface ITaskDatasetControlRuntimeParameters {
+export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
     labels: ILocalizationService<ITaskGridLabels>;
     pcfContext: IPcfContext;
@@ -23,9 +23,9 @@ export interface ITaskDatasetControlRuntimeParameters {
     onGetProps: () => ITaskDatasetControlProps;
 }
 
-export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
-    public readonly services = new ServiceLocator<ITaskDatasetControlRuntimeServiceMap>();
-    public readonly events = new EventEmitter<ITaskDatasetControlRuntimeEvents>();
+export class TaskRuntime implements ITaskRuntime {
+    public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
+    public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
@@ -33,7 +33,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     private _unregisterCommands?: () => void;
 
-    constructor(parameters: ITaskDatasetControlRuntimeParameters) {
+    constructor(parameters: ITaskRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
         this._onGetProps = parameters.onGetProps;
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
@@ -46,7 +46,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
-        const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskDatasetControl: this });
+        const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskRuntime: this });
         provider.initialize({ fieldMapping, rootTaskId });
         provider.registerAvailableColumns(this._addPathColumn);
         //modules waiting for it add their columns, which a user view may keep
@@ -94,8 +94,8 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
         this.services.find('taskTree')?.setFlatList(isFlatList);
     }
 
-    public async openTasks(taskIds: string[]): Promise<void> {
-        await this.execute(() => this.getProvider().openTasks(taskIds));
+    public async editTasks(taskIds: string[]): Promise<void> {
+        await this.execute(() => this.getProvider().editTasks(taskIds));
     }
 
     public isCreationEnabled(): boolean {
@@ -216,7 +216,7 @@ export class TaskDatasetControlRuntime implements ITaskDatasetControlRuntime {
             taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.openTasks(selectedIds) });
+            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.editTasks(selectedIds) });
         }
         if (this.isDeletionEnabled() && selectedIds.length > 0) {
             taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) });

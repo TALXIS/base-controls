@@ -2,7 +2,7 @@ import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
 import type { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { ILookupManyLabels, LOOKUP_MANY_LABELS } from "./labels";
@@ -29,7 +29,7 @@ export interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn 
     column: IColumn;
     /** What the module's `columns` maps the column to. */
     settings: TColumn;
-    taskDatasetControl: ITaskDatasetControlRuntime;
+    taskRuntime: ITaskRuntime;
 }
 
 export interface ILookupManyParameters<TColumn extends ILookupManyColumn = ILookupManyColumn> {
@@ -54,15 +54,15 @@ const PICKER_KEYS = new Set(['Enter', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDow
 
 /** Columns holding several related records, drawn as pills and picked in a pop-out editor. */
 export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> implements ILookupMany {
-    private _taskDatasetControl: ITaskDatasetControlRuntime;
+    private _taskRuntime: ITaskRuntime;
     private _parameters: ILookupManyParameters<TColumn>;
     private _labels: ILocalizationService<ILookupManyLabels>;
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ILookupManyParameters<TColumn>) {
-        this._taskDatasetControl = taskDatasetControl;
+    constructor(taskRuntime: ITaskRuntime, parameters: ILookupManyParameters<TColumn>) {
+        this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         this._labels = new LocalizationService<ILookupManyLabels>({ ...LOOKUP_MANY_LABELS, ...parameters.labels });
-        taskDatasetControl.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
 
     public getColumn(columnName: string): TColumn | undefined {
@@ -75,7 +75,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     public createOptionsProvider(record: IRecord, column: IColumn): IDataProvider | undefined {
         const settings = this.getColumn(column.name);
-        return settings && this._parameters.onCreateOptionsProvider({ record, column, settings, taskDatasetControl: this._taskDatasetControl });
+        return settings && this._parameters.onCreateOptionsProvider({ record, column, settings, taskRuntime: this._taskRuntime });
     }
 
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {

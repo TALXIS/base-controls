@@ -18,7 +18,7 @@ export interface ITaskGridLabels {
     confirmDeleteTasksWithSubtasks: string;
     /** None of the selected tasks may be deleted. */
     tasksCannotBeDeleted: string;
-    /** Why the strategy kept a task. */
+    /** Why the store kept a task. */
     taskCannotBeDeleted: string;
     /** Some tasks were not deleted; the details list them. */
     deleteTasksFailed: string;

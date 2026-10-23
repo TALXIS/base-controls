@@ -3,36 +3,31 @@ import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
 import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskDatasetControlRuntime, TaskRibbonCommandUiHook } from "../../runtime";
+import type { ICreateTaskTree } from "../../provider";
+import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
 import { ITemplatesLabels, TEMPLATES_LABELS } from "./labels";
 import { TemplateSelectorAdapter } from "./components/adapters/template-selector";
 
-export interface ICreateTasksFromTemplateParameters {
-    templateId: string;
-    /** The task the template's tasks go under; the top level without it. */
-    parentId?: string;
-    taskDatasetControl: ITaskDatasetControlRuntime;
+/** A template: its own task, named after it, with the tasks under it. */
+export interface ITemplate {
+    name: string;
+    tree: ICreateTaskTree;
 }
 
-export interface ICreateTemplateFromTaskParameters {
-    task: IRecord;
-    taskDatasetControl: ITaskDatasetControlRuntime;
-}
-
-/** Where templates come from, and how they turn into tasks and back. */
-export interface ITemplatesStrategy {
+/** Where templates are kept. */
+export interface ITemplatesStore {
     /** A provider over the templates, searched by the selector; made each time it opens. */
-    onCreateTemplatesProvider(taskDatasetControl: ITaskDatasetControlRuntime): IDataProvider;
-    onCreateTasksFromTemplate(parameters: ICreateTasksFromTemplateParameters): Promise<void>;
-    /** Captures the task and its subtree; *Save as template* is offered only when implemented. */
-    onCreateTemplateFromTask?(parameters: ICreateTemplateFromTaskParameters): Promise<void>;
+    onCreateTemplatesProvider(): IDataProvider;
+    /** @returns The template, or `null` when there is none with the id. */
+    onGetTemplate(templateId: string): Promise<ITemplate | null>;
+    onCreateTemplate(template: ITemplate): Promise<void>;
 }
 
 export interface ITemplatesParameters {
-    strategy: ITemplatesStrategy;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore;
     /** Overrides for the module's strings. */
     labels?: Partial<ITemplatesLabels>;
 }
@@ -54,18 +49,18 @@ const FROM_TEMPLATE_COMMAND_ID = 'newFromTemplate';
 
 /** Templates offered from the ribbon's New and from each row's add command. */
 export class Templates implements ITemplates {
-    private _taskDatasetControl: ITaskDatasetControlRuntime;
-    private _strategy: ITemplatesStrategy;
+    private _taskRuntime: ITaskRuntime;
+    private _store: ITemplatesStore;
     private _labels: ILocalizationService<ITemplatesLabels>;
     private _unregisters: (() => void)[] = [];
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ITemplatesParameters) {
-        this._taskDatasetControl = taskDatasetControl;
-        this._strategy = parameters.strategy;
+    constructor(taskRuntime: ITaskRuntime, parameters: ITemplatesParameters) {
+        this._taskRuntime = taskRuntime;
+        this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<ITemplatesLabels>({ ...TEMPLATES_LABELS, ...parameters.labels });
-        taskDatasetControl.services.get('datasetControl').parts.whenAvailable('ribbon', ribbon => this._unregisters.push(ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)));
-        this._unregisters.push(taskDatasetControl.registerRibbonCommandUi(this._onRibbonCommandUi));
-        taskDatasetControl.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.get('datasetControl').parts.whenAvailable('ribbon', ribbon => this._unregisters.push(ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)));
+        this._unregisters.push(taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi));
+        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
     }
 
     public getLabels(): ILocalizationService<ITemplatesLabels> {
@@ -73,28 +68,40 @@ export class Templates implements ITemplates {
     }
 
     public createTemplatesProvider(): IDataProvider {
-        return this._strategy.onCreateTemplatesProvider(this._taskDatasetControl);
+        return this._store.onCreateTemplatesProvider();
     }
 
     public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<void> {
-        await this._run('creatingTasksFromTemplate', () => this._strategy.onCreateTasksFromTemplate({ templateId, parentId, taskDatasetControl: this._taskDatasetControl }));
+        await this._run('creatingTasksFromTemplate', async () => {
+            const template = await this._store.onGetTemplate(templateId);
+            if (template) {
+                const provider = this._taskRuntime.getProvider();
+                const { tree } = template;
+                await provider.createTasks([{ ...tree, data: { ...tree.data, [provider.getFieldMapping().subject]: template.name } }], parentId);
+            }
+        });
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
-        await this._run('savingTemplate', async () => this._strategy.onCreateTemplateFromTask?.({ task, taskDatasetControl: this._taskDatasetControl }));
+        await this._run('savingTemplate', async () => {
+            const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
+            const { data, children } = this._toTemplateTree(task);
+            const { [subject]: name, ...rootData } = data ?? {};
+            await this._store.onCreateTemplate({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
+        });
     }
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
     }
 
-    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
+    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
         //after the tree's own add command
         this._unregisters.push(grid.services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30));
     }
 
     private _addCommands = (commands: IRibbonCommand[]): void => {
-        const provider = this._taskDatasetControl.getProvider();
+        const provider = this._taskRuntime.getProvider();
         const selectedIds = provider.getSelectedRecordIds();
         const newIndex = commands.findIndex(command => command.id === 'new');
         const newCommand = commands[newIndex];
@@ -111,7 +118,7 @@ export class Templates implements ITemplates {
             };
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
-        if (task && this._strategy.onCreateTemplateFromTask) {
+        if (task) {
             commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.getLocalizedString('saveAsTemplate'), iconName: 'PageAdd', onExecute: () => this.createTemplateFromTask(task) });
         }
     };
@@ -120,7 +127,7 @@ export class Templates implements ITemplates {
         if (item.key !== FROM_TEMPLATE_COMMAND_ID) {
             return;
         }
-        const provider = this._taskDatasetControl.getProvider();
+        const provider = this._taskRuntime.getProvider();
         item.subMenuProps = {
             items: [{
                 key: 'selector',
@@ -161,15 +168,26 @@ export class Templates implements ITemplates {
         });
     }
 
+    //the whole subtree, whatever the view hides
+    private _toTemplateTree(task: IRecord): ICreateTaskTree {
+        const provider = this._taskRuntime.getProvider();
+        const { parentId, stackRank } = provider.getFieldMapping();
+        const excluded = new Set([provider.getMetadata().PrimaryIdAttribute, parentId, stackRank]);
+        const rawData = task.getRawData();
+        const data = Object.fromEntries(provider.getColumns().filter(column => !column.isHidden && !excluded.has(column.name)).map(column => [column.name, rawData[column.name] ?? null]));
+        const children = provider.getRecordTree().structure.getChildren(task.getRecordId()).map(child => this._toTemplateTree(child));
+        return { data, children };
+    }
+
     //the commands do not await them
     private async _run(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<void>): Promise<void> {
-        const provider = this._taskDatasetControl.getProvider();
+        const provider = this._taskRuntime.getProvider();
         provider.setLoading(true, this._labels.getLocalizedString(loadingLabel));
         try {
             await operation();
         }
         catch (error) {
-            await this._taskDatasetControl.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('templatesFailed'), details: ErrorHelper.getMessageFromError(error) });
+            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('templatesFailed'), details: ErrorHelper.getMessageFromError(error) });
         }
         finally {
             provider.setLoading(false);

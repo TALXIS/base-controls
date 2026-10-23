@@ -3,7 +3,7 @@ import { IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useSurfaceMenuProps } from "@ui";
 import { useCompact } from "@utils";
-import { useTaskDatasetControl } from "../context";
+import { useTaskRuntime } from "../context";
 import { ISettingsComponents, SettingsComponents } from "./components";
 import { getSettingsStyles } from "./styles";
 
@@ -14,13 +14,13 @@ export interface ISettingsProps {
 
 /** A menu of the task grid's toggles, such as Show hierarchy, and those its modules add. */
 export const Settings = (props: ISettingsProps) => {
-    const taskDatasetControl = useTaskDatasetControl();
+    const taskRuntime = useTaskRuntime();
     const components = { ...SettingsComponents, ...props.components };
     const styles = useMemo(() => getSettingsStyles(), []);
     const isCompact = useCompact();
     const { rerender } = useRerender();
 
-    const items = taskDatasetControl.getSettings().map((setting): IContextualMenuItem => ({
+    const items = taskRuntime.getSettings().map((setting): IContextualMenuItem => ({
         key: setting.key,
         text: setting.label,
         canCheck: true,
@@ -35,7 +35,7 @@ export const Settings = (props: ISettingsProps) => {
     if (items.length === 0) {
         return null;
     }
-    const text = taskDatasetControl.getLabels().getLocalizedString('settings');
+    const text = taskRuntime.getLabels().getLocalizedString('settings');
     return components.onRenderTooltip({
         content: isCompact ? text : undefined,
         setAriaDescribedBy: false,

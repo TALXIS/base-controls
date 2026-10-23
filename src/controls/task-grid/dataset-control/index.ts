@@ -1,5 +1,5 @@
 export * from './TaskDatasetControl';
-export { useTaskDatasetControl } from './context';
+export { useTaskRuntime } from './context';
 export * from './settings';
 export * from './page-size-switcher';
 export * from './ribbon';

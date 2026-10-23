@@ -1,2 +1,2 @@
 export * from './createDataverseDependenciesModule';
-export type { IDataverseDependenciesSchema } from './DataverseDependenciesStrategy';
+export type { IDataverseDependenciesSchema } from './DataverseDependenciesStore';

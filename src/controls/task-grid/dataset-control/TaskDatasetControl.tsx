@@ -10,7 +10,7 @@ import type { IDatasetControlLoadParameters } from "@controls/dataset-control/ru
 import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
 import type { ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
 import type { ITaskViewData } from "../provider";
-import type { ITaskDatasetControlRuntime } from "../runtime";
+import type { ITaskRuntime } from "../runtime";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
@@ -35,11 +35,11 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     /** The control's and the task grid's strings; read once, at mount. */
     labels?: Partial<IDatasetControlLabels & ITaskGridLabels>;
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
-    onMounted?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onMounted?: (taskRuntime: ITaskRuntime) => void;
     /** Called on every mount once its load succeeded. */
-    onReady?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onReady?: (taskRuntime: ITaskRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
-    onDestroyed?: (taskDatasetControl: ITaskDatasetControlRuntime) => void;
+    onDestroyed?: (taskRuntime: ITaskRuntime) => void;
 }
 
 /** A DatasetControl of tasks: `onLoad` returns the provider for the view; `TaskGrid` goes in its body. */
@@ -55,19 +55,19 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onMounted = (datasetControl: IDatasetControl<ITaskViewData>) => {
         datasetControlRef.current = datasetControl;
-        propsRef.current.onMounted?.(datasetControl.parts.get('taskDatasetControl'));
+        propsRef.current.onMounted?.(datasetControl.parts.get('taskRuntime'));
     };
 
-    const onReady = (datasetControl: IDatasetControl<ITaskViewData>) => propsRef.current.onReady?.(datasetControl.parts.get('taskDatasetControl'));
+    const onReady = (datasetControl: IDatasetControl<ITaskViewData>) => propsRef.current.onReady?.(datasetControl.parts.get('taskRuntime'));
 
     const onDestroyed = (datasetControl: IDatasetControl<ITaskViewData>) => {
-        const taskDatasetControl = datasetControl.parts.find('taskDatasetControl');
-        if (taskDatasetControl) {
-            propsRef.current.onDestroyed?.(taskDatasetControl);
+        const taskRuntime = datasetControl.parts.find('taskRuntime');
+        if (taskRuntime) {
+            propsRef.current.onDestroyed?.(taskRuntime);
         }
     };
 
-    const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskDatasetControl').load(parameters);
+    const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskRuntime').load(parameters);
 
     const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, enableEditing, enableDeletion, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
 

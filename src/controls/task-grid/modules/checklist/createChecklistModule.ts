@@ -7,6 +7,6 @@ export interface IChecklistModule extends IDatasetControlModule<'checklist'> { }
 /** Shows the items `onGetItems` reads off each task as `done/total`. */
 export const createChecklistModule = (parameters: IChecklistParameters): IChecklistModule => ({
     name: 'checklist',
-    onLoad: datasetControl => new Checklist(datasetControl.parts.get('taskDatasetControl'), parameters),
+    onLoad: datasetControl => new Checklist(datasetControl.parts.get('taskRuntime'), parameters),
     onDestroy: checklist => checklist.destroy(),
 });

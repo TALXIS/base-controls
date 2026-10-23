@@ -1,9 +1,10 @@
 import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
-import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
+import type { ITaskRuntime } from "../../runtime";
+import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 
-export interface IMemoryTaskStrategyParameters {
+export interface IMemoryTaskStoreParameters {
+    taskRuntime: ITaskRuntime;
     /** The tasks to start with; copied, so changes never reach this array. */
     records: IRawRecord[];
     /** `PrimaryIdAttribute` is required. */
@@ -12,28 +13,18 @@ export interface IMemoryTaskStrategyParameters {
     columns: IColumn[];
 }
 
-/** A strategy over tasks held in memory, handed its mount by `createMemoryTaskDataSource`. */
-export interface IMemoryTaskStrategy extends ITaskStrategy {
-    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
-}
+/** Tasks held in memory; editing one shows an alert. */
+export class MemoryTaskStore implements ITaskStore {
+    protected _parameters: IMemoryTaskStoreParameters;
+    protected _tasks: IRawRecord[];
 
-/** Tasks held in memory; opening one shows an alert. */
-export class MemoryTaskStrategy implements IMemoryTaskStrategy {
-    protected _parameters: IMemoryTaskStrategyParameters;
-    protected _store: IRawRecord[];
-    protected _taskDatasetControl!: ITaskDatasetControlRuntime;
-
-    constructor(parameters: IMemoryTaskStrategyParameters) {
+    constructor(parameters: IMemoryTaskStoreParameters) {
         this._parameters = parameters;
-        this._store = structuredClone(parameters.records);
-    }
-
-    public onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void {
-        this._taskDatasetControl = taskDatasetControl;
+        this._tasks = structuredClone(parameters.records);
     }
 
     public async onLoad(): Promise<ITaskLoadResult> {
-        return { rawData: structuredClone(this._store), metadata: this._parameters.metadata, columns: this._parameters.columns };
+        return { rawData: structuredClone(this._tasks), metadata: this._parameters.metadata, columns: this._parameters.columns };
     }
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
@@ -58,14 +49,14 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         task[fieldMapping.parentId] = this._getParentReference(params.parentRecord);
         task[fieldMapping.stackRank] = this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping);
         task[fieldMapping.stateCode] ??= 0;
-        this._store.push(task);
+        this._tasks.push(task);
         return structuredClone(task);
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
         const deletedTaskIds = new Set(params.taskIds);
         const primaryIdAttribute = this._parameters.metadata.PrimaryIdAttribute!;
-        this._store = this._store.filter(task => !deletedTaskIds.has(task[primaryIdAttribute]));
+        this._tasks = this._tasks.filter(task => !deletedTaskIds.has(task[primaryIdAttribute]));
         return { success: true, deletedTaskIds: params.taskIds };
     }
 
@@ -90,14 +81,19 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         return { recordId: record.getRecordId(), success: true, fields: Object.keys(values) };
     }
 
-    public async onOpenRecords(references: ComponentFramework.EntityReference[]): Promise<IOpenTasksResult | null> {
-        const names = references.map(reference => reference.name).join(', ');
-        await this._taskDatasetControl.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${names}: tasks held in memory have no form.` });
+    public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+        const subject = this._parameters.taskRuntime.getProvider().getFieldMapping().subject;
+        const names = taskIds.map(taskId => this._find(taskId)?.[subject] ?? taskId).join(', ');
+        await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${names}` });
         return null;
     }
 
+    public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
+        await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${reference.name ?? reference.id.guid}` });
+    }
+
     protected _find(taskId: string): IRawRecord | undefined {
-        return this._store.find(task => task[this._parameters.metadata.PrimaryIdAttribute!] === taskId);
+        return this._tasks.find(task => task[this._parameters.metadata.PrimaryIdAttribute!] === taskId);
     }
 
     protected _write(taskId: string, values: IRawRecord): void {

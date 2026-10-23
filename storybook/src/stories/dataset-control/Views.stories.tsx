@@ -139,7 +139,7 @@ const store: IUserQueriesStore<IDealViewData> = {
     createManageProvider: () => createSavedViewsProvider(),
 }
 
-createUserQueriesModule<IDealViewData>({ store, onGetViewData: captureViewData })
+createUserQueriesModule<IDealViewData>({ onCreateStore: () => store, onGetViewData: captureViewData })
 \`\`\`
 
 | Store member | Description |

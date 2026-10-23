@@ -3,7 +3,7 @@ import { DataTypes, IColumn, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { CHECKLIST_LABELS, IChecklistLabels } from "./labels";
@@ -39,11 +39,11 @@ export class Checklist implements IChecklist {
     private _labels: ILocalizationService<IChecklistLabels>;
     private _unregisters: (() => void)[] = [];
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: IChecklistParameters) {
+    constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
         this._parameters = parameters;
         this._labels = new LocalizationService<IChecklistLabels>({ ...CHECKLIST_LABELS, ...parameters.labels });
-        taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
-        taskDatasetControl.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
+        taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
 
     public getItems(task: IRecord): IChecklistItem[] {

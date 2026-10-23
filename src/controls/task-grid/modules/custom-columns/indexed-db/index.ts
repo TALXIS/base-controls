@@ -1,2 +1,2 @@
-export * from './IndexedDbCustomColumnsStrategy';
+export * from './IndexedDbCustomColumnsStore';
 export * from './createIndexedDbCustomColumnsModule';

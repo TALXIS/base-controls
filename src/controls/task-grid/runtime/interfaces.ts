@@ -30,9 +30,9 @@ export interface ITaskGridTree {
 }
 
 /** The services a provider's platform registers; it adds its own by augmenting this. */
-export interface ITaskDatasetControlRuntimeModuleServiceMap { }
+export interface ITaskRuntimeModuleServiceMap { }
 
-export interface ITaskDatasetControlRuntimeServiceMap extends ITaskDatasetControlRuntimeModuleServiceMap {
+export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     /** The DatasetControl of this mount. */
     datasetControl: IDatasetControl<ITaskViewData>;
     labels: ILocalizationService<ITaskGridLabels>;
@@ -43,15 +43,15 @@ export interface ITaskDatasetControlRuntimeServiceMap extends ITaskDatasetContro
     taskTree: ITaskGridTree;
 }
 
-export interface ITaskDatasetControlRuntimeEvents {
+export interface ITaskRuntimeEvents {
     /** The mount is going; release what was wired outside it. */
     onDestroyed: () => void;
 }
 
 /** One mount of a `TaskDatasetControl`: what its modules register on and its parts read. */
-export interface ITaskDatasetControlRuntime {
-    readonly services: IServiceLocator<ITaskDatasetControlRuntimeServiceMap>;
-    readonly events: IEventSubscriber<ITaskDatasetControlRuntimeEvents>;
+export interface ITaskRuntime {
+    readonly services: IServiceLocator<ITaskRuntimeServiceMap>;
+    readonly events: IEventSubscriber<ITaskRuntimeEvents>;
     /** Calls `onLoad`, then initializes and registers the provider it returns. */
     load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
     /** The view this mount loaded. */
@@ -64,7 +64,7 @@ export interface ITaskDatasetControlRuntime {
     /** Whether the matching tasks are listed on their own, without the tree; remembered per view. */
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
-    openTasks(taskIds: string[]): Promise<void>;
+    editTasks(taskIds: string[]): Promise<void>;
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
@@ -95,7 +95,7 @@ export interface ITaskDatasetControlRuntime {
 
 declare module "@controls/dataset-control/runtime/interfaces" {
     interface IDatasetControlPartMap {
-        /** The task dataset control the parts are drawn in. */
-        taskDatasetControl: ITaskDatasetControlRuntime;
+        /** What runs the task grid inside the control. */
+        taskRuntime: ITaskRuntime;
     }
 }

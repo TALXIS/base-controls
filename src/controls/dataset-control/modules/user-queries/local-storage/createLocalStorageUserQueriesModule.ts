@@ -14,7 +14,7 @@ export interface ILocalStorageUserQueriesModuleParameters<TData> extends Omit<IL
 
 /** The user's views kept in the browser's localStorage, with their columns and data as JSON. */
 export const createLocalStorageUserQueriesModule = <TData,>(parameters: ILocalStorageUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => createUserQueriesModule<TData>({
-    store: new LocalStorageUserQueriesStore<TData>({ storageKey: parameters.storageKey, nameLabel: parameters.labels?.viewName ?? USER_QUERIES_LABELS.viewName }),
+    onCreateStore: () => new LocalStorageUserQueriesStore<TData>({ storageKey: parameters.storageKey, nameLabel: parameters.labels?.viewName ?? USER_QUERIES_LABELS.viewName }),
     onGetViewData: parameters.onGetViewData,
     labels: parameters.labels,
 });

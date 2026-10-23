@@ -3,7 +3,7 @@ import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxi
 import type { IGrid } from "@controls/grid";
 import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { DEPENDENCIES_LABELS, IDependenciesLabels } from "./labels";
@@ -26,7 +26,7 @@ export interface ITaskDependency {
 export type ITaskDependencyCreate = Omit<ITaskDependency, 'id'>;
 
 /** Where dependencies are kept; a read-only one throws from the writes. */
-export interface ITaskDependenciesStrategy {
+export interface ITaskDependenciesStore {
     /** The dependencies touching any of these tasks, at either end. */
     onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
     onCreateDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency>;
@@ -35,7 +35,7 @@ export interface ITaskDependenciesStrategy {
 }
 
 export interface IDependenciesParameters {
-    strategy: ITaskDependenciesStrategy;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ITaskDependenciesStore;
     /** Overrides for the module's strings. */
     labels?: Partial<IDependenciesLabels>;
 }
@@ -45,7 +45,7 @@ export interface IDependenciesEvents {
     onDependenciesChanged: (taskIds: string[]) => void;
 }
 
-/** The `dependencies` module: the tasks' dependencies, read and written through its strategy. */
+/** The `dependencies` module: the tasks' dependencies, read and written through its store. */
 export interface IDependencies {
     events: IEventEmitter<IDependenciesEvents>;
     getDependencies(): ITaskDependency[];
@@ -66,23 +66,23 @@ export interface IDependencies {
     destroy(): void;
 }
 
-/** Each task's dependencies, held for the grid and written through the strategy. */
+/** Each task's dependencies, held for the grid and written through the store. */
 export class Dependencies implements IDependencies {
     public events = new EventEmitter<IDependenciesEvents>();
-    private _taskDatasetControl: ITaskDatasetControlRuntime;
-    private _strategy: ITaskDependenciesStrategy;
+    private _taskRuntime: ITaskRuntime;
+    private _store: ITaskDependenciesStore;
     private _labels: ILocalizationService<IDependenciesLabels>;
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
     private _unregisters: (() => void)[] = [];
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: IDependenciesParameters) {
-        this._taskDatasetControl = taskDatasetControl;
-        this._strategy = parameters.strategy;
+    constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
+        this._taskRuntime = taskRuntime;
+        this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<IDependenciesLabels>({ ...DEPENDENCIES_LABELS, ...parameters.labels });
-        taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
-        taskDatasetControl.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
+        taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
 
     public getDependencies(): ITaskDependency[] {
@@ -98,7 +98,7 @@ export class Dependencies implements IDependencies {
     }
 
     public isEditable(): boolean {
-        return this._taskDatasetControl.isEditingEnabled();
+        return this._taskRuntime.isEditingEnabled();
     }
 
     public canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean {
@@ -116,7 +116,7 @@ export class Dependencies implements IDependencies {
             return null;
         }
         return this._run(async () => {
-            const created = await this._strategy.onCreateDependency(dependency);
+            const created = await this._store.onCreateDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
             return created;
         }, null);
@@ -129,7 +129,7 @@ export class Dependencies implements IDependencies {
         }
         return this._run(async () => {
             const updated = { ...existing, ...changes };
-            await this._strategy.onUpdateDependency(updated);
+            await this._store.onUpdateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
             return true;
         }, false);
@@ -141,7 +141,7 @@ export class Dependencies implements IDependencies {
             return false;
         }
         return this._run(async () => {
-            await this._strategy.onDeleteDependency(dependencyId);
+            await this._store.onDeleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             return true;
         }, false);
@@ -169,7 +169,7 @@ export class Dependencies implements IDependencies {
     };
 
     private _onFirstDataLoaded = (): void => {
-        this._load(Object.keys(this._taskDatasetControl.getProvider().getRecordsMap()));
+        this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
     };
 
     private _onTasksDeleted = (taskIds: string[]): void => {
@@ -190,7 +190,7 @@ export class Dependencies implements IDependencies {
             return;
         }
         await this._run(async () => {
-            const loaded = await this._strategy.onLoadDependencies(taskIds);
+            const loaded = await this._store.onLoadDependencies(taskIds);
             const loadedTaskIds = new Set(taskIds);
             const loadedIds = new Set(loaded.map(dependency => dependency.id));
             const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
@@ -265,7 +265,7 @@ export class Dependencies implements IDependencies {
             return await operation();
         }
         catch (error) {
-            await this._taskDatasetControl.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('dependenciesFailed'), details: ErrorHelper.getMessageFromError(error) });
+            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('dependenciesFailed'), details: ErrorHelper.getMessageFromError(error) });
             return fallback;
         }
     }

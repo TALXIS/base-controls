@@ -1,2 +1,2 @@
 export * from './createMemoryTaskDataSource';
-export * from './MemoryTaskStrategy';
+export * from './MemoryTaskStore';

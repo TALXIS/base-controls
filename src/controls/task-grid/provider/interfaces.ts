@@ -44,7 +44,7 @@ export type IDeleteTasksResult =
     | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
 
 /** The records opening came back with changed, and which could not be opened. */
-export type IOpenTasksResult =
+export type IEditTasksResult =
     | { success: true; updatedRecords: IRawRecord[] }
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
@@ -61,7 +61,7 @@ export interface ITaskSiblingContext {
 
 /** Where a new task lands, and what it starts with. */
 export interface ITaskCreateParams extends ITaskSiblingContext {
-    /** Values the caller asked for, by column name; applied over the strategy's defaults. */
+    /** Values the caller asked for, by column name; applied over the store's defaults. */
     data?: { [columnName: string]: any };
     /** The columns the provider shows. */
     columns: IColumn[];
@@ -78,11 +78,11 @@ export interface ITaskMoveParams extends ITaskSiblingContext {
     position: ITaskMovePosition;
 }
 
-/** What deleting tasks would remove, and what the strategy keeps. */
+/** What deleting tasks would remove, and what the store keeps. */
 export interface ITaskDeletion {
     /** The tasks and their subtrees, less refused tasks and the ancestors of those. */
     deletableTaskIds: string[];
-    /** The tasks the strategy refused. */
+    /** The tasks the store refused. */
     refusedTaskIds: string[];
 }
 
@@ -114,7 +114,7 @@ export interface ITaskLoadResult {
 }
 
 /** Where the tasks come from and how changing them is persisted. */
-export interface ITaskStrategy {
+export interface ITaskStore {
     /** Loads every task of the view the provider was created for. */
     onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult>;
     /** The columns Edit columns offers: the tasks' own, or those of `options.entityName` when given. */
@@ -132,8 +132,10 @@ export interface ITaskStrategy {
     /** @returns The records the move changed, or `null` when the user cancelled. */
     onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null>;
     onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult>;
-    /** Opens tasks, or a record a task's lookup points to when `isTask` is `false`. */
-    onOpenRecords(references: ComponentFramework.EntityReference[], isTask: boolean): Promise<IOpenTasksResult | null>;
+    /** Lets the user edit the tasks, such as in a form; `null` when nothing changed. */
+    onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Opens the record a task's lookup points to. */
+    onOpenRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
 /** What the task provider raises once an operation is done. */
@@ -173,7 +175,7 @@ export interface ITaskDataProvider extends IDataProvider {
     initialize(parameters: ITaskDataProviderInitializeParameters): void;
     /** @throws Before `initialize`. */
     getFieldMapping(): IFieldMapping;
-    getStrategy(): ITaskStrategy;
+    getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */
     getAllRecords(): IRecord[];
     getRecordTree(): IRecordTree;
@@ -197,11 +199,11 @@ export interface ITaskDataProvider extends IDataProvider {
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
     /** @returns Whether the task moved. */
     moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<boolean>;
-    openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
+    editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Writes changed raw data onto the records it belongs to. */
     updateTaskData(rawRecords: IRawRecord[]): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
-    /** Loads and saves the columns the handler claims in place of the strategy. */
+    /** Loads and saves the columns the handler claims in place of the store. */
     registerColumnHandler(handler: ITaskColumnHandler): () => void;
 }

@@ -11,11 +11,11 @@ declare module "@controls/dataset-control/runtime/interfaces" {
     }
 }
 
-/** The user's own task columns, loaded on every mount before the tasks. */
+/** The user's own task columns, loaded on every mount before the tasks, from the store `onCreateStore` makes. */
 export const createCustomColumnsModule = (parameters: ICustomColumnsParameters): ICustomColumnsModule => ({
     name: 'customColumns',
     onLoad: async datasetControl => {
-        const customColumns = new CustomColumns(datasetControl.parts.get('taskDatasetControl'), parameters);
+        const customColumns = new CustomColumns(datasetControl.parts.get('taskRuntime'), parameters);
         await customColumns.load();
         return customColumns;
     },

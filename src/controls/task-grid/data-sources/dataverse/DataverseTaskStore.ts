@@ -1,9 +1,9 @@
 import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { StackRank } from "@utils/stack-rank";
-import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
+import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 
 /** A form the data source opens. */
 export type DataverseTaskFormOperation = 'create' | 'edit' | 'bulkEdit' | 'open';
@@ -23,7 +23,8 @@ export interface IDataverseTaskFormOptions {
     onGetParameters?: (operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormParameters) => IDataverseTaskFormParameters;
 }
 
-export interface IDataverseTaskStrategyParameters {
+export interface IDataverseTaskStoreParameters {
+    taskRuntime: ITaskRuntime;
     /** Selects the tasks, rendered with Liquid over `project` and `currentRecord`. */
     fetchXml: string;
     /** The record the grid sits on, as `currentRecord` in the FetchXML. */
@@ -33,32 +34,25 @@ export interface IDataverseTaskStrategyParameters {
     onGetNewTaskDefaults?: (params: ITaskCreateParams) => IRawRecord | Promise<IRawRecord>;
 }
 
-/** A strategy over tasks in Dataverse, handed its mount by `createDataverseTaskDataSource`. */
-export interface IDataverseTaskStrategy extends ITaskStrategy {
-    onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
-}
+const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
 
 //the values land inside FetchXML attributes
 const LIQUID = new Liquid({ outputEscape: 'escape' });
 const MAX_IDS_PER_REQUEST = 800;
-const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
 
 /** Tasks in Dataverse, read through FetchXML and opened in their forms. */
-export class DataverseTaskStrategy implements IDataverseTaskStrategy {
-    protected _parameters: IDataverseTaskStrategyParameters;
-    protected _taskDatasetControl!: ITaskDatasetControlRuntime;
+export class DataverseTaskStore implements ITaskStore {
+    protected _parameters: IDataverseTaskStoreParameters;
+    protected _taskRuntime: ITaskRuntime;
     protected _fetchXmlProvider!: FetchXmlDataProvider;
     protected _entityName!: string;
     protected _entitySetName!: string;
     protected _primaryIdAttribute!: string;
     protected _projectLookup?: { columnName: string; reference: ComponentFramework.EntityReference };
 
-    constructor(parameters: IDataverseTaskStrategyParameters) {
+    constructor(parameters: IDataverseTaskStoreParameters) {
         this._parameters = parameters;
-    }
-
-    public onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void {
-        this._taskDatasetControl = taskDatasetControl;
+        this._taskRuntime = parameters.taskRuntime;
     }
 
     public async onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult> {
@@ -116,15 +110,14 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return this._fetchXmlProvider.onRecordSave(record);
     }
 
-    public async onOpenRecords(references: ComponentFramework.EntityReference[], isTask: boolean): Promise<IOpenTasksResult | null> {
-        if (!isTask) {
-            await this._navigate('open', { pageInput: { pageType: 'entityrecord', entityName: references[0].etn!, entityId: references[0].id.guid }, navigationOptions: SIDE_DIALOG });
-            return null;
-        }
-        const taskIds = references.map(reference => reference.id.guid);
+    public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
+        await this._navigate('open', { pageInput: { pageType: 'entityrecord', entityName: reference.etn!, entityId: reference.id.guid }, navigationOptions: SIDE_DIALOG });
+    }
+
+    public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
         if (taskIds.length === 1) {
             await this._navigate('edit', {
-                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskDatasetControl.getProvider().isRecordActive(taskIds[0]) } },
+                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskRuntime.getProvider().isRecordActive(taskIds[0]) } },
                 navigationOptions: SIDE_DIALOG,
             });
         }
@@ -139,15 +132,15 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     protected _getPcfContext(): IPcfContext {
-        return this._taskDatasetControl.services.get('pcfContext');
+        return this._taskRuntime.services.get('pcfContext');
     }
 
     protected _isEditingEnabled(): boolean {
-        return this._taskDatasetControl.isEditingEnabled();
+        return this._taskRuntime.isEditingEnabled();
     }
 
     protected _renderFetchXml(): string {
-        const project = this._taskDatasetControl.services.get('datasetControl').modules.find('project');
+        const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
         const sourceRecord = this._parameters.sourceRecord;
         return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
             project: project && { id: project.id, name: project.name, entityName: project.entityName, ...project.data as object },
@@ -157,7 +150,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
     //the task lookup to the project's table
     protected async _resolveProjectLookup(fetchXml: string): Promise<{ columnName: string; reference: ComponentFramework.EntityReference } | undefined> {
-        const project = this._taskDatasetControl.services.get('datasetControl').modules.find('project');
+        const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
         if (!project?.entityName) {
             return undefined;
         }
@@ -168,7 +161,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         const narrowedColumnNames = lookupColumnNames.filter(columnName => filteredColumnNames.includes(columnName));
         const columnNames = narrowedColumnNames.length > 0 ? narrowedColumnNames : lookupColumnNames;
         if (columnNames.length > 1) {
-            throw new Error(this._taskDatasetControl.getLabels().getLocalizedString('projectLookupAmbiguous', { columns: columnNames.join(', ') }));
+            throw new Error(this._taskRuntime.getLabels().getLocalizedString('projectLookupAmbiguous', { columns: columnNames.join(', ') }));
         }
         return columnNames[0] ? { columnName: columnNames[0], reference: { id: { guid: project.id }, name: project.name ?? '', etn: project.entityName } } : undefined;
     }

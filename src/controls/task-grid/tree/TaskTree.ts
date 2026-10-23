@@ -7,7 +7,7 @@ import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
-import type { ITaskDatasetControlRuntime, ITaskGridSetting } from "../runtime";
+import type { ITaskRuntime, ITaskGridSetting } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
@@ -21,7 +21,7 @@ const NEW_TASK_FOCUS_ATTEMPTS = 3;
 
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
-    runtime: ITaskDatasetControlRuntime;
+    runtime: ITaskRuntime;
     /** The view's store in the dataset control. */
     state: IStateStore;
 }
@@ -29,7 +29,7 @@ export interface ITaskTreeParameters {
 /** Draws the tasks as a tree on the grid: the rows, the subject column, dragging and expansion. */
 export class TaskTree {
     private _grid: IGrid<ITaskGridServiceMap>;
-    private _runtime: ITaskDatasetControlRuntime;
+    private _runtime: ITaskRuntime;
     private _state: IStateStore;
     private _provider: ITaskDataProvider;
     private _expansion: TaskExpansion;

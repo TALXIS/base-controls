@@ -2,7 +2,8 @@ import { Attribute, DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, 
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import type { Attribute as IAttribute } from "@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition";
 import type { IPcfContext } from "@interfaces";
-import type { ICustomColumnsStrategy } from "../CustomColumns";
+import type { ITaskRuntime } from "../../../runtime";
+import type { ICustomColumnsStore } from "../CustomColumns";
 
 /** The table holding custom column definitions. */
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
@@ -12,8 +13,8 @@ export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 const MAX_IDS_PER_REQUEST = 800;
 const VALUE_FIELDS = ['talxis_attributevalueid', 'talxis_serialized_value', 'talxis_text_value', 'talxis_int_value', 'talxis_decimal_value', '_talxis_choice_value_value', 'talxis_bit_value', 'talxis_date_value', 'talxis_datetime_userlocal_value', 'talxis_datetime_tzi_value', '_talxis_attributedefinitionid_value'];
 
-export interface ITalxisCustomColumnsStrategyParameters {
-    pcfContext: IPcfContext;
+export interface ITalxisCustomColumnsStoreParameters {
+    taskRuntime: ITaskRuntime;
     /** The logical name of the entity the columns are defined for, such as `task`. */
     entityName: string;
     /** Only the definitions of this record, such as the project. */
@@ -30,14 +31,14 @@ interface IValueRelationship {
 }
 
 /** Custom columns as TALXIS `talxis_attributedefinition` records, with each value a `talxis_attributevalue` record. */
-export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
-    private _parameters: ITalxisCustomColumnsStrategyParameters;
+export class TalxisCustomColumnsStore implements ICustomColumnsStore {
+    private _parameters: ITalxisCustomColumnsStoreParameters;
     private _columns: IColumn[] = [];
     //keyed by task id and attribute definition id, for the upsert
     private _valueIds = new Map<string, string>();
     private _relationship?: IValueRelationship;
 
-    constructor(parameters: ITalxisCustomColumnsStrategyParameters) {
+    constructor(parameters: ITalxisCustomColumnsStoreParameters) {
         this._parameters = parameters;
     }
 
@@ -88,11 +89,11 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
         };
         try {
             if (valueId) {
-                await this._parameters.pcfContext.webAPI.updateRecord(ATTRIBUTE_VALUE_ENTITY_NAME, valueId, payload);
+                await this._getPcfContext().webAPI.updateRecord(ATTRIBUTE_VALUE_ENTITY_NAME, valueId, payload);
                 return { success: true, recordId: valueId, fields: [column.name] };
             }
             const { referencingEntityNavigationPropertyName, entitySetName } = this._getRelationship();
-            const created = await this._parameters.pcfContext.webAPI.createRecord(ATTRIBUTE_VALUE_ENTITY_NAME, {
+            const created = await this._getPcfContext().webAPI.createRecord(ATTRIBUTE_VALUE_ENTITY_NAME, {
                 ...payload,
                 'talxis_attributedefinitionid@odata.bind': `/talxis_attributedefinitions(${definitionId})`,
                 [`${referencingEntityNavigationPropertyName}@odata.bind`]: `/${entitySetName}(${taskId})`,
@@ -121,7 +122,7 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
     }
 
     public async onDeleteColumn(columnName: string): Promise<string | null> {
-        await this._parameters.pcfContext.webAPI.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, this._getDefinitionId(columnName));
+        await this._getPcfContext().webAPI.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, this._getDefinitionId(columnName));
         return columnName;
     }
 
@@ -133,7 +134,7 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
         const results = await Promise.all(batches.map(async batch => {
             const ids = batch.map(id => `'${id}'`).join(',');
             const query = `?$select=${[...VALUE_FIELDS, taskIdField].join(',')}&$filter=Microsoft.Dynamics.CRM.In(PropertyName='${referencingAttribute}', PropertyValues=[${ids}])`;
-            const { entities } = await this._parameters.pcfContext.webAPI.retrieveMultipleRecords(ATTRIBUTE_VALUE_ENTITY_NAME, query);
+            const { entities } = await this._getPcfContext().webAPI.retrieveMultipleRecords(ATTRIBUTE_VALUE_ENTITY_NAME, query);
             return entities;
         }));
         return results.flat();
@@ -142,7 +143,7 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
     //the side dialog the definition forms open in
     private async _navigate(pageInput: Xrm.Navigation.PageInputEntityRecord): Promise<any> {
         //the PCF typings leave out navigateTo
-        const navigation = this._parameters.pcfContext.navigation as ComponentFramework.Navigation & Pick<Xrm.Navigation, 'navigateTo'>;
+        const navigation = this._getPcfContext().navigation as ComponentFramework.Navigation & Pick<Xrm.Navigation, 'navigateTo'>;
         return navigation.navigateTo(pageInput, { target: 2 });
     }
 
@@ -152,7 +153,7 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
 
     private _getRelationship(): IValueRelationship {
         if (!this._relationship) {
-            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship to ${ATTRIBUTE_VALUE_ENTITY_NAME} as its columns load.`);
+            throw new Error(`${TalxisCustomColumnsStore.name} reads the relationship to ${ATTRIBUTE_VALUE_ENTITY_NAME} as its columns load.`);
         }
         return this._relationship;
     }
@@ -160,7 +161,7 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
     //a schema has one relationship to the values; `navigationPropertyName` picks one when there are several
     private async _resolveRelationship(): Promise<IValueRelationship> {
         const { entityName, navigationPropertyName } = this._parameters;
-        const metadata: any = await this._parameters.pcfContext.utils.getEntityMetadata(entityName);
+        const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);
         const relationships: any[] = metadata.OneToManyRelationships.getAll().filter((relationship: any) => relationship.ReferencingEntity === ATTRIBUTE_VALUE_ENTITY_NAME);
         const relationship = navigationPropertyName
             ? relationships.find(candidate => candidate.ReferencedEntityNavigationPropertyName === navigationPropertyName || candidate.ReferencingEntityNavigationPropertyName === navigationPropertyName)
@@ -229,5 +230,9 @@ export class TalxisCustomColumnsStrategy implements ICustomColumnsStrategy {
             ...attribute,
             OptionSet: attribute.OptionSet?.Options.map(option => ({ Label: option.Label, Value: option.Value, Color: option.Color, OptionId: option.talxis_OptionId })),
         };
+    }
+
+    private _getPcfContext(): IPcfContext {
+        return this._parameters.taskRuntime.services.get('pcfContext');
     }
 }

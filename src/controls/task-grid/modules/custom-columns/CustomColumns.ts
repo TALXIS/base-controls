@@ -3,11 +3,11 @@ import type { ICommandBarItemProps } from "@legacy";
 import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/components/adapters/edit-columns";
 import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
-import type { ITaskDatasetControlRuntime } from "../../runtime";
+import type { ITaskRuntime } from "../../runtime";
 import { CUSTOM_COLUMNS_LABELS, ICustomColumnsLabels } from "./labels";
 
 /** Where custom column definitions and values are kept. */
-export interface ICustomColumnsStrategy {
+export interface ICustomColumnsStore {
     /** Loads the column definitions; called on every mount, before the tasks load. */
     onLoadColumns(): Promise<IColumn[]>;
     /** The custom columns' values of these tasks, by task id and column name. */
@@ -22,7 +22,7 @@ export interface ICustomColumnsStrategy {
 }
 
 export interface ICustomColumnsParameters {
-    strategy: ICustomColumnsStrategy;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
     /** The Add custom column command in Edit columns. */
     enableCreation?: boolean;
     /** The edit command on each custom column in Edit columns. */
@@ -33,25 +33,27 @@ export interface ICustomColumnsParameters {
     labels?: Partial<ICustomColumnsLabels>;
 }
 
-/** The user's own task columns: offered in Edit columns, and loaded and saved through their strategy. */
+/** The user's own task columns: offered in Edit columns, and loaded and saved through their store. */
 export class CustomColumns {
-    private _taskDatasetControl: ITaskDatasetControlRuntime;
+    private _taskRuntime: ITaskRuntime;
     private _parameters: ICustomColumnsParameters;
+    private _store: ICustomColumnsStore;
     private _labels: ILocalizationService<ICustomColumnsLabels>;
     private _columns: IColumn[] = [];
     private _unregisters: (() => void)[] = [];
 
-    constructor(taskDatasetControl: ITaskDatasetControlRuntime, parameters: ICustomColumnsParameters) {
-        this._taskDatasetControl = taskDatasetControl;
+    constructor(taskRuntime: ITaskRuntime, parameters: ICustomColumnsParameters) {
+        this._taskRuntime = taskRuntime;
         this._parameters = parameters;
+        this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<ICustomColumnsLabels>({ ...CUSTOM_COLUMNS_LABELS, ...parameters.labels });
     }
 
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */
     public async load(): Promise<void> {
-        this._columns = await this._parameters.strategy.onLoadColumns();
-        this._taskDatasetControl.services.whenAvailable('provider', this._onProviderAvailable);
-        this._taskDatasetControl.services.get('datasetControl').parts.whenAvailable('editColumns', this._onEditColumnsAvailable);
+        this._columns = await this._store.onLoadColumns();
+        this._taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
+        this._taskRuntime.services.get('datasetControl').parts.whenAvailable('editColumns', this._onEditColumnsAvailable);
     }
 
     public getColumns(): IColumn[] {
@@ -71,18 +73,18 @@ export class CustomColumns {
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        const strategy = this._parameters.strategy;
+        const store = this._store;
         this._unregisters.push(
             provider.registerColumnHandler({
                 isHandledColumn: columnName => this.isCustomColumn(columnName),
-                onLoadValues: taskIds => strategy.onLoadValues(taskIds),
-                onSaveValue: (record, column, value) => strategy.onSaveValue(record, column, value),
+                onLoadValues: taskIds => store.onLoadValues(taskIds),
+                onSaveValue: (record, column, value) => store.onSaveValue(record, column, value),
             }),
             provider.registerAvailableColumns(this._addAvailableColumns),
         );
     };
 
-    //over the bare virtual column a FetchXML strategy hands back for one
+    //over the bare virtual column a FetchXML store hands back for one
     private _addAvailableColumns = (columns: IColumn[]): void => {
         for (const column of this._columns) {
             const index = columns.findIndex(existing => existing.name === column.name);
@@ -123,7 +125,7 @@ export class CustomColumns {
 
     private async _createColumn(session: DatasetControlEditColumnsSession): Promise<void> {
         await this._run(async () => {
-            const columnName = await this._parameters.strategy.onCreateColumn();
+            const columnName = await this._store.onCreateColumn();
             if (!columnName) {
                 return;
             }
@@ -137,7 +139,7 @@ export class CustomColumns {
 
     private async _updateColumn(columnName: string, session: DatasetControlEditColumnsSession): Promise<void> {
         await this._run(async () => {
-            if (!await this._parameters.strategy.onUpdateColumn(columnName)) {
+            if (!await this._store.onUpdateColumn(columnName)) {
                 return;
             }
             await this._reloadColumns();
@@ -146,13 +148,13 @@ export class CustomColumns {
     }
 
     private async _deleteColumn(columnName: string, session: DatasetControlEditColumnsSession): Promise<void> {
-        const navigation = this._taskDatasetControl.services.get('pcfContext').navigation;
+        const navigation = this._taskRuntime.services.get('pcfContext').navigation;
         const confirmation = await navigation.openConfirmDialog({ text: this._labels.getLocalizedString('confirmColumnDelete') });
         if (!confirmation.confirmed) {
             return;
         }
         await this._run(async () => {
-            if (!await this._parameters.strategy.onDeleteColumn(columnName)) {
+            if (!await this._store.onDeleteColumn(columnName)) {
                 return;
             }
             await this._reloadColumns();
@@ -161,7 +163,7 @@ export class CustomColumns {
     }
 
     private async _reloadColumns(): Promise<void> {
-        this._columns = await this._parameters.strategy.onLoadColumns();
+        this._columns = await this._store.onLoadColumns();
     }
 
     //the commands do not await them
@@ -170,7 +172,7 @@ export class CustomColumns {
             await operation();
         }
         catch (error) {
-            await this._taskDatasetControl.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('customColumnsFailed'), details: ErrorHelper.getMessageFromError(error) });
+            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('customColumnsFailed'), details: ErrorHelper.getMessageFromError(error) });
         }
     }
 }
