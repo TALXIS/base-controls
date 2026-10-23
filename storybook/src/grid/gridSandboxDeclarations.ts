@@ -4184,7 +4184,7 @@ declare const createMemoryTemplatesModule: (parameters: { templates: IMemoryTemp
 declare const TEMPLATES: IMemoryTemplate[];
 
 /** Strings of the checklist module. */
-type ChecklistLabels = Partial<{ checklist: string }>;
+type ChecklistLabels = Partial<{ checklist: string; loadChecklistFailed: string }>;
 
 /** One item of a task's checklist. */
 interface IChecklistItem {
@@ -4193,8 +4193,14 @@ interface IChecklistItem {
     isCompleted: boolean;
 }
 
+/** Where checklist items are kept. */
+interface IChecklistStore {
+    /** The items of these tasks, by task id; a task with none may be left out. */
+    onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>>;
+}
+
 /** Each task's checklist progress as done/total, in a column Edit columns offers. */
-declare const createChecklistModule: (parameters: { onGetItems: (task: IRecord) => IChecklistItem[]; labels?: ChecklistLabels }) => IDatasetControlModule;
+declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => IChecklistStore; labels?: ChecklistLabels }) => IDatasetControlModule;
 /** Checklists held in memory, by task id. */
 declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]>; labels?: ChecklistLabels }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */

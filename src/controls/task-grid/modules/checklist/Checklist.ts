@@ -1,5 +1,5 @@
 import type { ColDef } from "ag-grid-community";
-import { DataTypes, IColumn, IRecord } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
@@ -18,16 +18,28 @@ export interface IChecklistItem {
     isCompleted: boolean;
 }
 
+/** Where checklist items are kept. */
+export interface IChecklistStore {
+    /** The items of these tasks, by task id; a task with none may be left out. */
+    onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>>;
+}
+
 export interface IChecklistParameters {
-    /** The task's checklist items, read from the task when its cell draws. */
-    onGetItems: (task: IRecord) => IChecklistItem[];
+    onCreateStore: (taskRuntime: ITaskRuntime) => IChecklistStore;
     /** Overrides for the module's strings. */
     labels?: Partial<IChecklistLabels>;
 }
 
-/** The `checklist` module: each task's checklist progress in a read-only column. */
+export interface IChecklistEvents {
+    /** The items of these tasks changed. */
+    onItemsChanged: (taskIds: string[]) => void;
+}
+
+/** The `checklist` module: each task's checklist items, loaded through its store. */
 export interface IChecklist {
-    getItems(task: IRecord): IChecklistItem[];
+    events: IEventEmitter<IChecklistEvents>;
+    /** The task's items as loaded; none until its first load. */
+    getItems(taskId: string): IChecklistItem[];
     getLabels(): ILocalizationService<IChecklistLabels>;
     /** Called as the mount goes. */
     destroy(): void;
@@ -35,19 +47,23 @@ export interface IChecklist {
 
 /** Each task's checklist progress, in a column Edit columns offers. */
 export class Checklist implements IChecklist {
-    private _parameters: IChecklistParameters;
+    public events = new EventEmitter<IChecklistEvents>();
+    private _taskRuntime: ITaskRuntime;
+    private _store: IChecklistStore;
     private _labels: ILocalizationService<IChecklistLabels>;
+    private _itemsByTask = new Map<string, IChecklistItem[]>();
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
-        this._parameters = parameters;
+        this._taskRuntime = taskRuntime;
+        this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<IChecklistLabels>({ ...CHECKLIST_LABELS, ...parameters.labels });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
 
-    public getItems(task: IRecord): IChecklistItem[] {
-        return this._parameters.onGetItems(task);
+    public getItems(taskId: string): IChecklistItem[] {
+        return this._itemsByTask.get(taskId) ?? [];
     }
 
     public getLabels(): ILocalizationService<IChecklistLabels> {
@@ -56,11 +72,45 @@ export class Checklist implements IChecklist {
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
+        this.events.clearEventListeners();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        this._unregisters.push(provider.registerAvailableColumns(this._addColumn));
+        provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
+        provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
+        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
+        this._unregisters.push(
+            provider.registerAvailableColumns(this._addColumn),
+            () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
+            () => provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted),
+            () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
+        );
     };
+
+    private _onFirstDataLoaded = (): void => {
+        this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+    };
+
+    private _onTasksDeleted = (taskIds: string[]): void => {
+        taskIds.forEach(taskId => this._itemsByTask.delete(taskId));
+        this.events.dispatchEvent('onItemsChanged', taskIds);
+    };
+
+    private _onTasksUpdated = (records: IRecord[]): void => {
+        this._load(records.map(record => record.getRecordId()));
+    };
+
+    //a task the store leaves out has no items left
+    private async _load(taskIds: string[]): Promise<void> {
+        if (taskIds.length === 0) {
+            return;
+        }
+        await this._taskRuntime.execute(async () => {
+            const loaded = await this._store.onLoadItems(taskIds);
+            taskIds.forEach(taskId => this._itemsByTask.set(taskId, loaded.get(taskId) ?? []));
+            this.events.dispatchEvent('onItemsChanged', taskIds);
+        }, { loading: { show: false }, error: { title: this._labels.getLocalizedString('loadChecklistFailed'), rethrow: false } });
+    }
 
     private _addColumn = (columns: IColumn[]): void => {
         if (columns.some(column => column.name === CHECKLIST_COLUMN_NAME)) {
