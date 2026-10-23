@@ -36,7 +36,6 @@ const GridExample = () => {
             databaseName: 'devStressTasks.customColumns',
             columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
             enableCreation: true,
-            enableEditing: true,
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),

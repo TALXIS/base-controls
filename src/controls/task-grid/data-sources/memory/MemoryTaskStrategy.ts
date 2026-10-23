@@ -1,8 +1,7 @@
 import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
-import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
 import type { ITaskDatasetControlRuntime } from "../../runtime";
-import type { MemoryTaskForm } from "./MemoryTaskForm";
+import { IDeleteTasksResult, IFieldMapping, IOpenTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStrategy } from "../../provider/interfaces";
 
 export interface IMemoryTaskStrategyParameters {
     /** The tasks to start with; copied, so changes never reach this array. */
@@ -18,7 +17,7 @@ export interface IMemoryTaskStrategy extends ITaskStrategy {
     onInitialize(taskDatasetControl: ITaskDatasetControlRuntime): void;
 }
 
-/** Tasks held in memory, opened in the memory form. */
+/** Tasks held in memory; opening one shows an alert. */
 export class MemoryTaskStrategy implements IMemoryTaskStrategy {
     protected _parameters: IMemoryTaskStrategyParameters;
     protected _store: IRawRecord[];
@@ -91,20 +90,10 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
         return { recordId: record.getRecordId(), success: true, fields: Object.keys(values) };
     }
 
-    public async onOpenRecords(references: ComponentFramework.EntityReference[], isTask: boolean): Promise<IOpenTasksResult | null> {
-        if (!isTask) {
-            return null;
-        }
-        const updatedRecords: IRawRecord[] = [];
-        for (const reference of references) {
-            const task = this._find(reference.id.guid);
-            const saved = task && await this._getForm().open(structuredClone(task), { isReadOnly: this._isTaskLocked(reference.id.guid) });
-            if (saved) {
-                Object.assign(task, saved);
-                updatedRecords.push(structuredClone(saved));
-            }
-        }
-        return updatedRecords.length > 0 ? { success: true, updatedRecords } : null;
+    public async onOpenRecords(references: ComponentFramework.EntityReference[]): Promise<IOpenTasksResult | null> {
+        const names = references.map(reference => reference.name).join(', ');
+        await this._taskDatasetControl.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${names}: tasks held in memory have no form.` });
+        return null;
     }
 
     protected _find(taskId: string): IRawRecord | undefined {
@@ -124,14 +113,5 @@ export class MemoryTaskStrategy implements IMemoryTaskStrategy {
 
     protected _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
         return StackRank.between(previousSibling?.getValue(fieldMapping.stackRank), nextSibling?.getValue(fieldMapping.stackRank));
-    }
-
-    protected _isTaskLocked(taskId: string): boolean {
-        const isEditingEnabled = this._taskDatasetControl.isEditingEnabled();
-        return !isEditingEnabled || !this._taskDatasetControl.getProvider().isRecordActive(taskId);
-    }
-
-    protected _getForm(): MemoryTaskForm {
-        return this._taskDatasetControl.services.get('memoryTaskForm');
     }
 }

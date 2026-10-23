@@ -4008,7 +4008,7 @@ declare const createCustomColumnsModule: (parameters: {
     labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
 
-/** What the IndexedDB form asks for a custom column. */
+/** A custom column as the IndexedDB strategy stores it. */
 interface ICustomColumnDefinition {
     displayName: string;
     dataType: string;
@@ -4019,7 +4019,7 @@ interface ICustomColumnDefinition {
     options?: string[];
 }
 
-/** The user's own task columns kept in the browser's IndexedDB, defined in a form drawn over the control. */
+/** The user's own task columns kept in the browser's IndexedDB; a new one is a sample text column, and editing one is not implemented. */
 declare const createIndexedDbCustomColumnsModule: (parameters: {
     /** The IndexedDB database the columns and their values are kept in; one per control. */
     databaseName: string;
@@ -4028,7 +4028,7 @@ declare const createIndexedDbCustomColumnsModule: (parameters: {
     enableCreation?: boolean;
     enableEditing?: boolean;
     enableDeletion?: boolean;
-    labels?: { [key: string]: string };
+    labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
 
 /** How a lookup-many column draws its records. */
@@ -4227,7 +4227,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     Ribbon: (props: { className?: string; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 
-/** Tasks held in memory, opened in a form drawn over the control. */
+/** Tasks held in memory; opening one shows an alert. */
 declare const createMemoryTaskDataSource: (parameters: { taskDatasetControl: ITaskDatasetControlRuntime; strategy: IMemoryTaskStrategy; provider?: new (parameters: { strategy: any }) => ITaskDataProvider }) => ITaskDataProvider;
 
 /** A strategy over tasks held in memory, handed its mount by createMemoryTaskDataSource. */

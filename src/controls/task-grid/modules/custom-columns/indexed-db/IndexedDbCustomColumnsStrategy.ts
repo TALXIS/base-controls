@@ -1,14 +1,22 @@
-import { DatasetConstants, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ICustomColumnsStrategy } from "../CustomColumns";
-import type { ICustomColumnDefinition } from "./IndexedDbCustomColumnForm";
+
+/** A custom column as the IndexedDB strategy stores it. */
+export interface ICustomColumnDefinition {
+    displayName: string;
+    dataType: DataType;
+    isRequired?: boolean;
+    /** Decimal places, for a decimal or currency column. */
+    precision?: number;
+    /** The labels of a choice column's options, in order. */
+    options?: string[];
+}
 
 export interface IIndexedDbCustomColumnsStrategyParameters {
     /** The IndexedDB database the columns and their values are kept in; one per control. */
     databaseName: string;
     /** The columns a new database starts with. */
     columns?: ICustomColumnDefinition[];
-    /** Asks for a column, a new one when none is given; resolves with `null` when the user cancels. */
-    onOpenForm: (definition?: ICustomColumnDefinition) => Promise<ICustomColumnDefinition | null>;
     /** The labels of a Yes/No column's two options. */
     labels?: { no?: string; yes?: string };
 }
@@ -35,7 +43,7 @@ const toPromise = <T,>(request: IDBRequest<T>): Promise<T> => new Promise((resol
     request.onerror = () => reject(request.error);
 });
 
-/** Custom columns kept in the browser's IndexedDB, defined through a form, with their values by task. */
+/** Custom columns kept in the browser's IndexedDB with their values by task; a new one is a sample text column. */
 export class IndexedDbCustomColumnsStrategy implements ICustomColumnsStrategy {
     private _parameters: IIndexedDbCustomColumnsStrategyParameters;
     private _database?: Promise<IDBDatabase>;
@@ -64,24 +72,16 @@ export class IndexedDbCustomColumnsStrategy implements ICustomColumnsStrategy {
     }
 
     public async onCreateColumn(): Promise<string | null> {
-        const definition = await this._parameters.onOpenForm();
-        if (!definition) {
-            return null;
-        }
+        const store = await this._getStore(COLUMNS_STORE, 'readwrite');
+        const count = await toPromise(store.count());
         const name = this._toColumnName(crypto.randomUUID());
-        await toPromise((await this._getStore(COLUMNS_STORE, 'readwrite')).put({ name, definition, createdOn: Date.now() } satisfies IStoredColumn));
+        const definition: ICustomColumnDefinition = { displayName: `Custom column ${count + 1}`, dataType: DataTypes.SingleLineText };
+        await toPromise(store.put({ name, definition, createdOn: Date.now() } satisfies IStoredColumn));
         return name;
     }
 
-    public async onUpdateColumn(columnName: string): Promise<string | null> {
-        const stored = await toPromise<IStoredColumn | undefined>((await this._getStore(COLUMNS_STORE)).get(columnName));
-        const definition = stored && await this._parameters.onOpenForm(stored.definition);
-        if (!stored || !definition) {
-            return null;
-        }
-        //a store's transaction does not outlive the form
-        await toPromise((await this._getStore(COLUMNS_STORE, 'readwrite')).put({ ...stored, definition } satisfies IStoredColumn));
-        return columnName;
+    public async onUpdateColumn(_columnName: string): Promise<string | null> {
+        throw new Error('Not implemented.');
     }
 
     public async onDeleteColumn(columnName: string): Promise<string | null> {
