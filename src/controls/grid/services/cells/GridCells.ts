@@ -49,6 +49,11 @@ export interface IGridCellsEvents {
     onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
 }
 
+export interface IGridCellsRenderOptions {
+    /** Draws only the cells in these columns. */
+    columnNames?: string[];
+}
+
 export interface IGridCellsParameters {
     services: IGridInternalServiceLocator;
 }
@@ -56,7 +61,7 @@ export interface IGridCellsParameters {
 /** Every cell the grid has on screen. */
 export interface IGridCells {
     /** Draws every cell on screen again, for a change their records do not carry. */
-    render(): void;
+    render(options?: IGridCellsRenderOptions): void;
     /** Every cell on screen. */
     getCells(): IGridCell[];
     /** The cell drawing this field, where one is rendered. */
@@ -153,8 +158,13 @@ export class GridCells implements IGridCellsInternal {
         this._renderedCells.delete(cell.getId());
     }
 
-    public render(): void {
-        this._renderedCells.forEach(cell => cell.render());
+    public render(options?: IGridCellsRenderOptions): void {
+        const columnNames = options?.columnNames && new Set(options.columnNames);
+        this._renderedCells.forEach(cell => {
+            if (!columnNames || columnNames.has(cell.getColumnName())) {
+                cell.render();
+            }
+        });
     }
 
     public getCells(): IGridCell[] {

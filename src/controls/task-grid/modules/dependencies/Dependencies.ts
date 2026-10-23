@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import type { IGrid } from "@controls/grid";
+import type { GridCellLoadingHook, IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
@@ -9,6 +9,8 @@ import { TASK_GRID_PRIORITY } from "../../priorities";
 import { DEPENDENCIES_LABELS, IDependenciesLabels } from "./labels";
 import { DependenciesCell } from "./components/adapters/dependencies-cell";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./constants";
+
+const DEPENDENCY_COLUMN_NAMES = [PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME];
 
 /** How the two tasks of a dependency relate in time. */
 export type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
@@ -43,6 +45,7 @@ export interface IDependenciesParameters {
 export interface IDependenciesEvents {
     /** The dependencies of these tasks changed, at either end. */
     onDependenciesChanged: (taskIds: string[]) => void;
+    onLoading: (isLoading: boolean) => void;
 }
 
 /** The `dependencies` module: the tasks' dependencies, read and written through its store. */
@@ -53,6 +56,8 @@ export interface IDependencies {
     getPredecessors(taskId: string): ITaskDependency[];
     /** What waits on the task. */
     getSuccessors(taskId: string): ITaskDependency[];
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
     /** Whether dependencies can be created, retyped and deleted. */
     isEditable(): boolean;
     /** Whether the dependency may be created: no self-link, duplicate or cycle. */
@@ -86,6 +91,8 @@ export class Dependencies implements IDependencies {
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
+    private _isLoading = false;
+    private _error?: unknown;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
@@ -106,6 +113,10 @@ export class Dependencies implements IDependencies {
 
     public getSuccessors(taskId: string): ITaskDependency[] {
         return [...this._byPredecessor.get(taskId) ?? []];
+    }
+
+    public getError(): unknown {
+        return this._error;
     }
 
     public isEditable(): boolean {
@@ -200,13 +211,26 @@ export class Dependencies implements IDependencies {
         if (taskIds.length === 0) {
             return;
         }
-        await this._taskRuntime.execute(async () => {
+        this._error = undefined;
+        this._setLoading(true);
+        try {
             const loaded = await this._store.onLoadDependencies(taskIds);
             const loadedTaskIds = new Set(taskIds);
             const loadedIds = new Set(loaded.map(dependency => dependency.id));
             const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
             this._setDependencies([...this._dependencies.filter(dependency => !replaced.includes(dependency)), ...loaded], [...replaced, ...loaded]);
-        }, { loading: { show: false }, error: { title: this._labels.getLocalizedString('loadDependenciesFailed'), rethrow: false } });
+        }
+        catch (error) {
+            this._error = new Error(this._labels.getLocalizedString('loadDependenciesFailed'), { cause: error });
+        }
+        finally {
+            this._setLoading(false);
+        }
+    }
+
+    private _setLoading(isLoading: boolean): void {
+        this._isLoading = isLoading;
+        this.events.dispatchEvent('onLoading', isLoading);
     }
 
     private _setDependencies(dependencies: ITaskDependency[], changed: ITaskDependency[]): void {
@@ -261,11 +285,18 @@ export class Dependencies implements IDependencies {
 
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
         grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
     }
+
+    private _onCellLoading: GridCellLoadingHook = (result, params) => {
+        if (this._isLoading && DEPENDENCY_COLUMN_NAMES.includes(params.columnName)) {
+            result.isLoading = true;
+        }
+    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         for (const colDef of columnDefs) {
-            if (colDef.colId === PREDECESSORS_COLUMN_NAME || colDef.colId === SUCCESSORS_COLUMN_NAME) {
+            if (DEPENDENCY_COLUMN_NAMES.includes(colDef.colId!)) {
                 colDef.cellRenderer = DependenciesCell;
             }
         }

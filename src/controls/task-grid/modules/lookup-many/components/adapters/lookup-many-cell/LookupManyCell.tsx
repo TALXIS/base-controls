@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useDatasetControlModule } from "@controls/dataset-control";
 import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
 import { runQuietly } from "../../../../../runtime/runQuietly";
@@ -10,8 +11,9 @@ const LookupManyCellPills = () => {
     const field = useGridField();
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const { runtime } = useTaskGridContext();
+    const lookupMany = useDatasetControlModule('lookupMany');
     const columnName = cell.getColumnName();
-    const appearance = runtime.services.get('datasetControl').modules.get('lookupMany').getColumn(columnName)?.appearance;
+    const appearance = lookupMany.getColumn(columnName)?.appearance;
     const { onRenderPill } = useMemo(() => getLookupManyComponents(appearance), [appearance]);
 
     const onOpen = (reference: ComponentFramework.EntityReference) => runQuietly(() => runtime.tasks.openRelatedRecord(reference, columnName));

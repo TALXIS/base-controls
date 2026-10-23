@@ -43,7 +43,7 @@ export const ErrorMessageBar = (props: IErrorMessageBarProps) => {
     return components.onRenderMessageBar({
         messageBarType: MessageBarType.error,
         isMultiline: false,
-        styles: { actions: styles.actions },
+        styles: { content: styles.content, actions: styles.actions },
         actions: <ThemeContext theme={commandBarTheme}>{components.onRenderCommandBar({ items: getItems(), styles: { root: styles.commandBar } })}</ThemeContext>,
         children: components.onRenderTooltip({ content: props.title, children: components.onRenderTitle({ className: styles.title, children: props.title }) }),
     });

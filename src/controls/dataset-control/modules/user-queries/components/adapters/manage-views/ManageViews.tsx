@@ -16,7 +16,7 @@ import { Footer } from "../../../../../components/adapters/footer/Footer";
 import { Header } from "../../../../../components/adapters/header/Header";
 import { QuickFind } from "../../../../../components/adapters/quick-find/QuickFind";
 import { Pagination } from "../../../../../components/adapters/pagination/Pagination";
-import { useRequiredDatasetControlRuntime } from "../../../../../components/adapters/root/context";
+import { useDatasetControlModule } from "../../../../../components/adapters/root/useDatasetControlModule";
 import { ManageViewsRibbon } from "../manage-views-ribbon";
 import { getManageViewsStyles } from "./styles";
 
@@ -42,7 +42,7 @@ export interface IManageViewsProps {
 /** The user's views as an editable, sortable and filterable DatasetControl. */
 export const ManageViews = (props: IManageViewsProps) => {
     //the control the panel is opened from, not the one it draws
-    const userQueries = useRequiredDatasetControlRuntime().modules.get('userQueries');
+    const userQueries = useDatasetControlModule('userQueries');
     const styles = useMemo(() => getManageViewsStyles(), []);
     const modules = useMemo(() => ({
         rowModel: createClientSideRowModelModule(),

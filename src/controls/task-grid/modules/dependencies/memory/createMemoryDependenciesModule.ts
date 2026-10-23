@@ -14,6 +14,7 @@ class MemoryDependenciesStore implements ITaskDependenciesStore {
     }
 
     public async onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
+        await simulateBackend(3000);
         const loadedTaskIds = new Set(taskIds);
         return this._dependencies.filter(dependency => loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
     }

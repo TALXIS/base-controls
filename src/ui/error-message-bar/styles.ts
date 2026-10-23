@@ -1,6 +1,9 @@
 import { mergeStyleSets } from "@fluentui/react";
 
 export const getErrorMessageBarStyles = () => mergeStyleSets({
+    content: {
+        alignItems: 'center',
+    },
     title: {
         fontWeight: 600,
     },

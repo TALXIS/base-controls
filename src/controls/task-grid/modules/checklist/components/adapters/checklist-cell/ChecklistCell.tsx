@@ -1,15 +1,14 @@
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
+import { useDatasetControlModule } from "@controls/dataset-control";
 import { Grid, IGridCellParams, useGridCell } from "@controls/grid";
-import { useTaskGridContext } from "../../../../../context";
 import type { IChecklistEvents } from "../../../Checklist";
 import { ChecklistProgress } from "../../ui";
 
 const ChecklistCellProgress = () => {
     const cell = useGridCell();
-    const { runtime } = useTaskGridContext();
     const { rerender } = useRerender();
-    const checklist = runtime.services.get('datasetControl').modules.get('checklist');
+    const checklist = useDatasetControlModule('checklist');
     const taskId = cell.getRecord().getRecordId();
 
     useEventEmitter<IChecklistEvents>(checklist.events, 'onItemsChanged', (taskIds: string[]) => {

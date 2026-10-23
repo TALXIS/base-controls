@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useResizeEffect } from "@utils";
 import { useTheme } from "@fluentui/react";
 import type { ICellEditorParams } from "ag-grid-community";
+import { useDatasetControlModule } from "@controls/dataset-control";
 import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
 import { LookupManySelect } from "../../ui";
@@ -19,7 +20,7 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     const field = useGridField();
     const theme = useTheme();
     const { runtime } = useTaskGridContext();
-    const lookupMany = runtime.services.get('datasetControl').modules.get('lookupMany');
+    const lookupMany = useDatasetControlModule('lookupMany');
     const record = cell.getRecord();
     const column = runtime.getProvider().getColumnsMap()[cell.getColumnName()];
     const styles = useMemo(() => getLookupManyCellEditorStyles(theme), [theme]);
