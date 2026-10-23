@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import type { IGrid } from "@controls/grid";
+import type { GridCellLoadingHook, IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
@@ -33,6 +33,7 @@ export interface IChecklistParameters {
 export interface IChecklistEvents {
     /** The items of these tasks changed. */
     onItemsChanged: (taskIds: string[]) => void;
+    onLoading: (isLoading: boolean) => void;
 }
 
 /** The `checklist` module: each task's checklist items, loaded through its store. */
@@ -40,6 +41,8 @@ export interface IChecklist {
     events: IEventEmitter<IChecklistEvents>;
     /** The task's items as loaded; none until its first load. */
     getItems(taskId: string): IChecklistItem[];
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
     getLabels(): ILocalizationService<IChecklistLabels>;
     /** Called as the mount goes. */
     destroy(): void;
@@ -52,6 +55,8 @@ export class Checklist implements IChecklist {
     private _store: IChecklistStore;
     private _labels: ILocalizationService<IChecklistLabels>;
     private _itemsByTask = new Map<string, IChecklistItem[]>();
+    private _isLoading = false;
+    private _error?: unknown;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
@@ -64,6 +69,10 @@ export class Checklist implements IChecklist {
 
     public getItems(taskId: string): IChecklistItem[] {
         return this._itemsByTask.get(taskId) ?? [];
+    }
+
+    public getError(): unknown {
+        return this._error;
     }
 
     public getLabels(): ILocalizationService<IChecklistLabels> {
@@ -105,11 +114,24 @@ export class Checklist implements IChecklist {
         if (taskIds.length === 0) {
             return;
         }
-        await this._taskRuntime.execute(async () => {
+        this._error = undefined;
+        this._setLoading(true);
+        try {
             const loaded = await this._store.onLoadItems(taskIds);
             taskIds.forEach(taskId => this._itemsByTask.set(taskId, loaded.get(taskId) ?? []));
             this.events.dispatchEvent('onItemsChanged', taskIds);
-        }, { loading: { show: false }, error: { title: this._labels.getLocalizedString('loadChecklistFailed'), rethrow: false } });
+        }
+        catch (error) {
+            this._error = new Error(this._labels.getLocalizedString('loadChecklistFailed'), { cause: error });
+        }
+        finally {
+            this._setLoading(false);
+        }
+    }
+
+    private _setLoading(isLoading: boolean): void {
+        this._isLoading = isLoading;
+        this.events.dispatchEvent('onLoading', isLoading);
     }
 
     private _addColumn = (columns: IColumn[]): void => {
@@ -129,7 +151,14 @@ export class Checklist implements IChecklist {
 
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
         grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
     }
+
+    private _onCellLoading: GridCellLoadingHook = (result, params) => {
+        if (this._isLoading && params.columnName === CHECKLIST_COLUMN_NAME) {
+            result.isLoading = true;
+        }
+    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const colDef = columnDefs.find(colDef => colDef.colId === CHECKLIST_COLUMN_NAME);
