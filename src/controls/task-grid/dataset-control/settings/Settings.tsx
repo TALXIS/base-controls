@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useSurfaceMenuProps } from "@ui";
-import { useCompact } from "@utils";
+import { useCompact, useDataProviderEvents } from "@utils";
 import { useTaskRuntime } from "../context";
 import { ISettingsComponents, SettingsComponents } from "./components";
 import { getSettingsStyles } from "./styles";
@@ -15,6 +15,7 @@ export interface ISettingsProps {
 /** A menu of the task grid's toggles, such as Show hierarchy, and those its modules add. */
 export const Settings = (props: ISettingsProps) => {
     const taskRuntime = useTaskRuntime();
+    const provider = useDataProviderEvents(['onLoading']);
     const components = { ...SettingsComponents, ...props.components };
     const styles = useMemo(() => getSettingsStyles(), []);
     const isCompact = useCompact();
@@ -48,6 +49,7 @@ export const Settings = (props: ISettingsProps) => {
             menuProps,
             //the settings are read as the menu opens, so it shows them as they are now
             onMenuClick: rerender,
+            disabled: provider.isLoading(),
         }),
     });
 };

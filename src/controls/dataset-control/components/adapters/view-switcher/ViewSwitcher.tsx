@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
-import { LocalizationService } from "@utils";
+import { LocalizationService, useDataProviderEvents } from "@utils";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
 import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
@@ -22,6 +22,7 @@ export interface IViewSwitcherProps {
 /** Switches the control between the views its `onLoadViews` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
+    const provider = useDataProviderEvents(['onLoading']);
     const viewSwitcher = useDatasetControlPart('viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
     const labels = useMemo(() => new LocalizationService<IViewSwitcherLabels>({ ...VIEW_SWITCHER_LABELS, ...props.labels }), [props.labels]);
     const views = viewSwitcher.getViews();
@@ -55,6 +56,7 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
             selectedKey={currentView?.id}
             //the items are read as the menu opens, so what children registered is in it
             onMenuClick={rerender}
+            disabled={provider.isLoading()}
             components={props.components} />
         {props.children}
     </>;

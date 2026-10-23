@@ -9,6 +9,7 @@ export interface IEditColumnsButtonUiProps {
     text: string;
     /** Opens the editor. */
     onClick: () => void;
+    disabled?: boolean;
     /** Replacements for its slots. */
     components?: Partial<IEditColumnsButtonUiComponents>;
 }
@@ -29,6 +30,7 @@ export const EditColumnsButton = (props: IEditColumnsButtonUiProps) => {
             ariaLabel: props.text,
             iconProps: { iconName: 'ColumnOptions' },
             onClick: props.onClick,
+            disabled: props.disabled,
         }),
     });
 };

@@ -4,7 +4,7 @@ import { useEventEmitter } from "@hooks";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
-import { ErrorBoundary, LocalizationService, useDataProvider } from "@utils";
+import { ErrorBoundary, LocalizationService, useDataProviderEvents } from "@utils";
 import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
 import { EDIT_COLUMNS_LABELS, IEditColumnsLabels } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "./DatasetControlEditColumns";
@@ -39,7 +39,7 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 /** The button that opens the column editor, and the editor while it is open. */
 export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
-    const provider = useDataProvider();
+    const provider = useDataProviderEvents(['onLoading']);
     const editColumns = useDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
     const labels = useMemo(() => new LocalizationService<IEditColumnsLabels>({ ...EDIT_COLUMNS_LABELS, ...props.labels }), [props.labels]);
     const components = props.components ?? NO_COMPONENTS;
@@ -77,6 +77,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
         <DatasetControlUi.EditColumnsButton
             text={labels.getLocalizedString('editColumns')}
             onClick={() => editColumns.open()}
+            disabled={provider.isLoading()}
             components={components.button} />
         {session && <DatasetControlUi.EditColumnsPanel
             title={getTitle()}

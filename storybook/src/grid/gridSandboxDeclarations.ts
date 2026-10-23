@@ -3594,6 +3594,8 @@ interface IRibbonProps {
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
     className?: string;
+    /** Disables every command, menus included. */
+    disabled?: boolean;
     /** Called with the runtime once it exists, before the first load. */
     onReady?: (ribbon: IRibbonRuntime) => void;
     components?: {
@@ -4290,7 +4292,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
     /** DatasetControl.Ribbon, its items passed through registerRibbonCommandUi. */
-    Ribbon: (props: { className?: string; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
+    Ribbon: (props: { className?: string; disabled?: boolean; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 
 /** Where the tasks come from and how changing them is persisted. */

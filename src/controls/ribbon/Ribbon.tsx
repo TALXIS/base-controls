@@ -21,6 +21,8 @@ export interface IRibbonProps {
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
     className?: string;
+    /** Disables every command, menus included. */
+    disabled?: boolean;
     /** Called with the runtime once it exists, before the first load. */
     onReady?: (ribbon: IRibbonRuntime) => void;
     /** Replacements for the command bar, the shimmer and the error. */
@@ -61,9 +63,9 @@ export const Ribbon = (props: IRibbonProps) => {
             iconProps: command.iconName ? { iconName: command.iconName } : undefined,
         };
         if (command.commands) {
-            return { ...item, disabled: command.isDisabled, subMenuProps: { items: command.commands.map(toItem) } };
+            return { ...item, disabled: props.disabled || command.isDisabled, subMenuProps: { items: command.commands.map(toItem) } };
         }
-        return { ...item, disabled: command.isDisabled || runtime.isRunning(command.id), onClick: () => { runtime.execute(command); } };
+        return { ...item, disabled: props.disabled || command.isDisabled || runtime.isRunning(command.id), onClick: () => { runtime.execute(command); } };
     };
 
     const items = (commands ?? []).map(toItem);

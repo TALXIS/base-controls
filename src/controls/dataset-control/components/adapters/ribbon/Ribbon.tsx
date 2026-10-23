@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
-import { getClassNames, useDataProvider } from "@utils";
+import { getClassNames, useDataProviderEvents } from "@utils";
 import { IRibbonProps, IRibbonRuntime, Ribbon as SharedRibbon } from "@controls/ribbon";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { useDatasetControlRegion } from "../region";
@@ -13,7 +13,7 @@ export type IDatasetControlRibbonProps = Omit<IRibbonProps, 'onReady' | 'align'>
 /** The ribbon, loaded again whenever the selected records change; in an `End` region its commands sit against the right. */
 export const Ribbon = (props: IDatasetControlRibbonProps) => {
     const runtime = useRequiredDatasetControlRuntime();
-    const provider = useDataProvider();
+    const provider = useDataProviderEvents(['onLoading']);
     const styles = useMemo(() => getDatasetControlRibbonStyles(), []);
     const ribbonRef = useRef<IRibbonRuntime>();
     const region = useDatasetControlRegion();
@@ -31,5 +31,5 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
         runtime.services.register('ribbon', () => ribbon);
     };
 
-    return <SharedRibbon {...props} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onReady={onReady} />;
+    return <SharedRibbon {...props} disabled={props.disabled || provider.isLoading()} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onReady={onReady} />;
 };

@@ -15,6 +15,7 @@ export interface IViewSwitcherUiProps {
     selectedKey?: string;
     /** Called as the menu opens. */
     onMenuClick?: () => void;
+    disabled?: boolean;
     /** Replacements for its slots. */
     components?: Partial<IViewSwitcherUiComponents>;
 }
@@ -32,6 +33,7 @@ export const ViewSwitcher = (props: IViewSwitcherUiProps) => {
         title: props.text,
         menuProps,
         onMenuClick: props.onMenuClick,
+        disabled: props.disabled,
         styles: {
             root: styles.viewSwitcher,
             textContainer: styles.textContainer,
