@@ -1,6 +1,7 @@
 import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@talxis/client-libraries";
 import type { ICreateTaskTree } from "../../../provider";
 import type { ITemplate, ITemplatesStore } from "../Templates";
+import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
 
 /** One task of a memory template, with its subtree. */
 export interface IMemoryTemplateTask extends ICreateTaskTree {
@@ -47,6 +48,7 @@ export class MemoryTemplatesStore implements ITemplatesStore {
     }
 
     public async onCreateTemplate(template: ITemplate): Promise<void> {
+        await simulateBackend();
         this._templates.push({ id: crypto.randomUUID(), name: template.name, ...structuredClone(template.tree) });
     }
 }

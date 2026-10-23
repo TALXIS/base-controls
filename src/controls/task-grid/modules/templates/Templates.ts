@@ -37,8 +37,9 @@ export interface ITemplatesParameters {
 export interface ITemplates {
     getLabels(): ILocalizationService<ITemplatesLabels>;
     createTemplatesProvider(): IDataProvider;
-    /** Under `parentId`, or at the top level without it. */
-    createTasksFromTemplate(templateId: string, parentId?: string): Promise<void>;
+    /** Under `parentId`, or at the top level without it; rejects when the store fails. */
+    createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null>;
+    /** Rejects when the store fails. */
     createTemplateFromTask(task: IRecord): Promise<void>;
     /** Called as the mount goes. */
     destroy(): void;
@@ -72,19 +73,20 @@ export class Templates implements ITemplates {
         return this._store.onCreateTemplatesProvider();
     }
 
-    public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<void> {
-        await this._run('creatingTasksFromTemplate', async () => {
+    public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null> {
+        return this._execute('creatingTasksFromTemplate', async () => {
             const template = await this._store.onGetTemplate(templateId);
-            if (template) {
-                const { tree } = template;
-                const subject = this._taskRuntime.getFieldMapping().subject;
-                await this._taskRuntime.tasks.createTrees([{ ...tree, data: { ...tree.data, [subject]: template.name } }], parentId);
+            if (!template) {
+                return null;
             }
+            const { tree } = template;
+            const subject = this._taskRuntime.getFieldMapping().subject;
+            return this._taskRuntime.tasks.createTrees([{ ...tree, data: { ...tree.data, [subject]: template.name } }], parentId);
         });
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
-        await this._run('savingTemplate', async () => {
+        await this._execute('savingTemplate', async () => {
             const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
             const { data, children } = this._toTemplateTree(task);
             const { [subject]: name, ...rootData } = data ?? {};
@@ -120,7 +122,7 @@ export class Templates implements ITemplates {
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
         if (task) {
-            commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.getLocalizedString('saveAsTemplate'), iconName: 'PageAdd', onExecute: () => this.createTemplateFromTask(task) });
+            commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.getLocalizedString('saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
         }
     };
 
@@ -164,7 +166,7 @@ export class Templates implements ITemplates {
             templates: this,
             onTemplateSelected: templateId => {
                 onDismiss();
-                this.createTasksFromTemplate(templateId, onGetParentId());
+                runQuietly(() => this.createTasksFromTemplate(templateId, onGetParentId()));
             },
         });
     }
@@ -180,9 +182,8 @@ export class Templates implements ITemplates {
         return { data, children };
     }
 
-    //the commands do not await them
-    private async _run(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<void>): Promise<void> {
-        await runQuietly(() => this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') }));
+    private _execute<T>(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<T>): Promise<T> {
+        return this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') });
     }
 }
 

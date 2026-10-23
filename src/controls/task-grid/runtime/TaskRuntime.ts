@@ -34,7 +34,7 @@ export class TaskRuntime implements ITaskRuntime {
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     public readonly tasks: ITaskActions = new TaskActions(this);
-    private _runningCount = 0;
+    private _runs: { loadingMessage?: string }[] = [];
     //a nested run rethrows an error the inner one already showed
     private _shownErrors = new WeakSet<object>();
     private _unregisterCommands?: () => void;
@@ -197,8 +197,9 @@ export class TaskRuntime implements ITaskRuntime {
     //form/dataset controls could use it too to display loading and handler errors the way it suits the app, instead of the default PCF error dialog
     public async execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T> {
         const provider = this.getProvider();
-        this._runningCount++;
-        provider.setLoading(true, options?.loadingMessage);
+        const run = { loadingMessage: options?.loadingMessage };
+        this._runs.push(run);
+        provider.setLoading(true, run.loadingMessage);
         try {
             return await operation();
         }
@@ -214,8 +215,13 @@ export class TaskRuntime implements ITaskRuntime {
             throw error;
         }
         finally {
-            //one that ends inside another keeps its loading
-            if (--this._runningCount === 0) {
+            this._runs.splice(this._runs.indexOf(run), 1);
+            //the latest run still going shows its message again
+            const latest = this._runs[this._runs.length - 1];
+            if (latest) {
+                provider.setLoading(true, latest.loadingMessage);
+            }
+            else {
                 provider.setLoading(false);
                 this._shownErrors = new WeakSet();
             }
