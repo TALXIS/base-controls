@@ -139,12 +139,28 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._store.onGetAvailableRelatedColumns();
     }
 
-    public onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        //tasks save as the user edits, one field at a time
-        const dirtyField = record.getFields().find(field => field.isDirty());
-        const column = dirtyField?.getColumn();
-        const handler = column && this._columnHandlers.find(handler => handler.isHandledColumn(column.name));
-        return handler ? handler.onSaveValue(record, column, dirtyField!.getValue()) : this._store.onSaveRecord(record);
+    public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
+        const results: IRecordSaveOperationResult[] = [];
+        let hasUnhandledField = false;
+        for (const field of record.getFields().filter(field => field.isDirty())) {
+            const column = field.getColumn();
+            const handler = this._columnHandlers.find(handler => handler.isHandledColumn(column.name));
+            if (handler) {
+                results.push(await handler.onSaveValue(record, column, field.getValue()));
+            }
+            else {
+                hasUnhandledField = true;
+            }
+        }
+        if (hasUnhandledField || results.length === 0) {
+            results.push(await this._store.onSaveRecord(record));
+        }
+        return {
+            recordId: record.getRecordId(),
+            success: results.every(result => result.success),
+            fields: results.flatMap(result => result.fields ?? []),
+            errors: results.flatMap(result => result.errors ?? []),
+        };
     }
 
     //records open through the task runtime's actions

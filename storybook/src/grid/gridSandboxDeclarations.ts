@@ -1574,11 +1574,34 @@ interface IGridEditingEvents {
     onEditedCellChanged: (previous: IGridEditedCell | undefined, next: IGridEditedCell | undefined) => void;
 }
 
+interface IGridSavesEvents {
+    onSaveStarted: (recordId: string) => void;
+    onSaveFinished: (result: IRecordSaveOperationResult) => void;
+}
+
+/** One part of a record's save; a rejection counts as a failed part. */
+type GridSaveHandler = () => Promise<IRecordSaveOperationResult>;
+
+/** A hook over a record's save, adding the handlers for what it keeps outside the record. */
+type GridSaveHook = (handlers: GridSaveHandler[], params: { record: IRecord }) => void;
+
+/** Saves the grid's records, and whether each is saving. */
+interface IGridSaves {
+    readonly events: IEventSubscriber<IGridSavesEvents>;
+    isSaving(record: IRecord): boolean;
+    /** Saves the record and what the save hooks add for it, after the record's previous save. */
+    save(record: IRecord): Promise<IRecordSaveOperationResult>;
+    /** Registers a hook over a record's save; a higher priority gets the later word. */
+    registerSave(hook: GridSaveHook, priority?: number): () => void;
+}
+
 /** Which cell the user is editing. */
 interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
     /** Whether a column, a record's row or a cell is locked. */
     readonly locks: IGridLocks;
+    /** Saves the grid's records, and whether each is saving. */
+    readonly saves: IGridSaves;
     isEditing(record: IRecord, columnName: string): boolean;
     /** Counts an editor from the moment it is drawn. */
     isBeingEdited(cell: IGridCell): boolean;

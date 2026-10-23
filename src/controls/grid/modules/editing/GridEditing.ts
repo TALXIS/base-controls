@@ -11,6 +11,7 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
 import { IGridStyles } from "../../services/theme";
 import { GridLocks, IGridLocks } from "./GridLocks";
+import { GridSaves, IGridSaves } from "./GridSaves";
 import { getGridEditingStyles } from "./styles";
 import { LOCKED_RECORD_ROW_CLASS, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY } from "./constants";
 import { RecordLockIndicatorCell } from "./components/record-lock-indicator/RecordLockIndicatorCell";
@@ -54,6 +55,8 @@ export interface IGridEditing {
     isAutoSaveEnabled(): boolean;
     /** Whether a column, a record's row or a cell is locked. */
     readonly locks: IGridLocks;
+    /** Saves the grid's records, and whether each is saving. */
+    readonly saves: IGridSaves;
     /** Whether the user is editing this cell, counting an editor from the moment it is drawn. */
     isBeingEdited(cell: IGridCell): boolean;
     /** Whether an editor may be opened over this cell. */
@@ -75,11 +78,13 @@ export class GridEditing implements IGridEditing {
     private _isRecordLockColumnVisible = false;
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
     public readonly locks: IGridLocks;
+    public readonly saves: IGridSaves;
 
     constructor(parameters: IGridEditingParameters) {
         this._services = parameters.services;
         this._isAutoSaveEnabled = !!parameters.autoSave;
         this.locks = new GridLocks({ services: this._services });
+        this.saves = new GridSaves({ services: this._services });
         if (parameters.onEditedCellChanged) {
             this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
         }
@@ -408,7 +413,7 @@ export class GridEditing implements IGridEditing {
             queueMicrotask(() => {
                 const records = [...this._recordsToSave];
                 this._recordsToSave.clear();
-                records.forEach(record => record.save());
+                records.forEach(record => this.saves.save(record));
             });
         }
         this._recordsToSave.add(record);
