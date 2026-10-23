@@ -202,6 +202,8 @@ export interface ITaskDataProvider extends IDataProvider {
     /** @returns `true` once moved, or `null` when it did not move. */
     moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
     editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Opens the record a task's lookup points to. */
+    openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** Writes changed raw data onto the records it belongs to. */
     updateTaskData(rawRecords: IRawRecord[]): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */

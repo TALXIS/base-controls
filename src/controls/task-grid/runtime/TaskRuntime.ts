@@ -9,10 +9,12 @@ import type { IGrid, IGridModule } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../services";
 import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
-import type { ICreateTaskOptions, IDeleteTasksResult, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
+import { ITaskActions, TaskActions } from "./tasks";
+import { runQuietly } from "./runQuietly";
 import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
@@ -31,6 +33,7 @@ export class TaskRuntime implements ITaskRuntime {
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
+    public readonly tasks: ITaskActions = new TaskActions(this);
     private _runningCount = 0;
     //a nested run rethrows an error the inner one already showed
     private _shownErrors = new WeakSet<object>();
@@ -97,14 +100,6 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.find('taskTree')?.setFlatList(isFlatList);
     }
 
-    public async editTasks(taskIds: string[]): Promise<void> {
-        try {
-            await this.getProvider().editTasks(taskIds);
-        }
-        //the error dialog already shows the failure
-        catch { }
-    }
-
     public isCreationEnabled(): boolean {
         return !!this._onGetProps().enableCreation;
     }
@@ -115,57 +110,6 @@ export class TaskRuntime implements ITaskRuntime {
 
     public isDeletionEnabled(): boolean {
         return !!this._onGetProps().enableDeletion;
-    }
-
-    public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
-        if (!this.isCreationEnabled()) {
-            return;
-        }
-        try {
-            const task = await this.getProvider().createTask(parentId, options);
-            if (task) {
-                this.services.find('taskTree')?.focusNewTask(task.getRecordId());
-            }
-        }
-        //the error dialog already shows the failure
-        catch { }
-    }
-
-    public async deleteTasks(taskIds: string[]): Promise<void> {
-        if (!this.isDeletionEnabled()) {
-            return;
-        }
-        const navigation = this.services.get('pcfContext').navigation;
-        const labels = this.getLabels();
-        const provider = this.getProvider();
-        const { deletableTaskIds, refusedTaskIds } = provider.getDeletion(taskIds);
-        if (deletableTaskIds.length === 0) {
-            await navigation.openErrorDialog({ message: labels.getLocalizedString('tasksCannotBeDeleted') });
-            return;
-        }
-        const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
-        const text = subtaskCount > 0 ? labels.getLocalizedString('confirmDeleteTasksWithSubtasks', { count: String(subtaskCount) }) : labels.getLocalizedString('confirmDeleteTasks');
-        const confirmation = await navigation.openConfirmDialog({ text });
-        if (!confirmation.confirmed) {
-            return;
-        }
-        let result: IDeleteTasksResult | null;
-        try {
-            result = await provider.deleteTasks(taskIds);
-        }
-        //the error dialog already shows the failure
-        catch {
-            return;
-        }
-        const failures = [
-            ...(result?.success === false ? result.errors : []),
-            ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
-        ];
-        if (failures.length > 0) {
-            const subject = this.getFieldMapping().subject;
-            const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
-            await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
-        }
     }
 
     public registerGridModule(module: IGridModule<ITaskGridServiceMap>): void {
@@ -228,13 +172,13 @@ export class TaskRuntime implements ITaskRuntime {
         const selectedIds = this.getProvider().getSelectedRecordIds();
         const taskCommands: IRibbonCommand[] = [];
         if (this.isCreationEnabled()) {
-            taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => this.createTask() });
+            taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => runQuietly(() => this.tasks.create()) });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => this.editTasks(selectedIds) });
+            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.edit(selectedIds)) });
         }
         if (this.isDeletionEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => this.deleteTasks(selectedIds) });
+            taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });
         }
         commands.unshift(...taskCommands);
     };

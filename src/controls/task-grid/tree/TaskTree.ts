@@ -15,6 +15,7 @@ import { PercentCompleteCell } from "./percent-complete-cell";
 import { ExpansionHeader } from "./expansion-header";
 import { TASK_COMMANDS_COLUMN_KEY } from "./constants";
 import { TaskCommandsCell } from "./task-commands-cell";
+import { runQuietly } from "../runtime/runQuietly";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
 const NEW_TASK_FOCUS_ATTEMPTS = 3;
@@ -88,15 +89,7 @@ export class TaskTree {
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([TASK_COMMANDS_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
-        this._refreshPathColumn(isFlatList);
-    }
-
-    private async _refreshPathColumn(isFlatList: boolean): Promise<void> {
-        try {
-            await this._runtime.execute(() => this._syncPathColumn(isFlatList));
-        }
-        //the error dialog already shows the failure
-        catch { }
+        runQuietly(() => this._runtime.execute(() => this._syncPathColumn(isFlatList)));
     }
 
     public focusNewTask(taskId: string): void {
@@ -166,7 +159,7 @@ export class TaskTree {
             return;
         }
         const label = this._runtime.getLabels().getLocalizedString('addChild');
-        result.items.push({ key: 'addChild', iconProps: { iconName: 'Add' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => { this._runtime.createTask(recordId); } });
+        result.items.push({ key: 'addChild', iconProps: { iconName: 'Add' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => { runQuietly(() => this._runtime.tasks.create(recordId)); } });
     };
 
     private _onLock: GridLockHook = (result, context) => {

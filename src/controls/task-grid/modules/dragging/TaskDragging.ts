@@ -387,7 +387,7 @@ export class TaskDragging {
     //a refused, cancelled or failed move snaps back
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
         try {
-            if (!this._canMoveTask(record.getRecordId()) || !await this._provider.moveTask(record.getRecordId(), targetId, position)) {
+            if (!this._canMoveTask(record.getRecordId()) || !await this._taskRuntime.tasks.move(record.getRecordId(), targetId, position)) {
                 this._restoreRows(record);
             }
         }

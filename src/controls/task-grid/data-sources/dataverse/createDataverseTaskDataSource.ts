@@ -13,5 +13,5 @@ export interface IDataverseTaskDataSourceParameters {
 /** Tasks in Dataverse, read through FetchXML and opened in their forms. */
 export const createDataverseTaskDataSource = (parameters: IDataverseTaskDataSourceParameters): ITaskDataProvider => {
     const { taskRuntime, onCreateStore, provider: Provider = TaskDataProvider } = parameters;
-    return new Provider({ store: onCreateStore(taskRuntime), taskRuntime });
+    return new Provider({ store: onCreateStore(taskRuntime) });
 };

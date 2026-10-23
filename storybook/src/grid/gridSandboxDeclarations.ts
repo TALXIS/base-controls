@@ -3886,6 +3886,22 @@ interface ITaskDataProvider extends IDataProvider {
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
+/** The task actions, each run with the grid loading and its error shown. */
+interface ITaskActions {
+    /** The created task, or null when creation is off or the user cancelled. */
+    create(parentId?: string, options?: { previousTaskId?: string; nextTaskId?: string; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
+    /** Creates the trees under parentId, first among its children, as one creation. */
+    createTrees(trees: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null>;
+    edit(taskIds: string[]): Promise<any>;
+    /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
+    delete(taskIds: string[]): Promise<void>;
+    /** true once moved, or null when it did not move. */
+    move(taskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): Promise<true | null>;
+    /** Edits the task, or opens the record its lookup points to when columnName is another column. */
+    open(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
+    openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
+}
+
 interface ITaskRuntime {
     readonly services: { get(key: string): any; find(key: string): any; whenAvailable(key: string, callback: (service: any) => void): void; register(key: string, resolve: () => any): void };
     readonly events: { addEventListener(event: 'onDestroyed', listener: () => void): void };
@@ -3894,16 +3910,11 @@ interface ITaskRuntime {
     getView(): ITaskView | undefined;
     /** What the view shows right now, as task view data to save. */
     getCurrentViewData(): ITaskViewData;
-    createTask(parentId?: string): Promise<void>;
-    deleteTasks(taskIds: string[]): Promise<void>;
-    editTasks(taskIds: string[]): Promise<void>;
+    /** Every task action, run with the grid loading and its error shown. */
+    readonly tasks: ITaskActions;
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
-    /** Creates a task, opens its parent, and starts editing its name when the grid edits. */
-    createTask(parentId?: string): Promise<void>;
-    /** Deletes the tasks and everything under them, once the user confirms. */
-    deleteTasks(taskIds: string[]): Promise<void>;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     /** Runs the operation with the grid loading, showing its error in a dialog before rethrowing it. */
@@ -4248,7 +4259,7 @@ interface ITaskStore {
 declare const createMemoryTaskDataSource: (parameters: {
     taskRuntime: ITaskRuntime;
     onCreateStore: (taskRuntime: ITaskRuntime) => ITaskStore;
-    provider?: new (parameters: { store: ITaskStore; taskRuntime: ITaskRuntime }) => ITaskDataProvider;
+    provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
 }) => ITaskDataProvider;
 
 /** Tasks held in memory; editing one, or opening a record a lookup points to, shows an alert. */

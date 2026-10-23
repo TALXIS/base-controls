@@ -10,6 +10,7 @@ import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
 import { ITemplatesLabels, TEMPLATES_LABELS } from "./labels";
 import { TemplateSelectorAdapter } from "./components/adapters/template-selector";
+import { runQuietly } from "../../runtime/runQuietly";
 
 /** A template: its own task, named after it, with the tasks under it. */
 export interface ITemplate {
@@ -75,9 +76,9 @@ export class Templates implements ITemplates {
         await this._run('creatingTasksFromTemplate', async () => {
             const template = await this._store.onGetTemplate(templateId);
             if (template) {
-                const provider = this._taskRuntime.getProvider();
                 const { tree } = template;
-                await provider.createTasks([{ ...tree, data: { ...tree.data, [provider.getFieldMapping().subject]: template.name } }], parentId);
+                const subject = this._taskRuntime.getFieldMapping().subject;
+                await this._taskRuntime.tasks.createTrees([{ ...tree, data: { ...tree.data, [subject]: template.name } }], parentId);
             }
         });
     }
@@ -181,11 +182,7 @@ export class Templates implements ITemplates {
 
     //the commands do not await them
     private async _run(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<void>): Promise<void> {
-        try {
-            await this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') });
-        }
-        //the error dialog already shows the failure
-        catch { }
+        await runQuietly(() => this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') }));
     }
 }
 

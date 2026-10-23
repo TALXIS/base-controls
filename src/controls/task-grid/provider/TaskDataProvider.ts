@@ -1,16 +1,12 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
-import type { ITaskGridLabels } from "../labels";
-import type { ITaskRuntime } from "../runtime";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
 import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
-    /** Runs the store's actions with the grid loading and their errors shown. */
-    taskRuntime: ITaskRuntime;
 }
 
 const ACTIVE_STATE_CODE = 0;
@@ -20,7 +16,6 @@ const copyColumn = (column: IColumn): IColumn => ({ ...column, metadata: { ...co
 /** Every task of a view, loaded at once through a store and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _store: ITaskStore;
-    private _taskRuntime: ITaskRuntime;
     private _fieldMapping?: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
@@ -38,7 +33,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
         this._store = parameters.store;
-        this._taskRuntime = parameters.taskRuntime;
         this._tree = new RecordTree(this);
     }
 
@@ -153,39 +147,24 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return handler ? handler.onSaveValue(record, column, dirtyField!.getValue()) : this._store.onSaveRecord(record);
     }
 
-    public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        const columnName = context?.columnName;
-        try {
-            if (!columnName || columnName === this.getFieldMapping().subject) {
-                await this.editTasks([entityReference.id.guid]);
-            }
-            else {
-                await this._execute(() => this._store.onOpenRelatedRecord(entityReference, columnName), 'openingRecord', 'openRecordFailed');
-            }
-        }
-        //the error dialog already shows the failure
-        catch { }
-    }
+    //records open through the task runtime's actions
+    public onOpenDatasetItem(): void { }
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
-        return this._execute(async () => {
-            const resolvedParentId = parentId ?? this._rootTaskId;
-            const rawRecord = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
-            return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
-        }, 'creatingTask', 'createTaskFailed');
+        const resolvedParentId = parentId ?? this._rootTaskId;
+        const rawRecord = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
+        return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
     }
 
     public async createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null> {
-        return this._execute(async () => {
-            const resolvedParentId = parentId ?? this._rootTaskId;
-            const records = await this._createTaskTrees(tasks, resolvedParentId);
-            if (records.length === 0) {
-                return null;
-            }
-            this._rebuildTree();
-            this.taskEvents.dispatchEvent('onTasksCreated', records, resolvedParentId);
-            return records;
-        }, 'creatingTasks', 'createTasksFailed');
+        const resolvedParentId = parentId ?? this._rootTaskId;
+        const records = await this._createTaskTrees(tasks, resolvedParentId);
+        if (records.length === 0) {
+            return null;
+        }
+        this._rebuildTree();
+        this.taskEvents.dispatchEvent('onTasksCreated', records, resolvedParentId);
+        return records;
     }
 
     public addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[] {
@@ -210,66 +189,64 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
-        return this._execute(async (): Promise<IDeleteTasksResult | null> => {
-            const { structure } = this._tree;
-            const keptIds = new Set<string>();
-            const deletedTaskIds: string[] = [];
-            const errors: IFailedRecord[] = [];
-            for (const level of this._getLevelsDeepestFirst(this.getDeletion(taskIds).deletableTaskIds)) {
-                const levelIds = level.filter(taskId => !structure.getChildren(taskId).some(child => keptIds.has(child.getRecordId())));
-                level.filter(taskId => !levelIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
-                if (levelIds.length === 0) {
-                    continue;
-                }
-                const result = await this._store.onDeleteTasks({ taskIds: levelIds, tree: this._tree });
-                if (!result) {
-                    break;
-                }
-                deletedTaskIds.push(...result.deletedTaskIds);
-                levelIds.filter(taskId => !result.deletedTaskIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
-                if (!result.success) {
-                    errors.push(...result.errors);
-                }
+        const { structure } = this._tree;
+        const keptIds = new Set<string>();
+        const deletedTaskIds: string[] = [];
+        const errors: IFailedRecord[] = [];
+        for (const level of this._getLevelsDeepestFirst(this.getDeletion(taskIds).deletableTaskIds)) {
+            const levelIds = level.filter(taskId => !structure.getChildren(taskId).some(child => keptIds.has(child.getRecordId())));
+            level.filter(taskId => !levelIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
+            if (levelIds.length === 0) {
+                continue;
             }
-            if (deletedTaskIds.length === 0 && errors.length === 0) {
-                return null;
+            const result = await this._store.onDeleteTasks({ taskIds: levelIds, tree: this._tree });
+            if (!result) {
+                break;
             }
-            if (deletedTaskIds.length > 0) {
-                const deletedIds = new Set(deletedTaskIds);
-                await this.deleteRecords(deletedTaskIds);
-                this._rebuildTree();
-                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
-                this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
+            deletedTaskIds.push(...result.deletedTaskIds);
+            levelIds.filter(taskId => !result.deletedTaskIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
+            if (!result.success) {
+                errors.push(...result.errors);
             }
-            return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
-        }, 'deletingTasks', 'deleteTasksFailed');
+        }
+        if (deletedTaskIds.length === 0 && errors.length === 0) {
+            return null;
+        }
+        if (deletedTaskIds.length > 0) {
+            const deletedIds = new Set(deletedTaskIds);
+            await this.deleteRecords(deletedTaskIds);
+            this._rebuildTree();
+            this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
+            this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
+        }
+        return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
     public async moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
-        return this._execute(async (): Promise<true | null> => {
-            const params = this._resolveMove(movingTaskId, targetTaskId, position);
-            if (!params || !await this._store.onMoveTask(params)) {
-                return null;
-            }
-            const { parentId, stackRank } = params.fieldMapping;
-            this.updateTaskData([{
-                [this.getMetadata().PrimaryIdAttribute!]: movingTaskId,
-                [parentId]: params.parentRecord ? [params.parentRecord.getNamedReference()] : null,
-                [stackRank]: params.stackRank,
-            }]);
-            this.taskEvents.dispatchEvent('onTaskMoved', params);
-            return true;
-        }, 'movingTask', 'moveTaskFailed');
+        const params = this._resolveMove(movingTaskId, targetTaskId, position);
+        if (!params || !await this._store.onMoveTask(params)) {
+            return null;
+        }
+        const { parentId, stackRank } = params.fieldMapping;
+        this.updateTaskData([{
+            [this.getMetadata().PrimaryIdAttribute!]: movingTaskId,
+            [parentId]: params.parentRecord ? [params.parentRecord.getNamedReference()] : null,
+            [stackRank]: params.stackRank,
+        }]);
+        this.taskEvents.dispatchEvent('onTaskMoved', params);
+        return true;
     }
 
     public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
-        return this._execute(async () => {
-            const result = await this._store.onEditTasks(taskIds);
-            if (result) {
-                this.updateTaskData(result.updatedRecords);
-            }
-            return result;
-        }, 'editingTasks', 'editTasksFailed');
+        const result = await this._store.onEditTasks(taskIds);
+        if (result) {
+            this.updateTaskData(result.updatedRecords);
+        }
+        return result;
+    }
+
+    public async openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void> {
+        await this._store.onOpenRelatedRecord(reference, columnName);
     }
 
     public updateTaskData(rawRecords: IRawRecord[]): void {
@@ -487,10 +464,5 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             (levels[this._tree.structure.getAncestorIds(taskId).length] ??= []).push(taskId);
         }
         return levels.filter(Boolean).reverse();
-    }
-
-    private _execute<T>(operation: () => Promise<T>, loadingLabel: keyof ITaskGridLabels, errorLabel: keyof ITaskGridLabels): Promise<T> {
-        const labels = this._taskRuntime.getLabels();
-        return this._taskRuntime.execute(operation, { loadingMessage: labels.getLocalizedString(loadingLabel), errorMessage: labels.getLocalizedString(errorLabel) });
     }
 }
