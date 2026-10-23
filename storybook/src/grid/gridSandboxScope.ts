@@ -20,10 +20,11 @@ import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStrategy, createProjectModule, createTaskDraggingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStrategy, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule } from '@talxis/base-controls'
+import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStrategy, createProjectModule, createTaskDraggingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStrategy, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { CHECKLIST_COLUMN, CHECKLIST_ITEMS, createChecklistItems } from '../task-grid/memoryChecklistData'
+import { createDependencies, DEPENDENCIES, DEPENDENCY_COLUMNS } from '../task-grid/memoryDependencyData'
 import { COLUMNS as TASK_COLUMNS, ENTITY_METADATA as TASK_METADATA, getQueryColumns as getTaskColumns, TASKS } from '../task-grid/memoryTaskData'
 import { createStressTasks } from '../task-grid/stressTaskData'
 import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
@@ -157,6 +158,13 @@ export const GRID_SANDBOX_SCOPE = {
     CHECKLIST_ITEMS,
     CHECKLIST_COLUMN,
     createChecklistItems,
+    createDependenciesModule,
+    createMemoryDependenciesModule,
+    createDataverseDependenciesModule,
+    createTalxisDependenciesModule,
+    DEPENDENCIES,
+    DEPENDENCY_COLUMNS,
+    createDependencies,
     TASKS,
     createStressTasks,
     TASK_COLUMNS,

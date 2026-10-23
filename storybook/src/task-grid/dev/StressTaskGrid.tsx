@@ -15,7 +15,7 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams').concat(CHECKLIST_COLUMN)),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams').concat(CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
     taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
     taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
@@ -42,6 +42,7 @@ const GridExample = () => {
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
         createMemoryTemplatesModule({ templates: TEMPLATES }),
         createMemoryChecklistModule({ items: createChecklistItems(tasks) }),
+        createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
     ], [])
 
     const onLoad = async ({ taskDatasetControl }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskDatasetControl, strategy: new MemoryTaskStrategy({ records: tasks, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })

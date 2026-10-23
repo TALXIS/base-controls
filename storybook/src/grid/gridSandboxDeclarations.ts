@@ -4167,6 +4167,56 @@ declare const CHECKLIST_COLUMN: IColumn;
 /** Checklists for generated tasks, ticked as far as each task's progress. */
 declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, IChecklistItem[]>;
 
+/** Strings of the dependencies module. */
+type DependenciesLabels = Partial<{ predecessors: string; successors: string; dependenciesFailed: string }>;
+
+/** How the two tasks of a dependency relate in time. */
+type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
+
+/** A dependency between two tasks. */
+interface ITaskDependency {
+    id: string;
+    /** The task that comes first. */
+    predecessorTaskId: string;
+    successorTaskId: string;
+    type: TaskDependencyType;
+}
+
+/** Where dependencies are kept; a read-only one throws from the writes. */
+interface ITaskDependenciesStrategy {
+    /** The dependencies touching any of these tasks, at either end. */
+    onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
+    onCreateDependency(dependency: Omit<ITaskDependency, 'id'>): Promise<ITaskDependency>;
+    onUpdateDependency(dependency: ITaskDependency): Promise<void>;
+    onDeleteDependency(dependencyId: string): Promise<void>;
+}
+
+/** A Dataverse table of dependencies: two task lookups and an option set of the type. */
+interface IDataverseDependenciesSchema {
+    entityName: string;
+    primaryIdAttribute: string;
+    predecessorAttribute: string;
+    successorAttribute: string;
+    typeAttribute: string;
+    dependencyTypeCodes: Record<number, TaskDependencyType>;
+}
+
+/** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
+declare const createDependenciesModule: (parameters: { strategy: ITaskDependenciesStrategy; labels?: DependenciesLabels }) => IDatasetControlModule;
+/** Dependencies held in memory, starting over on every mount like the memory tasks. */
+declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[]; labels?: DependenciesLabels }) => IDatasetControlModule;
+/** Dependencies kept in a Dataverse table of two task lookups and a type. */
+declare const createDataverseDependenciesModule: (parameters: IDataverseDependenciesSchema & { labels?: DependenciesLabels }) => IDatasetControlModule;
+/** Dependencies kept in TALXIS's task dependency table. */
+declare const createTalxisDependenciesModule: (parameters?: { labels?: DependenciesLabels }) => IDatasetControlModule;
+
+/** The dependencies of the sample tasks. */
+declare const DEPENDENCIES: ITaskDependency[];
+/** The dependency columns as a view lists them. */
+declare const DEPENDENCY_COLUMNS: IColumn[];
+/** Each task waiting on its previous sibling, under every other parent. */
+declare const createDependencies: (tasks: IRawRecord[]) => ITaskDependency[];
+
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
