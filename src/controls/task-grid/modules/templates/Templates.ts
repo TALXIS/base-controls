@@ -2,7 +2,7 @@ import { createElement } from "react";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
-import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
+import { ILocalizationService, LocalizationService } from "@utils";
 import type { ICreateTaskTree } from "../../provider";
 import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
@@ -181,17 +181,11 @@ export class Templates implements ITemplates {
 
     //the commands do not await them
     private async _run(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<void>): Promise<void> {
-        const provider = this._taskRuntime.getProvider();
-        provider.setLoading(true, this._labels.getLocalizedString(loadingLabel));
         try {
-            await operation();
+            await this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') });
         }
-        catch (error) {
-            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('templatesFailed'), details: ErrorHelper.getMessageFromError(error) });
-        }
-        finally {
-            provider.setLoading(false);
-        }
+        //the error dialog already shows the failure
+        catch { }
     }
 }
 

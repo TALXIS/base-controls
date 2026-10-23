@@ -3,6 +3,10 @@ import { StackRank } from "@utils/stack-rank";
 import type { ITaskRuntime } from "../../runtime";
 import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 
+//temporary: a slow backend that fails now and then, to try the loading and error dialog
+const SIMULATED_DELAY_MS = 1000;
+const SIMULATED_FAILURE_RATE = 0.3;
+
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
     /** The tasks to start with; copied, so changes never reach this array. */
@@ -39,6 +43,7 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null> {
+        await this._simulateBackend();
         const { fieldMapping, metadata } = params;
         const task: IRawRecord = {};
         for (const column of params.columns) {
@@ -54,21 +59,18 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
+        await this._simulateBackend();
         const deletedTaskIds = new Set(params.taskIds);
         const primaryIdAttribute = this._parameters.metadata.PrimaryIdAttribute!;
         this._tasks = this._tasks.filter(task => !deletedTaskIds.has(task[primaryIdAttribute]));
         return { success: true, deletedTaskIds: params.taskIds };
     }
 
-    public async onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null> {
-        const { fieldMapping } = params;
-        const moved = {
-            ...params.movingRecord.getRawData(),
-            [fieldMapping.parentId]: this._getParentReference(params.parentRecord),
-            [fieldMapping.stackRank]: this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping),
-        };
-        this._write(params.movingRecord.getRecordId(), { [fieldMapping.parentId]: moved[fieldMapping.parentId], [fieldMapping.stackRank]: moved[fieldMapping.stackRank] });
-        return [moved];
+    public async onMoveTask(params: ITaskMoveParams): Promise<true | null> {
+        await this._simulateBackend();
+        const { parentId, stackRank } = params.fieldMapping;
+        this._write(params.movingRecord.getRecordId(), { [parentId]: this._getParentReference(params.parentRecord), [stackRank]: params.stackRank });
+        return true;
     }
 
     public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {
@@ -82,6 +84,7 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+        await this._simulateBackend();
         const subject = this._parameters.taskRuntime.getProvider().getFieldMapping().subject;
         const names = taskIds.map(taskId => this._find(taskId)?.[subject] ?? taskId).join(', ');
         await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${names}` });
@@ -89,6 +92,7 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
+        await this._simulateBackend();
         await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${reference.name ?? reference.id.guid}` });
     }
 
@@ -109,5 +113,12 @@ export class MemoryTaskStore implements ITaskStore {
 
     protected _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
         return StackRank.between(previousSibling?.getValue(fieldMapping.stackRank), nextSibling?.getValue(fieldMapping.stackRank));
+    }
+
+    protected async _simulateBackend(): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, SIMULATED_DELAY_MS));
+        if (Math.random() < SIMULATED_FAILURE_RATE) {
+            throw new Error('The simulated backend failed.');
+        }
     }
 }

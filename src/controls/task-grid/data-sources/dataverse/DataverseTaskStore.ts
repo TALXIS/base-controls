@@ -94,16 +94,16 @@ export class DataverseTaskStore implements ITaskStore {
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
-    public async onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null> {
+    public async onMoveTask(params: ITaskMoveParams): Promise<true | null> {
         const { fieldMapping } = params;
         const parentId = params.parentRecord?.getRecordId();
         const parentNavigationProperty = await this._getNavigationPropertyName(this._entityName, fieldMapping.parentId);
         const taskId = params.movingRecord.getRecordId();
         await this._getPcfContext().webAPI.updateRecord(this._entityName, taskId, {
             [`${parentNavigationProperty}@odata.bind`]: parentId ? `/${this._entitySetName}(${parentId})` : null,
-            [fieldMapping.stackRank]: this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping),
+            [fieldMapping.stackRank]: params.stackRank,
         });
-        return this._getRawRecords([taskId]);
+        return true;
     }
 
     public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {

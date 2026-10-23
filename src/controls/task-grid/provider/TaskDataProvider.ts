@@ -1,12 +1,16 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
-import { ErrorHelper } from "@utils/error-handling";
 import { HookRegistry } from "@utils";
+import { StackRank } from "@utils/stack-rank";
+import type { ITaskGridLabels } from "../labels";
+import type { ITaskRuntime } from "../runtime";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
 import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
+    /** Runs the store's actions with the grid loading and their errors shown. */
+    taskRuntime: ITaskRuntime;
 }
 
 const ACTIVE_STATE_CODE = 0;
@@ -16,6 +20,7 @@ const copyColumn = (column: IColumn): IColumn => ({ ...column, metadata: { ...co
 /** Every task of a view, loaded at once through a store and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _store: ITaskStore;
+    private _taskRuntime: ITaskRuntime;
     private _fieldMapping?: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
@@ -33,6 +38,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
         this._store = parameters.store;
+        this._taskRuntime = parameters.taskRuntime;
         this._tree = new RecordTree(this);
     }
 
@@ -149,12 +155,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
         const columnName = context?.columnName;
-        if (!columnName || columnName === this.getFieldMapping().subject) {
-            await this.editTasks([entityReference.id.guid]);
+        try {
+            if (!columnName || columnName === this.getFieldMapping().subject) {
+                await this.editTasks([entityReference.id.guid]);
+            }
+            else {
+                await this._execute(() => this._store.onOpenRelatedRecord(entityReference, columnName), 'openingRecord', 'openRecordFailed');
+            }
         }
-        else {
-            await this._execute(() => this._store.onOpenRelatedRecord(entityReference, columnName));
-        }
+        //the error dialog already shows the failure
+        catch { }
     }
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
@@ -162,7 +172,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             const resolvedParentId = parentId ?? this._rootTaskId;
             const rawRecord = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
             return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
-        });
+        }, 'creatingTask', 'createTaskFailed');
     }
 
     public async createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null> {
@@ -175,7 +185,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             this._rebuildTree();
             this.taskEvents.dispatchEvent('onTasksCreated', records, resolvedParentId);
             return records;
-        });
+        }, 'creatingTasks', 'createTasksFailed');
     }
 
     public addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[] {
@@ -200,7 +210,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
-        return this._execute(async () => {
+        return this._execute(async (): Promise<IDeleteTasksResult | null> => {
             const { structure } = this._tree;
             const keptIds = new Set<string>();
             const deletedTaskIds: string[] = [];
@@ -232,23 +242,24 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
             }
             return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
-        });
+        }, 'deletingTasks', 'deleteTasksFailed');
     }
 
-    public async moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<boolean> {
-        return this._execute(async () => {
+    public async moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
+        return this._execute(async (): Promise<true | null> => {
             const params = this._resolveMove(movingTaskId, targetTaskId, position);
-            if (!params) {
-                return false;
+            if (!params || !await this._store.onMoveTask(params)) {
+                return null;
             }
-            const result = await this._store.onMoveTask(params);
-            if (!result) {
-                return false;
-            }
-            this.updateTaskData(result);
+            const { parentId, stackRank } = params.fieldMapping;
+            this.updateTaskData([{
+                [this.getMetadata().PrimaryIdAttribute!]: movingTaskId,
+                [parentId]: params.parentRecord ? [params.parentRecord.getNamedReference()] : null,
+                [stackRank]: params.stackRank,
+            }]);
             this.taskEvents.dispatchEvent('onTaskMoved', params);
             return true;
-        });
+        }, 'movingTask', 'moveTaskFailed');
     }
 
     public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
@@ -258,7 +269,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 this.updateTaskData(result.updatedRecords);
             }
             return result;
-        });
+        }, 'editingTasks', 'editTasksFailed');
     }
 
     public updateTaskData(rawRecords: IRawRecord[]): void {
@@ -456,6 +467,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const [previousSibling, nextSibling] = position === 'child'
             ? [undefined, siblings[0]]
             : position === 'above' ? [neighbours.previous, targetRecord] : [targetRecord, neighbours.next];
+        const { stackRank } = this.getFieldMapping();
         return {
             movingRecord,
             targetRecord,
@@ -465,6 +477,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             previousSibling,
             nextSibling,
             fieldMapping: this.getFieldMapping(),
+            stackRank: StackRank.between(previousSibling?.getValue(stackRank), nextSibling?.getValue(stackRank)),
         };
     }
 
@@ -476,7 +489,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return levels.filter(Boolean).reverse();
     }
 
-    private _execute<T>(operation: () => Promise<T>): Promise<T> {
-        return ErrorHelper.executeWithErrorHandling({ operation, onError: (error, message) => this.dispatchEvent('onError', message, error) });
+    private _execute<T>(operation: () => Promise<T>, loadingLabel: keyof ITaskGridLabels, errorLabel: keyof ITaskGridLabels): Promise<T> {
+        const labels = this._taskRuntime.getLabels();
+        return this._taskRuntime.execute(operation, { loadingMessage: labels.getLocalizedString(loadingLabel), errorMessage: labels.getLocalizedString(errorLabel) });
     }
 }

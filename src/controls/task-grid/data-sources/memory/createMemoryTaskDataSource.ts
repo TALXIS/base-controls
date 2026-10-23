@@ -13,5 +13,5 @@ export interface IMemoryTaskDataSourceParameters {
 /** Tasks held in memory. */
 export const createMemoryTaskDataSource = (parameters: IMemoryTaskDataSourceParameters): ITaskDataProvider => {
     const { taskRuntime, onCreateStore, provider: Provider = TaskDataProvider } = parameters;
-    return new Provider({ store: onCreateStore(taskRuntime) });
+    return new Provider({ store: onCreateStore(taskRuntime), taskRuntime });
 };

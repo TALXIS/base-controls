@@ -3906,6 +3906,8 @@ interface ITaskRuntime {
     deleteTasks(taskIds: string[]): Promise<void>;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
+    /** Runs the operation with the grid loading, showing its error in a dialog before rethrowing it. */
+    execute<T>(operation: () => Promise<T>, options?: { loadingMessage?: string; errorMessage?: string }): Promise<T>;
     /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
     registerRibbonCommandUi(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
 }
@@ -4246,7 +4248,7 @@ interface ITaskStore {
 declare const createMemoryTaskDataSource: (parameters: {
     taskRuntime: ITaskRuntime;
     onCreateStore: (taskRuntime: ITaskRuntime) => ITaskStore;
-    provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
+    provider?: new (parameters: { store: ITaskStore; taskRuntime: ITaskRuntime }) => ITaskDataProvider;
 }) => ITaskDataProvider;
 
 /** Tasks held in memory; editing one, or opening a record a lookup points to, shows an alert. */

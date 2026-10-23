@@ -384,18 +384,15 @@ export class TaskDragging {
         await this._moveTask(record, ...target);
     }
 
+    //a refused, cancelled or failed move snaps back
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
-        let isMoved = false;
         try {
-            //a refused task snaps back
-            isMoved = this._canMoveTask(record.getRecordId()) && await this._provider.moveTask(record.getRecordId(), targetId, position);
-        }
-        //the provider's notification already shows the failure
-        catch { }
-        finally {
-            if (!isMoved) {
+            if (!this._canMoveTask(record.getRecordId()) || !await this._provider.moveTask(record.getRecordId(), targetId, position)) {
                 this._restoreRows(record);
             }
+        }
+        catch {
+            this._restoreRows(record);
         }
     }
 
@@ -417,6 +414,7 @@ export class TaskDragging {
         const gridApi = this._grid.services.find('gridApi');
         const subtree = [record, ...this._provider.getRecordTree().structure.getDescendants(record.getRecordId())];
         gridApi?.applyTransaction({ update: subtree.filter(task => gridApi.getRowNode(task.getRecordId())) });
-        this._grid.services.get('rowModel').refresh();
+        //a copy, as AG Grid keeps its dragged order when handed the provider's unchanged array
+        gridApi?.setGridOption('rowData', [...this._provider.getRecords()]);
     }
 }

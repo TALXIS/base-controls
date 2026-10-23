@@ -49,6 +49,13 @@ export interface ITaskRuntimeEvents {
 }
 
 /** One mount of a `TaskDatasetControl`: what its modules register on and its parts read. */
+export interface ITaskExecuteOptions {
+    /** Shown in the grid's loading overlay. */
+    loadingMessage?: string;
+    /** Titles the error dialog. */
+    errorMessage?: string;
+}
+
 export interface ITaskRuntime {
     readonly services: IServiceLocator<ITaskRuntimeServiceMap>;
     readonly events: IEventSubscriber<ITaskRuntimeEvents>;
@@ -75,8 +82,8 @@ export interface ITaskRuntime {
     /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
     registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
     getGridModules(): IGridModule<ITaskGridServiceMap>[];
-    /** Runs the operation; a failure shows in the control's notifications, not as a rejection. */
-    execute(operation: () => Promise<unknown>): Promise<void>;
+    /** Runs the operation with the grid loading, showing its error in a dialog before rethrowing it. */
+    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     /**
      * Registers a hook over the toggles `TaskDatasetControl.Settings` shows.
      *

@@ -88,7 +88,15 @@ export class TaskTree {
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([TASK_COMMANDS_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
-        this._runtime.execute(() => this._syncPathColumn(isFlatList));
+        this._refreshPathColumn(isFlatList);
+    }
+
+    private async _refreshPathColumn(isFlatList: boolean): Promise<void> {
+        try {
+            await this._runtime.execute(() => this._syncPathColumn(isFlatList));
+        }
+        //the error dialog already shows the failure
+        catch { }
     }
 
     public focusNewTask(taskId: string): void {

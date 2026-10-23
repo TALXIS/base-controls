@@ -76,6 +76,8 @@ export interface ITaskMoveParams extends ITaskSiblingContext {
     movingRecord: IRecord;
     targetRecord: IRecord;
     position: ITaskMovePosition;
+    /** The stack rank the task moves to; the store saves it. */
+    stackRank: string;
 }
 
 /** What deleting tasks would remove, and what the store keeps. */
@@ -129,8 +131,8 @@ export interface ITaskStore {
      * @returns Which tasks went, or `null` when the user cancelled.
      */
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
-    /** @returns The records the move changed, or `null` when the user cancelled. */
-    onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null>;
+    /** @returns `true` once moved, or `null` when the user cancelled. */
+    onMoveTask(params: ITaskMoveParams): Promise<true | null>;
     onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult>;
     /** Lets the user edit the tasks, such as in a form; `null` when nothing changed. */
     onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
@@ -197,8 +199,8 @@ export interface ITaskDataProvider extends IDataProvider {
     getDeletion(taskIds: string[]): ITaskDeletion;
     /** Deletes the tasks and their subtrees bottom-up, keeping the ancestors of a refused or failed task. */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns Whether the task moved. */
-    moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<boolean>;
+    /** @returns `true` once moved, or `null` when it did not move. */
+    moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
     editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Writes changed raw data onto the records it belongs to. */
     updateTaskData(rawRecords: IRawRecord[]): void;

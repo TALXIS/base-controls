@@ -9,11 +9,11 @@ import type { IGrid, IGridModule } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../services";
 import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
-import type { ICreateTaskOptions, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { ICreateTaskOptions, IDeleteTasksResult, IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
-import type { ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
@@ -31,6 +31,9 @@ export class TaskRuntime implements ITaskRuntime {
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
+    private _runningCount = 0;
+    //a nested run rethrows an error the inner one already showed
+    private _shownErrors = new WeakSet<object>();
     private _unregisterCommands?: () => void;
 
     constructor(parameters: ITaskRuntimeParameters) {
@@ -95,7 +98,11 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async editTasks(taskIds: string[]): Promise<void> {
-        await this.execute(() => this.getProvider().editTasks(taskIds));
+        try {
+            await this.getProvider().editTasks(taskIds);
+        }
+        //the error dialog already shows the failure
+        catch { }
     }
 
     public isCreationEnabled(): boolean {
@@ -111,14 +118,17 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<void> {
-        if (this.isCreationEnabled()) {
-            await this.execute(async () => {
-                const task = await this.getProvider().createTask(parentId, options);
-                if (task) {
-                    this.services.find('taskTree')?.focusNewTask(task.getRecordId());
-                }
-            });
+        if (!this.isCreationEnabled()) {
+            return;
         }
+        try {
+            const task = await this.getProvider().createTask(parentId, options);
+            if (task) {
+                this.services.find('taskTree')?.focusNewTask(task.getRecordId());
+            }
+        }
+        //the error dialog already shows the failure
+        catch { }
     }
 
     public async deleteTasks(taskIds: string[]): Promise<void> {
@@ -139,18 +149,23 @@ export class TaskRuntime implements ITaskRuntime {
         if (!confirmation.confirmed) {
             return;
         }
-        await this.execute(async () => {
-            const result = await provider.deleteTasks(taskIds);
-            const failures = [
-                ...(result?.success === false ? result.errors : []),
-                ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
-            ];
-            if (failures.length > 0) {
-                const subject = this.getFieldMapping().subject;
-                const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
-                await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
-            }
-        });
+        let result: IDeleteTasksResult | null;
+        try {
+            result = await provider.deleteTasks(taskIds);
+        }
+        //the error dialog already shows the failure
+        catch {
+            return;
+        }
+        const failures = [
+            ...(result?.success === false ? result.errors : []),
+            ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
+        ];
+        if (failures.length > 0) {
+            const subject = this.getFieldMapping().subject;
+            const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
+            await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
+        }
     }
 
     public registerGridModule(module: IGridModule<ITaskGridServiceMap>): void {
@@ -234,11 +249,32 @@ export class TaskRuntime implements ITaskRuntime {
         });
     };
 
-    //the provider's notification already shows the failure
-    public async execute(operation: () => Promise<unknown>): Promise<void> {
+    //TODO: this kind of handling should be moved to some utility, as it's not specific to the task grid
+    //form/dataset controls could use it too to display loading and handler errors the way it suits the app, instead of the default PCF error dialog
+    public async execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T> {
+        const provider = this.getProvider();
+        this._runningCount++;
+        provider.setLoading(true, options?.loadingMessage);
         try {
-            await operation();
+            return await operation();
         }
-        catch { }
+        catch (error) {
+            const isObject = typeof error === 'object' && error !== null;
+            if (!isObject || !this._shownErrors.has(error)) {
+                if (isObject) {
+                    this._shownErrors.add(error);
+                }
+                const message = options?.errorMessage ?? this.getLabels().getLocalizedString('actionFailed');
+                await this.services.get('pcfContext').navigation.openErrorDialog({ message, details: ErrorHelper.getMessageFromError(error) });
+            }
+            throw error;
+        }
+        finally {
+            //one that ends inside another keeps its loading
+            if (--this._runningCount === 0) {
+                provider.setLoading(false);
+                this._shownErrors = new WeakSet();
+            }
+        }
     }
 }
