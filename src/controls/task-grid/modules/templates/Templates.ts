@@ -183,7 +183,7 @@ export class Templates implements ITemplates {
     }
 
     private _execute<T>(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<T>): Promise<T> {
-        return this._taskRuntime.execute(operation, { loadingMessage: this._labels.getLocalizedString(loadingLabel), errorMessage: this._labels.getLocalizedString('templatesFailed') });
+        return this._taskRuntime.execute(operation, { loading: { message: this._labels.getLocalizedString(loadingLabel) }, error: { title: this._labels.getLocalizedString('templatesFailed') } });
     }
 }
 

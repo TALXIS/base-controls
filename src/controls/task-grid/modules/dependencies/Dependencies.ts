@@ -1,7 +1,7 @@
 import type { ColDef } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
+import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
@@ -57,9 +57,20 @@ export interface IDependencies {
     isEditable(): boolean;
     /** Whether the dependency may be created: no self-link, duplicate or cycle. */
     canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean;
-    /** @returns The created dependency, or `null` when it is not allowed or failed. */
+    /**
+     * Rejects when the store fails.
+     * @returns The created dependency, or `null` when it is not allowed.
+     */
     createDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency | null>;
+    /**
+     * Rejects when the store fails.
+     * @returns `false` when there is no such dependency or editing is off.
+     */
     updateDependency(dependencyId: string, changes: Pick<ITaskDependency, 'type'>): Promise<boolean>;
+    /**
+     * Rejects when the store fails.
+     * @returns `false` when there is no such dependency or editing is off.
+     */
     deleteDependency(dependencyId: string): Promise<boolean>;
     getLabels(): ILocalizationService<IDependenciesLabels>;
     /** Called as the mount goes. */
@@ -115,11 +126,11 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !this.canCreateDependency(dependency.predecessorTaskId, dependency.successorTaskId)) {
             return null;
         }
-        return this._run(async () => {
+        return this._execute(async () => {
             const created = await this._store.onCreateDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
             return created;
-        }, null);
+        }, 'creatingDependency');
     }
 
     public async updateDependency(dependencyId: string, changes: Pick<ITaskDependency, 'type'>): Promise<boolean> {
@@ -127,12 +138,12 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !existing) {
             return false;
         }
-        return this._run(async () => {
+        return this._execute(async () => {
             const updated = { ...existing, ...changes };
             await this._store.onUpdateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
             return true;
-        }, false);
+        }, 'savingDependency');
     }
 
     public async deleteDependency(dependencyId: string): Promise<boolean> {
@@ -140,11 +151,11 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !existing) {
             return false;
         }
-        return this._run(async () => {
+        return this._execute(async () => {
             await this._store.onDeleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             return true;
-        }, false);
+        }, 'deletingDependency');
     }
 
     public getLabels(): ILocalizationService<IDependenciesLabels> {
@@ -189,13 +200,13 @@ export class Dependencies implements IDependencies {
         if (taskIds.length === 0) {
             return;
         }
-        await this._run(async () => {
+        await this._taskRuntime.execute(async () => {
             const loaded = await this._store.onLoadDependencies(taskIds);
             const loadedTaskIds = new Set(taskIds);
             const loadedIds = new Set(loaded.map(dependency => dependency.id));
             const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
             this._setDependencies([...this._dependencies.filter(dependency => !replaced.includes(dependency)), ...loaded], [...replaced, ...loaded]);
-        }, undefined);
+        }, { loading: { show: false }, error: { title: this._labels.getLocalizedString('loadDependenciesFailed'), rethrow: false } });
     }
 
     private _setDependencies(dependencies: ITaskDependency[], changed: ITaskDependency[]): void {
@@ -260,14 +271,8 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private async _run<T>(operation: () => Promise<T>, fallback: T): Promise<T> {
-        try {
-            return await operation();
-        }
-        catch (error) {
-            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('dependenciesFailed'), details: ErrorHelper.getMessageFromError(error) });
-            return fallback;
-        }
+    private _execute<T>(operation: () => Promise<T>, loadingLabel: 'creatingDependency' | 'savingDependency' | 'deletingDependency'): Promise<T> {
+        return this._taskRuntime.execute(operation, { loading: { message: this._labels.getLocalizedString(loadingLabel) }, error: { title: this._labels.getLocalizedString('dependenciesFailed') } });
     }
 }
 

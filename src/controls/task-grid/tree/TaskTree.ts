@@ -89,7 +89,7 @@ export class TaskTree {
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([TASK_COMMANDS_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
-        runQuietly(() => this._runtime.execute(() => this._syncPathColumn(isFlatList)));
+        this._runtime.execute(() => this._syncPathColumn(isFlatList), { error: { rethrow: false } });
     }
 
     public focusNewTask(taskId: string): void {

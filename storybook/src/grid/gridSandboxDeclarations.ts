@@ -3886,6 +3886,22 @@ interface ITaskDataProvider extends IDataProvider {
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
+/** How execute shows a run and handles its failure; by default it shows the loading, and the dialog before rethrowing. */
+interface ITaskExecuteOptions {
+    loading?: {
+        /** Defaults to true; false for a run in the background. */
+        show?: boolean;
+        /** Shown in the grid's loading overlay. */
+        message?: string;
+    };
+    error?: {
+        /** Titles the error dialog. */
+        title?: string;
+        /** Defaults to true; false resolves undefined once the dialog is shown. */
+        rethrow?: boolean;
+    };
+}
+
 /** The task actions, each run with the grid loading and its error shown. */
 interface ITaskActions {
     /** The created task, or null when creation is off or the user cancelled. */
@@ -3917,8 +3933,9 @@ interface ITaskRuntime {
     isDeletionEnabled(): boolean;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
-    /** Runs the operation with the grid loading, showing its error in a dialog before rethrowing it. */
-    execute<T>(operation: () => Promise<T>, options?: { loadingMessage?: string; errorMessage?: string }): Promise<T>;
+    /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
+    execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
+    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
     registerRibbonCommandUi(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
 }
@@ -4191,7 +4208,7 @@ declare const CHECKLIST_COLUMN: IColumn;
 declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, IChecklistItem[]>;
 
 /** Strings of the dependencies module. */
-type DependenciesLabels = Partial<{ predecessors: string; successors: string; dependenciesFailed: string }>;
+type DependenciesLabels = Partial<{ predecessors: string; successors: string; creatingDependency: string; savingDependency: string; deletingDependency: string; dependenciesFailed: string; loadDependenciesFailed: string }>;
 
 /** How the two tasks of a dependency relate in time. */
 type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';

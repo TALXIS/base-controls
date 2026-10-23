@@ -103,6 +103,6 @@ export class TaskActions implements ITaskActions {
 
     private _execute<T>(operation: () => Promise<T>, loadingLabel: keyof ITaskGridLabels, errorLabel: keyof ITaskGridLabels): Promise<T> {
         const labels = this._runtime.getLabels();
-        return this._runtime.execute(operation, { loadingMessage: labels.getLocalizedString(loadingLabel), errorMessage: labels.getLocalizedString(errorLabel) });
+        return this._runtime.execute(operation, { loading: { message: labels.getLocalizedString(loadingLabel) }, error: { title: labels.getLocalizedString(errorLabel) } });
     }
 }

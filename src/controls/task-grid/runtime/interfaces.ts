@@ -50,11 +50,25 @@ export interface ITaskRuntimeEvents {
 }
 
 /** One mount of a `TaskDatasetControl`: what its modules register on and its parts read. */
-export interface ITaskExecuteOptions {
+/** How `execute` shows a run while it goes; by default it shows the loading. */
+export interface ITaskExecuteLoading {
+    /** Defaults to `true`; `false` for a run in the background. */
+    show?: boolean;
     /** Shown in the grid's loading overlay. */
-    loadingMessage?: string;
+    message?: string;
+}
+
+/** How `execute` handles a run's failure; by default it shows the dialog and rethrows. */
+export interface ITaskExecuteError {
     /** Titles the error dialog. */
-    errorMessage?: string;
+    title?: string;
+    /** Defaults to `true`; `false` resolves `undefined` once the dialog is shown. */
+    rethrow?: boolean;
+}
+
+export interface ITaskExecuteOptions {
+    loading?: ITaskExecuteLoading;
+    error?: ITaskExecuteError;
 }
 
 export interface ITaskRuntime {
@@ -80,7 +94,8 @@ export interface ITaskRuntime {
     /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
     registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
     getGridModules(): IGridModule<ITaskGridServiceMap>[];
-    /** Runs the operation with the grid loading, showing its error in a dialog before rethrowing it. */
+    /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
+    execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     /**
      * Registers a hook over the toggles `TaskDatasetControl.Settings` shows.

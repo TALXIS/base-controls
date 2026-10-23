@@ -1,7 +1,6 @@
 import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
-import { ErrorHelper } from "@utils/error-handling";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
@@ -15,6 +14,7 @@ import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
 import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
+import { TaskExecutor } from "./TaskExecutor";
 import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
@@ -34,9 +34,7 @@ export class TaskRuntime implements ITaskRuntime {
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     public readonly tasks: ITaskActions = new TaskActions(this);
-    private _runs: { loadingMessage?: string }[] = [];
-    //a nested run rethrows an error the inner one already showed
-    private _shownErrors = new WeakSet<object>();
+    private _executor = new TaskExecutor(this);
     private _unregisterCommands?: () => void;
 
     constructor(parameters: ITaskRuntimeParameters) {
@@ -195,36 +193,9 @@ export class TaskRuntime implements ITaskRuntime {
 
     //TODO: this kind of handling should be moved to some utility, as it's not specific to the task grid
     //form/dataset controls could use it too to display loading and handler errors the way it suits the app, instead of the default PCF error dialog
-    public async execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T> {
-        const provider = this.getProvider();
-        const run = { loadingMessage: options?.loadingMessage };
-        this._runs.push(run);
-        provider.setLoading(true, run.loadingMessage);
-        try {
-            return await operation();
-        }
-        catch (error) {
-            const isObject = typeof error === 'object' && error !== null;
-            if (!isObject || !this._shownErrors.has(error)) {
-                if (isObject) {
-                    this._shownErrors.add(error);
-                }
-                const message = options?.errorMessage ?? this.getLabels().getLocalizedString('actionFailed');
-                await this.services.get('pcfContext').navigation.openErrorDialog({ message, details: ErrorHelper.getMessageFromError(error) });
-            }
-            throw error;
-        }
-        finally {
-            this._runs.splice(this._runs.indexOf(run), 1);
-            //the latest run still going shows its message again
-            const latest = this._runs[this._runs.length - 1];
-            if (latest) {
-                provider.setLoading(true, latest.loadingMessage);
-            }
-            else {
-                provider.setLoading(false);
-                this._shownErrors = new WeakSet();
-            }
-        }
+    public execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
+    public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
+    public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T | undefined> {
+        return this._executor.execute(operation, options);
     }
 }
