@@ -3975,8 +3975,16 @@ interface IProject<TData = { [key: string]: unknown }> {
 /** Loads the project the tasks belong to; goes in TaskDatasetControl's modules. */
 interface IProjectModule extends IDatasetControlModule { }
 
+/** Where the project comes from. */
+interface IProjectStore<TData = { [key: string]: unknown }> {
+    /** Called on every mount, before the tasks load. */
+    onLoadProject(): Promise<IProject<TData>>;
+}
+
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
-declare const createProjectModule: <TData>(parameters: { onLoadProject: (taskRuntime: ITaskRuntime) => Promise<IProject<TData>> }) => IProjectModule;
+declare const createProjectModule: <TData>(parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData> }) => IProjectModule;
+/** The project module for a project held in memory. */
+declare const createMemoryProjectModule: <TData>(parameters: { project: IProject<TData> }) => IProjectModule;
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */

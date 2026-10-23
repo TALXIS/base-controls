@@ -17,15 +17,20 @@ export interface IProject<TData = { [key: string]: unknown }> {
 /** Loads the project the tasks belong to; goes in `TaskDatasetControl`'s `modules`. */
 export interface IProjectModule<TData = { [key: string]: unknown }> extends IDatasetControlModule<'project'> { }
 
+/** Where the project comes from. */
+export interface IProjectStore<TData = { [key: string]: unknown }> {
+    /** Called on every mount, before the tasks load. */
+    onLoadProject(): Promise<IProject<TData>>;
+}
+
 export interface IProjectModuleParameters<TData> {
-    /** Loads the project; called on every mount, before the tasks load. */
-    onLoadProject: (taskRuntime: ITaskRuntime) => Promise<IProject<TData>>;
+    onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData>;
 }
 
 /** The project the tasks belong to, loaded on every mount and registered as the `project` module. */
 export const createProjectModule = <TData,>(parameters: IProjectModuleParameters<TData>): IProjectModule<TData> => ({
     name: 'project',
-    onLoad: datasetControl => parameters.onLoadProject(datasetControl.parts.get('taskRuntime')),
+    onLoad: datasetControl => parameters.onCreateStore(datasetControl.parts.get('taskRuntime')).onLoadProject(),
 });
 
 declare module "@controls/dataset-control/runtime/interfaces" {
