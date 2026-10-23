@@ -143,7 +143,7 @@ export class DataverseTaskStore implements ITaskStore {
         const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
         const sourceRecord = this._parameters.sourceRecord;
         return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
-            project: project && { id: project.id, name: project.name, entityName: project.entityName, ...project.data as object },
+            project: project && { id: project.getId(), name: project.getName(), entityName: project.getEntityName(), ...project.getData() as object },
             currentRecord: sourceRecord && { id: sourceRecord.getNamedReference().id.guid, ...sourceRecord.getRawData() },
         });
     }
@@ -151,19 +151,20 @@ export class DataverseTaskStore implements ITaskStore {
     //the task lookup to the project's table
     protected async _resolveProjectLookup(fetchXml: string): Promise<{ columnName: string; reference: ComponentFramework.EntityReference } | undefined> {
         const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
-        if (!project?.entityName) {
+        const projectEntityName = project?.getEntityName();
+        if (!project || !projectEntityName) {
             return undefined;
         }
         const lookupColumnNames = (await this._getManyToOneRelationships(this._entityName))
-            .filter(relationship => relationship.ReferencedEntity === project.entityName)
+            .filter(relationship => relationship.ReferencedEntity === projectEntityName)
             .map(relationship => relationship.ReferencingAttribute);
-        const filteredColumnNames = this._getColumnsFilteredByValue(fetchXml, project.id);
+        const filteredColumnNames = this._getColumnsFilteredByValue(fetchXml, project.getId());
         const narrowedColumnNames = lookupColumnNames.filter(columnName => filteredColumnNames.includes(columnName));
         const columnNames = narrowedColumnNames.length > 0 ? narrowedColumnNames : lookupColumnNames;
         if (columnNames.length > 1) {
             throw new Error(this._taskRuntime.getLabels().getLocalizedString('projectLookupAmbiguous', { columns: columnNames.join(', ') }));
         }
-        return columnNames[0] ? { columnName: columnNames[0], reference: { id: { guid: project.id }, name: project.name ?? '', etn: project.entityName } } : undefined;
+        return columnNames[0] ? { columnName: columnNames[0], reference: { id: { guid: project.getId() }, name: project.getName() ?? '', etn: projectEntityName } } : undefined;
     }
 
     //the root entity's `eq` conditions on this value

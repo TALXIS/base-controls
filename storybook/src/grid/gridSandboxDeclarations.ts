@@ -3960,8 +3960,8 @@ interface ITaskGridLoadResult {
     rootTaskId?: string;
 }
 
-/** The project the tasks belong to. */
-interface IProject<TData = { [key: string]: unknown }> {
+/** The project the tasks belong to, as its store loads it. */
+interface IProjectData<TData = { [key: string]: unknown }> {
     id: string;
     name?: string;
     /** The table the project lives in, for code that writes a lookup to it. */
@@ -3972,19 +3972,31 @@ interface IProject<TData = { [key: string]: unknown }> {
     data?: TData;
 }
 
+/** The project module, registered as project: the project the tasks belong to. */
+interface IProject<TData = { [key: string]: unknown }> {
+    getId(): string;
+    getName(): string | undefined;
+    /** The table the project lives in, for code that writes a lookup to it. */
+    getEntityName(): string | undefined;
+    getStartDate(): import('dayjs').Dayjs | undefined;
+    getEndDate(): import('dayjs').Dayjs | undefined;
+    /** What else the project carries, such as its own columns. */
+    getData(): TData | undefined;
+}
+
 /** Loads the project the tasks belong to; goes in TaskDatasetControl's modules. */
 interface IProjectModule extends IDatasetControlModule { }
 
 /** Where the project comes from. */
 interface IProjectStore<TData = { [key: string]: unknown }> {
     /** Called on every mount, before the tasks load. */
-    onLoadProject(): Promise<IProject<TData>>;
+    onLoadProject(): Promise<IProjectData<TData>>;
 }
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
 declare const createProjectModule: <TData>(parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData> }) => IProjectModule;
 /** The project module for a project held in memory. */
-declare const createMemoryProjectModule: <TData>(parameters: { project: IProject<TData> }) => IProjectModule;
+declare const createMemoryProjectModule: <TData>(parameters: { project: IProjectData<TData> }) => IProjectModule;
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */

@@ -38,7 +38,7 @@ const createOptionsProvider = (parameters: ILookupManyOptionsParameters<IDataver
     return new FetchXmlDataProvider({
         fetchXml: LIQUID.parseAndRenderSync(fetchXml, {
             task: { id: record.getRecordId(), ...record.getRawData() },
-            project: { id: project?.id, ...project?.data as object },
+            project: { id: project?.getId(), ...project?.getData() as object },
             currentRecord: { id: sourceRecord?.getRecordId(), ...sourceRecord?.getRawData() },
         }),
     });

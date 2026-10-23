@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import type { ITaskRuntime } from "../../../runtime";
-import { createProjectModule, IProject, IProjectModule, IProjectStore } from "../createProjectModule";
+import { createProjectModule, IProjectModule } from "../createProjectModule";
+import type { IProjectData, IProjectStore } from "../Project";
 
 export interface IDataverseProjectModuleParameters {
     /** The project's table. */
@@ -23,7 +24,7 @@ class DataverseProjectStore implements IProjectStore {
         this._parameters = parameters;
     }
 
-    public async onLoadProject(): Promise<IProject> {
+    public async onLoadProject(): Promise<IProjectData> {
         const { entityName, id, startDateColumn, endDateColumn, columns = [] } = this._parameters;
         const pcfContext = this._taskRuntime.services.get('pcfContext');
         const nameColumn = (await pcfContext.utils.getEntityMetadata(entityName, [])).PrimaryNameAttribute;
