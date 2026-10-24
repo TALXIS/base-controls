@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { useTheme } from "@fluentui/react";
+import { useEffect, useRef, useState } from "react";
+import { Layer, useTheme } from "@fluentui/react";
 import { MultiValueProps, OptionProps } from "react-select";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { ILookupManySelectComponents, LookupManySelectComponents } from "./components";
@@ -19,6 +19,9 @@ export interface ILookupManySelectProps {
     noRecordsFoundText: string;
     loadingText: string;
     components?: Partial<ILookupManySelectComponents>;
+    placeholder?: string;
+    /** Draws as a field whose records open in a popup over the page, in place of a list under the picks. */
+    isMenuPopup?: boolean;
     onChange?: (value: Reference[]) => void;
 }
 
@@ -39,6 +42,8 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
     const theme = useTheme();
     const value = props.value ?? [];
     const isMountedRef = useRef(true);
+    const [menuPortal, setMenuPortal] = useState<HTMLDivElement | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(true);
     useEffect(() => () => { isMountedRef.current = false; }, []);
 
     const loadOptions = async (query: string): Promise<Reference[]> => {
@@ -54,14 +59,21 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
     const onRemove = (reference: Reference) => props.onChange?.(value.filter(picked => picked.id.guid !== reference.id.guid));
 
     return <LookupManySelectContext.Provider value={{ components, onRemove }}>
+        {/* a Fluent layer, so a callout around it counts a pick as inside */}
+        {props.isMenuPopup && <Layer><div ref={setMenuPortal} /></Layer>}
         {components.onRenderSelect({
             isMulti: true,
             isDisabled: props.isDisabled,
             autoFocus: props.autoFocus,
             defaultInputValue: props.defaultSearchQuery,
-            menuIsOpen: !props.isDisabled,
+            menuIsOpen: !props.isDisabled && (!props.isMenuPopup || isMenuOpen),
+            onMenuOpen: () => setIsMenuOpen(true),
+            onMenuClose: () => setIsMenuOpen(false),
+            menuPortalTarget: props.isMenuPopup ? menuPortal : undefined,
+            openMenuOnFocus: true,
+            menuPosition: props.isMenuPopup ? 'fixed' : 'absolute',
             value,
-            placeholder: '',
+            placeholder: props.placeholder ?? '',
             isClearable: false,
             closeMenuOnSelect: false,
             backspaceRemovesValue: true,
@@ -73,10 +85,14 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
             loadOptions,
             onChange: picked => props.onChange?.([...picked]),
             styles: {
-                control: base => ({ ...base, minHeight: 0, padding: `4px ${PADDING}px`, border: 'none', borderBottom: `1px solid ${theme.palette.neutralLight}`, borderRadius: 0, background: 'none', boxShadow: 'none' }),
+                control: base => props.isMenuPopup
+                    ? { ...base, minHeight: 32, padding: `2px ${PADDING}px`, border: 'none', borderRadius: 0, background: theme.palette.neutralLighter, boxShadow: 'none', cursor: 'text' }
+                    : { ...base, minHeight: 0, padding: `4px ${PADDING}px`, border: 'none', borderBottom: `1px solid ${theme.palette.neutralLight}`, borderRadius: 0, background: 'none', boxShadow: 'none' },
                 valueContainer: base => ({ ...base, gap: 4, padding: 0 }),
                 input: base => ({ ...base, margin: 0, padding: 0, color: theme.semanticColors.inputText }),
-                menu: base => ({ ...base, position: 'static', margin: 0, boxShadow: 'none', borderRadius: 0, background: 'none' }),
+                menu: base => props.isMenuPopup
+                    ? { ...base, zIndex: 1, margin: 0, borderRadius: 0, background: theme.semanticColors.bodyBackground, boxShadow: theme.effects.elevation8 }
+                    : { ...base, position: 'static', margin: 0, boxShadow: 'none', borderRadius: 0, background: 'none' },
                 menuList: base => ({ ...base, maxHeight: 240 }),
                 option: (base, state) => ({ ...base, paddingLeft: PADDING, paddingRight: PADDING, cursor: 'pointer', color: theme.semanticColors.bodyText, backgroundColor: state.isFocused ? theme.palette.neutralLighter : 'transparent' }),
                 noOptionsMessage: base => ({ ...base, paddingLeft: PADDING, paddingRight: PADDING, textAlign: 'left', color: theme.semanticColors.bodySubtext }),

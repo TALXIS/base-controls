@@ -91,7 +91,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
         return new FetchXmlDataProvider({
             fetchXml: LIQUID.parseAndRenderSync(settings.fetchXml, {
-                task: { id: record.getRecordId(), ...record.getRawData() },
+                task: record ? { id: record.getRecordId(), ...record.getRawData() } : {},
                 project: { id: project?.getId(), ...project?.getData() as object },
                 currentRecord: { id: this._sourceRecord?.getRecordId(), ...this._sourceRecord?.getRawData() },
             }),

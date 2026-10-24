@@ -1,5 +1,5 @@
 import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import type { ITaskDataProvider } from "../interfaces";
+import type { ITaskColumnMatcher, ITaskDataProvider } from "../interfaces";
 import { patchDataBuilderPrepare } from "./patchDataBuilderPrepare";
 
 /** The column a task's ancestor names are written to, when a view has it. */
@@ -57,6 +57,8 @@ interface IViewProjection {
     orderedIds: string[];
 }
 
+const OR_OPERATOR = 1;
+
 const EMPTY_INDEX: IHierarchyIndex = {
     records: [],
     recordsMap: {},
@@ -75,6 +77,7 @@ const EMPTY_PROJECTION: IViewProjection = {
 
 export class RecordTree implements IRecordTree {
     private _provider: ITaskDataProvider;
+    private _getColumnMatcher: (columnName: string) => ITaskColumnMatcher | undefined;
     private _index: IHierarchyIndex = EMPTY_INDEX;
     private _projection: IViewProjection = EMPTY_PROJECTION;
     private _isBuilt = false;
@@ -83,8 +86,9 @@ export class RecordTree implements IRecordTree {
     public readonly view: IRecordTreeView;
     public readonly structure: IRecordStructure;
 
-    constructor(provider: ITaskDataProvider) {
+    constructor(provider: ITaskDataProvider, getColumnMatcher: (columnName: string) => ITaskColumnMatcher | undefined) {
         this._provider = provider;
+        this._getColumnMatcher = getColumnMatcher;
         this.view = this._createView();
         this.structure = this._createStructure();
     }
@@ -314,18 +318,51 @@ export class RecordTree implements IRecordTree {
         return descendants;
     }
 
+    //the column matchers answer for their columns, the memory provider for the rest
     private _buildMatchingIds(index: IHierarchyIndex): Set<string> {
+        const conditionMatchingIds = this._getConditionMatchingIds(index.records);
+        const searchMatchingIds = this._getSearchMatchingIds(index.records);
+        return new Set(index.records.map(record => record.getRecordId()).filter(recordId => conditionMatchingIds.has(recordId) && searchMatchingIds.has(recordId)));
+    }
+
+    private _getConditionMatchingIds(records: IRecord[]): Set<string> {
         const filtering = this._provider.getFiltering();
         //turning "hide inactive" off leaves an empty expression behind
-        const isUnfiltered = !filtering || (filtering.conditions.length === 0 && (filtering.filters ?? []).length === 0);
-        if (isUnfiltered && !this._provider.getSearchQuery()) {
-            return new Set(index.records.map(record => record.getRecordId()));
+        if (!filtering || filtering.conditions.length === 0) {
+            return new Set(records.map(record => record.getRecordId()));
         }
-        const provider = this._createBaseProvider(index.records);
-        provider.onGetQuickFindColumns = () => this._provider.getQuickFindColumns();
+        const handled = filtering.conditions.filter(condition => this._getColumnMatcher(condition.attributeName));
+        const native = filtering.conditions.filter(condition => !handled.includes(condition));
+        const isOr = filtering.filterOperator === OR_OPERATOR;
+        const nativeMatchingIds = native.length > 0 ? this._filterNatively(records, provider => provider.setFiltering({ ...filtering, conditions: native, filters: [] })) : new Set(isOr ? [] : records.map(record => record.getRecordId()));
+        const isHandledMatching = (record: IRecord, condition: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression) => this._getColumnMatcher(condition.attributeName)!.isMatchingCondition(record, condition);
+        return new Set(records.filter(record => isOr
+            ? nativeMatchingIds.has(record.getRecordId()) || handled.some(condition => isHandledMatching(record, condition))
+            : nativeMatchingIds.has(record.getRecordId()) && handled.every(condition => isHandledMatching(record, condition))
+        ).map(record => record.getRecordId()));
+    }
+
+    private _getSearchMatchingIds(records: IRecord[]): Set<string> {
+        const searchQuery = this._provider.getSearchQuery();
+        if (!searchQuery) {
+            return new Set(records.map(record => record.getRecordId()));
+        }
+        const columns = this._provider.getQuickFindColumns();
+        const handled = columns.filter(column => this._getColumnMatcher(column.name));
+        const native = columns.filter(column => !handled.includes(column));
+        const nativeMatchingIds = native.length > 0 ? this._filterNatively(records, provider => {
+            provider.onGetQuickFindColumns = () => native;
+            provider.setSearchQuery(searchQuery);
+        }) : new Set<string>();
+        return new Set(records.filter(record => nativeMatchingIds.has(record.getRecordId())
+            || handled.some(column => this._getColumnMatcher(column.name)!.isMatchingSearch(record, column.name, searchQuery))
+        ).map(record => record.getRecordId()));
+    }
+
+    private _filterNatively(records: IRecord[], setUp: (provider: MemoryDataProvider) => void): Set<string> {
+        const provider = this._createBaseProvider(records);
         provider.setSorting([]);
-        provider.setFiltering(filtering);
-        provider.setSearchQuery(this._provider.getSearchQuery());
+        setUp(provider);
         provider.refreshSync();
         return new Set(Object.keys(provider.getRecordsMap()));
     }

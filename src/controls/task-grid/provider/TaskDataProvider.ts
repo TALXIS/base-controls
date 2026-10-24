@@ -3,7 +3,7 @@ import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
@@ -26,6 +26,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _declaredColumns: IColumn[] = [];
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
     private _columnHandlers: ITaskColumnHandler[] = [];
+    private _columnMatchers: ITaskColumnMatcher[] = [];
+    private _loadWaiters: TaskLoadWaiter[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
     public readonly taskEvents = new EventEmitter<ITaskDataProviderEvents>();
@@ -33,7 +35,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
         this._store = parameters.store;
-        this._tree = new RecordTree(this);
+        this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
     }
 
     public initialize(parameters: ITaskDataProviderInitializeParameters): void {
@@ -133,6 +135,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public registerColumnHandler(handler: ITaskColumnHandler): () => void {
         this._columnHandlers.push(handler);
         return () => this._columnHandlers = this._columnHandlers.filter(registered => registered !== handler);
+    }
+
+    public registerColumnMatcher(matcher: ITaskColumnMatcher): () => void {
+        this._columnMatchers.push(matcher);
+        return () => this._columnMatchers = this._columnMatchers.filter(registered => registered !== matcher);
+    }
+
+    public registerLoadWaiter(waiter: TaskLoadWaiter): () => void {
+        this._loadWaiters.push(waiter);
+        return () => this._loadWaiters = this._loadWaiters.filter(registered => registered !== waiter);
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
@@ -318,6 +330,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (!this._hasLoaded) {
             await this._load();
         }
+        const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
+        const taskIds = this.getDataSource().map(rawRecord => rawRecord[primaryIdAttribute]);
+        await Promise.all(this._loadWaiters.map(waiter => waiter({ taskIds })));
         return this.getDataSync(pageNumber, pageSize, previousPageNumber, event);
     }
 

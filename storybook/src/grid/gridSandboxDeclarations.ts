@@ -3903,11 +3903,27 @@ interface ITaskViewData {
 /** A view of the tasks, user views included. */
 type ITaskView = IDatasetControlResolvedView<ITaskViewData>;
 
+/** Matches tasks against filters and quick find for columns whose values are kept apart from the tasks. */
+interface ITaskColumnMatcher {
+    isHandledColumn(columnName: string): boolean;
+    /** Whether the task matches a filter condition on a handled column. */
+    isMatchingCondition(record: IRecord, condition: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression): boolean;
+    /** Whether the task's value in a handled quick find column matches the search query. */
+    isMatchingSearch(record: IRecord, columnName: string, searchQuery: string): boolean;
+}
+
+/** Holds the tasks back from the tree until it settles, such as values a filter on the module's column reads. */
+type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
+
 /** The tasks of one view, loaded at once and shown as a tree. */
 interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: (columns: IColumn[]) => void, priority?: number): () => void;
+    /** Answers filters and quick find for the columns the matcher claims. */
+    registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
+    /** Runs before every data load hands its tasks out, and is waited for. */
+    registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
@@ -4123,7 +4139,8 @@ interface ILookupManyColumn {
 
 /** What a lookup-many module is handed to create a column's options provider. */
 interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn = ILookupManyColumn> {
-    record: IRecord;
+    /** Missing when the records are offered for a filter. */
+    record?: IRecord;
     column: IColumn;
     /** What the module's columns maps the column to. */
     settings: TColumn;
@@ -4140,7 +4157,11 @@ interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn
 }
 
 /** Strings of the lookup-many module. */
-type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string; loadLookupManyFailed: string }>;
+type LookupManyLabels = Partial<{
+    noRecordsFound: string; loading: string; loadLookupManyFailed: string; filterApply: string; filterText: string;
+    operatorEqual: string; operatorDoesNotEqual: string; operatorContainValues: string; operatorDoesNotContainValues: string; operatorContainsData: string; operatorDoesNotContainData: string;
+    operatorLike: string; operatorNotLike: string; operatorBeginsWith: string; operatorDoesNotBeginWith: string; operatorEndsWith: string; operatorDoesNotEndWith: string;
+}>;
 
 /** The task columns in columns, drawn as pills and picked in a pop-out editor. */
 declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {

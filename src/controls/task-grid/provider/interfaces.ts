@@ -171,6 +171,18 @@ export interface ITaskColumnHandler {
     onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
 }
 
+/** Matches tasks against filters and quick find for columns whose values are kept apart from the tasks. */
+export interface ITaskColumnMatcher {
+    isHandledColumn(columnName: string): boolean;
+    /** Whether the task matches a filter condition on a handled column. */
+    isMatchingCondition(record: IRecord, condition: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression): boolean;
+    /** Whether the task's value in a handled quick find column matches the search query. */
+    isMatchingSearch(record: IRecord, columnName: string, searchQuery: string): boolean;
+}
+
+/** Holds the tasks back from the tree until it settles, such as values a filter on the module's column reads. */
+export type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
+
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     /** Takes the control's field mapping and root task before the provider loads. */
@@ -210,4 +222,8 @@ export interface ITaskDataProvider extends IDataProvider {
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */
     registerColumnHandler(handler: ITaskColumnHandler): () => void;
+    /** Answers filters and quick find for the columns the matcher claims. */
+    registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
+    /** Runs before every data load hands its tasks out, and is waited for. */
+    registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
 }
