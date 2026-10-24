@@ -1,8 +1,7 @@
-import { FetchXmlDataProvider, ISingleRecord } from "@talxis/client-libraries";
-import { Liquid } from "liquidjs";
+import type { ISingleRecord } from "@talxis/client-libraries";
 import { createLookupManyModule, ILookupManyModule } from "../createLookupManyModule";
-import type { ILookupManyColumn, ILookupManyOptionsParameters, ILookupManyParameters } from "../LookupMany";
-import { DataverseLookupManyHandler } from "./DataverseLookupManyHandler";
+import type { ILookupManyColumn, ILookupManyParameters } from "../LookupMany";
+import { DataverseLookupManyStore } from "./DataverseLookupManyStore";
 
 /** One Dataverse lookup-many column: the relationship it is reached through, and what it offers. */
 export interface IDataverseLookupManyColumn extends ILookupManyColumn {
@@ -19,43 +18,13 @@ export interface IDataverseLookupManyColumn extends ILookupManyColumn {
     fetchXml?: string;
 }
 
-export interface IDataverseLookupManyModuleParameters extends Omit<ILookupManyParameters<IDataverseLookupManyColumn>, 'onCreateOptionsProvider'> {
+export interface IDataverseLookupManyModuleParameters extends Omit<ILookupManyParameters<IDataverseLookupManyColumn>, 'onCreateStore'> {
     /** The record the grid sits on, as `currentRecord` in a column's FetchXML. */
     sourceRecord?: ISingleRecord;
 }
 
-//the values land inside FetchXML attributes
-const LIQUID = new Liquid({ outputEscape: 'escape' });
-
-//a column offers what its FetchXML selects, rendered for the task
-const createOptionsProvider = (parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>, sourceRecord?: ISingleRecord) => {
-    const { record, settings, taskRuntime } = parameters;
-    const fetchXml = settings.fetchXml;
-    if (!fetchXml) {
-        return undefined;
-    }
-    const project = taskRuntime.services.get('datasetControl').modules.find('project');
-    return new FetchXmlDataProvider({
-        fetchXml: LIQUID.parseAndRenderSync(fetchXml, {
-            task: { id: record.getRecordId(), ...record.getRawData() },
-            project: { id: project?.getId(), ...project?.getData() as object },
-            currentRecord: { id: sourceRecord?.getRecordId(), ...sourceRecord?.getRawData() },
-        }),
-    });
-};
-
 /** Lookup-many columns of Dataverse tasks, loaded and saved through their relationships. */
 export const createDataverseLookupManyModule = (parameters: IDataverseLookupManyModuleParameters): ILookupManyModule => {
     const { sourceRecord, ...moduleParameters } = parameters;
-    const module = createLookupManyModule({ ...moduleParameters, onCreateOptionsProvider: options => createOptionsProvider(options, sourceRecord) });
-    return {
-        ...module,
-        onLoad: async datasetControl => {
-            const lookupMany = await module.onLoad(datasetControl);
-            const taskRuntime = datasetControl.parts.get('taskRuntime');
-            const pcfContext = taskRuntime.services.get('pcfContext');
-            taskRuntime.services.whenAvailable('provider', provider => provider.registerColumnHandler(new DataverseLookupManyHandler({ provider, pcfContext, columns: parameters.columns })));
-            return lookupMany;
-        },
-    };
+    return createLookupManyModule({ ...moduleParameters, onCreateStore: taskRuntime => new DataverseLookupManyStore({ taskRuntime, columns: parameters.columns, sourceRecord }) });
 };

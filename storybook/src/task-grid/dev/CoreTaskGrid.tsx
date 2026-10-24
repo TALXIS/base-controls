@@ -15,10 +15,33 @@ const CORE_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams').concat(CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
     taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
+    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
+
+//pale red at 0%, pale amber halfway, pale green when done
+const PROGRESS_STOPS = [{ at: 0, color: [253, 231, 233] }, { at: 50, color: [255, 244, 206] }, { at: 100, color: [223, 246, 221] }]
+
+const getProgressColor = (percent: number): string => {
+    const clamped = Math.min(100, Math.max(0, percent))
+    const upper = PROGRESS_STOPS.findIndex(stop => stop.at >= clamped)
+    const from = PROGRESS_STOPS[Math.max(0, upper - 1)]
+    const to = PROGRESS_STOPS[upper]
+    const ratio = to.at === from.at ? 0 : (clamped - from.at) / (to.at - from.at)
+    return '#' + from.color.map((channel, index) => Math.round(channel + (to.color[index] - channel) * ratio).toString(16).padStart(2, '0')).join('')
+}
+
+const progressThemeModule: IGridModule = {
+    onRegister: grid => {
+        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+            const percent = record.getValue('percentcomplete')
+            if (percent != null) {
+                theme.colors.background = getProgressColor(Number(percent))
+            }
+        })
+    },
+}
 
 const GridExample = () => {
     const modules = React.useMemo(() => ({
@@ -26,6 +49,7 @@ const GridExample = () => {
         editing: createEditingModule({ autoSave: true }),
         sorting: createSortingModule(),
         filtering: createFilteringModule(),
+        custom: [progressThemeModule],
     }), [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskRuntime').getCurrentViewData() }),
@@ -37,7 +61,7 @@ const GridExample = () => {
             enableCreation: true,
             enableDeletion: true,
         }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
         createMemoryTemplatesModule({ templates: TEMPLATES }),
         createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),

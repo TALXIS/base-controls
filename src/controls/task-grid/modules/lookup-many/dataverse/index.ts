@@ -1,2 +1,2 @@
-export * from './DataverseLookupManyHandler';
+export * from './DataverseLookupManyStore';
 export * from './createDataverseLookupManyModule';

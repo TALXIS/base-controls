@@ -4114,6 +4114,7 @@ type LookupManyAppearance =
 
 /** One lookup-many column, as the module's columns maps it. */
 interface ILookupManyColumn {
+    displayName: string;
     /** The entity the column's records are of. */
     entityName: string;
     /** Plain when left out. */
@@ -4129,23 +4130,33 @@ interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn = ILook
     taskRuntime: ITaskRuntime;
 }
 
-/** Strings of the lookup-many picker. */
-type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string }>;
+/** Where lookup-many values are kept. */
+interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn> {
+    /** Every mapped column's references of these tasks, by task id and column name. */
+    onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: ComponentFramework.EntityReference[] }>>;
+    onSaveValue(taskId: string, columnName: string, value: ComponentFramework.EntityReference[]): Promise<void>;
+    /** A provider over the records the column can take; undefined leaves the cell read-only. */
+    onCreateOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
+}
+
+/** Strings of the lookup-many module. */
+type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string; loadLookupManyFailed: string }>;
 
 /** The task columns in columns, drawn as pills and picked in a pop-out editor. */
 declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: TColumn };
-    /** A provider over the records the column can take; undefined leaves the cell read-only. */
-    onCreateOptionsProvider: (parameters: ILookupManyOptionsParameters<TColumn>) => IDataProvider | undefined;
+    onCreateStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
     labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 
-/** Lookup-many columns over records held in memory; their values stay on the tasks. */
+/** Lookup-many columns over records held in memory, starting over on every mount like the memory tasks. */
 declare const createMemoryLookupManyModule: (parameters: {
     /** The sources by entity name, matched against each column's entityName. */
     sources: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
     columns: { [columnName: string]: ILookupManyColumn };
+    /** The tasks' references, by task id and column name. */
+    values: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
     labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 
@@ -4173,6 +4184,12 @@ declare const createDataverseLookupManyModule: (parameters: {
 declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
 /** The sample tasks' lookup-many columns, as the module maps them. */
 declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
+/** The lookup-many columns as a view names them. */
+declare const LOOKUP_MANY_VIEW_COLUMNS: IColumn[];
+/** The sample tasks' lookup-many references. */
+declare const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
+/** Moves the tasks' lookup-many references out of the records, by task id, as the lookup-many module keeps them. */
+declare const takeLookupManyValues: (tasks: IRawRecord[]) => { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
 
 /** Strings of the templates module. */
 type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; creatingTasksFromTemplate: string; savingTemplate: string; templatesFailed: string }>;

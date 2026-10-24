@@ -1,6 +1,6 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { LexoRank } from "lexorank";
-import { personRef, tagRef, teamRefs } from "./memoryLookupManyData";
+import { LOOKUP_MANY_COLUMNS, personRef, tagRef, teamRefs } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────
 
@@ -98,37 +98,6 @@ export const COLUMNS: IColumn[] = [
             appliesTo: 'both',
             name: 'PercentComplete',
         }]
-    },
-    {
-        name: 'assignedto',
-        dataType: 'Lookup.Simple',
-        displayName: 'Assigned To',
-        visualSizeFactor: 150,
-        metadata: {
-            //declared empty on purpose: a lookup can only be filtered when it is bound to an actual
-            //Dataverse entity, and these candidates are local fixtures
-            SupportedFilterConditionOperators: [],
-        },
-    },
-    {
-        name: 'tags',
-        dataType: 'Lookup.Simple',
-        displayName: 'Tags',
-        visualSizeFactor: 200,
-        metadata: {
-            //declared empty on purpose: a lookup can only be filtered when it is bound to an actual
-            //Dataverse entity, and these candidates are local fixtures
-            SupportedFilterConditionOperators: [],
-        },
-    },
-    {
-        name: 'teams',
-        dataType: 'Lookup.Simple',
-        displayName: 'Teams',
-        visualSizeFactor: 180,
-        metadata: {
-            SupportedFilterConditionOperators: [],
-        },
     },
     // ── Native (hidden) columns ──────────────────────────────────────────────
     { name: PRIMARY_ID, dataType: 'SingleLine.Text', displayName: 'ID', visualSizeFactor: 280, isHidden: true },
@@ -1299,4 +1268,20 @@ for (const task of TASKS) {
 }
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);
+
+/** Moves the tasks' lookup-many references out of the records, by task id, as the lookup-many module keeps them. */
+export const takeLookupManyValues = (tasks: IRawRecord[]): { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } => {
+    const values: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } = {};
+    for (const task of tasks) {
+        values[task[PRIMARY_ID] as string] = {};
+        for (const columnName of Object.keys(LOOKUP_MANY_COLUMNS)) {
+            values[task[PRIMARY_ID] as string][columnName] = task[columnName] ?? [];
+            delete task[columnName];
+        }
+    }
+    return values;
+};
+
+/** The sample tasks' lookup-many references. */
+export const LOOKUP_MANY_VALUES = takeLookupManyValues(TASKS);
 

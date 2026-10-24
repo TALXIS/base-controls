@@ -15,13 +15,14 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete', 'assignedto', 'tags', 'teams').concat(CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
+    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
     taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'assignedto'), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
+    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
 ]
 
 const GridExample = () => {
     const tasks = React.useMemo(() => createStressTasks(10000), [])
+    const lookupManyValues = React.useMemo(() => takeLookupManyValues(tasks), [tasks])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
@@ -38,7 +39,7 @@ const GridExample = () => {
             enableCreation: true,
             enableDeletion: true,
         }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
         createMemoryTemplatesModule({ templates: TEMPLATES }),
         createMemoryChecklistModule({ items: createChecklistItems(tasks) }),
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),

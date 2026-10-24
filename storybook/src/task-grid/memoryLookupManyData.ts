@@ -186,10 +186,13 @@ export const LOOKUP_MANY_SOURCES = {
 
 /** The sample tasks' lookup-many columns, as the module maps them. */
 export const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn } = {
-    assignedto: { entityName: PEOPLE_ENTITY_NAME, appearance: { type: 'people' } },
-    tags: { entityName: TAGS_ENTITY_NAME, appearance: { type: 'colorful' } },
-    teams: { entityName: TEAMS_ENTITY_NAME },
+    assignedto: { displayName: 'Assigned To', entityName: PEOPLE_ENTITY_NAME, appearance: { type: 'people' } },
+    tags: { displayName: 'Tags', entityName: TAGS_ENTITY_NAME, appearance: { type: 'colorful' } },
+    teams: { displayName: 'Teams', entityName: TEAMS_ENTITY_NAME },
 };
+
+/** The lookup-many columns as a view names them. */
+export const LOOKUP_MANY_VIEW_COLUMNS: IColumn[] = Object.entries(LOOKUP_MANY_COLUMNS).map(([name, column]) => ({ name, displayName: column.displayName, dataType: 'Lookup.Simple', order: 0, visualSizeFactor: 200 }));
 
 // ─── Reference helpers ────────────────────────────────────────────────────────
 
