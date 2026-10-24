@@ -203,18 +203,19 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         }
     };
 
-    //a filter or search on these columns has to see the values
+    //a sort, filter or search on these columns has to see the values
     private _waitForValues: TaskLoadWaiter = async params => {
-        if (this._isFilteredOn()) {
+        if (this._isReadByView()) {
             await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
         }
     };
 
-    private _isFilteredOn(): boolean {
+    private _isReadByView(): boolean {
         const provider = this._taskRuntime.getProvider();
+        const isSorted = provider.getSorting().some(sort => this.getColumn(sort.name));
         const isFiltered = provider.getFiltering()?.conditions.some(condition => this.getColumn(condition.attributeName)) ?? false;
         const isSearched = !!provider.getSearchQuery() && provider.getQuickFindColumns().some(column => this.getColumn(column.name));
-        return isFiltered || isSearched;
+        return isSorted || isFiltered || isSearched;
     }
 
     private _onTasksUpdated = (records: IRecord[]): void => {
@@ -274,7 +275,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
                     dataType: DataTypes.LookupSimple,
                     isVirtual: true,
                     visualSizeFactor: 200,
-                    disableSorting: true,
                     //the grid's filtering resolves a lookup condition's ids through the targets
                     metadata: { IsValidForUpdate: true, SupportedFilterConditionOperators: FILTER_OPERATORS, Targets: [settings.entityName] } as IColumn['metadata'],
                 });
@@ -305,7 +305,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             colDef.context = { ...colDef.context, header: { ...colDef.context?.header, onGetMenuSections: (sections: IColumnMenuSection[]) => this._redirectFilterItem(sections, colDef.colId!) } };
             colDef.cellEditorPopup = true;
             colDef.cellEditorPopupPosition = 'over';
-            colDef.sortable = false;
             colDef.suppressKeyboardEvent = this._suppressKeyboardEvent;
         }
     };
