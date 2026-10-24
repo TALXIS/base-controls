@@ -50,9 +50,8 @@ export class GridField implements IGridField {
 
     public setValue(newValue: any): Promise<IRecordSaveOperationResult> | null {
         this._record.setValue(this._columnName, newValue);
-        const editing = this._services.find('editing');
-        if (editing?.isAutoSaveEnabled()) {
-            return editing.saves.save(this._record);
+        if (this._services.find('editing')?.isAutoSaveEnabled()) {
+            return this._record.save();
         }
         return null;
     }
