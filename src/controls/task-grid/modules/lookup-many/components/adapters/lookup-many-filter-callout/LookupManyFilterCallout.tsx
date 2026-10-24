@@ -106,7 +106,6 @@ export const LookupManyFilterCallout = () => {
         dataProvider={optionsProvider}
         records={records}
         text={text}
-        textLabel={labels.getLocalizedString('filterText')}
         applyText={gridLabels['filtermenu-applybutton']()}
         clearText={filteringLabels.getLocalizedString('clear')}
         noRecordsFoundText={labels.getLocalizedString('noRecordsFound')}

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { DefaultButton, PrimaryButton, Target, TextField } from "@fluentui/react";
+import { DefaultButton, PrimaryButton, Target } from "@fluentui/react";
 import { IOptionSet, OptionSet } from "@controls/fields/option-set";
+import { TextField } from "@controls/fields/text-field";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { FilteringUi, IFilteringUiCalloutComponents } from "@controls/grid";
 import { ILookupManySelectComponents, LookupManySelect } from "../lookup-many-select";
@@ -14,7 +15,7 @@ export type LookupManyFilterValueKind = 'records' | 'text' | 'none';
 export interface ILookupManyFilterProps {
     target?: Target;
     title: string;
-    /** What the operator control is drawn with. */
+    /** What the operator and text controls are drawn with. */
     context: IOptionSet['context'];
     operators: { value: number; label: string }[];
     operator: number;
@@ -23,7 +24,6 @@ export interface ILookupManyFilterProps {
     dataProvider?: IDataProvider;
     records: Reference[];
     text: string;
-    textLabel: string;
     applyText: string;
     clearText: string;
     noRecordsFoundText: string;
@@ -60,7 +60,10 @@ export const LookupManyFilter = (props: ILookupManyFilterProps) => {
                     placeholder='---'
                     isMenuPopup
                     onChange={props.onRecordsChange} />}
-                {props.valueKind === 'text' && <TextField ariaLabel={props.textLabel} placeholder='---' value={props.text} autoFocus onChange={(_, value) => props.onTextChange(value ?? '')} />}
+                {props.valueKind === 'text' && <TextField
+                    context={props.context}
+                    parameters={{ value: { raw: props.text }, AutoFocus: { raw: true } }}
+                    onNotifyOutputChanged={outputs => props.onTextChange(outputs.value ?? '')} />}
             </div>
             <div className={styles.buttons}>
                 <PrimaryButton text={props.applyText} onClick={props.onApply} />
