@@ -3499,6 +3499,14 @@ interface IUserQueriesStore<TData = unknown> {
     createManageProvider(): IDataProvider;
 }
 
+/** Which of the user views' commands the view switcher offers; each is on unless set to `false`. */
+interface IUserQueriesCommands {
+    enableSaveAsNewView?: boolean;
+    /** Save changes, while a user view is shown. */
+    enableSaveChanges?: boolean;
+    enableManageViews?: boolean;
+}
+
 type IUserQueriesLabelOverrides = Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
 
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
@@ -3509,7 +3517,7 @@ declare const createUserQueriesModule: <TData>(parameters: {
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
-}) => IDatasetControlModule;
+} & IUserQueriesCommands) => IDatasetControlModule;
 
 /** The user's views kept in the browser's localStorage, with their columns and data as JSON. */
 declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
@@ -3519,7 +3527,7 @@ declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
-}) => IDatasetControlModule;
+} & IUserQueriesCommands) => IDatasetControlModule;
 
 
 interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: string; leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }
@@ -3897,6 +3905,8 @@ interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: (columns: IColumn[]) => void, priority?: number): () => void;
+    /** Reads the tasks with this column whatever the view shows; returns its unregistration. */
+    registerRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
     registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
     /** Runs before every data load hands its tasks out, and is waited for. */
@@ -3977,7 +3987,8 @@ interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskVie
 interface ITaskGridLoadResult {
     /** The provider for the view. */
     provider: ITaskDataProvider;
-    fieldMapping: IFieldMapping;
+    /** `stateCode` defaults to `statecode`. */
+    fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
 }
@@ -4326,7 +4337,12 @@ declare const createDependencies: (tasks: IRawRecord[]) => ITaskDependency[];
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
-    Settings: (props: {}) => JSX.Element;
+    Settings: (props: {
+        /** The Show hierarchy toggle; on unless set to `false`. */
+        enableShowHierarchy?: boolean;
+        /** The Hide inactive tasks toggle; on unless set to `false`. */
+        enableHideInactiveTasks?: boolean;
+    }) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
     /** DatasetControl.Ribbon, its items passed through registerRibbonCommandUi. */

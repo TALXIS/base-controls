@@ -7,7 +7,7 @@ import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
-import type { ITaskRuntime, ITaskGridSetting } from "../runtime";
+import type { ITaskRuntime } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
@@ -38,7 +38,6 @@ export class TaskTree {
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
-    private _unregisterSettings: () => void;
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -57,8 +56,6 @@ export class TaskTree {
         services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
-        //ahead of the runtime's own settings
-        this._unregisterSettings = parameters.runtime.registerSettings(this._addSettings, -1);
 
         services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
         services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree));
@@ -214,15 +211,6 @@ export class TaskTree {
         await provider.refresh();
     }
 
-    private _addSettings = (settings: ITaskGridSetting[]): void => {
-        settings.push({
-            key: 'showHierarchy',
-            label: this._runtime.getLabels().getLocalizedString('showHierarchy'),
-            isChecked: !this._isFlatList,
-            onChange: isChecked => this.setFlatList(!isChecked),
-        });
-    };
-
     private _getState(): ITaskTreeState {
         return this._state.get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
     }
@@ -326,7 +314,6 @@ export class TaskTree {
     };
 
     private _onDestroyed = (): void => {
-        this._unregisterSettings();
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }

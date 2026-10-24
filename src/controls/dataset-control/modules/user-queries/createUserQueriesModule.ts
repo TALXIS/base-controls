@@ -2,9 +2,9 @@ import { LocalizationService } from "@utils";
 import type { IDatasetControl } from "../../runtime/interfaces";
 import { IUserQueriesLabels, USER_QUERIES_LABELS } from "./labels";
 import type { IUserQueriesModule, IUserQueriesStore } from "./interfaces";
-import { DatasetControlUserQueries } from "./DatasetControlUserQueries";
+import { DatasetControlUserQueries, IUserQueriesCommands } from "./DatasetControlUserQueries";
 
-export interface IUserQueriesModuleParameters<TData> {
+export interface IUserQueriesModuleParameters<TData> extends IUserQueriesCommands {
     /** Makes the store the user's views are kept in. */
     onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
     /** The view's own data as it is saved, beside its columns. */
@@ -24,6 +24,7 @@ export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModulePa
             store: parameters.onCreateStore(datasetControl as IDatasetControl<TData>) as IUserQueriesStore,
             labels,
             onGetViewData: parameters.onGetViewData as IUserQueriesModuleParameters<unknown>['onGetViewData'],
+            commands: { enableSaveAsNewView: parameters.enableSaveAsNewView, enableSaveChanges: parameters.enableSaveChanges, enableManageViews: parameters.enableManageViews },
         });
         await userQueries.load();
         return userQueries;

@@ -27,6 +27,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
     private _columnHandlers: ITaskColumnHandler[] = [];
     private _columnMatchers: ITaskColumnMatcher[] = [];
+    private _requiredColumns: IColumn[] = [];
     private _loadWaiters: TaskLoadWaiter[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
@@ -39,7 +40,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public initialize(parameters: ITaskDataProviderInitializeParameters): void {
-        this._fieldMapping = parameters.fieldMapping;
+        this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
     }
 
@@ -135,6 +136,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public registerColumnHandler(handler: ITaskColumnHandler): () => void {
         this._columnHandlers.push(handler);
         return () => this._columnHandlers = this._columnHandlers.filter(registered => registered !== handler);
+    }
+
+    public registerRequiredColumn(column: IColumn): () => void {
+        this._requiredColumns.push(column);
+        return () => this._requiredColumns = this._requiredColumns.filter(registered => registered !== column);
     }
 
     public registerColumnMatcher(matcher: ITaskColumnMatcher): () => void {
@@ -377,7 +383,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
         this.setDataSource(rawData);
         //as declared, since the data-type defaults filled in since would override the catalogue's definitions
-        const currentColumns = this._declaredColumns.filter(column => !column.isHidden || !this._isMappedColumn(column.name));
+        const currentColumns = this._declaredColumns.filter(column => !column.isHidden || !this._isAddedColumn(column.name));
         this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
         this._hasLoaded = true;
     }
@@ -443,8 +449,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return definition ? mergeColumn(definition, column) : column;
     }
 
-    private _isMappedColumn(columnName: string): boolean {
-        return Object.values(this.getFieldMapping()).includes(columnName);
+    //added whatever the view shows, so a view never needs to keep them
+    private _isAddedColumn(columnName: string): boolean {
+        return Object.values(this.getFieldMapping()).includes(columnName) || this._requiredColumns.some(column => column.name === columnName);
     }
 
     //the tree reads these whatever the view shows
@@ -456,7 +463,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 ...(this._columnCatalogue.get(columnName) ?? { name: columnName, displayName: columnName, dataType: 'SingleLine.Text', order: -1, visualSizeFactor: 100 }),
                 isHidden: true,
             }));
-        return [...columns, ...missing];
+        const required = this._requiredColumns.filter(column => !columnNames.has(column.name)).map(column => ({ ...column, isHidden: true }));
+        return [...columns, ...missing, ...required];
     }
 
     private _getStateCodeCondition() {

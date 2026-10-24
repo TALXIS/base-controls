@@ -15,7 +15,7 @@ import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetCon
 import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
 import { TaskExecutor } from "./TaskExecutor";
-import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, ITaskGridSetting, TaskGridSettingsHook, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
@@ -29,7 +29,6 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
     public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
-    private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
@@ -43,7 +42,6 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('labels', () => parameters.labels);
         this.services.register('pcfContext', () => parameters.pcfContext);
-        this._settingsHooks.register(this._addCoreSettings);
         //ahead of the modules, which attach to the grid after the tree
         datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this, state: datasetControl.getViewStateStore() }));
         datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
@@ -118,16 +116,6 @@ export class TaskRuntime implements ITaskRuntime {
         return this._gridModules;
     }
 
-    public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
-        return this._settingsHooks.register(hook, priority);
-    }
-
-    public getSettings(): ITaskGridSetting[] {
-        const settings: ITaskGridSetting[] = [];
-        this._settingsHooks.apply(settings);
-        return settings;
-    }
-
     public registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void {
         return this._ribbonCommandUiHooks.register(hook, priority);
     }
@@ -179,16 +167,6 @@ export class TaskRuntime implements ITaskRuntime {
             taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });
         }
         commands.unshift(...taskCommands);
-    };
-
-    private _addCoreSettings = (settings: ITaskGridSetting[]): void => {
-        const provider = this.getProvider();
-        settings.push({
-            key: 'hideInactiveTasks',
-            label: this.getLabels().getLocalizedString('hideInactiveTasks'),
-            isChecked: provider.areInactiveTasksHidden(),
-            onChange: isChecked => provider.setInactiveTasksHidden(isChecked),
-        });
     };
 
     //TODO: this kind of handling should be moved to some utility, as it's not specific to the task grid

@@ -2,10 +2,11 @@ import type { IDatasetControl } from "../../../runtime/interfaces";
 import type { IUserQueriesLabels } from "../labels";
 import type { IUserQueriesModule } from "../interfaces";
 import { createUserQueriesModule } from "../createUserQueriesModule";
+import type { IUserQueriesCommands } from "../DatasetControlUserQueries";
 import type { IDataverseUserQueriesProviderParameters } from "./DataverseUserQueriesProvider";
 import { DataverseUserQueriesStore } from "./DataverseUserQueriesStore";
 
-export interface IDataverseUserQueriesModuleParameters<TData> extends IDataverseUserQueriesProviderParameters {
+export interface IDataverseUserQueriesModuleParameters<TData> extends IDataverseUserQueriesProviderParameters, IUserQueriesCommands {
     /** The view's own data as it is saved, beside its columns. */
     onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries: the header, the commands and the panel. */
@@ -17,4 +18,7 @@ export const createDataverseUserQueriesModule = <TData,>(parameters: IDataverseU
     onCreateStore: () => new DataverseUserQueriesStore<TData>(parameters),
     onGetViewData: parameters.onGetViewData,
     labels: parameters.labels,
+    enableSaveAsNewView: parameters.enableSaveAsNewView,
+    enableSaveChanges: parameters.enableSaveChanges,
+    enableManageViews: parameters.enableManageViews,
 });

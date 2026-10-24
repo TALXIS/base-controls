@@ -15,6 +15,15 @@ export interface IDatasetControlUserQueriesParameters {
     store: IUserQueriesStore;
     labels: ILocalizationService<IUserQueriesLabels>;
     onGetViewData?: (datasetControl: IDatasetControl) => unknown;
+    commands?: IUserQueriesCommands;
+}
+
+/** Which of the user views' commands the view switcher offers; each is on unless set to `false`. */
+export interface IUserQueriesCommands {
+    enableSaveAsNewView?: boolean;
+    /** Save changes, while a user view is shown. */
+    enableSaveChanges?: boolean;
+    enableManageViews?: boolean;
 }
 
 export interface IDatasetControlUserQueriesEvents {
@@ -31,6 +40,7 @@ export class DatasetControlUserQueries {
     private _store: IUserQueriesStore;
     private _labels: ILocalizationService<IUserQueriesLabels>;
     private _onGetViewData?: (datasetControl: IDatasetControl) => unknown;
+    private _commands: IUserQueriesCommands;
     private _views: IUserQueryListItem[] = [];
     private _manageProvider?: IDataProvider;
 
@@ -39,6 +49,7 @@ export class DatasetControlUserQueries {
         this._store = parameters.store;
         this._labels = parameters.labels;
         this._onGetViewData = parameters.onGetViewData;
+        this._commands = parameters.commands ?? {};
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
     }
@@ -157,14 +168,19 @@ export class DatasetControlUserQueries {
 
     //the switcher reads its items as its menu opens
     private _addViewSwitcherItems = (items: IContextualMenuItem[]): void => {
-        items.push({ key: 'userQueriesDivider', itemType: ContextualMenuItemType.Divider });
-        if (this.isUserView(this._datasetControl.getViewId())) {
-            items.push({ key: 'saveChanges', text: this._labels.getLocalizedString('saveChanges'), iconProps: { iconName: 'Save' }, onClick: () => { this.save(); } });
+        const commands: IContextualMenuItem[] = [];
+        if (this._commands.enableSaveChanges !== false && this.isUserView(this._datasetControl.getViewId())) {
+            commands.push({ key: 'saveChanges', text: this._labels.getLocalizedString('saveChanges'), iconProps: { iconName: 'Save' }, onClick: () => { this.save(); } });
         }
-        items.push(
-            { key: 'saveAsNewView', text: this._labels.getLocalizedString('saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: () => { this.saveAsNew(); } },
-            { key: 'manageViews', text: this._labels.getLocalizedString('manageViews'), iconProps: { iconName: 'Settings' }, onClick: () => this._events.dispatchEvent('onManageRequested') },
-        );
+        if (this._commands.enableSaveAsNewView !== false) {
+            commands.push({ key: 'saveAsNewView', text: this._labels.getLocalizedString('saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: () => { this.saveAsNew(); } });
+        }
+        if (this._commands.enableManageViews !== false) {
+            commands.push({ key: 'manageViews', text: this._labels.getLocalizedString('manageViews'), iconProps: { iconName: 'Settings' }, onClick: () => this._events.dispatchEvent('onManageRequested') });
+        }
+        if (commands.length > 0) {
+            items.push({ key: 'userQueriesDivider', itemType: ContextualMenuItemType.Divider }, ...commands);
+        }
     };
 
     //what the control shows, as a view keeps it

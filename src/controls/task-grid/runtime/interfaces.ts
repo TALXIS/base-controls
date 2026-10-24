@@ -8,17 +8,6 @@ import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from 
 import type { ITaskActions } from "./tasks";
 import type { ITaskGridLabels } from "../labels";
 
-/** A toggle in `TaskDatasetControl.Settings`. */
-export interface ITaskGridSetting {
-    key: string;
-    label: string;
-    isChecked: boolean;
-    onChange: (isChecked: boolean) => void;
-}
-
-/** A hook over the toggles `TaskDatasetControl.Settings` shows, which it adds to or changes in place. */
-export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
-
 /** A hook over an item `TaskDatasetControl.Ribbon` draws, which it changes in place, such as to give a menu content of its own. */
 export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
 
@@ -97,13 +86,6 @@ export interface ITaskRuntime {
     /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
-    /**
-     * Registers a hook over the toggles `TaskDatasetControl.Settings` shows.
-     *
-     * @param priority Ascending: a higher number gets the later word.
-     */
-    registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void;
-    getSettings(): ITaskGridSetting[];
     /**
      * Registers a hook over every item `TaskDatasetControl.Ribbon` draws, the ones in its menus included.
      * @param priority Ascending: a higher number gets the later word.

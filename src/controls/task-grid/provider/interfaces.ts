@@ -154,7 +154,8 @@ export interface ITaskDataProviderEvents {
 /** A provider of tasks: every task loaded at once and shown as a tree. */
 /** What the task runtime hands a task provider before it loads. */
 export interface ITaskDataProviderInitializeParameters {
-    fieldMapping: IFieldMapping;
+    /** `stateCode` defaults to `statecode`. */
+    fieldMapping: Omit<IFieldMapping, 'stateCode'> & Partial<Pick<IFieldMapping, 'stateCode'>>;
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
 }
@@ -224,6 +225,8 @@ export interface ITaskDataProvider extends IDataProvider {
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */
     registerColumnHandler(handler: ITaskColumnHandler): () => void;
+    /** Reads the tasks with the column whatever the view shows, hidden; for a field a module reads off the records. */
+    registerRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
     registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
     /** Runs before every data load hands its tasks out, and is waited for. */

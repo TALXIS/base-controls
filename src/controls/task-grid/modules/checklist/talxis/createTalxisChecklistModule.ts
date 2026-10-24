@@ -1,3 +1,4 @@
+import { DataTypes } from "@talxis/client-libraries";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IChecklistItem, IChecklistParameters, IChecklistStore } from "../Checklist";
 import { createChecklistModule, IChecklistModule } from "../createChecklistModule";
@@ -12,6 +13,8 @@ class TalxisChecklistStore implements IChecklistStore {
 
     constructor(taskRuntime: ITaskRuntime) {
         this._taskRuntime = taskRuntime;
+        //real, not virtual: a virtual column is never selected
+        taskRuntime.services.whenAvailable('provider', provider => provider.registerRequiredColumn({ name: CHECKLIST_FIELD, displayName: CHECKLIST_FIELD, dataType: DataTypes.Multiple, isHidden: true, disableSorting: true, order: -1, visualSizeFactor: 100 }));
     }
 
     public async onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>> {
