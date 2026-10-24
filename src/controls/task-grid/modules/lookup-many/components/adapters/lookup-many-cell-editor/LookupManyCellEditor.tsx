@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useResizeEffect } from "@utils";
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
 import { useTheme } from "@fluentui/react";
 import type { ICellEditorParams } from "ag-grid-community";
 import { useDatasetControlModule } from "@controls/dataset-control";
-import { EditingCell, Grid, IGridCellParams, useGridCell } from "@controls/grid";
+import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
-import { runQuietly } from "../../../../../runtime/runQuietly";
-import type { ILookupManyEvents } from "../../../LookupMany";
 import { LookupManySelect } from "../../ui";
 import { getLookupManyComponents } from "../getLookupManyComponents";
 import { getLookupManyCellEditorStyles, LOOKUP_MANY_EDITOR_MIN_WIDTH } from "./styles";
@@ -21,7 +17,7 @@ interface ILookupManyCellSelectProps {
 
 const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     const cell = useGridCell();
-    const { rerender } = useRerender();
+    const field = useGridField();
     const theme = useTheme();
     const { runtime } = useTaskGridContext();
     const lookupMany = useDatasetControlModule('lookupMany');
@@ -35,12 +31,6 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     const labels = lookupMany.getLabels();
     const rootRef = useRef<HTMLDivElement>(null);
     const shiftRef = useRef({ x: 0, y: 0 });
-
-    useEventEmitter<ILookupManyEvents>(lookupMany.events, 'onValuesChanged', (taskIds: string[]) => {
-        if (taskIds.includes(record.getRecordId())) {
-            rerender();
-        }
-    });
 
     //AG Grid places the popup before it is drawn, and a cell never takes its content's width
     useResizeEffect(rootRef, () => {
@@ -60,14 +50,14 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     return <div ref={rootRef} className={styles.root}>
         <LookupManySelect
             dataProvider={optionsProvider}
-            value={lookupMany.getValue(record.getRecordId(), column.name)}
+            value={field?.getValue() ?? []}
             isDisabled={!optionsProvider}
             autoFocus
             defaultSearchQuery={props.eventKey?.length === 1 ? props.eventKey : undefined}
             noRecordsFoundText={labels.getLocalizedString('noRecordsFound')}
             loadingText={labels.getLocalizedString('loading')}
             components={components}
-            onChange={value => runQuietly(() => lookupMany.setValue(record, column.name, value ?? []))} />
+            onChange={value => field?.setValue(value)} />
     </div>;
 };
 

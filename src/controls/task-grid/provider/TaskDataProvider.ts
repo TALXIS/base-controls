@@ -277,6 +277,21 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         await this._store.onOpenRelatedRecord(reference, columnName);
     }
 
+    public setTaskValues(values: Map<string, IRawRecord>): void {
+        for (const [taskId, taskValues] of values) {
+            const record = this.getRecordsMap()[taskId];
+            if (!record) {
+                continue;
+            }
+            //raw data rebuilds the fields, so the user's changes are put back
+            const changes = record.getFields().filter(field => field.isDirty()).map(field => [field.getColumn().name, field.getValue()] as const);
+            const changedNames = new Set(changes.map(([columnName]) => columnName));
+            const loaded = Object.fromEntries(Object.entries(taskValues).filter(([columnName]) => !changedNames.has(columnName)));
+            record.setRawData({ ...record.getRawData(), ...loaded });
+            changes.forEach(([columnName, value]) => record.setValue(columnName, value));
+        }
+    }
+
     public updateTaskData(rawRecords: IRawRecord[]): void {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
         const { parentId, stackRank } = this.getFieldMapping();
@@ -363,7 +378,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     //the store never returns these, so later task updates keep what is merged here
     private async _loadHandledValues(rawData: IRawRecord[], primaryIdAttribute: string): Promise<void> {
         const taskIds = rawData.map(rawRecord => rawRecord[primaryIdAttribute]);
-        const valueMaps = await Promise.all(this._columnHandlers.map(handler => handler.onLoadValues(taskIds)));
+        const valueMaps = await Promise.all(this._columnHandlers.map(handler => handler.onLoadValues?.(taskIds) ?? new Map<string, IRawRecord>()));
         for (const rawRecord of rawData) {
             for (const values of valueMaps) {
                 Object.assign(rawRecord, values.get(rawRecord[primaryIdAttribute]));

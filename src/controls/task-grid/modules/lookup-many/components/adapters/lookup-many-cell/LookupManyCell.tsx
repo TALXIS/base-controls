@@ -3,7 +3,7 @@ import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { ErrorBoundary } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
-import { Grid, IGridCellParams, useGridCell, useGridService } from "@controls/grid";
+import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
 import { runQuietly } from "../../../../../runtime/runQuietly";
 import type { ILookupManyEvents } from "../../../LookupMany";
@@ -12,6 +12,7 @@ import { getLookupManyComponents } from "../getLookupManyComponents";
 
 const LookupManyCellPills = () => {
     const cell = useGridCell();
+    const field = useGridField();
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const { runtime } = useTaskGridContext();
     const lookupMany = useDatasetControlModule('lookupMany');
@@ -22,7 +23,7 @@ const LookupManyCellPills = () => {
     const onOpen = (reference: ComponentFramework.EntityReference) => runQuietly(() => runtime.tasks.openRelatedRecord(reference, columnName));
 
     return <ErrorBoundary error={lookupMany.getError()}>
-        <LookupManyPills value={lookupMany.getValue(cell.getRecord().getRecordId(), columnName)} onOpen={isNavigationEnabled ? onOpen : undefined} components={{ onRenderPill }} />
+        <LookupManyPills value={field?.getValue() ?? []} onOpen={isNavigationEnabled ? onOpen : undefined} components={{ onRenderPill }} />
     </ErrorBoundary>;
 };
 

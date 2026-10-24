@@ -166,8 +166,8 @@ export type TaskAvailableColumnsHook = (columns: IColumn[]) => void;
 export interface ITaskColumnHandler {
     /** Whether the handler loads and saves the column. */
     isHandledColumn(columnName: string): boolean;
-    /** The handled columns' values of these tasks, by task id and column name. */
-    onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    /** The handled columns' values of these tasks, by task id and column name; left out by a handler that writes them itself. */
+    onLoadValues?(taskIds: string[]): Promise<Map<string, IRawRecord>>;
     onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
 }
 
@@ -218,6 +218,8 @@ export interface ITaskDataProvider extends IDataProvider {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** Writes changed raw data onto the records it belongs to. */
     updateTaskData(rawRecords: IRawRecord[]): void;
+    /** Writes values loaded apart from the tasks onto their records, by task id, leaving what the user has changed. */
+    setTaskValues(values: Map<string, IRawRecord>): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */
