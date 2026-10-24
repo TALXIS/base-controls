@@ -123,6 +123,10 @@ export class DatasetControlUserQueries {
         const [ownColumns, relatedColumns] = await Promise.all([provider.getAvailableColumns(), this._getRelatedColumns(provider, columns, linking)]);
         const definitions = new Map([...ownColumns, ...relatedColumns].map(column => [column.name, column]));
         const definedColumns = columns.map(column => this._toColumn(column, definitions.get(column.name))).filter((column): column is IColumn => !!column);
+        const droppedNames = columns.filter(column => !definitions.has(column.name)).map(column => column.name);
+        if (droppedNames.length > 0) {
+            console.warn(`User view ${viewId} keeps columns the provider no longer offers, so they are left out: ${droppedNames.join(', ')}`);
+        }
         return { columns: definedColumns, linking, data };
     };
 
