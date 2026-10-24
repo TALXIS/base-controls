@@ -4157,11 +4157,7 @@ interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn
 }
 
 /** Strings of the lookup-many module. */
-type LookupManyLabels = Partial<{
-    noRecordsFound: string; loading: string; loadLookupManyFailed: string; filterApply: string; filterText: string;
-    operatorEqual: string; operatorDoesNotEqual: string; operatorContainValues: string; operatorDoesNotContainValues: string; operatorContainsData: string; operatorDoesNotContainData: string;
-    operatorLike: string; operatorNotLike: string; operatorBeginsWith: string; operatorDoesNotBeginWith: string; operatorEndsWith: string; operatorDoesNotEndWith: string;
-}>;
+type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string; loadLookupManyFailed: string; filterText: string }>;
 
 /** The task columns in columns, drawn as pills and picked in a pop-out editor. */
 declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {

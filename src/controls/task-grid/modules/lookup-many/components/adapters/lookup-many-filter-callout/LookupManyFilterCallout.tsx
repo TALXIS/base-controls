@@ -1,30 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Operators } from "@talxis/client-libraries";
+import { useControlLabels } from "@hooks";
 import { usePcfContext } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { useGridColumnHeader, useGridFilteringLabels, useGridService } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
-import { ILookupManyLabels } from "../../../labels";
+import { gridTranslations } from "@controls/grid/translations";
+import { datasetColumnFilteringTranslations } from "@controls/grid/modules/filtering/components/dataset-column-filtering/translations";
 import { LookupManyFilter, LookupManyFilterValueKind } from "../../ui";
 import { getLookupManyComponents } from "../getLookupManyComponents";
 
 type Reference = ComponentFramework.EntityReference;
 type Condition = ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression;
-
-const OPERATOR_LABELS: { [operator: number]: keyof ILookupManyLabels } = {
-    [Operators.Equal.Value]: 'operatorEqual',
-    [Operators.DoesNotEqual.Value]: 'operatorDoesNotEqual',
-    [Operators.ContainValues.Value]: 'operatorContainValues',
-    [Operators.DoesNotContainValues.Value]: 'operatorDoesNotContainValues',
-    [Operators.ContainsData.Value]: 'operatorContainsData',
-    [Operators.DoesNotContainData.Value]: 'operatorDoesNotContainData',
-    [Operators.Like.Value]: 'operatorLike',
-    [Operators.NotLike.Value]: 'operatorNotLike',
-    [Operators.BeginsWith.Value]: 'operatorBeginsWith',
-    [Operators.DoesNotBeginWith.Value]: 'operatorDoesNotBeginWith',
-    [Operators.EndsWith.Value]: 'operatorEndsWith',
-    [Operators.DoesNotEndWith.Value]: 'operatorDoesNotEndWith',
-};
 
 const RECORD_OPERATORS = new Set<number>([Operators.Equal.Value, Operators.DoesNotEqual.Value, Operators.ContainValues.Value, Operators.DoesNotContainValues.Value]);
 const NO_VALUE_OPERATORS = new Set<number>([Operators.ContainsData.Value, Operators.DoesNotContainData.Value]);
@@ -54,6 +41,8 @@ const unwrapText = (value: string): string => value.replace(/^%|%$/g, '');
 export const LookupManyFilterCallout = () => {
     const header = useGridColumnHeader();
     const context = usePcfContext();
+    const operatorLabels = useControlLabels<typeof datasetColumnFilteringTranslations>({ languageId: context.userSettings.languageId, defaultTranslations: datasetColumnFilteringTranslations });
+    const gridLabels = useControlLabels<typeof gridTranslations>({ languageId: context.userSettings.languageId, defaultTranslations: gridTranslations });
     const column = header.getColumn()!;
     const lookupMany = useDatasetControlModule('lookupMany');
     const { runtime } = useTaskGridContext();
@@ -111,14 +100,14 @@ export const LookupManyFilterCallout = () => {
         target={header.getElement()}
         title={filteringLabels.getLocalizedString('filterMenuFilterBy')}
         context={context}
-        operators={supportedOperators.map(value => ({ value, label: labels.getLocalizedString(OPERATOR_LABELS[value]) }))}
+        operators={supportedOperators.map(value => ({ value, label: operatorLabels[`operator-${value}` as keyof typeof datasetColumnFilteringTranslations]() }))}
         operator={operator}
         valueKind={valueKind}
         dataProvider={optionsProvider}
         records={records}
         text={text}
         textLabel={labels.getLocalizedString('filterText')}
-        applyText={labels.getLocalizedString('filterApply')}
+        applyText={gridLabels['filtermenu-applybutton']()}
         clearText={filteringLabels.getLocalizedString('clear')}
         noRecordsFoundText={labels.getLocalizedString('noRecordsFound')}
         loadingText={labels.getLocalizedString('loading')}
