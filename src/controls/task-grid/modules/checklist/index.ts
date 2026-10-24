@@ -3,5 +3,5 @@ export * from './labels';
 export * from './components';
 export * from './memory';
 export * from './talxis';
-export { CHECKLIST_COLUMN_NAME } from './Checklist';
-export type { IChecklist, IChecklistEvents, IChecklistItem, IChecklistParameters, IChecklistStore } from './Checklist';
+export { CHECKLIST_COLUMN_NAME, CHECKLIST_ITEM_ETN } from './Checklist';
+export type { IChecklist, IChecklistEvents, IChecklistItem, IChecklistItemData, IChecklistParameters, IChecklistStore } from './Checklist';

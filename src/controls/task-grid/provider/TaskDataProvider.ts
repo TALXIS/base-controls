@@ -142,6 +142,13 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return () => this._columnMatchers = this._columnMatchers.filter(registered => registered !== matcher);
     }
 
+    public isColumnQueried(columnName: string): boolean {
+        const isSorted = this.getSorting().some(sort => sort.name === columnName);
+        const isFiltered = this.getFiltering()?.conditions.some(condition => condition.attributeName === columnName) ?? false;
+        const isSearched = !!this.getSearchQuery() && this.getQuickFindColumns().some(column => column.name === columnName);
+        return isSorted || isFiltered || isSearched;
+    }
+
     public registerLoadWaiter(waiter: TaskLoadWaiter): () => void {
         this._loadWaiters.push(waiter);
         return () => this._loadWaiters = this._loadWaiters.filter(registered => registered !== waiter);

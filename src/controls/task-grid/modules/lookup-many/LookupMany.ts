@@ -205,18 +205,11 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //a sort, filter or search on these columns has to see the values
     private _waitForValues: TaskLoadWaiter = async params => {
-        if (this._isReadByView()) {
+        const provider = this._taskRuntime.getProvider();
+        if (Object.keys(this._parameters.columns).some(columnName => provider.isColumnQueried(columnName))) {
             await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
         }
     };
-
-    private _isReadByView(): boolean {
-        const provider = this._taskRuntime.getProvider();
-        const isSorted = provider.getSorting().some(sort => this.getColumn(sort.name));
-        const isFiltered = provider.getFiltering()?.conditions.some(condition => this.getColumn(condition.attributeName)) ?? false;
-        const isSearched = !!provider.getSearchQuery() && provider.getQuickFindColumns().some(column => this.getColumn(column.name));
-        return isSorted || isFiltered || isSearched;
-    }
 
     private _onTasksUpdated = (records: IRecord[]): void => {
         this._load(records.map(record => record.getRecordId()));

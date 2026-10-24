@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Persona, PersonaSize } from "@fluentui/react";
 import { components, OptionProps } from "react-select";
-import { getRawValue } from "../getRawValue";
+import { getDataValue } from "../getDataValue";
 import { getPersonLookupManyOptionStyles } from "./styles";
 
 /** Props for {@link PersonLookupManyOption}. */
@@ -16,7 +16,7 @@ export const PersonLookupManyOption = (props: IPersonLookupManyOptionProps) => {
     const styles = useMemo(() => getPersonLookupManyOptionStyles(), []);
     return <components.Option {...optionProps}>
         <div className={styles.option}>
-            <Persona text={props.data.name} imageUrl={getRawValue(props.data, imageUrlPropertyName)} size={PersonaSize.size24} hidePersonaDetails styles={{ root: { margin: 0 } }} />
+            <Persona text={props.data.name} imageUrl={getDataValue(props.data, imageUrlPropertyName)} size={PersonaSize.size24} hidePersonaDetails styles={{ root: { margin: 0 } }} />
             {props.children}
         </div>
     </components.Option>;

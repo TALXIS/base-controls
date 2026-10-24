@@ -2,15 +2,15 @@ import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { ErrorBoundary } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
-import { Grid, IGridCellParams, useGridCell } from "@controls/grid";
+import { Grid, IGridCellParams, useGridField } from "@controls/grid";
 import type { IChecklistEvents } from "../../../Checklist";
 import { ChecklistProgress } from "../../ui";
 
 const ChecklistCellProgress = () => {
-    const cell = useGridCell();
+    const field = useGridField();
     const checklist = useDatasetControlModule('checklist');
     return <ErrorBoundary error={checklist.getError()}>
-        <ChecklistProgress items={checklist.getItems(cell.getRecord().getRecordId())} />
+        <ChecklistProgress items={field?.getValue() ?? []} />
     </ErrorBoundary>;
 };
 

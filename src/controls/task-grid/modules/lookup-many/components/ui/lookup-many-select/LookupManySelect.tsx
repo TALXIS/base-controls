@@ -53,7 +53,7 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
         }
         provider.setSearchQuery(query);
         const records = await provider.refresh();
-        return isMountedRef.current ? records.map(record => ({ ...record.getNamedReference(), rawData: record.getRawData() }) as Reference) : [];
+        return isMountedRef.current ? records.map(record => ({ ...record.getNamedReference(), data: record.getRawData() }) as Reference) : [];
     };
 
     const onRemove = (reference: Reference) => props.onChange?.(value.filter(picked => picked.id.guid !== reference.id.guid));

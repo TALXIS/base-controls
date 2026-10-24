@@ -3901,6 +3901,8 @@ interface ITaskDataProvider extends IDataProvider {
     registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
     /** Runs before every data load hands its tasks out, and is waited for. */
     registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
+    /** Whether the current sorting, filtering or quick find reads the column. */
+    isColumnQueried(columnName: string): boolean;
     /** Writes values loaded apart from the tasks onto their records, by task id, leaving what the user has changed. */
     setTaskValues(values: Map<string, IRawRecord>): void;
 }

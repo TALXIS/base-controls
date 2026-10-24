@@ -1,4 +1,6 @@
-/** A field of the record a reference was picked from, as its raw data carries it. */
-export const getRawValue = (reference: ComponentFramework.EntityReference, propertyName: string): string | undefined => {
-    return (reference as ComponentFramework.EntityReference & { rawData?: Record<string, string> }).rawData?.[propertyName];
+import type { IEntityReference } from "@talxis/client-libraries";
+
+/** A value from the data a reference carries, such as the picked record's fields. */
+export const getDataValue = (reference: IEntityReference<Record<string, string>>, propertyName: string): string | undefined => {
+    return reference.data?.[propertyName];
 };

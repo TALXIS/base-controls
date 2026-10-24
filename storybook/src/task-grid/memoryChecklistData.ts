@@ -23,4 +23,4 @@ export const createChecklistItems = (tasks: IRawRecord[]): Record<string, ICheck
 export const CHECKLIST_ITEMS = createChecklistItems(TASKS);
 
 /** The checklist column as a view lists it; the module fills in the rest. */
-export const CHECKLIST_COLUMN: IColumn = { name: 'checklist__virtual', displayName: 'Checklist', dataType: 'SingleLine.Text', order: 0, visualSizeFactor: 100 };
+export const CHECKLIST_COLUMN: IColumn = { name: 'checklist__virtual', displayName: 'Checklist', dataType: 'Lookup.Simple', order: 0, visualSizeFactor: 100 };

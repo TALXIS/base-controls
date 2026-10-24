@@ -1,4 +1,4 @@
-import { FetchXmlDataProvider, IDataProvider, IRawRecord, ISingleRecord } from "@talxis/client-libraries";
+import { FetchXmlDataProvider, IDataProvider, IEntityReference, IRawRecord, ISingleRecord } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskDataProvider } from "../../../provider";
@@ -14,7 +14,7 @@ export interface IDataverseLookupManyStoreParameters {
     sourceRecord?: ISingleRecord;
 }
 
-type Reference = ComponentFramework.EntityReference & { rawData?: IRawRecord & { __intersectionId?: string } };
+type Reference = IEntityReference<IRawRecord & { __intersectionId?: string }>;
 
 interface IResolvedColumn {
     columnName: string;
@@ -145,8 +145,8 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         const relatedNavigationPropertyName = resolvedColumn.settings.customIntersection?.navigationPropertyName;
         return items.map(item => {
             const related: IRawRecord = relatedNavigationPropertyName ? item[relatedNavigationPropertyName] ?? {} : item;
-            const rawData = resolvedColumn.intersection ? { ...related, __intersectionId: item[resolvedColumn.intersection.primaryIdAttribute] } : related;
-            return { id: { guid: related[metadata.PrimaryIdAttribute] }, name: related[metadata.PrimaryNameAttribute], etn: targetEntityName, rawData };
+            const data = resolvedColumn.intersection ? { ...related, __intersectionId: item[resolvedColumn.intersection.primaryIdAttribute] } : related;
+            return { id: { guid: related[metadata.PrimaryIdAttribute] }, name: related[metadata.PrimaryNameAttribute], etn: targetEntityName, data };
         });
     }
 
@@ -198,7 +198,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     private async _disassociate(taskId: string, references: Reference[], resolved: IResolvedColumn): Promise<void> {
         if (resolved.intersection) {
             await Promise.all(references.map(async reference => {
-                const intersectionId = reference.rawData?.__intersectionId;
+                const intersectionId = reference.data?.__intersectionId;
                 if (!intersectionId) {
                     throw new Error(`${reference.name} has no intersection record to delete.`);
                 }
@@ -217,7 +217,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
             [`${intersection.taskNavigationPropertyName}@odata.bind`]: `/${taskMetadata.EntitySetName}(${taskId})`,
             [`${relatedNavigationPropertyName}@odata.bind`]: `/${relatedMetadata.EntitySetName}(${reference.id.guid})`,
         });
-        reference.rawData = { ...reference.rawData, __intersectionId: created.id };
+        reference.data = { ...reference.data, __intersectionId: created.id };
     }
 
     //the PCF Web API has no execute

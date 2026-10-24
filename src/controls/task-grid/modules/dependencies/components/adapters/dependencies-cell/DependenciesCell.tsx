@@ -2,17 +2,17 @@ import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { ErrorBoundary } from "@utils";
-import { Grid, IGridCellParams, useGridCell } from "@controls/grid";
+import { Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import type { IDependenciesEvents } from "../../../Dependencies";
 import { PREDECESSORS_COLUMN_NAME } from "../../../constants";
 import { DependencyCount } from "../../ui";
 
 const DependenciesCellCount = () => {
     const cell = useGridCell();
+    const field = useGridField();
     const dependencies = useDatasetControlModule('dependencies');
-    const taskId = cell.getRecord().getRecordId();
     const direction = cell.getColumnName() === PREDECESSORS_COLUMN_NAME ? 'predecessors' : 'successors';
-    const count = direction === 'predecessors' ? dependencies.getPredecessors(taskId).length : dependencies.getSuccessors(taskId).length;
+    const count = (field?.getValue() ?? []).length;
     return <ErrorBoundary error={dependencies.getError()}>
         <DependencyCount direction={direction} count={count} />
     </ErrorBoundary>;

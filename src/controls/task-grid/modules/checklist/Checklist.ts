@@ -1,8 +1,8 @@
 import type { ColDef } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { GridCellLoadingHook, IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskDataProvider } from "../../provider";
+import type { ITaskDataProvider, TaskLoadWaiter } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -10,6 +10,9 @@ import { CHECKLIST_LABELS, IChecklistLabels } from "./labels";
 import { ChecklistCell } from "./components/adapters/checklist-cell";
 
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
+
+/** The entity name a checklist item's reference carries. */
+export const CHECKLIST_ITEM_ETN = 'checklistitem';
 
 /** One item of a task's checklist. */
 export interface IChecklistItem {
@@ -36,11 +39,14 @@ export interface IChecklistEvents {
     onLoading: (isLoading: boolean) => void;
 }
 
-/** The `checklist` module: each task's checklist items, loaded through its store. */
+/** What a checklist item's reference on the task's record carries. */
+export interface IChecklistItemData {
+    isCompleted: boolean;
+}
+
+/** The `checklist` module: each task's checklist items, loaded through its store onto the task's record. */
 export interface IChecklist {
     events: IEventEmitter<IChecklistEvents>;
-    /** The task's items as loaded; none until its first load. */
-    getItems(taskId: string): IChecklistItem[];
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
     getLabels(): ILocalizationService<IChecklistLabels>;
@@ -54,8 +60,9 @@ export class Checklist implements IChecklist {
     private _taskRuntime: ITaskRuntime;
     private _store: IChecklistStore;
     private _labels: ILocalizationService<IChecklistLabels>;
-    private _itemsByTask = new Map<string, IChecklistItem[]>();
     private _isLoading = false;
+    private _hasStartedLoading = false;
+    private _currentLoad?: Promise<void>;
     private _error?: unknown;
     private _unregisters: (() => void)[] = [];
 
@@ -65,10 +72,6 @@ export class Checklist implements IChecklist {
         this._labels = new LocalizationService<IChecklistLabels>({ ...CHECKLIST_LABELS, ...parameters.labels });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
-    }
-
-    public getItems(taskId: string): IChecklistItem[] {
-        return this._itemsByTask.get(taskId) ?? [];
     }
 
     public getError(): unknown {
@@ -86,31 +89,40 @@ export class Checklist implements IChecklist {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
         provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-        provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
         provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumn),
+            provider.registerLoadWaiter(this._waitForItems),
             () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
-            () => provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted),
             () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
         );
     };
 
     private _onFirstDataLoaded = (): void => {
-        this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        if (!this._hasStartedLoading) {
+            this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        }
     };
 
-    private _onTasksDeleted = (taskIds: string[]): void => {
-        taskIds.forEach(taskId => this._itemsByTask.delete(taskId));
-        this.events.dispatchEvent('onItemsChanged', taskIds);
+    //a sort, filter or search on the column has to see the items
+    private _waitForItems: TaskLoadWaiter = async params => {
+        if (this._taskRuntime.getProvider().isColumnQueried(CHECKLIST_COLUMN_NAME)) {
+            await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
+        }
     };
 
     private _onTasksUpdated = (records: IRecord[]): void => {
         this._load(records.map(record => record.getRecordId()));
     };
 
+    private _load(taskIds: string[]): Promise<void> {
+        this._hasStartedLoading = true;
+        this._currentLoad = this._loadItems(taskIds);
+        return this._currentLoad;
+    }
+
     //a task the store leaves out has no items left
-    private async _load(taskIds: string[]): Promise<void> {
+    private async _loadItems(taskIds: string[]): Promise<void> {
         if (taskIds.length === 0) {
             return;
         }
@@ -118,7 +130,7 @@ export class Checklist implements IChecklist {
         this._setLoading(true);
         try {
             const loaded = await this._store.onLoadItems(taskIds);
-            taskIds.forEach(taskId => this._itemsByTask.set(taskId, loaded.get(taskId) ?? []));
+            this._taskRuntime.getProvider().setTaskValues(new Map(taskIds.map(taskId => [taskId, { [CHECKLIST_COLUMN_NAME]: (loaded.get(taskId) ?? []).map(this._toReference) }])));
             this.events.dispatchEvent('onItemsChanged', taskIds);
         }
         catch (error) {
@@ -128,6 +140,13 @@ export class Checklist implements IChecklist {
             this._setLoading(false);
         }
     }
+
+    private _toReference = (item: IChecklistItem): IEntityReference<IChecklistItemData> => ({
+        id: { guid: item.id },
+        name: item.name,
+        etn: CHECKLIST_ITEM_ETN,
+        data: { isCompleted: item.isCompleted },
+    });
 
     private _setLoading(isLoading: boolean): void {
         this._isLoading = isLoading;
@@ -141,7 +160,7 @@ export class Checklist implements IChecklist {
         columns.push({
             name: CHECKLIST_COLUMN_NAME,
             displayName: this._labels.getLocalizedString('checklist'),
-            dataType: DataTypes.SingleLineText,
+            dataType: DataTypes.LookupSimple,
             isVirtual: true,
             visualSizeFactor: 100,
             disableSorting: true,

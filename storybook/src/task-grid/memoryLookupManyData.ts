@@ -199,7 +199,7 @@ export const LOOKUP_MANY_VIEW_COLUMNS: IColumn[] = Object.entries(LOOKUP_MANY_CO
 const _personByName = new Map<string, IRawRecord>(PEOPLE.map(p => [p.name as string, p]));
 const _tagBySlug    = new Map<string, IRawRecord>(TAGS.map(t => [t.name as string, t]));
 
-/** Returns an EntityReference for an in-memory person record, including imageurl in rawData. */
+/** Returns an EntityReference for an in-memory person record, including imageurl in its data. */
 export function personRef(name: string): ComponentFramework.EntityReference {
     const p = _personByName.get(name);
     if (!p) throw new Error(`personRef: unknown person "${name}"`);
@@ -207,11 +207,11 @@ export function personRef(name: string): ComponentFramework.EntityReference {
         id:         { guid: p[PEOPLE_PRIMARY_ID] as string },
         name:       p.name as string,
         etn: PEOPLE_ENTITY_NAME,
-        rawData:    { imageurl: p.imageurl },
+        data:       { imageurl: p.imageurl },
     } as unknown as ComponentFramework.EntityReference;
 }
 
-/** Returns an EntityReference for an in-memory tag record, including color in rawData. */
+/** Returns an EntityReference for an in-memory tag record, including color in its data. */
 export function tagRef(slug: string): ComponentFramework.EntityReference {
     const t = _tagBySlug.get(slug);
     if (!t) throw new Error(`tagRef: unknown tag "${slug}"`);
@@ -219,7 +219,7 @@ export function tagRef(slug: string): ComponentFramework.EntityReference {
         id:         { guid: t[TAGS_PRIMARY_ID] as string },
         name:       t.name as string,
         etn: TAGS_ENTITY_NAME,
-        rawData:    { color: t.color },
+        data:       { color: t.color },
     } as any
 }
 

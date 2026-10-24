@@ -1,8 +1,8 @@
 import type { ColDef } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { GridCellLoadingHook, IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskDataProvider } from "../../provider";
+import type { ITaskDataProvider, TaskLoadWaiter } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -21,6 +21,12 @@ export interface ITaskDependency {
     /** The task that comes first. */
     predecessorTaskId: string;
     successorTaskId: string;
+    type: TaskDependencyType;
+}
+
+/** What the reference to a dependency's other task carries on a task's record. */
+export interface ITaskDependencyData {
+    dependencyId: string;
     type: TaskDependencyType;
 }
 
@@ -92,6 +98,8 @@ export class Dependencies implements IDependencies {
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
     private _isLoading = false;
+    private _hasStartedLoading = false;
+    private _currentLoad?: Promise<void>;
     private _error?: unknown;
     private _unregisters: (() => void)[] = [];
 
@@ -184,6 +192,7 @@ export class Dependencies implements IDependencies {
         provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumns),
+            provider.registerLoadWaiter(this._waitForDependencies),
             () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
             () => provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted),
             () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
@@ -191,7 +200,17 @@ export class Dependencies implements IDependencies {
     };
 
     private _onFirstDataLoaded = (): void => {
-        this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        if (!this._hasStartedLoading) {
+            this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        }
+    };
+
+    //a sort, filter or search on the columns has to see the dependencies
+    private _waitForDependencies: TaskLoadWaiter = async params => {
+        const provider = this._taskRuntime.getProvider();
+        if (DEPENDENCY_COLUMN_NAMES.some(columnName => provider.isColumnQueried(columnName))) {
+            await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
+        }
     };
 
     private _onTasksDeleted = (taskIds: string[]): void => {
@@ -206,8 +225,14 @@ export class Dependencies implements IDependencies {
         this._load(records.map(record => record.getRecordId()));
     };
 
+    private _load(taskIds: string[]): Promise<void> {
+        this._hasStartedLoading = true;
+        this._currentLoad = this._loadDependencies(taskIds);
+        return this._currentLoad;
+    }
+
     //what was held for the tasks is replaced, including any the load no longer returns
-    private async _load(taskIds: string[]): Promise<void> {
+    private async _loadDependencies(taskIds: string[]): Promise<void> {
         if (taskIds.length === 0) {
             return;
         }
@@ -238,7 +263,27 @@ export class Dependencies implements IDependencies {
         this._byPredecessor = this._groupBy(dependencies, dependency => dependency.predecessorTaskId);
         this._bySuccessor = this._groupBy(dependencies, dependency => dependency.successorTaskId);
         const taskIds = new Set(changed.flatMap(dependency => [dependency.predecessorTaskId, dependency.successorTaskId]));
+        this._writeToRecords([...taskIds]);
         this.events.dispatchEvent('onDependenciesChanged', [...taskIds]);
+    }
+
+    private _writeToRecords(taskIds: string[]): void {
+        const provider = this._taskRuntime.getProvider();
+        const values = new Map<string, IRawRecord>(taskIds.map(taskId => [taskId, {
+            [PREDECESSORS_COLUMN_NAME]: this.getPredecessors(taskId).map(dependency => this._toReference(dependency.predecessorTaskId, dependency)),
+            [SUCCESSORS_COLUMN_NAME]: this.getSuccessors(taskId).map(dependency => this._toReference(dependency.successorTaskId, dependency)),
+        }]));
+        provider.setTaskValues(values);
+    }
+
+    private _toReference(taskId: string, dependency: ITaskDependency): IEntityReference<ITaskDependencyData> {
+        const provider = this._taskRuntime.getProvider();
+        return {
+            id: { guid: taskId },
+            name: provider.getRecordsMap()[taskId]?.getValue(provider.getFieldMapping().subject) ?? '',
+            etn: provider.getEntityName(),
+            data: { dependencyId: dependency.id, type: dependency.type },
+        };
     }
 
     private _groupBy(dependencies: ITaskDependency[], getTaskId: (dependency: ITaskDependency) => string): Map<string, ITaskDependency[]> {
@@ -273,7 +318,7 @@ export class Dependencies implements IDependencies {
                 columns.push({
                     name,
                     displayName: this._labels.getLocalizedString(label),
-                    dataType: DataTypes.SingleLineText,
+                    dataType: DataTypes.LookupSimple,
                     isVirtual: true,
                     visualSizeFactor: 100,
                     disableSorting: true,

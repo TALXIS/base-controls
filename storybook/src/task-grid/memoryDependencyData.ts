@@ -29,6 +29,6 @@ export const DEPENDENCIES = createDependencies(TASKS);
 
 /** The dependency columns as a view lists them; the module fills in the rest. */
 export const DEPENDENCY_COLUMNS: IColumn[] = [
-    { name: 'predecessors__virtual', displayName: 'Predecessors', dataType: 'SingleLine.Text', order: 0, visualSizeFactor: 100 },
-    { name: 'successors__virtual', displayName: 'Successors', dataType: 'SingleLine.Text', order: 0, visualSizeFactor: 100 },
+    { name: 'predecessors__virtual', displayName: 'Predecessors', dataType: 'Lookup.Simple', order: 0, visualSizeFactor: 100 },
+    { name: 'successors__virtual', displayName: 'Successors', dataType: 'Lookup.Simple', order: 0, visualSizeFactor: 100 },
 ];

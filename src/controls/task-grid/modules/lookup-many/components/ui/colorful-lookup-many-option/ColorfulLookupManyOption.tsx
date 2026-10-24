@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { components, OptionProps } from "react-select";
-import { getRawValue } from "../getRawValue";
+import { getDataValue } from "../getDataValue";
 import { getColorfulLookupManyOptionStyles } from "./styles";
 
 /** Props for {@link ColorfulLookupManyOption}. */
@@ -14,7 +14,7 @@ export interface IColorfulLookupManyOptionProps extends OptionProps<ComponentFra
 export const ColorfulLookupManyOption = (props: IColorfulLookupManyOptionProps) => {
     const { colorPropertyName = 'color', ...optionProps } = props;
     const theme = useTheme();
-    const color = getRawValue(props.data, colorPropertyName) ?? theme.palette.neutralLight;
+    const color = getDataValue(props.data, colorPropertyName) ?? theme.palette.neutralLight;
     const styles = useMemo(() => getColorfulLookupManyOptionStyles(color), [color]);
     return <components.Option {...optionProps}>
         <div className={styles.option}>

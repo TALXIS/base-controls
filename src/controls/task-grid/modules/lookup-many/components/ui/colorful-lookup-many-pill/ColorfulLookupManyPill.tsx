@@ -1,5 +1,5 @@
 import { ILookupManyPillProps, LookupManyPill } from "../lookup-many-pill";
-import { getRawValue } from "../getRawValue";
+import { getDataValue } from "../getDataValue";
 
 /** Props for {@link ColorfulLookupManyPill}. */
 export interface IColorfulLookupManyPillProps extends ILookupManyPillProps {
@@ -10,5 +10,5 @@ export interface IColorfulLookupManyPillProps extends ILookupManyPillProps {
 /** A record drawn as a tag tinted with its own colour. */
 export const ColorfulLookupManyPill = (props: IColorfulLookupManyPillProps) => {
     const { colorPropertyName = 'color', ...pillProps } = props;
-    return <LookupManyPill {...pillProps} color={getRawValue(props.reference, colorPropertyName)} />;
+    return <LookupManyPill {...pillProps} color={getDataValue(props.reference, colorPropertyName)} />;
 };
