@@ -29,8 +29,8 @@ export const GridGanttSplit = (props: IGridGanttSplitProps) => {
     const ganttSize = state.get<number>(GANTT_SIZE_STATE_KEY) ?? props.defaultGanttSize ?? DEFAULT_GANTT_SIZE;
 
     return <PanelGroup direction="horizontal" className={styles.root} onLayout={sizes => state.set(GANTT_SIZE_STATE_KEY, sizes[1])}>
-        <Panel defaultSize={100 - ganttSize} minSize={10} className={styles.grid}>{props.children[0]}</Panel>
+        <Panel defaultSize={100 - ganttSize} minSize={0} className={styles.grid}>{props.children[0]}</Panel>
         <PanelResizeHandle className={styles.handle} />
-        <Panel defaultSize={ganttSize} minSize={10}>{props.children[1]}</Panel>
+        <Panel defaultSize={ganttSize} minSize={0}>{props.children[1]}</Panel>
     </PanelGroup>;
 };
