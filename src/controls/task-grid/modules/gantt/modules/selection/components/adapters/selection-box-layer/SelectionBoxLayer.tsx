@@ -3,6 +3,7 @@ import Selecto, { OnDragEnd, OnDragStart, OnScroll, OnSelect } from "selecto";
 import { mergeStyles } from "@fluentui/react";
 import { useGanttModule, useGanttService } from "../../../../../context";
 import { GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS } from "../../../../../chart/classNames";
+import { GANTT_SELECTION_BOX_CLASS } from "../../../classNames";
 
 const EDGE_SCROLL_THRESHOLD = 50;
 const SCROLL_STEP = 10;
@@ -33,6 +34,7 @@ export const SelectionBoxLayer = () => {
 
         const selecto = new Selecto({
             container: chart.$task,
+            className: GANTT_SELECTION_BOX_CLASS,
             hitRate: 0,
             selectableTargets: [`.${GANTT_TASK_LINE_CLASS}`],
             scrollOptions: {
