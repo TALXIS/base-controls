@@ -11,6 +11,7 @@ import type { IGanttDragging } from "./dragging/GanttDragging";
 import type { IGanttTasks } from "./tasks/GanttTasks";
 import type { IGanttSurfaces } from "./surfaces";
 import type { IGanttTheme } from "./theme";
+import type { IGanttOverlay } from "./overlay";
 import type { ITaskGanttProps } from "./TaskGantt";
 
 /** The modules a Gantt loaded, by name; each module adds its own entry. */
@@ -34,6 +35,7 @@ export interface IGanttServiceMap extends IGanttModuleServiceMap {
     taskRuntime: ITaskRuntime;
     labels: ILocalizationService<IGanttLabels>;
     theme: IGanttTheme;
+    overlay: IGanttOverlay;
     /** What the Gantt keeps per view. */
     state: IStateStore;
     /** The chart, there once it is drawn. */

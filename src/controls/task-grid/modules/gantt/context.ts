@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { useContextWithNullCheck } from "@utils";
 import type { IGantt, IGanttDeferredService, IGanttModuleMap, IGanttServiceMap } from "./interfaces";
 
@@ -38,4 +38,21 @@ export const useGanttService = <TKey extends keyof IGanttServiceMap>(key: TKey):
 
     //the conditional return type is the caller's contract
     return service as any;
+};
+
+/** Creates a service once and registers it on the Gantt while the calling component is mounted. */
+export const useCreateGanttService = <TKey extends keyof IGanttServiceMap, TService extends IGanttServiceMap[TKey]>(key: TKey, onCreate: () => TService): TService => {
+    const services = useGantt().services;
+    //registered as it is made: the modules load after the first render and may read it
+    const service = useMemo(() => {
+        const created = onCreate();
+        services.register(key, () => created);
+        return created;
+    }, []);
+    useEffect(() => () => {
+        if (services.find(key) as unknown === service) {
+            services.unregister(key);
+        }
+    }, []);
+    return service;
 };

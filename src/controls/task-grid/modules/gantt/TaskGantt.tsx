@@ -11,6 +11,7 @@ import { GanttContext } from "./context";
 import type { IGanttLabels } from "./labels";
 import type { IGanttEvents, IGanttModule } from "./interfaces";
 import { getTaskGanttStyles } from "./styles";
+import { GanttOverlayLayer } from "./components/overlay-layer";
 
 export interface ITaskGanttProps {
     /** Read once, at mount. */
@@ -53,6 +54,7 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
         <div className={styles.root}>
             <div ref={containerRef} className={styles.chart} />
             {isChartReady && gantt.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
+            <GanttOverlayLayer />
         </div>
     </GanttContext.Provider>;
 };
