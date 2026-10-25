@@ -99,7 +99,7 @@ export class GridRuntime implements IGrid {
         //all three wire themselves to the api and the provider
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });
-        new GridViewport({ services: this._services });
+        const viewport = new GridViewport({ services: this._services });
         this._services.register('columns', () => columns);
         this._services.register('cells', () => cells);
         this._services.register('rows', () => rows);
@@ -107,6 +107,7 @@ export class GridRuntime implements IGrid {
         this._services.register('keyboard', () => keyboard);
         this._services.register('surfaces', () => surfaces);
         this._services.register('fields', () => fields);
+        this._services.register('viewport', () => viewport);
 
         const { custom = [], ...builtIns } = onGetProps().modules;
         const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);

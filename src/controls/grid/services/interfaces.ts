@@ -15,6 +15,7 @@ import type { IGridValidation, IGridValidationInternal } from "../services/valid
 import type { IGridSurfaces, IGridSurfacesInternal } from "../services/surfaces";
 import type { IGridFields } from "../services/fields";
 import type { IGridTheme, IGridThemeInternal } from "../services/theme";
+import type { IGridViewport } from "../services/viewport";
 
 /** The services the modules register; a module adds its own by augmenting this. */
 export interface IGridModuleServiceMap { }
@@ -53,6 +54,8 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
     keyboard: IGridKeyboard;
     /** How the grid gets its rows. */
     rowModel: IGridRowModel;
+    /** The grid's vertical scroll and header height. */
+    viewport: IGridViewport;
     /** The running grid. */
     grid: IGrid;
 }

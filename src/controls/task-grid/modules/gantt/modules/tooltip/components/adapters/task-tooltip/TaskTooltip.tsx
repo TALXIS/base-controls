@@ -19,7 +19,7 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     const gantt = useGantt();
     const chart = useGanttService('chart');
     const dragging = useGanttService('dragging');
-    const data = useGanttService('data');
+    const tasks = useGanttService('tasks');
     const [hovered, setHovered] = useState<IHoveredTask>();
     const draggedTaskIdRef = useRef<string>();
 
@@ -55,7 +55,7 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
         };
     }, [chart, dragging]);
 
-    const record = hovered && data?.getRecord(hovered.taskId);
+    const record = hovered && tasks?.getRecord(hovered.taskId);
     if (!chart || !hovered || !record) {
         return null;
     }

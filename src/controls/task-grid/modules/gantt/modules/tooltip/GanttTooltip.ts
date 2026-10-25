@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { IGantt, IGanttLayer } from "../../interfaces";
+import type { IGantt } from "../../interfaces";
+import type { IGanttSurface } from "../../surfaces";
 import { GANTT_TOOLTIP_LABELS, IGanttTooltipLabels } from "./labels";
 import { TaskTooltipRenderer } from "./components/adapters/renderer";
 
@@ -24,12 +25,12 @@ export interface IGanttTooltip {
 export class GanttTooltip implements IGanttTooltip {
     private _parameters: IGanttTooltipParameters;
     private _labels: ILocalizationService<IGanttTooltipLabels>;
-    private _unregisterLayers: () => void;
+    private _unregisterSurface: () => void;
 
     constructor(gantt: IGantt, parameters: IGanttTooltipParameters) {
         this._parameters = parameters;
         this._labels = new LocalizationService<IGanttTooltipLabels>({ ...GANTT_TOOLTIP_LABELS, ...parameters.labels });
-        this._unregisterLayers = gantt.registerLayers(this._addLayers);
+        this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
     }
 
     public getLabels(): ILocalizationService<IGanttTooltipLabels> {
@@ -45,11 +46,11 @@ export class GanttTooltip implements IGanttTooltip {
     }
 
     public destroy(): void {
-        this._unregisterLayers();
+        this._unregisterSurface();
     }
 
-    private _addLayers = (layers: IGanttLayer[]): void => {
-        layers.push({ key: 'tooltip', onRender: () => this.render() });
+    private _onSurfaces = (surfaces: IGanttSurface[]): void => {
+        surfaces.push({ key: 'tooltip', onRender: () => this.render() });
     };
 }
 

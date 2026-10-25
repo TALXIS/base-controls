@@ -17,6 +17,7 @@ export type { IGridRows, IGridRowHeight, GridRowHeightHook, GridRowClassRule, IG
 export type { IGridValidation, GridValidationHook } from './services/validation';
 export type { IGridSurfaces, IGridSurface, GridSurfacesHook } from './services/surfaces';
 export type { IGridTheme, IGridAgTheme, GridThemeHook, IGridStyles, GridStylesHook } from './services/theme';
+export type { IGridViewport } from './services/viewport';
 export type { IGridFields, IGridField } from './services/fields';
 export type { IGridRowModel, IGridRowModelType, IGridRowModelGrouping, IGridRowModelGroupingParameters } from './services/row-model';
 export type { IGridSettings } from './services/settings';

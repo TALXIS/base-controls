@@ -11,12 +11,21 @@ interface IGridViewportState {
     focusedCell?: { rowId: string; columnId: string };
 }
 
+/** The grid's vertical scroll and header, for a view drawn beside the grid's rows. */
+export interface IGridViewport {
+    /** `0` until the grid is mounted. */
+    getScrollTop(): number;
+    setScrollTop(top: number): void;
+    /** `0` until the grid is mounted. */
+    getHeaderHeight(): number;
+}
+
 export interface IGridViewportParameters {
     services: IGridInternalServiceLocator;
 }
 
 /** Where the user is scrolled and focused, kept in the grid's state. */
-export class GridViewport {
+export class GridViewport implements IGridViewport {
     private _services: IGridInternalServiceLocator;
     private _pending?: IGridViewportState;
     private _hasLoaded = false;
@@ -26,6 +35,26 @@ export class GridViewport {
         this._pending = this._services.get('state').get<IGridViewportState>(VIEWPORT_STATE_KEY);
         this._services.get('grid').events.addEventListener('onDataLoaded', this._onDataLoaded);
         this._services.whenAvailable('gridApi', this._onGridApiAvailable);
+    }
+
+    public getScrollTop(): number {
+        return this._services.find('gridApi')?.getVerticalPixelRange().top ?? 0;
+    }
+
+    public setScrollTop(top: number): void {
+        const bodyViewport = this._getBodyViewport();
+        if (bodyViewport) {
+            bodyViewport.scrollTop = top;
+        }
+    }
+
+    public getHeaderHeight(): number {
+        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-header')?.offsetHeight ?? 0;
+    }
+
+    //AG Grid has no api to set the scroll; this is the element that scrolls the rows
+    private _getBodyViewport(): HTMLElement | null | undefined {
+        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-grid-viewport');
     }
 
     private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {

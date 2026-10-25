@@ -3499,7 +3499,7 @@ interface IUserQueriesStore<TData = unknown> {
     createManageProvider(): IDataProvider;
 }
 
-/** Which of the user views' commands the view switcher offers; each is on unless set to `false`. */
+/** Which of the user views' commands the view switcher offers; each is on unless set to \`false\`. */
 interface IUserQueriesCommands {
     enableSaveAsNewView?: boolean;
     /** Save changes, while a user view is shown. */
@@ -3987,7 +3987,7 @@ interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskVie
 interface ITaskGridLoadResult {
     /** The provider for the view. */
     provider: ITaskDataProvider;
-    /** `stateCode` defaults to `statecode`. */
+    /** \`stateCode\` defaults to \`statecode\`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
@@ -4338,9 +4338,9 @@ declare const createDependencies: (tasks: IRawRecord[]) => ITaskDependency[];
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
     Settings: (props: {
-        /** The Show hierarchy toggle; on unless set to `false`. */
+        /** The Show hierarchy toggle; on unless set to \`false\`. */
         enableShowHierarchy?: boolean;
-        /** The Hide inactive tasks toggle; on unless set to `false`. */
+        /** The Hide inactive tasks toggle; on unless set to \`false\`. */
         enableHideInactiveTasks?: boolean;
     }) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
@@ -4375,5 +4375,85 @@ declare const TASK_COLUMNS: IColumn[];
 declare const TASK_METADATA: IMemoryProviderEntityMetadata;
 /** Every task column, with the ones not named hidden. */
 declare const getTaskColumns: (...visibleColumnNames: string[]) => IColumn[];
+
+/** A feature of the Gantt, loaded on every mount before the chart is drawn. */
+interface IGanttModule {
+    name: string;
+    onLoad(gantt: any): any;
+    onDestroy?(instance: any): void;
+}
+
+/** A date marked on the timeline with a line and a chip on the scale. */
+interface IGanttMarker {
+    id: string;
+    text: string;
+    date: import('dayjs').Dayjs;
+    color?: string;
+    /** Draws a diamond on the scale rather than a chip. */
+    isMilestone?: boolean;
+}
+
+interface IGanttMarkersOptions {
+    /** Defaults to \`true\`. */
+    showToday?: boolean;
+    /** The project module's start and end; defaults to \`true\`. */
+    showProject?: boolean;
+    labels?: Partial<{ today: string; projectStart: string; projectEnd: string }>;
+}
+
+/** The tasks on a timeline, row for row with the TaskGrid beside it; needs startDate and endDate in the field mapping. */
+declare const TaskGantt: ((props: {
+    modules?: IGanttModule[];
+    stateKey?: string;
+    labels?: Partial<{ zoomSlider: string; zoomToFit: string; goToToday: string }>;
+}) => JSX.Element) & {
+    /** The Gantt's zoom; goes in the header. */
+    ZoomSlider: () => JSX.Element;
+    /** The grid and the Gantt side by side; goes in the body. */
+    Split: (props: { children: [React.ReactNode, React.ReactNode]; stateKey?: string; defaultGanttSize?: number }) => JSX.Element;
+};
+
+/** Today, the project's start and end, and the store's own markers. */
+declare const createGanttMarkersModule: (parameters?: IGanttMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IGanttMarker[]> } }) => IGanttModule;
+/** Markers held in memory. */
+declare const createMemoryGanttMarkersModule: (parameters: IGanttMarkersOptions & { markers: IGanttMarker[] }) => IGanttModule;
+/** Hides weekends from the scale, toggled in TaskDatasetControl.Settings. */
+declare const createGanttWeekendsModule: (parameters?: { isVisibleByDefault?: boolean; labels?: Partial<{ hideWeekends: string }> }) => IGanttModule;
+/** Moves and resizes bars, writing the dates once the bar is dropped. */
+declare const createGanttTaskDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
+/** Ctrl+drag over the timeline draws a new task. */
+declare const createGanttTaskCreateModule: () => IGanttModule;
+/** Shift+drag selects the bars under a band. */
+declare const createGanttSelectionBoxModule: () => IGanttModule;
+type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | null }>;
+
+/** Finds the hovered or dragged bar; its parts go inside it. */
+declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Element | null) & {
+    /** The default tooltip: the name and status, the progress, and when it runs. */
+    Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: TaskTooltipSlots; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
+    /** The callout next to the pointer: onRenderCallout, onRenderContainer. */
+    Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The task's name and status pill: onRenderContainer, onRenderTitle, onRenderStatus. */
+    Header: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** Holds the field rows: onRenderContainer. */
+    FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** Any column: onRenderContainer, onRenderIcon, onRenderLabel, onRenderValue. */
+    FieldRow: (props: { columnName: string; iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The start from the timeline, not the record. */
+    StartDateRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The end from the timeline, not the record. */
+    EndDateRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The duration from the timeline's start and end. */
+    DurationRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The start, end and duration from the timeline, on one line. */
+    DateRangeRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The mapped percentComplete as a bar. */
+    ProgressRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+};
+
+/** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
+declare const createGanttTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string; labels?: Partial<{ duration: string }> }) => IGanttModule;
+/** Draws the dependencies module's dependencies between the bars. */
+declare const createGanttLinksModule: (parameters?: { labels?: Partial<{ confirmDeleteLink: string }> }) => IGanttModule;
 
 `
