@@ -6,7 +6,7 @@ export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export type { IGanttOverlay, IGanttOverlayEvents } from './overlay';
 export { useGantt, useGanttModule, useGanttService, useCreateGanttService } from './context';
 export type { ITaskGanttProps } from './TaskGantt';
-export type { ITaskGanttSplitProps } from './components';
+export type { IGridGanttSplitProps } from './components';
 export type { IGanttDates } from './dates/GanttDates';
 export type { IGanttZooming, IGanttZoomingEvents } from './zooming/GanttZooming';
 export type { IGanttTimeline } from './timeline/GanttTimeline';

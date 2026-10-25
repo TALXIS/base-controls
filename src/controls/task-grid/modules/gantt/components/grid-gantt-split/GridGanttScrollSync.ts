@@ -7,7 +7,7 @@ import type { IGridViewport } from "@controls/grid";
 const SCROLL_TOLERANCE = 1;
 
 /** Keeps the chart and the grid scrolled to the same rows. */
-export class GanttScrollSync {
+export class GridGanttScrollSync {
     private _gantt: GanttStatic;
     private _gridApi: GridApi<IRecord>;
     private _viewport: IGridViewport;

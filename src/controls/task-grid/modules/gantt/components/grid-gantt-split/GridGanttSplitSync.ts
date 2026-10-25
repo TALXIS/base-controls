@@ -5,13 +5,13 @@ import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";
 import type { ITaskRuntime } from "../../../../runtime";
 import { TASK_GRID_PRIORITY } from "../../../../priorities";
 import type { IGantt } from "../../interfaces";
-import { GanttScrollSync } from "./GanttScrollSync";
+import { GridGanttScrollSync } from "./GridGanttScrollSync";
 
 /** Keeps the grid and the Gantt beside it lined up, row for row and scrolled together. */
-export class TaskGanttSplitSync {
+export class GridGanttSplitSync {
     private _taskRuntime: ITaskRuntime;
     private _grid?: IGrid;
-    private _scrollSync?: GanttScrollSync;
+    private _scrollSync?: GridGanttScrollSync;
     private _unregisters: (() => void)[] = [];
 
     //registered as the grid is made, before AG Grid reads its options
@@ -48,7 +48,7 @@ export class TaskGanttSplitSync {
     private _onChartReady = (chart: GanttStatic): void => {
         const gridApi = this._grid?.services.find('gridApi');
         if (this._grid && gridApi) {
-            this._scrollSync = new GanttScrollSync(chart, gridApi, this._grid.services.get('viewport'));
+            this._scrollSync = new GridGanttScrollSync(chart, gridApi, this._grid.services.get('viewport'));
         }
     };
 
