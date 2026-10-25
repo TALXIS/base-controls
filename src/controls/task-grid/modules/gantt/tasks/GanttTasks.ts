@@ -51,9 +51,8 @@ export interface IGanttTaskClassParameters {
 /** Adds to the class names of a task's bar or row. */
 export type GanttTaskClassHook = (classNames: string[], parameters: IGanttTaskClassParameters) => void;
 
-//an 8px band and the bracket ends under it, drawn by the Gantt's styles
-const SUMMARY_BAR_HEIGHT = 14;
-const TASK_BAR_HEIGHT = 24;
+const SUMMARY_BAR_HEIGHT = 8;
+const TASK_BAR_HEIGHT = 20;
 
 export interface IGanttTasksParameters {
     gantt: GanttStatic;
@@ -88,9 +87,8 @@ export class GanttTasks implements IGanttTasks {
         const provider = this._taskRuntime.getProvider();
         this._gantt.templates.task_class = (_start: Date, _end: Date, task: Task) => this.getTaskClass(task);
         this._gantt.templates.task_row_class = (_start: Date, _end: Date, task: Task) => this.getRowClass(task);
-        //the name sits beside the bar, where it stays readable at every zoom
+        //the grid beside it shows each task's name on the same row
         this._gantt.templates.task_text = () => '';
-        this._gantt.templates.leftside_text = (_start: Date, _end: Date, task: Task) => task.text;
         this._gridApi.addEventListener('modelUpdated', this._scheduleParse);
         provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
@@ -236,7 +234,7 @@ export class GanttTasks implements IGanttTasks {
         return task;
     }
 
-    //a parent spans its children, so it is drawn as their bracket
+    //a parent spans its children, so it is drawn as a slim bar over them
     private _isSummary(taskId: string): boolean {
         return !this._taskRuntime.isFlatList() && this._taskRuntime.getProvider().getRecordTree().view.hasChildren(taskId);
     }

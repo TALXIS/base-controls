@@ -4,15 +4,11 @@ import {
     GANTT_ROW_INACTIVE_CLASS,
     GANTT_TASK_CELL_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
+    GANTT_TASK_CONTENT_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
     GANTT_WEEKEND_CLASS,
 } from "./chart/classNames";
-
-const TASK_COLOR = '#9BCB96';
-const TASK_PROGRESS_COLOR = '#69A96B';
-const SUMMARY_COLOR = '#8DB7E8';
-const SUMMARY_PROGRESS_COLOR = '#6A9AD6';
 
 export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
     root: {
@@ -47,31 +43,24 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         '--dhx-gantt-link-handle-border': theme.semanticColors.variantBorder,
         '--dhx-gantt-link-handle-background': theme.palette.neutralLight,
         '--dhx-gantt-link-handle-background-hover': theme.semanticColors.bodySubtext,
-        '--dhx-gantt-task-background': TASK_COLOR,
-        '--dhx-gantt-task-progress-color': TASK_PROGRESS_COLOR,
+        '--dhx-gantt-task-background': theme.palette.themePrimary,
+        '--dhx-gantt-milestone-background': theme.palette.themePrimary,
         '--dhx-gantt-task-border': 'none',
-        '--dhx-gantt-task-border-radius': theme.effects.roundedCorner2,
-        '--dhx-gantt-milestone-background': SUMMARY_PROGRESS_COLOR,
-        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}`]: {
-            '--dhx-gantt-task-background': SUMMARY_COLOR,
-            '--dhx-gantt-task-progress-color': SUMMARY_PROGRESS_COLOR,
-            background: 'transparent',
-            //an 8px band with a bracket end under each corner; the progress takes the same shape
-            '.gantt_task_progress_wrapper': {
-                background: 'var(--dhx-gantt-task-background)',
-                borderRadius: 0,
-                clipPath: 'polygon(0 0, 100% 0, 100% 100%, calc(100% - 6px) 8px, 6px 8px, 0 100%)',
-            },
-            //the name beside it is laid out on the bar's height, so it is centred on the band
-            '.gantt_side_content': {
-                top: 4,
-                height: 'auto',
-                lineHeight: 'normal',
-                transform: 'translateY(-50%)',
-            },
+        '--dhx-gantt-task-border-radius': theme.effects.roundedCorner4,
+        //a task's `color` tints the track and fills the done part
+        [`.${GANTT_TASK_LINE_CLASS}`]: {
+            '--dhx-gantt-task-progress-color': 'var(--dhx-gantt-task-background)',
+            background: `color-mix(in srgb, var(--dhx-gantt-task-background) 24%, ${theme.semanticColors.bodyBackground})`,
         },
-        '.gantt_side_content': {
-            color: theme.semanticColors.bodyText,
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}`]: {
+            '--dhx-gantt-task-background': theme.palette.teal,
+            '--dhx-gantt-task-border-radius': '999px',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.gantt_milestone`]: {
+            background: 'var(--dhx-gantt-task-background)',
+            [`.${GANTT_TASK_CONTENT_CLASS}`]: {
+                borderRadius: theme.effects.roundedCorner2,
+            },
         },
         '.gantt_task_scale': {
             fontWeight: 600,
