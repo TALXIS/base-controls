@@ -1,12 +1,15 @@
 import { createElement } from "react";
+import type { ITheme } from "@fluentui/react";
 import type { GanttStatic } from "gantt-trial";
 import type { ITaskDataProvider } from "../../../../provider";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { IGanttTasks } from "../../tasks/GanttTasks";
+import type { IGanttStyles } from "../../theme";
 import { GANTT_ROW_SELECTED_CLASS, GANTT_TASK_SELECTED_CLASS } from "./classNames";
-import { SelectionLayer } from "./components/adapters/selection-layer";
+import { SelectionBoxLayer } from "./components/adapters/selection-box-layer";
+import { getGanttSelectionStyles } from "./styles";
 
 export interface IGanttSelectionParameters {
     /** Shift+drag selects the bars under a band. Defaults to `true`. */
@@ -38,7 +41,10 @@ export class GanttSelection implements IGanttSelection {
         this._unregisters.push(() => this._provider.removeEventListener('onRecordsSelected', this._onSelectionChanged));
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.services.whenAvailable('tasks', this._onTasksReady);
-        this._unregisters.push(gantt.surfaces.registerSurface(this._onSurfaces));
+        this._unregisters.push(gantt.services.get('theme').registerStyles(this._onStyles));
+        if (this._isSelectionBoxEnabled) {
+            this._unregisters.push(gantt.surfaces.registerSurface(this._onSurfaces));
+        }
     }
 
     public isSelected(taskId: string): boolean {
@@ -73,7 +79,11 @@ export class GanttSelection implements IGanttSelection {
     };
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
-        surfaces.push({ key: 'selection', onRender: () => createElement(SelectionLayer) });
+        surfaces.push({ key: 'selectionBox', onRender: () => createElement(SelectionBoxLayer) });
+    };
+
+    private _onStyles = (result: IGanttStyles, theme: ITheme): void => {
+        result.styles.push(getGanttSelectionStyles(theme));
     };
 
     private _onSelectionChanged = (): void => {

@@ -7,6 +7,7 @@ import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { GANTT_MARKERS_LABELS, IGanttMarkersLabels } from "./labels";
 import { MarkerLayer } from "./components/adapters/marker-layer";
+import { getGanttMarkersStyles } from "./styles";
 
 /** A date marked on the timeline with a line and a chip on the scale. */
 export interface IGanttMarker {
@@ -57,6 +58,7 @@ export class GanttMarkers implements IGanttMarkers {
         this._unregisters.push(
             gantt.registerChartConfig(chart => chart.plugins({ marker: true })),
             gantt.surfaces.registerSurface(this._onSurfaces),
+            gantt.services.get('theme').registerStyles(result => result.styles.push(getGanttMarkersStyles())),
         );
         //the chart drops its markers on every parse
         gantt.events.addEventListener('onTasksParsed', this._draw);

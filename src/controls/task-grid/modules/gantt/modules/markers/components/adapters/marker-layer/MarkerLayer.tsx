@@ -20,7 +20,6 @@ export const MarkerLayer = () => {
             return;
         }
         overlay.className = styles.overlay;
-        chart.$root.classList.add(styles.chart);
         const place = () => {
             overlay.style.height = `${chart.config.scale_height}px`;
             if (overlay.parentElement !== chart.$task) {
@@ -33,7 +32,6 @@ export const MarkerLayer = () => {
         place();
         return () => {
             chart.detachEvent(eventId);
-            chart.$root?.classList.remove(styles.chart);
             overlay.remove();
         };
     }, [chart]);

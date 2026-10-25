@@ -33,9 +33,11 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ datasetControl, taskRuntime, state, onGetProps: () => propsRef.current }));
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    const styles = useMemo(() => getTaskGanttStyles(theme), [theme]);
     const [error, setError] = useState<unknown>();
     const { rerender } = useRerender();
+    const isChartReady = !!gantt.services.find('chart');
+    //the modules register their styles as they load, which is before the chart is drawn
+    const styles = useMemo(() => getTaskGanttStyles(theme, gantt.theme.getStyles(theme)), [theme, isChartReady]);
 
     useEventEmitter<IGanttEvents>(gantt.events, 'onChartReady', rerender);
 
@@ -50,7 +52,7 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     return <GanttContext.Provider value={gantt}>
         <div className={styles.root}>
             <div ref={containerRef} className={styles.chart} />
-            {gantt.services.find('chart') && gantt.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
+            {isChartReady && gantt.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
         </div>
     </GanttContext.Provider>;
 };

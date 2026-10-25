@@ -10,6 +10,7 @@ import type { ITaskRuntime } from "../../../runtime";
 import { GANTT_LABELS, IGanttLabels } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
+import { GanttTheme } from "../theme";
 import { createChart } from "../chart/createChart";
 import { GanttDates } from "../dates/GanttDates";
 import { GanttTimeline } from "../timeline/GanttTimeline";
@@ -31,6 +32,7 @@ export class GanttRuntime implements IGantt {
     public readonly services = new ServiceLocator<IGanttServiceMap>();
     public readonly modules = new ServiceLocator<IGanttModuleMap>();
     public readonly surfaces = new GanttSurfaces();
+    public readonly theme = new GanttTheme();
     private _datasetControl: IDatasetControlRuntime;
     private _taskRuntime: ITaskRuntime;
     private _onGetProps: () => ITaskGanttProps;
@@ -50,6 +52,7 @@ export class GanttRuntime implements IGantt {
         const dates = new GanttDates(parameters.taskRuntime);
         this.services.register('taskRuntime', () => parameters.taskRuntime);
         this.services.register('labels', () => labels);
+        this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
         this.services.register('dates', () => dates);
         this._datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));

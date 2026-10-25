@@ -2,6 +2,7 @@ export * from './namespace';
 export * from './interfaces';
 export * from './labels';
 export type { IGanttSurface, IGanttSurfaces, GanttSurfacesHook } from './surfaces';
+export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export { useGantt, useGanttModule, useGanttService } from './context';
 export type { ITaskGanttProps } from './TaskGantt';
 export type { ITaskGanttSplitProps } from './components';

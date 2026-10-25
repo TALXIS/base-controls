@@ -1,4 +1,4 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IStyle, ITheme, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_ROW_INACTIVE_CLASS,
@@ -14,14 +14,14 @@ const TASK_PROGRESS_COLOR = '#69A96B';
 const SUMMARY_COLOR = '#8DB7E8';
 const SUMMARY_PROGRESS_COLOR = '#6A9AD6';
 
-export const getTaskGanttStyles = (theme: ITheme) => mergeStyleSets({
+export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
     root: {
         position: 'relative',
         width: '100%',
         height: '100%',
         overflow: 'hidden',
     },
-    chart: {
+    chart: [{
         width: '100%',
         height: '100%',
         '--dhx-gantt-font-family': theme.fonts.medium.fontFamily,
@@ -94,5 +94,5 @@ export const getTaskGanttStyles = (theme: ITheme) => mergeStyleSets({
         [`.${GANTT_ROW_INACTIVE_CLASS}`]: {
             opacity: 0.5,
         },
-    },
+    }, ...moduleStyles],
 });
