@@ -1,11 +1,10 @@
-import { Fragment, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import "gantt-trial/codebase/dhtmlxgantt.css";
 import { useTheme } from "@fluentui/react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { useControlStateStore, useDatasetControlPart } from "@controls/dataset-control/components/adapters/root";
-import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
-import { TaskRuntimeContext } from "../../dataset-control/context";
+import { useTaskRuntime } from "../../dataset-control/context";
 import { GanttRuntime } from "./runtime/GanttRuntime";
 import { GanttContext } from "./context";
 import type { IGanttLabels } from "./labels";
@@ -24,14 +23,10 @@ export interface ITaskGanttProps {
 
 /** The tasks of a `TaskDatasetControl` on a timeline, row for row with the `TaskGrid` beside it. */
 export const TaskGanttRoot = (props: ITaskGanttProps) => {
-    const taskRuntime = useContext(TaskRuntimeContext);
-    if (!taskRuntime) {
-        throw new Error('TaskGantt must be rendered inside a TaskDatasetControl.');
-    }
-    const datasetControl = useRequiredDatasetControlRuntime();
+    const taskRuntime = useTaskRuntime();
     const state = useControlStateStore(props.stateKey);
     const propsRef = useLatest(props);
-    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ datasetControl, taskRuntime, state, onGetProps: () => propsRef.current }));
+    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, onGetProps: () => propsRef.current }));
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const [error, setError] = useState<unknown>();

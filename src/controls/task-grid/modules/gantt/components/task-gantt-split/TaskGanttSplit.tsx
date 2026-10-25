@@ -1,7 +1,9 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root";
+import { useTaskRuntime } from "../../../../dataset-control/context";
+import { TaskGanttSplitSync } from "./TaskGanttSplitSync";
 import { getTaskGanttSplitStyles } from "./styles";
 
 const GANTT_SIZE_STATE_KEY = 'ganttSize';
@@ -18,9 +20,12 @@ export interface ITaskGanttSplitProps {
 
 /** The grid and the Gantt side by side, resizable between them. */
 export const TaskGanttSplit = (props: ITaskGanttSplitProps) => {
+    const taskRuntime = useTaskRuntime();
     const state = useControlStateStore(props.stateKey);
     const theme = useTheme();
     const styles = useMemo(() => getTaskGanttSplitStyles(theme), [theme]);
+    const splitSync = useMemo(() => new TaskGanttSplitSync(taskRuntime), []);
+    useEffect(() => () => splitSync.destroy(), []);
     const ganttSize = state.get<number>(GANTT_SIZE_STATE_KEY) ?? props.defaultGanttSize ?? DEFAULT_GANTT_SIZE;
 
     return <PanelGroup direction="horizontal" className={styles.root} onLayout={sizes => state.set(GANTT_SIZE_STATE_KEY, sizes[1])}>

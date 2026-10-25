@@ -4,9 +4,10 @@ import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, ILocalizationService, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { IGrid } from "@controls/grid";
-import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { ITaskGridServiceMap } from "../../../services";
 import type { ITaskRuntime } from "../../../runtime";
+import type { IDatasetControl } from "@controls/dataset-control/runtime";
+import type { ITaskViewData } from "../../../provider";
 import { GANTT_LABELS, IGanttLabels } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
@@ -18,10 +19,8 @@ import { GanttZooming } from "../zooming/GanttZooming";
 import { GanttDragging } from "../dragging/GanttDragging";
 import { GanttTasks } from "../tasks/GanttTasks";
 import type { ITaskGanttProps } from "../TaskGantt";
-import { GanttScrollSync } from "../sync/GanttScrollSync";
 
 export interface IGanttRuntimeParameters {
-    datasetControl: IDatasetControlRuntime;
     taskRuntime: ITaskRuntime;
     state: IStateStore;
     onGetProps: () => ITaskGanttProps;
@@ -33,7 +32,6 @@ export class GanttRuntime implements IGantt {
     public readonly modules = new ServiceLocator<IGanttModuleMap>();
     public readonly surfaces = new GanttSurfaces();
     public readonly theme = new GanttTheme();
-    private _datasetControl: IDatasetControlRuntime;
     private _taskRuntime: ITaskRuntime;
     private _onGetProps: () => ITaskGanttProps;
     private _loadedModules: { module: IGanttModule; instance: unknown }[] = [];
@@ -45,7 +43,6 @@ export class GanttRuntime implements IGantt {
     private _isDestroyed = false;
 
     constructor(parameters: IGanttRuntimeParameters) {
-        this._datasetControl = parameters.datasetControl;
         this._taskRuntime = parameters.taskRuntime;
         this._onGetProps = parameters.onGetProps;
         const labels = new LocalizationService<IGanttLabels>({ ...GANTT_LABELS, ...parameters.onGetProps().labels });
@@ -145,9 +142,12 @@ export class GanttRuntime implements IGantt {
         this.services.register('grid', () => grid);
         this.services.register('tasks', () => tasks);
         tasks.parse();
-        this._destroyables.push(new GanttScrollSync(gantt, gridApi, grid.services.get('viewport')));
         this.events.dispatchEvent('onChartReady', gantt);
         this._datasetControl.parts.find('ribbon')?.reload();
+    }
+
+    private get _datasetControl(): IDatasetControl<ITaskViewData> {
+        return this._taskRuntime.services.get('datasetControl');
     }
 
     private _onTasksParsed = (isFirstLoad: boolean): void => {

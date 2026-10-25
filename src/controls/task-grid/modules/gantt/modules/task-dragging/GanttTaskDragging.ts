@@ -29,7 +29,6 @@ interface IGanttDragState {
 
 interface IGanttTaskDnd {
     drag: IGanttDragState | null;
-    dragMultiple?: { [taskId: string]: IGanttDragState };
 }
 
 export class GanttTaskDragging implements IGanttTaskDragging {
@@ -130,22 +129,19 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         if (!taskDnd?.drag || !offset) {
             return;
         }
-        const shift = (drag: IGanttDragState) => {
-            if (drag.start_x !== undefined) {
-                drag.start_x += offset;
-            }
-            if (drag.pos) {
-                drag.pos.x += offset;
-            }
-            if (drag.obj_s_x !== undefined) {
-                drag.obj_s_x += offset;
-            }
-            if (drag.obj_e_x !== undefined) {
-                drag.obj_e_x += offset;
-            }
-        };
-        shift(taskDnd.drag);
-        Object.values(taskDnd.dragMultiple ?? {}).forEach(shift);
+        const drag = taskDnd.drag;
+        if (drag.start_x !== undefined) {
+            drag.start_x += offset;
+        }
+        if (drag.pos) {
+            drag.pos.x += offset;
+        }
+        if (drag.obj_s_x !== undefined) {
+            drag.obj_s_x += offset;
+        }
+        if (drag.obj_e_x !== undefined) {
+            drag.obj_e_x += offset;
+        }
     }
 }
 
