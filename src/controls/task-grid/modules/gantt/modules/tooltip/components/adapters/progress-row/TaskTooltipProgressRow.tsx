@@ -7,12 +7,12 @@ export interface ITaskTooltipProgressRowProps {
 
 /** The task's `percentComplete` as a bar; nothing when it is not mapped or empty. */
 export const TaskTooltipProgressRow = (props: ITaskTooltipProgressRowProps) => {
-    const { gantt, record } = useTaskTooltip();
+    const { gantt, record, color } = useTaskTooltip();
     const columnName = gantt.getTaskRuntime().getFieldMapping().percentComplete;
     const value = columnName ? record.getValue(columnName) : null;
     if (!columnName || value == null || value === '') {
         return null;
     }
     const percent = Number(value);
-    return <TaskTooltipUiProgress percent={percent} text={`${Math.round(percent)}%`} components={props.components} />;
+    return <TaskTooltipUiProgress percent={percent} text={`${Math.round(percent)}%`} color={color} components={props.components} />;
 };

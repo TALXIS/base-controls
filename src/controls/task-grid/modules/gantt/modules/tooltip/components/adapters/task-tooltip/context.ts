@@ -12,6 +12,8 @@ export interface ITaskTooltipContext {
     task: Task;
     /** Where the pointer is. */
     target: IPoint;
+    /** The colour the task's bar is drawn in. */
+    color?: string;
 }
 
 export const TaskTooltipContext = createContext<ITaskTooltipContext | undefined>(undefined);

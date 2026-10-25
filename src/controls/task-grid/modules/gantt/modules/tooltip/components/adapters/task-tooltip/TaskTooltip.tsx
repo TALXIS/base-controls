@@ -23,11 +23,12 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     const [hovered, setHovered] = useState<IHoveredTask>();
     const draggedTaskIdRef = useRef<string>();
 
-    useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDragStarted', taskId => draggedTaskIdRef.current = taskId);
+    useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDragStarted', (taskId: string) => draggedTaskIdRef.current = taskId);
     useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDragEnded', () => {
         draggedTaskIdRef.current = undefined;
         setHovered(undefined);
     });
+    useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDraggingDisabledChanged', (isDisabled: boolean) => isDisabled && setHovered(undefined));
 
     useEffect(() => {
         if (!chart || !dragging) {
@@ -59,8 +60,12 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     if (!chart || !hovered || !record) {
         return null;
     }
-    const context = { gantt, record, task: chart.getTask(hovered.taskId), target: hovered.target };
+    const context = { gantt, record, task: chart.getTask(hovered.taskId), target: hovered.target, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
     return <TaskTooltipContext.Provider value={context}>{props.children}</TaskTooltipContext.Provider>;
+};
+
+const getBarColor = (bar: HTMLElement | null): string | undefined => {
+    return (bar && getComputedStyle(bar).getPropertyValue('--dhx-gantt-task-background').trim()) || undefined;
 };
 
 const getBarTaskId = (event: MouseEvent, taskAttribute: string): string | undefined => {

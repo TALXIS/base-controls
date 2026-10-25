@@ -8,6 +8,8 @@ export interface ITaskTooltipUiProgressProps {
     percent: number;
     /** Such as `40%`. */
     text: string;
+    /** The fill's colour; the theme's without it. */
+    color?: string;
     components?: Partial<ITaskTooltipUiProgressComponents>;
 }
 
@@ -23,7 +25,7 @@ export const TaskTooltipUiProgress = (props: ITaskTooltipUiProgressProps) => {
         children: <>
             {components.onRenderTrack({
                 className: styles.track,
-                children: components.onRenderFill({ className: styles.fill, style: { width: `${percent}%` } }),
+                children: components.onRenderFill({ className: styles.fill, style: { width: `${percent}%`, backgroundColor: props.color } }),
             })}
             {components.onRenderText({ className: styles.text, children: props.text })}
         </>,

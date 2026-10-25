@@ -15,6 +15,12 @@ export interface ITaskTooltipUiHeaderProps {
     components?: Partial<ITaskTooltipUiHeaderComponents>;
 }
 
+//text mixed toward the body text stays readable on the tint
+const getStatusColors = (color: string, bodyText: string): React.CSSProperties => ({
+    backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
+    color: `color-mix(in srgb, ${color} 70%, ${bodyText})`,
+});
+
 /** A title, with a status pill beside it. */
 export const TaskTooltipUiHeader = (props: ITaskTooltipUiHeaderProps) => {
     const components = { ...TaskTooltipUiHeaderComponents, ...props.components };
@@ -27,7 +33,7 @@ export const TaskTooltipUiHeader = (props: ITaskTooltipUiHeaderProps) => {
             {components.onRenderTitle({ className: styles.title, children: props.title })}
             {props.status && components.onRenderStatus({
                 className: styles.status,
-                style: props.status.color ? { backgroundColor: props.status.color, color: theme.palette.white } : undefined,
+                style: props.status.color ? getStatusColors(props.status.color, theme.semanticColors.bodyText) : undefined,
                 children: props.status.text,
             })}
         </>,

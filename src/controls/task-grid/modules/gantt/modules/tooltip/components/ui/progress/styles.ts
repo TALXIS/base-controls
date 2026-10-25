@@ -1,22 +1,22 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { FontWeights, ITheme, mergeStyleSets } from "@fluentui/react";
 
 export const getTaskTooltipUiProgressStyles = (theme: ITheme) => mergeStyleSets({
     progress: {
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
-        marginBottom: 8,
+        gap: 10,
+        marginBottom: 12,
     },
     track: {
         flexGrow: 1,
-        height: 4,
-        borderRadius: 2,
+        height: 6,
+        borderRadius: 3,
         overflow: 'hidden',
         backgroundColor: theme.palette.neutralLighter,
     },
     fill: {
         height: '100%',
-        borderRadius: 2,
+        borderRadius: 3,
         backgroundColor: theme.palette.themePrimary,
     },
     text: {
@@ -24,6 +24,7 @@ export const getTaskTooltipUiProgressStyles = (theme: ITheme) => mergeStyleSets(
         flexShrink: 0,
         minWidth: 32,
         textAlign: 'right',
-        color: theme.palette.neutralSecondary,
+        fontWeight: FontWeights.semibold,
+        color: theme.semanticColors.bodyText,
     },
 });

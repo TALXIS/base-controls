@@ -4,7 +4,7 @@ export const getTaskTooltipUiFieldRowsStyles = () => mergeStyleSets({
     fieldRows: {
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
-        marginBottom: 8,
+        gap: 4,
+        marginBottom: 12,
     },
 });

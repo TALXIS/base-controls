@@ -1,10 +1,17 @@
-import { mergeStyleSets } from "@fluentui/react";
+import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskTooltipUiCalloutStyles = () => mergeStyleSets({
+export const getTaskTooltipUiCalloutStyles = (theme: ITheme) => mergeStyleSets({
+    callout: {
+        borderRadius: theme.effects.roundedCorner6,
+        boxShadow: theme.effects.elevation16,
+    },
+    calloutMain: {
+        borderRadius: theme.effects.roundedCorner6,
+    },
     container: {
-        padding: '12px 16px',
-        minWidth: 240,
-        maxWidth: 320,
+        width: 280,
+        boxSizing: 'border-box',
+        padding: '14px 16px 12px',
         pointerEvents: 'none',
     },
 });

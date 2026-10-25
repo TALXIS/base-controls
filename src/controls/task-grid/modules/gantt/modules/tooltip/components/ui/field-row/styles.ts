@@ -6,6 +6,7 @@ export const getTaskTooltipUiFieldRowStyles = (theme: ITheme) => mergeStyleSets(
         alignItems: 'center',
         gap: 8,
         fontSize: theme.fonts.small.fontSize,
+        lineHeight: '20px',
     },
     icon: {
         color: theme.palette.neutralSecondary,
@@ -13,12 +14,16 @@ export const getTaskTooltipUiFieldRowStyles = (theme: ITheme) => mergeStyleSets(
         textAlign: 'center',
     },
     label: {
-        flexGrow: 1,
+        width: 96,
+        flexShrink: 0,
         color: theme.palette.neutralSecondary,
     },
     value: {
-        textAlign: 'right',
+        flexGrow: 1,
+        minWidth: 0,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
         color: theme.semanticColors.bodyText,
-        fontWeight: 600,
     },
 });

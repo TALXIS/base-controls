@@ -4,6 +4,7 @@ import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import { GANTT_LINKS_LABELS, IGanttLinksLabels } from "./labels";
+import { getGanttLinksStyles } from "./styles";
 
 export interface IGanttLinksParameters {
     labels?: Partial<IGanttLinksLabels>;
@@ -39,7 +40,10 @@ export class GanttLinks implements IGanttLinks {
             return;
         }
         const dependencies = this._dependencies;
-        this._unregisters.push(gantt.registerChartConfig(this._configureChart));
+        this._unregisters.push(
+            gantt.registerChartConfig(this._configureChart),
+            gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getGanttLinksStyles(theme))),
+        );
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
         dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);

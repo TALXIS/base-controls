@@ -5,6 +5,8 @@ import { GANTT_DRAGGING_DISABLED_CLASS, GANTT_TASK_LINE_CLASS } from "../chart/c
 export interface IGanttDraggingEvents {
     onDragStarted: (taskId: string) => void;
     onDragEnded: () => void;
+    /** Another gesture took the pointer, or gave it back. */
+    onDraggingDisabledChanged: (isDisabled: boolean) => void;
 }
 
 /** Who owns the pointer on the chart, and when a bar is being dragged. */
@@ -29,7 +31,11 @@ export class GanttDragging implements IGanttDragging {
     }
 
     public setDraggingDisabled(isDisabled: boolean): void {
+        if (isDisabled === this.isDraggingDisabled()) {
+            return;
+        }
         this._gantt.$root?.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, isDisabled);
+        this.events.dispatchEvent('onDraggingDisabledChanged', isDisabled);
     }
 
     public isDraggingDisabled(): boolean {
