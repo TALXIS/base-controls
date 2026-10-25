@@ -49,7 +49,7 @@ const GridExample = () => {
         createGanttWeekendsModule(),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
-        createGanttSelectionBoxModule(),
+        createGanttSelectionModule(),
         createGanttTooltipModule({ statusColumnName: 'statuscode' }),
         createGanttLinksModule(),
     ], [])

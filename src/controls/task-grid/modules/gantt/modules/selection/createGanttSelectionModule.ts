@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttSelectionBox } from "./GanttSelectionBox";
+import { GanttSelection, IGanttSelectionParameters } from "./GanttSelection";
 
-export interface IGanttSelectionBoxModule extends IGanttModule<'selectionBox'> { }
+export interface IGanttSelectionModule extends IGanttModule<'selection'> { }
 
-export const createGanttSelectionBoxModule = (): IGanttSelectionBoxModule => ({
-    name: 'selectionBox',
-    onLoad: gantt => new GanttSelectionBox(gantt),
-    onDestroy: selectionBox => selectionBox.destroy(),
+export const createGanttSelectionModule = (parameters: IGanttSelectionParameters = {}): IGanttSelectionModule => ({
+    name: 'selection',
+    onLoad: gantt => new GanttSelection(gantt, parameters),
+    onDestroy: selection => selection.destroy(),
 });

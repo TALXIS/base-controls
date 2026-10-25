@@ -1,33 +1,129 @@
 import { createElement } from "react";
+import type { GanttStatic } from "gantt-trial";
+import type { ITaskDataProvider } from "../../../../provider";
+import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { SelectionBoxLayer } from "./components/adapters/selection-box-layer";
+import type { IGanttTasks } from "../../tasks/GanttTasks";
+import { GANTT_ROW_SELECTED_CLASS, GANTT_TASK_SELECTED_CLASS } from "./classNames";
+import { SelectionLayer } from "./components/adapters/selection-layer";
 
-/** The `selectionBox` module: Shift+drag selects the bars under a band. */
-export interface IGanttSelectionBox {
+export interface IGanttSelectionParameters {
+    /** Shift+drag selects the bars under a band. Defaults to `true`. */
+    enableSelectionBox?: boolean;
+}
+
+/** The `selection` module: selects tasks from the chart, through the provider's selection. */
+export interface IGanttSelection {
+    isSelected(taskId: string): boolean;
+    /** Selects exactly these tasks, or adds them to the selection. */
+    select(taskIds: string[], options?: { isAdditive?: boolean }): void;
+    isSelectionBoxEnabled(): boolean;
     /** Called as the Gantt goes. */
     destroy(): void;
 }
 
-export class GanttSelectionBox implements IGanttSelectionBox {
-    private _unregisterSurface: () => void;
+export class GanttSelection implements IGanttSelection {
+    private _gantt: IGantt;
+    private _provider: ITaskDataProvider;
+    private _isSelectionBoxEnabled: boolean;
+    private _rangeAnchorTaskId?: string;
+    private _unregisters: (() => void)[] = [];
 
-    constructor(gantt: IGantt) {
-        this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
+    constructor(gantt: IGantt, parameters: IGanttSelectionParameters) {
+        this._gantt = gantt;
+        this._provider = gantt.getTaskRuntime().getProvider();
+        this._isSelectionBoxEnabled = parameters.enableSelectionBox ?? true;
+        this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
+        this._unregisters.push(() => this._provider.removeEventListener('onRecordsSelected', this._onSelectionChanged));
+        gantt.services.whenAvailable('chart', this._onChartReady);
+        gantt.services.whenAvailable('tasks', this._onTasksReady);
+        this._unregisters.push(gantt.surfaces.registerSurface(this._onSurfaces));
+    }
+
+    public isSelected(taskId: string): boolean {
+        return this._provider.getSelectedRecordIds().includes(taskId);
+    }
+
+    public select(taskIds: string[], options?: { isAdditive?: boolean }): void {
+        this._provider.setSelectedRecordIds(options?.isAdditive ? [...new Set([...this._provider.getSelectedRecordIds(), ...taskIds])] : taskIds);
+    }
+
+    public isSelectionBoxEnabled(): boolean {
+        return this._isSelectionBoxEnabled;
     }
 
     public destroy(): void {
-        this._unregisterSurface();
+        this._unregisters.forEach(unregister => unregister());
     }
 
-    private _onSurfaces = (surfaces: IGanttSurface[]): void => {
-        surfaces.push({ key: 'selectionBox', onRender: () => createElement(SelectionBoxLayer) });
+    private _onChartReady = (chart: GanttStatic): void => {
+        const eventIds = [
+            chart.attachEvent('onTaskClick', this._onTaskClick),
+            chart.attachEvent('onTaskDblClick', this._onTaskDblClick),
+        ];
+        this._unregisters.push(() => eventIds.forEach(eventId => chart.detachEvent(eventId)));
     };
+
+    private _onTasksReady = (tasks: IGanttTasks): void => {
+        this._unregisters.push(
+            tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), GANTT_ROW_SELECTED_CLASS)),
+            tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), GANTT_TASK_SELECTED_CLASS)),
+        );
+    };
+
+    private _onSurfaces = (surfaces: IGanttSurface[]): void => {
+        surfaces.push({ key: 'selection', onRender: () => createElement(SelectionLayer) });
+    };
+
+    private _onSelectionChanged = (): void => {
+        this._gantt.render();
+    };
+
+    private _addClassIfSelected(classNames: string[], taskId: string, className: string): void {
+        if (this.isSelected(taskId)) {
+            classNames.push(className);
+        }
+    }
+
+    private _onTaskClick = (id: string | number, event?: MouseEvent): boolean => {
+        const taskId = String(id);
+        const isToggle = !!event?.ctrlKey || !!event?.metaKey;
+        if (event?.shiftKey) {
+            this._selectRange(taskId, isToggle);
+            return true;
+        }
+        this._rangeAnchorTaskId = taskId;
+        if (isToggle) {
+            this._provider.toggleSelectedRecordId(taskId);
+        }
+        else {
+            this.select([taskId]);
+        }
+        return true;
+    };
+
+    private _onTaskDblClick = (id: string | number): boolean => {
+        const record = this._gantt.services.find('tasks')?.getRecord(String(id));
+        if (record) {
+            runQuietly(() => this._gantt.getTaskRuntime().tasks.open(record.getNamedReference()));
+        }
+        return false;
+    };
+
+    private _selectRange(taskId: string, isAdditive: boolean): void {
+        const taskIds = this._gantt.services.find('tasks')?.getTaskIds() ?? [];
+        const from = taskIds.indexOf(this._rangeAnchorTaskId ?? taskId);
+        const to = taskIds.indexOf(taskId);
+        if (from >= 0 && to >= 0) {
+            this.select(taskIds.slice(Math.min(from, to), Math.max(from, to) + 1), { isAdditive });
+        }
+    }
 }
 
 declare module "../../interfaces" {
     interface IGanttModuleMap {
-        /** Selecting bars under a band. */
-        selectionBox: IGanttSelectionBox;
+        /** Selecting tasks from the chart. */
+        selection: IGanttSelection;
     }
 }

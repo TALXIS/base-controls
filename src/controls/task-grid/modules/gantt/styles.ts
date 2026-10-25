@@ -2,7 +2,6 @@ import { ITheme, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_ROW_INACTIVE_CLASS,
-    GANTT_ROW_SELECTED_CLASS,
     GANTT_TASK_CELL_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
     GANTT_TASK_LINE_CLASS,
@@ -91,9 +90,6 @@ export const getTaskGanttStyles = (theme: ITheme) => mergeStyleSets({
         },
         [`.gantt_scale_cell.${GANTT_WEEKEND_CLASS}`]: {
             backgroundColor: theme.semanticColors.errorBackground,
-        },
-        [`.${GANTT_ROW_SELECTED_CLASS}`]: {
-            backgroundColor: theme.semanticColors.listItemBackgroundChecked,
         },
         [`.${GANTT_ROW_INACTIVE_CLASS}`]: {
             opacity: 0.5,

@@ -17,7 +17,6 @@ import { GanttZooming } from "../zooming/GanttZooming";
 import { GanttDragging } from "../dragging/GanttDragging";
 import { GanttTasks } from "../tasks/GanttTasks";
 import type { ITaskGanttProps } from "../TaskGantt";
-import { GanttSelection } from "../sync/GanttSelection";
 import { GanttScrollSync } from "../sync/GanttScrollSync";
 
 export interface IGanttRuntimeParameters {
@@ -131,9 +130,8 @@ export class GanttRuntime implements IGantt {
         const dragging = new GanttDragging(gantt);
         const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, dates, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ gantt, gridApi, runtime: this, dates, onParsed: this._onTasksParsed });
-        const selection = new GanttSelection({ gantt, taskRuntime: this._taskRuntime, tasks, onSelectionChanged: () => gantt.render() });
         this._zooming = zooming;
-        this._destroyables.push(timeline, tasks, selection);
+        this._destroyables.push(timeline, tasks);
         this._chartConfigHooks.apply(gantt);
         gantt.init(container);
 
@@ -143,7 +141,6 @@ export class GanttRuntime implements IGantt {
         this.services.register('zooming', () => zooming);
         this.services.register('grid', () => grid);
         this.services.register('tasks', () => tasks);
-        this.services.register('selection', () => selection);
         tasks.parse();
         this._destroyables.push(new GanttScrollSync(gantt, gridApi, grid.services.get('viewport')));
         this.events.dispatchEvent('onChartReady', gantt);

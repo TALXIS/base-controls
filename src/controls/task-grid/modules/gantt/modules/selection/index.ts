@@ -1,2 +1,2 @@
-export * from './createGanttSelectionBoxModule';
-export type { IGanttSelectionBox } from './GanttSelectionBox';
+export * from './createGanttSelectionModule';
+export type { IGanttSelection, IGanttSelectionParameters } from './GanttSelection';

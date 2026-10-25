@@ -10,6 +10,5 @@ export type { IGanttZooming, IGanttZoomingEvents } from './zooming/GanttZooming'
 export type { IGanttTimeline } from './timeline/GanttTimeline';
 export type { IGanttDragging, IGanttDraggingEvents } from './dragging/GanttDragging';
 export type { IGanttTasks, IGanttTaskParameters, GanttTaskHook, IGanttTaskClassParameters, GanttTaskClassHook } from './tasks/GanttTasks';
-export type { IGanttSelection } from './sync/GanttSelection';
 export { GANTT_TASK_ID_ATTRIBUTE } from './chart/classNames';
 export * from './modules';

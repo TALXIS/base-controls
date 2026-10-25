@@ -9,7 +9,6 @@ import type { IGanttZooming } from "./zooming/GanttZooming";
 import type { IGanttTimeline } from "./timeline/GanttTimeline";
 import type { IGanttDragging } from "./dragging/GanttDragging";
 import type { IGanttTasks } from "./tasks/GanttTasks";
-import type { IGanttSelection } from "./sync/GanttSelection";
 import type { IGanttSurfaces } from "./surfaces";
 import type { ITaskGanttProps } from "./TaskGantt";
 
@@ -45,13 +44,12 @@ export interface IGanttServiceMap extends IGanttModuleServiceMap {
     grid: IGrid<ITaskGridServiceMap>;
     /** The chart's tasks, there once the grid is drawn. */
     tasks: IGanttTasks;
-    selection: IGanttSelection;
 }
 
 export type IGanttServiceLocator = IServiceLocator<IGanttServiceMap>;
 
 /** The services there only once the chart, or the module adding them, is. */
-export type IGanttDeferredService = keyof IGanttModuleServiceMap | 'chart' | 'zooming' | 'timeline' | 'dragging' | 'grid' | 'tasks' | 'selection';
+export type IGanttDeferredService = keyof IGanttModuleServiceMap | 'chart' | 'zooming' | 'timeline' | 'dragging' | 'grid' | 'tasks';
 
 export interface IGanttEvents {
     /** The chart is drawn, and its services are there. */

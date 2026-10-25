@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Selecto, { OnDragEnd, OnDragStart, OnScroll, OnSelect } from "selecto";
 import { mergeStyles } from "@fluentui/react";
-import { useGanttService } from "../../../../../context";
+import { useGanttModule, useGanttService } from "../../../../../context";
 import { GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS } from "../../../../../chart/classNames";
 
 const EDGE_SCROLL_THRESHOLD = 50;
@@ -14,7 +14,7 @@ const SELECT_CURSOR_CLASS = mergeStyles({ selectors: { '&&, && *': { cursor: 'cr
 export const SelectionBoxLayer = () => {
     const chart = useGanttService('chart');
     const dragging = useGanttService('dragging');
-    const selection = useGanttService('selection');
+    const selection = useGanttModule('selection');
 
     useEffect(() => {
         if (!chart || !dragging) {
@@ -69,7 +69,7 @@ export const SelectionBoxLayer = () => {
             setTimeout(() => isDeselectionBlocked = false);
         });
         selecto.on('dragEnd', (event: OnDragEnd<Selecto>) => {
-            selection?.select([...selectedTaskIds]);
+            selection.select([...selectedTaskIds]);
             selectedTaskIds.clear();
             setArmed(!!event.inputEvent?.shiftKey);
         });

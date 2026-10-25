@@ -4423,8 +4423,8 @@ declare const createGanttWeekendsModule: (parameters?: { isVisibleByDefault?: bo
 declare const createGanttTaskDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
 /** Ctrl+drag over the timeline draws a new task. */
 declare const createGanttTaskCreateModule: () => IGanttModule;
-/** Shift+drag selects the bars under a band. */
-declare const createGanttSelectionBoxModule: () => IGanttModule;
+/** Selects tasks from the chart; Shift+drag selects the bars under a band. */
+declare const createGanttSelectionModule: (parameters?: { enableSelectionBox?: boolean }) => IGanttModule;
 type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | null }>;
 
 /** Finds the hovered or dragged bar; its parts go inside it. */

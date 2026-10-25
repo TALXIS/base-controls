@@ -1,5 +1,4 @@
 export const GANTT_DRAGGING_DISABLED_CLASS = 'gantt_dragging_disabled';
-export const GANTT_ROW_SELECTED_CLASS = 'gantt_row_selected';
 export const GANTT_ROW_INACTIVE_CLASS = 'gantt_row_inactive';
 export const GANTT_TASK_LINE_CLASS = 'gantt_task_line';
 export const GANTT_TASK_SUMMARY_CLASS = 'gantt_task_summary';
