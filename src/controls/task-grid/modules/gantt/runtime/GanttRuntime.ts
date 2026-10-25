@@ -1,4 +1,4 @@
-import { Gantt, GanttStatic, Task } from "gantt-trial";
+import type { GanttStatic } from "gantt-trial";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, ILocalizationService, IStateStore, LocalizationService, ServiceLocator } from "@utils";
@@ -10,8 +10,7 @@ import type { ITaskRuntime } from "../../../runtime";
 import { GANTT_LABELS, IGanttLabels } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
-import { configureChart } from "../chart/configureChart";
-import { GANTT_ROW_INACTIVE_CLASS, GANTT_ROW_SELECTED_CLASS } from "../chart/classNames";
+import { createChart } from "../chart/createChart";
 import { GanttDates } from "../dates/GanttDates";
 import { GanttTimeline } from "../timeline/GanttTimeline";
 import { GanttZooming } from "../zooming/GanttZooming";
@@ -120,27 +119,24 @@ export class GanttRuntime implements IGantt {
         }
     }
 
-    //config before init; the parts after it, so their presence means the chart is drawn
+    //parts and module hooks configure the chart before init; services exist only after it
     private _draw(container: HTMLElement, grid: IGrid<ITaskGridServiceMap>, gridApi: GridApi<IRecord>): void {
-        const gantt = Gantt.getGanttInstance();
+        const gantt = createChart({
+            rowHeight: grid.services.get('settings').getDefaultRowHeight(),
+            scaleHeight: grid.services.get('viewport').getHeaderHeight(),
+        });
         this._gantt = gantt;
         const dates = this.services.get('dates');
-        configureChart(gantt, {
-            rowHeight: grid.services.get('settings').getDefaultRowHeight(),
-            scaleHeight: grid.services.get('viewport').getHeaderHeight() || gantt.config.scale_height,
-            onGetTaskClass: task => this.services.find('tasks')?.getTaskClass(task) ?? '',
-            onGetRowClass: this._getRowClass,
-        });
         const timeline = new GanttTimeline(gantt);
         const dragging = new GanttDragging(gantt);
         const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, dates, timeline, state: this.services.get('state') });
+        const tasks = new GanttTasks({ gantt, gridApi, runtime: this, dates, onParsed: this._onTasksParsed });
+        const selection = new GanttSelection({ gantt, taskRuntime: this._taskRuntime, tasks, onSelectionChanged: () => gantt.render() });
         this._zooming = zooming;
+        this._destroyables.push(timeline, tasks, selection);
         this._chartConfigHooks.apply(gantt);
         gantt.init(container);
 
-        const tasks = new GanttTasks({ gantt, gridApi, runtime: this, dates, onParsed: this._onTasksParsed });
-        const selection = new GanttSelection({ gantt, taskRuntime: this._taskRuntime, tasks, onSelectionChanged: () => gantt.render() });
-        this._destroyables.push(timeline, tasks, selection);
         this.services.register('chart', () => gantt);
         this.services.register('timeline', () => timeline);
         this.services.register('dragging', () => dragging);
@@ -177,18 +173,6 @@ export class GanttRuntime implements IGantt {
         observer.observe(taskArea);
         this._destroyables.push({ destroy: () => observer.disconnect() });
     }
-
-    private _getRowClass = (task: Task): string => {
-        const taskId = String(task.id);
-        const classNames: string[] = [];
-        if (!this._taskRuntime.getProvider().isRecordActive(taskId)) {
-            classNames.push(GANTT_ROW_INACTIVE_CLASS);
-        }
-        if (this.services.find('selection')?.isSelected(taskId)) {
-            classNames.push(GANTT_ROW_SELECTED_CLASS);
-        }
-        return classNames.join(' ');
-    };
 
     private _addCommands = (commands: IRibbonCommand[]): void => {
         const labels = this.getLabels();

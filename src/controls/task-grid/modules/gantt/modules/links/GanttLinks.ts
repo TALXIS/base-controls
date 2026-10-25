@@ -40,6 +40,7 @@ export class GanttLinks implements IGanttLinks {
         }
         const dependencies = this._dependencies;
         this._unregisters.push(gantt.registerChartConfig(this._configureChart));
+        gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
         dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
         this._unregisters.push(
@@ -59,6 +60,9 @@ export class GanttLinks implements IGanttLinks {
     private _configureChart = (chart: GanttStatic): void => {
         chart.config.show_links = true;
         chart.config.drag_links = this.isEditable();
+    };
+
+    private _onChartReady = (chart: GanttStatic): void => {
         chart.attachEvent('onBeforeLinkAdd', this._onBeforeLinkAdd);
         chart.attachEvent('onLinkDblClick', this._onLinkDblClick);
     };

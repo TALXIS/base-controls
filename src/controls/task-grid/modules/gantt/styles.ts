@@ -98,18 +98,5 @@ export const getTaskGanttStyles = (theme: ITheme) => mergeStyleSets({
         [`.${GANTT_ROW_INACTIVE_CLASS}`]: {
             opacity: 0.5,
         },
-        '.gantt_marker_area': {
-            zIndex: 3,
-        },
-        '.gantt_marker': {
-            width: 2,
-            marginLeft: -1,
-            opacity: 1,
-            pointerEvents: 'none',
-        },
-        //the markers module draws its own labels on the scale
-        '.gantt_marker .gantt_marker_content': {
-            display: 'none',
-        },
     },
 });

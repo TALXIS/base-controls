@@ -20,7 +20,7 @@ export const createChart = (sizing: IChartSizing): GanttStatic => {
     gantt.config.drag_resize = false;
     gantt.config.drag_progress = false;
     gantt.config.row_height = sizing.rowHeight;
-    gantt.config.scale_height = sizing.scaleHeight;
+    gantt.config.scale_height = sizing.scaleHeight || gantt.config.scale_height;
     gantt.config.layout = {
         css: 'gantt_container',
         rows: [

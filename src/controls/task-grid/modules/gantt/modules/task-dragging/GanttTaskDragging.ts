@@ -63,12 +63,12 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         chart.config.drag_move = this._isMoveEnabled;
         chart.config.drag_resize = this._isResizeEnabled;
         chart.config.round_dnd_dates = false;
-        chart.attachEvent('onBeforeTaskDrag', this._onBeforeTaskDrag);
-        chart.attachEvent('onTaskDrag', this._onTaskDrag);
-        chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
     };
 
     private _onChartReady = (chart: GanttStatic): void => {
+        chart.attachEvent('onBeforeTaskDrag', this._onBeforeTaskDrag);
+        chart.attachEvent('onTaskDrag', this._onTaskDrag);
+        chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
         //captured: the chart measures the bar in its own mousedown
         chart.$root.addEventListener('mousedown', this._onPointerDown, true);
         document.addEventListener('mouseup', this._onPointerUp);

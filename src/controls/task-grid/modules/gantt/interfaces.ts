@@ -61,7 +61,7 @@ export interface IGanttEvents {
     onDestroyed: () => void;
 }
 
-/** Changes the chart's config and plugins before it is drawn. */
+/** Sets the chart's config, templates and plugins before it is drawn. */
 export type GanttChartConfigHook = (chart: GanttStatic) => void;
 
 /** One mount of a `TaskGantt`: what its modules load on and its parts read. */
@@ -76,7 +76,7 @@ export interface IGantt {
     getTaskRuntime(): ITaskRuntime;
     getLabels(): ILocalizationService<IGanttLabels>;
     /**
-     * Registers a hook over the chart before it is drawn, such as to turn on a plugin.
+     * Registers a hook that sets the chart's config, templates and plugins before it is drawn.
      * @param priority Ascending: a higher number gets the later word.
      */
     registerChartConfig(hook: GanttChartConfigHook, priority?: number): () => void;
