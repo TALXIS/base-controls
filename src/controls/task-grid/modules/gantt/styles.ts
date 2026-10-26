@@ -79,9 +79,6 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         },
         [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_LOCKED_CLASS}`]: {
             filter: 'saturate(0.45)',
-            '&, *': {
-                cursor: 'not-allowed',
-            },
             '::after': {
                 content: '""',
                 position: 'absolute',
