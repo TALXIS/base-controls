@@ -1,1 +1,1 @@
-export * from './MarkerLayer';
+export * from './GanttMarkerLayer';

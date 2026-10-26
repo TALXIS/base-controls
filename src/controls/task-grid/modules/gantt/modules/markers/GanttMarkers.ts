@@ -1,13 +1,13 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { mergeStyles } from "@fluentui/react";
+import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { GANTT_MARKERS_LABELS, IGanttMarkersLabels } from "./labels";
-import { MarkerLayer } from "./components/adapters/marker-layer";
-import { getGanttMarkersStyles } from "./styles";
+import type { IGanttMarkerUiChipComponents, IGanttMarkerUiColumnComponents, IGanttMarkerUiLayerComponents, IGanttMarkerUiLineComponents, IGanttMarkerUiScaleComponents, IGanttMarkerUiTrackComponents } from "./components/ui";
+import { GanttMarkerLayer } from "./components/adapters/marker-layer";
 
 /** A date marked on the timeline with a line and a chip on the scale. */
 export interface IGanttMarker {
@@ -16,106 +16,140 @@ export interface IGanttMarker {
     date: Dayjs;
     /** The line's and the chip's colour; the theme's primary colour by default. */
     color?: string;
-    /** Draws a diamond on the scale rather than a chip. */
-    isMilestone?: boolean;
 }
 
 /** Where the markers of the consumer's own come from. */
 export interface IGanttMarkersStore {
-    /** Called on every mount, before the chart is drawn. */
+    /** Called on every mount before the chart is drawn, and again on `reload`. */
     onLoadMarkers(): Promise<IGanttMarker[]>;
 }
 
-export interface IGanttMarkersParameters {
+/** The replaceable pieces of every marker, by the part they belong to. */
+export interface IGanttMarkersComponents {
+    layer?: Partial<IGanttMarkerUiLayerComponents>;
+    column?: Partial<IGanttMarkerUiColumnComponents>;
+    track?: Partial<IGanttMarkerUiTrackComponents>;
+    scale?: Partial<IGanttMarkerUiScaleComponents>;
+    line?: Partial<IGanttMarkerUiLineComponents>;
+    chip?: Partial<IGanttMarkerUiChipComponents>;
+}
+
+/** Today, marked on the timeline. */
+export interface IGanttTodayMarkerParameters {
     /** Defaults to `true`. */
-    showToday?: boolean;
-    /** The `project` module's start and end; defaults to `true`. */
-    showProject?: boolean;
+    enableMarker?: boolean;
+    color?: string;
+}
+
+/** The `project` module's start and end, marked on the timeline. */
+export interface IGanttProjectMarkersParameters {
+    /** Defaults to `true`. */
+    enableMarkers?: boolean;
+    color?: string;
+}
+
+export interface IGanttMarkersParameters {
+    today?: IGanttTodayMarkerParameters;
+    project?: IGanttProjectMarkersParameters;
     onCreateStore?: (taskRuntime: ITaskRuntime) => IGanttMarkersStore;
+    components?: IGanttMarkersComponents;
     labels?: Partial<IGanttMarkersLabels>;
+}
+
+export interface IGanttMarkersEvents {
+    /** The markers changed, such as after `reload` or as today moved on. */
+    onMarkersChanged: () => void;
 }
 
 /** The `markers` module: today, the project's start and end, and the store's own markers. */
 export interface IGanttMarkers {
+    readonly events: IEventEmitter<IGanttMarkersEvents>;
     getMarkers(): IGanttMarker[];
+    /** Reads the store's markers again. */
+    reload(): Promise<void>;
+    getComponents(): IGanttMarkersComponents;
     /** Called as the Gantt goes. */
     destroy(): void;
 }
 
-const PROJECT_MARKER_COLOR = '#ffb900';
 
 export class GanttMarkers implements IGanttMarkers {
+    public readonly events = new EventEmitter<IGanttMarkersEvents>();
     private _gantt: IGantt;
     private _parameters: IGanttMarkersParameters;
     private _labels: ILocalizationService<IGanttMarkersLabels>;
+    private _store?: IGanttMarkersStore;
     private _storeMarkers: IGanttMarker[] = [];
-    private _unregisters: (() => void)[] = [];
+    private _midnightTimeout?: ReturnType<typeof setTimeout>;
+    private _unregisterSurface: () => void;
 
     constructor(gantt: IGantt, parameters: IGanttMarkersParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
         this._labels = new LocalizationService<IGanttMarkersLabels>({ ...GANTT_MARKERS_LABELS, ...parameters.labels });
-        this._unregisters.push(
-            gantt.registerChartConfig(chart => chart.plugins({ marker: true })),
-            gantt.surfaces.registerSurface(this._onSurfaces),
-            gantt.services.get('theme').registerStyles(result => result.styles.push(getGanttMarkersStyles())),
-        );
-        //the chart drops its markers on every parse
-        gantt.events.addEventListener('onTasksParsed', this._draw);
-        this._unregisters.push(() => gantt.events.removeEventListener('onTasksParsed', this._draw));
+        this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
+        this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
+        if (this._isTodayShown()) {
+            this._scheduleMidnight();
+        }
     }
 
     /** Loads the store's markers; the module awaits it before the chart is drawn. */
     public async load(): Promise<void> {
-        this._storeMarkers = await this._parameters.onCreateStore?.(this._gantt.getTaskRuntime()).onLoadMarkers() ?? [];
+        this._storeMarkers = await this._store?.onLoadMarkers() ?? [];
+    }
+
+    public async reload(): Promise<void> {
+        await this.load();
+        this.events.dispatchEvent('onMarkersChanged');
     }
 
     public getMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
-        if (this._parameters.showToday ?? true) {
-            markers.push({ id: 'today', text: this._labels.getLocalizedString('today'), date: dayjs() });
+        if (this._isTodayShown()) {
+            markers.push({ id: 'today', text: this._labels.getLocalizedString('today'), date: dayjs(), color: this._parameters.today?.color });
         }
-        const project = this._gantt.getTaskRuntime().services.get('datasetControl').modules.find('project');
-        if (this._parameters.showProject ?? true) {
+        if (this._parameters.project?.enableMarkers ?? true) {
+            const color = this._parameters.project?.color;
+            const project = this._gantt.getTaskRuntime().services.get('datasetControl').modules.find('project');
             const startDate = project?.getStartDate();
             const endDate = project?.getEndDate();
             if (startDate) {
-                markers.push({ id: 'projectStart', text: this._labels.getLocalizedString('projectStart'), date: startDate, color: PROJECT_MARKER_COLOR });
+                markers.push({ id: 'projectStart', text: this._labels.getLocalizedString('projectStart'), date: startDate, color });
             }
             if (endDate) {
-                markers.push({ id: 'projectEnd', text: this._labels.getLocalizedString('projectEnd'), date: endDate, color: PROJECT_MARKER_COLOR });
+                markers.push({ id: 'projectEnd', text: this._labels.getLocalizedString('projectEnd'), date: endDate, color });
             }
         }
         return [...markers, ...this._storeMarkers];
     }
 
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+    public getComponents(): IGanttMarkersComponents {
+        return this._parameters.components ?? {};
     }
 
-    private _draw = (): void => {
-        const chart = this._gantt.services.find('chart');
-        if (!chart) {
-            return;
-        }
-        for (const marker of this.getMarkers()) {
-            if (chart.getMarker(marker.id)) {
-                chart.deleteMarker(marker.id);
-            }
-            chart.addMarker({ id: marker.id, start_date: marker.date.toDate(), text: marker.text, css: getLineClassName(marker.color) });
-        }
-        chart.renderMarkers();
-    };
+    public destroy(): void {
+        clearTimeout(this._midnightTimeout);
+        this._unregisterSurface();
+        this.events.clearEventListeners();
+    }
+
+    private _isTodayShown(): boolean {
+        return this._parameters.today?.enableMarker ?? true;
+    }
+
+    private _scheduleMidnight(): void {
+        const untilMidnight = dayjs().add(1, 'day').startOf('day').diff(dayjs());
+        this._midnightTimeout = setTimeout(() => {
+            this.events.dispatchEvent('onMarkersChanged');
+            this._scheduleMidnight();
+        }, untilMidnight);
+    }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
-        surfaces.push({ key: 'markers', onRender: () => createElement(MarkerLayer) });
+        surfaces.push({ key: 'markers', onRender: () => createElement(GanttMarkerLayer) });
     };
 }
-
-//doubled to outweigh the chart's own `.gantt_marker` colour
-const getLineClassName = (color: string | undefined): string | undefined => {
-    return color ? mergeStyles({ selectors: { '&&': { backgroundColor: color } } }) : undefined;
-};
 
 declare module "../../interfaces" {
     interface IGanttModuleMap {

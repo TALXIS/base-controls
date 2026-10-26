@@ -21,7 +21,7 @@ import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastControll
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
-import { TaskGantt, createGanttMarkersModule, createMemoryGanttMarkersModule, createGanttWeekendsModule, createGanttTaskDraggingModule, createGanttTaskCreateModule, createGanttSelectionModule, createGanttTooltipModule, createGanttLinksModule, TaskTooltip } from '@talxis/base-controls/controls/task-grid/modules/gantt'
+import { TaskGantt, createGanttMarkersModule, createMemoryGanttMarkersModule, createGanttWeekendsModule, createGanttTaskDraggingModule, createGanttTaskCreateModule, createGanttSelectionModule, createGanttTooltipModule, createGanttLinksModule, TaskTooltip, useGanttMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { CHECKLIST_COLUMN, CHECKLIST_ITEMS, createChecklistItems } from '../task-grid/memoryChecklistData'
@@ -175,6 +175,7 @@ export const GRID_SANDBOX_SCOPE = {
     createGanttTooltipModule,
     createGanttLinksModule,
     TaskTooltip,
+    useGanttMarker,
     createDataverseDependenciesModule,
     createTalxisDependenciesModule,
     DEPENDENCIES,

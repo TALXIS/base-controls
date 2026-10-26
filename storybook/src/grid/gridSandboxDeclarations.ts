@@ -4388,18 +4388,31 @@ interface IGanttMarker {
     id: string;
     text: string;
     date: import('dayjs').Dayjs;
+    /** The line's and the chip's colour; the theme's primary colour by default. */
     color?: string;
-    /** Draws a diamond on the scale rather than a chip. */
-    isMilestone?: boolean;
 }
 
+type GanttMarkerSlot = (props: any) => JSX.Element | null;
+
 interface IGanttMarkersOptions {
-    /** Defaults to \`true\`. */
-    showToday?: boolean;
-    /** The project module's start and end; defaults to \`true\`. */
-    showProject?: boolean;
+    /** Today: enableMarker defaults to \`true\`, color to the theme's primary colour. */
+    today?: { enableMarker?: boolean; color?: string };
+    /** The project module's start and end: enableMarkers defaults to \`true\`, color to the theme's primary colour. */
+    project?: { enableMarkers?: boolean; color?: string };
+    /** The replaceable pieces of the markers: layer, column, track, scale and line each have onRenderContainer; chip has onRenderTooltip and onRenderChip. */
+    components?: {
+        layer?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
+        column?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
+        track?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
+        scale?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
+        line?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
+        chip?: Partial<{ onRenderTooltip: GanttMarkerSlot; onRenderChip: GanttMarkerSlot }>;
+    };
     labels?: Partial<{ today: string; projectStart: string; projectEnd: string }>;
 }
+
+/** The marker a slot is drawn for, inside a Gantt marker. */
+declare const useGanttMarker: () => { marker: IGanttMarker; left: number };
 
 /** The tasks on a timeline, row for row with the TaskGrid beside it; needs startDate and endDate in the field mapping. */
 declare const TaskGantt: ((props: {

@@ -20,6 +20,66 @@ const VIEWS: IDatasetControlView<ITaskViewData>[] = [
     taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description', 'assignedto'] }),
 ]
 
+const betaCutoffStyles = mergeStyleSets({
+    chip: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 3,
+        padding: '2px 4px 2px 3px',
+        borderRadius: 999,
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: FontWeights.semibold,
+        whiteSpace: 'nowrap',
+        background: 'linear-gradient(135deg, #a07bd6, #5c2e91)',
+        boxShadow: '0 2px 8px rgba(92, 46, 145, 0.35)',
+    },
+    icon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        fontSize: 10,
+        background: 'rgba(255, 255, 255, 0.22)',
+    },
+    countdown: {
+        padding: '0 7px',
+        borderRadius: 999,
+        fontSize: 11,
+        lineHeight: '16px',
+        color: '#5c2e91',
+        background: 'rgba(255, 255, 255, 0.92)',
+    },
+    line: {
+        backgroundImage: 'repeating-linear-gradient(to bottom, #8764b8 0 6px, transparent 6px 11px)',
+    },
+})
+
+const BetaCutoffChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    const { marker } = useGanttMarker()
+    if (marker.id !== 'betaCutoff') {
+        return <div {...props} />
+    }
+    const days = marker.date.startOf('day').diff(dayjs().startOf('day'), 'day')
+    const countdown = days === 0 ? 'today' : days > 0 ? 'in ' + days + 'd' : Math.abs(days) + 'd ago'
+    return <div className={betaCutoffStyles.chip}>
+        <span className={betaCutoffStyles.icon}><Icon iconName='Rocket' /></span>
+        {marker.text}
+        <span className={betaCutoffStyles.countdown}>{countdown}</span>
+    </div>
+}
+
+const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    const { marker } = useGanttMarker()
+    if (marker.id !== 'betaCutoff') {
+        return <div {...props} />
+    }
+    return <div {...props} className={props.className + ' ' + betaCutoffStyles.line} style={{ ...props.style, backgroundColor: 'transparent' }} />
+}
+
 const GridExample = () => {
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
@@ -43,7 +103,14 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [])
     const ganttModules = React.useMemo(() => [
-        createMemoryGanttMarkersModule({ markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8', isMilestone: true }] }),
+        createMemoryGanttMarkersModule({
+            markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8' }],
+            project: { color: '#ca5010' },
+            components: {
+                chip: { onRenderChip: props => <BetaCutoffChip {...props} /> },
+                line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
+            },
+        }),
         createGanttWeekendsModule(),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
