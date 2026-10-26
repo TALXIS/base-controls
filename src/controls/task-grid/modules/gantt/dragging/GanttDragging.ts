@@ -24,6 +24,8 @@ export class GanttDragging implements IGanttDragging {
 
     constructor(gantt: GanttStatic) {
         this._gantt = gantt;
+        //before the config, which the plugin resets as it starts
+        gantt.plugins({ drag_timeline: true });
         gantt.config.drag_timeline = { ignore: `.${GANTT_DRAGGING_DISABLED_CLASS}, .${GANTT_TASK_LINE_CLASS}` };
         gantt.attachEvent('onBeforeTaskDrag', () => !this.isDraggingDisabled());
         gantt.attachEvent('onTaskDrag', this._onTaskDrag);
