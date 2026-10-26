@@ -25,6 +25,10 @@ const LINK_TYPES: Record<TaskDependencyType, string> = {
     startToFinish: '3',
 };
 
+const isSameLink = (left: Link | undefined, right: Link | undefined): boolean => {
+    return !!left && !!right && String(left.source) === String(right.source) && String(left.target) === String(right.target) && String(left.type) === String(right.type);
+};
+
 export class GanttLinks implements IGanttLinks {
     private _gantt: IGantt;
     private _dependencies?: IDependencies;
@@ -77,18 +81,22 @@ export class GanttLinks implements IGanttLinks {
         if (!chart || !this._dependencies) {
             return;
         }
+        const wanted = new Map<string, Link>();
+        for (const dependency of this._dependencies.getDependencies()) {
+            if (chart.isTaskExists(dependency.predecessorTaskId) && chart.isTaskExists(dependency.successorTaskId)) {
+                wanted.set(dependency.id, { id: dependency.id, source: dependency.predecessorTaskId, target: dependency.successorTaskId, type: LINK_TYPES[dependency.type] });
+            }
+        }
+        const current = new Map(chart.getLinks().map(link => [String(link.id), link]));
+        const stale = [...current.values()].filter(link => !isSameLink(link, wanted.get(String(link.id))));
+        const missing = [...wanted.values()].filter(link => !isSameLink(current.get(String(link.id)), link));
         this._isSyncing = true;
         try {
-            chart.batchUpdate(() => {
-                for (const link of chart.getLinks()) {
-                    chart.deleteLink(link.id);
-                }
-                for (const dependency of this._dependencies!.getDependencies()) {
-                    if (chart.isTaskExists(dependency.predecessorTaskId) && chart.isTaskExists(dependency.successorTaskId)) {
-                        chart.addLink({ id: dependency.id, source: dependency.predecessorTaskId, target: dependency.successorTaskId, type: LINK_TYPES[dependency.type] });
-                    }
-                }
-            });
+            chart.batchUpdate(() => stale.forEach(link => chart.deleteLink(link.id)));
+            //one parse, as each added link makes the chart recheck every task
+            if (missing.length > 0) {
+                chart.parse({ data: [], links: missing });
+            }
         }
         finally {
             this._isSyncing = false;

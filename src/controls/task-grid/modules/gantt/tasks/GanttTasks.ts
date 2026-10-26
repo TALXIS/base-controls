@@ -69,6 +69,7 @@ export class GanttTasks implements IGanttTasks {
     private _dates: IGanttDates;
     private _onParsed: (isFirstLoad: boolean) => void;
     private _taskIds: string[] = [];
+    private _taskIndexes = new Map<string, number>();
     private _isFirstLoad = true;
     private _scheduledFrame?: number;
     private _pendingUpdates = new Map<string, IRecord>();
@@ -89,6 +90,8 @@ export class GanttTasks implements IGanttTasks {
         this._gantt.templates.task_row_class = (_start: Date, _end: Date, task: Task) => this.getRowClass(task);
         //the grid beside it shows each task's name on the same row
         this._gantt.templates.task_text = () => '';
+        //the chart scans a task's siblings for its index, twice per render
+        this._gantt.getTaskIndex = (taskId: string | number) => this._taskIndexes.get(String(taskId)) ?? -1;
         this._gridApi.addEventListener('modelUpdated', this._scheduleParse);
         provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
@@ -145,11 +148,20 @@ export class GanttTasks implements IGanttTasks {
             return;
         }
         const tasks: Task[] = [];
+        const branchSizes = new Map<string | undefined, number>();
+        this._taskIndexes = new Map();
         for (let index = 0; index < this._gridApi.getDisplayedRowCount(); index++) {
             const node = this._gridApi.getDisplayedRowAtIndex(index);
-            if (node?.data) {
-                tasks.push(this._toTask(node.data, node));
+            if (!node?.data) {
+                continue;
             }
+            const task = this._toTask(node.data, node);
+            //the grid's tree, as the chart slows down with the size of a branch
+            const parentId = this._getDisplayedParentId(node);
+            const branchIndex = branchSizes.get(parentId) ?? 0;
+            branchSizes.set(parentId, branchIndex + 1);
+            this._taskIndexes.set(String(task.id), branchIndex);
+            tasks.push({ ...task, parent: parentId, open: true });
         }
         this._taskIds = tasks.map(task => String(task.id));
         this._gantt.batchUpdate(() => {
@@ -232,6 +244,12 @@ export class GanttTasks implements IGanttTasks {
         } as Task;
         this._taskHooks.apply(task, { record });
         return task;
+    }
+
+    //rows come parent first, so a displayed parent is already indexed
+    private _getDisplayedParentId(node: IRowNode<IRecord>): string | undefined {
+        const parentId = this._taskRuntime.isFlatList() ? undefined : node.parent?.data?.getRecordId();
+        return parentId !== undefined && this._taskIndexes.has(parentId) ? parentId : undefined;
     }
 
     //a parent spans its children, so it is drawn as a slim bar over them
