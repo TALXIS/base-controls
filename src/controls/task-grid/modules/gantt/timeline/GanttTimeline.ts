@@ -1,4 +1,4 @@
-import type { GanttStatic, Task } from "gantt-trial";
+import type { GanttStatic, Task } from "dhtmlx-gantt";
 import { IGanttScale, isDayScaleVisible, snapToLattice } from "../zooming/zoomScales";
 import { GANTT_WEEKEND_CLASS } from "../chart/classNames";
 import { isWeekend } from "../dates/isWeekend";

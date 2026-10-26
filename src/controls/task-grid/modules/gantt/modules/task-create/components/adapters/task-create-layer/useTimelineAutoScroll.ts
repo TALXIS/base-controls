@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 
 const EDGE_THRESHOLD = 50;
 const SCROLL_STEP = 10;

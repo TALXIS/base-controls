@@ -1,5 +1,5 @@
 import { useTheme } from "@fluentui/react";
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule } from "../../../../../context";
 import type { IGanttMarker } from "../../../GanttMarkers";
 import { GanttMarkerUiChip, GanttMarkerUiColumn, GanttMarkerUiLine, GanttMarkerUiScale, GanttMarkerUiTrack } from "../../ui";

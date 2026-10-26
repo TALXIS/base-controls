@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 
 /** The date a run of zoom steps holds still; re-reading it from pixels each step drifts. */
 export class GanttZoomAnchor {

@@ -1,5 +1,5 @@
 import { HookRegistry } from "@utils";
-import type { GanttStatic, Task } from "gantt-trial";
+import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { GridApi, IRowNode } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { ITaskDataProviderEvents } from "../../../provider";

@@ -1,4 +1,4 @@
-import type { GanttStatic, ZoomLevel } from "gantt-trial";
+import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 
 const NARROWEST_COLUMN_WIDTH = 60;
 const WIDEST_COLUMN_WIDTH = 120;

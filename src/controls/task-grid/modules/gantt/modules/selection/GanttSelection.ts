@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import type { ITheme } from "@fluentui/react";
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { ITaskDataProvider } from "../../../../provider";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";

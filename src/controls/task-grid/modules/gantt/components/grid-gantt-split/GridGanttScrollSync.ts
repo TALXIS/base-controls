@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { BodyScrollEvent, GridApi } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGridViewport } from "@controls/grid";

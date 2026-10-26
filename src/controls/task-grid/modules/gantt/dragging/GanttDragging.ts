@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { GANTT_DRAGGING_DISABLED_CLASS, GANTT_TASK_LINE_CLASS } from "../chart/classNames";
 

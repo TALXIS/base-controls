@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import { GANTT_DATA_AREA_CLASS, GANTT_TASK_BG_CLASS, GANTT_TASK_CELL_CLASS, GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS, GANTT_TASK_ROW_CLASS } from "../../chart/classNames";
 
 /** The row a drawn task goes above, relative to the chart's root. */

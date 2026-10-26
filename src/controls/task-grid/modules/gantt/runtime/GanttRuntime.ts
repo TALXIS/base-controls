@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, ILocalizationService, IStateStore, LocalizationService, ServiceLocator } from "@utils";
@@ -12,13 +12,13 @@ import { GANTT_LABELS, IGanttLabels } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
-import { createChart } from "../chart/createChart";
 import { GanttDates } from "../dates/GanttDates";
 import { GanttTimeline } from "../timeline/GanttTimeline";
 import { GanttZooming } from "../zooming/GanttZooming";
 import { GanttDragging } from "../dragging/GanttDragging";
 import { GanttTasks } from "../tasks/GanttTasks";
 import type { ITaskGanttProps } from "../TaskGantt";
+import type { IGanttLibrary } from "../modules/library";
 
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
@@ -67,6 +67,10 @@ export class GanttRuntime implements IGantt {
         return this.services.get('labels');
     }
 
+    public getLibrary(): IGanttLibrary {
+        return this.modules.get('library');
+    }
+
     public registerChartConfig(hook: GanttChartConfigHook, priority?: number): () => void {
         return this._chartConfigHooks.register(hook, priority);
     }
@@ -106,8 +110,14 @@ export class GanttRuntime implements IGantt {
     }
 
     private async _loadModules(): Promise<void> {
+        const modules = this._onGetProps().modules ?? [];
+        const library = modules.find(module => module.name === 'library');
+        if (!library) {
+            throw new Error('TaskGantt needs a library module: createGanttLibraryModule() or createGanttProLibraryModule(Gantt).');
+        }
         const names = new Set<string>();
-        for (const module of this._onGetProps().modules ?? []) {
+        //other modules read the library as they load
+        for (const module of [library, ...modules.filter(module => module !== library)]) {
             if (names.has(module.name)) {
                 throw new Error(`Gantt module "${module.name}" is registered twice.`);
             }
@@ -120,10 +130,7 @@ export class GanttRuntime implements IGantt {
 
     //parts and module hooks configure the chart before init; services exist only after it
     private _draw(container: HTMLElement, grid: IGrid<ITaskGridServiceMap>, gridApi: GridApi<IRecord>): void {
-        const gantt = createChart({
-            rowHeight: grid.services.get('settings').getDefaultRowHeight(),
-            scaleHeight: grid.services.get('viewport').getHeaderHeight(),
-        });
+        const gantt = this._createChart(grid);
         this._gantt = gantt;
         const dates = this.services.get('dates');
         const timeline = new GanttTimeline(gantt);
@@ -144,6 +151,34 @@ export class GanttRuntime implements IGantt {
         tasks.parse();
         this.events.dispatchEvent('onChartReady', gantt);
         this._datasetControl.parts.find('ribbon')?.reload();
+    }
+
+    //every feature starts off until a part or module turns it on
+    private _createChart(grid: IGrid<ITaskGridServiceMap>): GanttStatic {
+        const gantt = this.getLibrary().Gantt.getGanttInstance();
+        gantt.config.show_grid = false;
+        gantt.config.select_task = false;
+        gantt.config.details_on_dblclick = false;
+        gantt.config.show_unscheduled = true;
+        gantt.config.show_tasks_outside_timescale = true;
+        gantt.config.task_scroll_offset = 200;
+        //otherwise each parse, such as on every expand, scrolls to the first task
+        gantt.config.initial_scroll = false;
+        gantt.config.show_links = false;
+        gantt.config.drag_links = false;
+        gantt.config.drag_move = false;
+        gantt.config.drag_resize = false;
+        gantt.config.drag_progress = false;
+        gantt.config.row_height = grid.services.get('settings').getDefaultRowHeight();
+        gantt.config.scale_height = grid.services.get('viewport').getHeaderHeight() || gantt.config.scale_height;
+        gantt.config.layout = {
+            css: 'gantt_container',
+            rows: [
+                { cols: [{ view: 'timeline', scrollX: 'scrollHor', scrollY: 'scrollVer' }, { view: 'scrollbar', id: 'scrollVer' }] },
+                { view: 'scrollbar', id: 'scrollHor' },
+            ],
+        };
+        return gantt;
     }
 
     private get _datasetControl(): IDatasetControl<ITaskViewData> {

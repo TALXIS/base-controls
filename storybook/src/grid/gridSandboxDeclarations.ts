@@ -4426,11 +4426,17 @@ declare const TaskGantt: ((props: {
     Split: (props: { children: [React.ReactNode, React.ReactNode]; stateKey?: string; defaultGanttSize?: number }) => JSX.Element;
 };
 
+/** The PRO trial build of DHTMLX Gantt. */
+declare const GanttTrial: unknown;
+/** The free MIT build of DHTMLX Gantt; every TaskGantt needs a library module. */
+declare const createGanttLibraryModule: () => IGanttModule;
+/** A PRO build of DHTMLX Gantt, passed as its Gantt export. */
+declare const createGanttProLibraryModule: (Gantt: unknown) => IGanttModule;
 /** Today, the project's start and end, and the store's own markers. */
 declare const createGanttMarkersModule: (parameters?: IGanttMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IGanttMarker[]> } }) => IGanttModule;
 /** Markers held in memory. */
 declare const createMemoryGanttMarkersModule: (parameters: IGanttMarkersOptions & { markers: IGanttMarker[] }) => IGanttModule;
-/** Hides weekends from the scale, toggled in TaskDatasetControl.Settings. */
+/** Hides weekends from the scale, toggled in TaskDatasetControl.Settings; needs a PRO library module. */
 declare const createGanttWeekendsModule: (parameters?: { isVisibleByDefault?: boolean; labels?: Partial<{ hideWeekends: string }> }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
 declare const createGanttTaskDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;

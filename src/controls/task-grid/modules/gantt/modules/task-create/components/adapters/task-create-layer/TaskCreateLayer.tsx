@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mergeStyles } from "@fluentui/react";
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule, useGanttService } from "../../../../../context";
 import type { IGanttDragging } from "../../../../../dragging/GanttDragging";
 import { getCreateTarget, getTimelineX, isCreateTarget, ITimelineCreateTarget } from "../../../timelineGeometry";

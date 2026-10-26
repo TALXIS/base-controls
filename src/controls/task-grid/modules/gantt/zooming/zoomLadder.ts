@@ -1,4 +1,4 @@
-import type { GanttStatic, ZoomLevel } from "gantt-trial";
+import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 import { countColumnsInRange, getFinestScale, getUnitDays } from "./zoomScales";
 
 /** One position on the zoom ladder. */

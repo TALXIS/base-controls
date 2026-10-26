@@ -27,7 +27,6 @@ export interface IGanttWeekends {
     destroy(): void;
 }
 
-//a PRO feature of the chart: https://docs.dhtmlx.com/gantt/guides/custom-scale/
 export class GanttWeekends implements IGanttWeekends {
     public readonly events = new EventEmitter<IGanttWeekendsEvents>();
     private _gantt: IGantt;
@@ -36,6 +35,10 @@ export class GanttWeekends implements IGanttWeekends {
     private _unregisters: (() => void)[] = [];
 
     constructor(gantt: IGantt, parameters: IGanttWeekendsParameters) {
+        //a PRO feature of the chart: https://docs.dhtmlx.com/gantt/guides/custom-scale/
+        if (!gantt.getLibrary().isPro) {
+            throw new Error('The weekends module needs the PRO build of DHTMLX Gantt: pass createGanttProLibraryModule(Gantt).');
+        }
         this._gantt = gantt;
         this._isVisibleByDefault = parameters.isVisibleByDefault ?? true;
         this._labels = new LocalizationService<IGanttWeekendsLabels>({ ...GANTT_WEEKENDS_LABELS, ...parameters.labels });

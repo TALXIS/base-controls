@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Task } from "gantt-trial";
+import type { Task } from "dhtmlx-gantt";
 import type { IPoint } from "@fluentui/react";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGantt } from "../../../../../interfaces";

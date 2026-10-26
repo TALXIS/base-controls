@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";

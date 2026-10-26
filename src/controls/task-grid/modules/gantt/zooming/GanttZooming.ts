@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import type { GanttStatic, ZoomLevel } from "gantt-trial";
+import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 import type { IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";

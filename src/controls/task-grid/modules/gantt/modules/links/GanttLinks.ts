@@ -1,4 +1,4 @@
-import type { GanttStatic, Link } from "gantt-trial";
+import type { GanttStatic, Link } from "dhtmlx-gantt";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { runQuietly } from "../../../../runtime/runQuietly";

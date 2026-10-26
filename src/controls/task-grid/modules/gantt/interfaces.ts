@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator, IStateStore } from "@utils";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
@@ -13,6 +13,7 @@ import type { IGanttSurfaces } from "./surfaces";
 import type { IGanttTheme } from "./theme";
 import type { IGanttOverlay } from "./overlay";
 import type { ITaskGanttProps } from "./TaskGantt";
+import type { IGanttLibrary } from "./modules/library";
 
 /** The modules a Gantt loaded, by name; each module adds its own entry. */
 export interface IGanttModuleMap { }
@@ -77,6 +78,8 @@ export interface IGantt {
     getProps(): ITaskGanttProps;
     getTaskRuntime(): ITaskRuntime;
     getLabels(): ILocalizationService<IGanttLabels>;
+    /** The build the chart is created from, there before any other module loads. */
+    getLibrary(): IGanttLibrary;
     /**
      * Registers a hook that sets the chart's config, templates and plugins before it is drawn.
      * @param priority Ascending: a higher number gets the later word.

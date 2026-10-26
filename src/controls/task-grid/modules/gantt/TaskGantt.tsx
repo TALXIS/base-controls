@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import "gantt-trial/codebase/dhtmlxgantt.css";
 import { useTheme } from "@fluentui/react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";

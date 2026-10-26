@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 
 /** The wheel event the zoom extension hands its handler. */
 export interface IZoomWheelEvent {

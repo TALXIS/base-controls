@@ -1,4 +1,4 @@
-import type { GanttStatic } from "gantt-trial";
+import type { GanttStatic } from "dhtmlx-gantt";
 import type { IGantt } from "../../interfaces";
 import { GANTT_TASK_LINE_CLASS } from "../../chart/classNames";
 

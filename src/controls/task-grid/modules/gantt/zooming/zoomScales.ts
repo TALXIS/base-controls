@@ -1,4 +1,4 @@
-import type { GanttStatic, ZoomLevel } from "gantt-trial";
+import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 
 /** A unit and how many of it one column spans. */
 export interface IGanttScale {
