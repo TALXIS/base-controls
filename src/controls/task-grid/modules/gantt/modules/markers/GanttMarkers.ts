@@ -20,7 +20,7 @@ export interface IGanttMarker {
 
 /** Where the markers of the consumer's own come from. */
 export interface IGanttMarkersStore {
-    /** Called on every mount before the chart is drawn, and again on `reload`. */
+    /** Called on every mount and on `reload`; its markers appear once it resolves. */
     onLoadMarkers(): Promise<IGanttMarker[]>;
 }
 
@@ -57,7 +57,7 @@ export interface IGanttMarkersParameters {
 }
 
 export interface IGanttMarkersEvents {
-    /** The markers changed, such as after `reload` or as today moved on. */
+    /** The markers changed, such as after `reload`. */
     onMarkersChanged: () => void;
 }
 
@@ -65,7 +65,7 @@ export interface IGanttMarkersEvents {
 export interface IGanttMarkers {
     readonly events: IEventEmitter<IGanttMarkersEvents>;
     getMarkers(): IGanttMarker[];
-    /** Reads the store's markers again. */
+    /** Reads the store's markers again and redraws every marker. */
     reload(): Promise<void>;
     getComponents(): IGanttMarkersComponents;
     /** Called as the Gantt goes. */
@@ -80,7 +80,6 @@ export class GanttMarkers implements IGanttMarkers {
     private _labels: ILocalizationService<IGanttMarkersLabels>;
     private _store?: IGanttMarkersStore;
     private _storeMarkers: IGanttMarker[] = [];
-    private _midnightTimeout?: ReturnType<typeof setTimeout>;
     private _unregisterSurface: () => void;
 
     constructor(gantt: IGantt, parameters: IGanttMarkersParameters) {
@@ -89,24 +88,26 @@ export class GanttMarkers implements IGanttMarkers {
         this._labels = new LocalizationService<IGanttMarkersLabels>({ ...GANTT_MARKERS_LABELS, ...parameters.labels });
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
-        if (this._isTodayShown()) {
-            this._scheduleMidnight();
-        }
-    }
-
-    /** Loads the store's markers; the module awaits it before the chart is drawn. */
-    public async load(): Promise<void> {
-        this._storeMarkers = await this._store?.onLoadMarkers() ?? [];
+        //not awaited: the chart draws without the store's markers, which join it once loaded
+        this.reload();
     }
 
     public async reload(): Promise<void> {
-        await this.load();
+        if (this._store) {
+            const store = this._store;
+            const errorTitle = this._labels.getLocalizedString('loadMarkersFailed');
+            const markers = await this._gantt.getTaskRuntime().execute(() => store.onLoadMarkers(), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
+            if (!markers) {
+                return;
+            }
+            this._storeMarkers = markers;
+        }
         this.events.dispatchEvent('onMarkersChanged');
     }
 
     public getMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
-        if (this._isTodayShown()) {
+        if (this._parameters.today?.enableMarker ?? true) {
             markers.push({ id: 'today', text: this._labels.getLocalizedString('today'), date: dayjs(), color: this._parameters.today?.color });
         }
         if (this._parameters.project?.enableMarkers ?? true) {
@@ -129,21 +130,8 @@ export class GanttMarkers implements IGanttMarkers {
     }
 
     public destroy(): void {
-        clearTimeout(this._midnightTimeout);
         this._unregisterSurface();
         this.events.clearEventListeners();
-    }
-
-    private _isTodayShown(): boolean {
-        return this._parameters.today?.enableMarker ?? true;
-    }
-
-    private _scheduleMidnight(): void {
-        const untilMidnight = dayjs().add(1, 'day').startOf('day').diff(dayjs());
-        this._midnightTimeout = setTimeout(() => {
-            this.events.dispatchEvent('onMarkersChanged');
-            this._scheduleMidnight();
-        }, untilMidnight);
     }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

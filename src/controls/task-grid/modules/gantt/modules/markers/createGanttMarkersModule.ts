@@ -5,10 +5,6 @@ export interface IGanttMarkersModule extends IGanttModule<'markers'> { }
 
 export const createGanttMarkersModule = (parameters: IGanttMarkersParameters = {}): IGanttMarkersModule => ({
     name: 'markers',
-    onLoad: async gantt => {
-        const markers = new GanttMarkers(gantt, parameters);
-        await markers.load();
-        return markers;
-    },
+    onLoad: gantt => new GanttMarkers(gantt, parameters),
     onDestroy: markers => markers.destroy(),
 });

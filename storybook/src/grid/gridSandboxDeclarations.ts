@@ -4408,7 +4408,7 @@ interface IGanttMarkersOptions {
         line?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
         chip?: Partial<{ onRenderTooltip: GanttMarkerSlot; onRenderChip: GanttMarkerSlot }>;
     };
-    labels?: Partial<{ today: string; projectStart: string; projectEnd: string }>;
+    labels?: Partial<{ today: string; projectStart: string; projectEnd: string; loadMarkersFailed: string }>;
 }
 
 /** The marker a slot is drawn for, inside a Gantt marker. */
