@@ -1,6 +1,7 @@
 import type { GanttStatic } from "dhtmlx-gantt";
 import type { IGantt } from "../../interfaces";
 import { GANTT_TASK_LINE_CLASS } from "../../chart/classNames";
+import { getGanttTaskDraggingStyles } from "./styles";
 
 const RESIZE_MODE = 'resize';
 
@@ -41,7 +42,10 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         this._gantt = gantt;
         this._isMoveEnabled = parameters.enableMove ?? true;
         this._isResizeEnabled = parameters.enableResize ?? true;
-        this._unregisters.push(gantt.registerChartConfig(this._configureChart));
+        this._unregisters.push(
+            gantt.registerChartConfig(this._configureChart),
+            gantt.services.get('theme').registerStyles(result => result.styles.push(getGanttTaskDraggingStyles())),
+        );
         gantt.services.whenAvailable('chart', this._onChartReady);
     }
 

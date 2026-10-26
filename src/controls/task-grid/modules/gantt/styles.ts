@@ -9,8 +9,6 @@ import {
     GANTT_TASK_SUMMARY_CLASS,
 } from "./chart/classNames";
 
-const LOCK_ICON = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a3 3 0 0 0-3 3v2H4.5A1.5 1.5 0 0 0 3 7.5v6A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 11.5 6H11V4a3 3 0 0 0-3-3Zm-2 5V4a2 2 0 1 1 4 0v2H6Z'/%3E%3C/svg%3E\")";
-
 export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
     root: {
         position: 'relative',
@@ -87,19 +85,6 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
                 pointerEvents: 'none',
                 backgroundImage: 'repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px 6px)',
             },
-        },
-        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_LOCKED_CLASS}:not(.gantt_milestone):not(.${GANTT_TASK_SUMMARY_CLASS}) .${GANTT_TASK_CONTENT_CLASS}::before`]: {
-            content: '""',
-            position: 'absolute',
-            left: 6,
-            top: '50%',
-            width: 10,
-            height: 10,
-            transform: 'translateY(-50%)',
-            backgroundColor: 'var(--dhx-gantt-task-color)',
-            maskImage: LOCK_ICON,
-            maskRepeat: 'no-repeat',
-            maskSize: 'contain',
         },
     }, ...moduleStyles],
 });
