@@ -1,6 +1,6 @@
 import { EventEmitter, IEventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
-import type { IStateStore } from "@utils";
+import { HookRegistry, IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";
 import type { IGanttDates } from "../dates/GanttDates";
@@ -44,7 +44,26 @@ export interface IGanttZooming {
     zoomToFit(): void;
     /** Whether whole days are columns at the current zoom. */
     isDayScaleVisible(): boolean;
+    /**
+     * Registers a hook over the label of each scale cell.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerScaleLabel(hook: GanttScaleLabelHook, priority?: number): () => void;
 }
+
+export interface IGanttScaleLabelParameters {
+    /** Where the cell starts. */
+    date: Date;
+    /** Such as `year`, `quarter`, `month`, `week`, `day` or `hour`. */
+    unit: string;
+    /** How many units the cell spans. */
+    step: number;
+    /** `0` for the scale's top row, `1` for its bottom one. */
+    row: number;
+}
+
+/** Changes the label of a scale cell, which starts as the built-in one. */
+export type GanttScaleLabelHook = (result: { label: string }, parameters: IGanttScaleLabelParameters) => void;
 
 export interface IGanttZoomingParameters {
     gantt: GanttStatic;
@@ -86,6 +105,7 @@ export class GanttZooming implements IGanttZooming {
     private _frame?: number;
     private _wheelTarget?: HTMLElement;
     private _unsaveWithView?: () => void;
+    private _scaleLabelHooks = new HookRegistry<GanttScaleLabelHook>();
 
     constructor(parameters: IGanttZoomingParameters) {
         this._gantt = parameters.gantt;
@@ -135,6 +155,10 @@ export class GanttZooming implements IGanttZooming {
         }
         const finest = scales[scales.length - 1];
         return finest?.unit === 'hour' && 24 % (finest.step ?? 1) === 0;
+    }
+
+    public registerScaleLabel(hook: GanttScaleLabelHook, priority?: number): () => void {
+        return this._scaleLabelHooks.register(hook, priority);
     }
 
     /** Puts back the zoom the view was left at, or the one it was saved with, or fits the tasks. */
@@ -324,6 +348,20 @@ export class GanttZooming implements IGanttZooming {
         return (this._gantt.$task?.offsetWidth ?? 0) / 2;
     }
 
+    private _withLabelHooks(scale: ZoomLevel['scales'][number], row: number): ZoomLevel['scales'][number] {
+        const builtIn = scale.format as (date: Date) => string;
+        const unit = scale.unit;
+        const step = scale.step ?? 1;
+        return {
+            ...scale,
+            format: (date: Date) => {
+                const result = { label: builtIn(date) };
+                this._scaleLabelHooks.apply(result, { date, unit, step, row });
+                return result.label;
+            },
+        };
+    }
+
     //labelled the way the user's settings format dates
     private _createLevels(formatting: IFormatting): ZoomLevel[] {
         const gantt = this._gantt;
@@ -340,7 +378,7 @@ export class GanttZooming implements IGanttZooming {
         const timeFormat = new Intl.DateTimeFormat(formatting.locale, { hour: 'numeric', minute: '2-digit', hour12: !formatting.dateFormattingInfo.shortTimePattern.includes('H') });
         const time = (date: Date) => timeFormat.format(date);
 
-        return [
+        const levels: ZoomLevel[] = [
             { name: 'year-quarter', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'quarter', step: 1, format: (date: Date) => `Q${Math.floor(date.getMonth() / 3) + 1}` }] },
             { name: 'year-2month', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'month', step: 2, format: (date: Date) => `${month(date)} – ${month(gantt.date.add(date, 1, 'month'))}` }] },
             { name: 'year-month', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'month', step: 1, format: month }] },
@@ -355,5 +393,6 @@ export class GanttZooming implements IGanttZooming {
             { name: 'day-2h', scales: [dayHeader, { unit: 'hour', step: 2, format: time }] },
             { name: 'day-hour', scales: [dayHeader, { unit: 'hour', step: 1, format: time }] },
         ];
+        return levels.map(level => ({ ...level, scales: level.scales.map((scale, row) => this._withLabelHooks(scale, row)) as ZoomLevel['scales'] }));
     }
 }

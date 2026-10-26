@@ -10,7 +10,7 @@ export { GanttSkeleton, GanttSkeletonShimmer, GanttSkeletonUiComponents } from '
 export type { IGanttSkeletonProps, IGanttSkeletonShimmerProps, IGanttSkeletonUiComponents } from './components';
 export type { IGridGanttSplitProps } from './components';
 export type { IGanttDates } from './dates/GanttDates';
-export type { IGanttZooming, IGanttZoomingEvents } from './zooming/GanttZooming';
+export type { IGanttZooming, IGanttZoomingEvents, IGanttScaleLabelParameters, GanttScaleLabelHook } from './zooming/GanttZooming';
 export type { IGanttTimeline, IGanttCellClassParameters, GanttCellClassHook } from './timeline/GanttTimeline';
 export type { IGanttDragging, IGanttDraggingEvents } from './dragging/GanttDragging';
 export type { IGanttTasks, IGanttTaskParameters, GanttTaskHook, IGanttTaskClassParameters, GanttTaskClassHook } from './tasks/GanttTasks';

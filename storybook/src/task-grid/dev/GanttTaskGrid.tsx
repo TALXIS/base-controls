@@ -131,6 +131,29 @@ const HolidayDescription = ({ day, ...props }: React.HTMLAttributes<HTMLSpanElem
     </div>
 }
 
+const weekOfYear = (date: Date) => {
+    const thursday = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    thursday.setUTCDate(thursday.getUTCDate() + 4 - (thursday.getUTCDay() || 7))
+    return Math.ceil(((+thursday - Date.UTC(thursday.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7)
+}
+
+//fiscal quarters from July and week numbers, through the zoom's scale label hook
+const fiscalScaleModule = {
+    name: 'fiscalScale',
+    onLoad: (gantt: any) => {
+        gantt.services.whenAvailable('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
+            if (cell.unit === 'quarter') {
+                const fiscalYear = cell.date.getMonth() >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
+                result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((cell.date.getMonth() + 6) % 12) / 3) + 1)
+            }
+            if (cell.unit === 'week' && cell.row === 1) {
+                result.label = 'W' + weekOfYear(cell.date) + ' · ' + result.label
+            }
+        }))
+        return {}
+    },
+}
+
 const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
     const { marker } = useGanttMarker()
     if (marker.id !== 'betaCutoff') {
@@ -163,6 +186,7 @@ const GridExample = () => {
     ], [])
     const ganttModules = React.useMemo(() => [
         createGanttLibraryModule(),
+        fiscalScaleModule,
         createMemoryGanttMarkersModule({
             markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8' }],
             project: { color: '#ca5010' },
