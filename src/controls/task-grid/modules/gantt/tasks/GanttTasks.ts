@@ -5,12 +5,14 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { ITaskDataProviderEvents } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
-import { GANTT_ROW_INACTIVE_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
+import { GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
 import type { IGanttDates } from "../dates/GanttDates";
 
 /** The chart's tasks: exactly the rows the grid displays, in its order and at its row heights. */
 export interface IGanttTasks {
     getRecord(taskId: string): IRecord | undefined;
+    /** Whether the task's record is locked against edits, as the grid beside it decides. */
+    isLocked(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
     /**
@@ -65,6 +67,7 @@ export interface IGanttTasksParameters {
 export class GanttTasks implements IGanttTasks {
     private _gantt: GanttStatic;
     private _gridApi: GridApi<IRecord>;
+    private _runtime: IGantt;
     private _taskRuntime: ITaskRuntime;
     private _dates: IGanttDates;
     private _onParsed: (isFirstLoad: boolean) => void;
@@ -82,6 +85,7 @@ export class GanttTasks implements IGanttTasks {
     constructor(parameters: IGanttTasksParameters) {
         this._gantt = parameters.gantt;
         this._gridApi = parameters.gridApi;
+        this._runtime = parameters.runtime;
         this._taskRuntime = parameters.runtime.getTaskRuntime();
         this._dates = parameters.dates;
         this._onParsed = parameters.onParsed;
@@ -106,6 +110,11 @@ export class GanttTasks implements IGanttTasks {
         return this._taskRuntime.getProvider().getRecordsMap()[taskId];
     }
 
+    public isLocked(taskId: string): boolean {
+        const record = this.getRecord(taskId);
+        return !!record && !!this._runtime.services.get('grid').services.find('editing')?.locks.get({ record }).isLocked;
+    }
+
     public getTaskIds(): string[] {
         return this._taskIds;
     }
@@ -124,6 +133,12 @@ export class GanttTasks implements IGanttTasks {
             return '';
         }
         const classNames = this._isSummary(record.getRecordId()) ? [GANTT_TASK_SUMMARY_CLASS] : [];
+        if (!this._taskRuntime.getProvider().isRecordActive(record.getRecordId())) {
+            classNames.push(GANTT_TASK_INACTIVE_CLASS);
+        }
+        if (this.isLocked(record.getRecordId())) {
+            classNames.push(GANTT_TASK_LOCKED_CLASS);
+        }
         this._taskClassHooks.apply(classNames, { record, task });
         return classNames.join(' ');
     }
@@ -137,7 +152,7 @@ export class GanttTasks implements IGanttTasks {
         if (!record) {
             return '';
         }
-        const classNames = this._taskRuntime.getProvider().isRecordActive(record.getRecordId()) ? [] : [GANTT_ROW_INACTIVE_CLASS];
+        const classNames: string[] = [];
         this._rowClassHooks.apply(classNames, { record, task });
         return classNames.join(' ');
     }

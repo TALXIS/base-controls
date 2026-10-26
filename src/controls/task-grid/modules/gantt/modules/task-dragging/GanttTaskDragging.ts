@@ -91,7 +91,7 @@ export class GanttTaskDragging implements IGanttTaskDragging {
 
     private _onBeforeTaskDrag = (id: string | number, mode: string): boolean => {
         const taskRuntime = this._gantt.getTaskRuntime();
-        if (!taskRuntime.isEditingEnabled() || !taskRuntime.getProvider().isRecordActive(String(id))) {
+        if (!taskRuntime.isEditingEnabled() || this._gantt.services.get('tasks').isLocked(String(id))) {
             return false;
         }
         return mode === RESIZE_MODE ? this._isResizeEnabled : this._isMoveEnabled;

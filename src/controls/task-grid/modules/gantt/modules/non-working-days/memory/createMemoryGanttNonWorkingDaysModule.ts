@@ -14,7 +14,7 @@ class MemoryGanttNonWorkingDaysStore<TData> implements IGanttNonWorkingDaysStore
     }
 
     public async onLoadNonWorkingDays(): Promise<IGanttNonWorkingDay<TData>[]> {
-        await simulateDelay(10_000);
+        await simulateDelay();
         return this._nonWorkingDays;
     }
 }
