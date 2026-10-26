@@ -5,7 +5,7 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { ITaskDataProviderEvents } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
-import { GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
+import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
 import type { IGanttDates } from "../dates/GanttDates";
 
 /** The chart's tasks: exactly the rows the grid displays, in its order and at its row heights. */
@@ -133,6 +133,13 @@ export class GanttTasks implements IGanttTasks {
             return '';
         }
         const classNames = this._isSummary(record.getRecordId()) ? [GANTT_TASK_SUMMARY_CLASS] : [];
+        //a summary's end caps fill as its progress reaches them
+        if ((task.progress ?? 0) > 0) {
+            classNames.push(GANTT_TASK_STARTED_CLASS);
+        }
+        if ((task.progress ?? 0) >= 1) {
+            classNames.push(GANTT_TASK_DONE_CLASS);
+        }
         if (!this._taskRuntime.getProvider().isRecordActive(record.getRecordId())) {
             classNames.push(GANTT_TASK_INACTIVE_CLASS);
         }

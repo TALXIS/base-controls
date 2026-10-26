@@ -3,11 +3,19 @@ import {
     GANTT_DATA_AREA_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
     GANTT_TASK_CONTENT_CLASS,
+    GANTT_TASK_DONE_CLASS,
     GANTT_TASK_INACTIVE_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_LOCKED_CLASS,
+    GANTT_TASK_STARTED_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
 } from "./chart/classNames";
+
+const SUMMARY_CAP_WIDTH = 7;
+const SUMMARY_CAP_HEIGHT = 6;
+
+//a task's `color` tints the track and fills the done part
+const getTrackColor = (theme: ITheme) => `color-mix(in srgb, var(--dhx-gantt-task-background) 24%, ${theme.semanticColors.bodyBackground})`;
 
 export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
     root: {
@@ -45,14 +53,45 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         '--dhx-gantt-milestone-background': theme.palette.themePrimary,
         '--dhx-gantt-task-border': 'none',
         '--dhx-gantt-task-border-radius': theme.effects.roundedCorner4,
-        //a task's `color` tints the track and fills the done part
         [`.${GANTT_TASK_LINE_CLASS}`]: {
             '--dhx-gantt-task-progress-color': 'var(--dhx-gantt-task-background)',
-            background: `color-mix(in srgb, var(--dhx-gantt-task-background) 24%, ${theme.semanticColors.bodyBackground})`,
+            background: getTrackColor(theme),
         },
+        //flat underneath, where the end caps hang from
         [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}`]: {
             '--dhx-gantt-task-background': theme.palette.teal,
-            '--dhx-gantt-task-border-radius': '999px',
+            '--dhx-gantt-task-border-radius': `${theme.effects.roundedCorner2} ${theme.effects.roundedCorner2} 0 0`,
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS} .${GANTT_TASK_CONTENT_CLASS}`]: {
+            height: '100%',
+            padding: 0,
+            overflow: 'visible',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS} .${GANTT_TASK_CONTENT_CLASS}::before`]: {
+            content: '""',
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            width: SUMMARY_CAP_WIDTH,
+            height: SUMMARY_CAP_HEIGHT,
+            background: getTrackColor(theme),
+            clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS} .${GANTT_TASK_CONTENT_CLASS}::after`]: {
+            content: '""',
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            width: SUMMARY_CAP_WIDTH,
+            height: SUMMARY_CAP_HEIGHT,
+            background: getTrackColor(theme),
+            clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}.${GANTT_TASK_STARTED_CLASS} .${GANTT_TASK_CONTENT_CLASS}::before`]: {
+            background: 'var(--dhx-gantt-task-background)',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}.${GANTT_TASK_DONE_CLASS} .${GANTT_TASK_CONTENT_CLASS}::after`]: {
+            background: 'var(--dhx-gantt-task-background)',
         },
         [`.${GANTT_TASK_LINE_CLASS}.gantt_milestone`]: {
             background: 'var(--dhx-gantt-task-background)',
