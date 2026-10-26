@@ -1,5 +1,6 @@
 import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlResolvedView } from "@controls/dataset-control";
+import type { IUserQuerySavedValueMap } from "@controls/dataset-control/modules/user-queries/interfaces";
 import type { IEventSubscriber } from "@utils";
 import type { IRecordTree } from "./record-tree";
 
@@ -18,16 +19,20 @@ export interface IFieldMapping {
     percentComplete?: string;
 }
 
-/** What a task view starts the provider with, beside its columns and linking. */
-export interface ITaskViewData {
-    sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
-    filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
-    /** The columns quick find searches, by name. */
-    quickFindColumns?: string[];
-    searchQuery?: string;
-    /** Lists the matching tasks on their own, without the tree, until the user changes it. */
-    isFlatList?: boolean;
+declare module "@controls/dataset-control/modules/user-queries/interfaces" {
+    interface IUserQuerySavedValueMap {
+        sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
+        filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
+        /** The columns quick find searches, by name. */
+        quickFindColumns: string[];
+        searchQuery: string;
+        /** Lists the matching tasks on their own, without the tree, until the user changes it. */
+        isFlatList: boolean;
+    }
 }
+
+/** What a task view starts the provider with, beside its columns and linking: every value a user view saves. */
+export interface ITaskViewData extends Partial<IUserQuerySavedValueMap> { }
 
 /** A view of the tasks, user views included. */
 export type ITaskView = IDatasetControlResolvedView<ITaskViewData>;

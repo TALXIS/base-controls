@@ -38,6 +38,7 @@ export class TaskTree {
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
+    private _unsaveWithView?: () => void;
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -48,6 +49,9 @@ export class TaskTree {
         this._isFlatList = this._getState().isFlatList ?? parameters.runtime.getView()?.data?.isFlatList ?? false;
         this._expansion = new TaskExpansion({ provider: this._provider, state: this._state, onIsFlatList: () => this._isFlatList });
         parameters.runtime.services.register('taskTree', () => this);
+        parameters.runtime.services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
+            this._unsaveWithView = userQueries.saveWithView('isFlatList', () => this._isFlatList);
+        });
         services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
@@ -314,6 +318,7 @@ export class TaskTree {
     };
 
     private _onDestroyed = (): void => {
+        this._unsaveWithView?.();
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }

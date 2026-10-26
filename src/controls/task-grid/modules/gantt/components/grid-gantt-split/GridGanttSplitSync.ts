@@ -2,24 +2,47 @@ import type { GanttStatic } from "gantt-trial";
 import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";
+import type { IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../../runtime";
 import { TASK_GRID_PRIORITY } from "../../../../priorities";
 import type { IGantt } from "../../interfaces";
 import { GridGanttScrollSync } from "./GridGanttScrollSync";
 
-/** Keeps the grid and the Gantt beside it lined up, row for row and scrolled together. */
+const GANTT_SIZE_STATE_KEY = 'ganttSize';
+
+export interface IGridGanttSplitSyncParameters {
+    taskRuntime: ITaskRuntime;
+    /** Where the Split keeps the Gantt's share of the width. */
+    state: IStateStore;
+}
+
+/** Keeps the grid and the Gantt beside it lined up, row for row and scrolled together, and the split between them. */
 export class GridGanttSplitSync {
     private _taskRuntime: ITaskRuntime;
+    private _state: IStateStore;
     private _grid?: IGrid;
     private _scrollSync?: GridGanttScrollSync;
     private _unregisters: (() => void)[] = [];
 
     //registered as the grid is made, before AG Grid reads its options
-    constructor(taskRuntime: ITaskRuntime) {
-        this._taskRuntime = taskRuntime;
-        const datasetControl = taskRuntime.services.get('datasetControl');
+    constructor(parameters: IGridGanttSplitSyncParameters) {
+        this._taskRuntime = parameters.taskRuntime;
+        this._state = parameters.state;
+        const datasetControl = this._taskRuntime.services.get('datasetControl');
+        datasetControl.modules.whenAvailable('userQueries', userQueries => {
+            this._unregisters.push(userQueries.saveWithView('ganttSplitSize', () => this._state.get<number>(GANTT_SIZE_STATE_KEY)));
+        });
         datasetControl.parts.whenAvailable('grid', this._onGridAvailable);
         datasetControl.parts.whenAvailable('gantt', this._onGanttAvailable);
+    }
+
+    /** The Gantt's share of the width, in percent; this session's first, then the saved view's. */
+    public getGanttSize(defaultSize: number): number {
+        return this._state.get<number>(GANTT_SIZE_STATE_KEY) ?? this._taskRuntime.getView()?.data?.ganttSplitSize ?? defaultSize;
+    }
+
+    public setGanttSize(size: number): void {
+        this._state.set(GANTT_SIZE_STATE_KEY, size);
     }
 
     public destroy(): void {

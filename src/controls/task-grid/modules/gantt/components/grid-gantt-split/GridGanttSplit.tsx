@@ -6,7 +6,6 @@ import { useTaskRuntime } from "../../../../dataset-control/context";
 import { GridGanttSplitSync } from "./GridGanttSplitSync";
 import { getGridGanttSplitStyles } from "./styles";
 
-const GANTT_SIZE_STATE_KEY = 'ganttSize';
 const DEFAULT_GANTT_SIZE = 60;
 
 export interface IGridGanttSplitProps {
@@ -24,11 +23,11 @@ export const GridGanttSplit = (props: IGridGanttSplitProps) => {
     const state = useControlStateStore(props.stateKey);
     const theme = useTheme();
     const styles = useMemo(() => getGridGanttSplitStyles(theme), [theme]);
-    const splitSync = useMemo(() => new GridGanttSplitSync(taskRuntime), []);
+    const splitSync = useMemo(() => new GridGanttSplitSync({ taskRuntime, state }), []);
     useEffect(() => () => splitSync.destroy(), []);
-    const ganttSize = state.get<number>(GANTT_SIZE_STATE_KEY) ?? props.defaultGanttSize ?? DEFAULT_GANTT_SIZE;
+    const ganttSize = splitSync.getGanttSize(props.defaultGanttSize ?? DEFAULT_GANTT_SIZE);
 
-    return <PanelGroup direction="horizontal" className={styles.root} onLayout={sizes => state.set(GANTT_SIZE_STATE_KEY, sizes[1])}>
+    return <PanelGroup direction="horizontal" className={styles.root} onLayout={sizes => splitSync.setGanttSize(sizes[1])}>
         <Panel defaultSize={100 - ganttSize} minSize={0} className={styles.grid}>{props.children[0]}</Panel>
         <PanelResizeHandle className={styles.handle} />
         <Panel defaultSize={ganttSize} minSize={0}>{props.children[1]}</Panel>

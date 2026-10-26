@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const FLUENT_V9_CODE = `import { captureViewData, IDealViewData, loadDeals, loadDealViews } from './views'
+const FLUENT_V9_CODE = `import { createDealViewDataModule, IDealViewData, loadDeals, loadDealViews } from './views'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
@@ -19,7 +19,7 @@ const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews', onGetViewData: captureViewData })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews' }), createDealViewDataModule()], [])
 
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>

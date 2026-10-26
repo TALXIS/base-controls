@@ -2,6 +2,7 @@ import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "gantt-trial";
 import type { IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
+import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";
 import type { IGanttDates } from "../dates/GanttDates";
 import type { IGanttTimeline } from "../timeline/GanttTimeline";
 import { GanttZoomAnchor } from "./GanttZoomAnchor";
@@ -12,12 +13,6 @@ import { getFinestScale, getMillisecondsPerPixel, getSnapLattice, getUsableLevel
 
 const ZOOM_STATE_KEY = 'zoom';
 const ANCHOR_DATE_STATE_KEY = 'anchorDate';
-
-interface IGanttZoomState {
-    unit: string;
-    step: number;
-    columnWidth: number;
-}
 
 export interface IGanttZoomingEvents {
     onZoomChanged: (stopIndex: number) => void;
@@ -52,6 +47,7 @@ export class GanttZooming implements IGanttZooming {
     private _anchor = new GanttZoomAnchor();
     private _levels: ZoomLevel[];
     private _stops: IGanttZoomStop[];
+    private _unsaveWithView?: () => void;
 
     constructor(parameters: IGanttZoomingParameters) {
         this._gantt = parameters.gantt;
@@ -71,6 +67,9 @@ export class GanttZooming implements IGanttZooming {
             handler: this._onWheel as unknown as (event: Event) => void,
         });
         this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
+        this._taskRuntime.services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
+            this._unsaveWithView = userQueries.saveWithView('ganttZoom', this._getSavedZoom);
+        });
     }
 
     public getStopCount(): number {
@@ -97,20 +96,25 @@ export class GanttZooming implements IGanttZooming {
         this._applyStop(stopIndex, centreX);
     }
 
-    /** Puts back the zoom the view was left at, or fits the tasks. */
+    /** Puts back the zoom the view was left at, or the one it was saved with, or fits the tasks. */
     public restore(): void {
-        const zoom = this._state.get<IGanttZoomState>(ZOOM_STATE_KEY);
+        const saved = this._taskRuntime.getView()?.data?.ganttZoom;
+        const zoom = this._state.get<IGanttZoom>(ZOOM_STATE_KEY) ?? saved?.zoom;
         const stopIndex = zoom && findStopIndexForScale(this._stops, this._levels, zoom);
         if (stopIndex === undefined) {
             this.zoomToFit();
             return;
         }
         const centreX = this._getViewportCentreX();
-        const anchorDate = this._state.get<string>(ANCHOR_DATE_STATE_KEY);
+        const anchorDate = this._state.get<string>(ANCHOR_DATE_STATE_KEY) ?? saved?.anchorDate;
         if (anchorDate) {
             this._anchor.remember(new Date(anchorDate), centreX);
         }
         this._applyStop(stopIndex, centreX);
+    }
+
+    public destroy(): void {
+        this._unsaveWithView?.();
     }
 
     //range sized for the coming level first, then the width, then the level, which renders
@@ -138,10 +142,15 @@ export class GanttZooming implements IGanttZooming {
         }
         const scale = getFinestScale(level);
         if (scale) {
-            this._state.set<IGanttZoomState>(ZOOM_STATE_KEY, { unit: scale.unit, step: scale.step, columnWidth: stop.columnWidth });
+            this._state.set<IGanttZoom>(ZOOM_STATE_KEY, { unit: scale.unit, step: scale.step, columnWidth: stop.columnWidth });
         }
         this.events.dispatchEvent('onZoomChanged', this.getStopIndex());
     }
+
+    private _getSavedZoom = (): IGanttSavedZoom | undefined => {
+        const zoom = this._state.get<IGanttZoom>(ZOOM_STATE_KEY);
+        return zoom && { zoom, anchorDate: this._state.get<string>(ANCHOR_DATE_STATE_KEY) };
+    };
 
     private _onWheel = (event: IZoomWheelEvent): void => {
         //Firefox binds a different event

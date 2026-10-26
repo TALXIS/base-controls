@@ -48,11 +48,20 @@ export const loadSystemViews = async (): Promise<IDatasetControlView<IDealViewDa
     return withCopies(SYSTEM_VIEWS, 4)
 }
 
-/** What the deals show right now beside their columns, drawn the way the current view draws them. */
-export const captureViewData = (datasetControl: IDatasetControl<IDealViewData>): IDealViewData => {
-    const provider = datasetControl.getProvider()!
-    return { sorting: provider.getSorting(), filtering: provider.getFiltering(), searchQuery: provider.getSearchQuery() || undefined, layout: datasetControl.getView()?.data?.layout }
-}
+/** Saves what the deals show beside their columns with every user view, drawn the way the current view draws them. */
+export const createDealViewDataModule = (): IDatasetControlModule => ({
+    name: 'dealViewData',
+    onLoad: datasetControl => {
+        const provider = () => datasetControl.getProvider()!
+        datasetControl.modules.whenAvailable('userQueries', userQueries => {
+            userQueries.saveWithView('sorting', () => provider().getSorting())
+            userQueries.saveWithView('filtering', () => provider().getFiltering())
+            userQueries.saveWithView('searchQuery', () => provider().getSearchQuery() || undefined)
+            userQueries.saveWithView('layout', () => datasetControl.getView()?.data?.layout)
+        })
+        return {}
+    },
+})
 
 /** The deals as a view shows them; the control sets the view's columns on the provider. */
 export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {

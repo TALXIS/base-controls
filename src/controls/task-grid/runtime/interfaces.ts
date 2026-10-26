@@ -11,6 +11,7 @@ import type { ITaskGridLabels } from "../labels";
 /** A hook over an item `TaskDatasetControl.Ribbon` draws, which it changes in place, such as to give a menu content of its own. */
 export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
 
+
 /** What the runtime reads of the grid's task tree. */
 export interface ITaskGridTree {
     isFlatList(): boolean;
@@ -69,8 +70,6 @@ export interface ITaskRuntime {
     load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
-    /** What the view is set up with right now beside its columns, as task view data to save. */
-    getCurrentViewData(): ITaskViewData;
     getFieldMapping(): IFieldMapping;
     getProvider(): ITaskDataProvider;
     getLabels(): ILocalizationService<ITaskGridLabels>;

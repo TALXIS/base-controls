@@ -12,6 +12,9 @@ export interface IUserQueryView<TData = unknown> {
     data?: TData;
 }
 
+/** What a user view saves beside its columns, by key; each part adds the keys it saves. */
+export interface IUserQuerySavedValueMap { }
+
 /** A user view as the view switcher lists it. */
 export interface IUserQueryListItem {
     id: string;

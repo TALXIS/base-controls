@@ -30,6 +30,7 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
+    private _unsaveWithViews: (() => void)[] = [];
     private _view?: ITaskView;
     private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     public readonly tasks: ITaskActions = new TaskActions(this);
@@ -45,6 +46,12 @@ export class TaskRuntime implements ITaskRuntime {
         //ahead of the modules, which attach to the grid after the tree
         datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this, state: datasetControl.getViewStateStore() }));
         datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
+        datasetControl.modules.whenAvailable('userQueries', userQueries => this._unsaveWithViews.push(
+            userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
+            userQueries.saveWithView('filtering', () => this.getProvider().getFiltering()),
+            userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name)),
+            userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined),
+        ));
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
@@ -63,17 +70,6 @@ export class TaskRuntime implements ITaskRuntime {
 
     public getView(): ITaskView | undefined {
         return this._view;
-    }
-
-    public getCurrentViewData(): ITaskViewData {
-        const provider = this.getProvider();
-        return {
-            sorting: provider.getSorting(),
-            filtering: provider.getFiltering(),
-            quickFindColumns: provider.getQuickFindColumns().map(column => column.name),
-            searchQuery: provider.getSearchQuery() || undefined,
-            isFlatList: this.isFlatList(),
-        };
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -129,6 +125,7 @@ export class TaskRuntime implements ITaskRuntime {
         this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
         this._unregisterCommands?.();
+        this._unsaveWithViews.forEach(unregister => unregister());
         this.services.destroy();
     }
 

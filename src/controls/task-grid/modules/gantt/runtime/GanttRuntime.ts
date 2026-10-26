@@ -131,7 +131,7 @@ export class GanttRuntime implements IGantt {
         const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, dates, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ gantt, gridApi, runtime: this, dates, onParsed: this._onTasksParsed });
         this._zooming = zooming;
-        this._destroyables.push(timeline, tasks);
+        this._destroyables.push(timeline, zooming, tasks);
         this._chartConfigHooks.apply(gantt);
         gantt.init(container);
 

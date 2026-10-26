@@ -7,13 +7,10 @@ import { DatasetControlUserQueries, IUserQueriesCommands } from "./DatasetContro
 export interface IUserQueriesModuleParameters<TData> extends IUserQueriesCommands {
     /** Makes the store the user's views are kept in. */
     onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
-    /** The view's own data as it is saved, beside its columns. */
-    onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries: the header, the commands and the panel. */
     labels?: Partial<IUserQueriesLabels>;
 }
 
-//TODO: full support needs providers to name what a view must save and to load it back from that
 /** The user's own views: listed with the control's, and added and deleted through `DatasetControl.UserQueries`. */
 export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => ({
     name: 'userQueries',
@@ -23,7 +20,6 @@ export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModulePa
             datasetControl,
             store: parameters.onCreateStore(datasetControl as IDatasetControl<TData>) as IUserQueriesStore,
             labels,
-            onGetViewData: parameters.onGetViewData as IUserQueriesModuleParameters<unknown>['onGetViewData'],
             commands: { enableSaveAsNewView: parameters.enableSaveAsNewView, enableSaveChanges: parameters.enableSaveChanges, enableManageViews: parameters.enableManageViews },
         });
         await userQueries.load();

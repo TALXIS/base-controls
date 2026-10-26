@@ -3507,14 +3507,18 @@ interface IUserQueriesCommands {
     enableManageViews?: boolean;
 }
 
+/** The userQueries module, as datasetControl.modules.get('userQueries') returns it. */
+interface IDatasetControlUserQueries {
+    /** Saves the value onGetValue returns under key with every user view; undefined saves nothing, a throw stops the save. */
+    saveWithView(key: string, onGetValue: () => unknown): () => void;
+}
+
 type IUserQueriesLabelOverrides = Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
 
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
 declare const createUserQueriesModule: <TData>(parameters: {
     /** Makes the store the user's views are kept in. */
     onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
-    /** The view's own data as it is saved, beside its columns; throw to stop the save. */
-    onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
 } & IUserQueriesCommands) => IDatasetControlModule;
@@ -3523,8 +3527,6 @@ declare const createUserQueriesModule: <TData>(parameters: {
 declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
     /** The localStorage entry the views are kept in; one per control. */
     storageKey: string;
-    /** The view's own data as it is saved, beside its columns; throw to stop the save. */
-    onGetViewData?: (datasetControl: IDatasetControl<TData>) => TData | Promise<TData>;
     /** Overrides for every string of the user queries. */
     labels?: IUserQueriesLabelOverrides;
 } & IUserQueriesCommands) => IDatasetControlModule;
@@ -3956,8 +3958,6 @@ interface ITaskRuntime {
     getProvider(): ITaskDataProvider;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
-    /** What the view shows right now, as task view data to save. */
-    getCurrentViewData(): ITaskViewData;
     /** Every task action, run with the grid loading and its error shown. */
     readonly tasks: ITaskActions;
     isCreationEnabled(): boolean;

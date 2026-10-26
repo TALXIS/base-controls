@@ -42,13 +42,17 @@ export class GanttWeekends implements IGanttWeekends {
         this._unregisters.push(gantt.registerChartConfig(chart => {
             chart.ignore_time = (date: Date) => !this.isVisible() && isWeekend(date) && isDayScaleVisible(chart);
         }));
+        gantt.getTaskRuntime().services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
+            this._unregisters.push(userQueries.saveWithView('ganttShowWeekends', () => this.isVisible()));
+        });
         gantt.getTaskRuntime().services.get('datasetControl').parts.whenAvailable('taskSettings', settings => {
             this._unregisters.push(settings.registerSettings(this._addSettings));
         });
     }
 
     public isVisible(): boolean {
-        return this._gantt.services.get('state').get<boolean>(SHOW_WEEKENDS_STATE_KEY) ?? this._isVisibleByDefault;
+        const state = this._gantt.services.get('state').get<boolean>(SHOW_WEEKENDS_STATE_KEY);
+        return state ?? this._gantt.getTaskRuntime().getView()?.data?.ganttShowWeekends ?? this._isVisibleByDefault;
     }
 
     public setVisible(isVisible: boolean): void {
@@ -75,5 +79,12 @@ declare module "../../interfaces" {
     interface IGanttModuleMap {
         /** Hiding weekends from the scale. */
         weekends: IGanttWeekends;
+    }
+}
+
+declare module "@controls/dataset-control/modules/user-queries/interfaces" {
+    interface IUserQuerySavedValueMap {
+        /** Whether weekends are on the Gantt's scale. */
+        ganttShowWeekends: boolean;
     }
 }

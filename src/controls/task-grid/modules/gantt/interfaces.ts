@@ -86,6 +86,28 @@ export interface IGantt {
     render(): void;
 }
 
+/** A zoom level, as its finest scale and its column width. */
+export interface IGanttZoom {
+    unit: string;
+    step: number;
+    columnWidth: number;
+}
+
+/** The zoom a user view saves, with the date it is centred on. */
+export interface IGanttSavedZoom {
+    zoom: IGanttZoom;
+    /** As an ISO string. */
+    anchorDate?: string;
+}
+
+declare module "@controls/dataset-control/modules/user-queries/interfaces" {
+    interface IUserQuerySavedValueMap {
+        ganttZoom: IGanttSavedZoom;
+        /** The Gantt's share of `TaskGantt.Split`'s width, in percent. */
+        ganttSplitSize: number;
+    }
+}
+
 declare module "@controls/dataset-control/runtime/interfaces" {
     interface IDatasetControlPartMap {
         /** The `TaskGantt` in the body, while one is drawn. */

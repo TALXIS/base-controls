@@ -1,11 +1,11 @@
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { EventEmitter, IAvailableRelatedColumn, IColumn, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
-import type { IDatasetControl, IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
+import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
 import type { IEventSubscriber, ILocalizationService } from "@utils";
 import { toScopedColumn } from "../../components/adapters/edit-columns/toScopedColumn";
 import type { IUserQueriesLabels } from "./labels";
-import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQueryView } from "./interfaces";
+import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQuerySavedValueMap, IUserQueryView } from "./interfaces";
 
 /** The id of the group the user's views are listed under. */
 export const USER_QUERIES_GROUP = 'userQueries';
@@ -14,7 +14,6 @@ export interface IDatasetControlUserQueriesParameters {
     datasetControl: IDatasetControlRuntime;
     store: IUserQueriesStore;
     labels: ILocalizationService<IUserQueriesLabels>;
-    onGetViewData?: (datasetControl: IDatasetControl) => unknown;
     commands?: IUserQueriesCommands;
 }
 
@@ -39,7 +38,7 @@ export class DatasetControlUserQueries {
     private _datasetControl: IDatasetControlRuntime;
     private _store: IUserQueriesStore;
     private _labels: ILocalizationService<IUserQueriesLabels>;
-    private _onGetViewData?: (datasetControl: IDatasetControl) => unknown;
+    private _savedValues = new Map<string, () => unknown>();
     private _commands: IUserQueriesCommands;
     private _views: IUserQueryListItem[] = [];
     private _manageProvider?: IDataProvider;
@@ -48,7 +47,6 @@ export class DatasetControlUserQueries {
         this._datasetControl = parameters.datasetControl;
         this._store = parameters.store;
         this._labels = parameters.labels;
-        this._onGetViewData = parameters.onGetViewData;
         this._commands = parameters.commands ?? {};
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
@@ -60,6 +58,22 @@ export class DatasetControlUserQueries {
 
     public getLabels(): ILocalizationService<IUserQueriesLabels> {
         return this._labels;
+    }
+
+    /**
+     * Saves what `onGetValue` returns with every user view, under its key.
+     * @param onGetValue Called on every save; `undefined` saves nothing under the key.
+     */
+    public saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined): () => void {
+        if (this._savedValues.has(key)) {
+            throw new Error(`The saved value "${key}" is registered twice.`);
+        }
+        this._savedValues.set(key, onGetValue);
+        return () => {
+            if (this._savedValues.get(key) === onGetValue) {
+                this._savedValues.delete(key);
+            }
+        };
     }
 
     /** The user's views as records, for Manage views. */
@@ -188,7 +202,12 @@ export class DatasetControlUserQueries {
         const provider = this._datasetControl.getProvider();
         const columns = (provider?.getColumns() ?? []).map(({ name, isHidden, order, visualSizeFactor, grouping, aggregation }): IUserQueryColumn => ({ name, isHidden, order, visualSizeFactor, grouping, aggregation }));
         const linking = this._getUsedLinking(provider?.getLinking() ?? [], columns);
-        return { columns, linking, data: await this._onGetViewData?.(this._datasetControl) };
+        return { columns, linking, data: this._getSavedValues() };
+    }
+
+    private _getSavedValues(): { [key: string]: unknown } | undefined {
+        const values = [...this._savedValues].map(([key, onGetValue]) => [key, onGetValue()]).filter(([, value]) => value !== undefined);
+        return values.length > 0 ? Object.fromEntries(values) : undefined;
     }
 
     //the links a related column's alias names, with the links they hang off

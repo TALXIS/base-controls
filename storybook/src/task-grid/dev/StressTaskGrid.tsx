@@ -30,7 +30,7 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
-        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devStressTasks.userViews', onGetViewData: datasetControl => datasetControl.parts.get('taskRuntime').getCurrentViewData() }),
+        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devStressTasks.userViews' }),
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({

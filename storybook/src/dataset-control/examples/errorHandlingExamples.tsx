@@ -28,7 +28,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-const FAILED_ACTIONS_CODE = `import { captureViewData, IDealViewData, loadDeals, loadDealViews } from './views'
+const FAILED_ACTIONS_CODE = `import { createDealViewDataModule, IDealViewData, loadDeals, loadDealViews } from './views'
 
 //stands in for your server, which the toggle takes down
 const server = { isDown: false }
@@ -42,17 +42,23 @@ const syncToCrm = async () => {
 
 const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync to CRM', iconName: 'Sync', onExecute: syncToCrm }]
 
-//throwing stops the save
-const captureWhileUp = (datasetControl: IDatasetControl<IDealViewData>) => {
-    if (server.isDown) {
-        throw new Error('The view could not be saved while the server is down.')
-    }
-    return captureViewData(datasetControl)
+//a saved value that throws stops the save
+const serverGuardModule: IDatasetControlModule = {
+    name: 'serverGuard',
+    onLoad: datasetControl => {
+        datasetControl.modules.whenAvailable('userQueries', userQueries => userQueries.saveWithView('serverGuard', () => {
+            if (server.isDown) {
+                throw new Error('The view could not be saved while the server is down.')
+            }
+            return undefined
+        }))
+        return {}
+    },
 }
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews', onGetViewData: captureWhileUp })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews' }), createDealViewDataModule(), serverGuardModule], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked

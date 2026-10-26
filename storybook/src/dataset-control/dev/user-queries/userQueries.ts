@@ -2,7 +2,7 @@ import type { IGridExampleFile } from '../../../grid/GridLivePreview'
 
 export const USER_QUERIES_FILE: IGridExampleFile = {
     name: 'userQueries.ts',
-    code: `import { captureViewData, IDealViewData, where, withCopies } from './views'
+    code: `import { IDealViewData, where, withCopies } from './views'
 
 const STORAGE_KEY = 'scratch.userQueries'
 
@@ -31,7 +31,7 @@ const seedUserViews = () => {
 /** The user's views of the deals, kept in this browser. */
 export const createDealUserQueriesModule = () => {
     seedUserViews()
-    return createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: STORAGE_KEY, onGetViewData: captureViewData })
+    return createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: STORAGE_KEY })
 }
 `,
 }
