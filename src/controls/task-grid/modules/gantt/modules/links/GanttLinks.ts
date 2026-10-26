@@ -71,6 +71,9 @@ export class GanttLinks implements IGanttLinks {
     };
 
     private _onChartReady = (chart: GanttStatic): void => {
+        //the chart hides links to tasks outside the rendered range
+        const isTaskVisible = chart.isTaskVisible.bind(chart);
+        chart.isTaskVisible = (taskId: string | number) => isTaskVisible(taskId) || (chart.isTaskExists(taskId) && chart.getGlobalTaskIndex(taskId) >= 0);
         chart.attachEvent('onBeforeLinkAdd', this._onBeforeLinkAdd);
         chart.attachEvent('onLinkDblClick', this._onLinkDblClick);
     };

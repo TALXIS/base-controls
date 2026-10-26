@@ -1,4 +1,3 @@
-import { simulateDelay } from "../../../../../data-sources/memory/simulateBackend";
 import type { IGanttNonWorkingDay, IGanttNonWorkingDaysParameters, IGanttNonWorkingDaysStore } from "../GanttNonWorkingDays";
 import { createGanttNonWorkingDaysModule, IGanttNonWorkingDaysModule } from "../createGanttNonWorkingDaysModule";
 
@@ -14,7 +13,6 @@ class MemoryGanttNonWorkingDaysStore<TData> implements IGanttNonWorkingDaysStore
     }
 
     public async onLoadNonWorkingDays(): Promise<IGanttNonWorkingDay<TData>[]> {
-        await simulateDelay(10_000);
         return this._nonWorkingDays;
     }
 }
