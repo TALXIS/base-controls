@@ -69,9 +69,9 @@ export class GridGanttSplitSync {
 
     //the chart is drawn only once the grid has an api
     private _onChartReady = (chart: GanttStatic): void => {
-        const gridApi = this._grid?.services.find('gridApi');
-        if (this._grid && gridApi) {
-            this._scrollSync = new GridGanttScrollSync(chart, gridApi, this._grid.services.get('viewport'));
+        const gridScroller = this._grid?.services.find('gridApi') && this._grid.services.get('viewport').getScrollElement();
+        if (gridScroller) {
+            this._scrollSync = new GridGanttScrollSync(chart, gridScroller);
         }
     };
 

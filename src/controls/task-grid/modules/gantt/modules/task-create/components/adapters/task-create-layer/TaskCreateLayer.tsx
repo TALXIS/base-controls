@@ -4,7 +4,6 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule, useGanttService } from "../../../../../context";
 import type { IGanttDragging } from "../../../../../dragging/GanttDragging";
 import { getCreateTarget, isCreateTarget, ITimelineCreateTarget } from "../../../timelineGeometry";
-import { getTimelineX } from "../../../../../timeline/getTimelineX";
 import { CreatePreview, ICreatePreviewProps } from "../../ui/create-preview";
 import { useTimelineAutoScroll } from "./useTimelineAutoScroll";
 
@@ -33,13 +32,14 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
     const { chart, dragging } = props;
     const gantt = useGantt();
     const taskCreate = useGanttModule('taskCreate');
+    const timeline = gantt.services.get('timeline');
     const formatting = gantt.getTaskRuntime().getProvider().getFormatting();
     const [preview, setPreview] = useState<ICreatePreviewProps>();
     const activeDragRef = useRef<IActiveDrag>();
     const pointerRef = useRef<IPointer>();
 
     const formatDate = (timelineX: number) => formatting.formatDateShort(chart.dateFromPos(timelineX));
-    const canScrollLeft = () => !!activeDragRef.current && getTimelineX(chart, activeDragRef.current.clientX) > activeDragRef.current.anchorX;
+    const canScrollLeft = () => !!activeDragRef.current && timeline.getTimelineX(activeDragRef.current.clientX) > activeDragRef.current.anchorX;
     const autoScroll = useTimelineAutoScroll(chart, canScrollLeft, () => updatePreview());
 
     const setArmed = (isArmed: boolean) => {
@@ -51,7 +51,7 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
         const activeDrag = activeDragRef.current;
         const pointer = pointerRef.current;
         if (activeDrag) {
-            const endX = Math.max(activeDrag.anchorX, getTimelineX(chart, activeDrag.clientX));
+            const endX = Math.max(activeDrag.anchorX, timeline.getTimelineX(activeDrag.clientX));
             const scrollX = chart.getScrollState().x;
             setPreview({
                 row: { top: activeDrag.rowTop, height: activeDrag.rowHeight },
@@ -62,7 +62,7 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
             return;
         }
         if (pointer && isCreateTarget(chart, pointer.target)) {
-            setPreview({ text: formatDate(getTimelineX(chart, pointer.clientX)), target: { x: pointer.clientX + 10, y: pointer.clientY + 12 } });
+            setPreview({ text: formatDate(timeline.getTimelineX(pointer.clientX)), target: { x: pointer.clientX + 10, y: pointer.clientY + 12 } });
             return;
         }
         setPreview(undefined);
@@ -97,7 +97,7 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
             event.preventDefault();
             event.stopImmediatePropagation();
             setArmed(true);
-            activeDragRef.current = { ...target, anchorX: getTimelineX(chart, event.clientX), clientX: event.clientX };
+            activeDragRef.current = { ...target, anchorX: timeline.getTimelineX(event.clientX), clientX: event.clientX };
             updatePreview();
         },
         onMouseMove: (event: MouseEvent) => {
@@ -118,7 +118,7 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
             if (!activeDrag) {
                 return;
             }
-            const endX = Math.max(activeDrag.anchorX, getTimelineX(chart, activeDrag.clientX));
+            const endX = Math.max(activeDrag.anchorX, timeline.getTimelineX(activeDrag.clientX));
             if (activeDrag.rowTaskId) {
                 taskCreate.create(activeDrag.rowTaskId, chart.dateFromPos(activeDrag.anchorX), chart.dateFromPos(endX));
             }

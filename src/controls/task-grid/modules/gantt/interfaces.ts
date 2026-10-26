@@ -89,11 +89,9 @@ export interface IGantt {
     render(): void;
 }
 
-/** A zoom level, as its finest scale and its column width. */
+/** How far the chart is zoomed. */
 export interface IGanttZoom {
-    unit: string;
-    step: number;
-    columnWidth: number;
+    pixelsPerDay: number;
 }
 
 /** The zoom a user view saves, with the date it is centred on. */

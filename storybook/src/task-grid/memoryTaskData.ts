@@ -1,4 +1,5 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
+import dayjs from "dayjs";
 import { LexoRank } from "lexorank";
 import { LOOKUP_MANY_COLUMNS, personRef, tagRef, teamRefs } from "./memoryLookupManyData";
 
@@ -76,6 +77,12 @@ export const COLUMNS: IColumn[] = [
         dataType: 'DateAndTime.DateOnly',
         displayName: 'Due Date',
         visualSizeFactor: 130,
+    },
+    {
+        name: 'scheduleddurationminutes',
+        dataType: 'Whole.Duration',
+        displayName: 'Duration',
+        visualSizeFactor: 120,
     },
     {
         name: 'estimatedeffort',
@@ -1265,6 +1272,7 @@ TASKS.push(...DEEP_TASKS);
 
 for (const task of TASKS) {
     task.teams = teamRefs(task.tags as ComponentFramework.EntityReference[]);
+    task.scheduleddurationminutes = (dayjs(task.scheduledend).diff(dayjs(task.scheduledstart), 'day') + 1) * 24 * 60;
 }
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);

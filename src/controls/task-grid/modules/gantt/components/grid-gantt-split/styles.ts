@@ -10,6 +10,10 @@ export const getGridGanttSplitStyles = (theme: ITheme) => mergeStyleSets({
         '.ag-body-vertical-scroll': {
             display: 'none',
         },
+        //a bounce past either end would move the grid's rows away from the chart's
+        '.ag-grid-viewport': {
+            overscrollBehaviorY: 'none',
+        },
     },
     handle: {
         width: 4,

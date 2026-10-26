@@ -7,7 +7,6 @@ import type { ITaskRuntime } from "../../../../runtime";
 import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { isDayScaleVisible } from "../../zooming/zoomScales";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
 import { GANTT_NON_WORKING_DAYS_LABELS, IGanttNonWorkingDaysLabels } from "./labels";
 import { setScaleIgnores } from "./scaleIgnores";
@@ -163,19 +162,23 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
     }
 
     private _onChartReady = (chart: GanttStatic): void => {
-        setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && isDayScaleVisible(chart));
+        setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && this._isDayScaleVisible());
     };
 
     //week cells start on a Monday, so only day and hour cells are shaded
     private _onTimelineReady = (timeline: IGanttTimeline): void => {
-        const chart = this._gantt.services.get('chart');
         const addNonWorkingDayClass: GanttCellClassHook = (classNames, { date }) => {
-            if (this.isNonWorkingDay(date) && isDayScaleVisible(chart)) {
+            if (this.isNonWorkingDay(date) && this._isDayScaleVisible()) {
                 classNames.push(GANTT_NON_WORKING_DAY_CLASS);
             }
         };
         this._unregisters.push(timeline.registerCellClass(addNonWorkingDayClass), timeline.registerScaleCellClass(addNonWorkingDayClass));
     };
+
+    //read while drawing: the zoom is registered after the chart
+    private _isDayScaleVisible(): boolean {
+        return this._gantt.services.find('zooming')?.isDayScaleVisible() ?? false;
+    }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
         surfaces.push({ key: 'nonWorkingDays', onRender: () => createElement(NonWorkingDayScaleTooltip) });

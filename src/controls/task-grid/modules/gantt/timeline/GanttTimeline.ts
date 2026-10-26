@@ -1,11 +1,13 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import { HookRegistry } from "@utils";
-import { IGanttScale, snapToLattice } from "../zooming/zoomScales";
 
-/** The rendered date range, kept to a pixel budget around what is on screen. */
+/** The rendered date range: wide enough to scroll freely, re-centred only near its edges. */
 export interface IGanttTimeline {
-    /** Sizes the range for a scale about to be applied, centred on a date; renders nothing. */
-    setRangeAround(date: Date, millisecondsPerPixel: number, snapTo?: IGanttScale): void;
+    /**
+     * Re-centres the range on a date when it no longer leaves room around it at the current scales; renders nothing.
+     * @returns Whether the range moved.
+     */
+    ensureRange(date: Date, millisecondsPerPixel: number): boolean;
     /** Grows the range so a span and a screenful around it fall inside; call before the chart measures a drag. */
     fitRangeTo(startDate: Date, endDate: Date): void;
     /** Grows the range forward so a date keeps a screenful ahead of it. */
@@ -18,6 +20,10 @@ export interface IGanttTimeline {
     /** Puts back the range `fitRangeTo` grew. */
     restoreRange(): void;
     jumpToToday(): void;
+    /** Renders, then scrolls so a date sits that many pixels from the viewport's left edge. */
+    renderWithDateAt(date: Date, x: number): void;
+    /** A client x as a position on the timeline, so it stays put while the chart scrolls. */
+    getTimelineX(clientX: number): number;
     /** Runs the callback with the timeline's own scroll handling off. */
     executeWithScrollBlock<T>(callback: () => T): T;
     isScrollBlocked(): boolean;
@@ -41,12 +47,49 @@ export interface IGanttCellClassParameters {
 /** Adds class names to a cell of the timeline. */
 export type GanttCellClassHook = (classNames: string[], parameters: IGanttCellClassParameters) => void;
 
-//the chart builds a column per unit across its whole range, so the range bounds a render
-const TARGET_TIMELINE_WIDTH = 5000;
-const FALLBACK_HEADROOM = 30 * 86_400_000;
-const BUDGET_TOLERANCE = 2;
+//the drag_timeline plugin scrolls to its own position, unclamped, and moves it by each pointer move
+interface ITimelineDragInternals {
+    _mouseDown?: boolean;
+    _scrollState?: { x: number; y: number };
+}
+
+//the horizontal scrollbar adds each wheel step to the position it last scrolled to itself
+interface IScrollbarInternals {
+    _oldLeft?: number;
+    $scroll_hor?: HTMLElement;
+}
+
+interface IDatastoreInternals {
+    filter(): void;
+    _skipTaskRecalculation?: boolean | string;
+}
+
+interface IGanttInternals {
+    $ui?: {
+        getView(id: string): ({ _timelineDragScroll?: ITimelineDragInternals | null } & IScrollbarInternals) | undefined;
+    };
+    $services: { getService(name: 'datastores'): string[] };
+    getDatastore(name: string): IDatastoreInternals;
+    $data: { tasksStore: IDatastoreInternals };
+}
+
+const MILLISECONDS_PER_DAY = 86_400_000;
+//the chart lays out every column of the range on each render, but draws only the visible ones
+const RANGE_COLUMNS = 2000;
+const MAX_RANGE_COLUMNS = RANGE_COLUMNS * 1.5;
+const MAX_RANGE_DURATION = 100 * 365.25 * MILLISECONDS_PER_DAY;
+//the room kept on either side of the viewport before the range re-centres
+const EDGE_MARGIN_VIEWPORTS = 8;
+const FALLBACK_HEADROOM = 30 * MILLISECONDS_PER_DAY;
 //the scrollbar's own write echoes as a DOM event after the call
 const SCROLL_ECHO_WINDOW = 100;
+//any fixed date; columns of a multi-unit step are counted from it
+const LATTICE_ANCHOR = new Date(2000, 0, 1);
+const MILLISECONDS_PER_UNIT: Record<string, number> = {
+    hour: 3_600_000,
+    day: MILLISECONDS_PER_DAY,
+    week: 7 * MILLISECONDS_PER_DAY,
+};
 
 export class GanttTimeline implements IGanttTimeline {
     private _gantt: GanttStatic;
@@ -54,6 +97,9 @@ export class GanttTimeline implements IGanttTimeline {
     private _scrollBlockDepth = 0;
     private _scrollBlockedUntil = 0;
     private _isDestroyed = false;
+    private _edgeFrame?: number;
+    private _scrollbar?: HTMLElement;
+    private _isScrollbarHeld = false;
     private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
     private _scaleCellClassHooks = new HookRegistry<GanttCellClassHook>();
 
@@ -64,6 +110,8 @@ export class GanttTimeline implements IGanttTimeline {
         //scales without a css of their own take scale_cell_class
         this._gantt.config.inherit_scale_class = true;
         this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
+        this._gantt.attachEvent('onGanttReady', this._onGanttReady);
+        window.addEventListener('mouseup', this._onPointerUp);
     }
 
     public registerCellClass(hook: GanttCellClassHook, priority?: number): () => void {
@@ -74,25 +122,53 @@ export class GanttTimeline implements IGanttTimeline {
         return this._scaleCellClassHooks.register(hook, priority);
     }
 
-    public setRangeAround(date: Date, millisecondsPerPixel: number, snapTo?: IGanttScale): void {
-        if (millisecondsPerPixel <= 0 || this._isRangeUsableFor(date, millisecondsPerPixel)) {
-            return;
+    public ensureRange(date: Date, millisecondsPerPixel: number): boolean {
+        const columnDuration = this._getColumnDuration(date);
+        if (millisecondsPerPixel <= 0 || !columnDuration) {
+            return false;
         }
-        const duration = this._getBudgetWidth() * millisecondsPerPixel;
-        this._gantt.config.start_date = this._snapRangeStart(new Date(+date - duration / 2), snapTo);
+        const duration = Math.min(RANGE_COLUMNS * columnDuration, MAX_RANGE_DURATION);
+        const margin = Math.min(EDGE_MARGIN_VIEWPORTS * this._getViewportWidth() * millisecondsPerPixel, duration / 4);
+        const { start_date: startDate, end_date: endDate } = this._gantt.config;
+        const isUsable = !!startDate && !!endDate
+            && +date - +startDate >= margin && +endDate - +date >= margin
+            && (+endDate - +startDate) / columnDuration <= MAX_RANGE_COLUMNS;
+        if (isUsable) {
+            return false;
+        }
+        this._gantt.config.start_date = this._snapRangeStart(new Date(+date - duration / 2));
         this._gantt.config.end_date = new Date(+date + duration / 2);
+        this._rangeBeforeFitting = undefined;
+        return true;
     }
 
     public jumpToToday(): void {
         const today = new Date();
-        const { min_date: renderedStart, max_date: renderedEnd } = this._gantt.getState();
         this.executeWithScrollBlock(() => {
-            if (!renderedStart || !renderedEnd || today < renderedStart || today > renderedEnd) {
-                this.setRangeAround(today, this._getMillisecondsPerPixel());
+            if (this.ensureRange(today, this._getMillisecondsPerPixel())) {
                 this._gantt.render();
             }
             this._gantt.showDate(today);
         });
+    }
+
+    //the chart's own scroll preservation would scroll once more, redrawing every visible row again
+    public renderWithDateAt(date: Date, x: number): void {
+        this.executeWithScrollBlock(() => {
+            const preserveScroll = this._gantt.config.preserve_scroll;
+            this._gantt.config.preserve_scroll = false;
+            try {
+                this._renderGeometry();
+            }
+            finally {
+                this._gantt.config.preserve_scroll = preserveScroll;
+            }
+            this._gantt.scrollTo(Math.max(0, this._gantt.posFromDate(date) - x), null);
+        });
+    }
+
+    public getTimelineX(clientX: number): number {
+        return this._gantt.getScrollState().x + clientX - this._gantt.$root.getBoundingClientRect().left;
     }
 
     public isScrollBlocked(): boolean {
@@ -149,13 +225,9 @@ export class GanttTimeline implements IGanttTimeline {
         if (!renderedStart || +date - headroom >= +renderedStart) {
             return 0;
         }
-        //measured by a date, as the pixel is what moves
-        const reference = this._gantt.dateFromPos(this._gantt.getScrollState().x);
-        const positionBefore = reference ? this._gantt.posFromDate(reference) : 0;
         this._gantt.config.start_date = this._snapRangeStart(new Date(+date - headroom * 2));
         this._rangeBeforeFitting = undefined;
-        this._renderKeepingViewport();
-        return reference ? this._gantt.posFromDate(reference) - positionBefore : 0;
+        return this._renderKeepingViewport();
     }
 
     public restoreRange(): void {
@@ -171,6 +243,15 @@ export class GanttTimeline implements IGanttTimeline {
 
     public destroy(): void {
         this._isDestroyed = true;
+        this._scrollbar?.removeEventListener('mousedown', this._onScrollbarDown);
+        window.removeEventListener('mouseup', this._onPointerUp);
+        if (this._edgeFrame !== undefined) {
+            cancelAnimationFrame(this._edgeFrame);
+        }
+    }
+
+    private get _internals(): IGanttInternals {
+        return this._gantt as unknown as IGanttInternals;
     }
 
     private _getClass(hooks: HookRegistry<GanttCellClassHook>, date: Date): string {
@@ -179,49 +260,93 @@ export class GanttTimeline implements IGanttTimeline {
         return classNames.join(' ');
     }
 
-    private _isRangeUsableFor(date: Date, millisecondsPerPixel: number): boolean {
-        const { start_date: startDate, end_date: endDate } = this._gantt.config;
-        if (!startDate || !endDate) {
-            return false;
+    //a render refilters every store and recalculates summary tasks, which a change of scale or range leaves as it was
+    private _renderGeometry(): void {
+        const internals = this._internals;
+        const stores = internals.$services.getService('datastores').map(name => internals.getDatastore(name));
+        const ownFilters = stores.map(store => Object.prototype.hasOwnProperty.call(store, 'filter') ? store.filter : undefined);
+        stores.forEach(store => store.filter = () => { });
+        internals.$data.tasksStore._skipTaskRecalculation = true;
+        try {
+            this._gantt.render();
         }
-        const budgetWidth = this._getBudgetWidth();
-        const renderedWidth = (+endDate - +startDate) / millisecondsPerPixel;
-        if (renderedWidth < budgetWidth / BUDGET_TOLERANCE || renderedWidth > budgetWidth * BUDGET_TOLERANCE) {
-            return false;
+        finally {
+            stores.forEach((store, index) => {
+                const ownFilter = ownFilters[index];
+                if (ownFilter) {
+                    store.filter = ownFilter;
+                }
+                else {
+                    delete (store as Partial<IDatastoreInternals>).filter;
+                }
+            });
+            internals.$data.tasksStore._skipTaskRecalculation = false;
         }
-        const viewportDuration = this._getViewportWidth() * millisecondsPerPixel;
-        return +date - +startDate >= viewportDuration && +endDate - +date >= viewportDuration;
     }
 
-    //on the lattice, so columns keep their boundaries as the range moves
-    private _snapRangeStart(date: Date, lattice?: IGanttScale): Date {
-        const snapTo = lattice ?? this._getRenderedLattice();
-        return snapTo ? snapToLattice(this._gantt, date, snapTo) : date;
+    //on the lattice of the coarsest scale, so columns keep their boundaries as the range moves
+    private _snapRangeStart(date: Date): Date {
+        const coarsest = this._gantt.config.scales?.[0];
+        if (!coarsest) {
+            return date;
+        }
+        const step = coarsest.step ?? 1;
+        const unitStart = this._getUnitStart(coarsest.unit, date);
+        const unitDuration = MILLISECONDS_PER_UNIT[coarsest.unit];
+        if (step === 1 || !unitDuration) {
+            return unitStart;
+        }
+        const anchor = this._getUnitStart(coarsest.unit, LATTICE_ANCHOR);
+        //rounded: a local day is not always 24 hours
+        const unitsSinceAnchor = Math.round((+unitStart - +anchor) / unitDuration);
+        return this._gantt.date.add(anchor, Math.floor(unitsSinceAnchor / step) * step, coarsest.unit);
     }
 
-    private _getRenderedLattice(): IGanttScale | undefined {
-        const zoom = this._gantt.ext.zoom;
-        const coarsest = zoom.getLevels()?.[zoom.getCurrentLevel()]?.scales?.[0];
-        return coarsest && { unit: coarsest.unit, step: coarsest.step ?? 1 };
+    private _getUnitStart(unit: string, date: Date): Date {
+        switch (unit) {
+            case 'hour': return this._gantt.date.hour_start(date);
+            case 'week': return this._gantt.date.week_start(date);
+            case 'month': return this._gantt.date.month_start(date);
+            case 'quarter': return this._gantt.date.quarter_start(date);
+            case 'year': return this._gantt.date.year_start(date);
+            default: return this._gantt.date.day_start(date);
+        }
     }
 
-    private _getBudgetWidth(): number {
-        return Math.max(TARGET_TIMELINE_WIDTH, this._getViewportWidth() * 2);
+    //measured near a date, as months and years vary in length
+    private _getColumnDuration(near: Date): number {
+        const scales = this._gantt.config.scales ?? [];
+        const finest = scales[scales.length - 1];
+        return finest ? +this._gantt.date.add(near, finest.step ?? 1, finest.unit) - +near : 0;
     }
 
     private _getViewportWidth(): number {
         return this._gantt.$task?.offsetWidth ?? 0;
     }
 
-    //a moved range start moves every position, so the view is put back on its date
-    private _renderKeepingViewport(): void {
-        const leftEdgeDate = this._gantt.dateFromPos(this._gantt.getScrollState().x);
-        this.executeWithScrollBlock(() => {
-            this._gantt.render();
-            if (leftEdgeDate) {
-                this._gantt.scrollTo(this._gantt.posFromDate(leftEdgeDate), null);
-            }
-        });
+    /**
+     * Renders, then scrolls back so the date at the left edge stays where it was.
+     * @returns How far every position on the chart moved, in pixels.
+     */
+    private _renderKeepingViewport(): number {
+        const scrollBefore = this._gantt.getScrollState().x;
+        const leftEdgeDate = this._gantt.dateFromPos(scrollBefore);
+        if (!leftEdgeDate) {
+            this.executeWithScrollBlock(() => this._gantt.render());
+            return 0;
+        }
+        this.renderWithDateAt(leftEdgeDate, 0);
+        const offset = this._gantt.getScrollState().x - scrollBefore;
+        this._shiftTimelineDrag(offset);
+        return offset;
+    }
+
+    //in place: a scroll the drag plugin has queued holds the same object
+    private _shiftTimelineDrag(offset: number): void {
+        const drag = this._internals.$ui?.getView('timeline')?._timelineDragScroll;
+        if (drag?._mouseDown && drag._scrollState && offset) {
+            drag._scrollState.x += offset;
+        }
     }
 
     private _getMillisecondsPerPixel(): number {
@@ -236,38 +361,46 @@ export class GanttTimeline implements IGanttTimeline {
         return leftDate && rightDate ? +rightDate - +leftDate : FALLBACK_HEADROOM;
     }
 
+    //not held back by a scroll block: at the very edge no further scroll event would come
     private _onGanttScroll = (): boolean => {
-        if (!this.isScrollBlocked()) {
-            this._growAtEdges();
+        //whoever scrolled, the next wheel step goes on from here
+        const scrollbar = this._internals.$ui?.getView('scrollHor');
+        if (scrollbar?.$scroll_hor) {
+            scrollbar._oldLeft = scrollbar.$scroll_hor.scrollLeft;
+        }
+        if (!this._gantt.getState().drag_mode) {
+            this._edgeFrame ??= requestAnimationFrame(this._recentreNearEdge);
         }
         return true;
     };
 
-    private _growAtEdges(): void {
-        const gantt = this._gantt;
-        const unit = gantt.getScale().unit;
-        const left = gantt.getScrollState().x;
-        const rightDate = gantt.dateFromPos(left + this._getViewportWidth());
-        gantt.config.start_date ??= gantt.getState().min_date;
-        gantt.config.end_date ??= gantt.getState().max_date;
-        const maxAllowedDate = gantt.date.add(gantt.config.end_date, -2, unit);
-        let shouldRender = false;
-        //a drag grows the start through `extendRangeStart`, which shifts its coordinates
-        if (!left && !gantt.getState().drag_mode) {
-            gantt.config.start_date = this._snapRangeStart(gantt.date.add(gantt.config.start_date, -2, unit));
-            shouldRender = true;
+    //the browser moves a held thumb to the pointer, which would undo a re-centre on the next move
+    private _onGanttReady = (): boolean => {
+        this._scrollbar?.removeEventListener('mousedown', this._onScrollbarDown);
+        this._scrollbar = this._internals.$ui?.getView('scrollHor')?.$scroll_hor;
+        this._scrollbar?.addEventListener('mousedown', this._onScrollbarDown);
+        return true;
+    };
+
+    private _onScrollbarDown = (): void => {
+        this._isScrollbarHeld = true;
+    };
+
+    private _onPointerUp = (): void => {
+        if (this._isScrollbarHeld) {
+            this._isScrollbarHeld = false;
+            this._edgeFrame ??= requestAnimationFrame(this._recentreNearEdge);
         }
-        if (!rightDate || rightDate >= maxAllowedDate) {
-            gantt.config.end_date = gantt.date.add(gantt.config.end_date, 2, unit);
-            shouldRender = true;
+    };
+
+    private _recentreNearEdge = (): void => {
+        this._edgeFrame = undefined;
+        if (this._isDestroyed || this._isScrollbarHeld || !this._gantt.$task) {
+            return;
         }
-        if (shouldRender) {
-            //deferred past the scroll; the chart may be gone by then
-            setTimeout(() => {
-                if (!this._isDestroyed) {
-                    this.executeWithScrollBlock(() => gantt.render());
-                }
-            }, 20);
+        const centre = this._gantt.dateFromPos(this._gantt.getScrollState().x + this._getViewportWidth() / 2);
+        if (centre && this.ensureRange(centre, this._getMillisecondsPerPixel())) {
+            this._renderKeepingViewport();
         }
-    }
+    };
 }

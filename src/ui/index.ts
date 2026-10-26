@@ -15,4 +15,3 @@ export * from './error-message-bar';
 export * from './loading-boundary';
 export * from './option-tag';
 export * from './shimmer';
-export * from './zoom-slider';

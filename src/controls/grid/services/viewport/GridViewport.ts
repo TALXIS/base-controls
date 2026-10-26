@@ -16,6 +16,8 @@ export interface IGridViewport {
     /** `0` until the grid is mounted. */
     getScrollTop(): number;
     setScrollTop(top: number): void;
+    /** The element that scrolls the rows, once the grid is mounted. */
+    getScrollElement(): HTMLElement | undefined;
     /** `0` until the grid is mounted. */
     getHeaderHeight(): number;
 }
@@ -42,19 +44,19 @@ export class GridViewport implements IGridViewport {
     }
 
     public setScrollTop(top: number): void {
-        const bodyViewport = this._getBodyViewport();
+        const bodyViewport = this.getScrollElement();
         if (bodyViewport) {
             bodyViewport.scrollTop = top;
         }
     }
 
-    public getHeaderHeight(): number {
-        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-header')?.offsetHeight ?? 0;
+    //AG Grid has no api to set the scroll; this is the element that scrolls the rows
+    public getScrollElement(): HTMLElement | undefined {
+        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-grid-viewport') ?? undefined;
     }
 
-    //AG Grid has no api to set the scroll; this is the element that scrolls the rows
-    private _getBodyViewport(): HTMLElement | null | undefined {
-        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-grid-viewport');
+    public getHeaderHeight(): number {
+        return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-header')?.offsetHeight ?? 0;
     }
 
     private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {

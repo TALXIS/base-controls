@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { useDataProviderEvents } from "@utils";
-import { ZoomSlider } from "@ui/zoom-slider";
+import { ZoomSlider } from "../../ui/zoom-slider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
-import type { IGantt, IGanttEvents } from "../../interfaces";
-import type { IGanttZoomingEvents } from "../../zooming/GanttZooming";
+import type { IGantt, IGanttEvents } from "../../../interfaces";
+import type { IGanttZoomingEvents } from "../../../zooming/GanttZooming";
+
+//fine enough that dragging the slider zooms continuously
+const SLIDER_RESOLUTION = 1000;
+const BUTTON_STEPS = 12;
 
 /** The zoom of the `TaskGantt` in the body; goes in the header. */
 export const GanttZoomSlider = () => {
@@ -23,8 +27,9 @@ export const GanttZoomSlider = () => {
     return <ZoomSlider
         ariaLabel={gantt?.getLabels().getLocalizedString('zoomSlider')}
         min={0}
-        max={Math.max(0, (zooming?.getStopCount() ?? 1) - 1)}
-        value={zooming?.getStopIndex() ?? 0}
+        max={SLIDER_RESOLUTION}
+        buttonStep={SLIDER_RESOLUTION / BUTTON_STEPS}
+        value={Math.round((zooming?.getPosition() ?? 0) * SLIDER_RESOLUTION)}
         disabled={!zooming || provider.isLoading()}
-        onChange={stopIndex => zooming?.setStopIndex(stopIndex)} />;
+        onChange={value => zooming?.setPosition(value / SLIDER_RESOLUTION)} />;
 };
