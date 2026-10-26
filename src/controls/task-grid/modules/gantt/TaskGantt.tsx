@@ -10,6 +10,8 @@ import type { IGanttLabels } from "./labels";
 import type { IGanttEvents, IGanttModule } from "./interfaces";
 import { getTaskGanttStyles } from "./styles";
 import { GanttOverlayLayer } from "./components/overlay-layer";
+import { GanttSkeletonLayer } from "./components/adapters/skeleton";
+import type { IGanttSkeletonUiComponents } from "./components/ui/skeleton";
 
 export interface ITaskGanttProps {
     /** Read once, at mount. */
@@ -18,6 +20,13 @@ export interface ITaskGanttProps {
     stateKey?: string;
     /** Read once, at mount. */
     labels?: Partial<IGanttLabels>;
+    components?: ITaskGanttComponents;
+}
+
+/** The replaceable pieces of the Gantt, by the part they belong to. */
+export interface ITaskGanttComponents {
+    /** What covers the chart until it is drawn. */
+    skeleton?: Partial<IGanttSkeletonUiComponents>;
 }
 
 /** The tasks of a `TaskDatasetControl` on a timeline, row for row with the `TaskGrid` beside it. */
@@ -49,6 +58,7 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
             <div ref={containerRef} className={styles.chart} />
             {isChartReady && gantt.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
             <GanttOverlayLayer />
+            <GanttSkeletonLayer components={props.components?.skeleton} />
         </div>
     </GanttContext.Provider>;
 };

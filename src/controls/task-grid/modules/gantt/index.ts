@@ -5,7 +5,9 @@ export type { IGanttSurface, IGanttSurfaces, GanttSurfacesHook } from './surface
 export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export type { IGanttOverlay, IGanttOverlayEvents } from './overlay';
 export { useGantt, useGanttModule, useGanttService, useCreateGanttService } from './context';
-export type { ITaskGanttProps } from './TaskGantt';
+export type { ITaskGanttProps, ITaskGanttComponents } from './TaskGantt';
+export { GanttSkeleton, GanttSkeletonShimmer, GanttSkeletonUiComponents } from './components';
+export type { IGanttSkeletonProps, IGanttSkeletonShimmerProps, IGanttSkeletonUiComponents } from './components';
 export type { IGridGanttSplitProps } from './components';
 export type { IGanttDates } from './dates/GanttDates';
 export type { IGanttZooming, IGanttZoomingEvents } from './zooming/GanttZooming';
