@@ -12,6 +12,7 @@ export class GridGanttScrollSync {
     private _gridApi: GridApi<IRecord>;
     private _viewport: IGridViewport;
     private _eventId: string;
+    private _chartTop = 0;
 
     constructor(gantt: GanttStatic, gridApi: GridApi<IRecord>, viewport: IGridViewport) {
         this._gantt = gantt;
@@ -20,6 +21,7 @@ export class GridGanttScrollSync {
         this._gridApi.addEventListener('bodyScroll', this._onGridScroll);
         this._eventId = this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
         this._gantt.scrollTo(null, this._viewport.getScrollTop());
+        this._chartTop = this._gantt.getScrollState().y;
     }
 
     public destroy(): void {
@@ -38,6 +40,11 @@ export class GridGanttScrollSync {
     //the event's arguments are the old position when the scrollbar is dragged
     private _onGanttScroll = (): boolean => {
         const top = this._gantt.getScrollState().y;
+        //a horizontal scroll would push the chart's stale top onto a grid that just moved
+        if (top === this._chartTop) {
+            return true;
+        }
+        this._chartTop = top;
         if (Math.abs(this._viewport.getScrollTop() - top) > SCROLL_TOLERANCE) {
             this._viewport.setScrollTop(top);
         }

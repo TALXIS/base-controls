@@ -14,6 +14,8 @@ export const createChart = (sizing: IChartSizing): GanttStatic => {
     gantt.config.show_unscheduled = true;
     gantt.config.show_tasks_outside_timescale = true;
     gantt.config.task_scroll_offset = 200;
+    //otherwise each parse, such as on every expand, scrolls to the first task
+    gantt.config.initial_scroll = false;
     gantt.config.show_links = false;
     gantt.config.drag_links = false;
     gantt.config.drag_move = false;
