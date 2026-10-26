@@ -6,7 +6,6 @@ export const GANTT_TASK_CONTENT_CLASS = 'gantt_task_content';
 export const GANTT_TASK_CELL_CLASS = 'gantt_task_cell';
 export const GANTT_DATA_AREA_CLASS = 'gantt_data_area';
 export const GANTT_TASK_CONTAINER_CLASS = 'gantt_task';
-export const GANTT_WEEKEND_CLASS = 'gantt_weekend';
 export const GANTT_TASK_ID_ATTRIBUTE = 'data-task-id';
 export const GANTT_TASK_ROW_CLASS = 'gantt_task_row';
 export const GANTT_TASK_BG_CLASS = 'gantt_task_bg';

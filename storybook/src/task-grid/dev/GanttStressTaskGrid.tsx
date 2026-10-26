@@ -1,10 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const GANTT_STRESS_CODE = `//weekends need the PRO build
-const USE_PRO_GANTT = false
-
-const fieldMapping: IFieldMapping = {
+const GANTT_STRESS_CODE = `const fieldMapping: IFieldMapping = {
     parentId: 'parentid',
     subject: 'subject',
     stackRank: 'stackrank',
@@ -48,9 +45,9 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
     ], [])
     const ganttModules = React.useMemo(() => [
-        USE_PRO_GANTT ? createGanttProLibraryModule(GanttTrial) : createGanttLibraryModule(),
+        createGanttLibraryModule(),
         createGanttMarkersModule(),
-        ...(USE_PRO_GANTT ? [createGanttWeekendsModule()] : []),
+        createGanttWeekendsModule(),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
         createGanttSelectionModule(),

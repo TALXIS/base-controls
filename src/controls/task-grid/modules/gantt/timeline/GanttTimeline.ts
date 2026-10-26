@@ -1,7 +1,6 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
-import { IGanttScale, isDayScaleVisible, snapToLattice } from "../zooming/zoomScales";
-import { GANTT_WEEKEND_CLASS } from "../chart/classNames";
-import { isWeekend } from "../dates/isWeekend";
+import { HookRegistry } from "@utils";
+import { IGanttScale, snapToLattice } from "../zooming/zoomScales";
 
 /** The rendered date range, kept to a pixel budget around what is on screen. */
 export interface IGanttTimeline {
@@ -22,7 +21,25 @@ export interface IGanttTimeline {
     /** Runs the callback with the timeline's own scroll handling off. */
     executeWithScrollBlock<T>(callback: () => T): T;
     isScrollBlocked(): boolean;
+    /**
+     * Registers a hook over the class names of each background cell.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerCellClass(hook: GanttCellClassHook, priority?: number): () => void;
+    /**
+     * Registers a hook over the class names of each scale cell.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerScaleCellClass(hook: GanttCellClassHook, priority?: number): () => void;
 }
+
+export interface IGanttCellClassParameters {
+    /** Where the cell's column starts. */
+    date: Date;
+}
+
+/** Adds class names to a cell of the timeline. */
+export type GanttCellClassHook = (classNames: string[], parameters: IGanttCellClassParameters) => void;
 
 //the chart builds a column per unit across its whole range, so the range bounds a render
 const TARGET_TIMELINE_WIDTH = 5000;
@@ -37,11 +54,24 @@ export class GanttTimeline implements IGanttTimeline {
     private _scrollBlockDepth = 0;
     private _scrollBlockedUntil = 0;
     private _isDestroyed = false;
+    private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
+    private _scaleCellClassHooks = new HookRegistry<GanttCellClassHook>();
 
     constructor(gantt: GanttStatic) {
         this._gantt = gantt;
-        this._gantt.templates.timeline_cell_class = (_task: Task, date: Date) => isWeekend(date) && isDayScaleVisible(gantt) ? GANTT_WEEKEND_CLASS : '';
+        this._gantt.templates.timeline_cell_class = (_task: Task, date: Date) => this._getClass(this._cellClassHooks, date);
+        this._gantt.templates.scale_cell_class = (date: Date) => this._getClass(this._scaleCellClassHooks, date);
+        //scales without a css of their own take scale_cell_class
+        this._gantt.config.inherit_scale_class = true;
         this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
+    }
+
+    public registerCellClass(hook: GanttCellClassHook, priority?: number): () => void {
+        return this._cellClassHooks.register(hook, priority);
+    }
+
+    public registerScaleCellClass(hook: GanttCellClassHook, priority?: number): () => void {
+        return this._scaleCellClassHooks.register(hook, priority);
     }
 
     public setRangeAround(date: Date, millisecondsPerPixel: number, snapTo?: IGanttScale): void {
@@ -141,6 +171,12 @@ export class GanttTimeline implements IGanttTimeline {
 
     public destroy(): void {
         this._isDestroyed = true;
+    }
+
+    private _getClass(hooks: HookRegistry<GanttCellClassHook>, date: Date): string {
+        const classNames: string[] = [];
+        hooks.apply(classNames, { date });
+        return classNames.join(' ');
     }
 
     private _isRangeUsableFor(date: Date, millisecondsPerPixel: number): boolean {

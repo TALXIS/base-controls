@@ -1,10 +1,15 @@
+import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import { isWeekend } from "../../dates/isWeekend";
 import { isDayScaleVisible } from "../../zooming/zoomScales";
+import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
 import { GANTT_WEEKENDS_LABELS, IGanttWeekendsLabels } from "./labels";
+import { setScaleIgnores } from "./scaleIgnores";
+import { GANTT_WEEKEND_CLASS } from "./classNames";
+import { getGanttWeekendsStyles } from "./styles";
 
 const SHOW_WEEKENDS_STATE_KEY = 'showWeekends';
 
@@ -35,16 +40,12 @@ export class GanttWeekends implements IGanttWeekends {
     private _unregisters: (() => void)[] = [];
 
     constructor(gantt: IGantt, parameters: IGanttWeekendsParameters) {
-        //a PRO feature of the chart: https://docs.dhtmlx.com/gantt/guides/custom-scale/
-        if (!gantt.getLibrary().isPro) {
-            throw new Error('The weekends module needs the PRO build of DHTMLX Gantt: pass createGanttProLibraryModule(Gantt).');
-        }
         this._gantt = gantt;
         this._isVisibleByDefault = parameters.isVisibleByDefault ?? true;
         this._labels = new LocalizationService<IGanttWeekendsLabels>({ ...GANTT_WEEKENDS_LABELS, ...parameters.labels });
-        this._unregisters.push(gantt.registerChartConfig(chart => {
-            chart.ignore_time = (date: Date) => !this.isVisible() && isWeekend(date) && isDayScaleVisible(chart);
-        }));
+        this._unregisters.push(gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getGanttWeekendsStyles(theme))));
+        gantt.services.whenAvailable('chart', this._onChartReady);
+        gantt.services.whenAvailable('timeline', this._onTimelineReady);
         gantt.getTaskRuntime().services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
             this._unregisters.push(userQueries.saveWithView('ganttShowWeekends', () => this.isVisible()));
         });
@@ -68,7 +69,22 @@ export class GanttWeekends implements IGanttWeekends {
         this._unregisters.forEach(unregister => unregister());
     }
 
-    private _addSettings = (settings: ITaskGridSetting[]): void => {
+    private _onChartReady = (chart: GanttStatic): void => {
+        setScaleIgnores(chart, date => !this.isVisible() && isWeekend(date) && isDayScaleVisible(chart));
+    };
+
+    //week cells start on a Monday, so only day and hour cells can be a weekend
+    private _onTimelineReady = (timeline: IGanttTimeline): void => {
+        const chart = this._gantt.services.get('chart');
+        const addWeekendClass: GanttCellClassHook = (classNames, { date }) => {
+            if (isWeekend(date) && isDayScaleVisible(chart)) {
+                classNames.push(GANTT_WEEKEND_CLASS);
+            }
+        };
+        this._unregisters.push(timeline.registerCellClass(addWeekendClass), timeline.registerScaleCellClass(addWeekendClass));
+    };
+
+    private _addSettings =(settings: ITaskGridSetting[]): void => {
         settings.push({
             key: 'hideWeekends',
             label: this._labels.getLocalizedString('hideWeekends'),

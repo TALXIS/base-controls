@@ -2,12 +2,10 @@ import { IStyle, ITheme, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_ROW_INACTIVE_CLASS,
-    GANTT_TASK_CELL_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
     GANTT_TASK_CONTENT_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
-    GANTT_WEEKEND_CLASS,
 } from "./chart/classNames";
 
 export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
@@ -68,12 +66,6 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         },
         [`.${GANTT_TASK_CONTAINER_CLASS}`]: {
             overscrollBehaviorX: 'contain',
-        },
-        [`.${GANTT_TASK_CELL_CLASS}.${GANTT_WEEKEND_CLASS}`]: {
-            backgroundColor: theme.palette.neutralLighter,
-        },
-        [`.gantt_scale_cell.${GANTT_WEEKEND_CLASS}`]: {
-            backgroundColor: theme.semanticColors.errorBackground,
         },
         [`.${GANTT_ROW_INACTIVE_CLASS}`]: {
             opacity: 0.5,

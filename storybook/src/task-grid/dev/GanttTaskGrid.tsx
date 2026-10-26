@@ -1,10 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const GANTT_CODE = `//weekends need the PRO build
-const USE_PRO_GANTT = false
-
-const fieldMapping: IFieldMapping = {
+const GANTT_CODE = `const fieldMapping: IFieldMapping = {
     parentId: 'parentid',
     subject: 'subject',
     stackRank: 'stackrank',
@@ -106,7 +103,7 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [])
     const ganttModules = React.useMemo(() => [
-        USE_PRO_GANTT ? createGanttProLibraryModule(GanttTrial) : createGanttLibraryModule(),
+        createGanttLibraryModule(),
         createMemoryGanttMarkersModule({
             markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8' }],
             project: { color: '#ca5010' },
@@ -115,7 +112,7 @@ const GridExample = () => {
                 line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
             },
         }),
-        ...(USE_PRO_GANTT ? [createGanttWeekendsModule()] : []),
+        createGanttWeekendsModule(),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
         createGanttSelectionModule(),
