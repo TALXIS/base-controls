@@ -1,3 +1,5 @@
-export * from './createGanttWeekendsModule';
+export * from './createGanttNonWorkingDaysModule';
 export * from './labels';
-export type { IGanttWeekends, IGanttWeekendsEvents, IGanttWeekendsParameters } from './GanttWeekends';
+export * from './memory';
+export * from './components';
+export type { IGanttNonWorkingDay, IGanttNonWorkingDays, IGanttNonWorkingDaysComponents, IGanttNonWorkingDaysEvents, IGanttNonWorkingDaysParameters, IGanttNonWorkingDaysStore } from './GanttNonWorkingDays';

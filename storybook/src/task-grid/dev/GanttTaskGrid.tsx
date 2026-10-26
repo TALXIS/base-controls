@@ -72,6 +72,65 @@ const BetaCutoffChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
     </div>
 }
 
+const christmasStyles = mergeStyleSets({
+    card: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        margin: '2px -4px',
+        padding: '8px 10px',
+        borderRadius: 8,
+        color: '#ffffff',
+        background: 'linear-gradient(135deg, #c50f1f, #8a0a15 60%, #0e700e)',
+        boxShadow: '0 4px 14px rgba(138, 10, 21, 0.35)',
+    },
+    icon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        width: 30,
+        height: 30,
+        borderRadius: '50%',
+        fontSize: 15,
+        background: 'rgba(255, 255, 255, 0.18)',
+    },
+    text: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+    },
+    greeting: {
+        fontSize: 13,
+        fontWeight: FontWeights.semibold,
+    },
+    closed: {
+        alignSelf: 'flex-start',
+        padding: '0 7px',
+        borderRadius: 999,
+        fontSize: 11,
+        lineHeight: '16px',
+        color: '#8a0a15',
+        background: 'rgba(255, 255, 255, 0.92)',
+    },
+})
+
+//the tooltip draws each day through this slot, with the whole day and its data
+const HolidayDescription = ({ day, ...props }: React.HTMLAttributes<HTMLSpanElement> & { day: IGanttNonWorkingDay }) => {
+    if (day.id !== 'christmas') {
+        return <span {...props} />
+    }
+    const data = day.data as { greeting: string, isOfficeClosed: boolean }
+    return <div className={christmasStyles.card}>
+        <span className={christmasStyles.icon}><Icon iconName='GiftboxOpen' /></span>
+        <span className={christmasStyles.text}>
+            <span className={christmasStyles.greeting}>{data.greeting}</span>
+            {day.description}
+            {data.isOfficeClosed && <span className={christmasStyles.closed}>Office closed</span>}
+        </span>
+    </div>
+}
+
 const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
     const { marker } = useGanttMarker()
     if (marker.id !== 'betaCutoff') {
@@ -112,7 +171,12 @@ const GridExample = () => {
                 line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
             },
         }),
-        createGanttWeekendsModule(),
+        createMemoryGanttNonWorkingDaysModule({
+            nonWorkingDays: NON_WORKING_DAYS,
+            components: {
+                tooltip: { onRenderDescription: props => <HolidayDescription {...props} /> },
+            },
+        }),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
         createGanttSelectionModule(),

@@ -3,7 +3,8 @@ import { mergeStyles } from "@fluentui/react";
 import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule, useGanttService } from "../../../../../context";
 import type { IGanttDragging } from "../../../../../dragging/GanttDragging";
-import { getCreateTarget, getTimelineX, isCreateTarget, ITimelineCreateTarget } from "../../../timelineGeometry";
+import { getCreateTarget, isCreateTarget, ITimelineCreateTarget } from "../../../timelineGeometry";
+import { getTimelineX } from "../../../../../timeline/getTimelineX";
 import { CreatePreview, ICreatePreviewProps } from "../../ui/create-preview";
 import { useTimelineAutoScroll } from "./useTimelineAutoScroll";
 

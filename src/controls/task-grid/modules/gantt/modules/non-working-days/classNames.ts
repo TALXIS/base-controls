@@ -1,1 +1,1 @@
-export const GANTT_WEEKEND_CLASS = 'gantt_weekend';
+export const GANTT_NON_WORKING_DAY_CLASS = 'gantt_non_working_day';

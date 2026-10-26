@@ -47,7 +47,7 @@ const GridExample = () => {
     const ganttModules = React.useMemo(() => [
         createGanttLibraryModule(),
         createGanttMarkersModule(),
-        createGanttWeekendsModule(),
+        createMemoryGanttNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
         createGanttTaskDraggingModule(),
         createGanttTaskCreateModule(),
         createGanttSelectionModule(),

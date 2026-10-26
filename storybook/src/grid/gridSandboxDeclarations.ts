@@ -4434,8 +4434,43 @@ declare const createGanttProLibraryModule: (Gantt: unknown) => IGanttModule;
 declare const createGanttMarkersModule: (parameters?: IGanttMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IGanttMarker[]> } }) => IGanttModule;
 /** Markers held in memory. */
 declare const createMemoryGanttMarkersModule: (parameters: IGanttMarkersOptions & { markers: IGanttMarker[] }) => IGanttModule;
-/** Hides weekends from the scale, toggled in TaskDatasetControl.Settings. */
-declare const createGanttWeekendsModule: (parameters?: { isVisibleByDefault?: boolean; labels?: Partial<{ hideWeekends: string }> }) => IGanttModule;
+/** A day, or a run of days, on which tasks are not worked on. */
+interface IGanttNonWorkingDay {
+    id: string;
+    /** The first day, of the first occurrence when it recurs. */
+    date: import('dayjs').Dayjs;
+    /** The last day, inclusive; leave it out for a single day. */
+    endDate?: import('dayjs').Dayjs;
+    /** What the scale says when its day is pointed at. */
+    description?: string;
+    /** An RRULE, such as FREQ=YEARLY, whose start is date. */
+    recurrence?: string;
+    /** What else the day carries, such as its own columns. */
+    data?: { [key: string]: unknown };
+}
+
+interface IGanttNonWorkingDaysOptions {
+    /** Whether Saturdays and Sundays are non-working days. Defaults to true. */
+    enableWeekends?: boolean;
+    isVisibleByDefault?: boolean;
+    /** The tooltip's replaceable pieces: onRenderCallout, onRenderContainer, and onRenderDescription, which gets the whole day. */
+    components?: {
+        tooltip?: Partial<{
+            onRenderCallout: (props: any) => JSX.Element | null;
+            onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+            onRenderDescription: (props: React.HTMLAttributes<HTMLSpanElement> & { day: IGanttNonWorkingDay }) => JSX.Element | null;
+        }>;
+    };
+    labels?: Partial<{ hideNonWorkingDays: string; weekend: string; loadNonWorkingDaysFailed: string }>;
+}
+
+/** Common holidays, plus a few company days, for the sample Gantt. */
+declare const NON_WORKING_DAYS: IGanttNonWorkingDay[];
+
+/** Weekends and the store's days, shaded on the timeline and hidden from TaskDatasetControl.Settings. */
+declare const createGanttNonWorkingDaysModule: (parameters?: IGanttNonWorkingDaysOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadNonWorkingDays(): Promise<IGanttNonWorkingDay[]> } }) => IGanttModule;
+/** Non-working days held in memory. */
+declare const createMemoryGanttNonWorkingDaysModule: (parameters: IGanttNonWorkingDaysOptions & { nonWorkingDays: IGanttNonWorkingDay[] }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
 declare const createGanttTaskDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
 /** Ctrl+drag over the timeline draws a new task. */

@@ -15,11 +15,6 @@ export const isCreateTarget = (gantt: GanttStatic, target: EventTarget | null): 
     return !!element && gantt.$root.contains(element) && !!element.closest(CREATE_TARGET_SELECTOR);
 };
 
-/** A client x as a position on the timeline, so it stays put while the chart scrolls. */
-export const getTimelineX = (gantt: GanttStatic, clientX: number): number => {
-    return gantt.getScrollState().x + clientX - gantt.$root.getBoundingClientRect().left;
-};
-
 export const getCreateTarget = (gantt: GanttStatic, target: EventTarget | null): ITimelineCreateTarget | undefined => {
     const element = target as HTMLElement | null;
     if (!element || !isCreateTarget(gantt, element)) {
