@@ -238,10 +238,8 @@ export interface ITaskDataProvider extends IDataProvider {
     editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Opens the record a task's lookup points to. */
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
-    /** Merges changed raw data into the loaded tasks, keeping the user's unsaved edits, and redraws them. */
+    /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
     updateTaskData(rawRecords: IRawRecord[]): void;
-    /** Writes values loaded apart from the tasks onto their records, by task id, keeping the user's unsaved edits and raising nothing. */
-    setTaskValues(values: Map<string, IRawRecord>): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */

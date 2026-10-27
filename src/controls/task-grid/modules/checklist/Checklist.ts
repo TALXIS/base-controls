@@ -34,8 +34,6 @@ export interface IChecklistParameters {
 }
 
 export interface IChecklistEvents {
-    /** The items of these tasks changed. */
-    onItemsChanged: (taskIds: string[]) => void;
     onLoading: (isLoading: boolean) => void;
 }
 
@@ -49,6 +47,8 @@ export interface IChecklist {
     events: IEventEmitter<IChecklistEvents>;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
+    /** Loads the tasks' checklist items again, every loaded task's when none are given. */
+    reload(taskIds?: string[]): Promise<void>;
     getLabels(): ILocalizationService<IChecklistLabels>;
     /** Called as the mount goes. */
     destroy(): void;
@@ -78,6 +78,10 @@ export class Checklist implements IChecklist {
         return this._error;
     }
 
+    public reload(taskIds?: string[]): Promise<void> {
+        return this._load(taskIds ?? Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+    }
+
     public getLabels(): ILocalizationService<IChecklistLabels> {
         return this._labels;
     }
@@ -89,12 +93,10 @@ export class Checklist implements IChecklist {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
         provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumn),
             provider.registerLoadWaiter(this._waitForItems),
             () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
-            () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
         );
     };
 
@@ -109,10 +111,6 @@ export class Checklist implements IChecklist {
         if (this._taskRuntime.getProvider().isColumnQueried(CHECKLIST_COLUMN_NAME)) {
             await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
         }
-    };
-
-    private _onTasksUpdated = (records: IRecord[]): void => {
-        this._load(records.map(record => record.getRecordId()));
     };
 
     private _load(taskIds: string[]): Promise<void> {
@@ -130,8 +128,9 @@ export class Checklist implements IChecklist {
         this._setLoading(true);
         try {
             const loaded = await this._store.onLoadItems(taskIds);
-            this._taskRuntime.getProvider().setTaskValues(new Map(taskIds.map(taskId => [taskId, { [CHECKLIST_COLUMN_NAME]: (loaded.get(taskId) ?? []).map(this._toReference) }])));
-            this.events.dispatchEvent('onItemsChanged', taskIds);
+            const provider = this._taskRuntime.getProvider();
+            const primaryIdAttribute = provider.getMetadata().PrimaryIdAttribute!;
+            provider.updateTaskData(taskIds.map(taskId => ({ [primaryIdAttribute]: taskId, [CHECKLIST_COLUMN_NAME]: (loaded.get(taskId) ?? []).map(this._toReference) })));
         }
         catch (error) {
             this._error = new Error(this._labels.getLocalizedString('loadChecklistFailed'), { cause: error });

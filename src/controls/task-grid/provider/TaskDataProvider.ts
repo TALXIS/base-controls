@@ -302,16 +302,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         await this._store.onOpenRelatedRecord(reference, columnName);
     }
 
-    //silent: LookupMany reloads its values on onTasksUpdated and writes them back through here
-    public setTaskValues(values: Map<string, IRawRecord>): void {
-        for (const [taskId, taskValues] of values) {
-            const record = this.getRecordsMap()[taskId];
-            if (record) {
-                this._mergeRawData(record, taskValues);
-            }
-        }
-    }
-
     public updateTaskData(rawRecords: IRawRecord[]): void {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
         const { parentId, stackRank } = this.getFieldMapping();

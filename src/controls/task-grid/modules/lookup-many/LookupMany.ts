@@ -62,8 +62,6 @@ export interface ILookupManyParameters<TColumn extends ILookupManyColumn = ILook
 }
 
 export interface ILookupManyEvents {
-    /** The values of these tasks changed. */
-    onValuesChanged: (taskIds: string[]) => void;
     onLoading: (isLoading: boolean) => void;
     /** The column whose filter callout is open changed. */
     onFilterChanged: (columnName: string | undefined) => void;
@@ -77,6 +75,8 @@ export interface ILookupMany {
     getValue(taskId: string, columnName: string): Reference[];
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
+    /** Loads the tasks' references again, every loaded task's when none are given. */
+    reload(taskIds?: string[]): Promise<void>;
     getLabels(): ILocalizationService<ILookupManyLabels>;
     /** A provider over the records the column can take, for a task or a filter; `undefined` when it takes none. */
     createOptionsProvider(record: IRecord | undefined, column: IColumn): IDataProvider | undefined;
@@ -133,6 +133,10 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         return this._error;
     }
 
+    public reload(taskIds?: string[]): Promise<void> {
+        return this._load(taskIds ?? Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+    }
+
     public getLabels(): ILocalizationService<ILookupManyLabels> {
         return this._labels;
     }
@@ -177,14 +181,12 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
         provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumns),
             provider.registerColumnHandler({ isHandledColumn: columnName => !!this.getColumn(columnName), onSaveValue: this._saveValue }),
             provider.registerColumnMatcher(this._matcher),
             provider.registerLoadWaiter(this._waitForValues),
             () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
-            () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
         );
     };
 
@@ -211,10 +213,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         }
     };
 
-    private _onTasksUpdated = (records: IRecord[]): void => {
-        this._load(records.map(record => record.getRecordId()));
-    };
-
     private _load(taskIds: string[]): Promise<void> {
         this._hasStartedLoading = true;
         this._currentLoad = this._loadValues(taskIds);
@@ -232,8 +230,9 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             const loaded = await this._taskRuntime.execute(() => this._store.onLoadValues(taskIds), { loading: { show: false }, error: { title: errorTitle } });
             //a task the store leaves out holds none
             const empty = Object.fromEntries(Object.keys(this._parameters.columns).map(columnName => [columnName, []]));
-            this._taskRuntime.getProvider().setTaskValues(new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }])));
-            this.events.dispatchEvent('onValuesChanged', taskIds);
+            const provider = this._taskRuntime.getProvider();
+            const primaryIdAttribute = provider.getMetadata().PrimaryIdAttribute!;
+            provider.updateTaskData(taskIds.map(taskId => ({ ...empty, ...loaded.get(taskId), [primaryIdAttribute]: taskId })));
         }
         catch (error) {
             this._error = new Error(errorTitle, { cause: error });

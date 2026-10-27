@@ -64,6 +64,8 @@ export interface IDependencies {
     getSuccessors(taskId: string): ITaskDependency[];
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
+    /** Loads the tasks' dependencies again, every loaded task's when none are given. */
+    reload(taskIds?: string[]): Promise<void>;
     /** Whether dependencies can be created, retyped and deleted. */
     isEditable(): boolean;
     /** Whether the dependency may be created: no self-link, duplicate or cycle. */
@@ -125,6 +127,10 @@ export class Dependencies implements IDependencies {
 
     public getError(): unknown {
         return this._error;
+    }
+
+    public reload(taskIds?: string[]): Promise<void> {
+        return this._load(taskIds ?? Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
     }
 
     public isEditable(): boolean {
@@ -189,13 +195,11 @@ export class Dependencies implements IDependencies {
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
         provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
         provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
-        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumns),
             provider.registerLoadWaiter(this._waitForDependencies),
             () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
             () => provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted),
-            () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
         );
     };
 
@@ -219,10 +223,6 @@ export class Dependencies implements IDependencies {
         if (removed.length > 0) {
             this._setDependencies(this._dependencies.filter(dependency => !removed.includes(dependency)), removed);
         }
-    };
-
-    private _onTasksUpdated = (records: IRecord[]): void => {
-        this._load(records.map(record => record.getRecordId()));
     };
 
     private _load(taskIds: string[]): Promise<void> {
@@ -269,11 +269,12 @@ export class Dependencies implements IDependencies {
 
     private _writeToRecords(taskIds: string[]): void {
         const provider = this._taskRuntime.getProvider();
-        const values = new Map<string, IRawRecord>(taskIds.map(taskId => [taskId, {
+        const primaryIdAttribute = provider.getMetadata().PrimaryIdAttribute!;
+        provider.updateTaskData(taskIds.map((taskId): IRawRecord => ({
+            [primaryIdAttribute]: taskId,
             [PREDECESSORS_COLUMN_NAME]: this.getPredecessors(taskId).map(dependency => this._toReference(dependency.predecessorTaskId, dependency)),
             [SUCCESSORS_COLUMN_NAME]: this.getSuccessors(taskId).map(dependency => this._toReference(dependency.successorTaskId, dependency)),
-        }]));
-        provider.setTaskValues(values);
+        })));
     }
 
     private _toReference(taskId: string, dependency: ITaskDependency): IEntityReference<ITaskDependencyData> {

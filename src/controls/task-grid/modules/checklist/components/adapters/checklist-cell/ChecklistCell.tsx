@@ -18,13 +18,7 @@ const ChecklistCellProgress = () => {
 export const ChecklistCell = (props: IGridCellParams) => {
     const { rerender } = useRerender();
     const checklist = useDatasetControlModule('checklist');
-    const taskId = props.data!.getRecordId();
 
-    useEventEmitter<IChecklistEvents>(checklist.events, 'onItemsChanged', (taskIds: string[]) => {
-        if (taskIds.includes(taskId)) {
-            rerender();
-        }
-    });
     useEventEmitter<IChecklistEvents>(checklist.events, 'onLoading', rerender);
 
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>

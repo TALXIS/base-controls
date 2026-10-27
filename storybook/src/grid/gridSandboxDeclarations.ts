@@ -3917,8 +3917,8 @@ interface ITaskDataProvider extends IDataProvider {
     registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
     /** Whether the current sorting, filtering or quick find reads the column. */
     isColumnQueried(columnName: string): boolean;
-    /** Writes values loaded apart from the tasks onto their records, by task id, leaving what the user has changed. */
-    setTaskValues(values: Map<string, IRawRecord>): void;
+    /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
+    updateTaskData(rawRecords: IRawRecord[]): void;
 }
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */

@@ -22,13 +22,7 @@ const DependenciesCellCount = () => {
 export const DependenciesCell = (props: IGridCellParams) => {
     const { rerender } = useRerender();
     const dependencies = useDatasetControlModule('dependencies');
-    const taskId = props.data!.getRecordId();
 
-    useEventEmitter<IDependenciesEvents>(dependencies.events, 'onDependenciesChanged', (taskIds: string[]) => {
-        if (taskIds.includes(taskId)) {
-            rerender();
-        }
-    });
     useEventEmitter<IDependenciesEvents>(dependencies.events, 'onLoading', rerender);
 
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>

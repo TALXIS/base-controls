@@ -31,13 +31,7 @@ const LookupManyCellPills = () => {
 export const LookupManyCell = (props: IGridCellParams) => {
     const { rerender } = useRerender();
     const lookupMany = useDatasetControlModule('lookupMany');
-    const taskId = props.data!.getRecordId();
 
-    useEventEmitter<ILookupManyEvents>(lookupMany.events, 'onValuesChanged', (taskIds: string[]) => {
-        if (taskIds.includes(taskId)) {
-            rerender();
-        }
-    });
     useEventEmitter<ILookupManyEvents>(lookupMany.events, 'onLoading', rerender);
 
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
