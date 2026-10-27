@@ -3,7 +3,7 @@ import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, ICreateTaskTree, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
@@ -165,7 +165,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        const results: IRecordSaveOperationResult[] = [];
+        const results: ITaskSaveResult[] = [];
         let hasUnhandledField = false;
         for (const field of record.getFields().filter(field => field.isDirty())) {
             const column = field.getColumn();
@@ -180,6 +180,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (hasUnhandledField || results.length === 0) {
             results.push(await this._store.onSaveRecord(record));
         }
+        //before returning: the save then marks the values it sent saved, which must still be the dirty ones
+        this._applyChanges({ updatedRecords: results.flatMap(result => result.updatedRecords ?? []) });
         return {
             recordId: record.getRecordId(),
             success: results.every(result => result.success),
@@ -193,18 +195,25 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
         const resolvedParentId = parentId ?? this._rootTaskId;
-        const rawRecord = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
-        return rawRecord ? this.addTasks([rawRecord], resolvedParentId)[0] : null;
+        const result = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
+        if (!result) {
+            return null;
+        }
+        const [record] = this.addTasks([result.record], resolvedParentId);
+        this._applyChanges(result);
+        return record;
     }
 
     public async createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null> {
         const resolvedParentId = parentId ?? this._rootTaskId;
-        const records = await this._createTaskTrees(tasks, resolvedParentId);
+        const updatedRecords: IRawRecord[] = [];
+        const records = await this._createTaskTrees(tasks, updatedRecords, resolvedParentId);
         if (records.length === 0) {
             return null;
         }
         this._rebuildTree();
         this.taskEvents.dispatchEvent('onTasksCreated', records, resolvedParentId);
+        this._applyChanges({ updatedRecords });
         return records;
     }
 
@@ -234,6 +243,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const keptIds = new Set<string>();
         const deletedTaskIds: string[] = [];
         const errors: IFailedRecord[] = [];
+        const updatedRecords: IRawRecord[] = [];
         for (const level of this._getLevelsDeepestFirst(this.getDeletion(taskIds).deletableTaskIds)) {
             const levelIds = level.filter(taskId => !structure.getChildren(taskId).some(child => keptIds.has(child.getRecordId())));
             level.filter(taskId => !levelIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
@@ -245,6 +255,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 break;
             }
             deletedTaskIds.push(...result.deletedTaskIds);
+            updatedRecords.push(...result.updatedRecords ?? []);
             levelIds.filter(taskId => !result.deletedTaskIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
             if (!result.success) {
                 errors.push(...result.errors);
@@ -260,29 +271,30 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
             this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
         }
+        this._applyChanges({ updatedRecords }, new Set(deletedTaskIds));
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
     public async moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
         const params = this._resolveMove(movingTaskId, targetTaskId, position);
-        if (!params || !await this._store.onMoveTask(params)) {
+        const changes = params && await this._store.onMoveTask(params);
+        if (!params || !changes) {
             return null;
         }
         const { parentId, stackRank } = params.fieldMapping;
-        this.updateTaskData([{
+        const moved = {
             [this.getMetadata().PrimaryIdAttribute!]: movingTaskId,
             [parentId]: params.parentRecord ? [params.parentRecord.getNamedReference()] : null,
             [stackRank]: params.stackRank,
-        }]);
+        };
+        this._applyChanges({ updatedRecords: [moved, ...changes.updatedRecords ?? []] });
         this.taskEvents.dispatchEvent('onTaskMoved', params);
         return true;
     }
 
     public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
         const result = await this._store.onEditTasks(taskIds);
-        if (result) {
-            this.updateTaskData(result.updatedRecords);
-        }
+        this._applyChanges(result ?? undefined);
         return result;
     }
 
@@ -290,18 +302,13 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         await this._store.onOpenRelatedRecord(reference, columnName);
     }
 
+    //silent: LookupMany reloads its values on onTasksUpdated and writes them back through here
     public setTaskValues(values: Map<string, IRawRecord>): void {
         for (const [taskId, taskValues] of values) {
             const record = this.getRecordsMap()[taskId];
-            if (!record) {
-                continue;
+            if (record) {
+                this._mergeRawData(record, taskValues);
             }
-            //raw data rebuilds the fields, so the user's changes are put back
-            const changes = record.getFields().filter(field => field.isDirty()).map(field => [field.getColumn().name, field.getValue()] as const);
-            const changedNames = new Set(changes.map(([columnName]) => columnName));
-            const loaded = Object.fromEntries(Object.entries(taskValues).filter(([columnName]) => !changedNames.has(columnName)));
-            record.setRawData({ ...record.getRawData(), ...loaded });
-            changes.forEach(([columnName, value]) => record.setValue(columnName, value));
         }
     }
 
@@ -317,8 +324,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             }
             const previousParentId = record.getValue(parentId)?.[0]?.id?.guid;
             const previousStackRank = record.getValue(stackRank);
-            //a store may return fewer columns than were loaded, such as no linked-entity values
-            record.setRawData({ ...record.getRawData(), ...rawRecord });
+            this._mergeRawData(record, rawRecord);
             isTreeChanged ||= previousParentId !== record.getValue(parentId)?.[0]?.id?.guid || previousStackRank !== record.getValue(stackRank);
             records.push(record);
         }
@@ -399,6 +405,24 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         }
     }
 
+    //merged, as a store may return fewer columns than were loaded, such as no linked-entity values
+    private _mergeRawData(record: IRecord, rawData: IRawRecord): void {
+        //raw data rebuilds the fields, so the user's unsaved edits are put back over it
+        const edits = record.getFields().filter(field => field.isDirty()).map(field => [field.getColumn().name, field.getValue()] as const);
+        const editedNames = new Set(edits.map(([columnName]) => columnName));
+        const loaded = Object.fromEntries(Object.entries(rawData).filter(([columnName]) => !editedNames.has(columnName)));
+        record.setRawData({ ...record.getRawData(), ...loaded });
+        edits.forEach(([columnName, value]) => record.setValue(columnName, value));
+    }
+
+    private _applyChanges(changes?: ITaskChanges, skippedTaskIds?: Set<string>): void {
+        const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
+        const updatedRecords = (changes?.updatedRecords ?? []).filter(rawRecord => !skippedTaskIds?.has(rawRecord[primaryIdAttribute]));
+        if (updatedRecords.length > 0) {
+            this.updateTaskData(updatedRecords);
+        }
+    }
+
     private _isRelatedEntity(options?: IAvailableColumnOptions): boolean {
         return !!options?.entityName && options.entityName !== this.getEntityName();
     }
@@ -417,18 +441,19 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     //the tree is built after each task so its children are placed under it
-    private async _createTaskTrees(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[]> {
+    private async _createTaskTrees(tasks: ICreateTaskTree[], updatedRecords: IRawRecord[], parentId?: string): Promise<IRecord[]> {
         const created: IRecord[] = [];
         let previousTaskId: string | undefined;
         for (const task of tasks) {
-            const rawRecord = await this._store.onCreateTask(this._resolveCreate(parentId, { data: task.data, previousTaskId }));
-            if (!rawRecord) {
+            const result = await this._store.onCreateTask(this._resolveCreate(parentId, { data: task.data, previousTaskId }));
+            if (!result) {
                 break;
             }
-            const [record] = this._addRecords([rawRecord]);
+            updatedRecords.push(...result.updatedRecords ?? []);
+            const [record] = this._addRecords([result.record]);
             this._tree.build();
             previousTaskId = record.getRecordId();
-            created.push(record, ...await this._createTaskTrees(task.children ?? [], previousTaskId));
+            created.push(record, ...await this._createTaskTrees(task.children ?? [], updatedRecords, previousTaskId));
         }
         return created;
     }

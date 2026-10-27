@@ -2,7 +2,7 @@ import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProvi
 import { StackRank } from "@utils/stack-rank";
 import type { ITaskRuntime } from "../../runtime";
 import { simulateBackend } from "./simulateBackend";
-import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
@@ -39,7 +39,7 @@ export class MemoryTaskStore implements ITaskStore {
         return [];
     }
 
-    public async onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null> {
+    public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
         await simulateBackend();
         const { fieldMapping, metadata } = params;
         const task: IRawRecord = {};
@@ -52,7 +52,7 @@ export class MemoryTaskStore implements ITaskStore {
         task[fieldMapping.stackRank] = this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping);
         task[fieldMapping.stateCode] ??= 0;
         this._tasks.push(task);
-        return structuredClone(task);
+        return { record: structuredClone(task) };
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
@@ -63,11 +63,11 @@ export class MemoryTaskStore implements ITaskStore {
         return { success: true, deletedTaskIds: params.taskIds };
     }
 
-    public async onMoveTask(params: ITaskMoveParams): Promise<true | null> {
+    public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
         await simulateBackend();
         const { parentId, stackRank } = params.fieldMapping;
         this._write(params.movingRecord.getRecordId(), { [parentId]: this._getParentReference(params.parentRecord), [stackRank]: params.stackRank });
-        return true;
+        return {};
     }
 
     public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {

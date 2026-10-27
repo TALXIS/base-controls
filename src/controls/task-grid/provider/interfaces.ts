@@ -45,15 +45,29 @@ export interface IFailedRecord {
     error: any;
 }
 
-/** Which tasks a delete removed, and which it could not. */
-export type IDeleteTasksResult =
-    | { success: true; deletedTaskIds: string[] }
-    | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
+/** Records the backend changed along with an operation, such as dependent tasks it rescheduled. */
+export interface ITaskChanges {
+    /** Raw data by the primary id, merged into the loaded tasks; the user's unsaved edits stay. */
+    updatedRecords?: IRawRecord[];
+}
 
-/** The records opening came back with changed, and which could not be opened. */
-export type IEditTasksResult =
-    | { success: true; updatedRecords: IRawRecord[] }
-    | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
+/** The task a create made, with what else the backend changed. */
+export interface ITaskCreateResult extends ITaskChanges {
+    record: IRawRecord;
+}
+
+/** How a save went, with what else the backend changed. */
+export type ITaskSaveResult = IRecordSaveOperationResult & ITaskChanges;
+
+/** Which tasks a delete removed, and which it could not. */
+export type IDeleteTasksResult = ITaskChanges & (
+    | { success: true; deletedTaskIds: string[] }
+    | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] });
+
+/** How editing went, with the records it changed, and which could not be opened. */
+export type IEditTasksResult = ITaskChanges & (
+    | { success: true }
+    | { success: false; errors: IFailedRecord[] });
 
 /** Where a task lands, resolved over every loaded task whatever the view hides. */
 export interface ITaskSiblingContext {
@@ -130,7 +144,7 @@ export interface ITaskStore {
     onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
     onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
     /** @returns The created record, or `null` when the user cancelled. */
-    onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;
+    onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null>;
     /** Whether a task may be deleted; every task may when left out. */
     onCanDeleteTask?(task: IRecord): boolean;
     /**
@@ -138,9 +152,9 @@ export interface ITaskStore {
      * @returns Which tasks went, or `null` when the user cancelled.
      */
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
-    /** @returns `true` once moved, or `null` when the user cancelled. */
-    onMoveTask(params: ITaskMoveParams): Promise<true | null>;
-    onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult>;
+    /** @returns What else changed once moved, or `null` when the user cancelled. */
+    onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null>;
+    onSaveRecord(record: IRecord): Promise<ITaskSaveResult>;
     /** Lets the user edit the tasks, such as in a form; `null` when nothing changed. */
     onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Opens the record a task's lookup points to. */
@@ -176,7 +190,7 @@ export interface ITaskColumnHandler {
     isHandledColumn(columnName: string): boolean;
     /** The handled columns' values of these tasks, by task id and column name; left out by a handler that writes them itself. */
     onLoadValues?(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
+    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<ITaskSaveResult>;
 }
 
 /** Matches tasks against filters and quick find for columns whose values are kept apart from the tasks. */
@@ -224,9 +238,9 @@ export interface ITaskDataProvider extends IDataProvider {
     editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Opens the record a task's lookup points to. */
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
-    /** Writes changed raw data onto the records it belongs to. */
+    /** Merges changed raw data into the loaded tasks, keeping the user's unsaved edits, and redraws them. */
     updateTaskData(rawRecords: IRawRecord[]): void;
-    /** Writes values loaded apart from the tasks onto their records, by task id, leaving what the user has changed. */
+    /** Writes values loaded apart from the tasks onto their records, by task id, keeping the user's unsaved edits and raising nothing. */
     setTaskValues(values: Map<string, IRawRecord>): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;

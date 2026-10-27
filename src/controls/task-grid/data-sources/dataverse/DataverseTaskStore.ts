@@ -1,7 +1,7 @@
 import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { StackRank } from "@utils/stack-rank";
-import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
 
@@ -81,10 +81,11 @@ export class DataverseTaskStore implements ITaskStore {
         return this._fetchXmlProvider.getAvailableRelatedColumns();
     }
 
-    public async onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null> {
+    public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
         const placement = this._getPlacement(params);
         const defaults = { ...await this._parameters.onGetNewTaskDefaults?.(params), ...params.data };
-        return this._isEditingEnabled() ? this._createThroughWebApi({ ...defaults, ...placement }) : this._createThroughForm(defaults, placement);
+        const record = this._isEditingEnabled() ? await this._createThroughWebApi({ ...defaults, ...placement }) : await this._createThroughForm(defaults, placement);
+        return record && { record };
     }
 
     public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
@@ -94,7 +95,7 @@ export class DataverseTaskStore implements ITaskStore {
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
-    public async onMoveTask(params: ITaskMoveParams): Promise<true | null> {
+    public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
         const { fieldMapping } = params;
         const parentId = params.parentRecord?.getRecordId();
         const parentNavigationProperty = await this._getNavigationPropertyName(this._entityName, fieldMapping.parentId);
@@ -103,7 +104,7 @@ export class DataverseTaskStore implements ITaskStore {
             [`${parentNavigationProperty}@odata.bind`]: parentId ? `/${this._entitySetName}(${parentId})` : null,
             [fieldMapping.stackRank]: params.stackRank,
         });
-        return true;
+        return {};
     }
 
     public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {
