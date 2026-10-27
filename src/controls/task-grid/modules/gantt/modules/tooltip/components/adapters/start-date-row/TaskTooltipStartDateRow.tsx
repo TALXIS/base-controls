@@ -1,6 +1,5 @@
 import { ITaskTooltipUiFieldRowComponents, TaskTooltipUiFieldRow } from "../../ui";
 import { useTaskTooltip } from "../task-tooltip";
-import { useBarDate } from "./useBarDate";
 
 export interface ITaskTooltipStartDateRowProps {
     /** Defaults to `Calendar`. */
@@ -10,7 +9,10 @@ export interface ITaskTooltipStartDateRowProps {
 
 /** The task's start as the timeline draws it, not as the record holds it. */
 export const TaskTooltipStartDateRow = (props: ITaskTooltipStartDateRowProps) => {
-    const { gantt, task } = useTaskTooltip();
-    const date = useBarDate(task.start_date, gantt.services.get('dates').getStartColumnName());
-    return date ? <TaskTooltipUiFieldRow label={date.label} iconName={props.iconName ?? 'Calendar'} components={props.components}>{date.value}</TaskTooltipUiFieldRow> : null;
+    const { gantt, span } = useTaskTooltip();
+    if (!span) {
+        return null;
+    }
+    const schedule = gantt.services.get('schedule');
+    return <TaskTooltipUiFieldRow label={schedule.getLabels().start} iconName={props.iconName ?? 'Calendar'} components={props.components}>{schedule.format(span).start}</TaskTooltipUiFieldRow>;
 };

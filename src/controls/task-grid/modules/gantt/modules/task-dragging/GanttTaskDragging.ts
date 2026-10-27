@@ -1,8 +1,11 @@
-import type { GanttStatic } from "dhtmlx-gantt";
+import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { IGantt } from "../../interfaces";
 import { GANTT_TASK_LINE_CLASS } from "../../chart/classNames";
+import type { GanttSpanEdge, IGanttSpan } from "../../schedule/GanttSchedule";
 import { getGanttTaskDraggingStyles } from "./styles";
+import { getTaskDragState, shiftTaskDrag } from "./taskDragState";
 
+const MOVE_MODE = 'move';
 const RESIZE_MODE = 'resize';
 
 export interface IGanttTaskDraggingParameters {
@@ -18,18 +21,6 @@ export interface IGanttTaskDragging {
     isResizeEnabled(): boolean;
     /** Called as the Gantt goes. */
     destroy(): void;
-}
-
-//the chart's drag state, which it measures from the rendered range's start
-interface IGanttDragState {
-    start_x?: number;
-    pos?: { x: number; y: number };
-    obj_s_x?: number;
-    obj_e_x?: number;
-}
-
-interface IGanttTaskDnd {
-    drag: IGanttDragState | null;
 }
 
 export class GanttTaskDragging implements IGanttTaskDragging {
@@ -66,11 +57,14 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         chart.config.drag_move = this._isMoveEnabled;
         chart.config.drag_resize = this._isResizeEnabled;
         chart.config.round_dnd_dates = false;
+        //a moved bar's end is set from its duration on drop, which whole days would round
+        chart.config.duration_unit = 'minute';
     };
 
     private _onChartReady = (chart: GanttStatic): void => {
         chart.attachEvent('onBeforeTaskDrag', this._onBeforeTaskDrag);
         chart.attachEvent('onTaskDrag', this._onTaskDrag);
+        chart.attachEvent('onBeforeTaskChanged', this._onBeforeTaskChanged);
         chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
         //captured: the chart measures the bar in its own mousedown
         chart.$root.addEventListener('mousedown', this._onPointerDown, true);
@@ -98,61 +92,65 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         if (!taskRuntime.isEditingEnabled() || this._gantt.services.get('tasks').isLocked(String(id))) {
             return false;
         }
-        return mode === RESIZE_MODE ? this._isResizeEnabled : this._isMoveEnabled;
+        const isEnabled = mode === RESIZE_MODE ? this._isResizeEnabled : this._isMoveEnabled;
+        if (isEnabled) {
+            this._configureSnapping();
+        }
+        return isEnabled;
     };
 
-    //lets the bar travel past either end of what is drawn
-    private _onTaskDrag = (id: string | number): void => {
+    //the chart's own rounding on drop and its shortest bar follow the same steps
+    private _configureSnapping(): void {
+        const chart = this._gantt.services.get('chart');
+        const schedule = this._gantt.services.get('schedule');
+        chart.config.time_step = Math.min(schedule.getSnapMinutes('start'), schedule.getSnapMinutes('end'));
+        chart.config.min_duration = schedule.getSnapMinutes('end') * 60_000;
+    }
+
+    private _onTaskDrag = (id: string | number, mode: string, task: Task): void => {
         const chart = this._gantt.services.get('chart');
         const timeline = this._gantt.services.get('timeline');
-        const task = chart.getTask(id);
+        this._snap(task, mode);
+        //lets the bar travel past either end of what is drawn
         if (task.end_date) {
             timeline.extendRangeEnd(task.end_date);
         }
         if (task.start_date) {
-            this._shiftDragCoordinates(chart, timeline.extendRangeStart(task.start_date));
+            shiftTaskDrag(chart, timeline.extendRangeStart(task.start_date));
         }
     };
+
+    //after the chart's own rounding, so the dropped dates follow the same steps as the drag
+    private _onBeforeTaskChanged = (id: string | number, mode: string): boolean => {
+        this._snap(this._gantt.services.get('chart').getTask(id), mode);
+        return true;
+    };
+
+    private _snap(task: Task, mode: string): void {
+        const drag = getTaskDragState(this._gantt.services.get('chart'));
+        const span = toSpan(task);
+        const original = drag?.obj && toSpan(drag.obj);
+        if (!drag || !span || !original || (mode !== MOVE_MODE && mode !== RESIZE_MODE)) {
+            return;
+        }
+        const schedule = this._gantt.services.get('schedule');
+        const edge: GanttSpanEdge = drag.left ? 'start' : 'end';
+        const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original) : schedule.snapEdge(span, edge);
+        task.start_date = snapped.start;
+        task.end_date = snapped.end;
+    }
 
     private _onAfterTaskDrag = (id: string | number): void => {
         const taskId = String(id);
-        const task = this._gantt.services.get('chart').getTask(taskId);
-        const tasks = this._gantt.services.get('tasks');
-        const record = tasks.getRecord(taskId);
-        const dates = this._gantt.services.get('dates');
-        if (!record || !task.start_date || !task.end_date) {
-            return;
+        const span = toSpan(this._gantt.services.get('chart').getTask(taskId));
+        const record = this._gantt.services.get('tasks').getRecord(taskId);
+        if (record && span) {
+            this._gantt.services.get('schedule').save(record, span);
         }
-        const durationColumnName = this._gantt.getTaskRuntime().getFieldMapping().duration;
-        if (durationColumnName) {
-            record.setValue(durationColumnName, Math.round(tasks.calculateDuration(task.start_date, task.end_date, record)));
-        }
-        record.setValue(dates.getStartColumnName(), task.start_date);
-        //through the grid's field, so the drop saves as an edit in the grid does
-        this._gantt.services.get('grid').services.get('fields').get(record, dates.getEndColumnName()).setValue(task.end_date);
     };
-
-    //no public way to re-base a running drag after the range grew backwards
-    private _shiftDragCoordinates(chart: GanttStatic, offset: number): void {
-        const taskDnd = (chart as unknown as { _tasks_dnd?: IGanttTaskDnd })._tasks_dnd;
-        if (!taskDnd?.drag || !offset) {
-            return;
-        }
-        const drag = taskDnd.drag;
-        if (drag.start_x !== undefined) {
-            drag.start_x += offset;
-        }
-        if (drag.pos) {
-            drag.pos.x += offset;
-        }
-        if (drag.obj_s_x !== undefined) {
-            drag.obj_s_x += offset;
-        }
-        if (drag.obj_e_x !== undefined) {
-            drag.obj_e_x += offset;
-        }
-    }
 }
+
+const toSpan = (task: Task): IGanttSpan | undefined => task.start_date && task.end_date ? { start: task.start_date, end: task.end_date } : undefined;
 
 declare module "../../interfaces" {
     interface IGanttModuleMap {

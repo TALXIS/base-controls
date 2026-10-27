@@ -33,12 +33,12 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
     const gantt = useGantt();
     const taskCreate = useGanttModule('taskCreate');
     const timeline = gantt.services.get('timeline');
-    const formatting = gantt.getTaskRuntime().getProvider().getFormatting();
+    const schedule = gantt.services.get('schedule');
     const [preview, setPreview] = useState<ICreatePreviewProps>();
     const activeDragRef = useRef<IActiveDrag>();
     const pointerRef = useRef<IPointer>();
 
-    const formatDate = (timelineX: number) => formatting.formatDateShort(chart.dateFromPos(timelineX));
+    const getSpan = (activeDrag: IActiveDrag) => schedule.snapSpan({ start: chart.dateFromPos(activeDrag.anchorX), end: chart.dateFromPos(Math.max(activeDrag.anchorX, timeline.getTimelineX(activeDrag.clientX))) });
     const canScrollLeft = () => !!activeDragRef.current && timeline.getTimelineX(activeDragRef.current.clientX) > activeDragRef.current.anchorX;
     const autoScroll = useTimelineAutoScroll(chart, canScrollLeft, () => updatePreview());
 
@@ -51,18 +51,19 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
         const activeDrag = activeDragRef.current;
         const pointer = pointerRef.current;
         if (activeDrag) {
-            const endX = Math.max(activeDrag.anchorX, timeline.getTimelineX(activeDrag.clientX));
-            const scrollX = chart.getScrollState().x;
+            const span = getSpan(activeDrag);
+            const startX = chart.posFromDate(span.start);
             setPreview({
                 row: { top: activeDrag.rowTop, height: activeDrag.rowHeight },
-                span: { left: activeDrag.anchorX - scrollX, width: endX - activeDrag.anchorX },
-                text: `${formatDate(activeDrag.anchorX)} – ${formatDate(endX)}`,
+                span: { left: startX - chart.getScrollState().x, width: chart.posFromDate(span.end) - startX },
+                text: schedule.format(span).range,
                 target: { x: activeDrag.clientX + 10, y: (pointer?.clientY ?? 0) + 12 },
             });
             return;
         }
         if (pointer && isCreateTarget(chart, pointer.target)) {
-            setPreview({ text: formatDate(timeline.getTimelineX(pointer.clientX)), target: { x: pointer.clientX + 10, y: pointer.clientY + 12 } });
+            const date = chart.dateFromPos(timeline.getTimelineX(pointer.clientX));
+            setPreview({ text: schedule.format(schedule.snapSpan({ start: date, end: date })).start, target: { x: pointer.clientX + 10, y: pointer.clientY + 12 } });
             return;
         }
         setPreview(undefined);
@@ -118,9 +119,8 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
             if (!activeDrag) {
                 return;
             }
-            const endX = Math.max(activeDrag.anchorX, timeline.getTimelineX(activeDrag.clientX));
             if (activeDrag.rowTaskId) {
-                taskCreate.create(activeDrag.rowTaskId, chart.dateFromPos(activeDrag.anchorX), chart.dateFromPos(endX));
+                taskCreate.create(activeDrag.rowTaskId, getSpan(activeDrag));
             }
             stopDrawing();
         },

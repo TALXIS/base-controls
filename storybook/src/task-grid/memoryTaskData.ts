@@ -1293,3 +1293,20 @@ export const takeLookupManyValues = (tasks: IRawRecord[]): { [taskId: string]: {
 /** The sample tasks' lookup-many references. */
 export const LOOKUP_MANY_VALUES = takeLookupManyValues(TASKS);
 
+
+const hashOf = (text: string): number => [...text].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) | 0, 0) >>> 0;
+
+/** The task columns with a time of day on the start and due dates. */
+export const DATE_TIME_COLUMNS: IColumn[] = COLUMNS.map(column => ['scheduledstart', 'scheduledend'].includes(column.name) ? { ...column, dataType: 'DateAndTime.DateAndTime' } : column);
+
+/** The sample tasks starting in the morning and due in the afternoon, under the same ids. */
+export const DATE_TIME_TASKS: IRawRecord[] = TASKS.map(task => {
+    const hash = hashOf(task[PRIMARY_ID] as string);
+    const start = dayjs(task.scheduledstart as string).hour(8 + hash % 4).minute(hash % 2 * 30);
+    const end = dayjs(task.scheduledend as string).hour(13 + hash % 5).minute(hash % 3 === 0 ? 30 : 0);
+    return { ...task, scheduledstart: start.format('YYYY-MM-DDTHH:mm:ss'), scheduledend: end.format('YYYY-MM-DDTHH:mm:ss'), scheduleddurationminutes: end.diff(start, 'minute') + end.utcOffset() - start.utcOffset() };
+});
+
+/** Every date-time task column, with the ones not named hidden. */
+export const getDateTimeQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
+    getQueryColumns(...visibleColumnNames).map(column => ({ ...column, dataType: DATE_TIME_COLUMNS.find(dateTimeColumn => dateTimeColumn.name === column.name)?.dataType ?? column.dataType }));

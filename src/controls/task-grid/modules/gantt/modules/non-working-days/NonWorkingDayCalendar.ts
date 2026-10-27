@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import { RRule } from "rrule";
 import type { IGanttNonWorkingDay } from "./GanttNonWorkingDays";
+import { getClockDuration } from "../../schedule/clockTime";
 
 interface ICalendarEntry<TData> {
     day: IGanttNonWorkingDay<TData>;
@@ -38,14 +39,14 @@ export class NonWorkingDayCalendar<TData> {
         return this.getDays(date).length > 0;
     }
 
-    /** The milliseconds between two dates that fall on working days. */
+    /** The milliseconds between two dates that fall on working days, as a clock reads them. */
     public getWorkingDuration(startDate: Date, endDate: Date): number {
         let duration = 0;
         let day = dayjs(startDate).startOf('day');
         while (day.valueOf() < +endDate) {
             const nextDay = day.add(1, 'day');
             if (!this.isNonWorkingDay(day.toDate())) {
-                duration += Math.min(nextDay.valueOf(), +endDate) - Math.max(day.valueOf(), +startDate);
+                duration += getClockDuration(new Date(Math.max(day.valueOf(), +startDate)), new Date(Math.min(nextDay.valueOf(), +endDate)));
             }
             day = nextDay;
         }

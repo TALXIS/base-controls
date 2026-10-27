@@ -3,6 +3,7 @@ import type { Task } from "dhtmlx-gantt";
 import type { IPoint } from "@fluentui/react";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGantt } from "../../../../../interfaces";
+import type { IGanttSpan } from "../../../../../schedule/GanttSchedule";
 
 /** The task a tooltip is drawn for. */
 export interface ITaskTooltipContext {
@@ -12,7 +13,9 @@ export interface ITaskTooltipContext {
     task: Task;
     /** Where the pointer is. */
     target: IPoint;
-    /** How long the task takes in minutes, calculated from its bar while it is dragged. */
+    /** Where the task's bar runs, ahead of the record while it is dragged; absent while unscheduled. */
+    span?: IGanttSpan;
+    /** How long the task takes in minutes, calculated from its bar while it is dragged or when it has none. */
     duration?: number;
     /** The colour the task's bar is drawn in. */
     color?: string;

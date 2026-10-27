@@ -12,7 +12,7 @@ import { GANTT_LABELS, IGanttLabels } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
-import { GanttDates } from "../dates/GanttDates";
+import { GanttSchedule } from "../schedule/GanttSchedule";
 import { GanttTimeline } from "../timeline/GanttTimeline";
 import { GanttZooming } from "../zooming/GanttZooming";
 import { GanttDragging } from "../dragging/GanttDragging";
@@ -46,12 +46,12 @@ export class GanttRuntime implements IGantt {
         this._taskRuntime = parameters.taskRuntime;
         this._onGetProps = parameters.onGetProps;
         const labels = new LocalizationService<IGanttLabels>({ ...GANTT_LABELS, ...parameters.onGetProps().labels });
-        const dates = new GanttDates(parameters.taskRuntime);
         this.services.register('taskRuntime', () => parameters.taskRuntime);
         this.services.register('labels', () => labels);
         this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
-        this.services.register('dates', () => dates);
+        const schedule = new GanttSchedule(this);
+        this.services.register('schedule', () => schedule);
         this._datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
     }
 
@@ -132,11 +132,11 @@ export class GanttRuntime implements IGantt {
     private _draw(container: HTMLElement, grid: IGrid<ITaskGridServiceMap>, gridApi: GridApi<IRecord>): void {
         const gantt = this._createChart(grid);
         this._gantt = gantt;
-        const dates = this.services.get('dates');
+        const schedule = this.services.get('schedule');
         const timeline = new GanttTimeline(gantt);
         const dragging = new GanttDragging(gantt);
-        const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, dates, timeline, state: this.services.get('state') });
-        const tasks = new GanttTasks({ gantt, gridApi, runtime: this, dates, onParsed: this._onTasksParsed });
+        const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
+        const tasks = new GanttTasks({ gantt, gridApi, runtime: this, schedule, onParsed: this._onTasksParsed });
         this._zooming = zooming;
         this._destroyables.push(timeline, zooming, tasks);
         this._chartConfigHooks.apply(gantt);

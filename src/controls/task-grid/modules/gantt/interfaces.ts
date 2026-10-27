@@ -4,7 +4,7 @@ import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";
 import type { IGanttLabels } from "./labels";
-import type { IGanttDates } from "./dates/GanttDates";
+import type { IGanttSchedule } from "./schedule/GanttSchedule";
 import type { IGanttZooming } from "./zooming/GanttZooming";
 import type { IGanttTimeline } from "./timeline/GanttTimeline";
 import type { IGanttDragging } from "./dragging/GanttDragging";
@@ -41,7 +41,8 @@ export interface IGanttServiceMap extends IGanttModuleServiceMap {
     state: IStateStore;
     /** The chart, there once it is drawn. */
     chart: GanttStatic;
-    dates: IGanttDates;
+    /** How a task's record maps to the span its bar runs over. */
+    schedule: IGanttSchedule;
     zooming: IGanttZooming;
     timeline: IGanttTimeline;
     dragging: IGanttDragging;

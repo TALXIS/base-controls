@@ -20,6 +20,7 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     const chart = useGanttService('chart');
     const dragging = useGanttService('dragging');
     const tasks = useGanttService('tasks');
+    const schedule = gantt.services.get('schedule');
     const [hovered, setHovered] = useState<IHoveredTask>();
     const draggedTaskIdRef = useRef<string>();
 
@@ -61,10 +62,10 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
         return null;
     }
     const task = chart.getTask(hovered.taskId);
-    const { start_date: startDate, end_date: endDate } = task;
-    const isDragged = draggedTaskIdRef.current === hovered.taskId;
-    const duration = isDragged && startDate && endDate ? tasks.calculateDuration(startDate, endDate, record) : tasks.getDuration(hovered.taskId);
-    const context = { gantt, record, task, target: hovered.target, duration, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
+    const span = task.start_date && task.end_date ? { start: task.start_date, end: task.end_date } : undefined;
+    const calculatedDuration = span && schedule.calculateDuration(span, record);
+    const duration = draggedTaskIdRef.current === hovered.taskId ? calculatedDuration : schedule.getDuration(record) ?? calculatedDuration;
+    const context = { gantt, record, task, span, target: hovered.target, duration, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
     return <TaskTooltipContext.Provider value={context}>{props.children}</TaskTooltipContext.Provider>;
 };
 

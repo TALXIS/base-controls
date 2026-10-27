@@ -27,7 +27,7 @@ import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { NON_WORKING_DAYS } from '../task-grid/memoryNonWorkingDayData'
 import { CHECKLIST_COLUMN, CHECKLIST_ITEMS, createChecklistItems } from '../task-grid/memoryChecklistData'
 import { createDependencies, DEPENDENCIES, DEPENDENCY_COLUMNS } from '../task-grid/memoryDependencyData'
-import { COLUMNS as TASK_COLUMNS, ENTITY_METADATA as TASK_METADATA, getQueryColumns as getTaskColumns, LOOKUP_MANY_VALUES, takeLookupManyValues, TASKS } from '../task-grid/memoryTaskData'
+import { COLUMNS as TASK_COLUMNS, DATE_TIME_COLUMNS as DATE_TIME_TASK_COLUMNS, DATE_TIME_TASKS, ENTITY_METADATA as TASK_METADATA, getDateTimeQueryColumns as getDateTimeTaskColumns, getQueryColumns as getTaskColumns, LOOKUP_MANY_VALUES, takeLookupManyValues, TASKS } from '../task-grid/memoryTaskData'
 import { createStressTasks } from '../task-grid/stressTaskData'
 import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
 
@@ -191,6 +191,9 @@ export const GRID_SANDBOX_SCOPE = {
     TASK_COLUMNS,
     TASK_METADATA,
     getTaskColumns,
+    DATE_TIME_TASKS,
+    DATE_TIME_TASK_COLUMNS,
+    getDateTimeTaskColumns,
     DataProvider,
     MemoryDataProvider,
     TotalRow,

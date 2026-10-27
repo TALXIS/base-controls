@@ -3,7 +3,7 @@ import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 import { HookRegistry, IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";
-import type { IGanttDates } from "../dates/GanttDates";
+import type { IGanttSchedule } from "../schedule/GanttSchedule";
 import type { IGanttTimeline } from "../timeline/GanttTimeline";
 
 const ZOOM_STATE_KEY = 'zoom';
@@ -44,6 +44,8 @@ export interface IGanttZooming {
     zoomToFit(): void;
     /** Whether whole days are columns at the current zoom. */
     isDayScaleVisible(): boolean;
+    /** How wide a day is drawn, in pixels. */
+    getPixelsPerDay(): number;
     /**
      * Registers a hook over the label of each scale cell.
      * @param priority Ascending: a higher number gets the later word.
@@ -68,7 +70,7 @@ export type GanttScaleLabelHook = (result: { label: string }, parameters: IGantt
 export interface IGanttZoomingParameters {
     gantt: GanttStatic;
     taskRuntime: ITaskRuntime;
-    dates: IGanttDates;
+    schedule: IGanttSchedule;
     timeline: IGanttTimeline;
     state: IStateStore;
 }
@@ -89,7 +91,7 @@ export class GanttZooming implements IGanttZooming {
     public readonly events = new EventEmitter<IGanttZoomingEvents>();
     private _gantt: GanttStatic;
     private _taskRuntime: ITaskRuntime;
-    private _dates: IGanttDates;
+    private _schedule: IGanttSchedule;
     private _timeline: IGanttTimeline;
     private _state: IStateStore;
     //coarsest first, each with its finest scale last
@@ -110,12 +112,12 @@ export class GanttZooming implements IGanttZooming {
     constructor(parameters: IGanttZoomingParameters) {
         this._gantt = parameters.gantt;
         this._taskRuntime = parameters.taskRuntime;
-        this._dates = parameters.dates;
+        this._schedule = parameters.schedule;
         this._timeline = parameters.timeline;
         this._state = parameters.state;
         const levels = this._createLevels(this._taskRuntime.getProvider().getFormatting());
         //an hour level means nothing without a time of day
-        this._levels = this._dates.hasTimeOfDay() ? levels : levels.filter(level => this._getFinestScale(level).unit !== 'hour');
+        this._levels = this._schedule.hasTimeOfDay() ? levels : levels.filter(level => this._getFinestScale(level).unit !== 'hour');
         this._minPixelsPerDay = MIN_COLUMN_WIDTH / this._getLevelDays(this._levels[0]);
         this._maxPixelsPerDay = MAX_COLUMN_WIDTH / this._getLevelDays(this._levels[this._levels.length - 1]);
         this._gantt.attachEvent('onGanttReady', this._onGanttReady);
@@ -137,15 +139,19 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public zoomToFit(): void {
-        const range = this._dates.getRange(this._getZoomToFitRecords());
+        const range = this._schedule.getRange(this._getZoomToFitRecords());
         const viewportWidth = this._gantt.$task?.offsetWidth;
         if (!range || !viewportWidth) {
             return;
         }
-        const days = Math.max(1, (+range.endDate - +range.startDate) / MILLISECONDS_PER_DAY);
+        const days = Math.max(1, (+range.end - +range.start) / MILLISECONDS_PER_DAY);
         const centreX = this._getViewportCentreX();
-        this._rememberAnchor(new Date((+range.startDate + +range.endDate) / 2), centreX);
+        this._rememberAnchor(new Date((+range.start + +range.end) / 2), centreX);
         this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
+    }
+
+    public getPixelsPerDay(): number {
+        return this._pixelsPerDay;
     }
 
     public isDayScaleVisible(): boolean {

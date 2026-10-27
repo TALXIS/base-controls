@@ -1,7 +1,15 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const GANTT_CODE = `const fieldMapping: IFieldMapping = {
+interface IGanttStoryData {
+    /** Where the story keeps its state, views and columns. */
+    storageKey: string;
+    tasks: string;
+    columns: string;
+    getColumns: string;
+}
+
+const createGanttCode = (data: IGanttStoryData) => `const fieldMapping: IFieldMapping = {
     parentId: 'parentid',
     subject: 'subject',
     stackRank: 'stackrank',
@@ -16,9 +24,9 @@ const GANTT_CODE = `const fieldMapping: IFieldMapping = {
 const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
 
 const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS), { quickFindColumns: ['subject', 'assignedto', 'tags', 'teams'] }),
-    taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description', 'assignedto'] }),
+    taskView('all', 'All tasks', ${data.getColumns}('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS), { quickFindColumns: ['subject', 'assignedto', 'tags', 'teams'] }),
+    taskView('planning', 'Planning', ${data.getColumns}('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
+    taskView('flat', 'Every task on its own', ${data.getColumns}('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description', 'assignedto'] }),
 ]
 
 const betaCutoffStyles = mergeStyleSets({
@@ -73,65 +81,6 @@ const BetaCutoffChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
     </div>
 }
 
-const christmasStyles = mergeStyleSets({
-    card: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        margin: '2px -4px',
-        padding: '8px 10px',
-        borderRadius: 8,
-        color: '#ffffff',
-        background: 'linear-gradient(135deg, #c50f1f, #8a0a15 60%, #0e700e)',
-        boxShadow: '0 4px 14px rgba(138, 10, 21, 0.35)',
-    },
-    icon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: 30,
-        height: 30,
-        borderRadius: '50%',
-        fontSize: 15,
-        background: 'rgba(255, 255, 255, 0.18)',
-    },
-    text: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    greeting: {
-        fontSize: 13,
-        fontWeight: FontWeights.semibold,
-    },
-    closed: {
-        alignSelf: 'flex-start',
-        padding: '0 7px',
-        borderRadius: 999,
-        fontSize: 11,
-        lineHeight: '16px',
-        color: '#8a0a15',
-        background: 'rgba(255, 255, 255, 0.92)',
-    },
-})
-
-//the tooltip draws each day through this slot, with the whole day and its data
-const HolidayDescription = ({ day, ...props }: React.HTMLAttributes<HTMLSpanElement> & { day: IGanttNonWorkingDay }) => {
-    if (day.id !== 'christmas') {
-        return <span {...props} />
-    }
-    const data = day.data as { greeting: string, isOfficeClosed: boolean }
-    return <div className={christmasStyles.card}>
-        <span className={christmasStyles.icon}><Icon iconName='GiftboxOpen' /></span>
-        <span className={christmasStyles.text}>
-            <span className={christmasStyles.greeting}>{data.greeting}</span>
-            {day.description}
-            {data.isOfficeClosed && <span className={christmasStyles.closed}>Office closed</span>}
-        </span>
-    </div>
-}
-
 const weekOfYear = (date: Date) => {
     const thursday = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
     thursday.setUTCDate(thursday.getUTCDate() + 4 - (thursday.getUTCDay() || 7))
@@ -171,11 +120,11 @@ const GridExample = () => {
         filtering: createFilteringModule(),
     }), [])
     const datasetControlModules = React.useMemo(() => [
-        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devGanttTasks.userViews' }),
+        createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: '${data.storageKey}.userViews' }),
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({
-            databaseName: 'devGanttTasks.customColumns',
+            databaseName: '${data.storageKey}.customColumns',
             columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
             enableCreation: true,
             enableDeletion: true,
@@ -194,12 +143,6 @@ const GridExample = () => {
             components: {
                 chip: { onRenderChip: props => <BetaCutoffChip {...props} /> },
                 line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
-            },
-        }),
-        createMemoryGanttNonWorkingDaysModule({
-            nonWorkingDays: NON_WORKING_DAYS,
-            components: {
-                tooltip: { onRenderDescription: props => <HolidayDescription {...props} /> },
             },
         }),
         createGanttTaskDraggingModule(),
@@ -222,9 +165,9 @@ const GridExample = () => {
         createGanttLinksModule(),
     ], [])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: ${data.tasks}, metadata: TASK_METADATA, columns: ${data.columns} }) }), fieldMapping })
 
-    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devGanttTasks' height='100%' onLoad={onLoad}>
+    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -255,5 +198,11 @@ const GridExample = () => {
 }
 `
 
-/** The task grid with the Gantt beside it, over memory tasks. */
-export const GanttTaskGrid = () => <GridExampleRunner seedCode={GANTT_CODE} />
+const DATE_ONLY_CODE = createGanttCode({ storageKey: 'devGanttTasks', tasks: 'TASKS', columns: 'TASK_COLUMNS', getColumns: 'getTaskColumns' })
+const DATE_TIME_CODE = createGanttCode({ storageKey: 'devGanttDateTimeTasks', tasks: 'DATE_TIME_TASKS', columns: 'DATE_TIME_TASK_COLUMNS', getColumns: 'getDateTimeTaskColumns' })
+
+/** The task grid with the Gantt beside it, over memory tasks with date-only dates. */
+export const GanttTaskGrid = () => <GridExampleRunner seedCode={DATE_ONLY_CODE} />
+
+/** The task grid with the Gantt beside it, over memory tasks with a time of day. */
+export const GanttDateTimeTaskGrid = () => <GridExampleRunner seedCode={DATE_TIME_CODE} />

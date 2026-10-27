@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
+import type { IGanttSpan } from "../../schedule/GanttSchedule";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import { TaskCreateLayer } from "./components/adapters/task-create-layer";
 
@@ -8,8 +9,8 @@ import { TaskCreateLayer } from "./components/adapters/task-create-layer";
 export interface IGanttTaskCreate {
     /** Whether tasks can be created at all. */
     isEnabled(): boolean;
-    /** Creates a task above the row's task, under the same parent. */
-    create(rowTaskId: string, startDate: Date, endDate: Date): Promise<void>;
+    /** Creates a task above the row's task, under the same parent, running over the span. */
+    create(rowTaskId: string, span: IGanttSpan): Promise<void>;
     /** Called as the Gantt goes. */
     destroy(): void;
 }
@@ -27,14 +28,13 @@ export class GanttTaskCreate implements IGanttTaskCreate {
         return this._gantt.getTaskRuntime().isCreationEnabled();
     }
 
-    public async create(rowTaskId: string, startDate: Date, endDate: Date): Promise<void> {
+    public async create(rowTaskId: string, span: IGanttSpan): Promise<void> {
         const taskRuntime = this._gantt.getTaskRuntime();
         const structure = taskRuntime.getProvider().getRecordTree().structure;
-        const dates = this._gantt.services.get('dates');
         await runQuietly(() => taskRuntime.tasks.create(structure.getParent(rowTaskId)?.getRecordId(), {
             previousTaskId: structure.getNeighbours(rowTaskId).previous?.getRecordId(),
             nextTaskId: rowTaskId,
-            data: { [dates.getStartColumnName()]: startDate, [dates.getEndColumnName()]: endDate },
+            data: this._gantt.services.get('schedule').getValues(span),
         }));
     }
 

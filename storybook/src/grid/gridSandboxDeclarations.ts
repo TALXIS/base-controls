@@ -4377,6 +4377,12 @@ declare const TASK_COLUMNS: IColumn[];
 declare const TASK_METADATA: IMemoryProviderEntityMetadata;
 /** Every task column, with the ones not named hidden. */
 declare const getTaskColumns: (...visibleColumnNames: string[]) => IColumn[];
+/** The sample tasks starting in the morning and due in the afternoon, under the same ids. */
+declare const DATE_TIME_TASKS: IRawRecord[];
+/** The task columns with a time of day on the start and due dates. */
+declare const DATE_TIME_TASK_COLUMNS: IColumn[];
+/** Every date-time task column, with the ones not named hidden. */
+declare const getDateTimeTaskColumns: (...visibleColumnNames: string[]) => IColumn[];
 
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
 interface IGanttModule {

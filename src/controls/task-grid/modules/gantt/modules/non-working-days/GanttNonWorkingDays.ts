@@ -8,7 +8,7 @@ import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
-import type { GanttDurationHook } from "../../tasks/GanttTasks";
+import type { GanttDurationHook } from "../../schedule/GanttSchedule";
 import { GANTT_NON_WORKING_DAYS_LABELS, IGanttNonWorkingDaysLabels } from "./labels";
 import { setScaleIgnores } from "./scaleIgnores";
 import { GANTT_NON_WORKING_DAY_CLASS } from "./classNames";
@@ -100,10 +100,10 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
         this._unregisters.push(
             gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getGanttNonWorkingDaysStyles(theme))),
             gantt.surfaces.registerSurface(this._onSurfaces),
+            gantt.services.get('schedule').registerDuration(this._countWorkingTime),
         );
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.services.whenAvailable('timeline', this._onTimelineReady);
-        gantt.services.whenAvailable('tasks', tasks => this._unregisters.push(tasks.registerDuration(this._countWorkingTime)));
         gantt.getTaskRuntime().services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
             this._unregisters.push(userQueries.saveWithView('ganttShowNonWorkingDays', () => this.isVisible()));
         });
@@ -167,8 +167,8 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
         setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && this._isDayScaleVisible());
     };
 
-    private _countWorkingTime: GanttDurationHook = (result, { startDate, endDate }) => {
-        result.duration = this._calendar.getWorkingDuration(startDate, endDate) / 60_000;
+    private _countWorkingTime: GanttDurationHook = (result, { span }) => {
+        result.duration = this._calendar.getWorkingDuration(span.start, span.end) / 60_000;
     };
 
     //week cells start on a Monday, so only day and hour cells are shaded

@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { GanttTaskGrid } from '../../../task-grid/dev/GanttTaskGrid'
+import { GanttDateTimeTaskGrid, GanttTaskGrid } from '../../../task-grid/dev/GanttTaskGrid'
 import { GanttStressTaskGrid } from '../../../task-grid/dev/GanttStressTaskGrid'
 
 const meta = {
@@ -18,11 +18,18 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The Core tasks with the Gantt beside the grid and every Gantt module. */
+/** The Core tasks with the Gantt beside the grid and every Gantt module, over date-only dates. */
 export const Gantt: Story = {
-    name: 'Gantt',
+    name: 'Gantt (date only)',
     parameters: { layout: 'fullscreen' },
     render: () => <div style={{ height: '100vh', padding: 18, boxSizing: 'border-box' }}><GanttTaskGrid /></div>,
+}
+
+/** The same Gantt over dates with a time of day. */
+export const GanttDateTime: Story = {
+    name: 'Gantt (date and time)',
+    parameters: { layout: 'fullscreen' },
+    render: () => <div style={{ height: '100vh', padding: 18, boxSizing: 'border-box' }}><GanttDateTimeTaskGrid /></div>,
 }
 
 /** The Gantt over 10,000 generated tasks, with every Gantt module. */

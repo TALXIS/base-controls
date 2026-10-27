@@ -6,7 +6,7 @@ import type { ITaskDataProviderEvents } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
 import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
-import type { IGanttDates } from "../dates/GanttDates";
+import type { IGanttSchedule } from "../schedule/GanttSchedule";
 
 /** The chart's tasks: exactly the rows the grid displays, in its order and at its row heights. */
 export interface IGanttTasks {
@@ -15,15 +15,6 @@ export interface IGanttTasks {
     isLocked(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
-    /** How long a task takes in minutes: the mapped duration, or else calculated from the record's dates. */
-    getDuration(taskId: string): number | undefined;
-    /** How long the time between two dates takes in minutes, through the duration hooks. */
-    calculateDuration(startDate: Date, endDate: Date, record: IRecord): number;
-    /**
-     * Registers a hook over each calculated duration.
-     * @param priority Ascending: a higher number gets the later word.
-     */
-    registerDuration(hook: GanttDurationHook, priority?: number): () => void;
     /**
      * Registers a hook over each task as it is handed to the chart.
      * @param priority Ascending: a higher number gets the later word.
@@ -51,15 +42,6 @@ export interface IGanttTaskParameters {
     record: IRecord;
 }
 
-export interface IGanttDurationParameters {
-    startDate: Date;
-    endDate: Date;
-    record: IRecord;
-}
-
-/** Changes a calculated duration in minutes, which starts as the time between the dates. */
-export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
-
 /** Changes a task in place, such as its `color`, `type` or `readonly`, before the chart draws it. */
 export type GanttTaskHook = (task: Task, parameters: IGanttTaskParameters) => void;
 
@@ -78,7 +60,7 @@ export interface IGanttTasksParameters {
     gantt: GanttStatic;
     gridApi: GridApi<IRecord>;
     runtime: IGantt;
-    dates: IGanttDates;
+    schedule: IGanttSchedule;
     onParsed: (isFirstLoad: boolean) => void;
 }
 
@@ -87,7 +69,7 @@ export class GanttTasks implements IGanttTasks {
     private _gridApi: GridApi<IRecord>;
     private _runtime: IGantt;
     private _taskRuntime: ITaskRuntime;
-    private _dates: IGanttDates;
+    private _schedule: IGanttSchedule;
     private _onParsed: (isFirstLoad: boolean) => void;
     private _taskIds: string[] = [];
     private _taskIndexes = new Map<string, number>();
@@ -99,14 +81,13 @@ export class GanttTasks implements IGanttTasks {
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
     private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
-    private _durationHooks = new HookRegistry<GanttDurationHook>();
 
     constructor(parameters: IGanttTasksParameters) {
         this._gantt = parameters.gantt;
         this._gridApi = parameters.gridApi;
         this._runtime = parameters.runtime;
         this._taskRuntime = parameters.runtime.getTaskRuntime();
-        this._dates = parameters.dates;
+        this._schedule = parameters.schedule;
         this._onParsed = parameters.onParsed;
         const provider = this._taskRuntime.getProvider();
         this._gantt.templates.task_class = (_start: Date, _end: Date, task: Task) => this.getTaskClass(task);
@@ -136,30 +117,6 @@ export class GanttTasks implements IGanttTasks {
 
     public getTaskIds(): string[] {
         return this._taskIds;
-    }
-
-    public getDuration(taskId: string): number | undefined {
-        const record = this.getRecord(taskId);
-        if (!record) {
-            return undefined;
-        }
-        const durationColumnName = this._taskRuntime.getFieldMapping().duration;
-        if (durationColumnName) {
-            return this._getMappedDuration(record, durationColumnName);
-        }
-        const startDate = this._dates.getStartDate(record);
-        const endDate = this._dates.getEndDate(record);
-        return startDate && endDate ? this.calculateDuration(startDate, endDate, record) : undefined;
-    }
-
-    public calculateDuration(startDate: Date, endDate: Date, record: IRecord): number {
-        const result = { duration: (+endDate - +startDate) / 60_000 };
-        this._durationHooks.apply(result, { startDate, endDate, record });
-        return result.duration;
-    }
-
-    public registerDuration(hook: GanttDurationHook, priority?: number): () => void {
-        return this._durationHooks.register(hook, priority);
     }
 
     public registerTask(hook: GanttTaskHook, priority?: number): () => void {
@@ -293,19 +250,17 @@ export class GanttTasks implements IGanttTasks {
 
     private _toTask(record: IRecord, node?: IRowNode<IRecord>): Task {
         const taskId = record.getRecordId();
-        const startDate = this._dates.getStartDate(record);
-        const endDate = this._dates.getEndDate(record);
-        const isScheduled = !!startDate && !!endDate && endDate >= startDate;
+        const span = this._schedule.getSpan(record);
         const task = {
             id: taskId,
             text: record.getNamedReference().name ?? '',
-            start_date: isScheduled ? startDate : undefined,
-            end_date: isScheduled ? endDate : undefined,
-            unscheduled: !isScheduled,
+            start_date: span?.start,
+            end_date: span?.end,
+            unscheduled: !span,
             progress: this._getProgress(record),
             row_height: node?.rowHeight ?? undefined,
             bar_height: this._isSummary(taskId) ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
-            type: isScheduled && +endDate === +startDate ? 'milestone' : 'task',
+            type: span && +span.end === +span.start ? 'milestone' : 'task',
         } as Task;
         this._taskHooks.apply(task, { record });
         return task;
@@ -320,11 +275,6 @@ export class GanttTasks implements IGanttTasks {
     //a parent spans its children, so it is drawn as a slim bar over them
     private _isSummary(taskId: string): boolean {
         return !this._taskRuntime.isFlatList() && this._taskRuntime.getProvider().getRecordTree().view.hasChildren(taskId);
-    }
-
-    private _getMappedDuration(record: IRecord, columnName: string): number | undefined {
-        const value = record.getValue(columnName);
-        return value == null || value === '' || !Number.isFinite(Number(value)) ? undefined : Number(value);
     }
 
     private _getProgress(record: IRecord): number {
