@@ -36,6 +36,7 @@ const ROOT_OPTIONS = [
 
 const GridExample = () => {
     const [rootTaskId, setRootTaskId] = React.useState('')
+    const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
@@ -47,7 +48,7 @@ const GridExample = () => {
     ], [])
 
     const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
-        provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }),
+        provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
         fieldMapping,
         rootTaskId: rootTaskId || undefined,
     })

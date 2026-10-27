@@ -113,6 +113,7 @@ const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
 }
 
 const GridExample = () => {
+    const database = React.useMemo(() => new MemoryTaskDatabase({ records: ${data.tasks}, metadata: TASK_METADATA }), [])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
@@ -130,10 +131,10 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
-        createMemoryTemplatesModule({ templates: TEMPLATES }),
+        createMemoryTemplatesModule({ database, templates: TEMPLATES }),
         createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-    ], [])
+    ], [database])
     const ganttModules = React.useMemo(() => [
         createGanttLibraryModule(),
         fiscalScaleModule,
@@ -165,7 +166,7 @@ const GridExample = () => {
         createGanttLinksModule(),
     ], [])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: ${data.tasks}, metadata: TASK_METADATA, columns: ${data.columns} }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping })
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>

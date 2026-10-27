@@ -1,6 +1,6 @@
 import type { IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions, ICreateTaskTree, IEditTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
+import type { ICreateTaskOptions, IEditTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
 import type { ITaskGridLabels } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 
@@ -8,8 +8,6 @@ import type { ITaskRuntime } from "../interfaces";
 export interface ITaskActions {
     /** @returns The created task, or `null` when creation is off or the user cancelled. */
     create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
-    /** Creates the trees under `parentId`, first among its children, as one creation. */
-    createTrees(trees: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null>;
     edit(taskIds: string[]): Promise<IEditTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
@@ -37,13 +35,6 @@ export class TaskActions implements ITaskActions {
             this._runtime.services.find('taskTree')?.focusNewTask(task.getRecordId());
         }
         return task;
-    }
-
-    public async createTrees(trees: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null> {
-        if (!this._runtime.isCreationEnabled()) {
-            return null;
-        }
-        return this._execute(() => this._provider.createTasks(trees, parentId), 'creatingTasks', 'createTasksFailed');
     }
 
     public async edit(taskIds: string[]): Promise<IEditTasksResult | null> {

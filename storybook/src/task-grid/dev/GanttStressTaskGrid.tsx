@@ -23,6 +23,7 @@ const VIEWS: IDatasetControlView<ITaskViewData>[] = [
 const GridExample = () => {
     const tasks = React.useMemo(() => createStressTasks(10000), [])
     const lookupManyValues = React.useMemo(() => takeLookupManyValues(tasks), [tasks])
+    const database = React.useMemo(() => new MemoryTaskDatabase({ records: tasks, metadata: TASK_METADATA }), [tasks])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
@@ -40,10 +41,10 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
-        createMemoryTemplatesModule({ templates: TEMPLATES }),
+        createMemoryTemplatesModule({ database, templates: TEMPLATES }),
         createMemoryChecklistModule({ items: createChecklistItems(tasks) }),
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
-    ], [])
+    ], [database])
     const ganttModules = React.useMemo(() => [
         createGanttLibraryModule(),
         createGanttMarkersModule(),
@@ -55,7 +56,7 @@ const GridExample = () => {
         createGanttLinksModule(),
     ], [])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: tasks, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping })
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devGanttStressTasks' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>

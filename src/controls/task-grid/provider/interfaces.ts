@@ -56,6 +56,12 @@ export interface ITaskCreateResult extends ITaskChanges {
     record: IRawRecord;
 }
 
+/** The tasks a backend created at once, with what else it changed. */
+export interface ITasksCreateResult extends ITaskChanges {
+    /** Every task created, subtasks included. */
+    records: IRawRecord[];
+}
+
 /** How a save went, with what else the backend changed. */
 export type ITaskSaveResult = IRecordSaveOperationResult & ITaskChanges;
 
@@ -224,8 +230,8 @@ export interface ITaskDataProvider extends IDataProvider {
     isRecordActive(recordId: string): boolean;
     /** Creates a task under `parentId`, first among its siblings unless `options` say otherwise. */
     createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
-    /** Creates the tasks with their subtrees under `parentId`, first among its children, as one creation. */
-    createTasks(tasks: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null>;
+    /** Adds the tasks `onCreate` makes in the backend, placed as a task created under `parentId` would be. */
+    createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>): Promise<IRecord[] | null>;
     /** Adds tasks that already exist, such as ones a template created. */
     addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[];
     /** Whether the task was created in this load; it shows whatever the filter. */

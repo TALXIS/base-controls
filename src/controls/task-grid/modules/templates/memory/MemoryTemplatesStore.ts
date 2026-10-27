@@ -1,6 +1,7 @@
 import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@talxis/client-libraries";
-import type { ICreateTaskTree } from "../../../provider";
-import type { ITemplate, ITemplatesStore } from "../Templates";
+import type { ICreateTaskTree, ITasksCreateResult } from "../../../provider";
+import type { MemoryTaskDatabase } from "../../../data-sources/memory/MemoryTaskDatabase";
+import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParams } from "../Templates";
 import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
 
 /** One task of a memory template, with its subtree. */
@@ -17,6 +18,8 @@ export interface IMemoryTemplate extends IMemoryTemplateTask {
 }
 
 export interface IMemoryTemplatesStoreParameters {
+    /** Where a template's tasks are created; the one the grid's memory task store reads. */
+    database: MemoryTaskDatabase;
     /** Copied in; a template captured later is kept in the copy. */
     templates: IMemoryTemplate[];
 }
@@ -30,9 +33,11 @@ const TEMPLATE_METADATA: IMemoryProviderEntityMetadata = {
 
 /** Templates held in memory. */
 export class MemoryTemplatesStore implements ITemplatesStore {
+    private _database: MemoryTaskDatabase;
     private _templates: IMemoryTemplate[];
 
     constructor(parameters: IMemoryTemplatesStoreParameters) {
+        this._database = parameters.database;
         this._templates = structuredClone(parameters.templates);
     }
 
@@ -42,9 +47,14 @@ export class MemoryTemplatesStore implements ITemplatesStore {
         return provider;
     }
 
-    public async onGetTemplate(templateId: string): Promise<ITemplate | null> {
-        const template = this._templates.find(candidate => candidate.id === templateId);
-        return template ? { name: template.name, tree: structuredClone({ data: template.data, children: template.children }) } : null;
+    public async onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null> {
+        await simulateBackend();
+        const template = this._templates.find(candidate => candidate.id === params.templateId);
+        if (!template) {
+            return null;
+        }
+        const tree: ICreateTaskTree = { data: { ...template.data, [params.fieldMapping.subject]: template.name }, children: template.children };
+        return { records: this._database.createTasks([tree], params) };
     }
 
     public async onCreateTemplate(template: ITemplate): Promise<void> {

@@ -3,7 +3,7 @@ import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { ICreateTaskTree } from "../../provider";
+import type { ICreateTaskTree, ITaskCreateParams, ITasksCreateResult } from "../../provider";
 import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -18,13 +18,19 @@ export interface ITemplate {
     tree: ICreateTaskTree;
 }
 
-/** Where templates are kept. */
+/** Where a template's tasks go: the template, and where its own task lands. */
+export interface ITemplateTasksCreateParams extends Omit<ITaskCreateParams, 'data'> {
+    templateId: string;
+}
+
+/** Where templates are kept, and what creates tasks from them. */
 export interface ITemplatesStore {
     /** A provider over the templates, searched by the selector; made each time it opens. */
     onCreateTemplatesProvider(): IDataProvider;
-    /** @returns The template, or `null` when there is none with the id. */
-    onGetTemplate(templateId: string): Promise<ITemplate | null>;
-    onCreateTemplate(template: ITemplate): Promise<void>;
+    /** @returns The tasks created, or `null` when there were none or the user cancelled. */
+    onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
+    /** Without it, tasks cannot be saved as templates. */
+    onCreateTemplate?(template: ITemplate): Promise<void>;
 }
 
 export interface ITemplatesParameters {
@@ -39,7 +45,7 @@ export interface ITemplates {
     createTemplatesProvider(): IDataProvider;
     /** Under `parentId`, or at the top level without it; rejects when the store fails. */
     createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null>;
-    /** Rejects when the store fails. */
+    /** Rejects when the store fails or keeps no templates of its own. */
     createTemplateFromTask(task: IRecord): Promise<void>;
     /** Called as the mount goes. */
     destroy(): void;
@@ -74,23 +80,21 @@ export class Templates implements ITemplates {
     }
 
     public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null> {
-        return this._execute('creatingTasksFromTemplate', async () => {
-            const template = await this._store.onGetTemplate(templateId);
-            if (!template) {
-                return null;
-            }
-            const { tree } = template;
-            const subject = this._taskRuntime.getFieldMapping().subject;
-            return this._taskRuntime.tasks.createTrees([{ ...tree, data: { ...tree.data, [subject]: template.name } }], parentId);
-        });
+        if (!this._taskRuntime.isCreationEnabled()) {
+            return null;
+        }
+        return this._execute('creatingTasksFromTemplate', () => this._taskRuntime.getProvider().createTasksWith(parentId, params => this._store.onCreateTasks({ ...params, templateId })));
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
+        if (!this._store.onCreateTemplate) {
+            throw new Error('The templates store keeps no templates of its own.');
+        }
         await this._execute('savingTemplate', async () => {
             const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
             const { data, children } = this._toTemplateTree(task);
             const { [subject]: name, ...rootData } = data ?? {};
-            await this._store.onCreateTemplate({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
+            await this._store.onCreateTemplate?.({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
         });
     }
 
@@ -121,7 +125,7 @@ export class Templates implements ITemplates {
             };
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
-        if (task) {
+        if (task && this._store.onCreateTemplate) {
             commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.getLocalizedString('saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
         }
     };

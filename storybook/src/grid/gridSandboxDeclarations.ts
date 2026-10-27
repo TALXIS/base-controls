@@ -3942,8 +3942,6 @@ interface ITaskExecuteOptions {
 interface ITaskActions {
     /** The created task, or null when creation is off or the user cancelled. */
     create(parentId?: string, options?: { previousTaskId?: string; nextTaskId?: string; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
-    /** Creates the trees under parentId, first among its children, as one creation. */
-    createTrees(trees: ICreateTaskTree[], parentId?: string): Promise<IRecord[] | null>;
     edit(taskIds: string[]): Promise<any>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
@@ -4217,13 +4215,38 @@ interface ITemplate {
     tree: ICreateTaskTree;
 }
 
-/** Where templates are kept. */
+/** Where a new task lands, with the values it starts with. */
+interface ITaskCreateParams {
+    parentRecord?: IRecord;
+    siblings: IRecord[];
+    previousSibling?: IRecord;
+    nextSibling?: IRecord;
+    data?: { [columnName: string]: any };
+    fieldMapping: IFieldMapping;
+    columns: IColumn[];
+    metadata: IMemoryProviderEntityMetadata;
+}
+
+/** Where a template's tasks go: the template, and where its own task lands. */
+interface ITemplateTasksCreateParams extends Omit<ITaskCreateParams, 'data'> {
+    templateId: string;
+}
+
+/** The tasks a backend created at once, with what else it changed. */
+interface ITasksCreateResult {
+    /** Every task created, subtasks included. */
+    records: IRawRecord[];
+    updatedRecords?: IRawRecord[];
+}
+
+/** Where templates are kept, and what creates tasks from them. */
 interface ITemplatesStore {
     /** A provider over the templates, searched by the picker; made each time it opens. */
     onCreateTemplatesProvider(): IDataProvider;
-    /** The template, or null when there is none with the id. */
-    onGetTemplate(templateId: string): Promise<ITemplate | null>;
-    onCreateTemplate(template: ITemplate): Promise<void>;
+    /** The tasks created, or null when there were none or the user cancelled. */
+    onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
+    /** Without it, tasks cannot be saved as templates. */
+    onCreateTemplate?(template: ITemplate): Promise<void>;
 }
 
 /** Offers New, From template and Save as template in the ribbon, and From template on each row. */
@@ -4244,14 +4267,15 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
 
 /** Templates held in memory. */
 declare class MemoryTemplatesStore implements ITemplatesStore {
-    constructor(parameters: { templates: IMemoryTemplate[] });
+    /** Its tasks are created in the database the grid's MemoryTaskStore reads. */
+    constructor(parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[] });
     onCreateTemplatesProvider(): IDataProvider;
-    onGetTemplate(templateId: string): Promise<ITemplate | null>;
+    onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
     onCreateTemplate(template: ITemplate): Promise<void>;
 }
 
 /** Task templates held in memory, the ones captured since kept for as long as the module is. */
-declare const createMemoryTemplatesModule: (parameters: { templates: IMemoryTemplate[]; labels?: TemplatesLabels }) => IDatasetControlModule;
+declare const createMemoryTemplatesModule: (parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[]; labels?: TemplatesLabels }) => IDatasetControlModule;
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
@@ -4363,9 +4387,22 @@ declare const createMemoryTaskDataSource: (parameters: {
     provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
 }) => ITaskDataProvider;
 
+/** Tasks held in memory, shared by the memory stores that read and write them. */
+declare class MemoryTaskDatabase {
+    /** The records are copied, so changes never reach the array. */
+    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata });
+    getMetadata(): IMemoryProviderEntityMetadata;
+    getTasks(): IRawRecord[];
+    getTask(taskId: string): IRawRecord | undefined;
+    /** Creates the tasks with their subtrees where params place the first. */
+    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>): IRawRecord[];
+    updateTask(taskId: string, values: IRawRecord): void;
+    deleteTasks(taskIds: string[]): void;
+}
+
 /** Tasks held in memory; editing one, or opening a record a lookup points to, shows an alert. */
 declare class MemoryTaskStore implements ITaskStore {
-    constructor(parameters: { taskRuntime: ITaskRuntime; records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
+    constructor(parameters: { taskRuntime: ITaskRuntime; database: MemoryTaskDatabase; columns: IColumn[] });
     [operation: string]: any;
 }
 

@@ -21,6 +21,7 @@ const VIEWS: IDatasetControlView<ITaskViewData>[] = [
 ]
 
 const GridExample = () => {
+    const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
     const modules = React.useMemo(() => ({
         rowSelection: createRowSelectionModule({ mode: 'multiple' }),
         editing: createEditingModule({ autoSave: true }),
@@ -38,12 +39,12 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
-        createMemoryTemplatesModule({ templates: TEMPLATES }),
+        createMemoryTemplatesModule({ database, templates: TEMPLATES }),
         createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-    ], [])
+    ], [database])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, records: TASKS, metadata: TASK_METADATA, columns: TASK_COLUMNS }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping })
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devTasks' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>

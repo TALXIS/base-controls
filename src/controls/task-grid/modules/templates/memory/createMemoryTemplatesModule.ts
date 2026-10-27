@@ -6,6 +6,6 @@ export interface IMemoryTemplatesModuleParameters extends IMemoryTemplatesStoreP
 
 /** Task templates held in memory, the ones captured since kept for as long as the module is. */
 export const createMemoryTemplatesModule = (parameters: IMemoryTemplatesModuleParameters): ITemplatesModule => {
-    const { templates, ...moduleParameters } = parameters;
-    return createTemplatesModule({ ...moduleParameters, onCreateStore: () => new MemoryTemplatesStore({ templates }) });
+    const { database, templates, ...moduleParameters } = parameters;
+    return createTemplatesModule({ ...moduleParameters, onCreateStore: () => new MemoryTemplatesStore({ database, templates }) });
 };
