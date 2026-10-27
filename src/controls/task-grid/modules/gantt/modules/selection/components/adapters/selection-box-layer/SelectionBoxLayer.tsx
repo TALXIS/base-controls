@@ -3,7 +3,7 @@ import Selecto, { OnDragEnd, OnDragStart, OnScroll, OnSelect } from "selecto";
 import { mergeStyles } from "@fluentui/react";
 import { useGanttModule, useGanttService } from "../../../../../context";
 import { GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS } from "../../../../../chart/classNames";
-import { GANTT_SELECTION_BOX_CLASS } from "../../../classNames";
+import { GANTT_ROW_SELECTED_CLASS, GANTT_SELECTION_BOX_CLASS, GANTT_TASK_SELECTED_CLASS } from "../../../classNames";
 
 const EDGE_SCROLL_THRESHOLD = 50;
 const SCROLL_STEP = 10;
@@ -29,6 +29,12 @@ export const SelectionBoxLayer = () => {
             chart.$root?.classList.toggle(SELECT_CURSOR_CLASS, isArmed);
         };
         const getTaskId = (element: Element) => element.closest(`[${GANTT_TASK_ID_ATTRIBUTE}]`)?.getAttribute(GANTT_TASK_ID_ATTRIBUTE) ?? undefined;
+        //drawn as selected while the band is open, until the selection redraws the chart
+        const setHighlighted = (taskId: string, isHighlighted: boolean) => {
+            chart.$root?.querySelectorAll(`[${GANTT_TASK_ID_ATTRIBUTE}="${CSS.escape(taskId)}"]`).forEach(element => {
+                element.classList.toggle(element.classList.contains(GANTT_TASK_LINE_CLASS) ? GANTT_TASK_SELECTED_CLASS : GANTT_ROW_SELECTED_CLASS, isHighlighted);
+            });
+        };
         const onKeyDown = (event: KeyboardEvent) => event.key === 'Shift' && setArmed(true);
         const onKeyUp = (event: KeyboardEvent) => event.key === 'Shift' && setArmed(false);
 
@@ -52,13 +58,19 @@ export const SelectionBoxLayer = () => {
         selecto.on('select', (event: OnSelect<Selecto>) => {
             for (const element of event.added) {
                 const taskId = getTaskId(element);
-                taskId && selectedTaskIds.add(taskId);
+                if (taskId) {
+                    selectedTaskIds.add(taskId);
+                    setHighlighted(taskId, true);
+                }
             }
             //a scroll step re-reads the targets, which would drop what scrolled out of view
             if (!isDeselectionBlocked) {
                 for (const element of event.removed) {
                     const taskId = getTaskId(element);
-                    taskId && selectedTaskIds.delete(taskId);
+                    if (taskId) {
+                        selectedTaskIds.delete(taskId);
+                        setHighlighted(taskId, false);
+                    }
                 }
             }
         });
@@ -68,6 +80,8 @@ export const SelectionBoxLayer = () => {
             chart.scrollTo(x + horizontal * SCROLL_STEP, y + vertical * SCROLL_STEP);
             isDeselectionBlocked = true;
             selecto.findSelectableTargets();
+            //the chart draws the bars that scrolled into view afresh
+            selectedTaskIds.forEach(taskId => setHighlighted(taskId, true));
             setTimeout(() => isDeselectionBlocked = false);
         });
         selecto.on('dragEnd', (event: OnDragEnd<Selecto>) => {
