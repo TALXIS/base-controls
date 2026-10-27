@@ -117,10 +117,15 @@ export class GanttTaskDragging implements IGanttTaskDragging {
     private _onAfterTaskDrag = (id: string | number): void => {
         const taskId = String(id);
         const task = this._gantt.services.get('chart').getTask(taskId);
-        const record = this._gantt.services.get('tasks').getRecord(taskId);
+        const tasks = this._gantt.services.get('tasks');
+        const record = tasks.getRecord(taskId);
         const dates = this._gantt.services.get('dates');
         if (!record || !task.start_date || !task.end_date) {
             return;
+        }
+        const durationColumnName = this._gantt.getTaskRuntime().getFieldMapping().duration;
+        if (durationColumnName) {
+            record.setValue(durationColumnName, Math.round(tasks.calculateDuration(task.start_date, task.end_date, record)));
         }
         record.setValue(dates.getStartColumnName(), task.start_date);
         //through the grid's field, so the drop saves as an edit in the grid does

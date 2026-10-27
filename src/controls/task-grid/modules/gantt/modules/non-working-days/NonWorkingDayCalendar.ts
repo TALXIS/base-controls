@@ -34,6 +34,24 @@ export class NonWorkingDayCalendar<TData> {
         return this._getYear(day.year()).get(getDayKey(day)) ?? [];
     }
 
+    public isNonWorkingDay(date: Date): boolean {
+        return this.getDays(date).length > 0;
+    }
+
+    /** The milliseconds between two dates that fall on working days. */
+    public getWorkingDuration(startDate: Date, endDate: Date): number {
+        let duration = 0;
+        let day = dayjs(startDate).startOf('day');
+        while (day.valueOf() < +endDate) {
+            const nextDay = day.add(1, 'day');
+            if (!this.isNonWorkingDay(day.toDate())) {
+                duration += Math.min(nextDay.valueOf(), +endDate) - Math.max(day.valueOf(), +startDate);
+            }
+            day = nextDay;
+        }
+        return duration;
+    }
+
     private _getYear(year: number): Map<string, IGanttNonWorkingDay<TData>[]> {
         const cached = this._years.get(year);
         if (cached) {

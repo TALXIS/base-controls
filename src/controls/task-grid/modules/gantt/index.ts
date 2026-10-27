@@ -13,6 +13,6 @@ export type { IGanttDates } from './dates/GanttDates';
 export type { IGanttZooming, IGanttZoomingEvents, IGanttScaleLabelParameters, GanttScaleLabelHook } from './zooming/GanttZooming';
 export type { IGanttTimeline, IGanttCellClassParameters, GanttCellClassHook } from './timeline/GanttTimeline';
 export type { IGanttDragging, IGanttDraggingEvents } from './dragging/GanttDragging';
-export type { IGanttTasks, IGanttTaskParameters, GanttTaskHook, IGanttTaskClassParameters, GanttTaskClassHook } from './tasks/GanttTasks';
+export type { IGanttTasks, IGanttTaskParameters, GanttTaskHook, IGanttTaskClassParameters, GanttTaskClassHook, IGanttDurationParameters, GanttDurationHook } from './tasks/GanttTasks';
 export { GANTT_TASK_ID_ATTRIBUTE } from './chart/classNames';
 export * from './modules';

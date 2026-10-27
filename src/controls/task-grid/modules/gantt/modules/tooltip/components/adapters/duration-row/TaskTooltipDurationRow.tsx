@@ -8,13 +8,13 @@ export interface ITaskTooltipDurationRowProps {
     components?: Partial<ITaskTooltipUiFieldRowComponents>;
 }
 
-/** How long the task runs as the timeline draws it, not as the record holds it. */
+/** How long the task takes, estimated from its bar while it is dragged. */
 export const TaskTooltipDurationRow = (props: ITaskTooltipDurationRowProps) => {
-    const { gantt, task } = useTaskTooltip();
+    const { gantt, duration } = useTaskTooltip();
     const labels = useGanttModule('tooltip').getLabels();
-    if (!task.start_date || !task.end_date) {
+    if (duration === undefined) {
         return null;
     }
-    const text = gantt.getTaskRuntime().getProvider().getFormatting().formatDuration((+task.end_date - +task.start_date) / 60_000);
+    const text = gantt.getTaskRuntime().getProvider().getFormatting().formatDuration(duration);
     return <TaskTooltipUiFieldRow label={labels.getLocalizedString('duration')} iconName={props.iconName ?? 'Clock'} components={props.components}>{text}</TaskTooltipUiFieldRow>;
 };

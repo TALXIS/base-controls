@@ -8,6 +8,7 @@ const GANTT_CODE = `const fieldMapping: IFieldMapping = {
     stateCode: 'statecode',
     startDate: 'scheduledstart',
     endDate: 'scheduledend',
+    duration: 'scheduleddurationminutes',
     percentComplete: 'percentcomplete',
 }
 

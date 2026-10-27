@@ -8,6 +8,7 @@ import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
+import type { GanttDurationHook } from "../../tasks/GanttTasks";
 import { GANTT_NON_WORKING_DAYS_LABELS, IGanttNonWorkingDaysLabels } from "./labels";
 import { setScaleIgnores } from "./scaleIgnores";
 import { GANTT_NON_WORKING_DAY_CLASS } from "./classNames";
@@ -62,7 +63,7 @@ export interface IGanttNonWorkingDaysEvents {
     onNonWorkingDaysChanged: () => void;
 }
 
-/** The `nonWorkingDays` module: weekends and the store's days, shaded on the timeline and hideable. */
+/** The `nonWorkingDays` module: weekends and the store's days, shaded on the timeline, hideable and left out of durations. */
 export interface IGanttNonWorkingDays<TData = { [key: string]: unknown }> {
     readonly events: IEventEmitter<IGanttNonWorkingDaysEvents>;
     isVisible(): boolean;
@@ -102,6 +103,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
         );
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.services.whenAvailable('timeline', this._onTimelineReady);
+        gantt.services.whenAvailable('tasks', tasks => this._unregisters.push(tasks.registerDuration(this._countWorkingTime)));
         gantt.getTaskRuntime().services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
             this._unregisters.push(userQueries.saveWithView('ganttShowNonWorkingDays', () => this.isVisible()));
         });
@@ -141,7 +143,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
     }
 
     public isNonWorkingDay(date: Date): boolean {
-        return this._calendar.getDays(date).length > 0;
+        return this._calendar.isNonWorkingDay(date);
     }
 
     public getComponents(): IGanttNonWorkingDaysComponents {
@@ -163,6 +165,10 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
 
     private _onChartReady = (chart: GanttStatic): void => {
         setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && this._isDayScaleVisible());
+    };
+
+    private _countWorkingTime: GanttDurationHook = (result, { startDate, endDate }) => {
+        result.duration = this._calendar.getWorkingDuration(startDate, endDate) / 60_000;
     };
 
     //week cells start on a Monday, so only day and hour cells are shaded

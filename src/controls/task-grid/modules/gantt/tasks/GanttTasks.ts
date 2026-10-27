@@ -15,6 +15,15 @@ export interface IGanttTasks {
     isLocked(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
+    /** How long a task takes in minutes: the mapped duration, or else calculated from the record's dates. */
+    getDuration(taskId: string): number | undefined;
+    /** How long the time between two dates takes in minutes, through the duration hooks. */
+    calculateDuration(startDate: Date, endDate: Date, record: IRecord): number;
+    /**
+     * Registers a hook over each calculated duration.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerDuration(hook: GanttDurationHook, priority?: number): () => void;
     /**
      * Registers a hook over each task as it is handed to the chart.
      * @param priority Ascending: a higher number gets the later word.
@@ -41,6 +50,15 @@ export interface IGanttTasks {
 export interface IGanttTaskParameters {
     record: IRecord;
 }
+
+export interface IGanttDurationParameters {
+    startDate: Date;
+    endDate: Date;
+    record: IRecord;
+}
+
+/** Changes a calculated duration in minutes, which starts as the time between the dates. */
+export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
 
 /** Changes a task in place, such as its `color`, `type` or `readonly`, before the chart draws it. */
 export type GanttTaskHook = (task: Task, parameters: IGanttTaskParameters) => void;
@@ -81,6 +99,7 @@ export class GanttTasks implements IGanttTasks {
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
     private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
+    private _durationHooks = new HookRegistry<GanttDurationHook>();
 
     constructor(parameters: IGanttTasksParameters) {
         this._gantt = parameters.gantt;
@@ -117,6 +136,30 @@ export class GanttTasks implements IGanttTasks {
 
     public getTaskIds(): string[] {
         return this._taskIds;
+    }
+
+    public getDuration(taskId: string): number | undefined {
+        const record = this.getRecord(taskId);
+        if (!record) {
+            return undefined;
+        }
+        const durationColumnName = this._taskRuntime.getFieldMapping().duration;
+        if (durationColumnName) {
+            return this._getMappedDuration(record, durationColumnName);
+        }
+        const startDate = this._dates.getStartDate(record);
+        const endDate = this._dates.getEndDate(record);
+        return startDate && endDate ? this.calculateDuration(startDate, endDate, record) : undefined;
+    }
+
+    public calculateDuration(startDate: Date, endDate: Date, record: IRecord): number {
+        const result = { duration: (+endDate - +startDate) / 60_000 };
+        this._durationHooks.apply(result, { startDate, endDate, record });
+        return result.duration;
+    }
+
+    public registerDuration(hook: GanttDurationHook, priority?: number): () => void {
+        return this._durationHooks.register(hook, priority);
     }
 
     public registerTask(hook: GanttTaskHook, priority?: number): () => void {
@@ -277,6 +320,11 @@ export class GanttTasks implements IGanttTasks {
     //a parent spans its children, so it is drawn as a slim bar over them
     private _isSummary(taskId: string): boolean {
         return !this._taskRuntime.isFlatList() && this._taskRuntime.getProvider().getRecordTree().view.hasChildren(taskId);
+    }
+
+    private _getMappedDuration(record: IRecord, columnName: string): number | undefined {
+        const value = record.getValue(columnName);
+        return value == null || value === '' || !Number.isFinite(Number(value)) ? undefined : Number(value);
     }
 
     private _getProgress(record: IRecord): number {

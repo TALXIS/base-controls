@@ -12,6 +12,8 @@ export interface ITaskTooltipContext {
     task: Task;
     /** Where the pointer is. */
     target: IPoint;
+    /** How long the task takes in minutes, calculated from its bar while it is dragged. */
+    duration?: number;
     /** The colour the task's bar is drawn in. */
     color?: string;
 }

@@ -7,7 +7,7 @@ export interface ITaskTooltipDateRangeRowProps {
 
 /** The task's start, end and duration as the timeline draws them, not as the record holds them. */
 export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) => {
-    const { gantt, task } = useTaskTooltip();
+    const { gantt, task, duration: minutes = 0 } = useTaskTooltip();
     if (!task.start_date || !task.end_date) {
         return null;
     }
@@ -18,6 +18,6 @@ export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) =>
     const start = formatting.format({ value: task.start_date, column: columns[dates.getStartColumnName()] }) ?? '';
     const end = formatting.format({ value: task.end_date, column: columns[dates.getEndColumnName()] }) ?? '';
     const range = start === end ? start : `${start} – ${end}`;
-    const duration = +task.end_date > +task.start_date ? formatting.formatDuration((+task.end_date - +task.start_date) / 60_000) : undefined;
+    const duration = minutes > 0 ? formatting.formatDuration(minutes) : undefined;
     return <TaskTooltipUiDateRange range={range} duration={duration} components={props.components} />;
 };

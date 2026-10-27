@@ -16,6 +16,8 @@ export interface IFieldMapping {
     stateCode: string;
     startDate?: string;
     endDate?: string;
+    /** The task's duration in minutes, as a duration column holds it. */
+    duration?: string;
     percentComplete?: string;
 }
 
