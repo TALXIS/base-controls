@@ -13,7 +13,6 @@ export const getCreatePreviewStyles = (theme: ITheme) => mergeStyleSets({
     span: {
         position: 'absolute',
         top: '50%',
-        height: 26,
         transform: 'translateY(-50%)',
         borderRadius: 4,
         backgroundColor: theme.palette.themeTertiary,

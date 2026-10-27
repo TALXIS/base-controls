@@ -5,6 +5,7 @@ import { useGantt, useGanttModule, useGanttService } from "../../../../../contex
 import type { IGanttDragging } from "../../../../../dragging/GanttDragging";
 import { getCreateTarget, isCreateTarget, ITimelineCreateTarget } from "../../../timelineGeometry";
 import { CreatePreview, ICreatePreviewProps } from "../../ui/create-preview";
+import { TASK_BAR_HEIGHT } from "../../../../../tasks/GanttTasks";
 import { useTimelineAutoScroll } from "./useTimelineAutoScroll";
 
 interface IActiveDrag extends ITimelineCreateTarget {
@@ -55,7 +56,7 @@ const TaskCreateGesture = (props: { chart: GanttStatic; dragging: IGanttDragging
             const startX = chart.posFromDate(span.start);
             setPreview({
                 row: { top: activeDrag.rowTop, height: activeDrag.rowHeight },
-                span: { left: startX - chart.getScrollState().x, width: chart.posFromDate(span.end) - startX },
+                span: { left: startX - chart.getScrollState().x, width: chart.posFromDate(span.end) - startX, height: TASK_BAR_HEIGHT },
                 text: schedule.format(span).range,
                 target: { x: activeDrag.clientX + 10, y: (pointer?.clientY ?? 0) + 12 },
             });

@@ -53,8 +53,9 @@ export interface IGanttTaskClassParameters {
 /** Adds to the class names of a task's bar or row. */
 export type GanttTaskClassHook = (classNames: string[], parameters: IGanttTaskClassParameters) => void;
 
-const SUMMARY_BAR_HEIGHT = 8;
-const TASK_BAR_HEIGHT = 20;
+const SUMMARY_BAR_HEIGHT = 12;
+/** How tall a task's bar is drawn, other than a summary's. */
+export const TASK_BAR_HEIGHT = 20;
 
 export interface IGanttTasksParameters {
     gantt: GanttStatic;
