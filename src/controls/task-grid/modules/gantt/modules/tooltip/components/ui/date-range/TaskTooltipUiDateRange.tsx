@@ -10,7 +10,7 @@ export interface ITaskTooltipUiDateRangeProps {
     components?: Partial<ITaskTooltipUiDateRangeComponents>;
 }
 
-/** When something runs, on one line, with how long it runs after it. */
+/** When something runs, with how long it runs after it. */
 export const TaskTooltipUiDateRange = (props: ITaskTooltipUiDateRangeProps) => {
     const components = { ...TaskTooltipUiDateRangeComponents, ...props.components };
     const theme = useTheme();

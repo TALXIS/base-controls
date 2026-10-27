@@ -14,9 +14,11 @@ export const getTaskTooltipUiDateRangeStyles = (theme: ITheme) => mergeStyleSets
         color: theme.palette.neutralSecondary,
     },
     range: {
-        whiteSpace: 'nowrap',
+        flex: '1 1 auto',
+        minWidth: 0,
     },
     duration: {
+        flexShrink: 0,
         marginLeft: 'auto',
         padding: '2px 8px',
         borderRadius: 999,
