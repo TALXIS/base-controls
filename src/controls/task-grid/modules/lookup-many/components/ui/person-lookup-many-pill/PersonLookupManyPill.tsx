@@ -15,9 +15,11 @@ export interface IPersonLookupManyPillProps extends ILookupManyPillProps {
 export const PersonLookupManyPill = (props: IPersonLookupManyPillProps) => {
     const { imageUrlPropertyName = 'imageurl', ...pillProps } = props;
     const styles = useMemo(() => getPersonLookupManyPillStyles(), []);
-    return <LookupManyPill {...pillProps} className={styles.pill}>
-        <TooltipHost content={props.reference.name}>
+    return <LookupManyPill {...pillProps} className={styles.pill} components={{
+        onRenderDot: () => null,
+        onRenderLabel: () => <TooltipHost content={props.reference.name}>
             <Persona text={props.reference.name} imageUrl={getDataValue(props.reference, imageUrlPropertyName)} size={PersonaSize.size24} imageShouldFadeIn={false} hidePersonaDetails styles={{ root: { margin: 0 } }} />
-        </TooltipHost>
-    </LookupManyPill>;
+        </TooltipHost>,
+        ...props.components,
+    }} />;
 };

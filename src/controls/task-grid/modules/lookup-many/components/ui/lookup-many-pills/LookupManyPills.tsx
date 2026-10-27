@@ -1,6 +1,5 @@
 import { Fragment, useMemo, useRef, useState } from "react";
-import { useTheme } from "@fluentui/react";
-import { TooltipHost } from "@ui";
+import { OptionTag, TooltipHost } from "@ui";
 import { useResizeEffect } from "@utils";
 import { ILookupManyPillsComponents, LookupManyPillsComponents } from "./components";
 import { getLookupManyPillsStyles, LOOKUP_MANY_PILLS_GAP, LOOKUP_MANY_PILLS_PADDING } from "./styles";
@@ -17,8 +16,7 @@ export interface ILookupManyPillsProps {
 export const LookupManyPills = (props: ILookupManyPillsProps) => {
     const { value, onOpen } = props;
     const components = { ...LookupManyPillsComponents, ...props.components };
-    const theme = useTheme();
-    const styles = useMemo(() => getLookupManyPillsStyles(theme), [theme]);
+    const styles = useMemo(() => getLookupManyPillsStyles(), []);
     const rootRef = useRef<HTMLDivElement>(null);
     const measurerRef = useRef<HTMLDivElement>(null);
     const [visibleCount, setVisibleCount] = useState(value.length);
@@ -53,11 +51,11 @@ export const LookupManyPills = (props: ILookupManyPillsProps) => {
         {hidden.length > 0 && <TooltipHost closeDelay={300} content={<div className={styles.overflowList}>
             {hidden.map(reference => <Fragment key={reference.id.guid}>{components.onRenderPill({ reference, onOpen })}</Fragment>)}
         </div>}>
-            <span className={styles.overflow}>+{hidden.length}</span>
+            <OptionTag label={`+${hidden.length}`} className={styles.overflow} components={{ onRenderDot: () => null }} />
         </TooltipHost>}
         <div ref={measurerRef} className={styles.measurer} aria-hidden>
             {value.map(reference => <Fragment key={reference.id.guid}>{components.onRenderPill({ reference })}</Fragment>)}
-            <span className={styles.overflow}>+{value.length}</span>
+            <OptionTag label={`+${value.length}`} className={styles.overflow} components={{ onRenderDot: () => null }} />
         </div>
     </div>;
 };

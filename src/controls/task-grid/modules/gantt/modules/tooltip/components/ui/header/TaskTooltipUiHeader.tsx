@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
+import { OptionTag } from "@ui";
 import { ITaskTooltipUiHeaderComponents, TaskTooltipUiHeaderComponents } from "./components";
 import { getTaskTooltipUiHeaderStyles } from "./styles";
 
 export interface ITaskTooltipUiHeaderStatus {
     text: string;
-    /** The pill's colour; the theme's neutral one without it. */
+    /** The tag's colour; the theme's neutral one without it. */
     color?: string;
 }
 
@@ -15,13 +16,7 @@ export interface ITaskTooltipUiHeaderProps {
     components?: Partial<ITaskTooltipUiHeaderComponents>;
 }
 
-//text mixed toward the body text stays readable on the tint
-const getStatusColors = (color: string, bodyText: string): React.CSSProperties => ({
-    backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
-    color: `color-mix(in srgb, ${color} 70%, ${bodyText})`,
-});
-
-/** A title, with a status pill beside it. */
+/** A title, with the status beside it as an option tag. */
 export const TaskTooltipUiHeader = (props: ITaskTooltipUiHeaderProps) => {
     const components = { ...TaskTooltipUiHeaderComponents, ...props.components };
     const theme = useTheme();
@@ -31,11 +26,7 @@ export const TaskTooltipUiHeader = (props: ITaskTooltipUiHeaderProps) => {
         className: styles.header,
         children: <>
             {components.onRenderTitle({ className: styles.title, children: props.title })}
-            {props.status && components.onRenderStatus({
-                className: styles.status,
-                style: props.status.color ? getStatusColors(props.status.color, theme.semanticColors.bodyText) : undefined,
-                children: props.status.text,
-            })}
+            {props.status && <OptionTag className={styles.status} label={props.status.text} color={props.status.color} components={components.status} />}
         </>,
     });
 };

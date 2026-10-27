@@ -1,12 +1,10 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { getOptionTagColors } from "@ui";
+import { mergeStyleSets } from "@fluentui/react";
 
 const GAP = 4;
 //as the grid's own value renderer
 const PADDING = 9;
 
-export const getLookupManyPillsStyles = (theme: ITheme) => {
-    const tag = getOptionTagColors(theme.palette.neutralSecondary, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
+export const getLookupManyPillsStyles = () => {
     return mergeStyleSets({
         root: {
             position: 'relative',
@@ -35,17 +33,8 @@ export const getLookupManyPillsStyles = (theme: ITheme) => {
         },
         overflow: {
             display: 'inline-flex',
-            alignItems: 'center',
-            height: 24,
-            paddingLeft: 6,
-            paddingRight: 6,
-            boxSizing: 'border-box',
-            borderRadius: theme.effects.roundedCorner4,
-            border: `1px solid ${tag.border}`,
-            backgroundColor: tag.background,
-            color: tag.text,
-            fontSize: theme.fonts.small.fontSize,
-            fontWeight: 600,
+            flexGrow: 0,
+            height: 22,
             cursor: 'default',
         },
         overflowList: {

@@ -1,11 +1,15 @@
 import { useMemo } from "react";
-import { Text, useTheme } from "@fluentui/react";
+import { mergeStyles, useTheme } from "@fluentui/react";
+import { IOptionTagComponents, OptionTagComponents } from "./components";
 import { getOptionTagStyles } from "./styles";
 
 export interface IOptionTagProps {
     label?: string;
     /** The colour it is drawn in. Without one it is drawn in the colour of whatever holds it. */
     color?: string;
+    /** Placement from what holds it, over the tag's own. */
+    className?: string;
+    components?: Partial<IOptionTagComponents>;
 }
 
 /**
@@ -20,8 +24,13 @@ export const OptionTag = (props: IOptionTagProps) => {
     //kind of thing whatever theme it is in
     const color = props.color || theme.palette.neutralSecondary;
     const styles = useMemo(() => getOptionTagStyles(theme, color), [theme, color]);
+    const components = { ...OptionTagComponents, ...props.components };
 
-    return <Text className={styles.optionTag} title={props.label}>
-        <span className={styles.label}>{props.label}</span>
-    </Text>;
+    return components.onRenderContainer({
+        className: mergeStyles(styles.optionTag, props.className),
+        children: <>
+            {components.onRenderDot({ className: styles.dot })}
+            {components.onRenderLabel({ className: styles.label, title: props.label, children: props.label })}
+        </>,
+    });
 };
