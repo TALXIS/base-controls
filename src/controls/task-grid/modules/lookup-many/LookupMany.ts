@@ -1,11 +1,12 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
-import type { GridCellLoadingHook, IColumnMenuSection, IGrid } from "@controls/grid";
+import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
+import type { IColumnMenuSection, IGrid } from "@controls/grid";
 import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskColumnMatcher, ITaskDataProvider, TaskLoadWaiter } from "../../provider";
+import type { ITaskColumnMatcher, ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
+import { TaskColumnValues } from "../column-values";
 import { ILookupManyLabels, LOOKUP_MANY_LABELS } from "./labels";
 import { LookupManyCell } from "./components/adapters/lookup-many-cell";
 import { LookupManyCellEditor } from "./components/adapters/lookup-many-cell-editor";
@@ -62,7 +63,6 @@ export interface ILookupManyParameters<TColumn extends ILookupManyColumn = ILook
 }
 
 export interface ILookupManyEvents {
-    onLoading: (isLoading: boolean) => void;
     /** The column whose filter callout is open changed. */
     onFilterChanged: (columnName: string | undefined) => void;
 }
@@ -102,10 +102,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _parameters: ILookupManyParameters<TColumn>;
     private _store: ILookupManyStore<TColumn>;
     private _labels: ILocalizationService<ILookupManyLabels>;
-    private _isLoading = false;
-    private _hasStartedLoading = false;
-    private _currentLoad?: Promise<void>;
-    private _error?: unknown;
+    private _values: TaskColumnValues;
     private _openFilter?: string;
     private _unregisters: (() => void)[] = [];
 
@@ -114,6 +111,12 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         this._parameters = parameters;
         this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<ILookupManyLabels>({ ...LOOKUP_MANY_LABELS, ...parameters.labels });
+        this._values = new TaskColumnValues({
+            taskRuntime,
+            columnNames: () => Object.keys(parameters.columns),
+            onLoad: this._loadValues,
+            errorMessage: () => this._labels.getLocalizedString('loadLookupManyFailed'),
+        });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
@@ -130,11 +133,11 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     }
 
     public getError(): unknown {
-        return this._error;
+        return this._values.getError();
     }
 
     public reload(taskIds?: string[]): Promise<void> {
-        return this._load(taskIds ?? Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        return this._values.reload(taskIds);
     }
 
     public getLabels(): ILocalizationService<ILookupManyLabels> {
@@ -176,17 +179,15 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
+        this._values.destroy();
         this.events.clearEventListeners();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumns),
             provider.registerColumnHandler({ isHandledColumn: columnName => !!this.getColumn(columnName), onSaveValue: this._saveValue }),
             provider.registerColumnMatcher(this._matcher),
-            provider.registerLoadWaiter(this._waitForValues),
-            () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
         );
     };
 
@@ -199,53 +200,13 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         isMatchingSearch: (record, columnName, searchQuery) => (record.getValue(columnName) as Reference[] | null ?? []).some(reference => isQuickFindMatch(reference.name, searchQuery)),
     };
 
-    private _onFirstDataLoaded = (): void => {
-        if (!this._hasStartedLoading) {
-            this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
-        }
-    };
-
-    //a sort, filter or search on these columns has to see the values
-    private _waitForValues: TaskLoadWaiter = async params => {
-        const provider = this._taskRuntime.getProvider();
-        if (Object.keys(this._parameters.columns).some(columnName => provider.isColumnQueried(columnName))) {
-            await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
-        }
-    };
-
-    private _load(taskIds: string[]): Promise<void> {
-        this._hasStartedLoading = true;
-        this._currentLoad = this._loadValues(taskIds);
-        return this._currentLoad;
-    }
-
-    private async _loadValues(taskIds: string[]): Promise<void> {
-        if (taskIds.length === 0) {
-            return;
-        }
-        this._error = undefined;
-        this._setLoading(true);
+    //a task the store leaves out holds none
+    private _loadValues = async (taskIds: string[]): Promise<Map<string, IRawRecord>> => {
         const errorTitle = this._labels.getLocalizedString('loadLookupManyFailed');
-        try {
-            const loaded = await this._taskRuntime.execute(() => this._store.onLoadValues(taskIds), { loading: { show: false }, error: { title: errorTitle } });
-            //a task the store leaves out holds none
-            const empty = Object.fromEntries(Object.keys(this._parameters.columns).map(columnName => [columnName, []]));
-            const provider = this._taskRuntime.getProvider();
-            const primaryIdAttribute = provider.getMetadata().PrimaryIdAttribute!;
-            provider.updateTaskData(taskIds.map(taskId => ({ ...empty, ...loaded.get(taskId), [primaryIdAttribute]: taskId })));
-        }
-        catch (error) {
-            this._error = new Error(errorTitle, { cause: error });
-        }
-        finally {
-            this._setLoading(false);
-        }
-    }
-
-    private _setLoading(isLoading: boolean): void {
-        this._isLoading = isLoading;
-        this.events.dispatchEvent('onLoading', isLoading);
-    }
+        const loaded = await this._taskRuntime.execute(() => this._store.onLoadValues(taskIds), { loading: { show: false }, error: { title: errorTitle } });
+        const empty = Object.fromEntries(Object.keys(this._parameters.columns).map(columnName => [columnName, []]));
+        return new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }]));
+    };
 
     private _saveValue = async (record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> => {
         const recordId = record.getRecordId();
@@ -277,14 +238,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
         //after the editing module, whose editor this replaces
         grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
-        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
     }
-
-    private _onCellLoading: GridCellLoadingHook = (result, params) => {
-        if (this._isLoading && this.getColumn(params.columnName)) {
-            result.isLoading = true;
-        }
-    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         for (const colDef of columnDefs) {

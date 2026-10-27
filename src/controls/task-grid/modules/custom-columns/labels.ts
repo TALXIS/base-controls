@@ -6,6 +6,7 @@ export interface ICustomColumnsLabels {
     confirmColumnDelete: string;
     /** Titles the dialog an operation on a custom column failed with. */
     customColumnsFailed: string;
+    loadCustomColumnsFailed: string;
 }
 
 /** The English defaults for {@link ICustomColumnsLabels}. */
@@ -15,4 +16,5 @@ export const CUSTOM_COLUMNS_LABELS: ICustomColumnsLabels = {
     deleteCustomColumn: 'Delete custom column',
     confirmColumnDelete: 'Do you want to delete this column and its values in every task?',
     customColumnsFailed: 'The custom column could not be changed.',
+    loadCustomColumnsFailed: 'The custom column values could not be loaded.',
 };

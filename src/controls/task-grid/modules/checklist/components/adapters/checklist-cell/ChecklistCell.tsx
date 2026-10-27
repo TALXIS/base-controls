@@ -1,9 +1,6 @@
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
 import { ErrorBoundary } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { Grid, IGridCellParams, useGridField } from "@controls/grid";
-import type { IChecklistEvents } from "../../../Checklist";
 import { ChecklistProgress } from "../../ui";
 
 const ChecklistCellProgress = () => {
@@ -16,11 +13,6 @@ const ChecklistCellProgress = () => {
 
 /** A checklist cell: the task's progress as `done/total`. */
 export const ChecklistCell = (props: IGridCellParams) => {
-    const { rerender } = useRerender();
-    const checklist = useDatasetControlModule('checklist');
-
-    useEventEmitter<IChecklistEvents>(checklist.events, 'onLoading', rerender);
-
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
         <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <ChecklistCellProgress /> } }} />
     </Grid.Cell.Field>;

@@ -1,9 +1,6 @@
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { ErrorBoundary } from "@utils";
 import { Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
-import type { IDependenciesEvents } from "../../../Dependencies";
 import { PREDECESSORS_COLUMN_NAME } from "../../../constants";
 import { DependencyCount } from "../../ui";
 
@@ -20,11 +17,6 @@ const DependenciesCellCount = () => {
 
 /** A dependencies cell: how many tasks this one waits on, or how many wait on it. */
 export const DependenciesCell = (props: IGridCellParams) => {
-    const { rerender } = useRerender();
-    const dependencies = useDatasetControlModule('dependencies');
-
-    useEventEmitter<IDependenciesEvents>(dependencies.events, 'onLoading', rerender);
-
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
         <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <DependenciesCellCount /> } }} />
     </Grid.Cell.Field>;

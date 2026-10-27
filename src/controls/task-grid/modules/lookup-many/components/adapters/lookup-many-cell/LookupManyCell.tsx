@@ -1,12 +1,9 @@
 import { useMemo } from "react";
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
 import { ErrorBoundary } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
 import { runQuietly } from "../../../../../runtime/runQuietly";
-import type { ILookupManyEvents } from "../../../LookupMany";
 import { LookupManyPills } from "../../ui";
 import { getLookupManyComponents } from "../getLookupManyComponents";
 
@@ -29,11 +26,6 @@ const LookupManyCellPills = () => {
 
 /** A lookup-many cell: its records on one line, the rest counted in a hoverable `+N`. */
 export const LookupManyCell = (props: IGridCellParams) => {
-    const { rerender } = useRerender();
-    const lookupMany = useDatasetControlModule('lookupMany');
-
-    useEventEmitter<ILookupManyEvents>(lookupMany.events, 'onLoading', rerender);
-
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
         <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <LookupManyCellPills /> } }} />
     </Grid.Cell.Field>;

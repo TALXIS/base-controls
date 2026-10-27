@@ -4,6 +4,7 @@ import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } fro
 import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
 import type { ITaskDataProvider, ITaskSaveResult } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
+import { TaskColumnValues } from "../column-values";
 import { CUSTOM_COLUMNS_LABELS, ICustomColumnsLabels } from "./labels";
 
 /** Where custom column definitions and values are kept. */
@@ -40,6 +41,7 @@ export class CustomColumns {
     private _store: ICustomColumnsStore;
     private _labels: ILocalizationService<ICustomColumnsLabels>;
     private _columns: IColumn[] = [];
+    private _values: TaskColumnValues;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: ICustomColumnsParameters) {
@@ -47,6 +49,12 @@ export class CustomColumns {
         this._parameters = parameters;
         this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<ICustomColumnsLabels>({ ...CUSTOM_COLUMNS_LABELS, ...parameters.labels });
+        this._values = new TaskColumnValues({
+            taskRuntime,
+            columnNames: () => this._columns.map(column => column.name),
+            onLoad: this._loadValues,
+            errorMessage: () => this._labels.getLocalizedString('loadCustomColumnsFailed'),
+        });
     }
 
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */
@@ -68,8 +76,19 @@ export class CustomColumns {
         return this._labels;
     }
 
+    /** What the last load threw, until the next one starts. */
+    public getError(): unknown {
+        return this._values.getError();
+    }
+
+    /** Loads the tasks' custom column values again, every loaded task's when none are given. */
+    public reload(taskIds?: string[]): Promise<void> {
+        return this._values.reload(taskIds);
+    }
+
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
+        this._values.destroy();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
@@ -77,11 +96,17 @@ export class CustomColumns {
         this._unregisters.push(
             provider.registerColumnHandler({
                 isHandledColumn: columnName => this.isCustomColumn(columnName),
-                onLoadValues: taskIds => store.onLoadValues(taskIds),
                 onSaveValue: (record, column, value) => store.onSaveValue(record, column, value),
             }),
             provider.registerAvailableColumns(this._addAvailableColumns),
         );
+    };
+
+    //a task the store leaves out holds none
+    private _loadValues = async (taskIds: string[]): Promise<Map<string, IRawRecord>> => {
+        const loaded = await this._store.onLoadValues(taskIds);
+        const empty = Object.fromEntries(this._columns.map(column => [column.name, null]));
+        return new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }]));
     };
 
     //over the bare virtual column a FetchXML store hands back for one
@@ -164,6 +189,7 @@ export class CustomColumns {
 
     private async _reloadColumns(): Promise<void> {
         this._columns = await this._store.onLoadColumns();
+        await this.reload();
     }
 
     //the commands do not await them

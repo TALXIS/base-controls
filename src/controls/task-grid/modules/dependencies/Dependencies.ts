@@ -1,11 +1,12 @@
 import type { ColDef } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
-import type { GridCellLoadingHook, IGrid } from "@controls/grid";
+import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import type { IGrid } from "@controls/grid";
 import { ILocalizationService, LocalizationService } from "@utils";
-import type { ITaskDataProvider, TaskLoadWaiter } from "../../provider";
+import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
+import { TaskColumnValues } from "../column-values";
 import { DEPENDENCIES_LABELS, IDependenciesLabels } from "./labels";
 import { DependenciesCell } from "./components/adapters/dependencies-cell";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./constants";
@@ -51,7 +52,6 @@ export interface IDependenciesParameters {
 export interface IDependenciesEvents {
     /** The dependencies of these tasks changed, at either end. */
     onDependenciesChanged: (taskIds: string[]) => void;
-    onLoading: (isLoading: boolean) => void;
 }
 
 /** The `dependencies` module: the tasks' dependencies, read and written through its store. */
@@ -99,16 +99,19 @@ export class Dependencies implements IDependencies {
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
-    private _isLoading = false;
-    private _hasStartedLoading = false;
-    private _currentLoad?: Promise<void>;
-    private _error?: unknown;
+    private _values: TaskColumnValues;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
         this._taskRuntime = taskRuntime;
         this._store = parameters.onCreateStore(taskRuntime);
         this._labels = new LocalizationService<IDependenciesLabels>({ ...DEPENDENCIES_LABELS, ...parameters.labels });
+        this._values = new TaskColumnValues({
+            taskRuntime,
+            columnNames: () => DEPENDENCY_COLUMN_NAMES,
+            onLoad: this._loadDependencies,
+            errorMessage: () => this._labels.getLocalizedString('loadDependenciesFailed'),
+        });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
     }
@@ -126,11 +129,11 @@ export class Dependencies implements IDependencies {
     }
 
     public getError(): unknown {
-        return this._error;
+        return this._values.getError();
     }
 
     public reload(taskIds?: string[]): Promise<void> {
-        return this._load(taskIds ?? Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
+        return this._values.reload(taskIds);
     }
 
     public isEditable(): boolean {
@@ -189,32 +192,16 @@ export class Dependencies implements IDependencies {
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
+        this._values.destroy();
         this.events.clearEventListeners();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
         provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
         this._unregisters.push(
             provider.registerAvailableColumns(this._addColumns),
-            provider.registerLoadWaiter(this._waitForDependencies),
-            () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
             () => provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted),
         );
-    };
-
-    private _onFirstDataLoaded = (): void => {
-        if (!this._hasStartedLoading) {
-            this._load(Object.keys(this._taskRuntime.getProvider().getRecordsMap()));
-        }
-    };
-
-    //a sort, filter or search on the columns has to see the dependencies
-    private _waitForDependencies: TaskLoadWaiter = async params => {
-        const provider = this._taskRuntime.getProvider();
-        if (DEPENDENCY_COLUMN_NAMES.some(columnName => provider.isColumnQueried(columnName))) {
-            await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
-        }
     };
 
     private _onTasksDeleted = (taskIds: string[]): void => {
@@ -225,38 +212,14 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _load(taskIds: string[]): Promise<void> {
-        this._hasStartedLoading = true;
-        this._currentLoad = this._loadDependencies(taskIds);
-        return this._currentLoad;
-    }
-
     //what was held for the tasks is replaced, including any the load no longer returns
-    private async _loadDependencies(taskIds: string[]): Promise<void> {
-        if (taskIds.length === 0) {
-            return;
-        }
-        this._error = undefined;
-        this._setLoading(true);
-        try {
-            const loaded = await this._store.onLoadDependencies(taskIds);
-            const loadedTaskIds = new Set(taskIds);
-            const loadedIds = new Set(loaded.map(dependency => dependency.id));
-            const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
-            this._setDependencies([...this._dependencies.filter(dependency => !replaced.includes(dependency)), ...loaded], [...replaced, ...loaded]);
-        }
-        catch (error) {
-            this._error = new Error(this._labels.getLocalizedString('loadDependenciesFailed'), { cause: error });
-        }
-        finally {
-            this._setLoading(false);
-        }
-    }
-
-    private _setLoading(isLoading: boolean): void {
-        this._isLoading = isLoading;
-        this.events.dispatchEvent('onLoading', isLoading);
-    }
+    private _loadDependencies = async (taskIds: string[]): Promise<void> => {
+        const loaded = await this._store.onLoadDependencies(taskIds);
+        const loadedTaskIds = new Set(taskIds);
+        const loadedIds = new Set(loaded.map(dependency => dependency.id));
+        const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
+        this._setDependencies([...this._dependencies.filter(dependency => !replaced.includes(dependency)), ...loaded], [...replaced, ...loaded]);
+    };
 
     private _setDependencies(dependencies: ITaskDependency[], changed: ITaskDependency[]): void {
         this._dependencies = dependencies;
@@ -268,13 +231,10 @@ export class Dependencies implements IDependencies {
     }
 
     private _writeToRecords(taskIds: string[]): void {
-        const provider = this._taskRuntime.getProvider();
-        const primaryIdAttribute = provider.getMetadata().PrimaryIdAttribute!;
-        provider.updateTaskData(taskIds.map((taskId): IRawRecord => ({
-            [primaryIdAttribute]: taskId,
+        this._values.write(new Map(taskIds.map(taskId => [taskId, {
             [PREDECESSORS_COLUMN_NAME]: this.getPredecessors(taskId).map(dependency => this._toReference(dependency.predecessorTaskId, dependency)),
             [SUCCESSORS_COLUMN_NAME]: this.getSuccessors(taskId).map(dependency => this._toReference(dependency.successorTaskId, dependency)),
-        })));
+        }])));
     }
 
     private _toReference(taskId: string, dependency: ITaskDependency): IEntityReference<ITaskDependencyData> {
@@ -331,14 +291,7 @@ export class Dependencies implements IDependencies {
 
     private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
         grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
-        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
     }
-
-    private _onCellLoading: GridCellLoadingHook = (result, params) => {
-        if (this._isLoading && DEPENDENCY_COLUMN_NAMES.includes(params.columnName)) {
-            result.isLoading = true;
-        }
-    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         for (const colDef of columnDefs) {
