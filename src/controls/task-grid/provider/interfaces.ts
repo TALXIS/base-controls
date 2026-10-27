@@ -75,35 +75,30 @@ export type IEditTasksResult = ITaskChanges & (
     | { success: true }
     | { success: false; errors: IFailedRecord[] });
 
-/** Where a task lands, resolved over every loaded task whatever the view hides. */
-export interface ITaskSiblingContext {
-    /** The parent it lands under; none for the top level. */
-    parentRecord?: IRecord;
-    /** Every record under that parent, in order, without the task itself. */
-    siblings: IRecord[];
-    previousSibling?: IRecord;
-    nextSibling?: IRecord;
-    fieldMapping: IFieldMapping;
-}
+/** Where among its parent's children a new task goes. */
+export type TaskCreatePosition = 'first' | 'last';
 
 /** Where a new task lands, and what it starts with. */
-export interface ITaskCreateParams extends ITaskSiblingContext {
-    /** Values the caller asked for, by column name; applied over the store's defaults. */
+export interface ITaskCreateParams {
+    /** None for the top level. */
+    parentRecord?: IRecord;
+    /** Resolved by the provider; the store saves it as is. */
+    stackRank: string;
+    /** Column values the task starts with. */
     data?: { [columnName: string]: any };
-    /** The columns the provider shows. */
-    columns: IColumn[];
-    metadata: IMemoryProviderEntityMetadata;
 }
 
 /** Where a task was dropped. */
 export type ITaskMovePosition = 'above' | 'below' | 'child';
 
 /** A move the provider resolved; a move into the task's own subtree never gets this far. */
-export interface ITaskMoveParams extends ITaskSiblingContext {
+export interface ITaskMoveParams {
     movingRecord: IRecord;
     targetRecord: IRecord;
     position: ITaskMovePosition;
-    /** The stack rank the task moves to; the store saves it. */
+    /** None for the top level. */
+    parentRecord?: IRecord;
+    /** Resolved by the provider; the store saves it as is. */
     stackRank: string;
 }
 
@@ -123,9 +118,8 @@ export interface ITaskDeleteParams {
 
 /** Where a created task lands among its siblings, and what it starts with. */
 export interface ICreateTaskOptions {
-    previousTaskId?: string;
-    /** Defaults to the parent's first child. */
-    nextTaskId?: string;
+    /** The provider's default when left out. */
+    position?: TaskCreatePosition;
     data?: { [columnName: string]: any };
 }
 
@@ -185,6 +179,8 @@ export interface ITaskDataProviderInitializeParameters {
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & Partial<Pick<IFieldMapping, 'stateCode'>>;
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
+    /** Where a task created with no position of its own goes; `first` when left out. */
+    defaultCreatePosition?: TaskCreatePosition;
 }
 
 /** Changes the columns Edit columns offers, in place. */
@@ -228,14 +224,12 @@ export interface ITaskDataProvider extends IDataProvider {
     areInactiveTasksHidden(): boolean;
     setInactiveTasksHidden(isHidden: boolean): void;
     isRecordActive(recordId: string): boolean;
-    /** Creates a task under `parentId`, first among its siblings unless `options` say otherwise. */
+    /** Creates a task under `parentId`, at the default position unless `options` say otherwise. */
     createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
     /** Adds the tasks `onCreate` makes in the backend, placed as a task created under `parentId` would be. */
-    createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>): Promise<IRecord[] | null>;
-    /** Adds tasks that already exist, such as ones a template created. */
-    addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[];
-    /** Whether the task was created in this load; it shows whatever the filter. */
-    isNewTask(taskId: string): boolean;
+    createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null>;
+    /** The position a task created since the view last loaded asked for; it shows there whatever the sort and filter. */
+    getNewTaskPosition(taskId: string): TaskCreatePosition | undefined;
     getDeletion(taskIds: string[]): ITaskDeletion;
     /** Deletes the tasks and their subtrees bottom-up, keeping the ancestors of a refused or failed task. */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;

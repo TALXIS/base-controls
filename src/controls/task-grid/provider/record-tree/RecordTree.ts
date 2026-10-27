@@ -1,4 +1,5 @@
 import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { StackRank } from "@utils/stack-rank";
 import type { ITaskColumnMatcher, ITaskDataProvider } from "../interfaces";
 import { patchDataBuilderPrepare } from "./patchDataBuilderPrepare";
 
@@ -13,7 +14,7 @@ export interface IRecordTreeView {
     hasChildren(recordId: string): boolean;
     /** The record's ancestors the view shows and the record itself, from the top. */
     getPath(recordId: string): string[];
-    /** Whether the record itself matches the filter and quick find, or is a new task. */
+    /** Whether the record itself matches the filter and quick find, or is a task created since the view loaded. */
     isMatching(recordId: string): boolean;
     getCount(): number;
     /** Every record the view shows, in the order it shows them. */
@@ -100,11 +101,10 @@ export class RecordTree implements IRecordTree {
         this._descendants.clear();
         //before the sort and the filter below, which may read the path
         this._patchRecordPaths(index);
-        this._sortChildren(index, this._buildSortingMap(index));
         const matchingIds = this._buildMatchingIds(index);
         //a new task stays shown whatever the filter
-        index.records.map(record => record.getRecordId()).filter(recordId => this._provider.isNewTask(recordId)).forEach(recordId => matchingIds.add(recordId));
-        this._projection = this._project(index, matchingIds);
+        index.records.map(record => record.getRecordId()).filter(recordId => this._provider.getNewTaskPosition(recordId)).forEach(recordId => matchingIds.add(recordId));
+        this._projection = this._project({ ...index, ...this._sortForDisplay(index, this._buildSortingMap(index)) }, matchingIds);
         this._isBuilt = true;
     }
 
@@ -169,8 +169,9 @@ export class RecordTree implements IRecordTree {
     }
 
     private _buildIndex(): IHierarchyIndex {
-        //a copy: it is sorted below, and the provider's own array must keep its order
-        const records = [...this._provider.getAllRecords()];
+        const stackRank = this._provider.getFieldMapping().stackRank;
+        //a copy in stack order, as the provider's own array must keep its order
+        const records = [...this._provider.getAllRecords()].sort((a, b) => StackRank.compare(a.getValue(stackRank), b.getValue(stackRank)));
         const recordsMap = this._provider.getRecordsMap();
         const parentIdColumn = this._provider.getFieldMapping().parentId;
         const childrenByParent = new Map<string | null, IRecord[]>([[null, []]]);
@@ -262,13 +263,19 @@ export class RecordTree implements IRecordTree {
         return unreachable;
     }
 
-    private _sortChildren(index: IHierarchyIndex, sortingMap: { [recordId: string]: number }): void {
-        const byDisplayOrder = (a: IRecord, b: IRecord): number =>
-            (sortingMap[a.getRecordId()] ?? Number.MAX_SAFE_INTEGER) - (sortingMap[b.getRecordId()] ?? Number.MAX_SAFE_INTEGER);
-        for (const [, children] of index.childrenByParent) {
-            children.sort(byDisplayOrder);
-        }
-        index.records.sort(byDisplayOrder);
+    //copies, as the structure keeps the stack order whatever the view sorts by
+    private _sortForDisplay(index: IHierarchyIndex, sortingMap: { [recordId: string]: number }): Pick<IHierarchyIndex, 'records' | 'childrenByParent'> {
+        //a new task stays at the end it asked for, in stack order among the other new tasks there
+        const getGroup = (record: IRecord): number => {
+            const position = this._provider.getNewTaskPosition(record.getRecordId());
+            return position === 'first' ? 0 : position === 'last' ? 2 : 1;
+        };
+        const byDisplayOrder = (a: IRecord, b: IRecord): number => {
+            const group = getGroup(a);
+            return (group - getGroup(b)) || (group === 1 ? (sortingMap[a.getRecordId()] ?? Number.MAX_SAFE_INTEGER) - (sortingMap[b.getRecordId()] ?? Number.MAX_SAFE_INTEGER) : 0);
+        };
+        const childrenByParent = new Map([...index.childrenByParent].map(([parentId, children]) => [parentId, [...children].sort(byDisplayOrder)]));
+        return { records: [...index.records].sort(byDisplayOrder), childrenByParent };
     }
 
     private _project(index: IHierarchyIndex, matchingIds: Set<string>): IViewProjection {

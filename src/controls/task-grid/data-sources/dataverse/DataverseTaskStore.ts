@@ -1,7 +1,6 @@
 import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { StackRank } from "@utils/stack-rank";
-import { IDeleteTasksResult, IFieldMapping, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
 
@@ -96,7 +95,7 @@ export class DataverseTaskStore implements ITaskStore {
     }
 
     public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
-        const { fieldMapping } = params;
+        const fieldMapping = this._taskRuntime.getProvider().getFieldMapping();
         const parentId = params.parentRecord?.getRecordId();
         const parentNavigationProperty = await this._getNavigationPropertyName(this._entityName, fieldMapping.parentId);
         const taskId = params.movingRecord.getRecordId();
@@ -184,8 +183,8 @@ export class DataverseTaskStore implements ITaskStore {
     }
 
     protected _getPlacement(params: ITaskCreateParams): IRawRecord {
-        const { fieldMapping } = params;
-        const placement: IRawRecord = { [fieldMapping.stackRank]: this._getStackRank(params.previousSibling, params.nextSibling, fieldMapping) };
+        const fieldMapping = this._taskRuntime.getProvider().getFieldMapping();
+        const placement: IRawRecord = { [fieldMapping.stackRank]: params.stackRank };
         if (params.parentRecord) {
             placement[fieldMapping.parentId] = params.parentRecord.getNamedReference();
         }
@@ -282,10 +281,5 @@ export class DataverseTaskStore implements ITaskStore {
             throw new Error(`No many-to-one relationship from ${this._entityName}.${referencingAttribute} to ${referencedEntityName}.`);
         }
         return relationship.ReferencingEntityNavigationPropertyName;
-    }
-
-    protected _getStackRank(previousSibling: IRecord | undefined, nextSibling: IRecord | undefined, fieldMapping: IFieldMapping): string {
-        const { stackRank } = fieldMapping;
-        return StackRank.between(previousSibling?.getValue(stackRank), nextSibling?.getValue(stackRank));
     }
 }

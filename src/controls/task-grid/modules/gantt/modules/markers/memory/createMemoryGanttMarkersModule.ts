@@ -1,4 +1,4 @@
-import { simulateDelay } from "../../../../../data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../../../data-sources/memory/simulateBackend";
 import type { IGanttMarker, IGanttMarkersParameters, IGanttMarkersStore } from "../GanttMarkers";
 import { createGanttMarkersModule, IGanttMarkersModule } from "../createGanttMarkersModule";
 
@@ -14,7 +14,7 @@ class MemoryGanttMarkersStore implements IGanttMarkersStore {
     }
 
     public async onLoadMarkers(): Promise<IGanttMarker[]> {
-        await simulateDelay();
+        await simulateBackend();
         return this._markers;
     }
 }

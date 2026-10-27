@@ -9,7 +9,7 @@ import { TaskCreateLayer } from "./components/adapters/task-create-layer";
 export interface IGanttTaskCreate {
     /** Whether tasks can be created at all. */
     isEnabled(): boolean;
-    /** Creates a task above the row's task, under the same parent, running over the span. */
+    /** Creates a task first under the row's parent, running over the span. */
     create(rowTaskId: string, span: IGanttSpan): Promise<void>;
     /** Called as the Gantt goes. */
     destroy(): void;
@@ -30,12 +30,8 @@ export class GanttTaskCreate implements IGanttTaskCreate {
 
     public async create(rowTaskId: string, span: IGanttSpan): Promise<void> {
         const taskRuntime = this._gantt.getTaskRuntime();
-        const structure = taskRuntime.getProvider().getRecordTree().structure;
-        await runQuietly(() => taskRuntime.tasks.create(structure.getParent(rowTaskId)?.getRecordId(), {
-            previousTaskId: structure.getNeighbours(rowTaskId).previous?.getRecordId(),
-            nextTaskId: rowTaskId,
-            data: this._gantt.services.get('schedule').getValues(span),
-        }));
+        const parentId = taskRuntime.getProvider().getRecordTree().structure.getParent(rowTaskId)?.getRecordId();
+        await runQuietly(() => taskRuntime.tasks.create(parentId, { data: this._gantt.services.get('schedule').getValues(span) }));
     }
 
     public destroy(): void {

@@ -19,7 +19,7 @@ export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<I
 }
 
 /** What a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridLoadResult extends ITaskDataProviderInitializeParameters {
+export interface ITaskGridLoadResult extends Omit<ITaskDataProviderInitializeParameters, 'defaultCreatePosition'> {
     /** The provider for the view. */
     provider: ITaskDataProvider;
 }

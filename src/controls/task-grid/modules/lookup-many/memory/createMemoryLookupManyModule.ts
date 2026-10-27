@@ -1,7 +1,7 @@
 import { IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { createLookupManyModule, ILookupManyModule } from "../createLookupManyModule";
 import type { ILookupManyOptionsParameters, ILookupManyParameters, ILookupManyStore } from "../LookupMany";
-import { simulateDelay } from "../../../data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
 
 type Reference = ComponentFramework.EntityReference;
 
@@ -29,12 +29,12 @@ class MemoryLookupManyStore implements ILookupManyStore {
     }
 
     public async onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
-        await simulateDelay(3000);
+        await simulateBackend(3000);
         return new Map(taskIds.filter(taskId => this._values[taskId]).map(taskId => [taskId, structuredClone(this._values[taskId])]));
     }
 
     public async onSaveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
-        await simulateDelay();
+        await simulateBackend();
         this._values[taskId] = { ...this._values[taskId], [columnName]: value };
     }
 

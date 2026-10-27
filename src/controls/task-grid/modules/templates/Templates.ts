@@ -134,15 +134,10 @@ export class Templates implements ITemplates {
         if (item.key !== FROM_TEMPLATE_COMMAND_ID) {
             return;
         }
-        const provider = this._taskRuntime.getProvider();
         item.subMenuProps = {
             items: [{
                 key: 'selector',
-                //the selection at the moment of the pick
-                onRender: (_, dismissMenu) => this._renderSelector(() => dismissMenu(undefined, true), () => {
-                    const ids = provider.getSelectedRecordIds();
-                    return ids.length === 1 ? ids[0] : undefined;
-                }),
+                onRender: (_, dismissMenu) => this._renderSelector(() => dismissMenu(undefined, true)),
             }],
         };
     };
@@ -159,18 +154,18 @@ export class Templates implements ITemplates {
             subMenuProps: {
                 items: [{
                     key: 'selector',
-                    onRender: (_, dismissMenu) => this._renderSelector(() => dismissMenu(undefined, true), () => recordId),
+                    onRender: (_, dismissMenu) => this._renderSelector(() => dismissMenu(undefined, true), recordId),
                 }],
             },
         });
     };
 
-    private _renderSelector(onDismiss: () => void, onGetParentId: () => string | undefined): JSX.Element {
+    private _renderSelector(onDismiss: () => void, parentId?: string): JSX.Element {
         return createElement(TemplateSelectorAdapter, {
             templates: this,
             onTemplateSelected: templateId => {
                 onDismiss();
-                runQuietly(() => this.createTasksFromTemplate(templateId, onGetParentId()));
+                runQuietly(() => this.createTasksFromTemplate(templateId, parentId));
             },
         });
     }

@@ -3941,7 +3941,7 @@ interface ITaskExecuteOptions {
 /** The task actions, each run with the grid loading and its error shown. */
 interface ITaskActions {
     /** The created task, or null when creation is off or the user cancelled. */
-    create(parentId?: string, options?: { previousTaskId?: string; nextTaskId?: string; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
+    create(parentId?: string, options?: { position?: TaskCreatePosition; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
     edit(taskIds: string[]): Promise<any>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
@@ -4044,6 +4044,8 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
+    /** Where among its parent's children a new task goes; first when left out. */
+    defaultCreatePosition?: TaskCreatePosition;
     /** The Edit command, and editing tasks in the grid and in their forms. */
     enableEditing?: boolean;
     /** The Delete command. */
@@ -4215,16 +4217,17 @@ interface ITemplate {
     tree: ICreateTaskTree;
 }
 
-/** Where a new task lands, with the values it starts with. */
+/** Where among its parent's children a new task goes. */
+type TaskCreatePosition = 'first' | 'last';
+
+/** Where a new task lands, and what it starts with. */
 interface ITaskCreateParams {
+    /** None for the top level. */
     parentRecord?: IRecord;
-    siblings: IRecord[];
-    previousSibling?: IRecord;
-    nextSibling?: IRecord;
+    /** Resolved by the provider; the store saves it as is. */
+    stackRank: string;
+    /** Column values the task starts with. */
     data?: { [columnName: string]: any };
-    fieldMapping: IFieldMapping;
-    columns: IColumn[];
-    metadata: IMemoryProviderEntityMetadata;
 }
 
 /** Where a template's tasks go: the template, and where its own task lands. */
@@ -4268,7 +4271,7 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
 /** Templates held in memory. */
 declare class MemoryTemplatesStore implements ITemplatesStore {
     /** Its tasks are created in the database the grid's MemoryTaskStore reads. */
-    constructor(parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[] });
+    constructor(parameters: { taskRuntime: ITaskRuntime; database: MemoryTaskDatabase; templates: IMemoryTemplate[] });
     onCreateTemplatesProvider(): IDataProvider;
     onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
     onCreateTemplate(template: ITemplate): Promise<void>;
@@ -4394,8 +4397,8 @@ declare class MemoryTaskDatabase {
     getMetadata(): IMemoryProviderEntityMetadata;
     getTasks(): IRawRecord[];
     getTask(taskId: string): IRawRecord | undefined;
-    /** Creates the tasks with their subtrees where params place the first. */
-    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>): IRawRecord[];
+    /** Creates the tasks with their subtrees, the first at the rank params give and the rest after it. */
+    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>, shape: { fieldMapping: IFieldMapping; columns: IColumn[] }): IRawRecord[];
     updateTask(taskId: string, values: IRawRecord): void;
     deleteTasks(taskIds: string[]): void;
 }

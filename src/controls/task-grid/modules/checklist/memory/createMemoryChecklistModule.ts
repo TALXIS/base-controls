@@ -1,6 +1,6 @@
 import type { IChecklistItem, IChecklistParameters, IChecklistStore } from "../Checklist";
 import { createChecklistModule, IChecklistModule } from "../createChecklistModule";
-import { simulateDelay } from "../../../data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
 
 export interface IMemoryChecklistModuleParameters extends Omit<IChecklistParameters, 'onCreateStore'> {
     /** The items of each task, by task id. */
@@ -15,7 +15,7 @@ class MemoryChecklistStore implements IChecklistStore {
     }
 
     public async onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>> {
-        await simulateDelay();
+        await simulateBackend();
         return new Map(taskIds.filter(taskId => this._items[taskId]).map(taskId => [taskId, structuredClone(this._items[taskId])]));
     }
 }

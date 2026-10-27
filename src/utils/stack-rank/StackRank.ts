@@ -1,20 +1,6 @@
 import { LexoRank } from "lexorank";
 
-/**
- * The lexicographic rank scheme both shipped task strategies order by — a string per task, so a reorder
- * rewrites one record instead of renumbering the list.
- *
- * Nothing in the grid requires it: the provider resolves which records an operation lands between, and how
- * order is expressed is the strategy's own decision.
- *
- * @example
- * ```ts
- * onMoveTask: async params => {
- *     const stackRank = StackRank.between(params.previousStackRank, params.nextStackRank);
- *     …
- * }
- * ```
- */
+/** The lexicographic ranks the task grid orders siblings by, resolved by the provider and saved by stores. */
 export class StackRank {
     /**
      * A rank that sorts strictly between two neighbours. With one neighbour, a step beyond it; with

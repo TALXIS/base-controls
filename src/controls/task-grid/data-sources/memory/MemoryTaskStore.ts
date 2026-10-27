@@ -38,7 +38,9 @@ export class MemoryTaskStore implements ITaskStore {
 
     public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
         await simulateBackend();
-        const [record] = this._parameters.database.createTasks([{ data: params.data }], params);
+        const { database, taskRuntime } = this._parameters;
+        const provider = taskRuntime.getProvider();
+        const [record] = database.createTasks([{ data: params.data }], params, { fieldMapping: provider.getFieldMapping(), columns: provider.getColumns() });
         return { record };
     }
 
@@ -50,7 +52,7 @@ export class MemoryTaskStore implements ITaskStore {
 
     public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
         await simulateBackend();
-        const { parentId, stackRank } = params.fieldMapping;
+        const { parentId, stackRank } = this._parameters.taskRuntime.getProvider().getFieldMapping();
         const parentReference = params.parentRecord ? [params.parentRecord.getNamedReference()] : null;
         this._parameters.database.updateTask(params.movingRecord.getRecordId(), { [parentId]: parentReference, [stackRank]: params.stackRank });
         return {};

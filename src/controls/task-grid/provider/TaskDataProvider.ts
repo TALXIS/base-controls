@@ -3,7 +3,7 @@ import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITasksCreateResult, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
@@ -19,9 +19,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _fieldMapping?: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
+    private _defaultCreatePosition: TaskCreatePosition = 'first';
     private _tree: RecordTree;
     private _hasLoaded = false;
-    private _newTaskIds = new Set<string>();
+    private _newTaskPositions = new Map<string, TaskCreatePosition>();
     private _columnCatalogue = new Map<string, IColumn>();
     private _declaredColumns: IColumn[] = [];
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
@@ -42,6 +43,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public initialize(parameters: ITaskDataProviderInitializeParameters): void {
         this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
+        this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -195,38 +197,30 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
         const resolvedParentId = parentId ?? this._rootTaskId;
-        const result = await this._store.onCreateTask(this._resolveCreate(resolvedParentId, options));
+        const position = options?.position ?? this._defaultCreatePosition;
+        const result = await this._store.onCreateTask({ ...this._resolveCreate(resolvedParentId, position), data: options?.data });
         if (!result) {
             return null;
         }
-        const [record] = this.addTasks([result.record], resolvedParentId);
+        const [record] = this._addTasks([result.record], resolvedParentId, position);
         this._applyChanges(result);
         return record;
     }
 
-    public async createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>): Promise<IRecord[] | null> {
+    public async createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null> {
         const resolvedParentId = parentId ?? this._rootTaskId;
-        const result = await onCreate(this._resolveCreate(resolvedParentId));
+        const position = options?.position ?? this._defaultCreatePosition;
+        const result = await onCreate(this._resolveCreate(resolvedParentId, position));
         if (!result) {
             return null;
         }
-        const records = this.addTasks(result.records, resolvedParentId);
+        const records = this._addTasks(result.records, resolvedParentId, position);
         this._applyChanges(result);
         return records;
     }
 
-    public addTasks(rawRecords: IRawRecord[], parentId?: string): IRecord[] {
-        const records = this._addRecords(rawRecords);
-        if (records.length > 0) {
-            this._rebuildTree();
-            this.taskEvents.dispatchEvent('onTasksCreated', records, parentId);
-        }
-        return records;
-    }
-
-
-    public isNewTask(taskId: string): boolean {
-        return this._newTaskIds.has(taskId);
+    public getNewTaskPosition(taskId: string): TaskCreatePosition | undefined {
+        return this._newTaskPositions.get(taskId);
     }
 
     public getDeletion(taskIds: string[]): ITaskDeletion {
@@ -280,7 +274,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (!params || !changes) {
             return null;
         }
-        const { parentId, stackRank } = params.fieldMapping;
+        const { parentId, stackRank } = this.getFieldMapping();
         const moved = {
             [this.getMetadata().PrimaryIdAttribute!]: movingTaskId,
             [parentId]: params.parentRecord ? [params.parentRecord.getNamedReference()] : null,
@@ -342,6 +336,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public dispatchEvent<K extends keyof IDataProviderEventListeners>(event: K, ...args: Parameters<IDataProviderEventListeners[K]>): boolean {
+        //a new task keeps its place only until the view is loaded again
+        if (event === 'onBeforeNewDataLoaded') {
+            this._newTaskPositions.clear();
+        }
         if (event === 'onNewDataLoaded' && this._tree) {
             this._tree.build();
             this._visibleRecords = this._getVisibleRecords();
@@ -422,10 +420,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return result;
     }
 
-    private _addRecords(rawRecords: IRawRecord[]): IRecord[] {
+    private _addTasks(rawRecords: IRawRecord[], parentId: string | undefined, position: TaskCreatePosition): IRecord[] {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
         const records = rawRecords.map(rawData => this.newRecord({ rawData, recordId: rawData[primaryIdAttribute] }));
-        records.forEach(record => this._newTaskIds.add(record.getRecordId()));
+        if (records.length > 0) {
+            records.forEach(record => this._newTaskPositions.set(record.getRecordId(), position));
+            this._rebuildTree();
+            this.taskEvents.dispatchEvent('onTasksCreated', records, parentId);
+        }
         return records;
     }
 
@@ -468,21 +470,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             && condition.conditionOperator === Operators.Equal.Value && condition.value === `${ACTIVE_STATE_CODE}`);
     }
 
-    private _resolveCreate(parentId?: string, options?: ICreateTaskOptions): ITaskCreateParams {
-        const { structure } = this._tree;
-        const siblings = structure.getChildren(parentId ?? null);
-        const recordsMap = this.getRecordsMap();
-        const previousTaskId = options?.previousTaskId;
-        const nextTaskId = options?.nextTaskId;
+    private _resolveCreate(parentId: string | undefined, position: TaskCreatePosition): ITaskCreateParams {
+        const siblings = this._tree.structure.getChildren(parentId ?? null);
+        const { stackRank } = this.getFieldMapping();
         return {
-            parentRecord: parentId ? recordsMap[parentId] : undefined,
-            siblings,
-            previousSibling: previousTaskId ? recordsMap[previousTaskId] : nextTaskId ? structure.getNeighbours(nextTaskId).previous : undefined,
-            nextSibling: nextTaskId ? recordsMap[nextTaskId] : previousTaskId ? structure.getNeighbours(previousTaskId).next : siblings[0],
-            data: options?.data,
-            fieldMapping: this.getFieldMapping(),
-            columns: this.getColumns(),
-            metadata: this.getMetadata(),
+            parentRecord: parentId ? this.getRecordsMap()[parentId] : undefined,
+            stackRank: position === 'first'
+                ? StackRank.between(undefined, siblings[0]?.getValue(stackRank))
+                : StackRank.between(siblings[siblings.length - 1]?.getValue(stackRank), undefined),
         };
     }
 
@@ -507,10 +502,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             targetRecord,
             position,
             parentRecord: parentId ? recordsMap[parentId] : undefined,
-            siblings,
-            previousSibling,
-            nextSibling,
-            fieldMapping: this.getFieldMapping(),
             stackRank: StackRank.between(previousSibling?.getValue(stackRank), nextSibling?.getValue(stackRank)),
         };
     }
