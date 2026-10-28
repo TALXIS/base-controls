@@ -10,3 +10,4 @@ export * from './filtering';
 export * from './aggregation';
 export * from './grouping';
 export * from './legacy-client-api-compatibility';
+export * from './ag-grid-style-isolation';

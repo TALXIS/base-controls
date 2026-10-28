@@ -37,6 +37,8 @@ export interface IGridModules {
     clipboard?: IGridModule;
     /** What legacy scripts set on a record's fields: {@link createLegacyClientApiCompatibilityModule}. */
     legacyClientApiCompatibility?: IGridModule;
+    /** Keeping other grids' AG Grid styles off this one: {@link createAgGridStyleIsolationModule}. */
+    agGridStyleIsolation?: IGridModule;
     /** The caller's own modules, ordered against {@link GRID_MODULE_PRIORITY}. */
     custom?: IGridModule[];
 }
