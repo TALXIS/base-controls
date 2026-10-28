@@ -15,7 +15,7 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
     public get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] {
         const service = this.find(key);
         if (service === undefined) {
-            throw new Error(`No "${String(key)}" is registered with this service locator. An optional feature's service is only there when that feature is — reach for it with find(), and resolve services in methods rather than in a constructor.`);
+            throw new Error(`The "${String(key)}" service is not registered. Use find() if it is optional, or whenAvailable() if it is registered later.`);
         }
         return service;
     }
