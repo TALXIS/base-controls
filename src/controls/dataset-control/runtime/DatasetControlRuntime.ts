@@ -60,7 +60,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _viewId?: string;
     private _view?: IDatasetControlResolvedView;
     private _requestedViewId?: string;
-    private _isLoading = false;
+    private _isLoadingView = false;
     private _isDestroyed = false;
     private _error?: unknown;
 
@@ -112,8 +112,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._state.getViewStore(viewId);
     }
 
-    public isLoading(): boolean {
-        return this._isLoading;
+    public isLoadingView(): boolean {
+        return this._isLoadingView;
     }
 
     public registerViews(hook: DatasetControlViewsHook, priority?: number): () => void {
@@ -178,7 +178,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private async _load(requestedViewId: string | undefined): Promise<void> {
-        this._isLoading = true;
+        this._isLoadingView = true;
         this._requestedViewId = requestedViewId;
         this._error = undefined;
         this.events.dispatchEvent('onLoadStarted');
@@ -258,7 +258,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._viewId = viewId;
         this._view = view;
         this._state.setViewId(viewId);
-        this._isLoading = false;
+        this._isLoadingView = false;
         this.events.dispatchEvent('onLoaded', result.provider);
     }
 
@@ -267,7 +267,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             return;
         }
         this._error = error;
-        this._isLoading = false;
+        this._isLoadingView = false;
         this.events.dispatchEvent('onLoadFailed', error);
     }
 

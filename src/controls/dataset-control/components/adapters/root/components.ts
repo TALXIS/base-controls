@@ -1,4 +1,5 @@
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
+import type { ILoadingOverlayComponents } from "@ui/loading";
 import type { IContainerUiComponents } from "../../ui";
 import type { ISkeletonComponents } from "../skeleton";
 
@@ -8,4 +9,6 @@ export interface IDatasetControlComponents extends Partial<IContainerUiComponent
     errorMessage?: Partial<IErrorMessageBarComponents>;
     /** What stands in for the parts while the provider loads. */
     skeleton?: ISkeletonComponents;
+    /** Replacements for the overlay shown while the control is set loading. */
+    loadingOverlay?: Partial<ILoadingOverlayComponents>;
 }

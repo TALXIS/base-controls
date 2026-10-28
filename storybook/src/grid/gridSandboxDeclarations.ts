@@ -3694,6 +3694,16 @@ interface IDatasetControlPartMap {
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
     notifications: IDatasetControlNotifications;
     editColumns: IDatasetControlEditColumns;
+    /** The overlay over the whole control; always there. */
+    loadingOverlay: IDatasetControlLoadingOverlay;
+}
+
+/** The overlay that covers the whole control while something runs. */
+interface IDatasetControlLoadingOverlay {
+    /** Covers the whole control until every caller has hidden it again; returns the hide for this caller. */
+    show(message?: string): () => void;
+    isLoading(): boolean;
+    getMessage(): string | undefined;
 }
 
 /** Looks up the parts rendered right now. */
@@ -3733,7 +3743,8 @@ interface IDatasetControl<TData = unknown> {
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
     getView(): IDatasetControlResolvedView<TData> | undefined;
-    isLoading(): boolean;
+    /** Whether a view is loading, behind the skeleton. */
+    isLoadingView(): boolean;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
     /** Loads the view on a new provider; asks first when there are unsaved changes. */

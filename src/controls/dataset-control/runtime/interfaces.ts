@@ -8,6 +8,7 @@ import type { DatasetControlPagination, IDatasetControlPagination } from "../com
 import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "../components/adapters/page-size-switcher/DatasetControlPageSizeSwitcher";
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
+import type { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlay } from "../components/adapters/loading-overlay/DatasetControlLoadingOverlay";
 import type { IRibbonRuntime } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
@@ -70,6 +71,8 @@ export interface IDatasetControlPartMap {
     notifications: IDatasetControlNotifications;
     /** `DatasetControl.EditColumns`. */
     editColumns: IDatasetControlEditColumns;
+    /** The overlay over the whole control; always there, as the control renders it itself. */
+    loadingOverlay: IDatasetControlLoadingOverlay;
 }
 
 /** Looks up the parts rendered right now. */
@@ -109,8 +112,8 @@ export interface IDatasetControl<TData = unknown> {
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
     getView(): IDatasetControlResolvedView<TData> | undefined;
-    /** Whether a load is running. */
-    isLoading(): boolean;
+    /** Whether a view is loading, behind the skeleton. */
+    isLoadingView(): boolean;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
     /** Mounts the control anew on the view; asks first when there are unsaved changes. */
@@ -131,6 +134,7 @@ export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     pageSizeSwitcher: DatasetControlPageSizeSwitcher;
     notifications: DatasetControlNotifications;
     editColumns: DatasetControlEditColumns;
+    loadingOverlay: DatasetControlLoadingOverlay;
 }
 
 export type IDatasetControlServiceLocator = IServiceLocator<IDatasetControlServiceMap>;

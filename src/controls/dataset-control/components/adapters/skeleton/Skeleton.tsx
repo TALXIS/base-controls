@@ -18,7 +18,7 @@ export const Skeleton = (props: ISkeletonProps) => {
         ...loadingBoundary,
     };
 
-    return <LoadingBoundary isLoading={runtime.isLoading() || !runtime.getProvider()} components={loadingBoundaryComponents}>
+    return <LoadingBoundary isLoading={runtime.isLoadingView() || !runtime.getProvider()} components={loadingBoundaryComponents}>
         {props.children}
     </LoadingBoundary>;
 };

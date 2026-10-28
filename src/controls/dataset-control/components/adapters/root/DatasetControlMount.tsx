@@ -8,6 +8,7 @@ import { DatasetControlRuntimeContext } from "./context";
 import { DatasetControlUi } from "../../ui";
 import { Skeleton } from "../skeleton/Skeleton";
 import { Surfaces } from "../surfaces/Surfaces";
+import { LoadingOverlay } from "../loading-overlay";
 import type { IDatasetControlProps } from "./Root";
 import { DatasetControl } from "@controls/dataset-control/namespace";
 
@@ -40,22 +41,24 @@ export const DatasetControlMount = (props: IDatasetControlMountProps) => {
         };
     }, []);
 
-    const { errorMessage, skeleton, ...container } = props.components ?? {};
+    const { errorMessage, skeleton, loadingOverlay, ...container } = props.components ?? {};
     const Scope = props.scope ?? Fragment;
 
     return <DatasetControlRuntimeContext.Provider value={runtime}>
         <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
             <Scope>
                 <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-                    <ErrorBoundary
-                        error={runtime.getError()}
-                        onRetry={() => runtime.retry()}
-                        components={errorMessage}>
-                        <Skeleton components={skeleton}>
-                            {props.children}
-                            <Surfaces />
-                        </Skeleton>
-                    </ErrorBoundary>
+                    <LoadingOverlay components={loadingOverlay}>
+                        <ErrorBoundary
+                            error={runtime.getError()}
+                            onRetry={() => runtime.retry()}
+                            components={errorMessage}>
+                            <Skeleton components={skeleton}>
+                                {props.children}
+                                <Surfaces />
+                            </Skeleton>
+                        </ErrorBoundary>
+                    </LoadingOverlay>
                 </DatasetControlUi.Container>
             </Scope>
         </DataProviderContext.Provider>

@@ -40,7 +40,7 @@ const controlRef = React.useRef<IDatasetControl>()
 | \`getViewId()\` | The view shown. |
 | \`getView()\` | The view shown, as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown. Inside the control, \`useDataProvider()\` returns it too. |
-| \`isLoading()\` | Whether a load is running. |
+| \`isLoadingView()\` | Whether a view is loading, behind the skeleton. |
 | \`getError()\` | What the last load threw, until the next one starts. |
 
 \`loadView()\`, \`reload()\` and \`retry()\` ask the user first when the records have unsaved changes, and do nothing if they cancel. How a load runs is on [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
@@ -68,6 +68,7 @@ quickFind.search()
 | \`pagination\` | [**Paging**](?path=/docs/datasetcontrol-parts-paging--overview) | Move between the pages. |
 | \`pageSizeSwitcher\` | [**Paging**](?path=/docs/datasetcontrol-parts-paging--overview) | Change the page size, read the record range. |
 | \`notifications\` | [**Notifications and empty records**](?path=/docs/datasetcontrol-parts-notifications-and-empty-records--overview) | Read the provider's load error. |
+| \`loadingOverlay\` | — | Cover the whole control with a spinner and a message: \`show(message?)\` returns the function that hides it again. Callers overlap; it stays until all have hidden it. Always there. |
 
 Each part's page lists everything it offers, under *From your code*.
 
