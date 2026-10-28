@@ -6,6 +6,7 @@ import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
+import { mergeColumn } from "../../provider/mergeColumn";
 import { TaskColumnValues } from "../column-values";
 import { CHECKLIST_LABELS, IChecklistLabels } from "./labels";
 import { ChecklistCell } from "./components/adapters/checklist-cell";
@@ -105,10 +106,7 @@ export class Checklist implements IChecklist {
     });
 
     private _addColumn = (columns: IColumn[]): void => {
-        if (columns.some(column => column.name === CHECKLIST_COLUMN_NAME)) {
-            return;
-        }
-        columns.push({
+        const column: IColumn = {
             name: CHECKLIST_COLUMN_NAME,
             displayName: this._labels.getLocalizedString('checklist'),
             dataType: DataTypes.LookupSimple,
@@ -116,7 +114,14 @@ export class Checklist implements IChecklist {
             visualSizeFactor: 100,
             disableSorting: true,
             metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
-        });
+        };
+        const index = columns.findIndex(existing => existing.name === CHECKLIST_COLUMN_NAME);
+        if (index === -1) {
+            columns.push(column);
+            return;
+        }
+        //the loaded columns echo the view's own entry, with fields the view leaves out
+        columns[index] = mergeColumn(column, columns[index]);
     };
 
     private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {

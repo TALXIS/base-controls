@@ -6,6 +6,7 @@ import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
+import { mergeColumn } from "../../provider/mergeColumn";
 import { TaskColumnValues } from "../column-values";
 import { DEPENDENCIES_LABELS, IDependenciesLabels } from "./labels";
 import { DependenciesCell } from "./components/adapters/dependencies-cell";
@@ -275,16 +276,22 @@ export class Dependencies implements IDependencies {
     private _addColumns = (columns: IColumn[]): void => {
         const columnNames: [string, keyof IDependenciesLabels][] = [[PREDECESSORS_COLUMN_NAME, 'predecessors'], [SUCCESSORS_COLUMN_NAME, 'successors']];
         for (const [name, label] of columnNames) {
-            if (!columns.some(column => column.name === name)) {
-                columns.push({
-                    name,
-                    displayName: this._labels.getLocalizedString(label),
-                    dataType: DataTypes.LookupSimple,
-                    isVirtual: true,
-                    visualSizeFactor: 100,
-                    disableSorting: true,
-                    metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
-                });
+            const column: IColumn = {
+                name,
+                displayName: this._labels.getLocalizedString(label),
+                dataType: DataTypes.LookupSimple,
+                isVirtual: true,
+                visualSizeFactor: 100,
+                disableSorting: true,
+                metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
+            };
+            const index = columns.findIndex(existing => existing.name === name);
+            if (index === -1) {
+                columns.push(column);
+            }
+            else {
+                //the loaded columns echo the view's own entry, with fields the view leaves out
+                columns[index] = mergeColumn(column, columns[index]);
             }
         }
     };
