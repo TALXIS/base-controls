@@ -96,7 +96,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public setColumns(columns: IColumn[]): void {
         //copied, as the base fills its defaults into the columns it is handed
         this._declaredColumns = columns.map(copyColumn);
-        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(copyColumn(column)))));
+        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(this._withRequired(copyColumn(column))))));
     }
 
     public setQuickFindColumns(columnNames: string[]): void {
@@ -440,6 +440,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _getVisibleRecords(): IRecord[] {
         const recordsMap = this.getRecordsMap();
         return this._tree.view.getOrderedIds().map(recordId => recordsMap[recordId]).filter((record): record is IRecord => !!record);
+    }
+
+    //a view that lists a required column keeps what it states, and the rest comes from the requirement
+    private _withRequired(column: IColumn): IColumn {
+        const required = this._requiredColumns.find(requiredColumn => requiredColumn.name === column.name);
+        return required ? mergeColumn(required, column) : column;
     }
 
     private _withDefinition(column: IColumn): IColumn {
