@@ -1,16 +1,33 @@
 import { ErrorHelper } from "../ErrorHelper";
 
+interface IErrorFields {
+    message?: unknown;
+    stack?: unknown;
+    cause?: unknown;
+}
+
 /** The title from a thrown value's `message`, and the details from its `cause` or stack. */
 export const readError = (exception: unknown): { title: string; details?: string } => ({
     title: ErrorHelper.getMessageFromError(exception),
-    details: exception instanceof Error ? getDetails(exception) : undefined,
+    details: getDetails(exception),
 });
 
-//typed here, since a consumer's `lib` may predate ES2022's `Error.cause`
-const getDetails = (error: Error & { cause?: unknown }): string | undefined => {
-    const { cause } = error;
-    if (cause === undefined) {
-        return error.stack;
+//read off the fields, so an error made in another window counts too
+const getDetails = (exception: unknown): string | undefined => {
+    if (!isObject(exception)) {
+        return undefined;
     }
-    return cause instanceof Error ? cause.stack ?? cause.message : String(cause);
+    const { stack, cause } = exception as IErrorFields;
+    if (cause === undefined) {
+        return asString(stack);
+    }
+    if (isObject(cause)) {
+        const fields = cause as IErrorFields;
+        return asString(fields.stack) ?? asString(fields.message) ?? String(cause);
+    }
+    return String(cause);
 };
+
+const isObject = (value: unknown): value is object => typeof value === 'object' && value !== null;
+
+const asString = (value: unknown): string | undefined => typeof value === 'string' ? value : undefined;

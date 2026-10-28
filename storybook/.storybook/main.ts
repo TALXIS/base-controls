@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import type { Plugin, UserConfig } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +14,37 @@ const stories: NonNullable<StorybookConfig['stories']> = ['../src/**/*.stories.@
 if (!isLocalDevelopment) {
   stories.splice(0, stories.length, '../src/**/!(*Scratch|*Dev*).stories.@(ts|tsx)', '../src/**/*.mdx');
 }
+
+const ISOLATED_FRAME_ENTRY = 'isolated-frame-entry';
+
+//the isolated frame story loads this entry into its frame under a fixed name
+const addIsolatedFrameEntry = (config: UserConfig): void => {
+  config.build ??= {};
+  config.build.rollupOptions ??= {};
+  const input = config.build.rollupOptions.input;
+  const inputs = typeof input === 'string' ? { main: input } : Array.isArray(input) ? Object.fromEntries(input.map((entry, index) => [`entry${index}`, entry])) : { ...input };
+  config.build.rollupOptions.input = { ...inputs, [ISOLATED_FRAME_ENTRY]: path.resolve(storybookDir, '../src/isolated-frame/frameEntry.ts') };
+  const output = config.build.rollupOptions.output;
+  if (Array.isArray(output)) {
+    throw new Error('The isolated frame entry expects a single Rollup output.');
+  }
+  const entryFileNames = output?.entryFileNames ?? 'assets/[name]-[hash].js';
+  config.build.rollupOptions.output = {
+    ...output,
+    entryFileNames: chunk => chunk.name === ISOLATED_FRAME_ENTRY ? `${ISOLATED_FRAME_ENTRY}.js` : typeof entryFileNames === 'function' ? entryFileNames(chunk) : entryFileNames,
+  };
+};
+
+//runs after Storybook's plugin sets the build's input
+const isolatedFrameEntryPlugin = (): Plugin => ({
+  name: 'base-controls:isolated-frame-entry',
+  enforce: 'post',
+  config: (config, { command }) => {
+    if (command === 'build') {
+      addIsolatedFrameEntry(config);
+    }
+  },
+});
 
 const config: StorybookConfig = {
   stories,
@@ -129,6 +161,7 @@ const config: StorybookConfig = {
     // prevents infinite or excessive watch recursion without breaking local source resolution.
     config.server.watch ??= {};
     config.server.watch.followSymlinks = false;
+    config.plugins = [...(config.plugins ?? []), isolatedFrameEntryPlugin()];
     return config;
   },
 };

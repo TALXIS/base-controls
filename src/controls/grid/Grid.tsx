@@ -14,8 +14,8 @@ import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components/components";
 import { Surfaces } from "./components/surfaces";
 import { useLatest } from "@hooks";
-import { GRID_CLASS_NAME } from "./classNames";
 
+const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
 
 const NO_COMPONENTS: IGridComponents = {};

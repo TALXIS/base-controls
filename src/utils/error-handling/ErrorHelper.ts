@@ -15,10 +15,7 @@ export class ErrorHelper {
     
 
     public static getMessageFromError(error: any): string {
-        if (error instanceof Error && error.message) {
-            return error.message;
-        }
-        else if (typeof error === 'string') {
+        if (typeof error === 'string') {
             return error;
         }
         else if (typeof error === 'object' && error !== null) {

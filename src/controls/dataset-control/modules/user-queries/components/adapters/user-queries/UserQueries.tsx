@@ -31,7 +31,7 @@ export const UserQueries = (props: IUserQueriesProps) => {
 
     useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onManageRequested', () => setIsManaging(true));
     useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onOperationFailed', error => {
-        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: error instanceof Error ? error.stack : undefined });
+        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: (error as { stack?: string } | undefined)?.stack });
     });
 
     //the switcher lists the views as they were when the control loaded

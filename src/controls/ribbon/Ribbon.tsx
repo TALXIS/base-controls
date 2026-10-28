@@ -40,7 +40,7 @@ export const Ribbon = (props: IRibbonProps) => {
 
     useEventEmitter<IRibbonRuntimeEvents>(runtime.events, ['onBeforeLoad', 'onLoaded', 'onBeforeExecute', 'onAfterExecute'], rerender);
     useEventEmitter<IRibbonRuntimeEvents>(runtime.events, 'onExecuteFailed', (_command, error) => {
-        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: error instanceof Error ? error.stack : undefined });
+        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: (error as { stack?: string } | undefined)?.stack });
     });
 
     useEffect(() => {
