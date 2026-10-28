@@ -15,10 +15,13 @@ export interface IAggregationModuleOptions {
     components?: IGridAggregationComponents;
 }
 
+export interface IAggregationModule extends IGridModule<'aggregation'> { }
+
 /** Builds the module that shows totals in a row pinned under the rest. */
-export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
+export const createAggregationModule = (options?: IAggregationModuleOptions): IAggregationModule => ({
+    name: 'aggregation',
     agGridModules: [PinnedRowModule],
-    onRegister: ({ services: gridServices }) => {
+    onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
         //built once, then registered: a resolver runs on every lookup
@@ -26,7 +29,7 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => options?.components ?? {});
-        const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation });
-        gridServices.register('aggregation', () => aggregation);
+        return new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation });
     },
+    onDestroy: aggregation => aggregation.destroy(),
 });

@@ -59,7 +59,7 @@ export class CheckListColumns {
         if (nameColDef) {
             nameColDef.cellRenderer = NameCell;
         }
-        if (this._services.find('editing')) {
+        if (this._services.get('grid').modules.find('editing')) {
             columnDefs.push(this._deleteColumnDefinition);
         }
     };

@@ -4,9 +4,6 @@ import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
-import type { IGrid, IGridModule } from "@controls/grid";
-import type { ITaskGridServiceMap } from "../services";
-import { TaskTree } from "../tree/TaskTree";
 import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
@@ -32,7 +29,6 @@ export class TaskRuntime implements ITaskRuntime {
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     private _unsaveWithViews: (() => void)[] = [];
     private _view?: ITaskView;
-    private _gridModules: IGridModule<ITaskGridServiceMap>[] = [];
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
     private _unregisterCommands?: () => void;
@@ -43,8 +39,6 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('labels', () => parameters.labels);
         this.services.register('pcfContext', () => parameters.pcfContext);
-        //ahead of the modules, which attach to the grid after the tree
-        datasetControl.parts.whenAvailable('grid', grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime: this, state: datasetControl.getViewStateStore() }));
         datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
         datasetControl.modules.whenAvailable('userQueries', userQueries => this._unsaveWithViews.push(
             userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
@@ -102,14 +96,6 @@ export class TaskRuntime implements ITaskRuntime {
 
     public isDeletionEnabled(): boolean {
         return !!this._onGetProps().enableDeletion;
-    }
-
-    public registerGridModule(module: IGridModule<ITaskGridServiceMap>): void {
-        this._gridModules.push(module);
-    }
-
-    public getGridModules(): IGridModule<ITaskGridServiceMap>[] {
-        return this._gridModules;
     }
 
     public registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void {

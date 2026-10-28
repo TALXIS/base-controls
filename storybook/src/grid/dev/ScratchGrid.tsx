@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridProps, IGridModules, DatasetControl } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridProps, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -20,11 +20,18 @@ const hslToHex = (hue: number, saturation: number, lightness: number): string =>
     return `#${channel(0)}${channel(8)}${channel(4)}`
 }
 
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        heatmap: void
+    }
+}
+
 const hashText = (text: string): number => [...text].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0)
 
 /** Tints every record cell: numbers from green to red across their column's range, any other value by what it is. */
 const heatmapModule: IGridModule = {
-    onRegister: runtime => {
+    name: 'heatmap',
+    onLoad: runtime => {
         const provider = runtime.services.get('provider')
         const cells = runtime.services.get('cells')
         let ranges = new Map<string, { min: number; max: number }>()
@@ -441,21 +448,21 @@ export const ScratchGrid = (props: IScratchGridProps) => {
 
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${mountCount}-${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}-${props.heatmap}`
-    const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: props.rowModel === 'clientSide'
+    const modules = React.useMemo<IGridModule[]>(() => [
+        props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
-        editing: props.enableEditing ? createEditingModule({ autoSave: props.enableAutoSave }) : undefined,
-        clipboard: props.clipboard ? createClipboardModule() : undefined,
-        legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-        cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
-        rowSelection: props.selectableRows === 'none' ? undefined : createRowSelectionModule({ mode: props.selectableRows }),
-        sorting: props.sorting ? createSortingModule() : undefined,
-        filtering: props.filtering ? createFilteringModule() : undefined,
-        aggregation: props.aggregation ? createAggregationModule() : undefined,
-        grouping: props.grouping ? createGroupingModule({ type: 'nested' }) : undefined,
-        custom: props.heatmap ? [heatmapModule] : [],
-    }), [key])
+        ...(props.enableEditing ? [createEditingModule({ autoSave: props.enableAutoSave })] : []),
+        ...(props.clipboard ? [createClipboardModule()] : []),
+        createLegacyClientApiCompatibilityModule(),
+        ...(props.cellSelection ? [createCellSelectionModule()] : []),
+        ...(props.selectableRows === 'none' ? [] : [createRowSelectionModule({ mode: props.selectableRows })]),
+        ...(props.sorting ? [createSortingModule()] : []),
+        ...(props.filtering ? [createFilteringModule()] : []),
+        ...(props.aggregation ? [createAggregationModule()] : []),
+        ...(props.grouping ? [createGroupingModule({ type: 'nested' })] : []),
+        ...(props.heatmap ? [heatmapModule] : []),
+    ], [key])
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />

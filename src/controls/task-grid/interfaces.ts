@@ -1,16 +1,12 @@
-import type { IGridComponents, IGridModule, IGridModules, IGridProps } from "@controls/grid";
-import type { ITaskGridServiceMap } from "./services";
+import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents } from "./tree";
 
 
-/** The grid modules of a task grid; the row model is always client-side, and grouping does not mix with a tree. */
-export interface ITaskGridGridModules extends Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation' | 'custom'> {
-    /** The caller's own grid modules, registered after the task tree. */
-    custom?: IGridModule<ITaskGridServiceMap>[];
-}
+/** A task grid's grid module; the row model is always client-side, and grouping does not mix with a tree. */
+export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'grouping' | 'aggregation' | 'taskTree'>>;
 
 /** What a `TaskDatasetControl`'s `onLoad` is called with. */
 export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
@@ -35,8 +31,8 @@ export interface ITaskGridComponents extends IGridComponents {
 
 /** The tasks of a `TaskDatasetControl`, drawn as a tree in its body. */
 export interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
-    /** Read once, at mount; the task tree and the client-side row model are always added. */
-    modules?: ITaskGridGridModules;
+    /** Read once, at mount, and loaded after the client-side row model and the task tree. */
+    modules?: ITaskGridGridModule[];
     components?: ITaskGridComponents;
 }
 

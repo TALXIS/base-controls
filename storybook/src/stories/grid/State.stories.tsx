@@ -10,7 +10,7 @@ A grid with a \`stateKey\` remembers where the user was: the cell at the top-lef
 \`\`\`tsx
 <DatasetControl onLoad={loadTickets}>
     <DatasetControl.Body>
-        <Grid stateKey='tickets' modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule() }} />
+        <Grid stateKey='tickets' modules={[createClientSideRowModelModule(), createGroupingModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -42,7 +42,8 @@ interface IPreviewState {
 }
 
 const createPreviewModule = (onOpen: (recordId: string) => void): IGridModule => ({
-    onRegister: grid => {
+    name: 'preview',
+    onLoad: grid => {
         const state = grid.services.get('state')
         const recordId = state.get<IPreviewState>('preview')?.recordId
         if (recordId) {

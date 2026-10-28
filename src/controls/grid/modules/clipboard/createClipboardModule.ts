@@ -20,10 +20,18 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
     | 'processDataFromClipboard'
     | 'sendToClipboard'>;
 
+export interface IClipboardModule extends IGridModule<'clipboard'> { }
+
+declare module "../../interfaces" {
+    interface IGridModuleMap {
+        /** Copying and pasting cells. */
+        clipboard: GridClipboard;
+    }
+}
+
 /** Builds the module that lets what is in the grid be copied out of it. */
-export const createClipboardModule = (options?: IGridClipboardOptions): IGridModule => ({
+export const createClipboardModule = (options?: IGridClipboardOptions): IClipboardModule => ({
+    name: 'clipboard',
     agGridModules: [ClipboardModule],
-    onRegister: ({ services }) => {
-        new GridClipboard({ services, options });
-    },
+    onLoad: ({ services }) => new GridClipboard({ services, options }),
 });

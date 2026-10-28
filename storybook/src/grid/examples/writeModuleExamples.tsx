@@ -8,7 +8,7 @@ export const UNSAVED_CHANGES_BAR_CODE = `interface IUnsavedChanges {
 
 //in your project: declare module '@talxis/base-controls'
 declare global {
-    interface IGridModuleServiceMap {
+    interface IGridModuleMap {
         unsavedChanges: IUnsavedChanges
     }
 }
@@ -17,7 +17,7 @@ const describeChanges = (count: number) => count === 1 ? '1 product has unsaved 
 
 const UnsavedChangesBar = () => {
     //registered by the module that draws this bar
-    const unsavedChanges = useGridService('unsavedChanges')!
+    const unsavedChanges = useGridModule('unsavedChanges')
     const provider = useGridService('provider')
     const [count, setCount] = React.useState(unsavedChanges.getCount)
 
@@ -38,7 +38,8 @@ const UnsavedChangesBar = () => {
 }
 
 const unsavedChangesModule: IGridModule = {
-    onRegister: grid => {
+    name: 'unsavedChanges',
+    onLoad: grid => {
         const provider = grid.services.get('provider')
         const listeners = new Set<(count: number) => void>()
         const getCount = () => provider.getDirtyRecordIds().length
@@ -50,7 +51,6 @@ const unsavedChangesModule: IGridModule = {
                 return () => listeners.delete(listener)
             },
         }
-        grid.services.register('unsavedChanges', () => unsavedChanges)
         grid.services.get('surfaces').registerSurface(surfaces => {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
@@ -64,13 +64,14 @@ const unsavedChangesModule: IGridModule = {
             provider.removeEventListener('onAfterRecordSaved', notify)
             provider.removeEventListener('onNewDataLoaded', notify)
         })
+        return unsavedChanges
     },
 }
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [unsavedChangesModule] }}
+            modules={[createClientSideRowModelModule(), createEditingModule(), unsavedChangesModule]}
             maxVisibleRows={9} />
     </DatasetControl.Body>
 </DatasetControl>

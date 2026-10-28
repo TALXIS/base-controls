@@ -9,7 +9,7 @@ export interface ICellLockIconProps {
 /** What says a cell is locked for its record, where its column is not. */
 export const CellLockIcon = (props: ICellLockIconProps) => {
     const cell = useGridCell();
-    const locks = useGridInternalService('editing')?.locks;
+    const locks = useGridInternalService('grid').modules.find('editing')?.locks;
     const labels = useGridInternalService('labels');
 
     //a locked column is marked in its header, a locked record by its muted row

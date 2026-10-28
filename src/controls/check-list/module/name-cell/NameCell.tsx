@@ -1,14 +1,13 @@
 import { useMemo } from "react";
 import { ICellRendererParams } from "ag-grid-community";
-import { useGridServices } from "../../../grid/useGridService";
-import { ICheckListServiceMap } from "../GridCheckList";
+import { useGridModule } from "../../../grid/useGridModule";
 import { ICellRendererComponents } from "../../../grid/components/cells/cell-renderer/components";
 import { CellFieldRenderer } from "../../../grid/components/cells/field-cell-renderer/CellFieldRenderer";
 import { GridValueRenderer, IGridValueRenderer } from "../../../grid/value-renderer";
 import { getNameCellStyles } from "./styles";
 
 const NameValue = (props: IGridValueRenderer) => {
-    const checkList = useGridServices<ICheckListServiceMap>().get('checkList');
+    const checkList = useGridModule('checkList');
     const styles = useMemo(() => getNameCellStyles(), []);
     const isCompleted = checkList.isCompleted(props.parameters.Record.raw);
 

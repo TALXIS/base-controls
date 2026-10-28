@@ -16,12 +16,12 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: deals })}>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    grouping: createGroupingModule({ defaultExpandedLevel: 0 }),
-                    aggregation: createAggregationModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createGroupingModule({ defaultExpandedLevel: 0 }),
+                    createAggregationModule(),
+                ]}
                 enableOptionSetColors
                 height='480px' />
         </DatasetControl.Body>
@@ -64,11 +64,11 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 key={type}
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    grouping: createGroupingModule({ type, defaultExpandedLevel: 0 }),
-                    aggregation: createAggregationModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createGroupingModule({ type, defaultExpandedLevel: 0 }),
+                    createAggregationModule(),
+                ]}
                 enableOptionSetColors
                 height='480px' />
         </DatasetControl.Body>
@@ -89,12 +89,12 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: deals })}>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                    aggregation: createAggregationModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createFilteringModule(),
+                    createAggregationModule(),
+                ]}
                 enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>
@@ -115,7 +115,7 @@ const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
     const expandTo = (getLevel: (current: number, deepest: number) => number) => {
-        const grouping = gridRef.current?.services.find('grouping')
+        const grouping = gridRef.current?.modules.find('grouping')
         if (grouping) {
             grouping.setExpandedLevel(getLevel(grouping.getExpandedLevel(), grouping.getDeepestLevel()))
         }
@@ -135,11 +135,11 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    grouping: createGroupingModule(),
-                    aggregation: createAggregationModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createGroupingModule(),
+                    createAggregationModule(),
+                ]}
                 enableOptionSetColors
                 onReady={grid => { gridRef.current = grid }}
                 height='440px' />

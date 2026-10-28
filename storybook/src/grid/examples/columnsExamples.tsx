@@ -17,7 +17,7 @@ const GridExample = () => {
             <Grid
                 //a new key makes the grid build its columns again
                 key={String(showEveryColumn)}
-                modules={{ rowModel: createClientSideRowModelModule() }}
+                modules={[createClientSideRowModelModule()]}
                 colDefs={{
                     ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
                     name: { pinned: 'left' },
@@ -98,7 +98,7 @@ const GridExample = () => {
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
                 <Grid
-                    modules={{ rowModel: createClientSideRowModelModule() }}
+                    modules={[createClientSideRowModelModule()]}
                     colDefs={{
                         name: { pinned: 'left', context: { isPrimary: true } },
                     }}
@@ -137,7 +137,7 @@ const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{
                 stockvalue: {
                     headerName: 'Stock value',
@@ -179,7 +179,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 colDefs={{
                     actions: {
                         headerName: '',
@@ -235,7 +235,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), sorting: createSortingModule() }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), createSortingModule()]}
                 colDefs={{
                     instock: {
                         context: {
@@ -271,7 +271,7 @@ const GridExample = () => {
 export const LONG_NOTES_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             colDefs={{
                 nextstep: { context: { cell: { isRowResizable: false } } },
             }}
@@ -283,7 +283,7 @@ export const LONG_NOTES_CODE = `const GridExample = () => <DatasetControl onLoad
 export const AUTO_HEIGHT_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             colDefs={{
                 notes: { autoHeight: true },
             }}
@@ -310,7 +310,7 @@ const ProductList = (props: IProductListProps) => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule() }} height='420px' />
+            <Grid modules={[createClientSideRowModelModule()]} height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

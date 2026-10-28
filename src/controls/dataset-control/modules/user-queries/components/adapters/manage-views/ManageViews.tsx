@@ -44,13 +44,13 @@ export const ManageViews = (props: IManageViewsProps) => {
     //the control the panel is opened from, not the one it draws
     const userQueries = useDatasetControlModule('userQueries');
     const styles = useMemo(() => getManageViewsStyles(), []);
-    const modules = useMemo(() => ({
-        rowModel: createClientSideRowModelModule(),
-        editing: createEditingModule(),
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), []);
+    const modules = useMemo(() => [
+        createClientSideRowModelModule(),
+        createEditingModule(),
+        createRowSelectionModule({ mode: 'multiple' }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], []);
 
     const { header, body, footer, ribbon, quickFind, pagination, ...datasetControl } = props.components?.datasetControl ?? {};
 

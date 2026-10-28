@@ -13,7 +13,7 @@ The provider is not a prop: the grid shows the one around it, in a DatasetContro
 
 | Prop | Type | Default | Read | Description |
 |---|---|---|---|---|
-| \`modules\` | \`IGridModules\` | Required | At mount | The features the grid has. \`rowModel\` is the one every grid needs. See [**Modules**](?path=/docs/grid-modules--overview). |
+| \`modules\` | \`IGridModule[]\` | Required | At mount | The features the grid has, in load order. A row model is the one every grid needs. See [**Modules**](?path=/docs/grid-modules--overview). |
 | \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. See *Data types* on [**Data**](?path=/docs/grid-data--overview). |
 | \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. See [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. See [**Appearance**](?path=/docs/grid-appearance--overview). |

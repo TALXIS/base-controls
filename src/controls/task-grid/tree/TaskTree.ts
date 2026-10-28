@@ -52,7 +52,6 @@ export class TaskTree {
         parameters.runtime.services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
             this._unsaveWithView = userQueries.saveWithView('isFlatList', () => this._isFlatList);
         });
-        services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
@@ -61,8 +60,8 @@ export class TaskTree {
         services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
-        services.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
-        services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree));
+        this._grid.modules.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
+        this._grid.modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree));
 
         services.whenAvailable('gridApi', this._onGridApi);
         //ahead of row selection's listener, which redraws the checkboxes
@@ -73,7 +72,6 @@ export class TaskTree {
         this._provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        this._grid.events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     /** Whether the matching tasks are listed on their own, without the tree. */
@@ -253,7 +251,7 @@ export class TaskTree {
     private _onTreeChanged = (): void => {
         this._partiallySelectedIds = undefined;
         this._expansion.prune();
-        this._grid.services.get('rowModel').refresh();
+        this._grid.modules.get('rowModel').refresh();
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
     };
 
@@ -295,7 +293,7 @@ export class TaskTree {
         gridApi.ensureNodeVisible(node);
         gridApi.setFocusedCell(node.rowIndex, subject);
         //a locked task refuses the editor on its own
-        if (!this._grid.services.find('editing')) {
+        if (!this._grid.modules.find('editing')) {
             return true;
         }
         gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });
@@ -317,7 +315,8 @@ export class TaskTree {
         }
     };
 
-    private _onDestroyed = (): void => {
+    /** Called as the grid tears down. */
+    public destroy(): void {
         this._unsaveWithView?.();
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
@@ -329,5 +328,5 @@ export class TaskTree {
         this._provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-    };
+    }
 }

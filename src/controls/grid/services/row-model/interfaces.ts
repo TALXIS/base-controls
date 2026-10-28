@@ -30,3 +30,10 @@ export interface IGridRowModelGrouping {
     /** What a data column needs for this row model, grouped or not. */
     onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
 }
+
+declare module "../../interfaces" {
+    interface IGridModuleMap {
+        /** How the grid gets its rows. */
+        rowModel: IGridRowModel;
+    }
+}

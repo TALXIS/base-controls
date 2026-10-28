@@ -15,7 +15,7 @@ Outside the grid, such as in a ribbon command, keep the grid \`onReady\` passes 
 const gridRef = React.useRef<IGrid>()
 
 const expandAll = () => {
-    const grouping = gridRef.current?.services.find('grouping')
+    const grouping = gridRef.current?.modules.find('grouping')
     grouping?.setExpandedLevel(grouping.getDeepestLevel())
 }
 
@@ -24,11 +24,12 @@ const expandAll = () => {
 
 {{story: Drive the grid from the ribbon}}
 
-Inside the grid, a module's \`onRegister\` receives it as the grid mounts, before AG Grid exists:
+Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG Grid exists:
 
 \`\`\`tsx
 const urgentTicketsModule: IGridModule = {
-    onRegister: grid => {
+    name: 'urgentTickets',
+    onLoad: grid => {
         grid.services.get('cells').registerCellTheme((theme, { record }) => {
             if (record.getValue('priority') === HIGH) {
                 theme.colors.text = '#a4262c'
@@ -37,14 +38,15 @@ const urgentTicketsModule: IGridModule = {
     },
 }
 
-<Grid modules={{ rowModel: createClientSideRowModelModule(), custom: [urgentTicketsModule] }} />
+<Grid modules={[createClientSideRowModelModule(), urgentTicketsModule]} />
 \`\`\`
 
 \`onDestroyed\` passes it once more as the grid unmounts, while AG Grid still works. How to write a module is on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 
 | Member | Description |
 |---|---|
-| \`services\` | Every part of the grid, by key, the modules' included. See *Services* below. |
+| \`services\` | Every part of the grid, by key. See *Services* below. |
+| \`modules\` | The modules the grid was given, by name. See *Modules* below. |
 | \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
@@ -56,9 +58,9 @@ The grid is made of services, and \`grid.services\` finds them by key:
 | Member | Returns |
 |---|---|
 | \`get(key)\` | The service. Throws when nothing registered it, so use it for the services every grid has. |
-| \`find(key)\` | The service, or \`undefined\`. Use it for a module's service, which may be off, and for \`gridApi\` before AG Grid is ready. |
+| \`find(key)\` | The service, or \`undefined\`. Use it for \`gridApi\` before AG Grid is ready. |
 | \`whenAvailable(key, callback)\` | Calls \`callback\` with the service as soon as there is one: at once, or the moment something registers it. |
-| \`register(key, resolve)\` | Adds a service of your own, or replaces one. See *Add a service of your own* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
+| \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 
 Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`whenAvailable\` do nothing.
 
@@ -79,7 +81,6 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | \`labels\` | The grid's strings: \`getLocalizedString(key)\`. |
 | \`theme\`, \`pcfContext\` | The Fluent theme and the PCF context the grid mounted with. |
 | \`keyboard\` | \`onKeyDown(handler)\` for every key pressed inside the grid, before AG Grid sees it; \`getKeyBeingPressed()\`. |
-| \`rowModel\` | The row model; its \`type\` is \`'clientSide'\` or \`'serverSide'\`. |
 | \`grid\` | The \`IGrid\`, for a part that only has the services. |
 
 What the hooks decide, and the order they run in, is on [**Hooks**](?path=/docs/grid-extending-hooks--overview).
@@ -89,18 +90,26 @@ What the hooks decide, and the order they run in, is on [**Hooks**](?path=/docs/
 | Key | Registered | Description |
 |---|---|---|
 | \`gridApi\` | Once AG Grid is ready | AG Grid's \`GridApi\`. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
-| \`editing\` | With \`modules.editing\` | See *From your code* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
-| \`rowSelection\` | With \`modules.rowSelection\` | See *From your code* on [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
-| \`sorting\`, \`filtering\` | With \`modules.sorting\`, \`modules.filtering\` | See *From your code* on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
-| \`grouping\`, \`aggregation\` | With \`modules.grouping\`, \`modules.aggregation\` | See *From your code* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
-| Your own | With your module in \`modules.custom\` | See [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 
-### Inside what the grid draws
+## Modules
 
-A custom cell, a header part, an overlay or a surface reads a service with \`useGridService(key)\`:
+\`grid.modules\` finds the modules the grid was given by name, with the same \`get\`, \`find\` and \`whenAvailable\`. A module reaches the ones before it in \`modules\` with \`get\` or \`find\`, and later ones with \`whenAvailable\`.
+
+| Name | Given | Description |
+|---|---|---|
+| \`rowModel\` | In every grid | The row model; its \`type\` is \`'clientSide'\` or \`'serverSide'\`. |
+| \`editing\` | With \`createEditingModule()\` | See *From your code* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`rowSelection\` | With \`createRowSelectionModule()\` | See *From your code* on [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
+| \`sorting\`, \`filtering\` | With \`createSortingModule()\`, \`createFilteringModule()\` | See *From your code* on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
+| \`grouping\`, \`aggregation\` | With \`createGroupingModule()\`, \`createAggregationModule()\` | See *From your code* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
+| Your own | With your module in \`modules\` | See [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
+
+## Inside what the grid draws
+
+A custom cell, a header part, an overlay or a surface reads a service with \`useGridService(key)\`, and a module with \`useGridModule(name)\`:
 
 - It works only inside the grid's own React tree; in the component that renders \`<Grid />\`, it throws.
-- A service every grid has is there on the first render. An optional one is \`undefined\` until it is registered, and the component renders again when it arrives.
+- A service every grid has is there on the first render. An optional one is \`undefined\` until it is registered, and the component renders again when it arrives. \`useGridModule\` throws when the grid was not given the module.
 - It returns the service, not its state: to redraw when the service changes, subscribe to it, as the bar on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) does.
 
 ## Events

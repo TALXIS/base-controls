@@ -23,10 +23,10 @@ const getUrgency = (ticket: IRecord) => {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createSortingModule(),
+            ]}
             colDefs={{
                 duedate: {
                     context: {
@@ -51,7 +51,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
 
 const escalatedTicketsModule: IGridModule = {
-    onRegister: grid => {
+    name: 'escalatedTickets',
+    onLoad: grid => {
         grid.services.get('cells').registerCellTheme((theme, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') !== '1') {
@@ -67,12 +68,12 @@ const escalatedTicketsModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                editing: createEditingModule(),
-                grouping: createGroupingModule(),
-                custom: [escalatedTicketsModule],
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createEditingModule(),
+                createGroupingModule(),
+                escalatedTicketsModule,
+            ]}
             colDefs={{
                 escalated: { context: { cell: { oneClickEdit: true } } },
             }}
@@ -90,7 +91,7 @@ const toMonospace = (theme: ITheme) => {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{
                 ticketnumber: { context: { cell: { onGetTheme: theme => theme.edit('monospace', toMonospace) } } },
             }}
@@ -125,7 +126,7 @@ const GridExample = () => {
             <DatasetControl.Body>
                 <Grid
                     key={[rowHeight, isZebra, hasOptionSetColors].join('|')}
-                    modules={{ rowModel: createClientSideRowModelModule() }}
+                    modules={[createClientSideRowModelModule()]}
                     rowHeight={rowHeight}
                     enableZebra={isZebra}
                     enableOptionSetColors={hasOptionSetColors}
@@ -138,7 +139,8 @@ const GridExample = () => {
 
 export const COLUMN_LINES_CODE = `//lines between the columns and a frame round the grid
 const columnLinesModule: IGridModule = {
-    onRegister: grid => {
+    name: 'columnLines',
+    onLoad: grid => {
         grid.services.get('gridTheme').registerTheme((result, fluentTheme) => {
             const line = { color: fluentTheme.semanticColors.bodyDivider }
             result.theme = result.theme.withParams({
@@ -154,10 +156,10 @@ const columnLinesModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                custom: [columnLinesModule],
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                columnLinesModule,
+            ]}
             height='360px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -186,7 +188,8 @@ const validateHours = (result: IFieldValidationResult, { record }: { record: IRe
 }
 
 const reviewModule: IGridModule = {
-    onRegister: grid => {
+    name: 'review',
+    onLoad: grid => {
         const headers = grid.services.get('columns').headers
         headers.registerColumnHeaderTheme((theme, header) => {
             const column = header.getColumn()
@@ -230,7 +233,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule(), custom: [reviewModule] }}
+                modules={[createClientSideRowModelModule(), createEditingModule(), reviewModule]}
                 colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
                 onReady={grid => gridRef.current = grid}
                 height='420px' />
@@ -302,14 +305,14 @@ const czechTotals = createAggregationModule({
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                editing: createEditingModule(),
-                sorting: czechSorting,
-                filtering: czechFiltering,
-                grouping: czechGrouping,
-                aggregation: czechTotals,
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createEditingModule(),
+                czechSorting,
+                czechFiltering,
+                czechGrouping,
+                czechTotals,
+            ]}
             labels={CZECH_LABELS}
             colDefs={{
                 employee: { context: { isLocked: true } },

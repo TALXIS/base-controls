@@ -14,10 +14,10 @@ const GridExample = (props: IGridExampleProps) => <DatasetControl onLoad={async 
     <DatasetControl.Body>
         <Grid
             key={props.rowModel}
-            modules={{
-                rowModel: props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
-                grouping: createGroupingModule(),
-            }}
+            modules={[
+                props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
+                createGroupingModule(),
+            ]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>

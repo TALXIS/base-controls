@@ -8,7 +8,7 @@ import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
 import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGridProps, IGridEventHandlers, IGridModule, IGridOpenRecordParams } from "../../interfaces";
+import { IGridProps, IGridEventHandlers, IGridModule, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParams } from "../../interfaces";
 import { GRID_LABELS, IGridLabels } from "../../labels";
 import { IGridInternalServiceLocator, IGridInternalServiceMap } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
@@ -62,6 +62,8 @@ export interface IGridRuntimeParameters {
 
 export class GridRuntime implements IGrid {
     private _services = new ServiceLocator<IGridInternalServiceMap>();
+    private _modules = new ServiceLocator<IGridModuleMap>();
+    private _loadedModules: { module: IGridModule; instance: IGridModuleMap[keyof IGridModuleMap] }[] = [];
     private _onGetProps: () => IGridProps;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
@@ -109,19 +111,17 @@ export class GridRuntime implements IGrid {
         this._services.register('fields', () => fields);
         this._services.register('viewport', () => viewport);
 
-        const { custom = [], ...builtIns } = onGetProps().modules;
-        const modules = [...Object.values(builtIns), ...custom].filter((module): module is IGridModule => !!module);
-        for (const module of modules) {
-            module.onRegister?.(this);
-        }
-        //before AG Grid is constructed on this same render
-        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
+        this._loadModules(onGetProps().modules);
         //after the modules so their api and provider listeners run first
         this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 
     public get services(): IGridInternalServiceLocator {
         return this._services;
+    }
+
+    public get modules(): IGridModuleLocator {
+        return this._modules;
     }
 
     public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
@@ -170,14 +170,36 @@ export class GridRuntime implements IGrid {
         //the provider outlives the grid
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this.events.dispatchEvent('onDestroyed');
+        for (const { module, instance } of this._loadedModules) {
+            module.onDestroy?.(instance as never);
+            this._modules.unregister(module.name);
+        }
+        this._loadedModules = [];
         this.events.clearEventListeners();
         this._services.destroy();
+        this._modules.destroy();
+    }
+
+    private _loadModules(modules: IGridModule[]): void {
+        for (const module of modules) {
+            if (this._loadedModules.some(loaded => loaded.module.name === module.name)) {
+                throw new Error(`Module "${module.name}" is registered twice.`);
+            }
+            const instance = module.onLoad(this);
+            this._loadedModules.push({ module, instance });
+            this._modules.register(module.name, () => instance as never);
+        }
+        if (!this._modules.find('rowModel')) {
+            throw new Error('The grid needs a row model module, such as createClientSideRowModelModule().');
+        }
+        //before AG Grid is constructed on this same render
+        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
     }
 
     private _evaluateAgGridInitialOptions(): IGridAgGridInitialOptions['options'] {
         const result: IGridAgGridInitialOptions = {
             options: {
-                rowModelType: this._services.get('rowModel').type,
+                rowModelType: this._modules.get('rowModel').type,
                 rowHeight: this._services.get('settings').getDefaultRowHeight(),
                 enableGroupEdit: true,
                 animateRows: false,
@@ -223,7 +245,7 @@ export class GridRuntime implements IGrid {
         //the server-side model reads grouping off the columns while it reloads
         this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
-        this._services.get('rowModel').refresh();
+        this._modules.get('rowModel').refresh();
         this.events.dispatchEvent('onDataLoaded');
     };
 

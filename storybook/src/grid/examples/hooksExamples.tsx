@@ -9,8 +9,9 @@ const LOCKED_WHEN_CLOSED = ['products', 'value', 'probability', 'closedate']
 const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValue('stage')))
 
 const closedDealsModule: IGridModule = {
-    onRegister: grid => {
-        grid.services.whenAvailable('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
+    name: 'closedDeals',
+    onLoad: grid => {
+        grid.modules.whenAvailable('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }
@@ -21,7 +22,7 @@ const closedDealsModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [closedDealsModule] }}
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), closedDealsModule]}
             enableOptionSetColors
             labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
             height='420px' />
@@ -39,7 +40,8 @@ const getHoursThatDay = (entry: IRecord) => entry.getDataProvider().getRecords()
     .reduce((total, other) => total + Number(other.getValue('hours') ?? 0), 0)
 
 const dayLimitModule: IGridModule = {
-    onRegister: grid => {
+    name: 'dayLimit',
+    onLoad: grid => {
         const timesheets = grid.services.get('provider')
         const cells = grid.services.get('cells')
         grid.services.get('validation').registerValidation((result, { record, columnName }) => {
@@ -63,7 +65,7 @@ const dayLimitModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [dayLimitModule] }}
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), dayLimitModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -79,7 +81,8 @@ const createPriceRefresh = () => {
     const refreshing = new Set<string>()
     let cells: IGridCells | undefined
     const module: IGridModule = {
-        onRegister: grid => {
+        name: 'priceRefresh',
+        onLoad: grid => {
             cells = grid.services.get('cells')
             cells.registerCellLoading((result, { record, columnName }) => {
                 if (columnName === 'price' && refreshing.has(record.getRecordId())) {
@@ -117,7 +120,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), custom: [priceRefresh.module] }}
+                modules={[createClientSideRowModelModule(), priceRefresh.module]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -127,7 +130,8 @@ const GridExample = () => {
 export const URGENT_ROWS_CODE = `const HIGH = 1
 
 const urgentRowsModule: IGridModule = {
-    onRegister: grid => {
+    name: 'urgentRows',
+    onLoad: grid => {
         const tickets = grid.services.get('provider')
         grid.services.get('rows').registerRowHeight((result, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
@@ -148,7 +152,7 @@ const urgentRowsModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [urgentRowsModule] }}
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), urgentRowsModule]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -156,7 +160,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 `
 
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
-    onRegister: grid => {
+    name: 'copyColumn',
+    onLoad: grid => {
         grid.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
             const column = header.getColumn()
             if (!column) {
@@ -184,12 +189,12 @@ const GridExample = () => {
         {message && <MessageBar messageBarType={MessageBarType.success} onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                    custom: [copyColumnModule],
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createFilteringModule(),
+                    copyColumnModule,
+                ]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -197,7 +202,8 @@ const GridExample = () => {
 `
 
 export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
-    onRegister: grid => {
+    name: 'currency',
+    onLoad: grid => {
         grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
             if (header.getColumn()?.dataType !== DataTypes.Currency) {
                 return
@@ -215,7 +221,7 @@ export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [currencyModule] }}
+            modules={[createClientSideRowModelModule(), createSortingModule(), currencyModule]}
             height='420px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -225,7 +231,8 @@ export const ASSIGN_TO_ME_CODE = `const ME = 'Eva Horák'
 const IN_PROGRESS = 2
 
 const assignToMeModule: IGridModule = {
-    onRegister: grid => {
+    name: 'assignToMe',
+    onLoad: grid => {
         grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'assignee' || record.getValue('assignee')) {
                 return
@@ -247,7 +254,7 @@ const assignToMeModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), custom: [assignToMeModule] }}
+            modules={[createClientSideRowModelModule(), assignToMeModule]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -257,7 +264,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
 
 const createColumnsByRoleModule = (getRole: () => Role): IGridModule => ({
-    onRegister: grid => {
+    name: 'columnsByRole',
+    onLoad: grid => {
         grid.services.get('columns').registerColumnDefinitions(columnDefs => {
             const rate = columnDefs.find(colDef => colDef.colId === 'rate')
             if (rate) {
@@ -292,7 +300,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnsByRole] }}
+                modules={[createClientSideRowModelModule(), columnsByRole]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -305,7 +313,8 @@ export const PLACEHOLDERS_CODE = `const PLACEHOLDERS: { [columnName: string]: st
 }
 
 const placeholdersModule: IGridModule = {
-    onRegister: grid => {
+    name: 'placeholders',
+    onLoad: grid => {
         grid.services.get('cells').registerControlParameters((parameters, { columnName }) => {
             if (PLACEHOLDERS[columnName]) {
                 parameters.Placeholder = { raw: PLACEHOLDERS[columnName] }
@@ -317,7 +326,7 @@ const placeholdersModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }), custom: [placeholdersModule] }}
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), placeholdersModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>

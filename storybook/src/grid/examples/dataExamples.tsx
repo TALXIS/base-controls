@@ -25,7 +25,7 @@ const GridExample = () => {
     const catalogue = React.useMemo(createCatalogue, [])
     return <DatasetControl onLoad={async () => ({ provider: catalogue })}>
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} height='400px' />
+            <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} height='400px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -122,7 +122,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: directory })}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
+            <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -156,7 +156,7 @@ const GridExample = () => {
     const stockCount = React.useMemo(createStockCount, [])
     return <DatasetControl onLoad={async () => ({ provider: stockCount })}>
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }} height='420px' />
+            <Grid modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]} height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

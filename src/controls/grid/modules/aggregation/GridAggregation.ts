@@ -18,8 +18,8 @@ import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
 import { IGridAgTheme } from "../../services/theme";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** The totals under the rows. */
         aggregation: IGridAggregation;
     }
@@ -63,6 +63,8 @@ export interface IGridAggregation {
     getTotalLabel(columnName: string): string | undefined;
     /** The alias a row holds a column's aggregate under. */
     getAggregateValueColumnName(record: IRecord, columnName: string): string;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 export class GridAggregation implements IGridAggregation {
@@ -78,7 +80,6 @@ export class GridAggregation implements IGridAggregation {
         this._services = parameters.services;
         this._allowUserAggregation = parameters.allowUserAggregation ?? true;
         this._gridServices.whenAvailable('gridApi', () => this._onGridApiAvailable());
-        this._gridServices.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         this._registerHooks();
     }
 
@@ -235,7 +236,7 @@ export class GridAggregation implements IGridAggregation {
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         const aggregationFunction = column?.aggregation?.aggregationFunction;
-        if (!column || !aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
+        if (!column || !aggregationFunction || this._services.get('gridServices').get('grid').modules.find('grouping')?.isColumnGrouped(column)) {
             return;
         }
         //no glyph: it competes with a long column name for the space
@@ -253,7 +254,7 @@ export class GridAggregation implements IGridAggregation {
         if (!column || !this.canColumnBeAggregated(column) || !supported.length) {
             return;
         }
-        const grouping = this._services.get('gridServices').find('grouping');
+        const grouping = this._services.get('gridServices').get('grid').modules.find('grouping');
         sections.push({
             key: 'aggregation',
             title: this._labels.getLocalizedString('menuSection'),
@@ -318,14 +319,14 @@ export class GridAggregation implements IGridAggregation {
     };
 
     //the provider outlives the grid
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._provider.removeEventListener('onFirstDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onNewDataLoaded', this._syncTotalRow);
         this._provider.removeEventListener('onAfterSaved', this._onAfterSaved);
         this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
         this._provider.removeEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted);
         this._totalRow?.destroy();
-    };
+    }
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.isFullWidthRow = this._isFullWidthRow;

@@ -11,10 +11,10 @@ Client scripts written against the dataset client API flag the records that need
 <DatasetControl onLoad={loadTickets}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-            }} />
+            modules={[
+                createClientSideRowModelModule(),
+                createLegacyClientApiCompatibilityModule(),
+            ]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -27,7 +27,7 @@ The module takes no options and needs no AG Grid Enterprise licence.
 
 A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that.
 
-- Run the script from a module of your own in \`modules.custom\`, as every example on this page does, and remove the listener in \`onDestroyed\`: see *Clean up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
+- Run the script from a module of your own in \`modules\`, as every example on this page does, and remove the listener in \`onDestroyed\`: see *Clean up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 - An expression for a column the provider does not have is ignored, with a console warning.
 - An expression that reads anything besides its own record's values, such as the time or another record, needs \`provider.requestRender()\` when that changes, as the stock sync below does.
 

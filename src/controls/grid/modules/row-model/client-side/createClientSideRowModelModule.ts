@@ -2,11 +2,11 @@ import { ClientSideRowModelApiModule, ClientSideRowModelModule as AgClientSideRo
 import { IGridModule } from "../../../interfaces";
 import { ClientSideRowModel } from "./ClientSideRowModel";
 
+export interface IClientSideRowModelModule extends IGridModule<'rowModel'> { }
+
 /** Builds the row-model module that holds every row at once. */
-export const createClientSideRowModelModule = (): IGridModule => ({
+export const createClientSideRowModelModule = (): IClientSideRowModelModule => ({
+    name: 'rowModel',
     agGridModules: [AgClientSideRowModelModule, ClientSideRowModelApiModule],
-    onRegister: ({ services }) => {
-        const rowModel = new ClientSideRowModel({ services });
-        services.register('rowModel', () => rowModel);
-    },
+    onLoad: ({ services }) => new ClientSideRowModel({ services }),
 });

@@ -21,7 +21,7 @@ export const READ_ONLY_CODE = `${FIELD_MAPPING}
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <CheckList fieldMapping={FIELD_MAPPING} modules={{ editing: undefined }} />
+        <CheckList fieldMapping={FIELD_MAPPING} modules={[]} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -33,7 +33,7 @@ const OVERDUE = '#fde7e9'
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
     //the checklist tells its items from the row that adds one
-    const checkList = () => gridRef.current?.services.find('checkList')
+    const checkList = () => gridRef.current?.modules.find('checkList')
     const isDone = (record: IRecord) => !!checkList()?.isCompleted(record)
     const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
 
@@ -51,7 +51,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <CheckList
                 fieldMapping={FIELD_MAPPING}
-                modules={{ aggregation: createAggregationModule() }}
+                modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
                 colDefs={{
                     name: { context: { cell: { onGetLock: lockWhenDone } } },
                     owner: {

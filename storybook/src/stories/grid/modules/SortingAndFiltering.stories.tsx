@@ -11,7 +11,7 @@ Sorting and filtering let users order a long list and narrow it down from each c
 \`\`\`tsx
 <DatasetControl onLoad={loadTickets}>
     <DatasetControl.Body>
-        <Grid modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), filtering: createFilteringModule() }} />
+        <Grid modules={[createClientSideRowModelModule(), createSortingModule(), createFilteringModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -92,7 +92,7 @@ Both are read at mount: see *Change a prop that is read at mount* on [**Props an
 
 ## From your code
 
-The sorting and filtering modules' services are \`grid.services.find('sorting')\` and \`grid.services.find('filtering')\`, or \`useGridService\` in a part the grid draws. Each is \`undefined\` without its module.
+The sorting and filtering modules' instances are \`grid.modules.find('sorting')\` and \`grid.modules.find('filtering')\`, or \`useGridModule\` in a part the grid draws. Without its module, \`find\` returns \`undefined\` and \`useGridModule\` throws.
 
 | \`sorting\` member | Description |
 |---|---|

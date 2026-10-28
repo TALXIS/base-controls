@@ -11,7 +11,7 @@ Every column draws its header with the grid's own header: the column's name, its
 <DatasetControl onLoad={loadProducts}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             colDefs={{ price: { headerComponent: CaptionedHeader } }} />
     </DatasetControl.Body>
 </DatasetControl>

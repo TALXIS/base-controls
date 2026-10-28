@@ -11,7 +11,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
                 onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
                 height='420px' />
@@ -57,7 +57,7 @@ const GridExample = () => {
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+                modules={[createClientSideRowModelModule(), createEditingModule()]}
                 onRecordValueChanged={reloadCommands}
                 onAfterSaved={reloadCommands}
                 height='400px' />
@@ -96,7 +96,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 colDefs={{
                     hours: { context: { cell: { onGetValidation: validateHours } } },
                     comment: { context: { cell: { onGetValidation: validateComment } } },
@@ -124,7 +124,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 key={isWeekClosed ? 'closed' : 'open'}
-                modules={{ rowModel: createClientSideRowModelModule(), editing: isWeekClosed ? undefined : createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ autoSave: true })])]}
                 rowSettings={{
                     onGetLock: (result, { record }) => {
                         if (Number(record.getValue('status')) === APPROVED) {
@@ -190,7 +190,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -211,7 +211,7 @@ const GridExample = () => {
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
                 onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
                 height='420px' />

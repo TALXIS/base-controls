@@ -1,8 +1,6 @@
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
-import type { IGridModule } from "@controls/grid";
 import type { IPcfContext } from "@interfaces";
-import type { ITaskGridServiceMap } from "../services";
 import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskActions } from "./tasks";
@@ -79,9 +77,6 @@ export interface ITaskRuntime {
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
-    /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
-    registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
-    getGridModules(): IGridModule<ITaskGridServiceMap>[];
     /** Runs the operation under the control's loading overlay, and shows its failure once in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;

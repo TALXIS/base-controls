@@ -6,7 +6,17 @@ export interface ILicenseModuleOptions {
     key: string;
 }
 
+export interface ILicenseModule extends IGridModule<'license'> { }
+
+declare module "../../interfaces" {
+    interface IGridModuleMap {
+        /** Only sets the key, so there is nothing to look up. */
+        license: void;
+    }
+}
+
 /** Builds the module that licenses AG Grid. */
-export const createLicenseModule = ({ key }: ILicenseModuleOptions): IGridModule => ({
-    onRegister: () => LicenseManager.setLicenseKey(key),
+export const createLicenseModule = ({ key }: ILicenseModuleOptions): ILicenseModule => ({
+    name: 'license',
+    onLoad: () => LicenseManager.setLicenseKey(key),
 });

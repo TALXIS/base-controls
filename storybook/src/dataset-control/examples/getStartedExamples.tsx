@@ -20,7 +20,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
     <DatasetControl.Body>
         <Grid
             stateKey='grid'
-            modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }), sorting: createSortingModule() }} />
+            modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createSortingModule()]} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

@@ -12,9 +12,9 @@ export class AgGridStyleIsolation {
     private static _registrations = 0;
     private static _observer?: MutationObserver;
     private static _isolatedSheets = new WeakSet<CSSStyleSheet>();
+    private _isDestroyed = false;
 
-    /** @returns Ends it once every grid that asked has gone. */
-    public static start(): () => void {
+    constructor() {
         AgGridStyleIsolation._registrations++;
         if (!AgGridStyleIsolation._observer) {
             AgGridStyleIsolation._observer = new MutationObserver(AgGridStyleIsolation._isolateSheets);
@@ -22,19 +22,20 @@ export class AgGridStyleIsolation {
             document.head.addEventListener('load', AgGridStyleIsolation._isolateSheets, true);
             AgGridStyleIsolation._isolateSheets();
         }
-        let isStopped = false;
-        return () => {
-            if (isStopped) {
-                return;
-            }
-            isStopped = true;
-            AgGridStyleIsolation._registrations--;
-            if (AgGridStyleIsolation._registrations === 0) {
-                AgGridStyleIsolation._observer?.disconnect();
-                AgGridStyleIsolation._observer = undefined;
-                document.head.removeEventListener('load', AgGridStyleIsolation._isolateSheets, true);
-            }
-        };
+    }
+
+    /** Ends the isolation once every grid that asked for it has gone. */
+    public destroy(): void {
+        if (this._isDestroyed) {
+            return;
+        }
+        this._isDestroyed = true;
+        AgGridStyleIsolation._registrations--;
+        if (AgGridStyleIsolation._registrations === 0) {
+            AgGridStyleIsolation._observer?.disconnect();
+            AgGridStyleIsolation._observer = undefined;
+            document.head.removeEventListener('load', AgGridStyleIsolation._isolateSheets, true);
+        }
     }
 
     private static _isolateSheets = (): void => {

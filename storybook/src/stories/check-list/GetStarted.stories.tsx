@@ -71,7 +71,7 @@ You should see the two items, the first ticked and struck through, and an empty 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`fieldMapping\` | \`ICheckListFieldMapping\` | Required | The columns the checklist works with. Read at mount. |
-| \`modules\` | \`ICheckListModules\` | \`editing\` with auto-save | Merged over the default; \`editing: undefined\` makes the list read-only. The row model is always the client-side one. Which modules work is under *Configure the grid* on [**Customization**](?path=/docs/checklist-customization--overview). Read at mount. |
+| \`modules\` | \`IGridModule[]\` | \`[createEditingModule({ autoSave: true })]\` | Replaces the default; a list without editing is read-only. The row model is always the client-side one. Which modules work is under *Configure the grid* on [**Customization**](?path=/docs/checklist-customization--overview). Read at mount. |
 | \`labels\` | \`Partial<IGridLabels & ICheckListLabels>\` | English | The grid's strings and the checklist's own. See *Change its wording* on [**Customization**](?path=/docs/checklist-customization--overview). Read at mount. |
 | \`enableZebra\` | \`boolean\` | \`false\`, unlike \`Grid\` | Shades every other row. |
 | \`enableOptionSetColors\` | \`boolean\` | \`true\`, unlike \`Grid\` | Draws options that have a colour as tags. |

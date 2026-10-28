@@ -73,7 +73,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
                 enableOptionSetColors
                 colDefs={{
                     products: { hide: true },
@@ -142,10 +142,10 @@ const CaptionedHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeade
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createSortingModule(),
+            ]}
             colDefs={{
                 price: { headerComponent: CaptionedHeader },
                 instock: { headerComponent: CaptionedHeader },
@@ -214,7 +214,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+                modules={[createClientSideRowModelModule(), createSortingModule()]}
                 colDefs={{
                     value: { headerComponent: SummaryHeader },
                     probability: { headerComponent: SummaryHeader },
@@ -241,7 +241,7 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
             components={COMPONENTS}
             height='360px' />
@@ -279,7 +279,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
     </DatasetControl.Header>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             components={COMPONENTS}
             height='400px' />
     </DatasetControl.Body>
@@ -304,10 +304,10 @@ const COMPONENTS: IGridComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createServerSideRowModelModule(),
-                grouping: createGroupingModule(),
-            }}
+            modules={[
+                createServerSideRowModelModule(),
+                createGroupingModule(),
+            ]}
             components={COMPONENTS}
             height='420px' />
     </DatasetControl.Body>
@@ -337,10 +337,10 @@ const COMPONENTS: IGridComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createServerSideRowModelModule(),
-                grouping: createGroupingModule(),
-            }}
+            modules={[
+                createServerSideRowModelModule(),
+                createGroupingModule(),
+            ]}
             components={COMPONENTS}
             height='420px' />
     </DatasetControl.Body>
@@ -366,7 +366,7 @@ const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
             colDefs={{
                 [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
             }}
@@ -496,7 +496,7 @@ const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.da
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{
                 description: {
                     cellRenderer: HtmlCell,

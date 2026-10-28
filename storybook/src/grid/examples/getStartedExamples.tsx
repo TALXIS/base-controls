@@ -21,7 +21,7 @@ export const GridExample = (props: IGridExampleProps) => {
                 <Grid
                     //modules are read once, at mount
                     key={JSON.stringify(props.features)}
-                    modules={{ rowModel: createClientSideRowModelModule(), ...modules }}
+                    modules={[createClientSideRowModelModule(), ...modules ?? []]}
                     {...featureProps}
                     height='520px' />
             </DatasetControl.Body>
@@ -153,7 +153,7 @@ import type { IFeature } from './features'
 
 /** What a cell shows: a grouped column draws its value in the group's row rather than in the deal's. */
 const getShownValue = (grid: IGrid, record: IRecord, columnName: string) => {
-    const grouping = grid.services.find('grouping')
+    const grouping = grid.modules.find('grouping')
     const column = grid.services.get('provider').getColumnsMap()[columnName]
     if (column && grouping?.isColumnGrouped(column)) {
         return grouping.isRowGroupedBy(record, columnName) ? record.getValue(grouping.getGroupedValueColumnName(record, columnName)) : undefined
@@ -169,7 +169,8 @@ const VALUE_TINTS = ['#f3faf3', '#dff6dd', '#bfe8bc']
 
 /** An icon before overdue and due close dates. */
 const statusIcons: IGridModule = {
-    onRegister: grid => {
+    name: 'statusIcons',
+    onLoad: grid => {
         grid.services.get('cells').registerControlParameters((parameters, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
@@ -182,7 +183,8 @@ const statusIcons: IGridModule = {
 
 /** Close dates tinted red when overdue and amber when due this week, and Value tinted by deal size. */
 const colourRules: IGridModule = {
-    onRegister: grid => {
+    name: 'colourRules',
+    onLoad: grid => {
         //after grouping, which repaints every row while the deals are grouped
         grid.services.get('cells').registerCellTheme((theme, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
@@ -202,7 +204,8 @@ const colourRules: IGridModule = {
 
 /** What the colours and icons in Close date mean. */
 const headerExtras: IGridModule = {
-    onRegister: grid => {
+    name: 'headerExtras',
+    onLoad: grid => {
         grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
             const legend = LEGENDS[header.getColumn()?.name ?? '']
             if (legend) {
@@ -218,7 +221,8 @@ const LEGENDS: { [columnName: string]: string } = {
 
 /** Commands in the close date of an overdue deal that push it back. */
 const overdueActions: IGridModule = {
-    onRegister: grid => {
+    name: 'overdueActions',
+    onLoad: grid => {
         //the field saves the deal while auto-save is on
         const pushBack = (deal: IRecord, days: number) => grid.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
         grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
@@ -249,7 +253,8 @@ const QUICK_VIEWS: { [columnName: string]: { key: string; text: string; iconName
 
 /** A Quick views section in the menus of Close date and Value, each view a ready-made filter. */
 const quickViews: IGridModule = {
-    onRegister: grid => {
+    name: 'quickViews',
+    onLoad: grid => {
         const deals = grid.services.get('provider')
         const show = (conditions: ICondition[] | null) => {
             deals.setFiltering(conditions ? { filterOperator: Type.And.Value, conditions } : null)
@@ -314,7 +319,8 @@ const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel i
 
 /** An Open in a form command beside every deal's name. */
 const openInForm: IGridModule = {
-    onRegister: grid => {
+    name: 'openInForm',
+    onLoad: grid => {
         grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
             if (columnName !== 'name' || isSummaryRow(record)) {
                 return
@@ -325,14 +331,14 @@ const openInForm: IGridModule = {
 }
 
 export const AT_A_GLANCE: { [feature: string]: IFeature } = {
-    statusIcons: () => ({ modules: { custom: [statusIcons] } }),
-    colourRules: () => ({ modules: { custom: [colourRules] } }),
-    headerExtras: () => ({ modules: { custom: [headerExtras] } }),
-    overdueActions: () => ({ modules: { custom: [overdueActions] } }),
-    quickViews: () => ({ modules: { custom: [quickViews] } }),
+    statusIcons: () => ({ modules: [statusIcons] }),
+    colourRules: () => ({ modules: [colourRules] }),
+    headerExtras: () => ({ modules: [headerExtras] }),
+    overdueActions: () => ({ modules: [overdueActions] }),
+    quickViews: () => ({ modules: [quickViews] }),
     //the command and the Deal link both open the deal through onOpenRecord
     dealForm: ({ openedDeal, onOpenDeal }) => ({
-        modules: { custom: [openInForm] },
+        modules: [openInForm],
         onOpenRecord: ({ record }) => onOpenDeal(record),
         frame: { overlays: [<DealPanel key='dealPanel' deal={openedDeal} onDismiss={() => onOpenDeal(undefined)} />] },
     }),
@@ -342,8 +348,8 @@ export const AT_A_GLANCE: { [feature: string]: IFeature } = {
 const READ_ONLY_LIST = `import type { IFeature } from './features'
 
 export const READ_ONLY_LIST: { [feature: string]: IFeature } = {
-    sorting: () => ({ modules: { sorting: createSortingModule() } }),
-    filtering: () => ({ modules: { filtering: createFilteringModule() } }),
+    sorting: () => ({ modules: [createSortingModule()] }),
+    filtering: () => ({ modules: [createFilteringModule()] }),
     optionSetColors: () => ({ enableOptionSetColors: true }),
     zebra: () => ({ enableZebra: true }),
 }
@@ -362,7 +368,7 @@ const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME
 export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
     editing: ({ switches }) => ({
-        modules: { editing: createEditingModule({ autoSave: !!switches.autoSave }) },
+        modules: [createEditingModule({ autoSave: !!switches.autoSave })],
         colDefs: { recurring: { context: { cell: { oneClickEdit: true } } } },
     }),
     //saving itself is the editing module's autoSave option, read above
@@ -376,8 +382,8 @@ export const SPREADSHEET: { [feature: string]: IFeature } = {
             }
         },
     }),
-    cellSelection: () => ({ modules: { cellSelection: createCellSelectionModule() } }),
-    clipboard: () => ({ modules: { clipboard: createClipboardModule() } }),
+    cellSelection: () => ({ modules: [createCellSelectionModule()] }),
+    clipboard: () => ({ modules: [createClipboardModule()] }),
     compactRows: () => ({ rowHeight: COMPACT_ROW_HEIGHT }),
     excelTheme: () => ({ frame: { theme: EXCEL_THEME } }),
 }
@@ -387,10 +393,10 @@ const PIPELINE_REVIEW = `import type { IFeature, IFeatureSwitches } from './feat
 
 export const PIPELINE_REVIEW: { [feature: string]: IFeature } = {
     rowSelection: ({ switches }) => ({
-        modules: { rowSelection: createRowSelectionModule({ mode: switches.rowSelection || 'multiple' }) },
+        modules: [createRowSelectionModule({ mode: switches.rowSelection || 'multiple' })],
     }),
-    grouping: () => ({ modules: { grouping: createGroupingModule() } }),
-    aggregation: () => ({ modules: { aggregation: createAggregationModule() } }),
+    grouping: () => ({ modules: [createGroupingModule()] }),
+    aggregation: () => ({ modules: [createAggregationModule()] }),
 }
 
 const STAGE_GROUP: IGroupByMetadata = { alias: 'stage_group', columnName: 'stage' }
@@ -439,7 +445,8 @@ const celebrate = (origin: { x: number; y: number }) => confetti({ particleCount
 
 /** Mark as won and Mark as lost in the actions column; on a selected deal they close every selected deal. */
 const dealCommands: IGridModule = {
-    onRegister: grid => {
+    name: 'dealCommands',
+    onLoad: grid => {
         const deals = grid.services.get('provider')
         const closeDeals = async (deal: IRecord, stage: number, origin: { x: number; y: number }) => {
             const selectedIds = deals.getSelectedRecordIds()
@@ -466,7 +473,8 @@ const dealCommands: IGridModule = {
 
 /** Paints won deals green and lost ones red. */
 const closedDealColours: IGridModule = {
-    onRegister: grid => {
+    name: 'closedDealColours',
+    onLoad: grid => {
         //after grouping, which repaints every row while the deals are grouped
         grid.services.get('cells').registerCellTheme((theme, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
@@ -486,8 +494,8 @@ const lockClosedDeals = (result: IGridLock, { record }: { record: IRecord }) => 
 }
 
 export const CLOSING_DEALS: { [feature: string]: IFeature } = {
-    rowActions: () => ({ modules: { custom: [dealCommands] }, colDefs: { actions: { headerName: '', pinned: 'right', initialWidth: 96 } } }),
-    closedDealColours: () => ({ modules: { custom: [closedDealColours] } }),
+    rowActions: () => ({ modules: [dealCommands], colDefs: { actions: { headerName: '', pinned: 'right', initialWidth: 96 } } }),
+    closedDealColours: () => ({ modules: [closedDealColours] }),
     lockClosedDeals: () => ({ rowSettings: { onGetLock: lockClosedDeals } }),
 }
 `
@@ -519,7 +527,7 @@ export const TOASTER_ID = 'deals'
 export type IToasts = ReturnType<typeof useToastController>
 
 /** What a feature adds to the grid, and to what is drawn around it. */
-export type IFeatureProps = Omit<Partial<IGrid>, 'modules'> & { modules?: Partial<IGridModules>; frame?: IFeatureFrameProps }
+export type IFeatureProps = Omit<Partial<IGrid>, 'modules'> & { modules?: IGridModule[]; frame?: IFeatureFrameProps }
 
 /** What the feature code shares. */
 export interface IFeatureContext {
@@ -546,7 +554,7 @@ const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
 const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => ({
     ...props,
     ...added,
-    modules: { ...props.modules, ...added.modules, custom: [...props.modules?.custom ?? [], ...added.modules?.custom ?? []] },
+    modules: [...props.modules ?? [], ...added.modules ?? []],
     colDefs: { ...props.colDefs, ...added.colDefs },
     rowSettings: { ...props.rowSettings, ...added.rowSettings },
     frame: { ...props.frame, ...added.frame, overlays: [...props.frame?.overlays ?? [], ...added.frame?.overlays ?? []] },

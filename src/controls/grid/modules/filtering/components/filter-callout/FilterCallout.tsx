@@ -8,6 +8,7 @@ import { INestedControlRenderer } from "@controls/nested-control-renderer/interf
 import { IControl, IParameters } from "@interfaces";
 import { GridFilterControl } from "../../GridFiltering";
 import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { useGridFilteringLabels } from "../../useGridFilteringLabels";
 import { FilteringUi, IFilteringUiCalloutComponents } from "../ui";
 import { getFilterCalloutStyles } from "./styles";
@@ -24,7 +25,7 @@ export interface IFilterCalloutProps {
 export const FilterCallout = (props: IFilterCalloutProps) => {
     const { column, onDismiss } = props;
     const filterCalloutStyles = useMemo(() => getFilterCalloutStyles(), []);
-    const filtering = useGridService('filtering')!;
+    const filtering = useGridModule('filtering');
     const provider = useGridService('provider');
     const dataProvider = provider as IInternalDataProvider;
     const context = usePcfContext();

@@ -1,7 +1,6 @@
 import { IRecord } from "@talxis/client-libraries";
 import { ILocalizationService, LocalizationService } from "@utils";
 import { IGrid } from "../../grid/services/runtime";
-import { IGridServiceMap } from "../../grid/services/interfaces";
 import { CHECK_LIST_LABELS, ICheckListLabels } from "../labels";
 import { CheckListColumns } from "./CheckListColumns";
 import { CheckListReordering } from "./CheckListReordering";
@@ -18,13 +17,8 @@ export interface ICheckListFieldMapping {
     completed: string;
 }
 
-/** The grid's services, with the checklist's own. */
-export interface ICheckListServiceMap extends IGridServiceMap {
-    checkList: IGridCheckList;
-}
-
-declare module "../../grid/services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../grid/interfaces" {
+    interface IGridModuleMap {
         /** The checklist, in a grid the `CheckList` draws. */
         checkList: IGridCheckList;
     }
@@ -46,12 +40,15 @@ export interface IGridCheckList {
     isItem(record: IRecord): boolean;
     /** Whether the item is finished. */
     isCompleted(record: IRecord): boolean;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 export class GridCheckList implements IGridCheckList {
     private _grid: IGrid;
     private _fieldMapping: ICheckListFieldMapping;
     private _labels: ILocalizationService<ICheckListLabels>;
+    private _newItemRow?: CheckListNewItemRow;
 
     constructor(parameters: IGridCheckListParameters) {
         this._grid = parameters.grid;
@@ -59,10 +56,14 @@ export class GridCheckList implements IGridCheckList {
         this._labels = new LocalizationService<ICheckListLabels>({ ...CHECK_LIST_LABELS, ...parameters.labels });
         this._warnWhenUnsorted();
         new CheckListColumns({ services: this._grid.services, checkList: this });
-        if (this._grid.services.find('editing')) {
+        if (this._grid.modules.find('editing')) {
             new CheckListReordering({ grid: this._grid, checkList: this });
-            new CheckListNewItemRow({ grid: this._grid, checkList: this });
+            this._newItemRow = new CheckListNewItemRow({ grid: this._grid, checkList: this });
         }
+    }
+
+    public destroy(): void {
+        this._newItemRow?.destroy();
     }
 
     private _warnWhenUnsorted(): void {

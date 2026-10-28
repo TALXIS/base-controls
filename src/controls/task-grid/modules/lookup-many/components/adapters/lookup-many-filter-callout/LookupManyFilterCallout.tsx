@@ -47,7 +47,7 @@ export const LookupManyFilterCallout = () => {
     const lookupMany = useDatasetControlModule('lookupMany');
     const { runtime } = useTaskGridContext();
     const filteringLabels = useGridFilteringLabels();
-    const calloutComponents = useGridService('filtering')?.components.filterCallout;
+    const calloutComponents = useGridService('grid').modules.find('filtering')?.components.filterCallout;
     const labels = lookupMany.getLabels();
     const condition = useMemo(() => lookupMany.getFilterCondition(column.name), []);
     const [operator, setOperator] = useState<number>(condition?.conditionOperator ?? Operators.ContainValues.Value);

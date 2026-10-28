@@ -16,7 +16,7 @@ const loadDeals = async () => {
 
 const GridExample = () => <DatasetControl onLoad={loadDeals} height='360px'>
     <DatasetControl.Body>
-        <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid modules={[createClientSideRowModelModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 `

@@ -1,5 +1,5 @@
 import { useGridCell } from "../../../../components/cells/root/context";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { IRowSelectionUiCheckboxComponents, RowSelectionUi } from "../ui";
 
 export interface ISelectionCheckboxProps {
@@ -9,7 +9,7 @@ export interface ISelectionCheckboxProps {
 /** The checkbox that selects the cell's record. */
 export const SelectionCheckbox = (props: ISelectionCheckboxProps) => {
     const cell = useGridCell();
-    const selection = useGridService('rowSelection')!;
+    const selection = useGridModule('rowSelection');
     const record = cell.getRecord();
 
     return <RowSelectionUi.Checkbox

@@ -8,8 +8,8 @@ import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from ".
 import { IGridSortingServiceLocator } from "./services";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** Sorting the grid by a column. */
         sorting: IGridSorting;
     }

@@ -47,13 +47,13 @@ export interface IManageViewsProps {
 /** The user's views as an editable, sortable and filterable DatasetControl. */
 export const ManageViews = (props: IManageViewsProps) => {
     const styles = useMemo(() => getManageViewsStyles(), []);
-    const modules = useMemo(() => ({
-        rowModel: createClientSideRowModelModule(),
-        editing: createEditingModule(),
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), []);
+    const modules = useMemo(() => [
+        createClientSideRowModelModule(),
+        createEditingModule(),
+        createRowSelectionModule({ mode: 'multiple' }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], []);
 
     const { header, body, footer, ribbon, quickFind, pagination, ...datasetControl } = props.components?.datasetControl ?? {};
 

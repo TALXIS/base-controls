@@ -6,7 +6,6 @@ import type { ILocalizationService, IServiceLocator, IStateStore } from "@utils"
 import type { IGridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
 import type { IGrid } from "../services/runtime";
-import type { IGridRowModel } from "./row-model";
 import type { IGridColumns, IGridColumnsInternal } from "../services/columns";
 import type { IGridCells, IGridCellsInternal } from "../services/cells";
 import type { IGridKeyboard } from "../services/keyboard";
@@ -17,11 +16,8 @@ import type { IGridFields } from "../services/fields";
 import type { IGridTheme, IGridThemeInternal } from "../services/theme";
 import type { IGridViewport } from "../services/viewport";
 
-/** The services the modules register; a module adds its own by augmenting this. */
-export interface IGridModuleServiceMap { }
-
 /** Everything the grid is made of that a module or your code may use. */
-export interface IGridServiceMap extends IGridModuleServiceMap {
+export interface IGridServiceMap {
     /** AG Grid's own api, there once AG Grid is ready; a last resort for what the hooks cannot express. */
     gridApi: GridApi<IRecord>;
     /** What the grid's parts keep for the next mount. */
@@ -52,8 +48,6 @@ export interface IGridServiceMap extends IGridModuleServiceMap {
     settings: IGridSettings;
     /** What the user is pressing while the grid is doing something about it. */
     keyboard: IGridKeyboard;
-    /** How the grid gets its rows. */
-    rowModel: IGridRowModel;
     /** The grid's vertical scroll and header height. */
     viewport: IGridViewport;
     /** The running grid. */
@@ -73,7 +67,7 @@ export interface IGridInternalServiceMap extends IGridServiceMap {
 }
 
 /** The services a grid may be without, or have only once it is mounted. */
-export type IGridDeferredService = keyof IGridModuleServiceMap | 'gridRoot' | 'gridApi';
+export type IGridDeferredService = 'gridRoot' | 'gridApi';
 
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
 export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceLocator<TServices>;

@@ -114,12 +114,12 @@ const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
 
 const GridExample = () => {
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: ${data.tasks}, metadata: TASK_METADATA }), [])
-    const modules = React.useMemo(() => ({
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        editing: createEditingModule({ autoSave: true }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createRowSelectionModule({ mode: 'multiple' }),
+        createEditingModule({ autoSave: true }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: '${data.storageKey}.userViews' }),
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),

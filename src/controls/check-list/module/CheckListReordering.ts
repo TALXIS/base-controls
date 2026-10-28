@@ -26,7 +26,7 @@ export class CheckListReordering {
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions);
         this._grid.registerAgGridOptions(this._onAgGridOptions);
         this._grid.services.get('gridTheme').registerStyles(this._onStyles);
-        this._grid.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
+        this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.whenAvailable('gridApi', this._onGridApiAvailable);
     }
 

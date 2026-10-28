@@ -9,11 +9,12 @@ export interface IEditingModuleOptions {
     onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'];
 }
 
+export interface IEditingModule extends IGridModule<'editing'> { }
+
 /** Builds the module that lets the grid's cells be edited. */
-export const createEditingModule = (options?: IEditingModuleOptions): IGridModule => ({
+export const createEditingModule = (options?: IEditingModuleOptions): IEditingModule => ({
+    name: 'editing',
     agGridModules: [CustomEditorModule],
-    onRegister: ({ services }) => {
-        const editing = new GridEditing({ services, autoSave: options?.autoSave, onEditedCellChanged: options?.onEditedCellChanged });
-        services.register('editing', () => editing);
-    },
+    onLoad: ({ services }) => new GridEditing({ services, autoSave: options?.autoSave, onEditedCellChanged: options?.onEditedCellChanged }),
+    onDestroy: editing => editing.destroy(),
 });

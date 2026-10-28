@@ -24,12 +24,12 @@ const GridExample = () => {
     const tasks = React.useMemo(() => createStressTasks(10000), [])
     const lookupManyValues = React.useMemo(() => takeLookupManyValues(tasks), [tasks])
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: tasks, metadata: TASK_METADATA }), [tasks])
-    const modules = React.useMemo(() => ({
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        editing: createEditingModule({ autoSave: true }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createRowSelectionModule({ mode: 'multiple' }),
+        createEditingModule({ autoSave: true }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devStressTasks.userViews' }),
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),

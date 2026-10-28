@@ -2,11 +2,11 @@ import { ServerSideRowModelApiModule, ServerSideRowModelModule as AgServerSideRo
 import { IGridModule } from "../../../interfaces";
 import { ServerSideRowModel } from "./ServerSideRowModel";
 
+export interface IServerSideRowModelModule extends IGridModule<'rowModel'> { }
+
 /** Builds the row-model module that reads a level at a time through a datasource. */
-export const createServerSideRowModelModule = (): IGridModule => ({
+export const createServerSideRowModelModule = (): IServerSideRowModelModule => ({
+    name: 'rowModel',
     agGridModules: [AgServerSideRowModelModule, ServerSideRowModelApiModule],
-    onRegister: ({ services }) => {
-        const rowModel = new ServerSideRowModel({ services });
-        services.register('rowModel', () => rowModel);
-    },
+    onLoad: ({ services }) => new ServerSideRowModel({ services }),
 });

@@ -11,7 +11,7 @@ Without the editing module the grid is read-only. With it, each column is edited
 \`\`\`tsx
 <DatasetControl onLoad={loadTimesheet}>
     <DatasetControl.Body>
-        <Grid modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }} />
+        <Grid modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -154,7 +154,7 @@ A server can refuse a save the browser allowed. A provider reports that as \`{ s
 
 ## From your code
 
-The editing module's service is \`grid.services.find('editing')\`, or \`useGridService('editing')\` in a part the grid draws. It is \`undefined\` without the module.
+The editing module's instance is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` in a part the grid draws. Without the module, \`find\` returns \`undefined\` and \`useGridModule\` throws.
 
 | Member | Description |
 |---|---|
@@ -174,7 +174,7 @@ The editing module adds two columns of its own: the save status, keyed \`RECORD_
 const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
 
 <Grid
-    modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: true }) }}
+    modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
     colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRenderer: SaveStatusCell } }} />
 \`\`\`
 

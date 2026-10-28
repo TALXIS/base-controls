@@ -27,10 +27,10 @@ const GridExample = () => {
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
+                ]}
                 colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
                 height='400px' />
         </DatasetControl.Body>
@@ -49,7 +49,7 @@ const COMPONENTS: IGridSortingComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ components: COMPONENTS }) }}
+            modules={[createClientSideRowModelModule(), createSortingModule({ components: COMPONENTS })]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -73,7 +73,7 @@ const COMPONENTS: IGridFilteringComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), filtering: createFilteringModule({ components: COMPONENTS }) }}
+            modules={[createClientSideRowModelModule(), createFilteringModule({ components: COMPONENTS })]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -87,7 +87,7 @@ export const GROUP_BADGES_CODE = `const styles = mergeStyleSets({
 //the part is handed the count as text in brackets
 const ProductCount = (props: { className?: string }) => {
     const cell = useGridCell()
-    const count = useGridService('grouping')?.getGroupedCount(cell.getRecord(), cell.getColumnName())
+    const count = useGridModule('grouping')?.getGroupedCount(cell.getRecord(), cell.getColumnName())
     return <span className={props.className}><span className={styles.count}>{count}</span></span>
 }
 
@@ -99,7 +99,7 @@ const COMPONENTS: IGridGroupingComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS }) }}
+            modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS })]}
             height='460px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -122,7 +122,7 @@ const COMPONENTS: IGridAggregationComponents = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), aggregation: createAggregationModule({ components: COMPONENTS }) }}
+            modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
             height='460px' />
     </DatasetControl.Body>
 </DatasetControl>

@@ -23,16 +23,19 @@ export interface IGroupingModuleOptions {
     maxGroupLoadsPerSelection?: number;
 }
 
+export interface IGroupingModule extends IGridModule<'grouping'> { }
+
 /** Builds the module that groups the rows by a column. */
-export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGridModule => ({
+export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGroupingModule => ({
+    name: 'grouping',
     agGridModules: [RowGroupingModule, TreeDataModule],
-    onRegister: ({ services: gridServices }) => {
+    onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
         services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => options.components ?? {});
-        const grouping = new GridGrouping({ services, settings: options });
-        gridServices.register('grouping', () => grouping);
+        return new GridGrouping({ services, settings: options });
     },
+    onDestroy: grouping => grouping.destroy(),
 });

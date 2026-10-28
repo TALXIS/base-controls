@@ -2,6 +2,7 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { IGridRowSelectionState } from "../../GridRowSelection";
@@ -14,7 +15,7 @@ export interface ISelectionHeaderProps extends IColumnHeaderParams {
 
 /** The header of the column the checkboxes live in: what selects every record, and clears them. */
 export const SelectionHeader = (props: ISelectionHeaderProps) => {
-    const selection = useGridService('rowSelection')!;
+    const selection = useGridModule('rowSelection');
     const provider = useGridService('provider');
     const { rerender } = useRerender();
     useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);

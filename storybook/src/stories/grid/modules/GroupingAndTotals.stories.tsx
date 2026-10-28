@@ -11,7 +11,7 @@ Grouping gathers the rows under a group row for each value of a column, level by
 \`\`\`tsx
 <DatasetControl onLoad={loadDeals}>
     <DatasetControl.Body>
-        <Grid modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule(), aggregation: createAggregationModule() }} />
+        <Grid modules={[createClientSideRowModelModule(), createGroupingModule(), createAggregationModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -79,7 +79,7 @@ const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }
 
 <DatasetControl onLoad={loadTimesheets}>
     <DatasetControl.Body>
-        <Grid modules={{ ...modules, editing: createEditingModule() }} rowSettings={{ onGetLock: lockSubmittedEntries }} />
+        <Grid modules={[...modules, createEditingModule()]} rowSettings={{ onGetLock: lockSubmittedEntries }} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -127,7 +127,7 @@ Both modules' options are read at mount: see *Change a prop that is read at moun
 
 ## From your code
 
-The grouping and aggregation modules' services are \`grid.services.find('grouping')\` and \`grid.services.find('aggregation')\`, or \`useGridService\` in a part the grid draws. Each is \`undefined\` without its module. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
+The grouping and aggregation modules' instances are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggregation')\`, or \`useGridModule\` in a part the grid draws. Without its module, \`find\` returns \`undefined\` and \`useGridModule\` throws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
 
 | \`grouping\` member | Description |
 |---|---|

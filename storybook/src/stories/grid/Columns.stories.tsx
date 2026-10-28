@@ -11,7 +11,7 @@ Every provider column becomes a grid column. \`colDefs\` changes those columns a
 <DatasetControl onLoad={loadProducts}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             colDefs={{
                 name: { pinned: 'left', context: { isPrimary: true } },
                 price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),

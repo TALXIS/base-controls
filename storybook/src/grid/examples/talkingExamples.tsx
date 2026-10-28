@@ -25,13 +25,13 @@ const GridExample = () => {
     }
 
     const expandAll = () => {
-        const grouping = gridRef.current?.services.find('grouping')
+        const grouping = gridRef.current?.modules.find('grouping')
         grouping?.setExpandedLevel(grouping.getDeepestLevel())
     }
 
-    const collapseAll = () => gridRef.current?.services.find('grouping')?.setExpandedLevel(-1)
+    const collapseAll = () => gridRef.current?.modules.find('grouping')?.setExpandedLevel(-1)
 
-    const sortByHours = () => gridRef.current?.services.find('sorting')?.sortColumn('hours', true)
+    const sortByHours = () => gridRef.current?.modules.find('sorting')?.sortColumn('hours', true)
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'expandAll', label: 'Expand all', iconName: 'ExploreContent', onExecute: expandAll },
@@ -50,12 +50,12 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    grouping: createGroupingModule(),
-                    aggregation: createAggregationModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createGroupingModule(),
+                    createAggregationModule(),
+                ]}
                 enableOptionSetColors
                 onReady={onReady}
                 height='440px' />

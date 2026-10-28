@@ -11,7 +11,7 @@ export interface IRecordLockIconProps {
 /** The lock drawn for a record locked as a whole, or nothing. */
 export const RecordLockIcon = (props: IRecordLockIconProps) => {
     const cell = useGridCell();
-    const locks = useGridService('editing')?.locks;
+    const locks = useGridService('grid').modules.find('editing')?.locks;
     const labels = useGridService('labels');
     const styles = useMemo(() => getRecordLockIconStyles(), []);
 

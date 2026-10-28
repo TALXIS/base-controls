@@ -21,8 +21,8 @@ import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor"
 import { getColumnContext } from "../../services/columns/colDef";
 import { getRowNode } from "../../services/rows/getRowNode";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** Which cell the user is editing, whether an edit saves itself, and what is locked. */
         editing: IGridEditing;
     }
@@ -62,6 +62,8 @@ export interface IGridEditing {
     start(cell: IGridCell): void;
     /** Ends the edit and brings the highlight back. */
     finish(cell: IGridCell): void;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 export class GridEditing implements IGridEditing {
@@ -84,7 +86,6 @@ export class GridEditing implements IGridEditing {
             this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
         }
         this._registerHooks();
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         this._services.whenAvailable('keyboard', keyboard => keyboard.onKeyDown(event => this._onKeyDown(event)));
         this._services.whenAvailable('gridApi', gridApi => {
             gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
@@ -156,9 +157,9 @@ export class GridEditing implements IGridEditing {
     };
 
     //the provider outlives the grid
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-    };
+    }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const columns = this._services.get('provider').getColumnsMap();

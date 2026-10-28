@@ -1,12 +1,13 @@
 import * as React from "react";
 import { useEventEmitter } from "@hooks";
 import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { IGridGroupingEvents } from "../../GridGrouping";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 
 /** Says a selection was refused because it would load the records of too many groups. */
 export const GroupSelectionLimitDialog = () => {
-    const grouping = useGridService('grouping')!;
+    const grouping = useGridModule('grouping');
     const pcfContext = useGridService('pcfContext');
     const labels = useGridGroupingLabels();
     const [isOpen, setIsOpen] = React.useState(grouping.isGroupSelectionLimitDialogOpen());

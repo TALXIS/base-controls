@@ -9,8 +9,8 @@ import { IGridAgGridOptions } from "../../services/runtime";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/components/ui/toggle/styles";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** Which records are selected. */
         rowSelection: IGridRowSelection;
     }
@@ -77,6 +77,8 @@ export interface IGridRowSelection {
     getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     /** Whether a record refuses selection at all. */
     isRecordSelectionDisabled(record: IRecord): boolean;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 export class GridRowSelection implements IGridRowSelection {
@@ -155,7 +157,6 @@ export class GridRowSelection implements IGridRowSelection {
     }
 
     private _registerEvents(parameters: IGridRowSelectionParameters): void {
-        this._services.get('gridServices').get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
         if (parameters.onSelectionChanged) {
             this.events.addEventListener('onSelectionChanged', parameters.onSelectionChanged);
         }
@@ -204,13 +205,13 @@ export class GridRowSelection implements IGridRowSelection {
         }
         const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS_NAME}, .${GROUPING_TOGGLE_CLASS_NAME}`);
         const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
-        const isGroupRow = !!this._services.get('gridServices').find('grouping')?.isGroupRow(params.node);
+        const isGroupRow = !!this._services.get('gridServices').get('grid').modules.find('grouping')?.isGroupRow(params.node);
         return this.isSelectionColumn(params.column?.getColId()) || isCommand || (isGroupRow && !hasModifier);
     }
 
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
-    };
+    }
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
@@ -309,7 +310,7 @@ export class GridRowSelection implements IGridRowSelection {
     }
 
     private get _rowModel() {
-        return this._services.get('gridServices').get('rowModel');
+        return this._services.get('gridServices').get('grid').modules.get('rowModel');
     }
 
     private get _gridApi(): GridApi<IRecord> {

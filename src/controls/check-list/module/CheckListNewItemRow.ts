@@ -33,8 +33,7 @@ export class CheckListNewItemRow {
         //after the totals row, so the new-item row sits between the items and the totals
         this._grid.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
         this._grid.services.get('cells').registerControlParameters(this._onControlParameters);
-        this._grid.services.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-        this._grid.events.addEventListener('onDestroyed', this._onDestroyed);
+        this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.whenAvailable('gridApi', this._onGridApiAvailable);
     }
 
@@ -119,9 +118,9 @@ export class CheckListNewItemRow {
         this._grid.refreshAgGridOptions();
     }
 
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._retiredDraftProviders.forEach(provider => provider.destroy());
         this._retiredDraftProviders = [];
         this._draftProvider?.destroy();
-    };
+    }
 }

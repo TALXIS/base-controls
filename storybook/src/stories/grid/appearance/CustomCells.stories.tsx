@@ -11,7 +11,7 @@ Every column draws its cells with the grid's own cell, which shows the value the
 <DatasetControl onLoad={loadDeals}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule() }}
+            modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{ description: { cellRenderer: HtmlCell, cellEditor: HtmlEditor } }} />
     </DatasetControl.Body>
 </DatasetControl>

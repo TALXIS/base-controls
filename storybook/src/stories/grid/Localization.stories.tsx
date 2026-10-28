@@ -12,7 +12,7 @@ Every string the grid shows can be replaced: the grid's own through \`labels\`, 
     <DatasetControl.Body>
         <Grid
             labels={{ noRecordsFound: 'Žádné záznamy.' }}
-            modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule({ labels: { clear: 'Zrušit' } }) }} />
+            modules={[createClientSideRowModelModule(), createSortingModule({ labels: { clear: 'Zrušit' } })]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`

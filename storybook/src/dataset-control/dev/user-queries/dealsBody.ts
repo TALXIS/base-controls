@@ -9,12 +9,12 @@ import { DealTimeline } from './DealTimeline'
 import { OwnerLeaderboard } from './OwnerLeaderboard'
 
 const DealGrid = () => {
-    const modules = React.useMemo(() => ({
-        rowModel: createClientSideRowModelModule(),
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createClientSideRowModelModule(),
+        createRowSelectionModule({ mode: 'multiple' }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], [])
     return <Grid stateKey='grid' modules={modules} />
 }
 

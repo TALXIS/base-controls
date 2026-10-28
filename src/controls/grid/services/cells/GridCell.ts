@@ -169,7 +169,7 @@ export class GridCell implements IGridCell {
 
     public isLocked(): boolean {
         //a grid without the editing module is read-only
-        return this._services.find('editing')?.locks.get({ record: this._record, columnName: this.getColumnName() }).isLocked ?? true;
+        return this._services.get('grid').modules.find('editing')?.locks.get({ record: this._record, columnName: this.getColumnName() }).isLocked ?? true;
     }
 
     public getCommands(): IGridCellCommands {
@@ -185,6 +185,6 @@ export class GridCell implements IGridCell {
 
     //a grid without the editing module edits nothing
     private get _editing() {
-        return this._services.find('editing');
+        return this._services.get('grid').modules.find('editing');
     }
 }

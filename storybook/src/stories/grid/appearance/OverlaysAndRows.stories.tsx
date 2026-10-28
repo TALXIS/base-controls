@@ -11,7 +11,7 @@ When the grid has no records to draw, it draws something in their place: an over
 <DatasetControl onLoad={loadProducts}>
     <DatasetControl.Body>
         <Grid
-            modules={{ rowModel: createClientSideRowModelModule() }}
+            modules={[createClientSideRowModelModule()]}
             components={{
                 overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } },
                 rows: { error: { onRenderMessageBar: props => <MessageBar {...props} messageBarType={MessageBarType.warning} /> } },

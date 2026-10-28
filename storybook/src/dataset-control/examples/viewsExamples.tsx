@@ -6,12 +6,12 @@ import { PRODUCT_GALLERY_FILE, VIEWS_FILE, withFiles } from './shared'
 const PROVIDER_VIEWS_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const GridExample = () => {
-    const modules = React.useMemo(() => ({
-        rowModel: createClientSideRowModelModule(),
-        editing: createEditingModule({ autoSave: false }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createClientSideRowModelModule(),
+        createEditingModule({ autoSave: false }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], [])
 
     return <DatasetControl onLoadViews={loadDealViews} stateKey='dealViews' onLoad={loadDeals} height='440px'>
         <DatasetControl.Header>
@@ -95,7 +95,7 @@ const PRODUCTS_BODY_FILE: IGridExampleFile = {
 import { ProductDataGrid } from './ProductDataGrid'
 import { ProductGallery } from './ProductGallery'
 
-const ProductGrid = () => <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }} />
+const ProductGrid = () => <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} />
 
 const UIS: { [ui in ProductUi]: () => JSX.Element } = {
     grid: ProductGrid,

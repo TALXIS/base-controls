@@ -31,7 +31,7 @@ export class TaskColumnValues {
     constructor(parameters: ITaskColumnValuesParameters) {
         this._parameters = parameters;
         parameters.taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        parameters.taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        parameters.taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
     }
 
     public isLoading(): boolean {
@@ -113,9 +113,9 @@ export class TaskColumnValues {
         this._grid?.services.get('cells').render({ columnNames: this._parameters.columnNames() });
     }
 
-    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
+    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
         this._grid = grid;
-        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        this._unregisters.push(grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20));
     }
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {

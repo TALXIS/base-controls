@@ -42,12 +42,12 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-                    editing: createEditingModule(),
-                    sorting: createSortingModule(),
-                }} />
+                modules={[
+                    createClientSideRowModelModule(),
+                    createRowSelectionModule({ mode: 'multiple' }),
+                    createEditingModule(),
+                    createSortingModule(),
+                ]} />
         </DatasetControl.Body>
         <DatasetControl.Footer>
             <DatasetControl.Footer.Start>
@@ -110,7 +110,7 @@ const GridExample = () => {
         </Stack>
         <DatasetControl onLoad={async () => ({ provider: tickets })} height='340px'>
             <DatasetControl.Body>
-                <Grid modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} enableOptionSetColors />
+                <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} enableOptionSetColors />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.End>

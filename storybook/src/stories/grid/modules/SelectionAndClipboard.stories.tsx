@@ -11,7 +11,7 @@ Three modules let users pick the rows they want to act on, highlight blocks of c
 \`\`\`tsx
 <DatasetControl onLoad={loadTimesheets}>
     <DatasetControl.Body>
-        <Grid modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }) }} />
+        <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds })]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
@@ -104,7 +104,7 @@ In an editable grid, Ctrl+V pastes into the focused cell, or into the highlighte
 
 ## From your code
 
-The row selection module's service is \`grid.services.find('rowSelection')\`, or \`useGridService('rowSelection')\` in a part the grid draws. It is \`undefined\` without the module.
+The row selection module's instance is \`grid.modules.find('rowSelection')\`, or \`useGridModule('rowSelection')\` in a part the grid draws. Without the module, \`find\` returns \`undefined\` and \`useGridModule\` throws.
 
 | Member | Description |
 |---|---|
@@ -124,7 +124,8 @@ const APPROVED = 3
 
 //approved timesheets are final
 const keepApprovedUnselectedModule: IGridModule = {
-    onRegister: grid => grid.services.find('rowSelection')?.setInterceptor('onSelectRecords', (parameters, defaultAction) => {
+    name: 'keepApprovedUnselected',
+    onLoad: grid => grid.modules.find('rowSelection')?.setInterceptor('onSelectRecords', (parameters, defaultAction) => {
         const records = parameters.provider.getRecordsMap()
         const recordIds = parameters.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
         return defaultAction({ ...parameters, recordIds })
@@ -132,7 +133,7 @@ const keepApprovedUnselectedModule: IGridModule = {
 }
 \`\`\`
 
-Pass it in \`modules.custom\`.
+Add it to \`modules\`, after the row selection module.
 
 - There is room for one interceptor, and the grouping module sets its own. Yours replaces it, so in a grouped grid \`maxGroupLoadsPerSelection\` no longer applies.
 - Unticking the header checkbox does not go through the interceptor, and neither do your own calls to the provider's selection methods.
@@ -145,7 +146,7 @@ The row selection module adds a checkbox column of its own, keyed \`SELECTION_CO
 const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
 <Grid
-    modules={{ rowModel: createClientSideRowModelModule(), rowSelection: createRowSelectionModule({ mode: 'multiple' }) }}
+    modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]}
     colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }} />
 \`\`\`
 

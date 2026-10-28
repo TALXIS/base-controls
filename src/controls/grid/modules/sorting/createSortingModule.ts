@@ -12,9 +12,12 @@ export interface ISortingModuleOptions {
     components?: IGridSortingComponents;
 }
 
+export interface ISortingModule extends IGridModule<'sorting'> { }
+
 /** Builds the module that lets the grid be sorted. */
-export const createSortingModule = (options?: ISortingModuleOptions): IGridModule => ({
-    onRegister: ({ services: gridServices }) => {
+export const createSortingModule = (options?: ISortingModuleOptions): ISortingModule => ({
+    name: 'sorting',
+    onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridSortingServiceMap>();
         //built once, then registered: a resolver runs on every lookup
@@ -22,7 +25,6 @@ export const createSortingModule = (options?: ISortingModuleOptions): IGridModul
         services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => options?.components ?? {});
-        const sorting = new GridSorting({ services });
-        gridServices.register('sorting', () => sorting);
+        return new GridSorting({ services });
     },
 });

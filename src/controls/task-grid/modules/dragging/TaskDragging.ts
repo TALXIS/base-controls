@@ -1,5 +1,5 @@
 import { IRecord } from "@talxis/client-libraries";
-import { GridApi, IRowDragItem, RowDragModule, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
+import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../provider";
@@ -52,21 +52,21 @@ export class TaskDragging {
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        taskRuntime.registerGridModule({ agGridModules: [RowDragModule], onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
     }
 
     public destroy(): void {
         this._taskProvider?.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
     }
 
-    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
+    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
         this._grid = grid;
         const services = grid.services;
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
         this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
         services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_PRIORITY.tree);
         services.get('rows').registerRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
-        services.whenAvailable('editing', editing => editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged));
+        grid.modules.whenAvailable('editing', editing => editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged));
         services.whenAvailable('gridApi', this._onGridApiAvailable);
         this._provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
         this._grid.events.addEventListener('onDestroyed', this._onDestroyed);

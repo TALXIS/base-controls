@@ -1,5 +1,5 @@
 import { useRerender } from "@legacy";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
@@ -13,7 +13,7 @@ export interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
 /** Opens and closes the groups a level at a time. */
 export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
     //the grouping module is registered wherever this header draws
-    const grouping = useGridService('grouping')!;
+    const grouping = useGridModule('grouping');
     const labels = useGridGroupingLabels();
     const { rerender } = useRerender();
     const expandedLevel = grouping.getExpandedLevel();

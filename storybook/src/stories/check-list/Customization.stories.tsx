@@ -10,7 +10,7 @@ The checklist is a grid with a few columns of its own, so it is customized like 
 \`\`\`tsx
 <CheckList
     fieldMapping={FIELD_MAPPING}
-    modules={{ aggregation: createAggregationModule() }}
+    modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
     labels={{ newItemPlaceholder: 'Add a task...' }}
     colDefs={{ name: { context: { isPrimary: true } } }}
     onOpenRecord={({ record }) => openItem(record)} />
@@ -21,7 +21,7 @@ The checklist is a grid with a few columns of its own, so it is customized like 
 Without the editing module the list is read-only: no ticking, renaming, adding, deleting or dragging.
 
 \`\`\`tsx
-<CheckList fieldMapping={FIELD_MAPPING} modules={{ editing: undefined }} />
+<CheckList fieldMapping={FIELD_MAPPING} modules={[]} />
 \`\`\`
 
 {{story: Keep a finished plan for reference}}
@@ -39,7 +39,7 @@ Pass the checklist's labels in \`labels\`, beside the grid's own. \`CHECK_LIST_L
 
 ## Configure the grid
 
-Everything \`Grid\` offers works on the checklist's other columns: column definitions, cell colours, locks, cell commands, events. Of the grid's modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and \`custom\`. Sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
+Everything \`Grid\` offers works on the checklist's other columns: column definitions, cell colours, locks, cell commands, events. Of the grid's modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and modules of your own. Sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
 
 The board below colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview)).
 
@@ -53,7 +53,7 @@ A primary column draws the item's name as a link, and \`onOpenRecord\` decides w
 
 ## From your code
 
-The checklist adds its own service to the grid: \`grid.services.find('checkList')\`, on the grid \`onReady\` or a module's \`onRegister\` passes you, or \`useGridService('checkList')\` in a part the grid draws. The release board above uses it to tell items from the row that adds one.
+The checklist adds its own module to the grid: \`grid.modules.find('checkList')\`, on the grid \`onReady\` or a module's \`onLoad\` passes you, or \`useGridModule('checkList')\` in a part the grid draws. The release board above uses it to tell items from the row that adds one.
 
 | Member | Description |
 |---|---|
@@ -86,7 +86,7 @@ export const KeepAFinishedPlanForReference: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The launch is over: \`modules={{ editing: undefined }}\` keeps the plan for reference. Try: click an item; nothing can be changed.`,
+                story: `The launch is over: \`modules={[]}\` keeps the plan for reference. Try: click an item; nothing can be changed.`,
             },
         },
     },

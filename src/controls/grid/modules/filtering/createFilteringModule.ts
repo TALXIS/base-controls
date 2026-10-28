@@ -12,15 +12,17 @@ export interface IFilteringModuleOptions {
     components?: IGridFilteringComponents;
 }
 
+export interface IFilteringModule extends IGridModule<'filtering'> { }
+
 /** Builds the module that lets the grid be filtered. */
-export const createFilteringModule = (options?: IFilteringModuleOptions): IGridModule => ({
-    onRegister: ({ services: gridServices }) => {
+export const createFilteringModule = (options?: IFilteringModuleOptions): IFilteringModule => ({
+    name: 'filtering',
+    onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridFilteringServiceMap>();
         const labels = new LocalizationService<IGridFilteringLabels>({ ...GRID_FILTERING_LABELS, ...options?.labels });
         services.register('gridServices', () => gridServices);
         services.register('labels', () => labels);
         services.register('components', () => options?.components ?? {});
-        const filtering = new GridFiltering({ services });
-        gridServices.register('filtering', () => filtering);
+        return new GridFiltering({ services });
     },
 });

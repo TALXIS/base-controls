@@ -1,5 +1,5 @@
 import { useGridCell } from "../../../../components/cells/root/context";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { GroupingUi, IGroupingUiCountComponents } from "../ui";
 
 export interface IGroupCountProps {
@@ -10,7 +10,7 @@ export interface IGroupCountProps {
 export const GroupCount = (props: IGroupCountProps) => {
     const cell = useGridCell();
     //the grouping module is registered wherever this cell draws
-    const grouping = useGridService('grouping')!;
+    const grouping = useGridModule('grouping');
     const count = grouping.getGroupedCount(cell.getRecord(), cell.getColumnName());
 
     if (count === undefined) {

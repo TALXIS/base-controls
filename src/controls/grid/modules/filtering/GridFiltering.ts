@@ -12,8 +12,8 @@ import { IGridFilteringServiceLocator } from "./services";
 import { IGridSurface } from "../../services/surfaces";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** Filtering the grid by a column. */
         filtering: IGridFiltering;
     }

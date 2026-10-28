@@ -37,12 +37,12 @@ const ROOT_OPTIONS = [
 const GridExample = () => {
     const [rootTaskId, setRootTaskId] = React.useState('')
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
-    const modules = React.useMemo(() => ({
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        editing: createEditingModule({ autoSave: true }),
-        sorting: createSortingModule(),
-        filtering: createFilteringModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createRowSelectionModule({ mode: 'multiple' }),
+        createEditingModule({ autoSave: true }),
+        createSortingModule(),
+        createFilteringModule(),
+    ], [])
     const datasetControlModules = React.useMemo(() => [
         createTaskDraggingModule(),
     ], [])

@@ -19,8 +19,8 @@ import type { GridSelectionStateHook, GridSelectRecordsHook } from "../row-selec
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { GridLockHook } from "../editing/GridLocks";
 
-declare module "../../services/interfaces" {
-    interface IGridModuleServiceMap {
+declare module "../../interfaces" {
+    interface IGridModuleMap {
         /** Grouping the rows by a column. */
         grouping: IGridGrouping;
     }
@@ -101,6 +101,8 @@ export interface IGridGrouping {
     toggleGroup(node: IRowNode<IRecord>): void;
     /** The parts of what this module draws, as the caller replaced them. */
     readonly components: IGridGroupingComponents;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 export class GridGrouping implements IGridGrouping {
@@ -133,8 +135,7 @@ export class GridGrouping implements IGridGrouping {
         this._grouping = new Grouping(this._provider);
         //overrides the provider's nested default
         this._provider.setProperty('groupingType', this._settings.type);
-        this._gridServices.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
-        this._gridServices.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        this._gridServices.get('grid').modules.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
         this._gridServices.whenAvailable('gridApi', gridApi => gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
@@ -150,12 +151,12 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may register after this one
-        this._gridServices.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping));
+        this._gridServices.get('grid').modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping));
         //listed in the column menu after sorting and filtering
         columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.whenAvailable('rowSelection', selection => {
+        this._gridServices.get('grid').modules.whenAvailable('rowSelection', selection => {
             selection.registerSelectRecords(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
             selection.registerSelectionState(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
         });
@@ -416,10 +417,10 @@ export class GridGrouping implements IGridGrouping {
     };
 
     //the provider outlives the grid
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._provider.removeEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-    };
+    }
 
     //each new load reports the child limit again
     private _onNewDataLoaded = (): void => {

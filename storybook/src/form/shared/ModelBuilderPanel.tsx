@@ -740,10 +740,10 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                     <DatasetControl.Notifications />
                     <DatasetControl.Body>
                         <Grid
-                            modules={{
-                                rowModel: createClientSideRowModelModule(),
-                                rowSelection: createRowSelectionModule({ mode: "multiple" }),
-                            }}
+                            modules={[
+                                createClientSideRowModelModule(),
+                                createRowSelectionModule({ mode: "multiple" }),
+                            ]}
                             enableNavigation
                             enableZebra
                             rowHeight={36} />

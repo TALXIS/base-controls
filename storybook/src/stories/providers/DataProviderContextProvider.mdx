@@ -20,7 +20,7 @@ products.refresh();
 export const Products = () => (
   <PcfContextProvider>
     <DataProviderContextProvider provider={products}>
-      <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+      <Grid modules={[createClientSideRowModelModule()]} />
     </DataProviderContextProvider>
   </PcfContextProvider>
 );`}

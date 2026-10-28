@@ -8,7 +8,7 @@ import { CellContainer } from "../../../../components/cells/container/CellContai
 import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellControl } from "../../../../components/cells/control/CellControl";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { TotalValue } from "../total-value/TotalValue";
 import { ITotalCellComponents } from "./components";
 
@@ -21,7 +21,7 @@ export interface ITotalCellProps extends ICellRendererParams<IRecord> {
 /** What a column that totals something draws in the row pinned under the rest. */
 export const TotalCell = (props: ITotalCellProps) => {
     //the aggregation module is registered wherever this cell draws
-    const aggregation = useGridService('aggregation')!;
+    const aggregation = useGridModule('aggregation');
     const components = { ...aggregation.components.totalCell, ...props.components };
     //the selector draws this only for the total row, so the record is there
     const record = props.data!;

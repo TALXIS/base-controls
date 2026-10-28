@@ -3,7 +3,8 @@ import { GridExampleRunner } from '../GridExampleRunner'
 import { createTicketsProvider } from '../data'
 
 export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
-    onRegister: grid => {
+    name: 'columnOrderLock',
+    onLoad: grid => {
         grid.registerAgGridOptions(result => {
             result.options.suppressMovableColumns = !isUnlocked()
         })
@@ -37,7 +38,7 @@ const GridExample = () => {
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), custom: [columnOrderLock] }}
+                modules={[createClientSideRowModelModule(), columnOrderLock]}
                 onReady={grid => { gridRef.current = grid }}
                 onColumnsChanged={columns => setOrder(describeOrder(columns))}
                 height='420px' />
@@ -47,7 +48,7 @@ const GridExample = () => {
 `
 
 export const JUMP_TO_NEWEST_TICKET_CODE = `//\`flashCells\` needs an AG Grid module the grid does not register itself
-const highlightChangesModule: IGridModule = { agGridModules: [HighlightChangesModule] }
+const highlightChangesModule: IGridModule = { name: 'highlightChanges', agGridModules: [HighlightChangesModule], onLoad: () => { } }
 
 const isNewer = (ticket: IRecord, other: IRecord) => dayjs(ticket.getValue('createdon')).isAfter(other.getValue('createdon'))
 
@@ -83,7 +84,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule(), custom: [highlightChangesModule] }}
+                modules={[createClientSideRowModelModule(), createSortingModule(), highlightChangesModule]}
                 enableOptionSetColors
                 onReady={grid => { gridRef.current = grid }}
                 height='400px' />

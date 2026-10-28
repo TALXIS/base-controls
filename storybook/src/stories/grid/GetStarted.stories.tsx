@@ -38,22 +38,22 @@ const createProducts = () => new MemoryDataProvider({
 export const ProductGrid = () => <PcfContextProvider>
     <DatasetControl onLoad={async () => ({ provider: createProducts() })}>
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+            <Grid modules={[createClientSideRowModelModule()]} />
         </DatasetControl.Body>
     </DatasetControl>
 </PcfContextProvider>
 \`\`\`
 
 - **The grid takes no provider prop.** It shows the provider around it: the one a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview) loads, which is the recommended way, as it also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) and load the provider yourself with \`refresh()\`. Without either, the grid throws.
-- **\`modules\` switches features on.** Only \`rowModel\` is required.
+- **\`modules\` switches features on.** Only a row model is required.
 - **\`PcfContextProvider\`** must wrap the grid. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
 
 ## How it fits together
 
 1. **The provider holds the data.** Its columns become the grid's columns, and the records of its current page become the rows. See [**Data**](?path=/docs/grid-data--overview).
 2. **\`colDefs\` shapes the columns**: pin them, link them, add calculated ones, give them commands. See [**Columns**](?path=/docs/grid-columns--overview).
-3. **Modules add the features**, each with its own options, look and service. See [**Modules**](?path=/docs/grid-modules--overview).
-4. **Your code talks to the grid** through \`IGrid\`, which \`onReady\` passes you: \`grid.services.find('sorting')?.sortColumn('price')\`. See [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
+3. **Modules add the features**, each with its own options, look and instance. See [**Modules**](?path=/docs/grid-modules--overview).
+4. **Your code talks to the grid** through \`IGrid\`, which \`onReady\` passes you: \`grid.modules.find('sorting')?.sortColumn('price')\`. See [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
 5. **Everything it draws can be restyled or replaced**, from a cell's colour to the whole cell. See [**Appearance**](?path=/docs/grid-appearance--overview).
 
 Every prop and event of \`<Grid />\` is on [**Props and events**](?path=/docs/grid-props-and-events--overview).

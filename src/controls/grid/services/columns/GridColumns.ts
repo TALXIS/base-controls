@@ -105,7 +105,7 @@ export class GridColumns implements IGridColumnsInternal {
         columnDef.cellRenderer ??= CellEmptyRenderer;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
         columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
-        const editing = this._services.find('editing');
+        const editing = this._services.get('grid').modules.find('editing');
         columnDef.editable ??= !!columnDef.cellEditor && !!editing && ((params: EditableCallbackParams<IRecord>) => editing.isEditorAvailable(params.data, params.colDef));
     }
 
@@ -214,7 +214,7 @@ export class GridColumns implements IGridColumnsInternal {
         }
         const columnName = event.colDef.colId!;
         this.events.dispatchEvent('onCellDoubleClicked', record, columnName);
-        if (this._settings.isNavigationEnabled() && !this._services.find('editing')) {
+        if (this._settings.isNavigationEnabled() && !this._services.get('grid').modules.find('editing')) {
             this._services.get('grid').openRecord({ record: record, reference: record.getNamedReference() });
         }
     }

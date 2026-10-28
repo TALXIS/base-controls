@@ -61,7 +61,8 @@ const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] =
 }
 
 const supportDeskScript: IGridModule = {
-    onRegister: grid => {
+    name: 'supportDeskScript',
+    onLoad: grid => {
         const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('title', () => getRecommendations(record))
         provider.getRecords().forEach(addRecommendations)
         //a reload or a save clears a record's expressions
@@ -74,11 +75,11 @@ const supportDeskScript: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-                custom: [supportDeskScript],
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createLegacyClientApiCompatibilityModule(),
+                supportDeskScript,
+            ]}
             colDefs={{ title: { initialWidth: 380 } }}
             enableOptionSetColors
             height='420px' />
@@ -112,7 +113,8 @@ const addStockScript = (record: IRecord) => {
 }
 
 const stockScript: IGridModule = {
-    onRegister: grid => {
+    name: 'stockScript',
+    onLoad: grid => {
         provider.getRecords().forEach(addStockScript)
         provider.addEventListener('onRecordLoaded', addStockScript)
         grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addStockScript))
@@ -142,12 +144,12 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    editing: createEditingModule({ autoSave: true }),
-                    legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-                    custom: [stockScript],
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createEditingModule({ autoSave: true }),
+                    createLegacyClientApiCompatibilityModule(),
+                    stockScript,
+                ]}
                 colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
                 height='420px' />
         </DatasetControl.Body>
@@ -163,7 +165,8 @@ const addAssigneePlaceholder = (record: IRecord) => record.expressions.ui.setCon
 }))
 
 const triageScript: IGridModule = {
-    onRegister: grid => {
+    name: 'triageScript',
+    onLoad: grid => {
         provider.getRecords().forEach(addAssigneePlaceholder)
         provider.addEventListener('onRecordLoaded', addAssigneePlaceholder)
         grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addAssigneePlaceholder))
@@ -173,12 +176,12 @@ const triageScript: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                editing: createEditingModule({ autoSave: true }),
-                legacyClientApiCompatibility: createLegacyClientApiCompatibilityModule(),
-                custom: [triageScript],
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createEditingModule({ autoSave: true }),
+                createLegacyClientApiCompatibilityModule(),
+                triageScript,
+            ]}
             enableOptionSetColors
             height='400px' />
     </DatasetControl.Body>

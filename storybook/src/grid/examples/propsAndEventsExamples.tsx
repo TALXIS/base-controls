@@ -56,7 +56,7 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid modules={{ rowModel: createClientSideRowModelModule() }} maxVisibleRows={maxVisibleRows} />
+            <Grid modules={[createClientSideRowModelModule()]} maxVisibleRows={maxVisibleRows} />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -74,7 +74,7 @@ const GridExample = () => {
         <div className={styles.container} style={{ height: containerHeight }}>
             <DatasetControl height='100%' onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
-                    <Grid modules={{ rowModel: createClientSideRowModelModule() }} />
+                    <Grid modules={[createClientSideRowModelModule()]} />
                 </DatasetControl.Body>
             </DatasetControl>
         </div>
@@ -135,7 +135,7 @@ const GridExample = () => {
                     <Grid
                         //the modules are read at mount, so auto-save mounts the grid again
                         key={mountCount + String(isAutoSaveOn)}
-                        modules={{ rowModel: createClientSideRowModelModule(), editing: createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), sorting: createSortingModule() }}
+                        modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
                         height='440px'
                         onReady={() => log('onReady')}
                         onDestroyed={() => log('onDestroyed')}
@@ -217,7 +217,7 @@ const GridExample = () => {
             <DatasetControl onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
                     <Grid
-                        modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }}
+                        modules={[createClientSideRowModelModule(), createSortingModule()]}
                         enableNavigation={false}
                         height='480px'
                         onRowClicked={setTicket}

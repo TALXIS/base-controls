@@ -21,7 +21,7 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule(), sorting: createSortingModule() }} />
+            <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createSortingModule()]} />
         </DatasetControl.Body>
     </DatasetControl>
 }

@@ -1838,11 +1838,13 @@ interface IGridEvents {
     onDestroyed: () => void;
 }
 
-/** The running grid: what onReady and onDestroyed hand you, and what a module's onRegister gets. */
+/** The running grid: what onReady and onDestroyed hand you, and what a module's onLoad gets. */
 interface IGrid {
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */
     readonly services: IGridServiceLocator;
+    /** The modules the grid was given, by name. */
+    readonly modules: { get(name: string): any; find(name: string): any; whenAvailable(name: string, callback: (instance: any) => void): void };
     /** A hook over the options AG Grid reads once, when it is created. */
     registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
     /** AG Grid is handed an option again whenever its reference changes. */
@@ -1974,19 +1976,6 @@ interface IGridAggregation {
     getAggregateValueColumnName(record: IRecord, columnName: string): string;
 }
 
-/** The services the modules register, each there only with its module. */
-interface IGridModuleServiceMap {
-    /** There with the editing module. */
-    editing: IGridEditing;
-    aggregation: IGridAggregation;
-    grouping: IGridGrouping;
-    filtering: IGridFiltering;
-    sorting: IGridSorting;
-    rowSelection: IGridRowSelection;
-    /** There in a grid the CheckList draws. */
-    checkList: IGridCheckList;
-}
-
 /** What the store keeps, by id; plain data, so a host can persist it. */
 type IStateDictionary = { [id: string]: unknown };
 
@@ -2000,7 +1989,7 @@ interface IStateStore {
 }
 
 /** Everything the grid is made of. */
-interface IGridServiceMap extends IGridModuleServiceMap {
+interface IGridServiceMap {
     /** AG Grid's own api, there once the grid is ready. */
     gridApi: GridApi;
     /** What the caller asked the grid to be, with its defaults applied. */
@@ -2023,16 +2012,18 @@ interface IGridServiceMap extends IGridModuleServiceMap {
     surfaces: IGridSurfaces;
     /** The fields of the grid's records, saved as the grid saves. */
     fields: IGridFields;
-    rowModel: IGridRowModel;
     grid: IGrid;
 }
 
-type IGridDeferredService = keyof IGridModuleServiceMap | 'gridApi';
+type IGridDeferredService = 'gridApi';
 
 type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
 
 /** Reads a grid service from inside something the grid draws. */
 declare function useGridService<TKey extends keyof IGridServiceMap>(key: TKey): TKey extends IGridDeferredService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey];
+
+/** One of the grid's modules by name, inside anything the grid draws; throws if it was not given. */
+declare function useGridModule(name: string): any;
 
 /** Throws outside Grid.Cell.Root. */
 declare function useGridCell(): IGridCell;
@@ -2097,27 +2088,14 @@ declare const useToastController: typeof import('@fluentui/react-components').us
 
 /** An optional feature a grid can be given. */
 interface IGridModule {
+    /** Unique within the grid; what onLoad returns is registered under it. */
+    name: string;
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
-    /** Registers what the module contributes to the grid. */
-    onRegister?: (grid: IGrid) => void;
-}
-
-/** Read once, at mount. */
-interface IGridModules {
-    rowModel: IGridModule;
-    license?: IGridModule;
-    rowSelection?: IGridModule;
-    cellSelection?: IGridModule;
-    editing?: IGridModule;
-    sorting?: IGridModule;
-    filtering?: IGridModule;
-    grouping?: IGridModule;
-    aggregation?: IGridModule;
-    clipboard?: IGridModule;
-    legacyClientApiCompatibility?: IGridModule;
-    /** Your own modules, ordered against GRID_MODULE_PRIORITY. */
-    custom?: IGridModule[];
+    /** Called once as the grid mounts, before AG Grid exists. */
+    onLoad(grid: IGrid): any;
+    /** Called as the grid tears down. */
+    onDestroy?(instance: any): void;
 }
 
 /** A hook's priority defaults to 0. */
@@ -2934,8 +2912,8 @@ interface IGridEventHandlers {
 }
 
 interface IGridProps extends Partial<IGridEventHandlers> {
-    /** Read once, at mount. */
-    modules: IGridModules;
+    /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
+    modules: IGridModule[];
     /** True by default and read once, at mount. */
     enableNavigation?: boolean;
     /** Read once, at mount. */
@@ -3359,7 +3337,7 @@ declare function createAggregationModule(options?: IAggregationModuleOptions): I
 /** Carries what legacy scripts set on records' fields into the cells. */
 declare function createLegacyClientApiCompatibilityModule(): IGridModule;
 /** Which of the provider's columns carry the label, the order and the completion state. */
-/** What makes the grid a checklist: grid.services.find('checkList'). */
+/** What makes the grid a checklist: grid.modules.find('checkList'). */
 interface IGridCheckList {
     /** The columns the checklist works with. */
     getFieldMapping(): ICheckListFieldMapping;
@@ -3388,14 +3366,11 @@ interface ICheckListLabels {
 
 declare const CHECK_LIST_LABELS: ICheckListLabels;
 
-/** The grid modules that work with a checklist; the others reorder or hide rows, or block dragging. */
-type ICheckListModules = Pick<IGridModules, 'license' | 'editing' | 'rowSelection' | 'clipboard' | 'aggregation' | 'legacyClientApiCompatibility' | 'custom'>;
-
 interface ICheckListProps extends Omit<IGridProps, 'modules' | 'labels'> {
     /** Read once, at mount. */
     fieldMapping: ICheckListFieldMapping;
-    /** Merged over an auto-saving editing module; editing: undefined makes the list read-only. Read once, at mount. */
-    modules?: ICheckListModules;
+    /** Defaults to an auto-saving editing module; a list without editing is read-only. Read once, at mount. */
+    modules?: IGridModule[];
     /** The grid's strings and the checklist's own. Read once, at mount. */
     labels?: Partial<IGridLabels & ICheckListLabels>;
 }
@@ -4071,7 +4046,7 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
 
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount; the task tree and the client-side row model are always added. */
-    modules?: Omit<IGridModules, 'rowModel' | 'grouping' | 'aggregation'>;
+    modules?: IGridModule[];
 }
 
 /** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useEventEmitter } from "@hooks";
 import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { IGridFilteringEvents } from "../../GridFiltering";
 import { FilterCallout } from "../filter-callout/FilterCallout";
 
 /** Shows the filter callout for whichever column this module says has one open. */
 export const FilterCalloutHost = () => {
-    const filtering = useGridService('filtering')!;
+    const filtering = useGridModule('filtering');
     const provider = useGridService('provider');
     const [openColumnName, setOpenColumnName] = useState(filtering.getOpenColumnName());
 

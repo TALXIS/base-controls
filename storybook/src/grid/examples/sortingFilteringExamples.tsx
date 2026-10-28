@@ -4,11 +4,11 @@ import { GridExampleRunner } from '../GridExampleRunner'
 export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createSortingModule(),
+                createFilteringModule(),
+            ]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -34,11 +34,11 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createFilteringModule(),
+                ]}
                 enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>
@@ -108,11 +108,11 @@ const GridExample = () => <DatasetControl onLoadViews={loadViews} stateKey='tick
     </DatasetControl.Header>
     <DatasetControl.Body>
         <Grid
-            modules={{
-                rowModel: createClientSideRowModelModule(),
-                sorting: createSortingModule(),
-                filtering: createFilteringModule(),
-            }}
+            modules={[
+                createClientSideRowModelModule(),
+                createSortingModule(),
+                createFilteringModule(),
+            ]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -148,8 +148,9 @@ const createQueueProvider = () => {
 }
 
 const filterPlaceholdersModule: IGridModule = {
-    onRegister: grid => {
-        grid.services.get('filtering').registerFilterControlParameters((result, { column, control }) => {
+    name: 'filterPlaceholders',
+    onLoad: grid => {
+        grid.modules.get('filtering').registerFilterControlParameters((result, { column, control }) => {
             const placeholder = FILTER_PLACEHOLDERS.get(column.name)
             if (control === 'value' && placeholder) {
                 result.Placeholder = { raw: placeholder }
@@ -164,12 +165,12 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    sorting: createSortingModule(),
-                    filtering: createFilteringModule(),
-                    custom: [filterPlaceholdersModule],
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createSortingModule(),
+                    createFilteringModule(),
+                    filterPlaceholdersModule,
+                ]}
                 enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>

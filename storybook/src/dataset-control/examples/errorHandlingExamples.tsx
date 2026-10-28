@@ -23,7 +23,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -79,7 +79,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={{ rowModel: createClientSideRowModelModule() }} />
+                <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
     </Stack>

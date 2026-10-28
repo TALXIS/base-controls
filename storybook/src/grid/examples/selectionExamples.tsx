@@ -45,12 +45,12 @@ const GridExample = () => {
         {hasSelection && <MessageBar>{selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected, {selectedHours} hours in all.</MessageBar>}
         <DatasetControl.Body>
             <Grid
-                modules={{
-                    rowModel: createClientSideRowModelModule(),
-                    editing: createEditingModule({ autoSave: true }),
-                    rowSelection: createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
-                    sorting: createSortingModule(),
-                }}
+                modules={[
+                    createClientSideRowModelModule(),
+                    createEditingModule({ autoSave: true }),
+                    createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
+                    createSortingModule(),
+                ]}
                 enableOptionSetColors
                 onReady={grid => gridRef.current = grid}
                 height='440px' />
@@ -99,10 +99,10 @@ const GridExample = () => {
             <DatasetControl onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
                     <Grid
-                        modules={{
-                            rowModel: createClientSideRowModelModule(),
-                            rowSelection: createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
-                        }}
+                        modules={[
+                            createClientSideRowModelModule(),
+                            createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
+                        ]}
                         height='440px' />
                 </DatasetControl.Body>
             </DatasetControl>
@@ -119,11 +119,11 @@ export const COPY_PRICE_LIST_CODE = `const GridExample = () => {
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
                 <Grid
-                    modules={{
-                        rowModel: createClientSideRowModelModule(),
-                        cellSelection: createCellSelectionModule(),
-                        clipboard: createClipboardModule({ copyHeadersToClipboard: true }),
-                    }}
+                    modules={[
+                        createClientSideRowModelModule(),
+                        createCellSelectionModule(),
+                        createClipboardModule({ copyHeadersToClipboard: true }),
+                    ]}
                     height='360px' />
             </DatasetControl.Body>
         </DatasetControl>

@@ -22,7 +22,8 @@ import { IGridModule } from '@talxis/base-controls'
 
 //screen readers read the rows in the order the page holds them
 export const screenReaderModule: IGridModule = {
-    onRegister: grid => {
+    name: 'screenReader',
+    onLoad: grid => {
         grid.registerAgGridInitialOptions(result => {
             result.options.ensureDomOrder = true
         })
@@ -48,7 +49,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 | From | Reach it with |
 |---|---|
-| A module's \`onRegister\` | \`grid.services.whenAvailable('gridApi', gridApi => ...)\`. \`find('gridApi')\` is still \`undefined\` there. |
+| A module's \`onLoad\` | \`grid.services.whenAvailable('gridApi', gridApi => ...)\`. \`find('gridApi')\` is still \`undefined\` there. |
 | Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
@@ -88,7 +89,9 @@ import { CsvExportModule } from 'ag-grid-community'
 import { IGrid, IGridModule } from '@talxis/base-controls'
 
 export const csvExportModule: IGridModule = {
+    name: 'csvExport',
     agGridModules: [CsvExportModule],
+    onLoad: () => { },
 }
 
 export const exportQueue = (grid: IGrid) => grid.services.find('gridApi')?.exportDataAsCsv({ fileName: 'ticket-queue.csv' })

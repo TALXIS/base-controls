@@ -11,7 +11,7 @@ import { CellLoading } from "../../../../components/cells/loading/CellLoading";
 import { CellControl } from "../../../../components/cells/control/CellControl";
 import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { GroupCount } from "../group-count/GroupCount";
 import { GroupingUi } from "../ui";
 import { IGroupCellComponents } from "./components";
@@ -25,7 +25,7 @@ export interface IGroupCellProps extends ICellRendererParams<IRecord> {
 /** What a group row draws in its grouped column: its value and its chevron. */
 export const GroupCell = (props: IGroupCellProps) => {
     //the grouping module is registered wherever this cell draws
-    const grouping = useGridService('grouping')!;
+    const grouping = useGridModule('grouping');
     const node = props.node;
     const { rerender } = useRerender();
     const components = { ...grouping.components.groupCell, ...props.components };

@@ -3,45 +3,26 @@ import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@ta
 import type { IGridColDefOverride } from "./services/columns/colDef";
 import { IGridLabels } from "./labels";
 import type { IGrid } from "./services/runtime";
-import type { IGridServiceMap } from "./services/interfaces";
+import type { IServiceLocator } from "@utils";
 import type { IGridComponents } from "./components/components";
 import type { IGridRowSettings } from "./services/rows";
 
+/** What the grid's modules load, by module name; each module adds its own entry. */
+export interface IGridModuleMap { }
+
 /** An optional feature a grid can be given. */
-export interface IGridModule<TServices extends IGridServiceMap = IGridServiceMap> {
+export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridModuleMap> {
+    /** Unique within the grid; what `onLoad` returns is registered under it. */
+    name: TName;
     agGridModules?: Module[];
-    /** Registers what the module contributes to the grid. */
-    onRegister?(grid: IGrid<TServices>): void;
+    /** Called once as the grid mounts, before AG Grid exists. */
+    onLoad(grid: IGrid): IGridModuleMap[TName];
+    /** Called as the grid tears down. */
+    onDestroy?(instance: IGridModuleMap[TName]): void;
 }
 
-/** The modules a grid was given. */
-export interface IGridModules {
-    rowModel: IGridModule;
-    /** The AG Grid enterprise licence: {@link createLicenseModule}. */
-    license?: IGridModule;
-    /** Selecting rows: {@link createRowSelectionModule}. */
-    rowSelection?: IGridModule;
-    /** Highlighting cells by dragging across them: {@link createCellSelectionModule}. */
-    cellSelection?: IGridModule;
-    /** Editing the cells, and saving what is edited: {@link createEditingModule}. */
-    editing?: IGridModule;
-    /** Sorting by a column: {@link createSortingModule}. */
-    sorting?: IGridModule;
-    /** Filtering by a column: {@link createFilteringModule}. */
-    filtering?: IGridModule;
-    /** Grouping the rows by a column: {@link createGroupingModule}. */
-    grouping?: IGridModule;
-    /** Totals under the rows: {@link createAggregationModule}. */
-    aggregation?: IGridModule;
-    /** Copying and pasting cells: {@link createClipboardModule}. */
-    clipboard?: IGridModule;
-    /** What legacy scripts set on a record's fields: {@link createLegacyClientApiCompatibilityModule}. */
-    legacyClientApiCompatibility?: IGridModule;
-    /** Keeping other grids' AG Grid styles off this one: {@link createAgGridStyleIsolationModule}. */
-    agGridStyleIsolation?: IGridModule;
-    /** The caller's own modules, ordered against {@link GRID_MODULE_PRIORITY}. */
-    custom?: IGridModule[];
-}
+/** Where the grid's loaded modules are found, by name. */
+export type IGridModuleLocator = Pick<IServiceLocator<IGridModuleMap>, 'get' | 'find' | 'whenAvailable'>;
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
 export interface IGridOpenRecordParams {
@@ -79,8 +60,8 @@ export interface IGridEventHandlers {
 
 /** The grid reads its provider from `DataProviderContext`, once, at mount. */
 export interface IGridProps extends Partial<IGridEventHandlers> {
-    /** What this grid is made of; read once, at mount. */
-    modules: IGridModules;
+    /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
+    modules: IGridModule[];
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;
     /** Whether option sets show their colours; read at mount, then control parameter hooks. */

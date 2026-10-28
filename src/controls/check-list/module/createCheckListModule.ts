@@ -1,7 +1,7 @@
 import { PinnedRowModule, RowDragModule } from "ag-grid-community";
 import { IGridModule } from "../../grid/interfaces";
 import { ICheckListLabels } from "../labels";
-import { GridCheckList, ICheckListFieldMapping, ICheckListServiceMap } from "./GridCheckList";
+import { GridCheckList, ICheckListFieldMapping } from "./GridCheckList";
 
 export interface ICheckListModuleOptions {
     fieldMapping: ICheckListFieldMapping;
@@ -9,11 +9,12 @@ export interface ICheckListModuleOptions {
     labels?: Partial<ICheckListLabels>;
 }
 
+export interface ICheckListModule extends IGridModule<'checkList'> { }
+
 /** Builds the module that makes a grid on the client-side row model a checklist. */
-export const createCheckListModule = (options: ICheckListModuleOptions): IGridModule<ICheckListServiceMap> => ({
+export const createCheckListModule = (options: ICheckListModuleOptions): ICheckListModule => ({
+    name: 'checkList',
     agGridModules: [RowDragModule, PinnedRowModule],
-    onRegister: grid => {
-        const checkList = new GridCheckList({ grid, fieldMapping: options.fieldMapping, labels: options.labels });
-        grid.services.register('checkList', () => checkList);
-    },
+    onLoad: grid => new GridCheckList({ grid, fieldMapping: options.fieldMapping, labels: options.labels }),
+    onDestroy: checkList => checkList.destroy(),
 });

@@ -11,13 +11,16 @@ export interface IRowSelectionModuleOptions {
     onSelectionChanged?: (selectedRecordIds: string[]) => void;
 }
 
+export interface IRowSelectionModule extends IGridModule<'rowSelection'> { }
+
 /** Builds the module that lets rows be selected. */
-export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IGridModule => ({
+export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IRowSelectionModule => ({
+    name: 'rowSelection',
     agGridModules: [RowSelectionModule],
-    onRegister: ({ services: gridServices }) => {
+    onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridRowSelectionServiceMap>();
         services.register('gridServices', () => gridServices);
-        const selection = new GridRowSelection({ services, mode: options.mode, onSelectionChanged: options.onSelectionChanged });
-        gridServices.register('rowSelection', () => selection);
+        return new GridRowSelection({ services, mode: options.mode, onSelectionChanged: options.onSelectionChanged });
     },
+    onDestroy: selection => selection.destroy(),
 });

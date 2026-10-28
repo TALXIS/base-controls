@@ -30,6 +30,8 @@ export interface IGridLegacyClientApiCompatibility {
     getOpenTarget(): Target | undefined;
     openNotification(notification: IAddControlNotificationOptions, target?: Target): void;
     closeNotification(): void;
+    /** Called as the grid tears down. */
+    destroy(): void;
 }
 
 /** What the legacy client API sets on a record's field, handed to the cells hooks. */
@@ -44,7 +46,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         const cells = parameters.services.get('cells');
         parameters.services.get('surfaces').registerSurface(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may register after this one
-        parameters.services.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
+        parameters.services.get('grid').modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
         cells.registerCellLoading(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellTheme(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellCommands(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
@@ -52,7 +54,6 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         cells.registerControlParameters(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
         parameters.services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
-        parameters.services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public getOpenNotification(): IAddControlNotificationOptions | undefined {
@@ -85,9 +86,9 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     };
 
     //the provider outlives the grid
-    private _onDestroyed = (): void => {
+    public destroy(): void {
         this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
-    };
+    }
 
     private get _provider() {
         return this._services.get('provider');

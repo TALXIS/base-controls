@@ -113,7 +113,7 @@ export class Dependencies implements IDependencies {
             errorMessage: () => this._labels.getLocalizedString('loadDependenciesFailed'),
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
     }
 
     public getDependencies(): ITaskDependency[] {
@@ -289,8 +289,8 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
-        grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
+        this._unregisters.push(grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20));
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

@@ -1,5 +1,5 @@
 import type { IEventSubscriber } from "@utils";
-import type { IGridEventHandlers, IGridOpenRecordParams } from "../../interfaces";
+import type { IGridEventHandlers, IGridModuleLocator, IGridOpenRecordParams } from "../../interfaces";
 import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
 
@@ -9,12 +9,14 @@ export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
     onDestroyed: () => void;
 }
 
-/** The running grid: what `onReady` and `onDestroyed` hand you, and what a module's `onRegister` gets. */
+/** The running grid: what `onReady` and `onDestroyed` hand you, and what a module's `onLoad` gets. */
 export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
     /** Subscribe to the grid's events. */
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */
     readonly services: IGridServiceLocator<TServices>;
+    /** The modules the grid was given, by name. */
+    readonly modules: IGridModuleLocator;
     /**
      * Registers a hook over the options AG Grid reads only once, when it is created.
      *

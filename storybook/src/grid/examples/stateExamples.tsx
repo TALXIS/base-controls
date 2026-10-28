@@ -24,7 +24,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 key={mountCount}
-                modules={{ rowModel: createClientSideRowModelModule(), grouping: createGroupingModule({ defaultExpandedLevel: 0 }) }}
+                modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0 })]}
                 stateKey='ticket-queue'
                 height='360px' />
         </DatasetControl.Body>

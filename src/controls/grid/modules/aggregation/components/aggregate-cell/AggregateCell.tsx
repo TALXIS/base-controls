@@ -12,7 +12,7 @@ import { CellControl } from "../../../../components/cells/control/CellControl";
 import { CellColumnControl } from "../../../../components/cells/column-control/CellColumnControl";
 import { CellCommands } from "../../../../components/cells/commands/CellCommands";
 import { CellColumnControlComponents } from "../../../../components/cells/column-control/components";
-import { useGridService } from "../../../../useGridService";
+import { useGridModule } from "../../../../useGridModule";
 import { IAggregateCellComponents } from "./components";
 
 //a total reads from the right whichever way the column it totals reads
@@ -27,7 +27,7 @@ export interface IAggregateCellProps extends ICellRendererParams<IRecord> {
 /** What a column that totals something draws in a group's row: what that group adds up to. */
 export const AggregateCell = (props: IAggregateCellProps) => {
     //the aggregation module is registered wherever this cell draws
-    const aggregation = useGridService('aggregation')!;
+    const aggregation = useGridModule('aggregation');
     const components = { ...aggregation.components.aggregateCell, ...props.components };
     const onRenderControl = components.columnControl?.onRenderControl ?? CellColumnControlComponents.onRenderControl;
     //the selector draws this only for a group row, so the record is there

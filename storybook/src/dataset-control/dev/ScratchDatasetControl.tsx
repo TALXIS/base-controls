@@ -49,11 +49,11 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
     const [mountKey, setMountKey] = React.useState(0)
     const [isThrowing, setIsThrowing] = React.useState(false)
     const failNextLoadRef = React.useRef(false)
-    const modules = React.useMemo(() => ({
-        rowModel: createClientSideRowModelModule(),
-        rowSelection: createRowSelectionModule({ mode: 'multiple' }),
-        sorting: createSortingModule(),
-    }), [])
+    const modules = React.useMemo(() => [
+        createClientSideRowModelModule(),
+        createRowSelectionModule({ mode: 'multiple' }),
+        createSortingModule(),
+    ], [])
 
     //parked on window so the control can be poked at from the browser console
     const onMounted = (control: IDatasetControl) => Object.assign(window, { datasetControl: control })

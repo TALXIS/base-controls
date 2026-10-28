@@ -118,7 +118,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             errorMessage: () => this._labels.getLocalizedString('loadLookupManyFailed'),
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        taskRuntime.registerGridModule({ onRegister: grid => this._onGridRegistered(grid) });
+        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
     }
 
     public getColumn(columnName: string): TColumn | undefined {
@@ -235,9 +235,9 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         }
     };
 
-    private _onGridRegistered(grid: IGrid<ITaskGridServiceMap>): void {
+    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
         //after the editing module, whose editor this replaces
-        grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        this._unregisters.push(grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20));
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
