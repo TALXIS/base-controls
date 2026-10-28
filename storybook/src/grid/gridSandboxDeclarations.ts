@@ -4165,15 +4165,15 @@ interface IDataverseLookupManyColumn extends ILookupManyColumn {
     select?: string;
     /** Set when the relationship goes through an intersection entity of your own. */
     customIntersection?: { navigationPropertyName: string };
-    /** Liquid FetchXML over task, project and currentRecord for the records offered; read-only without it. */
+    /** Liquid FetchXML over task, project and hostRecord for the records offered; read-only without it. */
     fetchXml?: string;
 }
 
 /** Lookup-many columns of Dataverse tasks, loaded and saved through their relationships. */
 declare const createDataverseLookupManyModule: (parameters: {
     columns: { [columnName: string]: IDataverseLookupManyColumn };
-    /** The record the grid sits on, as currentRecord in a column's FetchXML. */
-    sourceRecord?: any;
+    /** The record the grid sits on, as hostRecord in a column's FetchXML. */
+    hostRecord?: any;
     labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 

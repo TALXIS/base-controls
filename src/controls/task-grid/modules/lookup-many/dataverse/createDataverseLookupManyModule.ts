@@ -1,4 +1,4 @@
-import type { ISingleRecord } from "@talxis/client-libraries";
+import type { IDataverseHostRecord } from "../../../data-sources/dataverse/DataverseTaskStore";
 import { createLookupManyModule, ILookupManyModule } from "../createLookupManyModule";
 import type { ILookupManyColumn, ILookupManyParameters } from "../LookupMany";
 import { DataverseLookupManyStore } from "./DataverseLookupManyStore";
@@ -14,17 +14,17 @@ export interface IDataverseLookupManyColumn extends ILookupManyColumn {
         /** The intersection entity's navigation property to the related record. */
         navigationPropertyName: string;
     };
-    /** Liquid FetchXML over `task`, `project` and `currentRecord` for the records offered; read-only without it. */
+    /** Liquid FetchXML over `task`, `project` and `hostRecord` for the records offered; read-only without it. */
     fetchXml?: string;
 }
 
 export interface IDataverseLookupManyModuleParameters extends Omit<ILookupManyParameters<IDataverseLookupManyColumn>, 'onCreateStore'> {
-    /** The record the grid sits on, as `currentRecord` in a column's FetchXML. */
-    sourceRecord?: ISingleRecord;
+    /** The record the grid sits on, as `hostRecord` in a column's FetchXML. */
+    hostRecord?: IDataverseHostRecord;
 }
 
 /** Lookup-many columns of Dataverse tasks, loaded and saved through their relationships. */
 export const createDataverseLookupManyModule = (parameters: IDataverseLookupManyModuleParameters): ILookupManyModule => {
-    const { sourceRecord, ...moduleParameters } = parameters;
-    return createLookupManyModule({ ...moduleParameters, onCreateStore: taskRuntime => new DataverseLookupManyStore({ taskRuntime, columns: parameters.columns, sourceRecord }) });
+    const { hostRecord, ...moduleParameters } = parameters;
+    return createLookupManyModule({ ...moduleParameters, onCreateStore: taskRuntime => new DataverseLookupManyStore({ taskRuntime, columns: parameters.columns, hostRecord }) });
 };

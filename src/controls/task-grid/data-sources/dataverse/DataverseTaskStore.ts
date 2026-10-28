@@ -1,4 +1,4 @@
-import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, ISingleRecord, Sanitizer } from "@talxis/client-libraries";
+import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { IDeleteTasksResult, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
@@ -22,12 +22,19 @@ export interface IDataverseTaskFormOptions {
     onGetParameters?: (operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormParameters) => IDataverseTaskFormParameters;
 }
 
+/** The record the grid sits on, such as the one the form shows. */
+export interface IDataverseHostRecord {
+    entityName: string;
+    /** None while the record is unsaved. */
+    id?: string;
+}
+
 export interface IDataverseTaskStoreParameters {
     taskRuntime: ITaskRuntime;
-    /** Selects the tasks, rendered with Liquid over `project` and `currentRecord`. */
+    /** Selects the tasks, rendered with Liquid over `project` and `hostRecord`. */
     fetchXml: string;
-    /** The record the grid sits on, as `currentRecord` in the FetchXML. */
-    sourceRecord?: ISingleRecord;
+    /** The record the grid sits on, as `hostRecord` in the FetchXML. */
+    hostRecord?: IDataverseHostRecord;
     form?: IDataverseTaskFormOptions;
     /** Values every new task starts with, by column. */
     onGetNewTaskDefaults?: (params: ITaskCreateParams) => IRawRecord | Promise<IRawRecord>;
@@ -141,10 +148,10 @@ export class DataverseTaskStore implements ITaskStore {
 
     protected _renderFetchXml(): string {
         const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
-        const sourceRecord = this._parameters.sourceRecord;
+        const hostRecord = this._parameters.hostRecord;
         return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
             project: project && { id: project.getId(), name: project.getName(), entityName: project.getEntityName(), ...project.getData() as object },
-            currentRecord: sourceRecord && { id: sourceRecord.getNamedReference().id.guid, ...sourceRecord.getRawData() },
+            hostRecord: hostRecord && { id: hostRecord.id, entityName: hostRecord.entityName },
         });
     }
 

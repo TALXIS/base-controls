@@ -1,8 +1,9 @@
-import { FetchXmlDataProvider, IDataProvider, IEntityReference, IRawRecord, ISingleRecord } from "@talxis/client-libraries";
+import { FetchXmlDataProvider, IDataProvider, IEntityReference, IRawRecord } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskDataProvider } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
+import type { IDataverseHostRecord } from "../../../data-sources/dataverse/DataverseTaskStore";
 import type { ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
 import type { IDataverseLookupManyColumn } from "./createDataverseLookupManyModule";
 
@@ -10,8 +11,8 @@ export interface IDataverseLookupManyStoreParameters {
     taskRuntime: ITaskRuntime;
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: IDataverseLookupManyColumn };
-    /** The record the grid sits on, as `currentRecord` in a column's FetchXML. */
-    sourceRecord?: ISingleRecord;
+    /** The record the grid sits on, as `hostRecord` in a column's FetchXML. */
+    hostRecord?: IDataverseHostRecord;
 }
 
 type Reference = IEntityReference<IRawRecord & { __intersectionId?: string }>;
@@ -38,7 +39,7 @@ const LIQUID = new Liquid({ outputEscape: 'escape' });
 export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLookupManyColumn> {
     private _taskRuntime: ITaskRuntime;
     private _columns: { [columnName: string]: IDataverseLookupManyColumn };
-    private _sourceRecord?: ISingleRecord;
+    private _hostRecord?: IDataverseHostRecord;
     private _resolvedColumns = new Map<string, IResolvedColumn>();
     //keyed by task id and column name, what was last loaded or saved, to diff a save against
     private _savedValues = new Map<string, Reference[]>();
@@ -46,7 +47,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     constructor(parameters: IDataverseLookupManyStoreParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._columns = parameters.columns;
-        this._sourceRecord = parameters.sourceRecord;
+        this._hostRecord = parameters.hostRecord;
     }
 
     public async onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
@@ -93,7 +94,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
             fetchXml: LIQUID.parseAndRenderSync(settings.fetchXml, {
                 task: record ? { id: record.getRecordId(), ...record.getRawData() } : {},
                 project: { id: project?.getId(), ...project?.getData() as object },
-                currentRecord: { id: this._sourceRecord?.getRecordId(), ...this._sourceRecord?.getRawData() },
+                hostRecord: { id: this._hostRecord?.id, entityName: this._hostRecord?.entityName },
             }),
         });
     }
