@@ -44,7 +44,7 @@ export interface ITaskRuntimeEvents {
 export interface ITaskExecuteLoading {
     /** Defaults to `true`; `false` for a run in the background. */
     show?: boolean;
-    /** Shown in the grid's loading overlay. */
+    /** Shown in the control's loading overlay. */
     message?: string;
 }
 
@@ -64,7 +64,7 @@ export interface ITaskExecuteOptions {
 export interface ITaskRuntime {
     readonly services: IServiceLocator<ITaskRuntimeServiceMap>;
     readonly events: IEventSubscriber<ITaskRuntimeEvents>;
-    /** Every task action, run through the store with the grid loading and its error shown. */
+    /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
     /** Calls `onLoad`, then initializes and registers the provider it returns. */
     load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
@@ -82,7 +82,7 @@ export interface ITaskRuntime {
     /** Adds a grid module to the mount's `TaskGrid`; a task module calls it in its `onLoad`. */
     registerGridModule(module: IGridModule<ITaskGridServiceMap>): void;
     getGridModules(): IGridModule<ITaskGridServiceMap>[];
-    /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
+    /** Runs the operation under the control's loading overlay, and shows its failure once in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     /**

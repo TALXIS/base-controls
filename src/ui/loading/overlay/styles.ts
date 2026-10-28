@@ -2,7 +2,6 @@ import { AnimationStyles, ITheme, mergeStyleSets } from "@fluentui/react";
 
 export const getLoadingOverlayStyles = (theme: ITheme) => mergeStyleSets({
     overlay: {
-        ...AnimationStyles.fadeIn200,
         //the largest z-index browsers allow
         zIndex: 2147483647,
         display: 'flex',

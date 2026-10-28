@@ -4,7 +4,7 @@ import type { ICreateTaskOptions, IEditTasksResult, ITaskDataProvider, ITaskMove
 import type { ITaskGridLabels } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 
-/** The task actions, each run with the grid loading and its error shown. */
+/** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
     /** @returns The created task, or `null` when creation is off or the user cancelled. */
     create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
@@ -18,7 +18,7 @@ export interface ITaskActions {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
-/** Runs the provider's task actions with the grid loading, their errors shown, and what the user sees around them. */
+/** Runs the provider's task actions under the loading overlay, their errors shown, and what the user sees around them. */
 export class TaskActions implements ITaskActions {
     private _runtime: ITaskRuntime;
 
