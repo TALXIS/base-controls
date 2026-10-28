@@ -108,6 +108,8 @@ export interface IDatasetControl<TData = unknown> {
     getProvider(): IDataProvider | undefined;
     /** The views of this mount, from `onLoadViews`; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
+    /** What `onLoadDependencies` loaded; there from the first module's `onLoad` on. */
+    getDependencies<TDependencies>(): TDependencies;
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */

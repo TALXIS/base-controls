@@ -63,6 +63,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _isLoadingView = false;
     private _isDestroyed = false;
     private _error?: unknown;
+    private _dependencies?: unknown;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
         const props = parameters.onGetProps();
@@ -98,6 +99,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getViews(): IDatasetControlView[] {
         return this._views;
+    }
+
+    public getDependencies<TDependencies>(): TDependencies {
+        return this._dependencies as TDependencies;
     }
 
     public getViewId(): string | undefined {
@@ -186,6 +191,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         let viewId: string | undefined;
         let view: IDatasetControlResolvedView | undefined;
         try {
+            this._dependencies = await this._onGetProps().onLoadDependencies?.();
             await this._loadModules();
             //a copy: the hooks change it in place
             const views = [...await this._onGetProps().onLoadViews?.() ?? []];

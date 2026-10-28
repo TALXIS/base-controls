@@ -8,6 +8,8 @@ import { DatasetControlMount } from "./DatasetControlMount";
 
 /** Props for `DatasetControl`. */
 export interface IDatasetControlProps<TData = unknown> {
+    /** Loads what the modules and `onLoad` read through `getDependencies()`; awaited first on every mount. */
+    onLoadDependencies?: () => Promise<unknown>;
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** The views to switch between; called before `onLoad` on every mount. */

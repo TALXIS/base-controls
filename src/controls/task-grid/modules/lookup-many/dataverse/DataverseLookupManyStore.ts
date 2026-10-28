@@ -94,7 +94,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
             fetchXml: LIQUID.parseAndRenderSync(settings.fetchXml, {
                 task: record ? { id: record.getRecordId(), ...record.getRawData() } : {},
                 project: { id: project?.getId(), ...project?.getData() as object },
-                hostRecord: { id: this._hostRecord?.id, entityName: this._hostRecord?.entityName },
+                hostRecord: { id: this._hostRecord?.id, entityName: this._hostRecord?.entityName, ...this._hostRecord?.data },
             }),
         });
     }

@@ -27,6 +27,8 @@ export interface IDataverseHostRecord {
     entityName: string;
     /** None while the record is unsaved. */
     id?: string;
+    /** The record's columns, for the templates. */
+    data?: IRawRecord;
 }
 
 export interface IDataverseTaskStoreParameters {
@@ -151,7 +153,7 @@ export class DataverseTaskStore implements ITaskStore {
         const hostRecord = this._parameters.hostRecord;
         return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
             project: project && { id: project.getId(), name: project.getName(), entityName: project.getEntityName(), ...project.getData() as object },
-            hostRecord: hostRecord && { id: hostRecord.id, entityName: hostRecord.entityName },
+            hostRecord: hostRecord && { id: hostRecord.id, entityName: hostRecord.entityName, ...hostRecord.data },
         });
     }
 

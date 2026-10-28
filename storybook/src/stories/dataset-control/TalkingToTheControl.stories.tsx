@@ -37,6 +37,7 @@ const controlRef = React.useRef<IDatasetControl>()
 | \`reload()\` | Loads the views and the view shown again, on a new provider. |
 | \`retry()\` | Runs the load that failed again. |
 | \`getViews()\` | The views as listed for this mount. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`getDependencies()\` | What \`onLoadDependencies\` loaded for this mount, typed by the caller: \`getDependencies<IMyDependencies>()\`. |
 | \`getViewId()\` | The view shown. |
 | \`getView()\` | The view shown, as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown. Inside the control, \`useDataProvider()\` returns it too. |

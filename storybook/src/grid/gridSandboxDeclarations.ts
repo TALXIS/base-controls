@@ -3714,6 +3714,8 @@ interface IDatasetControl<TData = unknown> {
     getProvider(): IDataProvider | undefined;
     /** The views of this mount, from onLoadViews; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
+    /** What onLoadDependencies loaded; there from the first module's onLoad on. */
+    getDependencies<TDependencies>(): TDependencies;
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
@@ -3731,6 +3733,8 @@ interface IDatasetControl<TData = unknown> {
 }
 
 interface IDatasetControlProps<TData = unknown> {
+    /** Loads what the modules and onLoad read through getDependencies(); awaited first on every mount. */
+    onLoadDependencies?: () => Promise<unknown>;
     /** The control's modules, each with a unique name; read on every mount. */
     modules?: IDatasetControlModule[];
     /** The views to switch between; called before onLoad on every mount. */
