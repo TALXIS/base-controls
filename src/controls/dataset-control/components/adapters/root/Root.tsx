@@ -43,7 +43,6 @@ export interface IDatasetControlProps<TData = unknown> {
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
 export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
     const stateStore = useStateStore();
-    props.
     const state = useMemo(() => new DatasetControlState({ store: props.stateKey ? stateStore.scope(props.stateKey) : new StateStore() }), []);
     //React keys can't be symbols
     const [mountKey, setMountKey] = useState(() => crypto.randomUUID());

@@ -15,6 +15,8 @@ const DROP_INTO_ON_HOVER_MS = 400;
 const EXPAND_ON_HOVER_MS = 700;
 //AG Grid's default slide trails behind the pointer
 const ROW_SLIDE_MS = 120;
+//a diagonal drag drifts sideways by about an indent
+const LEVEL_STEP_PX = LEVEL_INDENT * 2;
 
 interface IDragStart {
     record: IRecord;
@@ -22,6 +24,8 @@ interface IDragStart {
     level: number;
     pointerLevel: number;
 }
+
+type GapDrop = IsRowValidDropPositionResult<IRecord> | IRowNode<IRecord>;
 
 interface IGap {
     previous?: IRowNode<IRecord>;
@@ -42,6 +46,8 @@ export class TaskDragging {
     private _isEditing = false;
     private _dragStart?: IDragStart;
     private _dropInto?: IRowNode<IRecord>;
+    //where a release over the middle of a row lands, until that row becomes the drop target
+    private _midRowDrop?: GapDrop;
     private _hoveredRow?: IRowNode<IRecord>;
     private _dropIntoTimer?: number;
     private _expandTimer?: number;
@@ -134,8 +140,10 @@ export class TaskDragging {
         const isOverTask = !!over && !this._isWithin(over, dragged) && params.pointerPos === 'inside';
         this._setHoveredRow(isOverTask ? over : undefined);
         if (isOverTask) {
+            this._midRowDrop = this._getGapDrop(this._getGap(params, dragged), params);
             return { rows: [], highlight: false };
         }
+        this._midRowDrop = undefined;
         const result = this._getGapDrop(this._getGap(params, dragged), params);
         this._setDropInto(result && 'id' in result ? result : undefined);
         if (!result) {
@@ -165,7 +173,7 @@ export class TaskDragging {
     }
 
     //a gap allows only the levels that keep the rows around it where they are
-    private _getGapDrop({ previous, next }: IGap, params: IsRowValidDropPositionParams<IRecord>): IsRowValidDropPositionResult<IRecord> | IRowNode<IRecord> | undefined {
+    private _getGapDrop({ previous, next }: IGap, params: IsRowValidDropPositionParams<IRecord>): GapDrop | undefined {
         if (!previous) {
             return next && { target: next, position: 'above', newParent: params.rootNode };
         }
@@ -191,8 +199,8 @@ export class TaskDragging {
         if (!start || pointerX === undefined) {
             return params.source.level;
         }
-        //the level changes only a full indent away from the current one, so drift does not move it
-        const steps = start.level + (pointerX - start.pointerX) / LEVEL_INDENT;
+        //the level changes only a full step away from the current one, so drift does not move it
+        const steps = start.level + (pointerX - start.pointerX) / LEVEL_STEP_PX;
         if (Math.abs(steps - start.pointerLevel) >= 1) {
             start.pointerLevel = steps > start.pointerLevel ? Math.floor(steps) : Math.ceil(steps);
         }
@@ -312,9 +320,10 @@ export class TaskDragging {
     //fired before AG Grid applies the drop
     private _onRowDragEnd = (event: RowDragEndEvent<IRecord>): void => {
         const dropInto = this._dropInto;
+        const midRowDrop = this._midRowDrop;
         this._endDrag();
         queueMicrotask(async () => {
-            await (dropInto ? this._moveInto(event.node, dropInto) : this._moveDroppedRow(event.node));
+            await (dropInto ? this._moveInto(event.node, dropInto) : midRowDrop ? this._moveToGap(event.node, midRowDrop) : this._moveDroppedRow(event.node));
             this._stopAnimating();
         });
     };
@@ -323,7 +332,7 @@ export class TaskDragging {
     private _restoreDraggedRow = (): void => {
         const start = this._endDrag();
         if (start) {
-            this._restoreRows(start.record);
+            this._syncRows(start.record);
             this._stopAnimating();
         }
     };
@@ -331,6 +340,7 @@ export class TaskDragging {
     private _endDrag(): IDragStart | undefined {
         const start = this._dragStart;
         this._dragStart = undefined;
+        this._midRowDrop = undefined;
         this._setHoveredRow(undefined);
         this._setDropInto(undefined);
         return start;
@@ -353,7 +363,22 @@ export class TaskDragging {
     private async _moveInto(node: IRowNode<IRecord>, parent: IRowNode<IRecord>): Promise<void> {
         if (node.data && parent.data) {
             await this._moveTask(node.data, parent.data.getRecordId(), 'child');
+            //AG Grid left the row where it was
+            this._syncRows(node.data);
         }
+    }
+
+    private async _moveToGap(node: IRowNode<IRecord>, drop: GapDrop): Promise<void> {
+        if ('id' in drop) {
+            return this._moveInto(node, drop);
+        }
+        const target = drop.target?.data;
+        if (!node.data || !target || drop.position === 'none' || this._isInPlace(drop, node)) {
+            return;
+        }
+        await this._moveTask(node.data, target.getRecordId(), drop.position === 'inside' ? 'child' : drop.position!);
+        //AG Grid left the row where it was
+        this._syncRows(node.data);
     }
 
     private async _moveDroppedRow(node: IRowNode<IRecord>): Promise<void> {
@@ -378,7 +403,7 @@ export class TaskDragging {
             : parent ? [parent.getRecordId(), 'child']
             : undefined;
         if (!target) {
-            this._restoreRows(record);
+            this._syncRows(record);
             return;
         }
         await this._moveTask(record, ...target);
@@ -388,11 +413,11 @@ export class TaskDragging {
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
         try {
             if (!this._canMoveTask(record.getRecordId()) || !await this._taskRuntime.tasks.move(record.getRecordId(), targetId, position)) {
-                this._restoreRows(record);
+                this._syncRows(record);
             }
         }
         catch {
-            this._restoreRows(record);
+            this._syncRows(record);
         }
     }
 
@@ -410,7 +435,7 @@ export class TaskDragging {
     }
 
     //AG Grid reads a row's path again only when told the row was updated
-    private _restoreRows(record: IRecord): void {
+    private _syncRows(record: IRecord): void {
         const gridApi = this._grid.services.find('gridApi');
         const subtree = [record, ...this._provider.getRecordTree().structure.getDescendants(record.getRecordId())];
         gridApi?.applyTransaction({ update: subtree.filter(task => gridApi.getRowNode(task.getRecordId())) });
