@@ -2,14 +2,14 @@ import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
 import type { GanttDurationHook } from "../../schedule/GanttSchedule";
-import { GANTT_NON_WORKING_DAYS_LABELS, IGanttNonWorkingDaysLabels } from "./labels";
+import { GANTT_NON_WORKING_DAYS_LABELS } from "./labels";
 import { setScaleIgnores } from "./scaleIgnores";
 import { GANTT_NON_WORKING_DAY_CLASS } from "./classNames";
 import { getGanttNonWorkingDaysStyles } from "./styles";
@@ -54,7 +54,6 @@ export interface IGanttNonWorkingDaysParameters<TData = { [key: string]: unknown
     isVisibleByDefault?: boolean;
     onCreateStore?: (taskRuntime: ITaskRuntime) => IGanttNonWorkingDaysStore<TData>;
     components?: IGanttNonWorkingDaysComponents;
-    labels?: Partial<IGanttNonWorkingDaysLabels>;
 }
 
 export interface IGanttNonWorkingDaysEvents {
@@ -83,7 +82,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
     private _gantt: IGantt;
     private _isVisibleByDefault: boolean;
     private _isWeekendEnabled: boolean;
-    private _labels: ILocalizationService<IGanttNonWorkingDaysLabels>;
+    private _labels: LabelsOf<typeof GANTT_NON_WORKING_DAYS_LABELS>;
     private _store?: IGanttNonWorkingDaysStore<TData>;
     private _components: IGanttNonWorkingDaysComponents;
     private _calendar: NonWorkingDayCalendar<TData>;
@@ -94,7 +93,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
         this._isVisibleByDefault = parameters.isVisibleByDefault ?? true;
         this._isWeekendEnabled = parameters.enableWeekends ?? true;
         this._components = parameters.components ?? {};
-        this._labels = new LocalizationService<IGanttNonWorkingDaysLabels>({ ...GANTT_NON_WORKING_DAYS_LABELS, ...parameters.labels });
+        this._labels = gantt.getLabels(GANTT_NON_WORKING_DAYS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         this._calendar = new NonWorkingDayCalendar(this._getWeekends());
         this._unregisters.push(
@@ -128,7 +127,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
             return;
         }
         const store = this._store;
-        const errorTitle = this._labels.getLocalizedString('loadNonWorkingDaysFailed');
+        const errorTitle = this._labels.get('ganttNonWorkingDays.loadNonWorkingDaysFailed');
         const calendar = await this._gantt.getTaskRuntime().execute(async () => new NonWorkingDayCalendar([...this._getWeekends(), ...await store.onLoadNonWorkingDays()]), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
         if (!calendar) {
             return;
@@ -159,7 +158,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
         if (!this._isWeekendEnabled) {
             return [];
         }
-        const description = this._labels.getLocalizedString('weekend');
+        const description = this._labels.get('ganttNonWorkingDays.weekend');
         return [{ id: 'weekend', date: FIRST_WEEKEND, endDate: FIRST_WEEKEND.add(1, 'day'), description, recurrence: 'FREQ=WEEKLY' }];
     }
 
@@ -193,7 +192,7 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
     private _addSettings = (settings: ITaskGridSetting[]): void => {
         settings.push({
             key: 'hideNonWorkingDays',
-            label: this._labels.getLocalizedString('hideNonWorkingDays'),
+            label: this._labels.get('ganttNonWorkingDays.hideNonWorkingDays'),
             isChecked: !this.isVisible(),
             onChange: isChecked => this.setVisible(!isChecked),
         });

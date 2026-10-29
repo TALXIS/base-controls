@@ -1,6 +1,7 @@
 export * from './namespace';
 export * from './interfaces';
 export * from './labels';
+export * from './labels.cs';
 export * from './provider';
 export * from './services';
 export * from './tree';

@@ -27,7 +27,7 @@ const fluentIconMap: { [key: string]: string } = {
 }
 
 export const Ribbon = (props: IRibbon) => {
-    const { className } = useControl('Ribbon', props, {});
+    const { className } = useControl('Ribbon', props);
     const theme = useTheme();
     const propsRef = useRef<IRibbon>(props);
     propsRef.current = props;

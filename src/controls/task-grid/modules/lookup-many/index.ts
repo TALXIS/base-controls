@@ -1,5 +1,6 @@
 export * from './createLookupManyModule';
 export * from './labels';
+export * from './labels.cs';
 export * from './components';
 export * from './memory';
 export * from './dataverse';

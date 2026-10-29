@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo } from "react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
-import { DataProviderContext, ErrorBoundary } from "@utils";
+import { DataProviderContext, ErrorBoundary, useLocalization } from "@utils";
 import { DatasetControlRuntime, IDatasetControlEvents } from "../../../runtime";
 import type { DatasetControlState } from "../../../runtime/DatasetControlState";
 import { DatasetControlRuntimeContext } from "./context";
@@ -22,9 +22,11 @@ export interface IDatasetControlMountProps extends IDatasetControlProps {
 /** One mount of the control: its runtime, its one load and the parts on it. */
 export const DatasetControlMount = (props: IDatasetControlMountProps) => {
     const propsRef = useLatest(props);
+    const localization = useLocalization();
     const runtime = useMemo(() => new DatasetControlRuntime({
         onGetProps: () => propsRef.current,
         state: props.state,
+        localization,
         onRemount: () => propsRef.current.onRemount(),
     }), []);
     const { rerender } = useRerender();

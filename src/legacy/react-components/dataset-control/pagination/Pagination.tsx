@@ -1,3 +1,5 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
 import { IFooterProps } from "../interfaces";
 import { useModel } from "../useModel";
@@ -16,7 +18,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
   const paginationModel = useMemo(() => new PaginationModel(model), []);
   const dataset = model.getDatasetControl().getDataset();
   const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
-  const labels = model.getLabels();
+  const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
   const paging = dataset.paging;
   const theme = useTheme();
   const styles = useMemo(() => getPaginationStyles(theme), [theme]);
@@ -32,7 +34,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
       {
         key: 'header',
         itemType: ContextualMenuItemType.Header,
-        text: labels['page-record-count'](),
+        text: labels.get('legacyDatasetControl.pageRecordCount'),
       },
       {
         key: 'divider',
@@ -77,7 +79,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
         onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
       }, {
         key: 'CurrentPage',
-        text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
+        text: `${labels.get('legacyDatasetControl.pagingPage')} ${paging.pageNumber.toString()}`,
         className: styles.currentPageBtn,
         disabled: true,
       }, {

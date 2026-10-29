@@ -1,17 +1,15 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IPaginationUiComponents } from "../../ui";
-import { LocalizationService, useDataProvider } from "@utils";
+import { useLabels, useDataProvider } from "@utils";
 import { useDatasetControlPart } from "../root";
 import { useDatasetControlRegion } from "../region";
-import { IPaginationLabels, PAGINATION_LABELS } from "./labels";
+import { PAGINATION_LABELS } from "./labels";
 import { DatasetControlPagination, IDatasetControlPaginationEvents } from "./DatasetControlPagination";
 
 /** Props for `DatasetControl.Pagination`. */
 export interface IPaginationProps {
-    /** Overrides for the pagination's strings. */
-    labels?: Partial<IPaginationLabels>;
     /** Replacements for the pagination's slots. */
     components?: Partial<IPaginationUiComponents>;
 }
@@ -20,7 +18,7 @@ export interface IPaginationProps {
 export const Pagination = (props: IPaginationProps) => {
     const provider = useDataProvider();
     const pagination = useDatasetControlPart('pagination', () => new DatasetControlPagination({ provider }));
-    const labels = useMemo(() => new LocalizationService<IPaginationLabels>({ ...PAGINATION_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(PAGINATION_LABELS);
     const { rerender } = useRerender();
     const region = useDatasetControlRegion();
 
@@ -32,10 +30,10 @@ export const Pagination = (props: IPaginationProps) => {
         canMovePrevious={pagination.canMovePrevious()}
         canMoveNext={pagination.canMoveNext()}
         labels={{
-            firstPageTooltip: labels.getLocalizedString('firstPageTooltip'),
-            previousPageTooltip: labels.getLocalizedString('previousPageTooltip'),
-            nextPageTooltip: labels.getLocalizedString('nextPageTooltip'),
-            currentPage: labels.getLocalizedString('currentPage', { number: `${pagination.getPageNumber()}` }),
+            firstPageTooltip: labels.get('pagination.firstPageTooltip'),
+            previousPageTooltip: labels.get('pagination.previousPageTooltip'),
+            nextPageTooltip: labels.get('pagination.nextPageTooltip'),
+            currentPage: labels.get('pagination.currentPage', { number: pagination.getPageNumber() }),
         }}
         onMoveFirst={() => pagination.moveFirst()}
         onMovePrevious={() => pagination.movePrevious()}

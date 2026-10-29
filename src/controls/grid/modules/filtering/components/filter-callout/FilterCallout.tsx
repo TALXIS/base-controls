@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Target } from "@fluentui/react";
 import { IColumn, IInternalDataProvider } from "@talxis/client-libraries";
-import { getClassNames, usePcfContext } from "@utils";
+import { getClassNames, useLabels, usePcfContext } from "@utils";
 import { DatasetColumnFiltering } from "@controls/grid/modules/filtering/components/dataset-column-filtering/DatasetColumnFiltering";
 import { IOptionSet } from "@controls/fields/option-set";
 import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
@@ -9,7 +9,7 @@ import { IControl, IParameters } from "@interfaces";
 import { GridFilterControl } from "../../GridFiltering";
 import { useGridService } from "../../../../useGridService";
 import { useGridModule } from "../../../../useGridModule";
-import { useGridFilteringLabels } from "../../useGridFilteringLabels";
+import { GRID_FILTERING_LABELS } from "../../labels";
 import { FilteringUi, IFilteringUiCalloutComponents } from "../ui";
 import { getFilterCalloutStyles } from "./styles";
 
@@ -29,7 +29,7 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
     const provider = useGridService('provider');
     const dataProvider = provider as IInternalDataProvider;
     const context = usePcfContext();
-    const labels = useGridFilteringLabels();
+    const labels = useLabels(GRID_FILTERING_LABELS);
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
         dataProvider.executeWithUnsavedChangesBlocker(() => {
@@ -55,7 +55,7 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
                 const base = onOverrideComponentProps?.(componentProps) ?? componentProps;
                 return {
                     ...base,
-                    onOverrideControlProps: (controlProps: IControl<any, any, any, any>) => {
+                    onOverrideControlProps: (controlProps: IControl<any, any, any>) => {
                         const next = base.onOverrideControlProps?.(controlProps) ?? controlProps;
                         return { ...next, parameters: getParameters(next.parameters, 'value', index) };
                     }
@@ -75,7 +75,7 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
     return (
         <FilteringUi.Callout
             target={props.target}
-            title={labels.getLocalizedString('filterMenuFilterBy')}
+            title={labels.get('gridFiltering.filterMenuFilterBy')}
             onDismiss={onDismiss}
             components={props.components}>
             <DatasetColumnFiltering
@@ -110,8 +110,6 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
                                         container: {
                                             className: getClassNames([props.container.className, filterCalloutStyles.datasetColumnFilteringButtons])
                                         },
-                                        onRenderApplyButton: (props, defaultRender) => defaultRender({ ...props, text: labels.getLocalizedString('apply') }),
-                                        onRenderClearButton: (props, defaultRender) => defaultRender({ ...props, text: labels.getLocalizedString('clear') }),
                                     })
                                 }
                             })

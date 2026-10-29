@@ -1,25 +1,17 @@
-/** The strings of the quick find. */
-export interface IQuickFindLabels {
-    /** `collection` is the provider's plural entity name, or `defaultCollectionName` when it has none. */
-    searchPlaceholder: string;
-    /** Stands in for the collection name when the provider has none. */
-    defaultCollectionName: string;
-    /** Shown in the callout when the query starts with `*`. */
-    leadingWildcardWarning: string;
-    /** The callout's sentence above the columns: start, the bold operator, then end. */
-    columnsHintStart: string;
-    /** The bold operator between the columns. */
-    columnsHintOperator: string;
-    /** The end of the sentence, after the columns. */
-    columnsHintEnd: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IQuickFindLabels}. */
-export const QUICK_FIND_LABELS: IQuickFindLabels = {
-    searchPlaceholder: 'Search {{ collection }}...',
-    defaultCollectionName: 'records',
-    leadingWildcardWarning: "For faster results, don't start with an asterisk (*)",
-    columnsHintStart: 'Apply',
-    columnsHintOperator: 'begins with',
-    columnsHintEnd: 'filter on these columns:',
-};
+/** The strings of the quick find. */
+export const QUICK_FIND_LABELS = defineLabels({
+    /** `collection` is the provider's plural entity name, or `defaultCollectionName` when it has none. */
+    'quickFind.searchPlaceholder': 'Search {{ collection }}...',
+    /** Stands in for the collection name when the provider has none. */
+    'quickFind.defaultCollectionName': 'records',
+    /** Shown in the callout when the query starts with `*`. */
+    'quickFind.leadingWildcardWarning': "For faster results, don't start with an asterisk (*)",
+    /** The callout's sentence above the columns: start, the bold operator, then end. */
+    'quickFind.columnsHintStart': 'Apply',
+    /** The bold operator between the columns. */
+    'quickFind.columnsHintOperator': 'begins with',
+    /** The end of the sentence, after the columns. */
+    'quickFind.columnsHintEnd': 'filter on these columns:',
+});

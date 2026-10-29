@@ -1,10 +1,7 @@
-/** The strings of the notifications. */
-export interface INotificationsLabels {
-    /** `count` is how many notifications there are. */
-    groupedNotificationsSummary: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link INotificationsLabels}. */
-export const NOTIFICATIONS_LABELS: INotificationsLabels = {
-    groupedNotificationsSummary: 'You have {{ count }} notifications. Select to view them.',
-};
+/** The strings of the notifications. */
+export const NOTIFICATIONS_LABELS = defineLabels({
+    /** `count` is how many notifications there are. */
+    'notifications.groupedNotificationsSummary': 'You have {{ count }} notifications. Select to view them.',
+});

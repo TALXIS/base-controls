@@ -1,6 +1,5 @@
 import { IFieldValidationResult } from "@talxis/client-libraries";
 import type { ReactNode } from "react";
-import type { IFormLabels } from "./labels";
 import type { IFormStrategy } from "./strategies/interfaces";
 
 /**
@@ -112,9 +111,4 @@ export interface IFormProps extends Partial<IFormEventHandlers> {
      * Fired when the form runtime is ready and the public imperative API can be used.
      */
     onFormReady?: (api: IFormApi) => void;
-
-    /**
-     * Localized label overrides for built-in Form UI.
-     */
-    labels?: Partial<IFormLabels>;
 }

@@ -1,10 +1,7 @@
-/** The texts of the empty state. */
-export interface IEmptyRecordsLabels {
-    /** Shown while the provider has no records. */
-    noRecordsFound: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IEmptyRecordsLabels}. */
-export const EMPTY_RECORDS_LABELS: IEmptyRecordsLabels = {
-    noRecordsFound: 'No records found.',
-};
+/** The texts of the empty state. */
+export const EMPTY_RECORDS_LABELS = defineLabels({
+    /** Shown while the provider has no records. */
+    'emptyRecords.noRecordsFound': 'No records found.',
+});

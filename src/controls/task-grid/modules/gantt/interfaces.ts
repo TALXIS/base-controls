@@ -1,9 +1,8 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, ILocalizationService, IServiceLocator, IStateStore } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LocalizationService } from "@utils";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";
-import type { IGanttLabels } from "./labels";
 import type { IGanttSchedule } from "./schedule/GanttSchedule";
 import type { IGanttZooming } from "./zooming/GanttZooming";
 import type { IGanttTimeline } from "./timeline/GanttTimeline";
@@ -34,7 +33,7 @@ export interface IGanttModuleServiceMap { }
 
 export interface IGanttServiceMap extends IGanttModuleServiceMap {
     taskRuntime: ITaskRuntime;
-    labels: ILocalizationService<IGanttLabels>;
+    localization: LocalizationService;
     theme: IGanttTheme;
     overlay: IGanttOverlay;
     /** What the Gantt keeps per view. */
@@ -78,7 +77,7 @@ export interface IGantt {
     /** The `TaskGantt`'s props as they are now. */
     getProps(): ITaskGanttProps;
     getTaskRuntime(): ITaskRuntime;
-    getLabels(): ILocalizationService<IGanttLabels>;
+    getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** The build the chart is created from, there before any other module loads. */
     getLibrary(): IGanttLibrary;
     /**

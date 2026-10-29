@@ -1,25 +1,15 @@
-/** The strings of the templates module. */
-export interface ITemplatesLabels {
-    /** New › the plain task, beside the templates. */
-    task: string;
-    fromTemplate: string;
-    saveAsTemplate: string;
-    searchTemplates: string;
-    noTemplates: string;
-    creatingTasksFromTemplate: string;
-    savingTemplate: string;
-    /** Titles the dialog an operation on a template failed with. */
-    templatesFailed: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link ITemplatesLabels}. */
-export const TEMPLATES_LABELS: ITemplatesLabels = {
-    task: 'Task',
-    fromTemplate: 'From template',
-    saveAsTemplate: 'Save as template',
-    searchTemplates: 'Search templates',
-    noTemplates: 'No templates found',
-    creatingTasksFromTemplate: 'Creating tasks from template...',
-    savingTemplate: 'Saving template...',
-    templatesFailed: 'The template could not be used.',
-};
+/** The strings of the templates module. */
+export const TEMPLATES_LABELS = defineLabels({
+    /** New › the plain task, beside the templates. */
+    'templates.task': 'Task',
+    'templates.fromTemplate': 'From template',
+    'templates.saveAsTemplate': 'Save as template',
+    'templates.searchTemplates': 'Search templates',
+    'templates.noTemplates': 'No templates found',
+    'templates.creatingTasksFromTemplate': 'Creating tasks from template...',
+    'templates.savingTemplate': 'Saving template...',
+    /** Titles the dialog an operation on a template failed with. */
+    'templates.templatesFailed': 'The template could not be used.',
+});

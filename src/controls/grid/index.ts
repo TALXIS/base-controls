@@ -5,6 +5,7 @@ export { useGridModule } from './useGridModule';
 export * from './components';
 export * from './interfaces';
 export * from './labels';
+export * from './labels.cs';
 export * from './modules';
 export * from './value-renderer';
 export * from './inline-ribbon';

@@ -3,8 +3,8 @@ import { IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } f
 import { ContextualMenu } from '@ui/surfaces';
 import { INotificationMessageBarComponents } from './components';
 import { getNotificationMessageBarStyles } from './styles';
-import { LocalizationService } from '@utils';
-import { INotificationMessageBarLabels, NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
+import { useLabels } from '@utils/localization';
+import { NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
 
 /** One message of a notification bar. */
 export interface INotificationMessage {
@@ -18,7 +18,8 @@ export interface INotificationMessageBarProps {
 	/** The messages to show; the bar is not drawn without any. */
 	messages?: INotificationMessage[],
 	components?: Partial<INotificationMessageBarComponents>;
-	labels?: Partial<INotificationMessageBarLabels>;
+	/** Replaces the summary shown over several messages. */
+	groupedNotificationsSummary?: string;
 }
 
 const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = []): MessageBarType => {
@@ -31,14 +32,11 @@ const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = 
 
 export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 	const theme = useTheme();
-	const { labels, messages = [] } = props;
+	const { messages = [] } = props;
 	const [isUnfolded, setIsUnfolded] = React.useState(false);
 	const styles = useMemo(() => getNotificationMessageBarStyles(theme, isUnfolded), [theme, isUnfolded]);
 	const groupedNotificationRef = React.useRef<HTMLDivElement>(null);
-	const localizationService = useMemo(() => new LocalizationService({
-		...NOTIFICATION_MESSAGE_BAR_LABELS,
-		...labels,
-	}), []);
+	const labels = useLabels(NOTIFICATION_MESSAGE_BAR_LABELS);
 
 	const messageBarStyles: IMessageBarStyles = {
 		root: styles.notification,
@@ -64,9 +62,7 @@ export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 				<IconButton styles={{ root: styles.chevronBtn, icon: styles.chevronBtnIcon }} iconProps={{ iconName: 'ChevronDown' }} />
 			}
 		>
-			{localizationService.getLocalizedString("groupedNotificationsSummary", {
-				count: messages.length.toString(),
-			})}
+			{props.groupedNotificationsSummary ?? labels.get('notificationMessageBar.groupedNotificationsSummary', { count: messages.length })}
 		</MessageBar>
 		{isUnfolded &&
 			<ContextualMenu

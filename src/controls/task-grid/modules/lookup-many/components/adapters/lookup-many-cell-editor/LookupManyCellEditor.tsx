@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useResizeEffect } from "@utils";
+import { useLabels, useResizeEffect } from "@utils";
 import { useTheme } from "@fluentui/react";
 import type { ICellEditorParams } from "ag-grid-community";
 import { useDatasetControlModule } from "@controls/dataset-control";
@@ -7,6 +7,7 @@ import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "@
 import { useTaskGridContext } from "../../../../../context";
 import { LookupManySelect } from "../../ui";
 import { getLookupManyComponents } from "../getLookupManyComponents";
+import { LOOKUP_MANY_LABELS } from "../../../labels";
 import { getLookupManyCellEditorStyles, LOOKUP_MANY_EDITOR_MIN_WIDTH } from "./styles";
 
 interface ILookupManyCellSelectProps {
@@ -28,7 +29,7 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     const components = useMemo(() => getLookupManyComponents(appearance), [appearance]);
     const optionsProvider = useMemo(() => lookupMany.createOptionsProvider(record, column), [record, column]);
     useEffect(() => () => optionsProvider?.destroy(), [optionsProvider]);
-    const labels = lookupMany.getLabels();
+    const labels = useLabels(LOOKUP_MANY_LABELS);
     const rootRef = useRef<HTMLDivElement>(null);
     const shiftRef = useRef({ x: 0, y: 0 });
 
@@ -54,8 +55,8 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
             isDisabled={!optionsProvider}
             autoFocus
             defaultSearchQuery={props.eventKey?.length === 1 ? props.eventKey : undefined}
-            noRecordsFoundText={labels.getLocalizedString('noRecordsFound')}
-            loadingText={labels.getLocalizedString('loading')}
+            noRecordsFoundText={labels.get('lookupMany.noRecordsFound')}
+            loadingText={labels.get('lookupMany.loading')}
             components={components}
             onChange={value => field?.setValue(value)} />
     </div>;

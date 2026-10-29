@@ -1,10 +1,9 @@
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@interfaces";
-import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskActions } from "./tasks";
-import type { ITaskGridLabels } from "../labels";
 
 /** A hook over an item `TaskDatasetControl.Ribbon` draws, which it changes in place, such as to give a menu content of its own. */
 export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
@@ -24,7 +23,6 @@ export interface ITaskRuntimeModuleServiceMap { }
 export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     /** The DatasetControl of this mount. */
     datasetControl: IDatasetControl<ITaskViewData>;
-    labels: ILocalizationService<ITaskGridLabels>;
     pcfContext: IPcfContext;
     /** The tasks of this mount, there once `onLoad` returned. */
     provider: ITaskDataProvider;
@@ -70,7 +68,8 @@ export interface ITaskRuntime {
     getView(): ITaskView | undefined;
     getFieldMapping(): IFieldMapping;
     getProvider(): ITaskDataProvider;
-    getLabels(): ILocalizationService<ITaskGridLabels>;
+    /** The strings of one set, as the control's localization gives them. */
+    getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Whether the matching tasks are listed on their own, without the tree; remembered per view. */
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;

@@ -4,10 +4,10 @@ import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@interfaces";
-import { HookRegistry, ILocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, ILabels, ILabelSet, Labels, ServiceLocator } from "@utils";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
-import type { ITaskGridLabels } from "../labels";
+import { TASK_GRID_LABELS } from "../labels";
 import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetControl";
 import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
@@ -16,7 +16,6 @@ import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntim
 
 export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
-    labels: ILocalizationService<ITaskGridLabels>;
     pcfContext: IPcfContext;
     /** The `TaskDatasetControl`'s current props. */
     onGetProps: () => ITaskDatasetControlProps;
@@ -37,7 +36,6 @@ export class TaskRuntime implements ITaskRuntime {
         const datasetControl = parameters.datasetControl;
         this._onGetProps = parameters.onGetProps;
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
-        this.services.register('labels', () => parameters.labels);
         this.services.register('pcfContext', () => parameters.pcfContext);
         datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
         datasetControl.modules.whenAvailable('userQueries', userQueries => this._unsaveWithViews.push(
@@ -74,8 +72,8 @@ export class TaskRuntime implements ITaskRuntime {
         return this.services.get('provider');
     }
 
-    public getLabels(): ILocalizationService<ITaskGridLabels> {
-        return this.services.get('labels');
+    public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
+        return this.services.get('datasetControl').getLabels(set);
     }
 
     public isFlatList(): boolean {
@@ -135,23 +133,23 @@ export class TaskRuntime implements ITaskRuntime {
 
     private _addPathColumn = (columns: IColumn[]): void => {
         if (!columns.some(column => column.name === PATH_COLUMN_NAME)) {
-            columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels().getLocalizedString('path'), dataType: DataTypes.Multiple, isVirtual: true, visualSizeFactor: 300 });
+            columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels(TASK_GRID_LABELS).get('taskGrid.path'), dataType: DataTypes.Multiple, isVirtual: true, visualSizeFactor: 300 });
         }
     };
 
     //ahead of the consumer's own commands
     private _addCommands = (commands: IRibbonCommand[]): void => {
-        const labels = this.getLabels();
+        const labels = this.getLabels(TASK_GRID_LABELS);
         const selectedIds = this.getProvider().getSelectedRecordIds();
         const taskCommands: IRibbonCommand[] = [];
         if (this.isCreationEnabled()) {
-            taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => runQuietly(() => this.tasks.create()) });
+            taskCommands.push({ id: 'new', label: labels.get('taskGrid.new'), iconName: 'Add', onExecute: () => runQuietly(() => this.tasks.create()) });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.open(selectedIds)) });
+            taskCommands.push({ id: 'edit', label: labels.get('taskGrid.edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.open(selectedIds)) });
         }
         if (this.isDeletionEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });
+            taskCommands.push({ id: 'delete', label: labels.get('taskGrid.delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });
         }
         commands.unshift(...taskCommands);
     };

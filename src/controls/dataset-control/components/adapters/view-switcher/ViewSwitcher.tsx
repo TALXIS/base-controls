@@ -1,18 +1,16 @@
-import { ReactNode, useEffect, useMemo } from "react";
+import { ReactNode, useEffect } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
-import { LocalizationService, useDataProviderEvents } from "@utils";
+import { useLabels, useDataProviderEvents } from "@utils";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../../runtime";
 import { DatasetControlUi } from "../../ui";
 import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
-import { IViewSwitcherLabels, VIEW_SWITCHER_LABELS } from "./labels";
+import { VIEW_SWITCHER_LABELS } from "./labels";
 import { DatasetControlViewSwitcher } from "./DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
 
 /** Props for `DatasetControl.ViewSwitcher`. */
 export interface IViewSwitcherProps {
-    /** Overrides for the switcher's strings. */
-    labels?: Partial<IViewSwitcherLabels>;
     /** Replacements for the switcher's pieces. */
     components?: IViewSwitcherComponents;
     /** What adds to the switcher, such as `DatasetControl.UserQueries`. */
@@ -24,7 +22,7 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);
     const viewSwitcher = useDatasetControlPart('viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
-    const labels = useMemo(() => new LocalizationService<IViewSwitcherLabels>({ ...VIEW_SWITCHER_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(VIEW_SWITCHER_LABELS);
     const views = viewSwitcher.getViews();
     const currentView = viewSwitcher.getCurrentView();
     const { rerender } = useRerender();
@@ -32,7 +30,7 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
     useEffect(() => () => viewSwitcher.destroy(), []);
 
     const getGroups = (): Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }> => {
-        const ungrouped: IDatasetControlViewGroup = { id: 'ungrouped', name: labels.getLocalizedString('ungroupedViewsHeader') };
+        const ungrouped: IDatasetControlViewGroup = { id: 'ungrouped', name: labels.get('viewSwitcher.ungroupedViewsHeader') };
         const groups = new Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }>();
         for (const view of views) {
             const group = view.group ?? ungrouped;

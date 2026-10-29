@@ -1,9 +1,10 @@
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { useDataProviderEvents } from "@utils";
+import { useDataProviderEvents, useLabels } from "@utils";
 import { Grid, GroupingUi, IColumnHeaderParams } from "@controls/grid";
 import { useTaskGridService } from "../../useTaskGrid";
 import { useTaskGridContext } from "../../context";
+import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskExpansionEvents } from "../TaskExpansion";
 import { IExpansionHeaderComponents } from "./components";
 
@@ -13,10 +14,10 @@ export interface IExpansionHeaderProps extends IColumnHeaderParams {
 
 /** Expands or collapses the tasks a level at a time. */
 export const ExpansionHeader = (props: IExpansionHeaderProps) => {
-    const { runtime, components: taskGridComponents } = useTaskGridContext();
+    const { components: taskGridComponents } = useTaskGridContext();
     const expansion = useTaskGridService('taskExpansion');
     const components = { ...taskGridComponents.expansionHeader, ...props.components };
-    const labels = runtime.getLabels();
+    const labels = useLabels(TASK_GRID_LABELS);
     const { rerender } = useRerender();
     useDataProviderEvents(['onNewDataLoaded']);
     useEventEmitter<ITaskExpansionEvents>(expansion.events, 'onExpansionChanged', rerender);
@@ -25,8 +26,8 @@ export const ExpansionHeader = (props: IExpansionHeaderProps) => {
     return <Grid.ColumnHeader.Root {...props}>
         <Grid.ColumnHeader.Theme>
             <GroupingUi.ExpandCollapse
-                expandTitle={labels.getLocalizedString('expandLevel')}
-                collapseTitle={labels.getLocalizedString('collapseLevel')}
+                expandTitle={labels.get('taskGrid.expandLevel')}
+                collapseTitle={labels.get('taskGrid.collapseLevel')}
                 canExpand={expansion.canExpandLevel()}
                 canCollapse={expansion.canCollapseLevel()}
                 onExpand={() => expansion.expandLevel()}

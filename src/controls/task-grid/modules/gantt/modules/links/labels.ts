@@ -1,7 +1,5 @@
-export interface IGanttLinksLabels {
-    confirmDeleteLink: string;
-}
+import { defineLabels } from "@utils";
 
-export const GANTT_LINKS_LABELS: IGanttLinksLabels = {
-    confirmDeleteLink: 'Delete this dependency?',
-};
+export const GANTT_LINKS_LABELS = defineLabels({
+    'ganttLinks.confirmDeleteLink': 'Delete this dependency?',
+});

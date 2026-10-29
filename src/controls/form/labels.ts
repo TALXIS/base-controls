@@ -1,15 +1,9 @@
-export interface IFormLabels {
-    save: string;
-    saving: string;
-    saved: string;
-    unsavedChanges: string;
-    groupedNotificationsSummary: string;
-}
+import { defineLabels } from "@utils";
 
-export const FORM_LABELS: IFormLabels = {
-    save: "Save",
-    saving: "Saving...",
-    saved: "Saved!",
-    unsavedChanges: "Unsaved changes",
-    groupedNotificationsSummary: "You have {{ count }} notifications. Select to view them.",
-};
+export const FORM_LABELS = defineLabels({
+    'form.save': "Save",
+    'form.saving': "Saving...",
+    'form.saved': "Saved!",
+    'form.unsavedChanges': "Unsaved changes",
+    'form.groupedNotificationsSummary': "You have {{ count }} notifications. Select to view them.",
+});

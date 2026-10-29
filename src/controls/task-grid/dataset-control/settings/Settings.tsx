@@ -1,10 +1,11 @@
 import { IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
-import { useDataProviderEvents } from "@utils";
+import { useDataProviderEvents, useLabels, useLocalization } from "@utils";
 import { useLatest } from "@hooks";
 import { ISettingsMenuComponents, SettingsMenu } from "../../components/ui/settings-menu";
 import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
 import { useTaskRuntime } from "../context";
+import { TASK_GRID_LABELS } from "../../labels";
 import { TaskSettings } from "./TaskSettings";
 
 /** Props for `TaskDatasetControl.Settings`. */
@@ -20,7 +21,9 @@ export interface ISettingsProps {
 export const Settings = (props: ISettingsProps) => {
     const taskRuntime = useTaskRuntime();
     const propsRef = useLatest(props);
-    const settings = useDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, onGetProps: () => propsRef.current }));
+    const localization = useLocalization();
+    const labels = useLabels(TASK_GRID_LABELS);
+    const settings = useDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, localization, onGetProps: () => propsRef.current }));
     const provider = useDataProviderEvents(['onLoading']);
     const { rerender } = useRerender();
 
@@ -39,7 +42,7 @@ export const Settings = (props: ISettingsProps) => {
         return null;
     }
     return <SettingsMenu
-        text={taskRuntime.getLabels().getLocalizedString('settings')}
+        text={labels.get('taskGrid.settings')}
         items={items}
         disabled={provider.isLoading()}
         //the settings are read as the menu opens, so it shows them as they are now

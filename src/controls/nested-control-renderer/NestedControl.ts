@@ -45,7 +45,7 @@ export interface IOptions {
         onControlStateChanged?: () => void;
     },
     overrides?: {
-        onGetProps?: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>;
+        onGetProps?: (props: IControl<any, any, any>) => IControl<any, any, any>;
         onRender?: (control: NestedControl, defaultRender: () => Promise<void>) => void;
         onUnmount?: (control: NestedControl, defaultUnmount: () => void) => void;
         onIsLoading?: () => boolean;
@@ -63,7 +63,7 @@ export class NestedControl {
     private _customControlId: string = '';
     private _manifest: Manifest | null = null;
     private _loading: boolean = false;
-    private _props: IControl<IParameters, any, any, any> | undefined;
+    private _props: IControl<IParameters, any, any> | undefined;
     private _mutationObserver: MutationObserver | null = new MutationObserver((mutations) => this._checkIfControlLoadedToDom(mutations));
     private _destroyed: boolean = false;
     private _initialized: boolean = false;
@@ -75,7 +75,7 @@ export class NestedControl {
         this._getPropertiesFromBindings();
     }
 
-    public getProps(): IControl<IParameters, any, any, any> {
+    public getProps(): IControl<IParameters, any, any> {
         if (!this._props) {
             return this.refreshProps()
         }
@@ -88,7 +88,7 @@ export class NestedControl {
 
     public refreshProps() {
         const parameters: { [name: string]: IProperty } = this.getParameters();
-        const props: IControl<any, any, any, any> = {
+        const props: IControl<any, any, any> = {
             context: {
                 ...this.getOptions().parentPcfContext,
                 parameters: parameters,

@@ -3,13 +3,15 @@ import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
 import { OptionSet } from '@controls/fields/option-set';
-import { twoOptionsTranslations } from './translations';
+import { useLabels } from '@utils';
+import { TWO_OPTIONS_LABELS } from './labels';
 
 export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const { labels, sizing, onNotifyOutputChanged } = useControl('TwoOptions', props, twoOptionsTranslations);
+    const { sizing, onNotifyOutputChanged } = useControl('TwoOptions', props);
+    const labels = useLabels(TWO_OPTIONS_LABELS);
     const theme = useTheme();
     const context = props.context;
     const componentRef = useRef<any>(null);
@@ -72,8 +74,8 @@ export const TwoOptions = (props: ITwoOptions) => {
                     componentRef={componentRef}
                     disabled={context.mode.isControlDisabled}
                     inlineLabel
-                    onText={options.find(option => option.Value === 1)?.Label || labels.yes()}
-                    offText={options.find(option => option.Value === 0)?.Label || labels.no()}
+                    onText={options.find(option => option.Value === 1)?.Label || labels.get('twoOptions.yes')}
+                    offText={options.find(option => option.Value === 0)?.Label || labels.get('twoOptions.no')}
                     onChange={(e, value) => handleChange(value)}
                 />)
     )

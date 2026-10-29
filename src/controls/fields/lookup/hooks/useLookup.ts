@@ -1,8 +1,9 @@
 import { useTheme } from "@fluentui/react";
 import { useState } from "react";
-import { ITranslation, useControl } from "@hooks";
+import { useControl } from "@hooks";
+import { useLabels } from "@utils";
 import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
-import { lookupTranslations } from "../translations";
+import { LOOKUP_LABELS } from "../labels";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@theme";
 import dayjs from "dayjs";
@@ -10,7 +11,6 @@ import dayjs from "dayjs";
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
     IEntity[],
-    ITranslation<Required<ILookup>['translations']>,
     {
         create: (entityName: string) => void,
         select: (record: ComponentFramework.LookupValue[] | undefined) => void,
@@ -24,7 +24,8 @@ export const useLookup = (props: ILookup): [
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const { labels, onNotifyOutputChanged } = useControl('Lookup', props, lookupTranslations);
+    const { onNotifyOutputChanged } = useControl('Lookup', props);
+    const labels = useLabels(LOOKUP_LABELS);
     const theme = useTheme();
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
 
@@ -175,7 +176,7 @@ export const useLookup = (props: ILookup): [
         return (
             primaryName ??
             entity[entityMetadata.PrimaryNameAttribute] ??
-            labels.noName()
+            labels.get('lookup.noName')
         );
     };
 
@@ -205,7 +206,7 @@ export const useLookup = (props: ILookup): [
     }
 
     return [
-        boundValue, entities, labels, {
+        boundValue, entities, {
             create: createRecord,
             deselect: deselectRecord,
             select: selectRecords

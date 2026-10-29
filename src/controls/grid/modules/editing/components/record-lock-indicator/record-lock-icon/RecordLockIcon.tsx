@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { useLabels } from "@utils";
 import { useGridService } from "../../../../../useGridService";
+import { GRID_LABELS } from "../../../../../labels";
 import { useGridCell } from "../../../../../components/cells/root/context";
 import { CellUi, ICellUiLockIconComponents } from "../../../../../components/cells/ui";
 import { getRecordLockIconStyles } from "./styles";
@@ -12,11 +14,11 @@ export interface IRecordLockIconProps {
 export const RecordLockIcon = (props: IRecordLockIconProps) => {
     const cell = useGridCell();
     const locks = useGridService('grid').modules.find('editing')?.locks;
-    const labels = useGridService('labels');
+    const labels = useLabels(GRID_LABELS);
     const styles = useMemo(() => getRecordLockIconStyles(), []);
 
     if (locks?.get({ record: cell.getRecord() }).lockedBy !== 'record') {
         return null;
     }
-    return <CellUi.LockIcon className={styles.icon} message={labels.getLocalizedString('recordLocked')} components={props.components} />;
+    return <CellUi.LockIcon className={styles.icon} message={labels.get('grid.recordLocked')} components={props.components} />;
 };

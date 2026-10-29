@@ -1,5 +1,6 @@
 export * from './createDependenciesModule';
 export * from './labels';
+export * from './labels.cs';
 export * from './constants';
 export * from './components';
 export * from './memory';

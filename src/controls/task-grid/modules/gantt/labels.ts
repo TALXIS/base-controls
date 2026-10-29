@@ -1,11 +1,7 @@
-export interface IGanttLabels {
-    zoomSlider: string;
-    zoomToFit: string;
-    goToToday: string;
-}
+import { defineLabels } from "@utils";
 
-export const GANTT_LABELS: IGanttLabels = {
-    zoomSlider: 'Zoom',
-    zoomToFit: 'Zoom to fit',
-    goToToday: 'Go to today',
-};
+export const GANTT_LABELS = defineLabels({
+    'gantt.zoomSlider': 'Zoom',
+    'gantt.zoomToFit': 'Zoom to fit',
+    'gantt.goToToday': 'Go to today',
+});

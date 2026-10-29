@@ -9,6 +9,7 @@ import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
 import type { ITaskRuntime } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
+import { TASK_GRID_LABELS } from "../labels";
 import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
 import { TreeCell } from "./tree-cell";
 import { PercentCompleteCell } from "./percent-complete-cell";
@@ -159,7 +160,7 @@ export class TaskTree {
         if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || !this._provider.isRecordActive(recordId) || this._provider.isTaskPending(recordId)) {
             return;
         }
-        const label = this._runtime.getLabels().getLocalizedString('addChild');
+        const label = this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.addChild');
         result.items.push({ key: 'addChild', iconProps: { iconName: 'Add' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => { runQuietly(() => this._runtime.tasks.create(recordId)); } });
     };
 

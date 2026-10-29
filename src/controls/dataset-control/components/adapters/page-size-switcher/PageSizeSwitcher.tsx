@@ -1,18 +1,16 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IPageSizeSwitcherUiComponents } from "../../ui";
-import { LocalizationService, useDataProvider } from "@utils";
+import { useLabels, useDataProvider } from "@utils";
 import { useDatasetControlPart } from "../root";
-import { IPageSizeSwitcherLabels, PAGE_SIZE_SWITCHER_LABELS } from "./labels";
+import { PAGE_SIZE_SWITCHER_LABELS } from "./labels";
 import { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents } from "./DatasetControlPageSizeSwitcher";
 
 /** Props for `DatasetControl.PageSizeSwitcher`. */
 export interface IPageSizeSwitcherProps {
     /** The sizes the menu offers; read once, at mount. */
     pageSizes?: number[];
-    /** Overrides for the switcher's strings. */
-    labels?: Partial<IPageSizeSwitcherLabels>;
     /** Replacements for the switcher's slots. */
     components?: Partial<IPageSizeSwitcherUiComponents>;
 }
@@ -21,7 +19,7 @@ export interface IPageSizeSwitcherProps {
 export const PageSizeSwitcher = (props: IPageSizeSwitcherProps) => {
     const provider = useDataProvider();
     const pageSizeSwitcher = useDatasetControlPart('pageSizeSwitcher', () => new DatasetControlPageSizeSwitcher({ provider, pageSizes: props.pageSizes }));
-    const labels = useMemo(() => new LocalizationService<IPageSizeSwitcherLabels>({ ...PAGE_SIZE_SWITCHER_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(PAGE_SIZE_SWITCHER_LABELS);
     const { rerender } = useRerender();
     const range = pageSizeSwitcher.getRecordRange();
 
@@ -29,13 +27,13 @@ export const PageSizeSwitcher = (props: IPageSizeSwitcherProps) => {
     useEffect(() => () => pageSizeSwitcher.destroy(), []);
 
     const getText = (): string => {
-        const text = labels.getLocalizedString('recordRange', { start: `${range.first}`, end: range.last });
-        return range.total === undefined ? text : `${text} ${labels.getLocalizedString('recordTotal', { total: range.total })}`;
+        const text = labels.get('pageSizeSwitcher.recordRange', { start: range.first, end: range.last });
+        return range.total === undefined ? text : `${text} ${labels.get('pageSizeSwitcher.recordTotal', { total: range.total })}`;
     };
 
     return <DatasetControlUi.PageSizeSwitcher
         text={getText()}
-        title={labels.getLocalizedString('pageSizeTooltip')}
+        title={labels.get('pageSizeSwitcher.pageSizeTooltip')}
         pageSize={pageSizeSwitcher.getPageSize()}
         pageSizes={pageSizeSwitcher.getPageSizes()}
         disabled={pageSizeSwitcher.isLoading()}

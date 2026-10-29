@@ -1,13 +1,8 @@
-export interface IGanttMarkersLabels {
-    today: string;
-    projectStart: string;
-    projectEnd: string;
-    loadMarkersFailed: string;
-}
+import { defineLabels } from "@utils";
 
-export const GANTT_MARKERS_LABELS: IGanttMarkersLabels = {
-    today: 'Today',
-    projectStart: 'Project start',
-    projectEnd: 'Project end',
-    loadMarkersFailed: 'The markers could not be loaded.',
-};
+export const GANTT_MARKERS_LABELS = defineLabels({
+    'ganttMarkers.today': 'Today',
+    'ganttMarkers.projectStart': 'Project start',
+    'ganttMarkers.projectEnd': 'Project end',
+    'ganttMarkers.loadMarkersFailed': 'The markers could not be loaded.',
+});

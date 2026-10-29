@@ -1,0 +1,32 @@
+import { defineLabels } from "@utils";
+
+export const LEGACY_DATASET_CONTROL_LABELS = defineLabels({
+    'legacyDatasetControl.search': "Search",
+    'legacyDatasetControl.records': "records",
+    'legacyDatasetControl.noName': "(No name)",
+    'legacyDatasetControl.columnSource': "Column source",
+    'legacyDatasetControl.noResultFound': "No results found.",
+    'legacyDatasetControl.addColumn': "Add column",
+    'legacyDatasetControl.customColumn': "User column",
+    'legacyDatasetControl.cancel': "Cancel",
+    'legacyDatasetControl.editColumns': "Edit columns",
+    'legacyDatasetControl.editFilters': "Edit filters",
+    'legacyDatasetControl.save': "Save",
+    'legacyDatasetControl.generalError': "An unexpected error occurred while loading the control.",
+    'legacyDatasetControl.reload': "Reload",
+    'legacyDatasetControl.unsavedChanges': "Number of updated records: <b>{{ numOfChanges }}</b>.",
+    'legacyDatasetControl.savingDiscardAllConfirmation': "This action will discard all unsaved changes. Would you like to continue?",
+    'legacyDatasetControl.pagingOf': "of",
+    'legacyDatasetControl.pagingFirstPage': "First page",
+    'legacyDatasetControl.pagingPreviousPage': "Previous",
+    'legacyDatasetControl.pagingPage': "Page",
+    'legacyDatasetControl.pagingNextPage': "Next",
+    'legacyDatasetControl.pagingLastPage': "Last page",
+    'legacyDatasetControl.pagingPages': "{{ start }} - {{ end }}",
+    'legacyDatasetControl.pagingPagesTotalCount': "of {{ recordcount }}",
+    'legacyDatasetControl.pageRecordCount': "Records per page",
+    'legacyDatasetControl.quickFindLikeWarning': "For faster results, don't start with an asterisk (*)",
+    'legacyDatasetControl.quickFindSearchUseFilter': "Apply",
+    'legacyDatasetControl.quickFindSearchStartsWith': "begins with",
+    'legacyDatasetControl.quickFindSearchOnTheseColumns': "filter on these columns:"
+});

@@ -1,13 +1,13 @@
 import type { ColDef } from "ag-grid-community";
 import { DataTypes, IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TaskColumnValues } from "../column-values";
-import { CHECKLIST_LABELS, IChecklistLabels } from "./labels";
+import { CHECKLIST_LABELS } from "./labels";
 import { ChecklistCell } from "./components/adapters/checklist-cell";
 
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
@@ -32,8 +32,6 @@ export interface IChecklistStore {
 
 export interface IChecklistParameters {
     onCreateStore: (taskRuntime: ITaskRuntime, checklist: IChecklist) => IChecklistStore;
-    /** Overrides for the module's strings. */
-    labels?: Partial<IChecklistLabels>;
 }
 
 /** What a checklist item's reference on the task's record carries. */
@@ -47,7 +45,6 @@ export interface IChecklist {
     getError(): unknown;
     /** Loads the tasks' checklist items again, every loaded task's when none are given. */
     reload(taskIds?: string[]): Promise<void>;
-    getLabels(): ILocalizationService<IChecklistLabels>;
     /** Called as the mount goes. */
     destroy(): void;
 }
@@ -55,18 +52,18 @@ export interface IChecklist {
 /** Each task's checklist progress, in a column Edit columns offers. */
 export class Checklist implements IChecklist {
     private _store: IChecklistStore;
-    private _labels: ILocalizationService<IChecklistLabels>;
+    private _labels: LabelsOf<typeof CHECKLIST_LABELS>;
     private _values: TaskColumnValues;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
         this._store = parameters.onCreateStore(taskRuntime, this);
-        this._labels = new LocalizationService<IChecklistLabels>({ ...CHECKLIST_LABELS, ...parameters.labels });
+        this._labels = taskRuntime.getLabels(CHECKLIST_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => [CHECKLIST_COLUMN_NAME],
             onLoad: this._loadItems,
-            errorMessage: () => this._labels.getLocalizedString('loadChecklistFailed'),
+            errorMessage: () => this._labels.get('checklist.loadChecklistFailed'),
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
@@ -78,10 +75,6 @@ export class Checklist implements IChecklist {
 
     public reload(taskIds?: string[]): Promise<void> {
         return this._values.reload(taskIds);
-    }
-
-    public getLabels(): ILocalizationService<IChecklistLabels> {
-        return this._labels;
     }
 
     public destroy(): void {
@@ -110,7 +103,7 @@ export class Checklist implements IChecklist {
     private _addColumn = (columns: IColumn[]): void => {
         const column: IColumn = {
             name: CHECKLIST_COLUMN_NAME,
-            displayName: this._labels.getLocalizedString('checklist'),
+            displayName: this._labels.get('checklist.checklist'),
             dataType: DataTypes.LookupSimple,
             isVirtual: true,
             visualSizeFactor: 100,

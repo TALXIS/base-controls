@@ -1,0 +1,30 @@
+import { translateLabels } from "@utils";
+import { TASK_GRID_LABELS } from "./labels";
+
+export const TASK_GRID_LABELS_CS = translateLabels(TASK_GRID_LABELS, {
+    'taskGrid.settings': 'Nastavení',
+    'taskGrid.showHierarchy': 'Zobrazit hierarchii',
+    'taskGrid.hideInactiveTasks': 'Skrýt neaktivní úkoly',
+    'taskGrid.expandLevel': 'Rozbalit o úroveň',
+    'taskGrid.collapseLevel': 'Sbalit o úroveň',
+    'taskGrid.projectLookupAmbiguous': 'Na projekt odkazuje více sloupců úkolu ({{ columns }}); filtrujte FetchXML podle jednoho z nich.',
+    'taskGrid.path': 'Cesta',
+    'taskGrid.new': 'Nový',
+    'taskGrid.edit': 'Upravit',
+    'taskGrid.delete': 'Odstranit',
+    'taskGrid.addChild': 'Přidat podúkol',
+    'taskGrid.confirmDeleteTasks': 'Chcete odstranit vybrané úkoly?',
+    'taskGrid.confirmDeleteTasksWithSubtasks': 'Chcete odstranit vybrané úkoly a jejich podúkoly ({{ count }})?',
+    'taskGrid.tasksCannotBeDeleted': 'Vybrané úkoly nelze odstranit.',
+    'taskGrid.taskCannotBeDeleted': 'Tento úkol nelze odstranit.',
+    'taskGrid.deleteTasksFailed': 'Některé úkoly nebyly odstraněny.',
+    'taskGrid.openingTasks': 'Otevírání úkolů...',
+    'taskGrid.deletingTasks': 'Odstraňování úkolů...',
+    'taskGrid.movingTask': 'Přesouvání úkolu...',
+    'taskGrid.openingRecord': 'Otevírání záznamu...',
+    'taskGrid.createTaskFailed': 'Úkol se nepodařilo vytvořit.',
+    'taskGrid.openTasksFailed': 'Úkoly se nepodařilo otevřít.',
+    'taskGrid.moveTaskFailed': 'Úkol se nepodařilo přesunout.',
+    'taskGrid.openRecordFailed': 'Záznam se nepodařilo otevřít.',
+    'taskGrid.actionFailed': 'Akci se nepodařilo dokončit.',
+});

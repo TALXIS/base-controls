@@ -4,3 +4,4 @@ export * from './theme';
 export * from './hooks';
 export * from './utils';
 export * from './interfaces';
+export * from './localization';

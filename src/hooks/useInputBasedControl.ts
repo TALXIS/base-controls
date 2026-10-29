@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { IControl, IOutputs } from "../interfaces/context";
 import { IControlController, useControl } from "./useControl";
 import { IInputParameters } from "../interfaces/parameters";
-import { IDefaultTranslations } from "./useControlLabels";
 
 /**
  * Description
@@ -10,7 +9,6 @@ import { IDefaultTranslations } from "./useControlLabels";
  * @returns {any}
  */
 interface IControlOptions {
-    defaultTranslations?: IDefaultTranslations;
     /**
      * Formatting function that will format the bound value every time a new one comes from the props.
      */
@@ -25,26 +23,24 @@ interface IControlOptions {
  * be triggered when the user looses focus on the component (`onBlur` event).
  * @returns {[]} The hook returns an array with three props. First `value` prop is a value that will will always be in sync with the value that comes from the `value` parameter. 
  * Use this for displaying the up-to-date value to the user.
- * Second prop contains the translations for this component.
- * 
- * Third prop is a method that can be used to change the current value. The new value will get propagated to the `value` variable returned from this hook. This method wont propagate the value to the framework.
+ * Second prop is a method that can be used to change the current value. The new value will get propagated to the `value` variable returned from this hook. This method wont propagate the value to the framework.
  * 
  * The last prop is a method that will notify the framework that you wish to write changes.  
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-interface IInputBasedControlController<TValue, TTranslations, TOutputs> extends IControlController<TTranslations, TOutputs> {
+interface IInputBasedControlController<TValue, TOutputs> extends IControlController<TOutputs> {
     value: TValue,
     setValue: (value: TValue) => void
 }
 
-export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, options?: IControlOptions): IInputBasedControlController<TValue, TTranslations, TOutputs> => {
+export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(name: string, props: IControl<TParameters, TOutputs, any>, options?: IControlOptions): IInputBasedControlController<TValue, TOutputs> => {
     const { formatter, valueExtractor } = { ...options };
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
     const isEditedRef = useRef(false);
-    const { labels, sizing, className, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
+    const { sizing, className, onNotifyOutputChanged } = useControl(name, props);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -76,7 +72,6 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     return {
         className: className,
         value,
-        labels,
         sizing,
         onNotifyOutputChanged,
         setValue: setEditedValue

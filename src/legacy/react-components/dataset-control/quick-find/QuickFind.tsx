@@ -1,3 +1,5 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { useEffect, useMemo, useState } from "react";
 import { IRibbonQuickFindWrapperProps } from "../interfaces";
 import { useModel } from "../useModel";
@@ -13,7 +15,7 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
   const model = useModel();
   const dataset = model.getDatasetControl().getDataset();
   const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
-  const labels = model.getLabels();
+  const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
   const styles = useMemo(() => getQuickFindStyles(), []);
   const id = useMemo(() => `quickfind-${crypto.randomUUID()}`, []);
   const [isCalloutVisible, setIsCalloutVisible] = useState<boolean>(false);
@@ -49,7 +51,7 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
     return <div {...props.containerProps}>
       {props.onRenderTextField({
         value: query,
-        placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
+        placeholder: `${labels.get('legacyDatasetControl.search')} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.get('legacyDatasetControl.records')}...`,
         styles: {
           root: styles.textFieldRoot,
           fieldGroup: styles.fieldGroup
@@ -104,12 +106,12 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
               return <Callout {...calloutProps}>
                 {props.isLikeQuery &&
                   props.onRenderLikeOperatorWarning({}, (props) => {
-                    return <Text {...props}><FontIcon className={styles.calloutWarningIcon} iconName="Warning" />{labels["quickfind-like-warning"]()}</Text>
+                    return <Text {...props}><FontIcon className={styles.calloutWarningIcon} iconName="Warning" />{labels.get('legacyDatasetControl.quickFindLikeWarning')}</Text>
                   })
                 }
                 {!props.isLikeQuery && 
                   props.onRenderBegingsWithFilterInfo({}, (props) => {
-                    return <Text {...props}>{labels["quickfind-search-use-filter"]()} <span className={styles.calloutBoldText}>{labels["quickfind-search-starts-with"]()}</span> {labels["quickfind-search-on-these-columns"]()}</Text>
+                    return <Text {...props}>{labels.get('legacyDatasetControl.quickFindSearchUseFilter')} <span className={styles.calloutBoldText}>{labels.get('legacyDatasetControl.quickFindSearchStartsWith')}</span> {labels.get('legacyDatasetControl.quickFindSearchOnTheseColumns')}</Text>
                   })
                 }
                 {props.onRenderColumnsList({

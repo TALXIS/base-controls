@@ -1,13 +1,13 @@
 import { IInternalDataProvider } from "@talxis/client-libraries";
-import { ITranslation } from "@hooks";
+import { LabelsOf } from "@utils";
 import { IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
-import { datasetControlTranslations } from "./translations";
+import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
 
-type Labels = Required<ITranslation<typeof datasetControlTranslations>>;
+type Labels = LabelsOf<typeof LEGACY_DATASET_CONTROL_LABELS>;
 
 interface IDatasetControlModelOptions {
     datasetControl: IDatasetControl;
-    getLabels: () => Labels;
+    labels: Labels;
 }
 
 export class DatasetControlModel {
@@ -21,10 +21,9 @@ export class DatasetControlModel {
         return this._options.datasetControl;
     }
     public getLabels(): Labels {
-        return this._options.getLabels();
+        return this._options.labels;
     }
 
-    //here due to translations, should be part of DatasetControl when we have translations settled
     private _registerInterceptors() {
         const dataset = this._options.datasetControl.getDataset()
         const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
@@ -32,7 +31,7 @@ export class DatasetControlModel {
             if (!dataProvider.isDirty()) {
                 return defaultAction(parameters);
             }
-            else if (window.confirm(this._options.getLabels()['saving-discard-all-confirmation']()) ) {
+            else if (window.confirm(this._options.labels.get('legacyDatasetControl.savingDiscardAllConfirmation')) ) {
                 //@ts-ignore
                 dataProvider['_dirtyRecordIdsSet'].clear();
                 //@ts-ignore

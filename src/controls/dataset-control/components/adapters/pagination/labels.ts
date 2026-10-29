@@ -1,19 +1,13 @@
-/** The strings of the pagination. */
-export interface IPaginationLabels {
-    /** The first page button's tooltip. */
-    firstPageTooltip: string;
-    /** The previous page button's tooltip. */
-    previousPageTooltip: string;
-    /** The next page button's tooltip. */
-    nextPageTooltip: string;
-    /** `number` is the current page's number. */
-    currentPage: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IPaginationLabels}. */
-export const PAGINATION_LABELS: IPaginationLabels = {
-    firstPageTooltip: 'First page',
-    previousPageTooltip: 'Previous',
-    nextPageTooltip: 'Next',
-    currentPage: 'Page {{ number }}',
-};
+/** The strings of the pagination. */
+export const PAGINATION_LABELS = defineLabels({
+    /** The first page button's tooltip. */
+    'pagination.firstPageTooltip': 'First page',
+    /** The previous page button's tooltip. */
+    'pagination.previousPageTooltip': 'Previous',
+    /** The next page button's tooltip. */
+    'pagination.nextPageTooltip': 'Next',
+    /** `number` is the current page's number. */
+    'pagination.currentPage': 'Page {{ number }}',
+});

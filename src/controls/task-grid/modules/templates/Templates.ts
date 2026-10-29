@@ -2,13 +2,13 @@ import { createElement } from "react";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { ICreateTaskTree, ITaskCreateParams, ITasksCreateResult } from "../../provider";
 import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
-import { ITemplatesLabels, TEMPLATES_LABELS } from "./labels";
+import { TEMPLATES_LABELS } from "./labels";
 import { TemplateSelectorAdapter } from "./components/adapters/template-selector";
 import { runQuietly } from "../../runtime/runQuietly";
 
@@ -35,13 +35,10 @@ export interface ITemplatesStore {
 
 export interface ITemplatesParameters {
     onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore;
-    /** Overrides for the module's strings. */
-    labels?: Partial<ITemplatesLabels>;
 }
 
 /** The `templates` module: tasks created from templates, and templates captured from tasks. */
 export interface ITemplates {
-    getLabels(): ILocalizationService<ITemplatesLabels>;
     createTemplatesProvider(): IDataProvider;
     /** Under `parentId`, or at the top level without it; rejects when the store fails. */
     createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null>;
@@ -59,20 +56,16 @@ const FROM_TEMPLATE_COMMAND_ID = 'newFromTemplate';
 export class Templates implements ITemplates {
     private _taskRuntime: ITaskRuntime;
     private _store: ITemplatesStore;
-    private _labels: ILocalizationService<ITemplatesLabels>;
+    private _labels: LabelsOf<typeof TEMPLATES_LABELS>;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: ITemplatesParameters) {
         this._taskRuntime = taskRuntime;
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = new LocalizationService<ITemplatesLabels>({ ...TEMPLATES_LABELS, ...parameters.labels });
+        this._labels = taskRuntime.getLabels(TEMPLATES_LABELS);
         taskRuntime.services.get('datasetControl').parts.whenAvailable('ribbon', ribbon => this._unregisters.push(ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)));
         this._unregisters.push(taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi));
         taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
-    }
-
-    public getLabels(): ILocalizationService<ITemplatesLabels> {
-        return this._labels;
     }
 
     public createTemplatesProvider(): IDataProvider {
@@ -83,14 +76,14 @@ export class Templates implements ITemplates {
         if (!this._taskRuntime.isCreationEnabled()) {
             return null;
         }
-        return this._execute('creatingTasksFromTemplate', () => this._taskRuntime.getProvider().createTasksWith(parentId, params => this._store.onCreateTasks({ ...params, templateId })));
+        return this._execute('templates.creatingTasksFromTemplate', () => this._taskRuntime.getProvider().createTasksWith(parentId, params => this._store.onCreateTasks({ ...params, templateId })));
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
         if (!this._store.onCreateTemplate) {
             throw new Error('The templates store keeps no templates of its own.');
         }
-        await this._execute('savingTemplate', async () => {
+        await this._execute('templates.savingTemplate', async () => {
             const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
             const { data, children } = this._toTemplateTree(task);
             const { [subject]: name, ...rootData } = data ?? {};
@@ -118,15 +111,15 @@ export class Templates implements ITemplates {
                 label: newCommand.label,
                 iconName: newCommand.iconName,
                 commands: [
-                    { ...newCommand, id: 'newTask', label: this._labels.getLocalizedString('task') },
+                    { ...newCommand, id: 'newTask', label: this._labels.get('templates.task') },
                     //its selector comes through the ribbon command UI hook
-                    { id: FROM_TEMPLATE_COMMAND_ID, label: this._labels.getLocalizedString('fromTemplate'), iconName: 'PageList', commands: [] },
+                    { id: FROM_TEMPLATE_COMMAND_ID, label: this._labels.get('templates.fromTemplate'), iconName: 'PageList', commands: [] },
                 ],
             };
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
         if (task && this._store.onCreateTemplate) {
-            commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.getLocalizedString('saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
+            commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.get('templates.saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
         }
     };
 
@@ -149,7 +142,7 @@ export class Templates implements ITemplates {
         const recordId = record.getRecordId();
         result.items.push({
             key: 'fromTemplate',
-            text: this._labels.getLocalizedString('fromTemplate'),
+            text: this._labels.get('templates.fromTemplate'),
             iconProps: { iconName: 'PageList' },
             subMenuProps: {
                 items: [{
@@ -181,8 +174,8 @@ export class Templates implements ITemplates {
         return { data, children };
     }
 
-    private _execute<T>(loadingLabel: 'creatingTasksFromTemplate' | 'savingTemplate', operation: () => Promise<T>): Promise<T> {
-        return this._taskRuntime.execute(operation, { loading: { message: this._labels.getLocalizedString(loadingLabel) }, error: { title: this._labels.getLocalizedString('templatesFailed') } });
+    private _execute<T>(loadingLabel: 'templates.creatingTasksFromTemplate' | 'templates.savingTemplate', operation: () => Promise<T>): Promise<T> {
+        return this._taskRuntime.execute(operation, { loading: { message: this._labels.get(loadingLabel) }, error: { title: this._labels.get('templates.templatesFailed') } });
     }
 }
 

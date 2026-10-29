@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { StateStore, useStateStore } from "@utils";
 import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModule, IDatasetControlView } from "../../../runtime";
 import { DatasetControlState } from "../../../runtime/DatasetControlState";
-import { IDatasetControlLabels } from "./labels";
 import { IDatasetControlComponents } from "./components";
 import { DatasetControlMount } from "./DatasetControlMount";
 
@@ -26,8 +25,6 @@ export interface IDatasetControlProps<TData = unknown> {
     stateKey?: string;
     /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to `true`. */
     destroyProviderOnUnmount?: boolean;
-    /** Read once, at mount. */
-    labels?: Partial<IDatasetControlLabels>;
     /** Replacements for the box, the skeleton and the error. */
     components?: IDatasetControlComponents;
     /** A stable component wrapping each mount's content, rendered before its load. */

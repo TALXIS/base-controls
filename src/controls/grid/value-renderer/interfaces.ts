@@ -51,7 +51,7 @@ export interface IGridValueRendererParameters extends IParameters {
     Placeholder?: IStringProperty;
 }
 
-export interface IGridValueRenderer extends IControl<IGridValueRendererParameters, IOutputs, never, never> {
+export interface IGridValueRenderer extends IControl<IGridValueRendererParameters, IOutputs, never> {
     /** Put on the element the value is drawn in, alongside its own class. */
     className?: string;
     components?: Partial<IGridValueRendererComponents>;

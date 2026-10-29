@@ -1,8 +1,6 @@
 import { createElement } from "react";
-import { ILocalizationService, LocalizationService } from "@utils";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { GANTT_TOOLTIP_LABELS, IGanttTooltipLabels } from "./labels";
 import { TaskTooltipRenderer } from "./components/adapters/renderer";
 
 export interface IGanttTooltipParameters {
@@ -10,12 +8,10 @@ export interface IGanttTooltipParameters {
     onRender?: () => JSX.Element | null;
     /** An option set column the header shows as a pill in its option's colour. */
     statusColumnName?: string;
-    labels?: Partial<IGanttTooltipLabels>;
 }
 
 /** The `tooltip` module: what a bar says when the pointer is on it. */
 export interface IGanttTooltip {
-    getLabels(): ILocalizationService<IGanttTooltipLabels>;
     getStatusColumnName(): string | undefined;
     render(): JSX.Element | null;
     /** Called as the Gantt goes. */
@@ -24,17 +20,11 @@ export interface IGanttTooltip {
 
 export class GanttTooltip implements IGanttTooltip {
     private _parameters: IGanttTooltipParameters;
-    private _labels: ILocalizationService<IGanttTooltipLabels>;
     private _unregisterSurface: () => void;
 
     constructor(gantt: IGantt, parameters: IGanttTooltipParameters) {
         this._parameters = parameters;
-        this._labels = new LocalizationService<IGanttTooltipLabels>({ ...GANTT_TOOLTIP_LABELS, ...parameters.labels });
         this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
-    }
-
-    public getLabels(): ILocalizationService<IGanttTooltipLabels> {
-        return this._labels;
     }
 
     public getStatusColumnName(): string | undefined {

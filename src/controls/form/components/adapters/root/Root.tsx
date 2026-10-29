@@ -3,14 +3,12 @@ import { IOnLoadResult } from "@controls/form/strategies/interfaces";
 import { useEventEmitter, useIsMounted } from "@hooks";
 import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '@controls/form/internal/FormModel';
-import { FormContext, FormLocalizationServiceContext } from "./context";
+import { FormContext } from "./context";
 import { getFormStyles } from "./styles";
 import React from "react";
 import { FormUi } from "@controls/form/components/ui";
 import { FormApi } from "@controls/form/internal/FormApi";
 import { IFormAfterSaveParams, IFormProps, IValidation } from "@controls/form/interfaces";
-import { FORM_LABELS } from "@controls/form/labels";
-import { LocalizationService } from "@utils";
 import { applyFieldConfigs } from "./fieldConfigs";
 
 initializeIcons();
@@ -44,13 +42,6 @@ export const Root = (props: IFormProps) => {
 
 export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefreshRequested: () => void }) => {
     const { children, strategy, deps, onFormReady, onRefreshRequested } = props;
-    const localizationService = useMemo(() => {
-        return new LocalizationService({
-            ...FORM_LABELS,
-            ...props.labels,
-        });
-    }, []);
-
     const form = useMemo(() => {
         const instance = new FormModel({
             strategy: strategy,
@@ -87,12 +78,10 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     }, [children]);
 
     return (
-        <FormLocalizationServiceContext.Provider value={localizationService}>
-            <FormContext.Provider value={form}>
-                <div className={styles.form} data-id={`form-${id}`}>
-                    {children}
-                </div>
-            </FormContext.Provider>
-        </FormLocalizationServiceContext.Provider>
+        <FormContext.Provider value={form}>
+            <div className={styles.form} data-id={`form-${id}`}>
+                {children}
+            </div>
+        </FormContext.Provider>
     )
 }

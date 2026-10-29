@@ -1,9 +1,12 @@
 import type { IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
 import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
-import type { ITaskGridLabels } from "../../labels";
+import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 import { runQuietly } from "../runQuietly";
+
+type TaskLoadingLabel = 'taskGrid.openingTasks' | 'taskGrid.deletingTasks' | 'taskGrid.movingTask' | 'taskGrid.openingRecord';
+type TaskErrorLabel = 'taskGrid.openTasksFailed' | 'taskGrid.deleteTasksFailed' | 'taskGrid.moveTaskFailed' | 'taskGrid.openRecordFailed';
 
 /** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
@@ -40,7 +43,7 @@ export class TaskActions implements ITaskActions {
         const isCreated = await this._runtime.execute(async () => {
             await this._provider.whenTaskCreated(task.getRecordId());
             return true;
-        }, { loading: { show: false }, error: { title: this._runtime.getLabels().getLocalizedString('createTaskFailed'), rethrow: false } });
+        }, { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
         if (!isCreated) {
             return null;
         }
@@ -50,7 +53,7 @@ export class TaskActions implements ITaskActions {
     }
 
     public async open(taskIds: string[]): Promise<IOpenTasksResult | null> {
-        return this._execute(() => this._provider.openTasks(taskIds), 'openingTasks', 'openTasksFailed');
+        return this._execute(() => this._provider.openTasks(taskIds), 'taskGrid.openingTasks', 'taskGrid.openTasksFailed');
     }
 
     public async delete(taskIds: string[]): Promise<void> {
@@ -58,28 +61,28 @@ export class TaskActions implements ITaskActions {
             return;
         }
         const navigation = this._runtime.services.get('pcfContext').navigation;
-        const labels = this._runtime.getLabels();
+        const labels = this._runtime.getLabels(TASK_GRID_LABELS);
         const provider = this._provider;
         const { deletableTaskIds, refusedTaskIds } = provider.getDeletion(taskIds);
         if (deletableTaskIds.length === 0) {
-            await navigation.openErrorDialog({ message: labels.getLocalizedString('tasksCannotBeDeleted') });
+            await navigation.openErrorDialog({ message: labels.get('taskGrid.tasksCannotBeDeleted') });
             return;
         }
         const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
-        const text = subtaskCount > 0 ? labels.getLocalizedString('confirmDeleteTasksWithSubtasks', { count: String(subtaskCount) }) : labels.getLocalizedString('confirmDeleteTasks');
+        const text = subtaskCount > 0 ? labels.get('taskGrid.confirmDeleteTasksWithSubtasks', { count: subtaskCount }) : labels.get('taskGrid.confirmDeleteTasks');
         const confirmation = await navigation.openConfirmDialog({ text });
         if (!confirmation.confirmed) {
             return;
         }
-        const result = await this._execute(() => provider.deleteTasks(taskIds), 'deletingTasks', 'deleteTasksFailed');
+        const result = await this._execute(() => provider.deleteTasks(taskIds), 'taskGrid.deletingTasks', 'taskGrid.deleteTasksFailed');
         const failures = [
             ...(result?.success === false ? result.errors : []),
-            ...refusedTaskIds.map(id => ({ id, error: labels.getLocalizedString('taskCannotBeDeleted') })),
+            ...refusedTaskIds.map(id => ({ id, error: labels.get('taskGrid.taskCannotBeDeleted') })),
         ];
         if (failures.length > 0) {
             const subject = this._runtime.getFieldMapping().subject;
             const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
-            await navigation.openErrorDialog({ message: labels.getLocalizedString('deleteTasksFailed'), details: message });
+            await navigation.openErrorDialog({ message: labels.get('taskGrid.deleteTasksFailed'), details: message });
         }
     }
 
@@ -94,7 +97,7 @@ export class TaskActions implements ITaskActions {
                 throw new Error(result.errors?.map(error => error.message).join('\n'));
             }
             return true;
-        }, 'movingTask', 'moveTaskFailed');
+        }, 'taskGrid.movingTask', 'taskGrid.moveTaskFailed');
     }
 
     public async openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void> {
@@ -107,15 +110,15 @@ export class TaskActions implements ITaskActions {
     }
 
     public async openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void> {
-        await this._execute(() => this._provider.openRelatedRecord(reference, columnName), 'openingRecord', 'openRecordFailed');
+        await this._execute(() => this._provider.openRelatedRecord(reference, columnName), 'taskGrid.openingRecord', 'taskGrid.openRecordFailed');
     }
 
     private get _provider(): ITaskDataProvider {
         return this._runtime.getProvider();
     }
 
-    private _execute<T>(operation: () => Promise<T>, loadingLabel: keyof ITaskGridLabels, errorLabel: keyof ITaskGridLabels): Promise<T> {
-        const labels = this._runtime.getLabels();
-        return this._runtime.execute(operation, { loading: { message: labels.getLocalizedString(loadingLabel) }, error: { title: labels.getLocalizedString(errorLabel) } });
+    private _execute<T>(operation: () => Promise<T>, loadingLabel: TaskLoadingLabel, errorLabel: TaskErrorLabel): Promise<T> {
+        const labels = this._runtime.getLabels(TASK_GRID_LABELS);
+        return this._runtime.execute(operation, { loading: { message: labels.get(loadingLabel) }, error: { title: labels.get(errorLabel) } });
     }
 }

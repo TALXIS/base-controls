@@ -9,7 +9,7 @@ export const TextField = (props: ITextField) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs>('TextField', props);
 
     const getInputType = () => {
         switch (boundValue.type) {

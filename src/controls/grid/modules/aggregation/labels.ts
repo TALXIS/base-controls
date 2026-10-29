@@ -1,24 +1,14 @@
-/** Every localizable string this module renders. */
-export interface IGridAggregationLabels {
-    totalNone: string;
-    totalAverage: string;
-    totalMaximum: string;
-    totalMinimum: string;
-    totalSum: string;
-    totalCount: string;
-    totalCountColumn: string;
-    /** What this module's section of a column's menu is called. */
-    menuSection: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IGridAggregationLabels}. */
-export const GRID_AGGREGATION_LABELS: IGridAggregationLabels = {
-    totalNone: 'None',
-    totalAverage: 'Average',
-    totalMaximum: 'Maximum',
-    totalMinimum: 'Minimum',
-    totalSum: 'Sum',
-    totalCount: 'Count (including empty values)',
-    totalCountColumn: 'Count',
-    menuSection: 'Totals',
-};
+/** Every localizable string this module renders. */
+export const GRID_AGGREGATION_LABELS = defineLabels({
+    'gridAggregation.totalNone': 'None',
+    'gridAggregation.totalAverage': 'Average',
+    'gridAggregation.totalMaximum': 'Maximum',
+    'gridAggregation.totalMinimum': 'Minimum',
+    'gridAggregation.totalSum': 'Sum',
+    'gridAggregation.totalCount': 'Count (including empty values)',
+    'gridAggregation.totalCountColumn': 'Count',
+    /** What this module's section of a column's menu is called. */
+    'gridAggregation.menuSection': 'Totals',
+});

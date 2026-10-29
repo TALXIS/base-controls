@@ -1,11 +1,7 @@
-/** The strings of the checklist module. */
-export interface IChecklistLabels {
-    checklist: string;
-    loadChecklistFailed: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IChecklistLabels}. */
-export const CHECKLIST_LABELS: IChecklistLabels = {
-    checklist: 'Checklist',
-    loadChecklistFailed: 'The checklists could not be loaded.',
-};
+/** The strings of the checklist module. */
+export const CHECKLIST_LABELS = defineLabels({
+    'checklist.checklist': 'Checklist',
+    'checklist.loadChecklistFailed': 'The checklists could not be loaded.',
+});

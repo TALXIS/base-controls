@@ -1,15 +1,14 @@
 import { useMemo } from "react";
 import { SpinnerSize } from "@fluentui/react";
-import { LocalizationService } from "@utils";
+import { useLabels } from "@utils/localization";
 import { ILoadingBoundaryComponents, LoadingBoundaryComponents } from "./components";
-import { ILoadingBoundaryLabels, LOADING_BOUNDARY_LABELS } from "./labels";
+import { LOADING_BOUNDARY_LABELS } from "./labels";
 import { getLoadingBoundaryStyles } from "./styles";
 
 export interface ILoadingBoundaryProps {
     /** Draws the spinner in place of the children while `true`. */
     isLoading: boolean;
     children?: React.ReactNode;
-    labels?: Partial<ILoadingBoundaryLabels>;
     components?: Partial<ILoadingBoundaryComponents>;
 }
 
@@ -17,7 +16,7 @@ export interface ILoadingBoundaryProps {
 export const LoadingBoundary = (props: ILoadingBoundaryProps) => {
     const components = { ...LoadingBoundaryComponents, ...props.components };
     const styles = useMemo(() => getLoadingBoundaryStyles(), []);
-    const labels = useMemo(() => new LocalizationService<ILoadingBoundaryLabels>({ ...LOADING_BOUNDARY_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(LOADING_BOUNDARY_LABELS);
 
     if (!props.isLoading) {
         return <>{props.children}</>;
@@ -26,7 +25,7 @@ export const LoadingBoundary = (props: ILoadingBoundaryProps) => {
         className: styles.loadingBoundary,
         children: <>
             {components.onRenderSpinner({ size: SpinnerSize.small })}
-            {components.onRenderText({ children: labels.getLocalizedString('loading') })}
+            {components.onRenderText({ children: labels.get('loadingBoundary.loading') })}
         </>,
     });
 };

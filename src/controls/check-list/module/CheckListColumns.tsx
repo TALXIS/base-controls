@@ -6,6 +6,7 @@ import { IGridCellCommands } from "../../grid/services/cells";
 import { IGridColumnContext } from "../../grid/services/columns/colDef";
 import { IGridServiceLocator } from "../../grid/services";
 import { IGridCheckList } from "./GridCheckList";
+import { CHECK_LIST_LABELS } from "../labels";
 import { CompletionCell } from "./completion-cell";
 import { NameCell } from "./name-cell";
 import { CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME } from "./constants";
@@ -92,7 +93,7 @@ export class CheckListColumns {
         if (!this._checkList.isItem(params.record)) {
             return;
         }
-        const label = this._checkList.getLabels().getLocalizedString('deleteItem');
+        const label = this._services.get('localization').getLabels(CHECK_LIST_LABELS).get('checkList.deleteItem');
         const iconStyle = { color: this._services.get('theme').semanticColors.errorIcon };
         result.items.push({
             key: 'delete',
@@ -109,7 +110,7 @@ export class CheckListColumns {
 
     private async _deleteItem(record: IRecord): Promise<void> {
         const confirmation = await this._services.get('pcfContext').navigation.openConfirmDialog({
-            text: this._checkList.getLabels().getLocalizedString('confirmDialog.deleteItem.text'),
+            text: this._services.get('localization').getLabels(CHECK_LIST_LABELS).get('checkList.confirmDialog.deleteItem.text'),
         });
         if (!confirmation.confirmed) {
             return;

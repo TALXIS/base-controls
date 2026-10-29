@@ -1,8 +1,8 @@
 import { ColDef } from "ag-grid-community";
 import { IContextualMenuItem } from "@fluentui/react";
 import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@talxis/client-libraries";
-import { ILocalizationService } from "@utils";
-import { IGridSortingLabels } from "./labels";
+import { LabelsOf } from "@utils";
+import { GRID_SORTING_LABELS } from "./labels";
 import { GridSortingIconComponents, IGridSortingComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
@@ -125,12 +125,12 @@ export class GridSorting implements IGridSorting {
         if (this.isSorted(column)) {
             mine.push({
                 key: 'clear',
-                text: this._labels.getLocalizedString('clear'),
+                text: this._labels.get('gridSorting.clear'),
                 iconProps: { iconName: 'ClearSelection' },
                 onClick: () => this.clearColumnSorting(column.name),
             });
         }
-        sections.push({ key: 'sorting', title: this._labels.getLocalizedString('menuSection'), items: mine });
+        sections.push({ key: 'sorting', title: this._labels.get('gridSorting.menuSection'), items: mine });
     };
 
     /** The sort direction, as the header shows it. */
@@ -158,33 +158,33 @@ export class GridSorting implements IGridSorting {
             case DataTypes.WholeDuration:
             case DataTypes.Currency: {
                 if (!descending) {
-                    return this._labels.getLocalizedString('sortNumberAscending')
+                    return this._labels.get('gridSorting.sortNumberAscending')
                 }
-                return this._labels.getLocalizedString('sortNumberDescending')
+                return this._labels.get('gridSorting.sortNumberDescending')
             }
             case DataTypes.DateAndTimeDateAndTime:
             case DataTypes.DateAndTimeDateOnly: {
                 if (!descending) {
-                    return this._labels.getLocalizedString('sortDateAscending')
+                    return this._labels.get('gridSorting.sortDateAscending')
                 }
-                return this._labels.getLocalizedString('sortDateDescending')
+                return this._labels.get('gridSorting.sortDateDescending')
             }
             case DataTypes.TwoOptions: {
                 const [first, second] = column.metadata?.OptionSet ?? [];
                 //metadata without both options reads like text
                 if (!first || !second) {
-                    return this._labels.getLocalizedString(descending ? 'sortTextDescending' : 'sortTextAscending');
+                    return this._labels.get(descending ? 'gridSorting.sortTextDescending' : 'gridSorting.sortTextAscending');
                 }
                 if (!descending) {
-                    return `${first.Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${second.Label}`
+                    return `${first.Label} ${this._labels.get('gridSorting.sortTwoOptionsJoint')} ${second.Label}`
                 }
-                return `${second.Label} ${this._labels.getLocalizedString('sortTwoOptionsJoint')} ${first.Label}`
+                return `${second.Label} ${this._labels.get('gridSorting.sortTwoOptionsJoint')} ${first.Label}`
             }
             default: {
                 if (!descending) {
-                    return this._labels.getLocalizedString('sortTextAscending')
+                    return this._labels.get('gridSorting.sortTextAscending')
                 }
-                return this._labels.getLocalizedString('sortTextDescending')
+                return this._labels.get('gridSorting.sortTextDescending')
             }
         }
 
@@ -202,7 +202,7 @@ export class GridSorting implements IGridSorting {
         return this._services.get('components');
     }
 
-    private get _labels(): ILocalizationService<IGridSortingLabels> {
-        return this._services.get('labels');
+    private get _labels(): LabelsOf<typeof GRID_SORTING_LABELS> {
+        return this._services.get('gridServices').get('localization').getLabels(GRID_SORTING_LABELS);
     }
 }

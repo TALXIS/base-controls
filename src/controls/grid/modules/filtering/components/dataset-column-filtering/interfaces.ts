@@ -1,14 +1,13 @@
 import { IThemeProviderProps } from "@utils";
-import { IControl, IParameters, IStringProperty, ITranslations } from "@interfaces";
+import { IControl, IParameters, IStringProperty } from "@interfaces";
 import { IOptionSet } from "@controls/fields/option-set";
-import { datasetColumnFilteringTranslations } from "./translations";
 import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
 import { IButtonProps as IFluentButtonProps } from "@fluentui/react";
 import React from "react";
 import { Filtering } from "@talxis/client-libraries";
 
 
-export interface IDatasetColumnFiltering extends IControl<IDatasetColumnFilteringParameters, ComponentFramework.PropertyHelper.DataSetApi.FilterExpression, Partial<ITranslations<typeof datasetColumnFilteringTranslations>>, IDatasetColumnFilteringComponentProps> {
+export interface IDatasetColumnFiltering extends IControl<IDatasetColumnFilteringParameters, ComponentFramework.PropertyHelper.DataSetApi.FilterExpression, IDatasetColumnFilteringComponentProps> {
 }
 
 export interface IDatasetColumnFilteringParameters extends IParameters {

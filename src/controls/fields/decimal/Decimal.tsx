@@ -41,7 +41,7 @@ export const Decimal = (props: IDecimal) => {
         return result.value as number;
     };
 
-    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });

@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Operators } from "@talxis/client-libraries";
-import { useControlLabels } from "@hooks";
-import { usePcfContext } from "@utils";
+import { useLabels, usePcfContext } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
-import { useGridColumnHeader, useGridFilteringLabels, useGridService } from "@controls/grid";
+import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS, GRID_FILTERING_LABELS, useGridColumnHeader, useGridService } from "@controls/grid";
 import { useTaskGridContext } from "../../../../../context";
-import { gridTranslations } from "@controls/grid/translations";
-import { datasetColumnFilteringTranslations } from "@controls/grid/modules/filtering/components/dataset-column-filtering/translations";
 import { LookupManyFilter, LookupManyFilterValueKind } from "../../ui";
 import { getLookupManyComponents } from "../getLookupManyComponents";
+import { LOOKUP_MANY_LABELS } from "../../../labels";
 
 type Reference = ComponentFramework.EntityReference;
 type Condition = ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression;
@@ -41,14 +39,13 @@ const unwrapText = (value: string): string => value.replace(/^%|%$/g, '');
 export const LookupManyFilterCallout = () => {
     const header = useGridColumnHeader();
     const context = usePcfContext();
-    const operatorLabels = useControlLabels<typeof datasetColumnFilteringTranslations>({ languageId: context.userSettings.languageId, defaultTranslations: datasetColumnFilteringTranslations });
-    const gridLabels = useControlLabels<typeof gridTranslations>({ languageId: context.userSettings.languageId, defaultTranslations: gridTranslations });
+    const operatorLabels = useLabels(FILTER_OPERATORS_LABELS);
     const column = header.getColumn()!;
     const lookupMany = useDatasetControlModule('lookupMany');
     const { runtime } = useTaskGridContext();
-    const filteringLabels = useGridFilteringLabels();
+    const filteringLabels = useLabels(GRID_FILTERING_LABELS);
     const calloutComponents = useGridService('grid').modules.find('filtering')?.components.filterCallout;
-    const labels = lookupMany.getLabels();
+    const labels = useLabels(LOOKUP_MANY_LABELS);
     const condition = useMemo(() => lookupMany.getFilterCondition(column.name), []);
     const [operator, setOperator] = useState<number>(condition?.conditionOperator ?? Operators.ContainValues.Value);
     const [records, setRecords] = useState<Reference[]>(() => getSavedRecords(condition));
@@ -98,18 +95,18 @@ export const LookupManyFilterCallout = () => {
     const supportedOperators: number[] = column.metadata?.SupportedFilterConditionOperators ?? [];
     return <LookupManyFilter
         target={header.getElement()}
-        title={filteringLabels.getLocalizedString('filterMenuFilterBy')}
+        title={filteringLabels.get('gridFiltering.filterMenuFilterBy')}
         context={context}
-        operators={supportedOperators.map(value => ({ value, label: operatorLabels[`operator-${value}` as keyof typeof datasetColumnFilteringTranslations]() }))}
+        operators={supportedOperators.map(value => ({ value, label: operatorLabels.get(FILTER_OPERATOR_LABEL_KEYS[value]) }))}
         operator={operator}
         valueKind={valueKind}
         dataProvider={optionsProvider}
         records={records}
         text={text}
-        applyText={gridLabels['filtermenu-applybutton']()}
-        clearText={filteringLabels.getLocalizedString('clear')}
-        noRecordsFoundText={labels.getLocalizedString('noRecordsFound')}
-        loadingText={labels.getLocalizedString('loading')}
+        applyText={filteringLabels.get('gridFiltering.apply')}
+        clearText={filteringLabels.get('gridFiltering.clear')}
+        noRecordsFoundText={labels.get('lookupMany.noRecordsFound')}
+        loadingText={labels.get('lookupMany.loading')}
         isClearDisabled={records.length === 0 && !text}
         selectComponents={selectComponents}
         calloutComponents={calloutComponents}

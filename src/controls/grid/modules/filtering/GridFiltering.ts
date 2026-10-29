@@ -2,9 +2,9 @@ import { IEventSubscriber } from "@utils";
 import { createElement } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, DataTypes, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, ILocalizationService } from "@utils";
+import { HookRegistry, LabelsOf } from "@utils";
 import { IParameters } from "@interfaces";
-import { IGridFilteringLabels } from "./labels";
+import { GRID_FILTERING_LABELS } from "./labels";
 import { GridFilteringIconComponents, IGridFilteringComponents } from "./moduleComponents";
 import { FilterCalloutHost } from "./components/filter-callout-host/FilterCalloutHost";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
@@ -70,8 +70,6 @@ export interface IGridFiltering {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
-    /** The strings this module renders, for its own components. */
-    getLabels(): ILocalizationService<IGridFilteringLabels>;
     /** Which column's filter callout is open, if any. */
     getOpenColumnName(): string | undefined;
     /** What the open filter is drawn against: the header it was opened from. */
@@ -135,10 +133,6 @@ export class GridFiltering implements IGridFiltering {
     };
 
 
-    public getLabels(): ILocalizationService<IGridFilteringLabels> {
-        return this._labels;
-    }
-
     public getFiltering(): Filtering {
         return this._filtering;
     }
@@ -198,7 +192,7 @@ export class GridFiltering implements IGridFiltering {
         }
         const mine: IContextualMenuItem[] = [{
             key: 'filter',
-            text: this._labels.getLocalizedString('filterMenuFilterBy'),
+            text: this._labels.get('gridFiltering.filterMenuFilterBy'),
             iconProps: { iconName: 'Filter' },
             //the header the menu was opened from is what the filter is drawn against
             onClick: () => this.openFilter(column.name, header.getElement()),
@@ -206,12 +200,12 @@ export class GridFiltering implements IGridFiltering {
         if (this.isFiltered(column)) {
             mine.push({
                 key: 'clearFilter',
-                text: this._labels.getLocalizedString('clear'),
+                text: this._labels.get('gridFiltering.clear'),
                 iconProps: { iconName: 'ClearFilter' },
                 onClick: () => this.removeColumnFilter(column.name, true),
             });
         }
-        sections.push({ key: 'filtering', title: this._labels.getLocalizedString('menuSection'), items: mine});
+        sections.push({ key: 'filtering', title: this._labels.get('gridFiltering.menuSection'), items: mine});
     };
 
     /** The funnel, while a filter is applied to the dataset. */
@@ -240,7 +234,7 @@ export class GridFiltering implements IGridFiltering {
         return this._services.get('components');
     }
 
-    private get _labels(): ILocalizationService<IGridFilteringLabels> {
-        return this._services.get('labels');
+    private get _labels(): LabelsOf<typeof GRID_FILTERING_LABELS> {
+        return this._services.get('gridServices').get('localization').getLabels(GRID_FILTERING_LABELS);
     }
 }

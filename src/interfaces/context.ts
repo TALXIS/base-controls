@@ -10,10 +10,9 @@ export interface IPcfContext<TInputs = any, TEvents = any> extends ComponentFram
     formatting: IFormatting;
 }
 
-export interface IControl<TParameters extends IParameters, TOutputs, TTranslations, TComponentProps> {
+export interface IControl<TParameters extends IParameters, TOutputs, TComponentProps> {
     context: IPcfContext;
     parameters: TParameters;
-    translations?: TTranslations;
     state?: ComponentFramework.Dictionary;
     /**
     * Fires when the component changes the parameter value. It is usually fired directly after the change occurs in the value.
@@ -24,8 +23,4 @@ export interface IControl<TParameters extends IParameters, TOutputs, TTranslatio
     * Allows you to override the props of the internal component that the control uses for UI rendering. Might not work on every control. ONLY USE WHEN ABSOLUTELY NECESSARY AND CONSULT YOUR INTENTIONS WITH BRY!
     */
     onOverrideComponentProps?: (props: TComponentProps) => TComponentProps; 
-}
-
-export type ITranslations<T> = {
-    [Property in keyof T]: T[Property] extends string[] ? string[] : string
 }

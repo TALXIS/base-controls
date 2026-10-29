@@ -9,14 +9,13 @@ import { DateTime } from '@controls/fields/date-time';
 import { MultiSelectOptionSet } from '@controls/fields/multi-select-option-set';
 import { Lookup } from '@controls/fields/lookup';
 import { OptionSet } from '@controls/fields/option-set';
-import { BaseControls } from '@utils';
+import { BaseControls, useLabels } from '@utils';
 import { getInternalNestedControlStyles, getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@legacy';
 import { MessageBar, MessageBarButton, MessageBarType, SpinnerSize } from '@fluentui/react';
 import { Shimmer } from '@ui';
 import ReactDOM from 'react-dom';
-import { useControlLabels } from '@hooks';
-import { getDefaultNestedControlRendererTranslations } from './translations';
+import { NESTED_CONTROL_RENDERER_LABELS } from './labels';
 import { Ribbon as LegacyRibbon } from '@legacy/ribbon';
 import { GridInlineRibbon } from '@controls/grid/inline-ribbon';
 import { GridValueRenderer } from '@controls/grid/value-renderer';
@@ -33,11 +32,6 @@ interface IRef {
 
 export const NestedControlRenderer = (props: INestedControlRenderer) => {
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const labels = useControlLabels({
-        translations: props.translations,
-        languageId : props.context.userSettings.languageId,
-        defaultTranslations: getDefaultNestedControlRendererTranslations()
-    })
     const { rerender } = useRerender();
     const isBaseControl = useMemo(() => {
         return BaseControls.IsBaseControl(props.parameters.ControlName);
@@ -198,7 +192,6 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
 
     return <InternalNestedControlRenderer
         ref={internalControlRendererRef}
-        labels={labels}
         control={getRef().control ?? undefined}
         baseControl={getRef().isBaseControl ? getBaseControl() : undefined}
         parameters={getRef().props.parameters}
@@ -208,7 +201,6 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
 interface IInternalNestedControlRendererProps {
     parameters: INestedControlRendererParameters;
     componentProps: INestedControlRendererComponentProps;
-    labels: any;
     loadingType?: 'spinner' | 'shimmer';
     control?: NestedControl;
     /** Set for base controls: rendered as a child of this component, instead of into the container. */
@@ -223,7 +215,8 @@ interface IInternalNestedControlRendererRef {
 
 const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererRef, IInternalNestedControlRendererProps>((props, ref) => {
     //once control is defined, it is initialized
-    const { control, parameters, componentProps, labels, baseControl: BaseControl } = props;
+    const { control, parameters, componentProps, baseControl: BaseControl } = props;
+    const labels = useLabels(NESTED_CONTROL_RENDERER_LABELS);
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
     const styles = useMemo(() => getInternalNestedControlStyles(), []);
@@ -259,9 +252,9 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
             }
             {errorMessage &&
                 <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>
-                    <MessageBarButton className={componentProps.messageBarProps.buttonProps.className} onClick={() => onShowErrorDialog()}>{labels.detail()}</MessageBarButton>
+                    <MessageBarButton className={componentProps.messageBarProps.buttonProps.className} onClick={() => onShowErrorDialog()}>{labels.get('nestedControlRenderer.detail')}</MessageBarButton>
                 </div>} {...componentProps?.messageBarProps}>
-                    {labels.control()} <b>{parameters.ControlName}</b> {labels.failedToLoad()}.
+                    {labels.get('nestedControlRenderer.control')} <b>{parameters.ControlName}</b> {labels.get('nestedControlRenderer.failedToLoad')}.
                 </MessageBar>
             }
             <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? { display: 'none' } : undefined} {...componentProps.controlContainerProps}>

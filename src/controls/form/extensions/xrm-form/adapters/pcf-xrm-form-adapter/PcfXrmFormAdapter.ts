@@ -1,7 +1,8 @@
 import type { IXrmFormStrategy } from '../../interfaces';
 import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
-import type { IFormLabels } from '@controls/form/labels';
+import { FORM_LABELS } from '@controls/form/labels';
+import { translateLabels, type Labels } from '@utils';
 import { getTheme } from '@fluentui/react';
 import type { ITheme } from '@theme';
 
@@ -17,7 +18,7 @@ export interface IPcfXrmFormAdapterRenderProps<IInputs extends IPcfXrmFormAdapte
     context: ComponentFramework.Context<IInputs>;
     strategy: IXrmFormStrategy;
     strategyVersion: string;
-    labels: Partial<IFormLabels>;
+    labels: Labels;
     theme: ITheme;
     onFormReady: (formContext: IXrmFormContext) => Promise<void>;
 }
@@ -106,14 +107,14 @@ export class PcfXrmFormAdapter<IInputs extends IPcfXrmFormAdapterInputs> {
         this._container.style.padding = height === '100%' ? '16px' : '';
     }
 
-    private _getLabels(): Partial<IFormLabels> {
-        return {
-            save: this._context.resources.getString('save'),
-            saving: this._context.resources.getString('saving'),
-            saved: this._context.resources.getString('saved'),
-            unsavedChanges: this._context.resources.getString('unsavedChanges'),
-            groupedNotificationsSummary: this._context.resources.getString('groupedNotificationsSummary'),
-        };
+    private _getLabels(): Labels {
+        return translateLabels(FORM_LABELS, {
+            'form.save': this._context.resources.getString('save'),
+            'form.saving': this._context.resources.getString('saving'),
+            'form.saved': this._context.resources.getString('saved'),
+            'form.unsavedChanges': this._context.resources.getString('unsavedChanges'),
+            'form.groupedNotificationsSummary': this._context.resources.getString('groupedNotificationsSummary'),
+        });
     }
 
     private _getTheme(): ITheme {

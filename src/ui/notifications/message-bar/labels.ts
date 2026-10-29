@@ -1,7 +1,5 @@
-export interface INotificationMessageBarLabels {
-    groupedNotificationsSummary: string;
-}
+import { defineLabels } from "@utils/localization";
 
-export const NOTIFICATION_MESSAGE_BAR_LABELS: INotificationMessageBarLabels = {
-    groupedNotificationsSummary: "You have {{ count }} notifications. Select to view them.",
-};
+export const NOTIFICATION_MESSAGE_BAR_LABELS = defineLabels({
+    'notificationMessageBar.groupedNotificationsSummary': "You have {{ count }} notifications. Select to view them.",
+});

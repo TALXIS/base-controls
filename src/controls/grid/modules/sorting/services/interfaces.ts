@@ -1,14 +1,11 @@
-import type { ILocalizationService, IServiceLocator } from "@utils";
+import type { IServiceLocator } from "@utils";
 import type { IGridServiceLocator } from "../../../services";
-import type { IGridSortingLabels } from "../labels";
 import type { IGridSortingComponents } from "../moduleComponents";
 
 /** Everything this module hands around, keyed by name and typed by its contract. */
 export interface IGridSortingServiceMap {
     /** The grid's locator: the provider, the columns, the other modules. */
     gridServices: IGridServiceLocator;
-    /** The strings this module renders. */
-    labels: ILocalizationService<IGridSortingLabels>;
     /** The parts of what this module draws, as the caller replaced them. */
     components: IGridSortingComponents;
 }

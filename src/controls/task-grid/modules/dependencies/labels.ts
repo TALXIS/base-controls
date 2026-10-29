@@ -1,22 +1,13 @@
-/** The strings of the dependencies module. */
-export interface IDependenciesLabels {
-    predecessors: string;
-    successors: string;
-    creatingDependency: string;
-    savingDependency: string;
-    deletingDependency: string;
-    /** Titles the dialog a write of a dependency failed with. */
-    dependenciesFailed: string;
-    loadDependenciesFailed: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IDependenciesLabels}. */
-export const DEPENDENCIES_LABELS: IDependenciesLabels = {
-    predecessors: 'Predecessors',
-    successors: 'Successors',
-    creatingDependency: 'Creating dependency...',
-    savingDependency: 'Saving dependency...',
-    deletingDependency: 'Deleting dependency...',
-    dependenciesFailed: 'The dependency could not be saved.',
-    loadDependenciesFailed: 'The dependencies could not be loaded.',
-};
+/** The strings of the dependencies module. */
+export const DEPENDENCIES_LABELS = defineLabels({
+    'dependencies.predecessors': 'Predecessors',
+    'dependencies.successors': 'Successors',
+    'dependencies.creatingDependency': 'Creating dependency...',
+    'dependencies.savingDependency': 'Saving dependency...',
+    'dependencies.deletingDependency': 'Deleting dependency...',
+    /** Titles the dialog a write of a dependency failed with. */
+    'dependencies.dependenciesFailed': 'The dependency could not be saved.',
+    'dependencies.loadDependenciesFailed': 'The dependencies could not be loaded.',
+});

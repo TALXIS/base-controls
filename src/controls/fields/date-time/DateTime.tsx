@@ -20,7 +20,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const datePickerRef = useRef<IDatePicker>(null);
     const context = componentProps.context;
     const parameters = componentProps.parameters;
-    const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
+    const [isDateTime, theme, date, patterns] = useDateTime(componentProps, ref);
     const surfaceTheme = useSurfaceTheme();
     const styles = getDateTimeStyles(theme);
     const { height, width, fillsAvailableSpace } = useControlSizing(componentProps.context.mode, componentProps.parameters);
@@ -45,7 +45,7 @@ export const DateTime = (componentProps: IDateTime) => {
         isDateTime: isDateTime,
         date: date,
         patterns: patterns,
-        labels: labels,
+        dateFormattingInfo: context.formatting.dateFormattingInfo,
         theme: theme,
         lastInputedTimeString: lastInputedTimeString
     };

@@ -3,8 +3,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
-import { getDefaultDurationTranslations } from './translations';
+import { useLabels } from '@utils';
+import { DURATION_LABELS } from './labels';
 import { DEFAULT_DURATION_OPTIONS, WORKING_DAY_DURATION_OPTIONS } from "./durationOptions";
+
+const splitWords = (words: string): string[] => words.split(',').map(word => word.trim());
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
@@ -12,6 +15,7 @@ export const Duration = (props: IDuration) => {
     const componentRef = useRef<IComboBox>(null);
     const context = props.context;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    const labels = useLabels(DURATION_LABELS);
     const hoursPerDay = typeof parameters.HoursPerDay?.raw === 'number' && parameters.HoursPerDay.raw > 0 ? parameters.HoursPerDay.raw : 24;
 
     const formatter = (value: number | null) => {
@@ -28,14 +32,14 @@ export const Duration = (props: IDuration) => {
         if (!str?.trim()) {
             return undefined;
         }
-        //the translations add abbreviations and forms the formatter does not write
+        //the labels add abbreviations and forms the formatter does not write
         const result = context.formatting.parsing.duration.parse({
             value: str,
             hoursPerDay,
             labels: {
-                minute: [...JSON.parse(labels.minute()), ...JSON.parse(labels.minutes())],
-                hour: [...JSON.parse(labels.hour()), ...JSON.parse(labels.hours())],
-                day: [...JSON.parse(labels.day()), ...JSON.parse(labels.days())],
+                minute: splitWords(labels.get('duration.minuteWords')),
+                hour: splitWords(labels.get('duration.hourWords')),
+                day: splitWords(labels.get('duration.dayWords')),
             },
         });
         return result.value;
@@ -47,10 +51,9 @@ export const Duration = (props: IDuration) => {
         return options.map(minutes => ({ key: minutes.toString(), text: formatter(minutes) ?? '' }));
     }, [parameters.DurationOptions?.raw, hoursPerDay]);
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
-        defaultTranslations: getDefaultDurationTranslations(),
     });
 
     const initialFormattedValue = useMemo(() => value, [])

@@ -1,3 +1,5 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
@@ -13,7 +15,7 @@ import { EditColumns } from "../edit-columns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
-    const labels = model.getLabels();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
     const datasetControl = model.getDatasetControl();
     const dataset = datasetControl.getDataset();
     const { rerender } = useRerender();
@@ -43,13 +45,13 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
         return [
             ...(isEditColumnsVisible ? [{
                 key: 'column',
-                text: labels['edit-columns'](),
+                text: labels.get('legacyDatasetControl.editColumns'),
                 iconProps: { iconName: 'ColumnOptions' },
                 onClick: () => setIsEditColumnsPanelVisible(true)
             }] : []),
             ...(isEditFiltersVisible ? [{
                 key: 'filter',
-                text: labels['edit-filters'](),
+                text: labels.get('legacyDatasetControl.editFilters'),
                 iconProps: { iconName: 'Filter' }
             }] : [])];
     }

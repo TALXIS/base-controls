@@ -1,4 +1,5 @@
 import { ErrorHelper } from "@utils/error-handling";
+import { TASK_GRID_LABELS } from "../labels";
 import type { ITaskExecuteError, ITaskExecuteLoading, ITaskExecuteOptions, ITaskRuntime } from "./interfaces";
 
 /** Runs operations under the control's loading overlay, and shows each failure once. */
@@ -49,7 +50,7 @@ export class TaskExecutor {
         if (isObject) {
             this._shownErrors.add(error);
         }
-        const message = options?.title ?? this._runtime.getLabels().getLocalizedString('actionFailed');
+        const message = options?.title ?? this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.actionFailed');
         await this._runtime.services.get('pcfContext').navigation.openErrorDialog({ message, details: ErrorHelper.getMessageFromError(error) });
     }
 }

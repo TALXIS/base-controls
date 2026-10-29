@@ -2,7 +2,8 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useSurfaceTheme } from "@utils";
+import { useLabels, useSurfaceTheme } from "@utils";
+import { LOOKUP_LABELS } from "./labels";
 import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "@hooks/useMouseOver";
@@ -20,7 +21,8 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
     const { height, fillsAvailableSpace } = useControlSizing(props.context.mode, props.parameters);
-    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
+    const [value, entities, records, selectEntity, getSearchResults, theme] = useLookup(props);
+    const labels = useLabels(LOOKUP_LABELS);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
     const suggestionsCalloutTheme = useSurfaceTheme();
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
@@ -106,7 +108,7 @@ export const Lookup = (props: ILookup) => {
     }
 
     const getDisplayName = () => {
-        return props.parameters.value.attributes.DisplayName ?? labels.record();
+        return props.parameters.value.attributes.DisplayName ?? labels.get('lookup.record');
     }
 
     const getSecondaryName = async (result: ComponentFramework.LookupValue & {
@@ -199,7 +201,7 @@ export const Lookup = (props: ILookup) => {
                 if (context.mode.isControlDisabled) {
                     return;
                 }
-                setPlaceholder(`${labels.placeholder()} ${getDisplayName()}`);
+                setPlaceholder(`${labels.get('lookup.placeholder')} ${getDisplayName()}`);
             },
             onMouseLeave: () => {
                 setPlaceholder("---");
@@ -207,18 +209,17 @@ export const Lookup = (props: ILookup) => {
 
         },
         pickerSuggestionsProps: {
-            loadingText: labels.searching(),
-            noResultsFoundText: labels.noRecordsFound(),
+            loadingText: labels.get('lookup.searching'),
+            noResultsFoundText: labels.get('lookup.noRecordsFound'),
             className: suggestionsCalloutStyles.suggestionsContainer,
             // @ts-ignore
             suggestionsHeaderText: (
                 <>
                     {props.parameters.IsInlineNewEnabled?.raw !== false && (
-                        <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
+                        <RecordCreator entities={entities} onCreateRecord={records.create} />
                     )}
                     {props.parameters.value.attributes.Targets.length > 1 && (
                         <TargetSelector
-                            labels={labels}
                             entities={entities}
                             onEntitySelected={(entityName) => {
                                 selectEntity(entityName);
@@ -250,7 +251,7 @@ export const Lookup = (props: ILookup) => {
         selectedItems: value.map((lookup) => {
             return {
                 key: lookup.id,
-                text: lookup.name || labels.noName(),
+                text: lookup.name || labels.get('lookup.noName'),
                 'data-entity': lookup.entityType,
                 'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
                 onClick: () => {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ErrorMessageBar, IErrorMessageBarComponents, IErrorMessageBarLabels } from "@ui/error-message-bar";
+import { ErrorMessageBar, IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { readError } from "./readError";
 
 export interface IErrorBoundaryProps {
@@ -8,7 +8,6 @@ export interface IErrorBoundaryProps {
     error?: unknown;
     /** Adds *Try again* to a passed `error`; a caught render error always remounts the children. */
     onRetry?: () => void;
-    labels?: Partial<IErrorMessageBarLabels>;
     components?: Partial<IErrorMessageBarComponents>;
 }
 
@@ -37,7 +36,7 @@ export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBo
 
     private _renderError(exception: unknown, onRetry?: () => void): React.ReactNode {
         const { title, details } = readError(exception);
-        return <ErrorMessageBar title={title} details={details} onRetry={onRetry} labels={this.props.labels} components={this.props.components} />;
+        return <ErrorMessageBar title={title} details={details} onRetry={onRetry} components={this.props.components} />;
     }
 
     //the children were unmounted when they threw, so clearing the error mounts them anew

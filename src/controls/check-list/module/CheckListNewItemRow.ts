@@ -7,6 +7,7 @@ import { IGridCellHookParameters } from "../../grid/services/cells";
 import { IGridEditedCell } from "../../grid/modules/editing";
 import { GRID_MODULE_PRIORITY } from "../../grid/modules/priorities";
 import { IGridCheckList } from "./GridCheckList";
+import { CHECK_LIST_LABELS } from "../labels";
 
 export interface ICheckListNewItemRowParameters {
     grid: IGrid;
@@ -54,7 +55,7 @@ export class CheckListNewItemRow {
 
     private _onControlParameters = (result: IParameters, params: IGridCellHookParameters): void => {
         if (params.record === this._draft && params.columnName === this._checkList.getFieldMapping().name) {
-            result.Placeholder = { raw: this._checkList.getLabels().getLocalizedString('newItemPlaceholder') };
+            result.Placeholder = { raw: this._grid.getLabels(CHECK_LIST_LABELS).get('checkList.newItemPlaceholder') };
         }
     };
 

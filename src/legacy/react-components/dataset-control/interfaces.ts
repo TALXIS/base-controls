@@ -1,12 +1,9 @@
 import { IPcfContext } from "@interfaces";
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps } from "@fluentui/react";
 import { IThemeProviderProps } from "@utils";
-import { ITranslation } from "@hooks";
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
 import { IDataset } from "@talxis/client-libraries";
 
-import { gridTranslations } from "@controls/grid/translations";
-import { datasetControlTranslations } from "./translations";
 import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
 import React from "react";
 import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
@@ -14,7 +11,7 @@ import { IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
 import { IColumn } from "@talxis/client-libraries";
 
 
-export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
+export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IOutputs, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
     /**
      * Used to provide the Dataset control instance.
      */
@@ -22,7 +19,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: IPcfContext, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: IPcfContext, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any>>
 }
 
 /**

@@ -1,13 +1,13 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
 import type { IColumnMenuSection, IGrid } from "@controls/grid";
-import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
+import { ErrorHelper, type LabelsOf } from "@utils";
 import type { ITaskColumnMatcher, ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TaskColumnValues } from "../column-values";
-import { ILookupManyLabels, LOOKUP_MANY_LABELS } from "./labels";
+import { LOOKUP_MANY_LABELS } from "./labels";
 import { LookupManyCell } from "./components/adapters/lookup-many-cell";
 import { LookupManyCellEditor } from "./components/adapters/lookup-many-cell-editor";
 import { LookupManyColumnHeader } from "./components/adapters/lookup-many-column-header";
@@ -58,8 +58,6 @@ export interface ILookupManyParameters<TColumn extends ILookupManyColumn = ILook
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: TColumn };
     onCreateStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
-    /** Overrides for the module's strings. */
-    labels?: Partial<ILookupManyLabels>;
 }
 
 export interface ILookupManyEvents {
@@ -77,7 +75,6 @@ export interface ILookupMany {
     getError(): unknown;
     /** Loads the tasks' references again, every loaded task's when none are given. */
     reload(taskIds?: string[]): Promise<void>;
-    getLabels(): ILocalizationService<ILookupManyLabels>;
     /** A provider over the records the column can take, for a task or a filter; `undefined` when it takes none. */
     createOptionsProvider(record: IRecord | undefined, column: IColumn): IDataProvider | undefined;
     /** The column's condition in the tasks' filter, if any. */
@@ -101,7 +98,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _taskRuntime: ITaskRuntime;
     private _parameters: ILookupManyParameters<TColumn>;
     private _store: ILookupManyStore<TColumn>;
-    private _labels: ILocalizationService<ILookupManyLabels>;
+    private _labels: LabelsOf<typeof LOOKUP_MANY_LABELS>;
     private _values: TaskColumnValues;
     private _openFilter?: string;
     private _unregisters: (() => void)[] = [];
@@ -110,12 +107,12 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = new LocalizationService<ILookupManyLabels>({ ...LOOKUP_MANY_LABELS, ...parameters.labels });
+        this._labels = taskRuntime.getLabels(LOOKUP_MANY_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => Object.keys(parameters.columns),
             onLoad: this._loadValues,
-            errorMessage: () => this._labels.getLocalizedString('loadLookupManyFailed'),
+            errorMessage: () => this._labels.get('lookupMany.loadLookupManyFailed'),
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
@@ -138,10 +135,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     public reload(taskIds?: string[]): Promise<void> {
         return this._values.reload(taskIds);
-    }
-
-    public getLabels(): ILocalizationService<ILookupManyLabels> {
-        return this._labels;
     }
 
     public getFilterCondition(columnName: string): Condition | undefined {
@@ -202,7 +195,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //a task the store leaves out holds none
     private _loadValues = async (taskIds: string[]): Promise<Map<string, IRawRecord>> => {
-        const errorTitle = this._labels.getLocalizedString('loadLookupManyFailed');
+        const errorTitle = this._labels.get('lookupMany.loadLookupManyFailed');
         const loaded = await this._taskRuntime.execute(() => this._store.onLoadValues(taskIds), { loading: { show: false }, error: { title: errorTitle } });
         const empty = Object.fromEntries(Object.keys(this._parameters.columns).map(columnName => [columnName, []]));
         return new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }]));

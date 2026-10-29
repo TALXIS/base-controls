@@ -1,21 +1,17 @@
 import { IDataProvider, IInternalDataProvider } from "@talxis/client-libraries";
-import { ILocalizationService } from "@utils";
-import type { IDatasetControlLabels } from "../components/adapters/root/labels";
+import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 
 export interface IDatasetControlUnsavedChangesGuardParameters {
     runtime: IDatasetControlRuntime;
-    labels: ILocalizationService<IDatasetControlLabels>;
 }
 
 /** Asks before anything that reloads the provider throws its unsaved changes away. */
 export class DatasetControlUnsavedChangesGuard {
     private _runtime: IDatasetControlRuntime;
-    private _labels: ILocalizationService<IDatasetControlLabels>;
 
     constructor(parameters: IDatasetControlUnsavedChangesGuardParameters) {
         this._runtime = parameters.runtime;
-        this._labels = parameters.labels;
         this._runtime.events.addEventListener('onLoaded', this._onLoaded);
     }
 
@@ -28,7 +24,7 @@ export class DatasetControlUnsavedChangesGuard {
         if (!provider.isDirty()) {
             return defaultAction(parameters);
         }
-        if (!window.confirm(this._labels.getLocalizedString('unsavedChangesConfirmation'))) {
+        if (!window.confirm(this._runtime.getLabels(DATASET_CONTROL_LABELS).get('dataset.unsavedChangesConfirmation'))) {
             return undefined;
         }
         provider.clearChanges();

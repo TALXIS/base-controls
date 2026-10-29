@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useEventEmitter } from "@hooks";
-import { ErrorHelper, usePcfContext } from "@utils";
+import { ErrorHelper, useLabels, usePcfContext } from "@utils";
 import { useRequiredDatasetControlRuntime } from "../../../../../components/adapters/root/context";
 import type { IDatasetControlUserQueriesEvents } from "../../../DatasetControlUserQueries";
+import { USER_QUERIES_LABELS } from "../../../labels";
 import { IManageViewsPanelUiComponents, ManageViewsPanel } from "../../ui";
 import { IManageViewsComponents, ManageViews } from "../manage-views";
 
@@ -27,7 +28,7 @@ export const UserQueries = (props: IUserQueriesProps) => {
         throw new Error('DatasetControl.UserQueries needs the userQueries module.');
     }
     const [isManaging, setIsManaging] = useState(false);
-    const labels = userQueries.getLabels();
+    const labels = useLabels(USER_QUERIES_LABELS);
 
     useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onManageRequested', () => setIsManaging(true));
     useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onOperationFailed', error => {
@@ -44,8 +45,8 @@ export const UserQueries = (props: IUserQueriesProps) => {
         return null;
     }
     return <ManageViewsPanel
-        title={labels.getLocalizedString('manageViews')}
-        closeText={labels.getLocalizedString('close')}
+        title={labels.get('userQueries.manageViews')}
+        closeText={labels.get('userQueries.close')}
         onDismiss={close}
         components={props.components?.manageViewsPanel}>
         <ManageViews components={props.components?.manageViews} />

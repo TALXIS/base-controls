@@ -1,10 +1,7 @@
-/** The strings `DatasetControl` shows itself. */
-export interface IDatasetControlLabels {
-    /** Asked before anything that reloads the provider throws its unsaved changes away. */
-    unsavedChangesConfirmation: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IDatasetControlLabels}. */
-export const DATASET_CONTROL_LABELS: IDatasetControlLabels = {
-    unsavedChangesConfirmation: 'This action will discard all unsaved changes. Would you like to continue?',
-};
+/** The strings `DatasetControl` shows itself. */
+export const DATASET_CONTROL_LABELS = defineLabels({
+    /** Asked before anything that reloads the provider throws its unsaved changes away. */
+    'dataset.unsavedChangesConfirmation': 'This action will discard all unsaved changes. Would you like to continue?',
+});

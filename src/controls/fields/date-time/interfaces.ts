@@ -1,12 +1,11 @@
 import { IDatePickerProps } from "@legacy";
 import { IDateTimeProperty, IStringProperty, ITwoOptionsProperty } from "@interfaces";
-import { IControl, IOutputs, ITranslations } from "@interfaces/context";
+import { IControl, IOutputs } from "@interfaces/context";
 import { IInputParameters } from "@interfaces/parameters";
-import { getDefaultDateTimeTranslations } from "./translations";
 
 
 
-export interface IDateTime extends IControl<IDateTimeParameters, IDateTimeOutputs, Partial<ITranslations<ReturnType<typeof getDefaultDateTimeTranslations>>>, IDatePickerProps> {
+export interface IDateTime extends IControl<IDateTimeParameters, IDateTimeOutputs, IDatePickerProps> {
 }
 export interface IDateTimeParameters extends IInputParameters {
     value: IDateTimeProperty;

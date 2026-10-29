@@ -1,11 +1,11 @@
+import { ThemeProvider, useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from '@dnd-kit/utilities';
 import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text } from "@fluentui/react";
-import { ThemeProvider } from "@utils";
-import { useModel } from "@legacy/dataset-control/useModel";
 import { useEditColumns } from "../useEditColumns";
 import { useThemeGenerator } from "@theme";
 
@@ -15,8 +15,8 @@ export const SortableItem = (props: { column: IColumn }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: column.name });
     const theme = useTheme();
     const styles = useMemo(() => getSortableItemStyles(theme), []);
-    const labels = useModel().getLabels();
-    const displayName = column.displayName ?? labels['no-name']();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
+    const displayName = column.displayName ?? labels.get('legacyDatasetControl.noName');
     const sortableItemTheme = useThemeGenerator({ primary: theme.palette.themePrimary, background: theme.semanticColors.buttonBackgroundPressed, text: theme.semanticColors.bodyText });
 
     const style = {

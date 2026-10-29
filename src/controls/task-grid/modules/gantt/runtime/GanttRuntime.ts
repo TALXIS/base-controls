@@ -1,14 +1,14 @@
 import type { GanttStatic } from "dhtmlx-gantt";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, ILocalizationService, IStateStore, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../../services";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime";
 import type { ITaskViewData } from "../../../provider";
-import { GANTT_LABELS, IGanttLabels } from "../labels";
+import { GANTT_LABELS } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
@@ -23,6 +23,7 @@ import type { IGanttLibrary } from "../modules/library";
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
     state: IStateStore;
+    localization: LocalizationService;
     onGetProps: () => ITaskGanttProps;
 }
 
@@ -45,9 +46,8 @@ export class GanttRuntime implements IGantt {
     constructor(parameters: IGanttRuntimeParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._onGetProps = parameters.onGetProps;
-        const labels = new LocalizationService<IGanttLabels>({ ...GANTT_LABELS, ...parameters.onGetProps().labels });
         this.services.register('taskRuntime', () => parameters.taskRuntime);
-        this.services.register('labels', () => labels);
+        this.services.register('localization', () => parameters.localization);
         this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
         const schedule = new GanttSchedule(this);
@@ -63,8 +63,8 @@ export class GanttRuntime implements IGantt {
         return this._taskRuntime;
     }
 
-    public getLabels(): ILocalizationService<IGanttLabels> {
-        return this.services.get('labels');
+    public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
+        return this.services.get('localization').getLabels(set);
     }
 
     public getLibrary(): IGanttLibrary {
@@ -210,11 +210,11 @@ export class GanttRuntime implements IGantt {
     }
 
     private _addCommands = (commands: IRibbonCommand[]): void => {
-        const labels = this.getLabels();
+        const labels = this.getLabels(GANTT_LABELS);
         const isDisabled = !this.services.find('zooming');
         commands.push(
-            { id: 'ganttZoomToFit', label: labels.getLocalizedString('zoomToFit'), iconName: 'ZoomToFit', isDisabled, onExecute: () => this.services.get('zooming').zoomToFit() },
-            { id: 'ganttGoToToday', label: labels.getLocalizedString('goToToday'), iconName: 'GotoToday', isDisabled, onExecute: () => this.services.get('timeline').jumpToToday() },
+            { id: 'ganttZoomToFit', label: labels.get('gantt.zoomToFit'), iconName: 'ZoomToFit', isDisabled, onExecute: () => this.services.get('zooming').zoomToFit() },
+            { id: 'ganttGoToToday', label: labels.get('gantt.goToToday'), iconName: 'GotoToday', isDisabled, onExecute: () => this.services.get('timeline').jumpToToday() },
         );
     };
 }

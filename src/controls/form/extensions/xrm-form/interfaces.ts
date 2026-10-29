@@ -1,5 +1,4 @@
 import type { IFormApi, IFormEventHandlers } from "@controls/form/interfaces";
-import type { IFormLabels } from "@controls/form/labels";
 import type { IFormStrategy } from "@controls/form/strategies";
 import type { IControlComponents } from "@controls/form/components/adapters/control/components";
 import type { IRibbonComponents } from "@controls/form/components/adapters/ribbon/components";
@@ -234,8 +233,6 @@ export interface IXrmFormProps extends Partial<IFormEventHandlers> {
     strategy: IXrmFormStrategy;
     /** Fired when the form context runtime and the base Form API are ready. */
     onFormReady?: (params: IOnXrmFormReadyParams) => void;
-    /** Localized label overrides for the base Form UI. */
-    labels?: Partial<IFormLabels>;
     /** Top-level Xrm overridable UI configuration. */
     components?: Partial<IXrmFormComponents>;
 }

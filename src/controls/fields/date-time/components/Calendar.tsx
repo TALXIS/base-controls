@@ -1,9 +1,10 @@
 import { ICalendarDayGridStyles, ICalendarProps, IComboBox, IProcessedStyleSet, ITheme } from "@fluentui/react";
-import { ThemeProvider, useSurfaceTheme } from "@utils";
+import { ThemeProvider, useLabels, useSurfaceTheme } from "@utils";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
 import { useDateTimeContext } from "../context";
+import { DATE_TIME_LABELS } from "../labels";
 import { ITimePickerProps, TimePicker } from "@legacy";
 import dayjs from "dayjs";
 import React from 'react';
@@ -23,7 +24,8 @@ export interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChan
 }
 
 export const Calendar = (calendarProps: ICalendarProps) => {
-    const { parameters, isDateTime, date, patterns, labels, lastInputedTimeString } = useDateTimeContext();
+    const { parameters, isDateTime, date, patterns, dateFormattingInfo, lastInputedTimeString } = useDateTimeContext();
+    const labels = useLabels(DATE_TIME_LABELS);
     const surfaceTheme = useSurfaceTheme();
     //the calendar is drawn on the surface, so what it is styled by is the surface's theme
     const styles = getDateTimeStyles(surfaceTheme);
@@ -62,20 +64,20 @@ export const Calendar = (calendarProps: ICalendarProps) => {
         },
         value: date.get(),
         strings: {
-            goToToday: labels.goToToday(),
-            days: JSON.parse(labels.days()),
-            months: JSON.parse(labels.months()),
-            shortDays: JSON.parse(labels.shortDays()),
-            shortMonths: JSON.parse(labels.shortMonths())
+            goToToday: labels.get('dateTime.goToToday'),
+            days: dateFormattingInfo.dayNames,
+            months: dateFormattingInfo.monthNames,
+            shortDays: dateFormattingInfo.shortestDayNames,
+            shortMonths: dateFormattingInfo.abbreviatedMonthNames
         },
         timePickerProps: {
             dateTimeFormat: patterns.fullDateTimePattern,
             autoComplete: "off",
             autoCapitalize: "off",
             timeFormat: patterns.shortTimePattern,
-            label: labels.time(),
+            label: labels.get('dateTime.time'),
             visible: isDateTime,
-            errorMessage: labels.invalidTimeInput(),
+            errorMessage: labels.get('dateTime.invalidTimeInput'),
             lastInputedTimeString: lastInputedTimeString.current,
             useHour12: patterns.shortTimePattern.endsWith('A'),
             onChange: (time?: string) => {
@@ -85,7 +87,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
             value: date.get(),
             formattedDateTime: date.getFormatted() ?? "",
             strings: {
-                invalidInputErrorMessage: labels.invalidTimeInput()
+                invalidInputErrorMessage: labels.get('dateTime.invalidTimeInput')
             }
         },
         theme: surfaceTheme,

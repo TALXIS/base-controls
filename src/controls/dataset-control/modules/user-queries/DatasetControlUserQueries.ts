@@ -2,8 +2,8 @@ import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { EventEmitter, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
-import type { IEventSubscriber, ILocalizationService } from "@utils";
-import type { IUserQueriesLabels } from "./labels";
+import type { IEventSubscriber, LabelsOf } from "@utils";
+import { USER_QUERIES_LABELS } from "./labels";
 import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQuerySavedValueMap, IUserQueryView } from "./interfaces";
 
 /** The id of the group the user's views are listed under. */
@@ -12,7 +12,6 @@ export const USER_QUERIES_GROUP = 'userQueries';
 export interface IDatasetControlUserQueriesParameters {
     datasetControl: IDatasetControlRuntime;
     store: IUserQueriesStore;
-    labels: ILocalizationService<IUserQueriesLabels>;
     commands?: IUserQueriesCommands;
 }
 
@@ -36,7 +35,7 @@ export class DatasetControlUserQueries {
     private _events = new EventEmitter<IDatasetControlUserQueriesEvents>();
     private _datasetControl: IDatasetControlRuntime;
     private _store: IUserQueriesStore;
-    private _labels: ILocalizationService<IUserQueriesLabels>;
+    private _labels: LabelsOf<typeof USER_QUERIES_LABELS>;
     private _savedValues = new Map<string, () => unknown>();
     private _commands: IUserQueriesCommands;
     private _views: IUserQueryListItem[] = [];
@@ -45,7 +44,7 @@ export class DatasetControlUserQueries {
     constructor(parameters: IDatasetControlUserQueriesParameters) {
         this._datasetControl = parameters.datasetControl;
         this._store = parameters.store;
-        this._labels = parameters.labels;
+        this._labels = parameters.datasetControl.getLabels(USER_QUERIES_LABELS);
         this._commands = parameters.commands ?? {};
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
@@ -53,10 +52,6 @@ export class DatasetControlUserQueries {
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {
         return this._events;
-    }
-
-    public getLabels(): ILocalizationService<IUserQueriesLabels> {
-        return this._labels;
     }
 
     /**
@@ -100,7 +95,7 @@ export class DatasetControlUserQueries {
 
     /** Asks for a name, then saves a new view under it and opens it. */
     public async saveAsNew(): Promise<void> {
-        const name = window.prompt(this._labels.getLocalizedString('viewName'))?.trim();
+        const name = window.prompt(this._labels.get('userQueries.viewName'))?.trim();
         if (name) {
             await this.create(name);
         }
@@ -127,7 +122,7 @@ export class DatasetControlUserQueries {
             await provider.refresh();
             const failed = results.filter(result => !result.success);
             if (failed.length > 0) {
-                throw new Error(failed.map(result => result.errorMessage ?? this._labels.getLocalizedString('deleteFailed')).join('\n'));
+                throw new Error(failed.map(result => result.errorMessage ?? this._labels.get('userQueries.deleteFailed')).join('\n'));
             }
         });
     }
@@ -138,7 +133,7 @@ export class DatasetControlUserQueries {
 
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
-        const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
+        const group = { id: USER_QUERIES_GROUP, name: this._labels.get('userQueries.myViewsHeader') };
         views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: () => this._resolveView(id) })));
     };
 
@@ -151,13 +146,13 @@ export class DatasetControlUserQueries {
     private _addViewSwitcherItems = (items: IContextualMenuItem[]): void => {
         const commands: IContextualMenuItem[] = [];
         if (this._commands.enableSaveChanges !== false && this.isUserView(this._datasetControl.getViewId())) {
-            commands.push({ key: 'saveChanges', text: this._labels.getLocalizedString('saveChanges'), iconProps: { iconName: 'Save' }, onClick: () => { this.save(); } });
+            commands.push({ key: 'saveChanges', text: this._labels.get('userQueries.saveChanges'), iconProps: { iconName: 'Save' }, onClick: () => { this.save(); } });
         }
         if (this._commands.enableSaveAsNewView !== false) {
-            commands.push({ key: 'saveAsNewView', text: this._labels.getLocalizedString('saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: () => { this.saveAsNew(); } });
+            commands.push({ key: 'saveAsNewView', text: this._labels.get('userQueries.saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: () => { this.saveAsNew(); } });
         }
         if (this._commands.enableManageViews !== false) {
-            commands.push({ key: 'manageViews', text: this._labels.getLocalizedString('manageViews'), iconProps: { iconName: 'Settings' }, onClick: () => this._events.dispatchEvent('onManageRequested') });
+            commands.push({ key: 'manageViews', text: this._labels.get('userQueries.manageViews'), iconProps: { iconName: 'Settings' }, onClick: () => this._events.dispatchEvent('onManageRequested') });
         }
         if (commands.length > 0) {
             items.push({ key: 'userQueriesDivider', itemType: ContextualMenuItemType.Divider }, ...commands);
@@ -197,7 +192,7 @@ export class DatasetControlUserQueries {
         const failed = results.filter(result => !result.success);
         if (failed.length > 0) {
             const messages = failed.flatMap(result => result.errors?.map(error => error.message) ?? []);
-            throw new Error(messages.length > 0 ? messages.join('\n') : this._labels.getLocalizedString('saveFailed'));
+            throw new Error(messages.length > 0 ? messages.join('\n') : this._labels.get('userQueries.saveFailed'));
         }
     }
 

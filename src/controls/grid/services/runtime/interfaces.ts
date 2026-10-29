@@ -1,4 +1,4 @@
-import type { IEventSubscriber } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, Labels } from "@utils";
 import type { IGridEventHandlers, IGridModuleLocator, IGridOpenRecordParams } from "../../interfaces";
 import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
@@ -29,6 +29,8 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    /** The strings of one set, as the grid's localization resolves them. */
+    getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */

@@ -1,10 +1,7 @@
 import { EventEmitter, Filtering, Operators, Type } from "@talxis/client-libraries";
-import { ITranslation } from "@hooks";
-import { datasetColumnFilteringTranslations } from "./translations";
-import { BaseControls } from "@utils";
+import { BaseControls, LabelsOf } from "@utils";
 import { Condition } from '@talxis/client-libraries';
-
-type Labels = Required<ITranslation<typeof datasetColumnFilteringTranslations>>;
+import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS } from "./labels";
 
 export interface IDatasetColumnFilteringModelEvents {
     onSave: (result: false | ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => void;
@@ -13,19 +10,19 @@ export interface IDatasetColumnFilteringModelEvents {
 
 interface IDatasetColumnFilteringModelOptions {
     condition: Condition;
-    labels: Labels;
+    operatorLabels: LabelsOf<typeof FILTER_OPERATORS_LABELS>;
     filtering: Filtering;
 }
 
 export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilteringModelEvents> {
     private _condition: Condition;
-    private _labels: Labels;
+    private _operatorLabels: LabelsOf<typeof FILTER_OPERATORS_LABELS>;
     private _filtering: Filtering;
 
     constructor(options: IDatasetColumnFilteringModelOptions) {
         super();
         this._condition = options.condition;
-        this._labels = options.labels;
+        this._operatorLabels = options.operatorLabels;
         this._filtering = options.filtering;
     }
 
@@ -34,8 +31,7 @@ export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilt
         return operators.map(operator => {
             return {
                 Value: operator,
-                //@ts-ignore - typings
-                Label: this._labels[`operator-${operator}`](),
+                Label: this._operatorLabels.get(FILTER_OPERATOR_LABEL_KEYS[operator]),
                 Color: ''
             }
         })

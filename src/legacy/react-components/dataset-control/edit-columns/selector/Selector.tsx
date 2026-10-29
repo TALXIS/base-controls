@@ -1,10 +1,11 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { DatasetConstants, IColumn } from "@talxis/client-libraries";
 import { GroupBase } from 'react-select';
 import { DirectionalHint, useTheme, Text } from "@fluentui/react";
 import { Callout, TooltipHost } from "@ui";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { useModel } from "@legacy/dataset-control/useModel";
 import { components } from 'react-select';
 import { useMemo } from "react";
 import React from "react";
@@ -21,7 +22,7 @@ interface ISelectorProps<IsMulti extends boolean = false, TColumn extends IColum
 export const Selector = <IsMulti extends boolean = false, TColumn extends IColumn = IColumn>(props: ISelectorProps<IsMulti, TColumn>) => {
     const theme = useTheme();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
-    const labels = useModel().getLabels();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
     const id = useMemo(() => `selector-${window.crypto.randomUUID()}`, []);
     const styles = useMemo(() => getSelectorStyles(), []);
     const { components: editColumnsComponents } = useEditColumns();
@@ -45,8 +46,8 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
     const componentProps = onOverrideComponentProps({
         id: id,
         getOptionValue: (column) => column.name,
-        getOptionLabel: (column) => column.displayName ?? labels['no-name'](),
-        noOptionsMessage: () => labels['no-result-found'](),
+        getOptionLabel: (column) => column.displayName ?? labels.get('legacyDatasetControl.noName'),
+        noOptionsMessage: () => labels.get('legacyDatasetControl.noResultFound'),
         maxMenuHeight: 600,
         isClearable: false,
         defaultOptions: true,

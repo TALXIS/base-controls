@@ -1,30 +1,19 @@
-/** Every localizable string this module renders. */
-export interface IGridGroupingLabels {
-    group: string;
-    ungroup: string;
-    maximumGroupChildrenLimitReached: string;
-    /** What a grouped column is named in its header tooltip. */
-    headerTitle: string;
-    /** What this module's section of a column's menu is called. */
-    menuSection: string;
-    /** What opening one more level of groups is called. */
-    expandLevel: string;
-    /** What closing one level of groups is called. */
-    collapseLevel: string;
-    /** What a selection refused for loading too many groups says. */
-    groupSelectionLimitMessage: string;
-    groupSelectionLimitConfirm: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IGridGroupingLabels}. */
-export const GRID_GROUPING_LABELS: IGridGroupingLabels = {
-    group: 'Group',
-    ungroup: 'Ungroup',
-    maximumGroupChildrenLimitReached: 'The maximum limit of {{maxGroupChildren}} child records has been reached. Records above this limit will not be loaded.',
-    headerTitle: 'Group',
-    menuSection: 'Grouping',
-    expandLevel: 'Expand one level',
-    collapseLevel: 'Collapse one level',
-    groupSelectionLimitMessage: 'This selection would load the records of more than {{maxGroupLoads}} groups. Select fewer groups, or expand them and select their records.',
-    groupSelectionLimitConfirm: 'OK',
-};
+/** Every localizable string this module renders. */
+export const GRID_GROUPING_LABELS = defineLabels({
+    'gridGrouping.group': 'Group',
+    'gridGrouping.ungroup': 'Ungroup',
+    'gridGrouping.maximumGroupChildrenLimitReached': 'The maximum limit of {{maxGroupChildren}} child records has been reached. Records above this limit will not be loaded.',
+    /** What a grouped column is named in its header tooltip. */
+    'gridGrouping.headerTitle': 'Group',
+    /** What this module's section of a column's menu is called. */
+    'gridGrouping.menuSection': 'Grouping',
+    /** What opening one more level of groups is called. */
+    'gridGrouping.expandLevel': 'Expand one level',
+    /** What closing one level of groups is called. */
+    'gridGrouping.collapseLevel': 'Collapse one level',
+    /** What a selection refused for loading too many groups says. */
+    'gridGrouping.groupSelectionLimitMessage': 'This selection would load the records of more than {{maxGroupLoads}} groups. Select fewer groups, or expand them and select their records.',
+    'gridGrouping.groupSelectionLimitConfirm': 'OK',
+});

@@ -9,9 +9,9 @@ export class PaginationModel {
 
     public toString(): string {
         if (this._paging.totalResultCount === undefined) {
-            return this._model.getLabels()['paging-pages']({ start: this._getPageFirstRecordOrder(), end: this._getPageLastRecordOrder() })
+            return this._model.getLabels().get('legacyDatasetControl.pagingPages', { start: this._getPageFirstRecordOrder(), end: this._getPageLastRecordOrder() })
         }
-        return `${this._model.getLabels()['paging-pages']({ start: this._getPageFirstRecordOrder(), end: this._getPageLastRecordOrder()})} ${this._model.getLabels()['paging-pages-totalcount']({ recordcount: this._getFormattedTotalResultCount() })}`
+        return `${this._model.getLabels().get('legacyDatasetControl.pagingPages', { start: this._getPageFirstRecordOrder(), end: this._getPageLastRecordOrder()})} ${this._model.getLabels().get('legacyDatasetControl.pagingPagesTotalCount', { recordcount: this._getFormattedTotalResultCount() })}`
     }
 
     private _getPageFirstRecordOrder() {

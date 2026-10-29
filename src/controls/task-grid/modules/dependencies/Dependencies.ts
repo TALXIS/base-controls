@@ -1,13 +1,13 @@
 import type { ColDef } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TaskColumnValues } from "../column-values";
-import { DEPENDENCIES_LABELS, IDependenciesLabels } from "./labels";
+import { DEPENDENCIES_LABELS } from "./labels";
 import { DependenciesCell } from "./components/adapters/dependencies-cell";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./constants";
 
@@ -47,8 +47,6 @@ export interface ITaskDependenciesStore {
 
 export interface IDependenciesParameters {
     onCreateStore: (taskRuntime: ITaskRuntime, dependencies: IDependencies) => ITaskDependenciesStore;
-    /** Overrides for the module's strings. */
-    labels?: Partial<IDependenciesLabels>;
 }
 
 export interface IDependenciesEvents {
@@ -87,7 +85,6 @@ export interface IDependencies {
      * @returns `false` when there is no such dependency or editing is off.
      */
     deleteDependency(dependencyId: string): Promise<boolean>;
-    getLabels(): ILocalizationService<IDependenciesLabels>;
     /** Called as the mount goes. */
     destroy(): void;
 }
@@ -97,7 +94,7 @@ export class Dependencies implements IDependencies {
     public events = new EventEmitter<IDependenciesEvents>();
     private _taskRuntime: ITaskRuntime;
     private _store: ITaskDependenciesStore;
-    private _labels: ILocalizationService<IDependenciesLabels>;
+    private _labels: LabelsOf<typeof DEPENDENCIES_LABELS>;
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
@@ -107,12 +104,12 @@ export class Dependencies implements IDependencies {
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
         this._taskRuntime = taskRuntime;
         this._store = parameters.onCreateStore(taskRuntime, this);
-        this._labels = new LocalizationService<IDependenciesLabels>({ ...DEPENDENCIES_LABELS, ...parameters.labels });
+        this._labels = taskRuntime.getLabels(DEPENDENCIES_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => DEPENDENCY_COLUMN_NAMES,
             onLoad: this._loadDependencies,
-            errorMessage: () => this._labels.getLocalizedString('loadDependenciesFailed'),
+            errorMessage: () => this._labels.get('dependencies.loadDependenciesFailed'),
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
@@ -160,7 +157,7 @@ export class Dependencies implements IDependencies {
             const created = await this._store.onCreateDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
             return created;
-        }, 'creatingDependency');
+        }, 'dependencies.creatingDependency');
     }
 
     public async updateDependency(dependencyId: string, changes: Pick<ITaskDependency, 'type'>): Promise<boolean> {
@@ -173,7 +170,7 @@ export class Dependencies implements IDependencies {
             await this._store.onUpdateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
             return true;
-        }, 'savingDependency');
+        }, 'dependencies.savingDependency');
     }
 
     public async deleteDependency(dependencyId: string): Promise<boolean> {
@@ -185,11 +182,7 @@ export class Dependencies implements IDependencies {
             await this._store.onDeleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             return true;
-        }, 'deletingDependency');
-    }
-
-    public getLabels(): ILocalizationService<IDependenciesLabels> {
-        return this._labels;
+        }, 'dependencies.deletingDependency');
     }
 
     public destroy(): void {
@@ -276,11 +269,11 @@ export class Dependencies implements IDependencies {
     }
 
     private _addColumns = (columns: IColumn[]): void => {
-        const columnNames: [string, keyof IDependenciesLabels][] = [[PREDECESSORS_COLUMN_NAME, 'predecessors'], [SUCCESSORS_COLUMN_NAME, 'successors']];
+        const columnNames: [string, 'dependencies.predecessors' | 'dependencies.successors'][] = [[PREDECESSORS_COLUMN_NAME, 'dependencies.predecessors'], [SUCCESSORS_COLUMN_NAME, 'dependencies.successors']];
         for (const [name, label] of columnNames) {
             const column: IColumn = {
                 name,
-                displayName: this._labels.getLocalizedString(label),
+                displayName: this._labels.get(label),
                 dataType: DataTypes.LookupSimple,
                 isVirtual: true,
                 visualSizeFactor: 100,
@@ -305,8 +298,8 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _execute<T>(operation: () => Promise<T>, loadingLabel: 'creatingDependency' | 'savingDependency' | 'deletingDependency'): Promise<T> {
-        return this._taskRuntime.execute(operation, { loading: { message: this._labels.getLocalizedString(loadingLabel) }, error: { title: this._labels.getLocalizedString('dependenciesFailed') } });
+    private _execute<T>(operation: () => Promise<T>, loadingLabel: 'dependencies.creatingDependency' | 'dependencies.savingDependency' | 'dependencies.deletingDependency'): Promise<T> {
+        return this._taskRuntime.execute(operation, { loading: { message: this._labels.get(loadingLabel) }, error: { title: this._labels.get('dependencies.dependenciesFailed') } });
     }
 }
 

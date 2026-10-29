@@ -1,10 +1,7 @@
-/** The strings of the view switcher. */
-export interface IViewSwitcherLabels {
-    /** The header of the views that have no group. */
-    ungroupedViewsHeader: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IViewSwitcherLabels}. */
-export const VIEW_SWITCHER_LABELS: IViewSwitcherLabels = {
-    ungroupedViewsHeader: 'System views',
-};
+/** The strings of the view switcher. */
+export const VIEW_SWITCHER_LABELS = defineLabels({
+    /** The header of the views that have no group. */
+    'viewSwitcher.ungroupedViewsHeader': 'System views',
+});

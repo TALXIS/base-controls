@@ -1,14 +1,11 @@
-import { LocalizationService, ServiceLocator } from "@utils";
+import { ServiceLocator } from "@utils";
 import { RowGroupingModule, TreeDataModule } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
-import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
 import { GridGrouping } from "./GridGrouping";
 import { IGridGroupingServiceMap } from "./services";
 
 export interface IGroupingModuleOptions {
-    /** Localized strings this module renders. */
-    labels?: Partial<IGridGroupingLabels>;
     /** Overrides for the parts of what this module draws, by piece. */
     components?: IGridGroupingComponents;
     /** Whether a column's menu offers grouping. */
@@ -31,9 +28,7 @@ export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGro
     agGridModules: [RowGroupingModule, TreeDataModule],
     onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
-        const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
         services.register('gridServices', () => gridServices);
-        services.register('labels', () => labels);
         services.register('components', () => options.components ?? {});
         return new GridGrouping({ services, settings: options });
     },

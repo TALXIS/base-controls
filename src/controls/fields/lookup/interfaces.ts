@@ -1,10 +1,9 @@
 import { ITagPickerProps } from "@legacy";
 import { ILookupProperty, ITwoOptionsProperty } from "@interfaces";
-import { IControl, IOutputs, ITranslations } from "@interfaces/context";
+import { IControl, IOutputs } from "@interfaces/context";
 import { IBaseParameters } from "@interfaces/parameters";
-import { lookupTranslations } from "./translations";
 
-export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ITagPickerProps> {
+export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, ITagPickerProps> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.

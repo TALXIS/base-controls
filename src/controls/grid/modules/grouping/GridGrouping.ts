@@ -3,9 +3,9 @@ import { createElement } from "react";
 import { ColDef, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
 import { DataProvider, DataTypes, EventEmitter, Grouping, IColumn, IEventEmitter, IGroupByMetadata, IDataProvider, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
-import { ILocalizationService } from "@utils";
+import { LabelsOf } from "@utils";
 import { ThemeBuilder } from "@theme";
-import { IGridGroupingLabels } from "./labels";
+import { GRID_GROUPING_LABELS } from "./labels";
 import { GridGroupingIconComponents, IGridGroupingComponents } from "./moduleComponents";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
@@ -94,8 +94,6 @@ export interface IGridGrouping {
     getMaxGroupLoadsPerSelection(): number;
     isGroupSelectionLimitDialogOpen(): boolean;
     closeGroupSelectionLimitDialog(): void;
-    /** The strings this module renders, for its own components. */
-    getLabels(): ILocalizationService<IGridGroupingLabels>;
     /** Whether a row's cell in this column carries the chevron that opens it. */
     isColumnExpandable(record: IRecord, columnName: string): boolean;
     toggleGroup(node: IRowNode<IRecord>): void;
@@ -223,10 +221,6 @@ export class GridGrouping implements IGridGrouping {
     private _onSurfaces = (surfaces: IGridSurface[]): void => {
         surfaces.push({ key: 'groupSelectionLimit', onRender: () => createElement(GroupSelectionLimitDialog) });
     };
-
-    public getLabels(): ILocalizationService<IGridGroupingLabels> {
-        return this._labels;
-    }
 
     public isColumnGrouped(column: IColumn): boolean {
         return !!column.grouping?.isGrouped;
@@ -392,7 +386,7 @@ export class GridGrouping implements IGridGrouping {
         adornments.push({
             key: 'grouping',
             placement: 'prefix',
-            title: this._labels.getLocalizedString('headerTitle'),
+            title: this._labels.get('gridGrouping.headerTitle'),
             onRender: () => ({ ...GridGroupingIconComponents, ...this.components.groupingIcon }).onRenderIcon({ iconName: 'GroupList' }),
         });
     };
@@ -406,10 +400,10 @@ export class GridGrouping implements IGridGrouping {
         const isGrouped = this.isColumnGrouped(column);
         sections.push({
             key: 'grouping',
-            title: this._labels.getLocalizedString('menuSection'),
+            title: this._labels.get('gridGrouping.menuSection'),
             items: [{
                 key: 'group',
-                text: this._labels.getLocalizedString(isGrouped ? 'ungroup' : 'group'),
+                text: this._labels.get(isGrouped ? 'gridGrouping.ungroup' : 'gridGrouping.group'),
                 iconProps: { iconName: isGrouped ? 'ViewList' : 'GroupList' },
                 onClick: () => this.toggleColumnGroup(column.name),
             }],
@@ -434,7 +428,7 @@ export class GridGrouping implements IGridGrouping {
         }
         this._hasReportedChildLimit = true;
         this._gridServices.get('pcfContext').navigation.openErrorDialog({
-            message: this._labels.getLocalizedString('maximumGroupChildrenLimitReached', {
+            message: this._labels.get('gridGrouping.maximumGroupChildrenLimitReached', {
                 maxGroupChildren: this._gridServices.get('pcfContext').formatting.formatInteger(CHILD_LIMIT),
             }),
         });
@@ -471,8 +465,8 @@ export class GridGrouping implements IGridGrouping {
         return this._services.get('components');
     }
 
-    private get _labels(): ILocalizationService<IGridGroupingLabels> {
-        return this._services.get('labels');
+    private get _labels(): LabelsOf<typeof GRID_GROUPING_LABELS> {
+        return this._services.get('gridServices').get('localization').getLabels(GRID_GROUPING_LABELS);
     }
 
     private get _gridServices() {

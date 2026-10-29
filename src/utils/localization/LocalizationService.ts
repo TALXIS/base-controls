@@ -1,22 +1,29 @@
 import { Liquid } from "liquidjs";
-
-export interface ILocalizationService<T> {
-    getLocalizedString: (key: keyof T, variables?: {[key: string]: string}) => string;
-}
+import type { ILabelSet } from "./defineLabels";
+import type { ILabels, Labels } from "./types";
 
 const LIQUID = new Liquid();
 
-export class LocalizationService<T extends { [K in keyof T]: string }> implements ILocalizationService<T> {
-    private _labels: T;
+/** Resolves every component's strings from one set of labels. */
+export class LocalizationService {
+    private _labels: Labels;
 
-    constructor(labels: T) {
+    constructor(labels: Labels = {}) {
         this._labels = labels;
     }
 
-    public getLocalizedString(key: keyof T, variables?: {[key: string]: string}): string {
-        if(variables) {
-            return LIQUID.parseAndRenderSync(this._labels[key] as unknown as string, variables);
-        }
-        return this._labels[key];
+    /** The strings of one set, falling back to its defaults. */
+    public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
+        return {
+            get: (key: string, variables?: Record<string, string | number>) => {
+                const template = this._labels[key] ?? set.defaults[key];
+                return variables ? LIQUID.parseAndRenderSync(template, variables) : template;
+            },
+        } as ILabels<T>;
+    }
+
+    /** A service with `labels` laid over these. */
+    public merge(labels: Labels): LocalizationService {
+        return new LocalizationService({ ...this._labels, ...labels });
     }
 }

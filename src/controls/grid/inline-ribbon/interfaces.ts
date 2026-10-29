@@ -4,7 +4,7 @@ import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
 import { IStringProperty } from "@interfaces";
 import { IAlignment } from "@utils";
 
-export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, any, IGridInlineRibbonComponentProps> {
+export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, IGridInlineRibbonComponentProps> {
 }
 
 export interface IRibbonParameters {

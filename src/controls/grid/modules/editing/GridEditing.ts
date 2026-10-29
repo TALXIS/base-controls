@@ -20,6 +20,7 @@ import { RecordSaveIndicatorCell } from "./components/record-save-indicator/Reco
 import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor";
 import { getColumnContext } from "../../services/columns/colDef";
 import { getRowNode } from "../../services/rows/getRowNode";
+import { GRID_LABELS } from "../../labels";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {
@@ -281,7 +282,7 @@ export class GridEditing implements IGridEditing {
         adornments.push({
             key: 'lock',
             placement: 'suffix',
-            onRender: () => createElement(CellUi.LockIcon, { message: this._services.get('labels').getLocalizedString('columnLocked') }),
+            onRender: () => createElement(CellUi.LockIcon, { message: this._services.get('localization').getLabels(GRID_LABELS).get('grid.columnLocked') }),
         });
     };
 

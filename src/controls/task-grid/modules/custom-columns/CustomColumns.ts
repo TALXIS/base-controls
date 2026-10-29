@@ -1,11 +1,11 @@
 import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/components/adapters/edit-columns";
-import { ErrorHelper, ILocalizationService, LocalizationService } from "@utils";
+import { ErrorHelper, type LabelsOf } from "@utils";
 import type { ITaskDataProvider, ITaskSaveResult } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import { TaskColumnValues } from "../column-values";
-import { CUSTOM_COLUMNS_LABELS, ICustomColumnsLabels } from "./labels";
+import { CUSTOM_COLUMNS_LABELS } from "./labels";
 
 /** Where custom column definitions and values are kept. */
 export interface ICustomColumnsStore {
@@ -30,8 +30,6 @@ export interface ICustomColumnsParameters {
     enableEditing?: boolean;
     /** The delete command on each custom column in Edit columns. */
     enableDeletion?: boolean;
-    /** Overrides for the module's strings. */
-    labels?: Partial<ICustomColumnsLabels>;
 }
 
 /** The user's own task columns: offered in Edit columns, and loaded and saved through their store. */
@@ -39,7 +37,7 @@ export class CustomColumns {
     private _taskRuntime: ITaskRuntime;
     private _parameters: ICustomColumnsParameters;
     private _store: ICustomColumnsStore;
-    private _labels: ILocalizationService<ICustomColumnsLabels>;
+    private _labels: LabelsOf<typeof CUSTOM_COLUMNS_LABELS>;
     private _columns: IColumn[] = [];
     private _values: TaskColumnValues;
     private _unregisters: (() => void)[] = [];
@@ -48,12 +46,12 @@ export class CustomColumns {
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = new LocalizationService<ICustomColumnsLabels>({ ...CUSTOM_COLUMNS_LABELS, ...parameters.labels });
+        this._labels = taskRuntime.getLabels(CUSTOM_COLUMNS_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => this._columns.map(column => column.name),
             onLoad: this._loadValues,
-            errorMessage: () => this._labels.getLocalizedString('loadCustomColumnsFailed'),
+            errorMessage: () => this._labels.get('customColumns.loadCustomColumnsFailed'),
         });
     }
 
@@ -70,10 +68,6 @@ export class CustomColumns {
 
     public isCustomColumn(columnName: string): boolean {
         return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX);
-    }
-
-    public getLabels(): ILocalizationService<ICustomColumnsLabels> {
-        return this._labels;
     }
 
     /** What the last load threw, until the next one starts. */
@@ -131,7 +125,7 @@ export class CustomColumns {
 
     private _addCommands = (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession): void => {
         if (this._parameters.enableCreation) {
-            commands.push({ key: 'addCustomColumn', text: this._labels.getLocalizedString('addCustomColumn'), iconProps: { iconName: 'Add' }, onClick: () => { this._createColumn(session); } });
+            commands.push({ key: 'addCustomColumn', text: this._labels.get('customColumns.addCustomColumn'), iconProps: { iconName: 'Add' }, onClick: () => { this._createColumn(session); } });
         }
     };
 
@@ -141,10 +135,10 @@ export class CustomColumns {
             return;
         }
         if (this._parameters.enableEditing) {
-            commands.unshift({ key: 'editCustomColumn', title: this._labels.getLocalizedString('editCustomColumn'), iconProps: { iconName: 'Edit' }, onMouseUp: () => { this._updateColumn(column.name, session); } });
+            commands.unshift({ key: 'editCustomColumn', title: this._labels.get('customColumns.editCustomColumn'), iconProps: { iconName: 'Edit' }, onMouseUp: () => { this._updateColumn(column.name, session); } });
         }
         if (this._parameters.enableDeletion) {
-            commands.push({ key: 'deleteCustomColumn', title: this._labels.getLocalizedString('deleteCustomColumn'), iconProps: { iconName: 'Delete' }, onMouseUp: () => { this._deleteColumn(column.name, session); } });
+            commands.push({ key: 'deleteCustomColumn', title: this._labels.get('customColumns.deleteCustomColumn'), iconProps: { iconName: 'Delete' }, onMouseUp: () => { this._deleteColumn(column.name, session); } });
         }
     };
 
@@ -174,7 +168,7 @@ export class CustomColumns {
 
     private async _deleteColumn(columnName: string, session: DatasetControlEditColumnsSession): Promise<void> {
         const navigation = this._taskRuntime.services.get('pcfContext').navigation;
-        const confirmation = await navigation.openConfirmDialog({ text: this._labels.getLocalizedString('confirmColumnDelete') });
+        const confirmation = await navigation.openConfirmDialog({ text: this._labels.get('customColumns.confirmColumnDelete') });
         if (!confirmation.confirmed) {
             return;
         }
@@ -198,7 +192,7 @@ export class CustomColumns {
             await operation();
         }
         catch (error) {
-            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.getLocalizedString('customColumnsFailed'), details: ErrorHelper.getMessageFromError(error) });
+            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.get('customColumns.customColumnsFailed'), details: ErrorHelper.getMessageFromError(error) });
         }
     }
 }

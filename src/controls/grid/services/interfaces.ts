@@ -2,9 +2,8 @@ import { IPcfContext } from "@interfaces";
 import type { GridApi } from "ag-grid-community";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { ITheme } from "@theme";
-import type { ILocalizationService, IServiceLocator, IStateStore } from "@utils";
+import type { IServiceLocator, IStateStore, LocalizationService } from "@utils";
 import type { IGridSettings } from "../services/settings";
-import type { IGridLabels } from "../labels";
 import type { IGrid } from "../services/runtime";
 import type { IGridColumns, IGridColumnsInternal } from "../services/columns";
 import type { IGridCells, IGridCellsInternal } from "../services/cells";
@@ -30,8 +29,8 @@ export interface IGridServiceMap {
     provider: IDataProvider;
     /** The host context. */
     pcfContext: IPcfContext;
-    /** Every string the grid renders, resolved. */
-    labels: ILocalizationService<IGridLabels>;
+    /** Resolves the strings of the grid and its modules. */
+    localization: LocalizationService;
     /** The theme the control was given. */
     theme: ITheme;
     /** The AG Grid theme made from it, and the hooks modules edit it through. */

@@ -3,10 +3,8 @@ import { IControl, IOutputs, IParameters } from "../interfaces";
 import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import dayjs from "dayjs";
-import { IDefaultTranslations, ITranslation, useControlLabels } from "./useControlLabels";
 
-export interface IControlController<TTranslations, TOutputs> {
-    labels: Required<ITranslation<TTranslations>>,
+export interface IControlController<TOutputs> {
     sizing: IControlSizing,
     className: string;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
@@ -15,15 +13,9 @@ export interface IControlController<TTranslations, TOutputs> {
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IControlController<TTranslations, TOutputs> => {
-    const context = props.context;
+export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs>(name: string, props: IControl<TParameters, TOutputs, any>): IControlController<TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const sizing = useControlSizing(props.context.mode, props.parameters);
-    const labels = useControlLabels({
-        languageId: context.userSettings.languageId,
-        translations: props.translations,
-        defaultTranslations
-    });
 
     useEffect(() => {
         parametersRef.current = props.parameters;
@@ -66,7 +58,6 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
     
     return {
         className: `talxis__baseControl__${name}`,
-        labels,
         sizing,
         onNotifyOutputChanged
     }

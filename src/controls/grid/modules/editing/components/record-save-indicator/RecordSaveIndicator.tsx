@@ -1,4 +1,6 @@
 import { useGridService } from "@controls/grid/useGridService";
+import { useLabels } from "@utils";
+import { GRID_LABELS } from "../../../../labels";
 import { useGridCell } from "../../../../components/cells/root/context";
 import { useRecordSaveStatus } from "./useRecordSaveStatus";
 import { IRecordSaveUiComponents, RecordSaveUi } from "./ui";
@@ -13,7 +15,7 @@ export interface IRecordSaveIndicatorProps {
 export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
     const record = useGridCell().getRecord();
     const status = useRecordSaveStatus(record);
-    const labels = useGridService('labels');
+    const labels = useLabels(GRID_LABELS);
     const gridApi = useGridService('gridApi');
     const components = props.components ?? {};
     const saveResult = status.saveResult;
@@ -30,8 +32,8 @@ export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
         state={saveResult.success ? 'succeeded' : 'failed'}
         components={components.indicator}
         errorCallout={{
-            title: labels.getLocalizedString('recordSaveErrorTitle'),
-            dismissText: labels.getLocalizedString('recordSaveErrorDismiss'),
+            title: labels.get('grid.recordSaveErrorTitle'),
+            dismissText: labels.get('grid.recordSaveErrorDismiss'),
             errors: (saveResult.errors ?? []).map(error => ({
                 fieldName: error.fieldName ? getFieldName(error.fieldName) : undefined,
                 message: error.message,

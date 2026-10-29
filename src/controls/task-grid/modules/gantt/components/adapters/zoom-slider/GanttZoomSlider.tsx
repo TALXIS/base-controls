@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { useDataProviderEvents } from "@utils";
+import { useDataProviderEvents, useLabels } from "@utils";
 import { ZoomSlider } from "../../ui/zoom-slider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import type { IGantt, IGanttEvents } from "../../../interfaces";
 import type { IGanttZoomingEvents } from "../../../zooming/GanttZooming";
+import { GANTT_LABELS } from "../../../labels";
 
 //fine enough that dragging the slider zooms continuously
 const SLIDER_RESOLUTION = 1000;
@@ -18,6 +19,7 @@ export const GanttZoomSlider = () => {
     const [gantt, setGantt] = useState<IGantt | undefined>(() => datasetControl.parts.find('gantt'));
     const zooming = gantt?.services.find('zooming');
     const { rerender } = useRerender();
+    const labels = useLabels(GANTT_LABELS);
 
     //the header renders before the body that holds the Gantt
     useEffect(() => datasetControl.parts.whenAvailable('gantt', setGantt), []);
@@ -25,7 +27,7 @@ export const GanttZoomSlider = () => {
     useEventEmitter<IGanttZoomingEvents>(zooming?.events, 'onZoomChanged', rerender);
 
     return <ZoomSlider
-        ariaLabel={gantt?.getLabels().getLocalizedString('zoomSlider')}
+        ariaLabel={labels.get('gantt.zoomSlider')}
         min={0}
         max={SLIDER_RESOLUTION}
         buttonStep={SLIDER_RESOLUTION / BUTTON_STEPS}

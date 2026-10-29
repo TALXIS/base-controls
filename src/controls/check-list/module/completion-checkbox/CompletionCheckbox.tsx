@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Check, useTheme } from "@fluentui/react";
-import { getClassNames } from "@utils";
+import { getClassNames, useLabels } from "@utils";
+import { CHECK_LIST_LABELS } from "../../labels";
 import { useGridCell } from "../../../grid/components/cells/root/context";
 import { useGridField } from "../../../grid/components/cells/field/context";
 import { useGridModule } from "../../../grid/useGridModule";
@@ -12,6 +13,7 @@ export const CompletionCheckbox = () => {
     const field = useGridField();
     const checkList = useGridModule('checkList');
     const theme = useTheme();
+    const labels = useLabels(CHECK_LIST_LABELS);
     const styles = useMemo(() => getCompletionCheckboxStyles(theme), [theme]);
     //only a tick the user just made pops, not one a redrawn row already had
     const [isPopping, setIsPopping] = useState(false);
@@ -20,7 +22,7 @@ export const CompletionCheckbox = () => {
     if (!field || !checkList.isItem(record)) {
         return null;
     }
-    const label = checkList.getLabels().getLocalizedString('markItemFinished');
+    const label = labels.get('checkList.markItemFinished');
     const isCompleted = checkList.isCompleted(record);
 
     const onClick = () => {

@@ -1,4 +1,6 @@
 import { HookRegistry } from "@utils";
+import type { LabelsOf, LocalizationService } from "@utils";
+import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../../runtime";
 import type { ISettingsProps } from "./Settings";
 
@@ -26,17 +28,20 @@ export interface ITaskSettings {
 
 export interface ITaskSettingsParameters {
     taskRuntime: ITaskRuntime;
+    localization: LocalizationService;
     onGetProps: () => ISettingsProps;
 }
 
 export class TaskSettings implements ITaskSettings {
     private _taskRuntime: ITaskRuntime;
     private _onGetProps: () => ISettingsProps;
+    private _labels: LabelsOf<typeof TASK_GRID_LABELS>;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
 
     constructor(parameters: ITaskSettingsParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._onGetProps = parameters.onGetProps;
+        this._labels = parameters.localization.getLabels(TASK_GRID_LABELS);
     }
 
     public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
@@ -46,11 +51,10 @@ export class TaskSettings implements ITaskSettings {
     public getSettings(): ITaskGridSetting[] {
         const settings: ITaskGridSetting[] = [];
         const props = this._onGetProps();
-        const labels = this._taskRuntime.getLabels();
         if (props.enableShowHierarchy !== false) {
             settings.push({
                 key: 'showHierarchy',
-                label: labels.getLocalizedString('showHierarchy'),
+                label: this._labels.get('taskGrid.showHierarchy'),
                 isChecked: !this._taskRuntime.isFlatList(),
                 onChange: isChecked => this._taskRuntime.setFlatList(!isChecked),
             });
@@ -59,7 +63,7 @@ export class TaskSettings implements ITaskSettings {
             const provider = this._taskRuntime.getProvider();
             settings.push({
                 key: 'hideInactiveTasks',
-                label: labels.getLocalizedString('hideInactiveTasks'),
+                label: this._labels.get('taskGrid.hideInactiveTasks'),
                 isChecked: provider.areInactiveTasksHidden(),
                 onChange: isChecked => provider.setInactiveTasksHidden(isChecked),
             });

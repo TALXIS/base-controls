@@ -1,16 +1,11 @@
-/** The strings of the page size switcher. */
-export interface IPageSizeSwitcherLabels {
-    /** `start` and `end` are the first and last record on the page. */
-    recordRange: string;
-    /** `total` is how many records there are. */
-    recordTotal: string;
-    /** The page size button's tooltip. */
-    pageSizeTooltip: string;
-}
+import { defineLabels } from "@utils";
 
-/** The English defaults for {@link IPageSizeSwitcherLabels}. */
-export const PAGE_SIZE_SWITCHER_LABELS: IPageSizeSwitcherLabels = {
-    recordRange: '{{ start }} - {{ end }}',
-    recordTotal: 'of {{ total }}',
-    pageSizeTooltip: 'Records per page',
-};
+/** The strings of the page size switcher. */
+export const PAGE_SIZE_SWITCHER_LABELS = defineLabels({
+    /** `start` and `end` are the first and last record on the page. */
+    'pageSizeSwitcher.recordRange': '{{ start }} - {{ end }}',
+    /** `total` is how many records there are. */
+    'pageSizeSwitcher.recordTotal': 'of {{ total }}',
+    /** The page size button's tooltip. */
+    'pageSizeSwitcher.pageSizeTooltip': 'Records per page',
+});

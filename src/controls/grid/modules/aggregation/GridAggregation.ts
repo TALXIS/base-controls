@@ -2,8 +2,8 @@ import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "ag-grid-commu
 import { FontWeights } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
-import { ILocalizationService } from "@utils";
-import { IGridAggregationLabels } from "./labels";
+import { LabelsOf } from "@utils";
+import { GRID_AGGREGATION_LABELS } from "./labels";
 import { IGridAggregationComponents } from "./moduleComponents";
 import { IGridCellLoading } from "../../services/cells";
 import { IGridRowHeight } from "../../services/rows";
@@ -33,13 +33,13 @@ const PENDING_RECORD_ID = '__total__pending';
 const MIN_TOTAL_ROW_HEIGHT = 42;
 
 /** Which label names a total, per aggregation a column can carry. */
-const TOTAL_LABELS: Record<string, keyof IGridAggregationLabels> = {
-    avg: 'totalAverage',
-    max: 'totalMaximum',
-    min: 'totalMinimum',
-    sum: 'totalSum',
-    count: 'totalCount',
-    countcolumn: 'totalCountColumn',
+const TOTAL_LABELS: Record<string, keyof typeof GRID_AGGREGATION_LABELS.defaults> = {
+    avg: 'gridAggregation.totalAverage',
+    max: 'gridAggregation.totalMaximum',
+    min: 'gridAggregation.totalMinimum',
+    sum: 'gridAggregation.totalSum',
+    count: 'gridAggregation.totalCount',
+    countcolumn: 'gridAggregation.totalCountColumn',
 };
 
 export interface IGridAggregationParameters {
@@ -164,7 +164,7 @@ export class GridAggregation implements IGridAggregation {
 
     public getTotalLabel(columnName: string): string | undefined {
         const aggregationFunction = this._provider.getColumnsMap()[columnName]?.aggregation?.aggregationFunction;
-        return aggregationFunction ? this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]) : undefined;
+        return aggregationFunction ? this._labels.get(TOTAL_LABELS[aggregationFunction]) : undefined;
     }
 
     public getAggregateValueColumnName(record: IRecord, columnName: string): string {
@@ -243,7 +243,7 @@ export class GridAggregation implements IGridAggregation {
         adornments.push({
             key: 'total',
             placement: 'suffix',
-            title: this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]),
+            title: this._labels.get(TOTAL_LABELS[aggregationFunction]),
         });
     };
 
@@ -257,13 +257,13 @@ export class GridAggregation implements IGridAggregation {
         const grouping = this._services.get('gridServices').get('grid').modules.find('grouping');
         sections.push({
             key: 'aggregation',
-            title: this._labels.getLocalizedString('menuSection'),
+            title: this._labels.get('gridAggregation.menuSection'),
             items: [
                 //a grouped column always totals by its groups
                 ...(grouping?.isColumnGrouped(column) ? [] : [{
                     key: 'none',
                     checked: !column.aggregation,
-                    text: this._labels.getLocalizedString('totalNone'),
+                    text: this._labels.get('gridAggregation.totalNone'),
                     onClick: () => {
                         //already none: nothing to remove
                         if (column.aggregation?.alias) {
@@ -274,7 +274,7 @@ export class GridAggregation implements IGridAggregation {
                 ...supported.map(aggregationFunction => ({
                     key: aggregationFunction,
                     checked: column.aggregation?.aggregationFunction === aggregationFunction,
-                    text: this._labels.getLocalizedString(TOTAL_LABELS[aggregationFunction]),
+                    text: this._labels.get(TOTAL_LABELS[aggregationFunction]),
                     onClick: () => this.addAggregation(column.name, aggregationFunction),
                 })),
             ],
@@ -414,8 +414,8 @@ export class GridAggregation implements IGridAggregation {
         return this._services.get('components');
     }
 
-    private get _labels(): ILocalizationService<IGridAggregationLabels> {
-        return this._services.get('labels');
+    private get _labels(): LabelsOf<typeof GRID_AGGREGATION_LABELS> {
+        return this._services.get('gridServices').get('localization').getLabels(GRID_AGGREGATION_LABELS);
     }
 
     private get _gridServices() {

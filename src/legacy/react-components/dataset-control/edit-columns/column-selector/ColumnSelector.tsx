@@ -1,7 +1,8 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import React, { useEffect, useMemo } from "react";
 import { InputActionMeta } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
-import { useModel } from "@legacy/dataset-control/useModel";
 import { Selector } from "../selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';
@@ -16,8 +17,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { openMenuOnMount } = props;
     const editColumnsModel = useEditColumns().model;
     const styles = useMemo(() => getColumnSelectorStyles(), []);
-    const model = useModel();
-    const labels = model.getLabels();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
     const ref = React.useRef<SelectInstance>(null);
     const [defaultOptions, setDefaultOptions] = React.useState<IColumn[]>([]);
     const [inputValue, setInputValue] = React.useState<string>('');
@@ -68,7 +68,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,
-            placeholder: `${labels["add-column"]()}...`,
+            placeholder: `${labels.get('legacyDatasetControl.addColumn')}...`,
             controlShouldRenderValue: false,
             onInputChange: onInputChange,
             getOptionValue: (column) => Attribute.GetNameFromAlias(column.name),

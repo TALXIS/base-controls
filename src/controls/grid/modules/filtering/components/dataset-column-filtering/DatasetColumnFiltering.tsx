@@ -1,9 +1,10 @@
 import { DefaultButton, DirectionalHint, PrimaryButton, useTheme } from "@fluentui/react";
-import { ThemeProvider } from "@utils";
+import { ThemeProvider, useLabels } from "@utils";
 import { useControl, useEventEmitter } from "@hooks"
 import { OptionSet } from "@controls/fields/option-set";
 import { IDatasetColumnFiltering } from "./interfaces";
-import { datasetColumnFilteringTranslations } from "./translations";
+import { FILTER_OPERATORS_LABELS } from "./labels";
+import { GRID_FILTERING_LABELS } from "../../labels";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DatasetColumnFilteringModel, IDatasetColumnFilteringModelEvents } from "./DatasetColumnFilteringModel";
 import { useRerender } from "@legacy";
@@ -15,7 +16,9 @@ import { IConditionEvents } from "@talxis/client-libraries";
 
 export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const { labels, onNotifyOutputChanged } = useControl('DatasetFiltering', props, datasetColumnFilteringTranslations);
+    const { onNotifyOutputChanged } = useControl('DatasetFiltering', props);
+    const operatorLabels = useLabels(FILTER_OPERATORS_LABELS);
+    const labels = useLabels(GRID_FILTERING_LABELS);
     const theme = useTheme();
     const context = props.context;
     const filtering = props.parameters.Filtering;
@@ -31,7 +34,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const model = useMemo(() => {
         return new DatasetColumnFilteringModel({
             condition: condition,
-            labels: labels,
+            operatorLabels: operatorLabels,
             filtering: filtering
         })
     }, []);
@@ -178,12 +181,12 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
             }, (props) => {
                 return <div {...props.container}>
                     {props.onRenderApplyButton({
-                        text: 'Apply',
+                        text: labels.get('gridFiltering.apply'),
                         disabled: condition.isValueLoading(),
                         onClick: () => model.save(),
                     }, (props) => <PrimaryButton {...props} />)}
                     {props.onRenderClearButton({
-                        text: 'Clear',
+                        text: labels.get('gridFiltering.clear'),
                         disabled: isClearButtonDisabled(),
                         onClick: onClear
                     }, (props) => <DefaultButton

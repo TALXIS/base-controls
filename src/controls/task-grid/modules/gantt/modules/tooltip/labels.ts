@@ -1,7 +1,5 @@
-export interface IGanttTooltipLabels {
-    duration: string;
-}
+import { defineLabels } from "@utils";
 
-export const GANTT_TOOLTIP_LABELS: IGanttTooltipLabels = {
-    duration: 'Duration',
-};
+export const GANTT_TOOLTIP_LABELS = defineLabels({
+    'ganttTooltip.duration': 'Duration',
+});

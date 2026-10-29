@@ -1,7 +1,6 @@
 import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./services/columns/colDef";
-import { IGridLabels } from "./labels";
 import type { IGrid } from "./services/runtime";
 import type { IServiceLocator } from "@utils";
 import type { IGridComponents } from "./components/components";
@@ -79,8 +78,6 @@ export interface IGridProps extends Partial<IGridEventHandlers> {
     /** Overrides for the parts of what the grid draws itself, by piece. */
     components?: IGridComponents;
 
-    /** Overrides for the strings the grid renders; read once, at mount. */
-    labels?: Partial<IGridLabels>;
     /** Changes or adds columns by id, after every module's hook has run. */
     colDefs?: { [colId: string]: IGridColDefOverride };
     /** The key the grid's state is kept under, per view inside a DatasetControl. */

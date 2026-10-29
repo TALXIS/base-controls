@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DatasetConstants, IAvailableRelatedColumn, IColumn } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
-import { ErrorBoundary, LocalizationService, useDataProviderEvents } from "@utils";
+import { ErrorBoundary, useLabels, useDataProviderEvents } from "@utils";
 import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
-import { EDIT_COLUMNS_LABELS, IEditColumnsLabels } from "./labels";
+import { EDIT_COLUMNS_LABELS } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "./DatasetControlEditColumns";
 import { IDatasetControlEditColumnsSessionEvents } from "./DatasetControlEditColumnsSession";
 
@@ -28,8 +28,6 @@ export interface IEditColumnsComponents {
 
 /** Props for `DatasetControl.EditColumns`; the columns and related entities it offers come from the provider. */
 export interface IEditColumnsProps {
-    /** Overrides for the editor's strings; read once, at mount. */
-    labels?: Partial<IEditColumnsLabels>;
     /** Replacements for the editor's pieces. */
     components?: IEditColumnsComponents;
 }
@@ -41,7 +39,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);
     const editColumns = useDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
-    const labels = useMemo(() => new LocalizationService<IEditColumnsLabels>({ ...EDIT_COLUMNS_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(EDIT_COLUMNS_LABELS);
     const components = props.components ?? NO_COMPONENTS;
     const { rerender } = useRerender();
     const [scopeVersion, setScopeVersion] = useState(0);
@@ -65,24 +63,24 @@ export const EditColumns = (props: IEditColumnsProps) => {
 
     const getTitle = (): string => {
         const collectionName = session?.getEntityDisplayName();
-        return collectionName ? `${labels.getLocalizedString('editColumns')}: ${collectionName}` : labels.getLocalizedString('editColumns');
+        return collectionName ? `${labels.get('editColumns.editColumns')}: ${collectionName}` : labels.get('editColumns.editColumns');
     };
 
     const getScopeLabel = (scope: IAvailableRelatedColumn): string => {
-        const name = scope.displayName ?? labels.getLocalizedString('unnamed');
+        const name = scope.displayName ?? labels.get('editColumns.unnamed');
         return scope.relatedEntityDisplayName ? `${name} (${scope.relatedEntityDisplayName})` : name;
     };
 
     return <>
         <DatasetControlUi.EditColumnsButton
-            text={labels.getLocalizedString('editColumns')}
+            text={labels.get('editColumns.editColumns')}
             onClick={() => editColumns.open()}
             disabled={provider.isLoading()}
             components={components.button} />
         {session && <DatasetControlUi.EditColumnsPanel
             title={getTitle()}
-            saveText={labels.getLocalizedString('save')}
-            cancelText={labels.getLocalizedString('cancel')}
+            saveText={labels.get('editColumns.save')}
+            cancelText={labels.get('editColumns.cancel')}
             isSaveDisabled={session.getColumns().length === 0}
             onSave={() => editColumns.save()}
             onDismiss={() => editColumns.close()}
@@ -91,10 +89,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
             <ErrorBoundary error={session.getError()} onRetry={retry} components={components.errorMessage}>
                 {session.hasScopes() && <DatasetControlUi.EditColumnsScopeSelector
                     key={retryCount}
-                    label={labels.getLocalizedString('scopeSelectorLabel')}
+                    label={labels.get('editColumns.scopeSelectorLabel')}
                     defaultValue={session.getMainScope()}
-                    noResultsText={labels.getLocalizedString('noResults')}
-                    loadingText={labels.getLocalizedString('loading')}
+                    noResultsText={labels.get('editColumns.noResults')}
+                    loadingText={labels.get('editColumns.loading')}
                     getOptionLabel={getScopeLabel}
                     onLoadOptions={query => session.getScopes(query)}
                     onChange={scope => session.setScope(scope)}
@@ -103,11 +101,11 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     key={`${scopeVersion}-${retryCount}`}
                     openMenuOnMount={scopeVersion > 0}
                     value={session.getColumns()}
-                    placeholder={labels.getLocalizedString('columnSelectorPlaceholder')}
-                    noResultsText={labels.getLocalizedString('noResults')}
-                    loadingText={labels.getLocalizedString('loading')}
-                    noNameText={labels.getLocalizedString('unnamed')}
-                    getOptionTooltip={column => column.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? labels.getLocalizedString('customColumnTooltip') : column.name}
+                    placeholder={labels.get('editColumns.columnSelectorPlaceholder')}
+                    noResultsText={labels.get('editColumns.noResults')}
+                    loadingText={labels.get('editColumns.loading')}
+                    noNameText={labels.get('editColumns.unnamed')}
+                    getOptionTooltip={column => column.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? labels.get('editColumns.customColumnTooltip') : column.name}
                     onLoadOptions={query => session.getAvailableColumns(query)}
                     onAdd={column => session.addColumn(column)}
                     components={components.columnSelector} />
@@ -115,7 +113,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             <DatasetControlUi.EditColumnsColumnList
                 columns={session.getColumns().map(column => ({
                     column,
-                    text: column.displayName ?? labels.getLocalizedString('unnamed'),
+                    text: column.displayName ?? labels.get('editColumns.unnamed'),
                     //dnd-kit swallows the click, so the remove button acts on mouse up
                     commands: editColumns.getColumnCommands(column, session, { key: 'remove', iconProps: { iconName: 'Cancel' }, onMouseUp: () => session.removeColumn(column.name) }),
                 }))}

@@ -11,8 +11,8 @@ import { TaskRuntimeContext, TaskDatasetControlPropsContext } from "./context";
 /** One mount's task runtime: there before the mount loads, gone with it. */
 export const TaskDatasetControlScope = (props: { children: ReactNode }) => {
     const datasetControl = useRequiredDatasetControlRuntime();
-    const { labels, pcfContext, propsRef } = useContextWithNullCheck(TaskDatasetControlPropsContext);
-    const runtime = useDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, labels, pcfContext, onGetProps: () => propsRef.current }));
+    const { pcfContext, propsRef } = useContextWithNullCheck(TaskDatasetControlPropsContext);
+    const runtime = useDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }));
 
     //the provider of this mount's last load
     const provider = useContext(DataProviderContext) as ITaskDataProvider | null;

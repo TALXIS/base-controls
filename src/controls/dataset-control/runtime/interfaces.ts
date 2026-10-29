@@ -1,6 +1,5 @@
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IEventSubscriber, ILocalizationService, IServiceLocator } from "@utils";
-import type { IDatasetControlLabels } from "../components/adapters/root/labels";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LocalizationService } from "@utils";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
 import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "../components/adapters/quick-find/DatasetControlQuickFind";
@@ -127,11 +126,13 @@ export interface IDatasetControl<TData = unknown> {
     reload(): Promise<void>;
     /** Mounts the control anew on the view that failed to load. */
     retry(): Promise<void>;
+    /** The strings of one set, as the control's `LocalizationProvider` gives them. */
+    getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
 }
 
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     runtime: IDatasetControlRuntime;
-    labels: ILocalizationService<IDatasetControlLabels>;
+    localization: LocalizationService;
     surfaces: DatasetControlSurfaces;
     viewSwitcher: DatasetControlViewSwitcher;
     quickFind: DatasetControlQuickFind;

@@ -1,13 +1,12 @@
 import type { GanttStatic, Link } from "dhtmlx-gantt";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
-import { GANTT_LINKS_LABELS, IGanttLinksLabels } from "./labels";
+import { GANTT_LINKS_LABELS } from "./labels";
 import { getGanttLinksStyles } from "./styles";
 
 export interface IGanttLinksParameters {
-    labels?: Partial<IGanttLinksLabels>;
 }
 
 /** The `links` module: the `dependencies` module's dependencies drawn between the bars. */
@@ -32,13 +31,13 @@ const isSameLink = (left: Link | undefined, right: Link | undefined): boolean =>
 export class GanttLinks implements IGanttLinks {
     private _gantt: IGantt;
     private _dependencies?: IDependencies;
-    private _labels: ILocalizationService<IGanttLinksLabels>;
+    private _labels: LabelsOf<typeof GANTT_LINKS_LABELS>;
     private _isSyncing = false;
     private _unregisters: (() => void)[] = [];
 
     constructor(gantt: IGantt, parameters: IGanttLinksParameters) {
         this._gantt = gantt;
-        this._labels = new LocalizationService<IGanttLinksLabels>({ ...GANTT_LINKS_LABELS, ...parameters.labels });
+        this._labels = gantt.getLabels(GANTT_LINKS_LABELS);
         this._dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
         if (!this._dependencies) {
             return;
@@ -127,7 +126,7 @@ export class GanttLinks implements IGanttLinks {
 
     private async _deleteLink(dependencyId: string): Promise<void> {
         const navigation = this._gantt.getTaskRuntime().services.get('pcfContext').navigation;
-        const confirmation = await navigation.openConfirmDialog({ text: this._labels.getLocalizedString('confirmDeleteLink') });
+        const confirmation = await navigation.openConfirmDialog({ text: this._labels.get('ganttLinks.confirmDeleteLink') });
         if (confirmation.confirmed) {
             await this._dependencies?.deleteDependency(dependencyId);
         }

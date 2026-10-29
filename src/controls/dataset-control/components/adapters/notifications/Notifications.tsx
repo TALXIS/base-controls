@@ -2,16 +2,14 @@ import { useEffect, useMemo } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { INotificationMessageBarProps } from "@ui/notifications";
-import { useDataProvider } from "@utils";
+import { useDataProvider, useLabels } from "@utils";
 import { useDatasetControlPart } from "../root";
-import { INotificationsLabels, NOTIFICATIONS_LABELS } from "./labels";
+import { NOTIFICATIONS_LABELS } from "./labels";
 import { INotificationsComponents, NotificationsComponents } from "./components";
 import { DatasetControlNotifications, IDatasetControlNotificationsEvents } from "./DatasetControlNotifications";
 
 /** Props for `DatasetControl.Notifications`. */
-export interface INotificationsProps extends Omit<INotificationMessageBarProps, 'labels' | 'components'> {
-    /** Overrides for the notifications' strings. */
-    labels?: Partial<INotificationsLabels>;
+export interface INotificationsProps extends Omit<INotificationMessageBarProps, 'groupedNotificationsSummary' | 'components'> {
     /** Replacements for the notifications' pieces. */
     components?: Partial<INotificationsComponents>;
 }
@@ -21,15 +19,18 @@ export const Notifications = (props: INotificationsProps) => {
     const provider = useDataProvider();
     const notifications = useDatasetControlPart('notifications', () => new DatasetControlNotifications({ provider }));
     const { rerender } = useRerender();
-    const { messages = [], labels, components: componentsProp, ...notificationsProps } = props;
+    const { messages = [], components: componentsProp, ...notificationsProps } = props;
+    const labels = useLabels(NOTIFICATIONS_LABELS);
     const components = { ...NotificationsComponents, ...componentsProp };
 
     useEventEmitter<IDatasetControlNotificationsEvents>(notifications.events, 'onNotificationsChanged', rerender);
     useEffect(() => () => notifications.destroy(), []);
 
+    const allMessages = [...messages, ...notifications.getMessages()];
+
     return components.onRenderNotifications({
         ...notificationsProps,
-        labels: { ...NOTIFICATIONS_LABELS, ...labels },
-        messages: [...messages, ...notifications.getMessages()],
+        groupedNotificationsSummary: labels.get('notifications.groupedNotificationsSummary', { count: allMessages.length }),
+        messages: allMessages,
     });
 };

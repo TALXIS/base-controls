@@ -1,18 +1,19 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { IAvailableRelatedColumn } from "@talxis/client-libraries";
 import { Selector } from "../selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { useEffect, useState } from "react";
-import { useModel } from "@legacy/dataset-control/useModel";
 
 
 export const ScopeSelector = () => {
     const editColumnsModel = useEditColumns().model;
     const [isDisabled, setIsDisabled] = useState(true);
-    const labels = useModel().getLabels();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
 
     const getOptionLabel = (column: IAvailableRelatedColumn): string => {
         const relatedEntityDisplayName = column.relatedEntityDisplayName;
-        return relatedEntityDisplayName ? `${column.displayName} (${relatedEntityDisplayName})` : column.displayName ?? labels['no-name']();
+        return relatedEntityDisplayName ? `${column.displayName} (${relatedEntityDisplayName})` : column.displayName ?? labels.get('legacyDatasetControl.noName');
     }
 
     useEffect(() => {

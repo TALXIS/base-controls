@@ -55,7 +55,7 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
                     }
                     return defaultUnmount();
                 },
-                onOverrideControlProps: (controlProps: IControl<any, any, any, any>) => {
+                onOverrideControlProps: (controlProps: IControl<any, any, any>) => {
                     //the control builds its own parameters out of the bindings
                     const controlParameters = control.getFinalControlParameters({ ...parameters, ...controlProps.parameters });
                     return {

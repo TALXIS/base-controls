@@ -1,10 +1,7 @@
-/** The texts of the loading boundary. */
-export interface ILoadingBoundaryLabels {
-    /** Shown beside the spinner. */
-    loading: string;
-}
+import { defineLabels } from "@utils/localization";
 
-/** The English defaults for {@link ILoadingBoundaryLabels}. */
-export const LOADING_BOUNDARY_LABELS: ILoadingBoundaryLabels = {
-    loading: 'Loading...',
-};
+/** The texts of the loading boundary. */
+export const LOADING_BOUNDARY_LABELS = defineLabels({
+    /** Shown beside the spinner. */
+    'loadingBoundary.loading': 'Loading...',
+});

@@ -1,7 +1,7 @@
 import { createContext, MutableRefObject, useContext } from "react";
-import { ITranslation } from "@hooks";
 import { ITheme } from "@theme";
-import { IDateTime, IDateTimeParameters } from "./interfaces";
+import { IPcfContext } from "@interfaces";
+import { IDateTimeParameters } from "./interfaces";
 import { useDateTime } from "./hooks/useDateTime";
 
 type DateTimeState = ReturnType<typeof useDateTime>;
@@ -19,10 +19,10 @@ export interface IDateTimeContext {
     /** Whether the value carries a time as well as a date. */
     isDateTime: boolean;
     /** The value, and the ways of reading and writing it. */
-    date: DateTimeState[3];
+    date: DateTimeState[2];
     /** How a date, a time and the two together read in this user's locale. */
-    patterns: DateTimeState[4];
-    labels: ITranslation<Required<IDateTime>['translations']>;
+    patterns: DateTimeState[3];
+    dateFormattingInfo: IPcfContext['formatting']['dateFormattingInfo'];
     /** The control's own theme. */
     theme: ITheme;
     /** What was last typed into the time input, which is what an invalid time is reported from. */

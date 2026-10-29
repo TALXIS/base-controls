@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { ICommandBarItemProps, MessageBarType, useTheme } from "@fluentui/react";
 import { ThemeContext, useThemeGenerator } from "@theme";
-import { LocalizationService } from "@utils/localization";
+import { useLabels } from "@utils/localization";
 import { usePcfContext } from "@utils/adapters/pcf-context/context";
 import { ErrorMessageBarComponents, IErrorMessageBarComponents } from "./components";
-import { ERROR_MESSAGE_BAR_LABELS, IErrorMessageBarLabels } from "./labels";
+import { ERROR_MESSAGE_BAR_LABELS } from "./labels";
 import { getErrorMessageBarStyles } from "./styles";
 
 export interface IErrorMessageBarProps {
@@ -14,8 +14,6 @@ export interface IErrorMessageBarProps {
     details?: string;
     /** Adds a *Try again* command that calls this. */
     onRetry?: () => void;
-    /** The commands' texts, in English where left out. */
-    labels?: Partial<IErrorMessageBarLabels>;
     /** Replacements for the bar, its title, its tooltip and its commands. */
     components?: Partial<IErrorMessageBarComponents>;
 }
@@ -24,7 +22,7 @@ export interface IErrorMessageBarProps {
 export const ErrorMessageBar = (props: IErrorMessageBarProps) => {
     const pcfContext = usePcfContext();
     const components = { ...ErrorMessageBarComponents, ...props.components };
-    const labels = useMemo(() => new LocalizationService({ ...ERROR_MESSAGE_BAR_LABELS, ...props.labels }), []);
+    const labels = useLabels(ERROR_MESSAGE_BAR_LABELS);
     const theme = useTheme();
     const styles = useMemo(() => getErrorMessageBarStyles(), []);
     const commandBarTheme = useThemeGenerator({ primary: theme.palette.themePrimary, background: theme.semanticColors.errorBackground, text: theme.semanticColors.messageText });
@@ -32,10 +30,10 @@ export const ErrorMessageBar = (props: IErrorMessageBarProps) => {
     const getItems = (): ICommandBarItemProps[] => {
         const items: ICommandBarItemProps[] = [];
         if (props.details) {
-            items.push({ key: 'details', text: labels.getLocalizedString('details'), iconProps: { iconName: 'Info' }, onClick: () => { pcfContext.navigation.openErrorDialog({ message: props.title, details: props.details }); } });
+            items.push({ key: 'details', text: labels.get('errorMessageBar.details'), iconProps: { iconName: 'Info' }, onClick: () => { pcfContext.navigation.openErrorDialog({ message: props.title, details: props.details }); } });
         }
         if (props.onRetry) {
-            items.push({ key: 'tryAgain', text: labels.getLocalizedString('tryAgain'), iconProps: { iconName: 'Refresh' }, onClick: props.onRetry });
+            items.push({ key: 'tryAgain', text: labels.get('errorMessageBar.tryAgain'), iconProps: { iconName: 'Refresh' }, onClick: props.onRetry });
         }
         return items;
     };

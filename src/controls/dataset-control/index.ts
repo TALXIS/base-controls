@@ -1,7 +1,7 @@
 export * from './namespace';
-export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_LABELS_CS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
 export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModuleParameters, IDataverseUserQueriesTable, ILocalStorageUserQueriesModuleParameters } from './modules/user-queries';
-export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQueriesLabels, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
@@ -11,22 +11,16 @@ export type {
 export { useDatasetControl, useControlStateStore, useDatasetControlPart, useDatasetControlModule } from './components/adapters/root';
 export { useDatasetControlHeader } from './components/ui/header';
 export type { IDatasetControlHeader } from './components/ui/header';
-export type { IDatasetControlProps, IDatasetControlLabels, IDatasetControlComponents } from './components/adapters/root';
-export { DATASET_CONTROL_LABELS } from './components/adapters/root';
-export { VIEW_SWITCHER_LABELS } from './components/adapters/view-switcher';
-export type { IViewSwitcherLabels } from './components/adapters/view-switcher';
-export { QUICK_FIND_LABELS } from './components/adapters/quick-find';
-export type { IQuickFindLabels } from './components/adapters/quick-find';
-export { PAGINATION_LABELS } from './components/adapters/pagination';
-export type { IPaginationLabels } from './components/adapters/pagination';
-export { PAGE_SIZE_SWITCHER_LABELS, DEFAULT_PAGE_SIZES } from './components/adapters/page-size-switcher';
-export type { IPageSizeSwitcherLabels } from './components/adapters/page-size-switcher';
-export { EMPTY_RECORDS_LABELS } from './components/adapters/empty-records';
-export type { IEmptyRecordsProps, IEmptyRecordsLabels } from './components/adapters/empty-records';
-export { NOTIFICATIONS_LABELS as DATASET_CONTROL_NOTIFICATIONS_LABELS } from './components/adapters/notifications';
-export type { INotificationsLabels as IDatasetControlNotificationsLabels } from './components/adapters/notifications';
-export { EDIT_COLUMNS_LABELS } from './components/adapters/edit-columns';
-export type { IEditColumnsLabels } from './components/adapters/edit-columns';
+export type { IDatasetControlProps, IDatasetControlComponents } from './components/adapters/root';
+export { DATASET_CONTROL_LABELS, DATASET_CONTROL_LABELS_CS } from './components/adapters/root';
+export { VIEW_SWITCHER_LABELS, VIEW_SWITCHER_LABELS_CS } from './components/adapters/view-switcher';
+export { QUICK_FIND_LABELS, QUICK_FIND_LABELS_CS } from './components/adapters/quick-find';
+export { PAGINATION_LABELS, PAGINATION_LABELS_CS } from './components/adapters/pagination';
+export { PAGE_SIZE_SWITCHER_LABELS, PAGE_SIZE_SWITCHER_LABELS_CS, DEFAULT_PAGE_SIZES } from './components/adapters/page-size-switcher';
+export { EMPTY_RECORDS_LABELS, EMPTY_RECORDS_LABELS_CS } from './components/adapters/empty-records';
+export type { IEmptyRecordsProps } from './components/adapters/empty-records';
+export { NOTIFICATIONS_LABELS as DATASET_CONTROL_NOTIFICATIONS_LABELS, NOTIFICATIONS_LABELS_CS as DATASET_CONTROL_NOTIFICATIONS_LABELS_CS } from './components/adapters/notifications';
+export { EDIT_COLUMNS_LABELS, EDIT_COLUMNS_LABELS_CS } from './components/adapters/edit-columns';
 export type { ISkeletonComponents as IDatasetControlSkeletonComponents } from './components/adapters/skeleton';
 export type { IHeaderProps as IDatasetControlHeaderProps, IHeaderStartProps as IDatasetControlHeaderStartProps, IHeaderEndProps as IDatasetControlHeaderEndProps } from './components/adapters/header';
 export type { IDatasetControlRegion } from './components/adapters/region';

@@ -3,7 +3,7 @@ import { IInputParameters } from "@interfaces/parameters";
 import { IControl, IOutputs } from "@interfaces/context";
 import { ITextFieldProps } from "@legacy";
 
-export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, any, ITextFieldProps> {
+export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, ITextFieldProps> {
     
 }
 

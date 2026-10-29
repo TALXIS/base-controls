@@ -5,7 +5,7 @@ import { useTheme } from "@fluentui/react";
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
-import { getClassNames, useDataProvider, usePcfContext, ThemeProvider } from "@utils";
+import { getClassNames, useDataProvider, useLocalization, usePcfContext, ThemeProvider } from "@utils";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
@@ -26,6 +26,7 @@ export const GridRoot = (props: IGridProps) => {
     const theme = useTheme();
     const state = useControlStateStore(props.stateKey);
     const datasetControl = useDatasetControlRuntime();
+    const localization = useLocalization();
     const propsRef = useLatest(props);
 
     const runtime = useDatasetControlPart('grid', () => new GridRuntime({
@@ -35,6 +36,7 @@ export const GridRoot = (props: IGridProps) => {
         theme: theme,
         state: state,
         datasetControl: datasetControl,
+        localization: localization,
     }));
 
     const settings = runtime.services.get('settings');

@@ -1,16 +1,14 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IQuickFindUiComponents } from "../../ui";
-import { LocalizationService, useDataProviderEvents } from "@utils";
+import { useLabels, useDataProviderEvents } from "@utils";
 import { useDatasetControlPart } from "../root";
-import { IQuickFindLabels, QUICK_FIND_LABELS } from "./labels";
+import { QUICK_FIND_LABELS } from "./labels";
 import { DatasetControlQuickFind, IDatasetControlQuickFindEvents } from "./DatasetControlQuickFind";
 
 /** Props for `DatasetControl.QuickFind`. */
 export interface IQuickFindProps {
-    /** Overrides for the quick find's strings. */
-    labels?: Partial<IQuickFindLabels>;
     /** Replacements for the quick find's slots. */
     components?: Partial<IQuickFindUiComponents>;
 }
@@ -19,7 +17,7 @@ export interface IQuickFindProps {
 export const QuickFind = (props: IQuickFindProps) => {
     const provider = useDataProviderEvents(['onLoading']);
     const quickFind = useDatasetControlPart('quickFind', () => new DatasetControlQuickFind({ provider }));
-    const labels = useMemo(() => new LocalizationService<IQuickFindLabels>({ ...QUICK_FIND_LABELS, ...props.labels }), [props.labels]);
+    const labels = useLabels(QUICK_FIND_LABELS);
     const { rerender } = useRerender();
 
     useEventEmitter<IDatasetControlQuickFindEvents>(quickFind.events, 'onQueryChanged', rerender);
@@ -27,15 +25,15 @@ export const QuickFind = (props: IQuickFindProps) => {
 
     return <DatasetControlUi.QuickFind
         value={quickFind.getQuery()}
-        placeholder={labels.getLocalizedString('searchPlaceholder', { collection: provider.getMetadata()?.DisplayCollectionName ?? labels.getLocalizedString('defaultCollectionName') })}
+        placeholder={labels.get('quickFind.searchPlaceholder', { collection: provider.getMetadata()?.DisplayCollectionName ?? labels.get('quickFind.defaultCollectionName') })}
         columns={quickFind.getColumns()}
         isLikeQuery={quickFind.isLikeQuery()}
         disabled={provider.isLoading()}
         labels={{
-            leadingWildcardWarning: labels.getLocalizedString('leadingWildcardWarning'),
-            columnsHintStart: labels.getLocalizedString('columnsHintStart'),
-            columnsHintOperator: labels.getLocalizedString('columnsHintOperator'),
-            columnsHintEnd: labels.getLocalizedString('columnsHintEnd'),
+            leadingWildcardWarning: labels.get('quickFind.leadingWildcardWarning'),
+            columnsHintStart: labels.get('quickFind.columnsHintStart'),
+            columnsHintOperator: labels.get('quickFind.columnsHintOperator'),
+            columnsHintEnd: labels.get('quickFind.columnsHintEnd'),
         }}
         onChange={value => quickFind.setQuery(value)}
         onSearch={() => quickFind.search()}

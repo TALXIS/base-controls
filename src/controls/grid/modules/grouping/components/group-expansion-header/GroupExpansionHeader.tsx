@@ -2,7 +2,8 @@ import { useRerender } from "@legacy";
 import { useGridModule } from "../../../../useGridModule";
 import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../components/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderTheme } from "../../../../components/column-header/theme/ColumnHeaderTheme";
-import { useGridGroupingLabels } from "../../useGridGroupingLabels";
+import { useLabels } from "@utils";
+import { GRID_GROUPING_LABELS } from "../../labels";
 import { GroupingUi } from "../ui";
 import { IGroupExpansionHeaderComponents } from "./components";
 
@@ -14,7 +15,7 @@ export interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
 export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
     //the grouping module is registered wherever this header draws
     const grouping = useGridModule('grouping');
-    const labels = useGridGroupingLabels();
+    const labels = useLabels(GRID_GROUPING_LABELS);
     const { rerender } = useRerender();
     const expandedLevel = grouping.getExpandedLevel();
 
@@ -27,8 +28,8 @@ export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
     return <ColumnHeaderRoot {...props}>
         <ColumnHeaderTheme>
             <GroupingUi.ExpandCollapse
-                expandTitle={labels.getLocalizedString('expandLevel')}
-                collapseTitle={labels.getLocalizedString('collapseLevel')}
+                expandTitle={labels.get('gridGrouping.expandLevel')}
+                collapseTitle={labels.get('gridGrouping.collapseLevel')}
                 canExpand={expandedLevel < grouping.getDeepestLevel()}
                 canCollapse={expandedLevel >= 0}
                 onExpand={() => onStepLevel(1)}

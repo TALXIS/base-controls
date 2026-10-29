@@ -1,11 +1,11 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { ILocalizationService, LocalizationService } from "@utils";
+import type { LabelsOf } from "@utils";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { GANTT_MARKERS_LABELS, IGanttMarkersLabels } from "./labels";
+import { GANTT_MARKERS_LABELS } from "./labels";
 import type { IGanttMarkerUiChipComponents, IGanttMarkerUiColumnComponents, IGanttMarkerUiLayerComponents, IGanttMarkerUiLineComponents, IGanttMarkerUiScaleComponents, IGanttMarkerUiTrackComponents } from "./components/ui";
 import { GanttMarkerLayer } from "./components/adapters/marker-layer";
 
@@ -53,7 +53,6 @@ export interface IGanttMarkersParameters {
     project?: IGanttProjectMarkersParameters;
     onCreateStore?: (taskRuntime: ITaskRuntime) => IGanttMarkersStore;
     components?: IGanttMarkersComponents;
-    labels?: Partial<IGanttMarkersLabels>;
 }
 
 export interface IGanttMarkersEvents {
@@ -77,7 +76,7 @@ export class GanttMarkers implements IGanttMarkers {
     public readonly events = new EventEmitter<IGanttMarkersEvents>();
     private _gantt: IGantt;
     private _parameters: IGanttMarkersParameters;
-    private _labels: ILocalizationService<IGanttMarkersLabels>;
+    private _labels: LabelsOf<typeof GANTT_MARKERS_LABELS>;
     private _store?: IGanttMarkersStore;
     private _storeMarkers: IGanttMarker[] = [];
     private _unregisterSurface: () => void;
@@ -85,7 +84,7 @@ export class GanttMarkers implements IGanttMarkers {
     constructor(gantt: IGantt, parameters: IGanttMarkersParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._labels = new LocalizationService<IGanttMarkersLabels>({ ...GANTT_MARKERS_LABELS, ...parameters.labels });
+        this._labels = gantt.getLabels(GANTT_MARKERS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
         //not awaited: the chart draws without the store's markers, which join it once loaded
@@ -95,7 +94,7 @@ export class GanttMarkers implements IGanttMarkers {
     public async reload(): Promise<void> {
         if (this._store) {
             const store = this._store;
-            const errorTitle = this._labels.getLocalizedString('loadMarkersFailed');
+            const errorTitle = this._labels.get('ganttMarkers.loadMarkersFailed');
             const markers = await this._gantt.getTaskRuntime().execute(() => store.onLoadMarkers(), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
             if (!markers) {
                 return;
@@ -108,7 +107,7 @@ export class GanttMarkers implements IGanttMarkers {
     public getMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
         if (this._parameters.today?.enableMarker ?? true) {
-            markers.push({ id: 'today', text: this._labels.getLocalizedString('today'), date: dayjs(), color: this._parameters.today?.color });
+            markers.push({ id: 'today', text: this._labels.get('ganttMarkers.today'), date: dayjs(), color: this._parameters.today?.color });
         }
         if (this._parameters.project?.enableMarkers ?? true) {
             const color = this._parameters.project?.color;
@@ -116,10 +115,10 @@ export class GanttMarkers implements IGanttMarkers {
             const startDate = project?.getStartDate();
             const endDate = project?.getEndDate();
             if (startDate) {
-                markers.push({ id: 'projectStart', text: this._labels.getLocalizedString('projectStart'), date: startDate, color });
+                markers.push({ id: 'projectStart', text: this._labels.get('ganttMarkers.projectStart'), date: startDate, color });
             }
             if (endDate) {
-                markers.push({ id: 'projectEnd', text: this._labels.getLocalizedString('projectEnd'), date: endDate, color });
+                markers.push({ id: 'projectEnd', text: this._labels.get('ganttMarkers.projectEnd'), date: endDate, color });
             }
         }
         return [...markers, ...this._storeMarkers];

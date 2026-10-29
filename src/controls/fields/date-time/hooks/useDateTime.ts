@@ -4,8 +4,6 @@ import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { getDefaultDateTimeTranslations } from "../translations";
-import { ITranslation } from "@hooks";
 import { ITheme } from "@theme";
 
 dayjs.extend(customParseFormat);
@@ -13,7 +11,6 @@ dayjs.extend(customParseFormat);
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
     boolean,
     ITheme,
-    ITranslation<Required<IDateTime>['translations']>,
     {
         get: () => Date | undefined;
         getFormatted: () => string | undefined;
@@ -110,10 +107,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             value: parseDateString(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
-    const { value, labels, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+    const { value, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs>('DateTime', props, {
         formatter: formatDate,
-        valueExtractor: parseDateString,
-        defaultTranslations: getDefaultDateTimeTranslations(dateFormattingInfo)
+        valueExtractor: parseDateString
     });
     const theme = useTheme();
 
@@ -138,7 +134,6 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     return [
         isDateTime,
         theme,
-        labels,
         {
             get: getDate,
             clear: clearDate,

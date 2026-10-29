@@ -1,13 +1,11 @@
 import { useMemo, useRef } from "react";
 import type { IRecord } from "@talxis/client-libraries";
 import { useLatest } from "@hooks";
-import { LocalizationService, usePcfContext } from "@utils";
+import { usePcfContext } from "@utils";
 import { Root as DatasetControl } from "@controls/dataset-control/components/adapters/root/Root";
 import type { IDatasetControlProps } from "@controls/dataset-control/components/adapters/root/Root";
-import type { IDatasetControlLabels } from "@controls/dataset-control/components/adapters/root/labels";
 import type { IDatasetControl, IDatasetControlModule } from "@controls/dataset-control/runtime/interfaces";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { ITaskGridLabels, TASK_GRID_LABELS } from "../labels";
 import type { ITaskGridLoadParameters, ITaskGridLoadResult } from "../interfaces";
 import type { ITaskViewData, TaskCreatePosition } from "../provider";
 import type { ITaskRuntime } from "../runtime";
@@ -15,7 +13,7 @@ import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from 
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
 
-export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'labels' | 'modules'> {
+export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes; `first` when left out. */
@@ -36,8 +34,6 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     onTasksDeleted?: (taskIds: string[]) => void;
     /** Called after tasks change, from a form save or a move. */
     onTasksUpdated?: (records: IRecord[]) => void;
-    /** The control's and the task grid's strings; read once, at mount. */
-    labels?: Partial<IDatasetControlLabels & ITaskGridLabels>;
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
     onMounted?: (taskRuntime: ITaskRuntime) => void;
     /** Called on every mount once its load succeeded. */
@@ -51,7 +47,6 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     const propsRef = useLatest(props);
     const pcfContext = usePcfContext();
     const propsContext = useMemo((): ITaskDatasetControlPropsContext => ({
-        labels: new LocalizationService<ITaskGridLabels>({ ...TASK_GRID_LABELS, ...props.labels }),
         pcfContext,
         propsRef,
     }), []);

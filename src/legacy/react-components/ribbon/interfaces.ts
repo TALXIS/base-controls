@@ -5,7 +5,7 @@ import { ITwoOptionsProperty } from "@interfaces";
 import { IShimmerProps } from "@fluentui/react";
 import { IThemeProviderProps } from "@utils";
 
-export interface IRibbon extends IControl<IRibbonParameters, any, any, IRibbonComponentProps> {
+export interface IRibbon extends IControl<IRibbonParameters, any, IRibbonComponentProps> {
 }
 
 export interface IRibbonParameters {

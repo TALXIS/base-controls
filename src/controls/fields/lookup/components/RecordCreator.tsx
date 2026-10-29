@@ -3,23 +3,21 @@
 import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
 import { useSurfaceMenuProps } from "@ui";
 import { CommandBarButton } from "@fluentui/react";
-import { IEntity, ILookupTranslations } from "../interfaces";
+import { IEntity } from "../interfaces";
+import { useLabels } from "@utils";
+import { LOOKUP_LABELS } from "../labels";
 import { getLookupStyles } from "../styles";
 import { useLoadedEntities } from "../hooks/useLoadedEntities";
 import React from 'react';
 
-type ILabelProps<T> = {
-    [Property in keyof T]: (variables?: any) => string;
-};
-
 interface IRecordCreator {
-    labels: Required<ILabelProps<ILookupTranslations>>,
     entities: IEntity[];
     onCreateRecord: (entityName: string) => void;
 }
 
 export const RecordCreator = (props: IRecordCreator) => {
-    const {labels, entities, onCreateRecord} = {...props};
+    const {entities, onCreateRecord} = {...props};
+    const labels = useLabels(LOOKUP_LABELS);
     const [loadedEntities] = useLoadedEntities(entities);
     const theme = useTheme();
     const styles = getLookupStyles(theme, 0)
@@ -54,6 +52,6 @@ export const RecordCreator = (props: IRecordCreator) => {
             }}
             onClick={selectedEntity ? () => onCreateRecord(selectedEntity.entityName) : undefined}
             menuProps={menuProps}
-            text={labels.newRecord()} />
+            text={labels.get('lookup.newRecord')} />
     )
 }

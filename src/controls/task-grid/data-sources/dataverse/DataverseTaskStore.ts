@@ -3,6 +3,7 @@ import { Liquid } from "liquidjs";
 import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
+import { TASK_GRID_LABELS } from "../../labels";
 
 /** A form the data source opens. */
 export type DataverseTaskFormOperation = 'edit' | 'bulkEdit' | 'open';
@@ -160,7 +161,7 @@ export class DataverseTaskStore implements ITaskStore {
         const narrowedColumnNames = lookupColumnNames.filter(columnName => filteredColumnNames.includes(columnName));
         const columnNames = narrowedColumnNames.length > 0 ? narrowedColumnNames : lookupColumnNames;
         if (columnNames.length > 1) {
-            throw new Error(this._taskRuntime.getLabels().getLocalizedString('projectLookupAmbiguous', { columns: columnNames.join(', ') }));
+            throw new Error(this._taskRuntime.getLabels(TASK_GRID_LABELS).get('taskGrid.projectLookupAmbiguous', { columns: columnNames.join(', ') }));
         }
         return columnNames[0] ? { columnName: columnNames[0], reference: { id: { guid: project.getId() }, name: project.getName() ?? '', etn: projectEntityName } } : undefined;
     }

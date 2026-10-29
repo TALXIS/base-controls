@@ -2,11 +2,11 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@fluentui/react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
+import { useLocalization } from "@utils";
 import { useControlStateStore, useDatasetControlPart } from "@controls/dataset-control/components/adapters/root";
 import { useTaskRuntime } from "../../dataset-control/context";
 import { GanttRuntime } from "./runtime/GanttRuntime";
 import { GanttContext } from "./context";
-import type { IGanttLabels } from "./labels";
 import type { IGanttEvents, IGanttModule } from "./interfaces";
 import { getTaskGanttStyles } from "./styles";
 import { GanttOverlayLayer } from "./components/overlay-layer";
@@ -18,8 +18,6 @@ export interface ITaskGanttProps {
     modules?: IGanttModule[];
     /** Where the zoom is kept per view; read once, at mount. */
     stateKey?: string;
-    /** Read once, at mount. */
-    labels?: Partial<IGanttLabels>;
     components?: ITaskGanttComponents;
 }
 
@@ -34,7 +32,8 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     const taskRuntime = useTaskRuntime();
     const state = useControlStateStore(props.stateKey);
     const propsRef = useLatest(props);
-    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, onGetProps: () => propsRef.current }));
+    const localization = useLocalization();
+    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, localization, onGetProps: () => propsRef.current }));
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const [error, setError] = useState<unknown>();

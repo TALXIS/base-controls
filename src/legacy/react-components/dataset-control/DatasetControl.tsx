@@ -1,8 +1,7 @@
 import { useTheme } from "@fluentui/react";
 import { useEffect, useMemo, useRef } from "react";
-import { useControl } from "@hooks";
-import { ThemeProvider } from "@utils";
-import { datasetControlTranslations } from "./translations";
+import { ThemeProvider, useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
 import { useRerender } from "@legacy";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";
@@ -14,11 +13,7 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
 
 export const DatasetControl = (props: IDatasetControlProps) => {
-  const { labels } = useControl('DatasetControl', {
-    ...props,
-    context: props.onGetDatasetControlInstance().getPcfContext(),
-    parameters: props.onGetDatasetControlInstance().getParameters(),
-  }, datasetControlTranslations);
+  const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
   const theme = useTheme();
   
   const propsRef = useRef<IDatasetControlProps>(props);
@@ -26,7 +21,7 @@ export const DatasetControl = (props: IDatasetControlProps) => {
   const datasetControl = propsRef.current.onGetDatasetControlInstance();
   const model = useMemo(() => new DatasetControlModel({
     datasetControl: datasetControl,
-    getLabels: () => labels,
+    labels: labels,
   }), []);
   useMemo(() => props.onGetDatasetControlInstance().init(), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);

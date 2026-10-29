@@ -1,3 +1,5 @@
+import { useLabels } from "@utils";
+import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, useTheme } from "@fluentui/react";
 import { Panel } from "@ui";
 import { useModel } from "../useModel";
@@ -41,7 +43,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const dataset = datasetControl.getDataset();
     const provider = dataset.getDataProvider();
     const theme = useTheme();
-    const labels = model.getLabels();
+    const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
     const styles = useMemo(() => getEditColumnsStyles(theme), []);
     const editColumnsModel = useMemo(() => datasetControl.editColumns, []);
     const columns = props.onFilterVisibleColumns?.(editColumnsModel.getColumns()) ?? editColumnsModel.getColumns();
@@ -70,7 +72,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
 
     const getTitle = () => {
         const collectionName = provider.getMetadata().DisplayCollectionName;
-        let title = labels["edit-columns"]();
+        let title = labels.get('legacyDatasetControl.editColumns');
         if (collectionName) {
             title += `: ${collectionName}`;
         }
@@ -94,11 +96,11 @@ export const EditColumns = (props: IEditColumnsProps) => {
                             editColumnsModel.save();
                             props.onDismiss();
                         }}
-                        text={labels['save']()}
+                        text={labels.get('legacyDatasetControl.save')}
                         disabled={columns.filter(col => !col.isHidden).length === 0}
                     />
                     <DefaultButton
-                        text={labels['cancel']()}
+                        text={labels.get('legacyDatasetControl.cancel')}
                         onClick={props.onDismiss}
                     />
                 </div>
@@ -112,7 +114,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 <components.CommandBar items={[]} />
                 {showScopeSelector && (
                     <div>
-                        <Label>{labels["column-source"]()}</Label>
+                        <Label>{labels.get('legacyDatasetControl.columnSource')}</Label>
                         <ScopeSelector />
                     </div>
                 )}

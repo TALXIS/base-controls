@@ -41,7 +41,6 @@ export const XrmForm = (props: IXrmFormProps) => {
         onFieldValueChanged={props.onFieldValueChanged}
         onFormReady={onFormReady}
         onValidationSummaryChanged={props.onValidationSummaryChanged}
-        labels={props.labels}
     >
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} components={components} />}
     </Form.Root>

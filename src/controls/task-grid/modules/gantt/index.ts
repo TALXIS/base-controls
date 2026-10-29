@@ -1,6 +1,7 @@
 export * from './namespace';
 export * from './interfaces';
 export * from './labels';
+export * from './labels.cs';
 export type { IGanttSurface, IGanttSurfaces, GanttSurfacesHook } from './surfaces';
 export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export type { IGanttOverlay, IGanttOverlayEvents } from './overlay';

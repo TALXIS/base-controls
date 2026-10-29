@@ -1,7 +1,5 @@
 import { IRecord } from "@talxis/client-libraries";
-import { ILocalizationService, LocalizationService } from "@utils";
 import { IGrid } from "../../grid/services/runtime";
-import { CHECK_LIST_LABELS, ICheckListLabels } from "../labels";
 import { CheckListColumns } from "./CheckListColumns";
 import { CheckListReordering } from "./CheckListReordering";
 import { CheckListNewItemRow } from "./CheckListNewItemRow";
@@ -27,15 +25,12 @@ declare module "../../grid/interfaces" {
 export interface IGridCheckListParameters {
     grid: IGrid;
     fieldMapping: ICheckListFieldMapping;
-    labels?: Partial<ICheckListLabels>;
 }
 
 /** What makes the grid a checklist. */
 export interface IGridCheckList {
     /** The columns the checklist works with. */
     getFieldMapping(): ICheckListFieldMapping;
-    /** The checklist's strings. */
-    getLabels(): ILocalizationService<ICheckListLabels>;
     /** Whether the record is one of the list's items, not the row that adds one. */
     isItem(record: IRecord): boolean;
     /** Whether the item is finished. */
@@ -47,13 +42,11 @@ export interface IGridCheckList {
 export class GridCheckList implements IGridCheckList {
     private _grid: IGrid;
     private _fieldMapping: ICheckListFieldMapping;
-    private _labels: ILocalizationService<ICheckListLabels>;
     private _newItemRow?: CheckListNewItemRow;
 
     constructor(parameters: IGridCheckListParameters) {
         this._grid = parameters.grid;
         this._fieldMapping = parameters.fieldMapping;
-        this._labels = new LocalizationService<ICheckListLabels>({ ...CHECK_LIST_LABELS, ...parameters.labels });
         this._warnWhenUnsorted();
         new CheckListColumns({ services: this._grid.services, checkList: this });
         if (this._grid.modules.find('editing')) {
@@ -75,10 +68,6 @@ export class GridCheckList implements IGridCheckList {
 
     public getFieldMapping(): ICheckListFieldMapping {
         return this._fieldMapping;
-    }
-
-    public getLabels(): ILocalizationService<ICheckListLabels> {
-        return this._labels;
     }
 
     public isItem(record: IRecord): boolean {

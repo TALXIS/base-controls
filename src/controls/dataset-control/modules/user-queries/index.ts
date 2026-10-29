@@ -1,6 +1,7 @@
 export * from './components';
 export * from './createUserQueriesModule';
 export * from './labels';
+export * from './labels.cs';
 export * from './talxis';
 export * from './local-storage';
 export * from './dataverse';

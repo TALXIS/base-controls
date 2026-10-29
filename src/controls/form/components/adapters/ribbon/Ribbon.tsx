@@ -6,7 +6,8 @@ import { useForm } from "../root/context";
 import { useEventEmitter } from "@hooks";
 import { useRerender, withButtonLoading } from "@legacy";
 import React from "react";
-import { useLocalizationService } from "../root/context";
+import { useLabels } from "@utils";
+import { FORM_LABELS } from "@controls/form/labels";
 
 export interface IFormRibbonProps {
     onSave?: () => void;
@@ -25,7 +26,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getRibbonStyles(theme), [theme]);
     const components = { ...RibbonComponents, ...props.components };
-    const localizationService = useLocalizationService();
+    const labels = useLabels(FORM_LABELS);
     const [saveButtonState, setSaveButtonState] = React.useState<TSaveButtonState>('save');
     const successStateTimeout = React.useRef<number | null>(null);
     const { rerender } = useRerender();
@@ -69,7 +70,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const getFarItems = (): ICommandBarItemProps[] => {
         return isDirty ? [{
             key: 'unsaved-changes',
-            text: localizationService.getLocalizedString('unsavedChanges'),
+            text: labels.get('form.unsavedChanges'),
             iconProps: {
                 iconName: 'Warning',
                 styles: {
@@ -103,14 +104,14 @@ export const Ribbon = (props: IFormRibbonProps) => {
 
     const getSaveText = () => {
         if (saveButtonState === 'saving') {
-            return localizationService.getLocalizedString('saving');
+            return labels.get('form.saving');
         }
 
         if (saveButtonState === 'saved') {
-            return localizationService.getLocalizedString('saved');
+            return labels.get('form.saved');
         }
 
-        return localizationService.getLocalizedString('save');
+        return labels.get('form.save');
     };
 
     const getSaveIconProps = () => {

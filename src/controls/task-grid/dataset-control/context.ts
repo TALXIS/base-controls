@@ -1,8 +1,7 @@
 import { createContext, MutableRefObject } from "react";
-import { ILocalizationService, useContextWithNullCheck } from "@utils";
+import { useContextWithNullCheck } from "@utils";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../runtime";
-import type { ITaskGridLabels } from "../labels";
 import type { ITaskDatasetControlProps } from "./TaskDatasetControl";
 
 export const TaskRuntimeContext = createContext<ITaskRuntime | null>(null);
@@ -13,7 +12,6 @@ TaskRuntimeContext.displayName = "TaskRuntimeContext";
 export const useTaskRuntime = (): ITaskRuntime => useContextWithNullCheck(TaskRuntimeContext);
 
 export interface ITaskDatasetControlPropsContext {
-    labels: ILocalizationService<ITaskGridLabels>;
     pcfContext: IPcfContext;
     propsRef: MutableRefObject<ITaskDatasetControlProps>;
 }

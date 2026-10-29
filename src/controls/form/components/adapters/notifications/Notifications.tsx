@@ -1,15 +1,17 @@
-import { useForm, useLocalizationService } from '../root/context';
+import { useLabels } from '@utils';
+import { FORM_LABELS } from '@controls/form/labels';
+import { useForm } from '../root/context';
 import { INotificationMessageBarProps } from '@ui/notifications';
 import { useValidationSummary } from '../root';
 import { FormNotificationsComponents, IFormNotificationsComponents } from './components';
 
-export interface IFormNotificationsProps extends Omit<INotificationMessageBarProps, 'labels'> {
+export interface IFormNotificationsProps extends Omit<INotificationMessageBarProps, 'groupedNotificationsSummary'> {
 	components?: Partial<IFormNotificationsComponents>;
 }
 
 export const Notifications = (props: IFormNotificationsProps) => {
 	const form = useForm();
-	const localizationService = useLocalizationService();
+	const labels = useLabels(FORM_LABELS);
 	const record = form.getRecord();
 	const { messages = [], components: componentsProp, ...notificationsProps } = props;
 	const validationSummary = useValidationSummary();
@@ -40,9 +42,7 @@ export const Notifications = (props: IFormNotificationsProps) => {
 
 	return components.onRenderNotifications({
 		...notificationsProps,
-		labels: {
-			groupedNotificationsSummary: localizationService.getLocalizedString('groupedNotificationsSummary')
-		},
+		groupedNotificationsSummary: labels.get('form.groupedNotificationsSummary', { count: mergedMessages.length }),
 		messages: mergedMessages,
 	});
 };
