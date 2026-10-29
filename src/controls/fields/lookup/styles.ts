@@ -45,6 +45,7 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
     return mergeStyleSets({
         displayName: 'talxis__lookupControl',
         root: {
+            height: fillsAvailableSpace ? '100%' : undefined,
             '[data-navigation-enabled="true"]': {
                 '.ms-Button-label': {
                     color: `${theme.semanticColors.link} !important`,
@@ -56,8 +57,15 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                     cursor: 'pointer !important'
                 }
             },
+            '.ms-BasePicker-itemsWrapper': fillsAvailableSpace && isSingleSelect ? {
+                alignSelf: 'stretch',
+                boxSizing: 'border-box',
+                '.TALXIS__input-buttons__root.TALXIS__input-buttons__root': {
+                    height: '100% !important'
+                }
+            } : undefined,
             '.ms-BasePicker-itemsWrapper .ms-CommandBar.ms-CommandBar': {
-                height: _height && isSingleSelect ? _height - 6 : undefined
+                height: fillsAvailableSpace && isSingleSelect ? '100%' : _height && isSingleSelect ? _height - 6 : undefined
             },
             '.ms-BasePicker-text': {
                 //filling is the container's answer, so there is no floor to keep it off: the picker is as
@@ -72,7 +80,7 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                 },
             },
             '.TALXIS__input-buttons__root': {
-                height: _height && `${_height - 3}px !important`
+                height: fillsAvailableSpace ? 'calc(100% - 2px) !important' : _height && `${_height - 3}px !important`
             }
         },
         createRecordBtn: {

@@ -86,7 +86,7 @@ const getFillAvailableSpaceStyles = () => {
             //space a cell of the grid has to give it
             minHeight: 0
         },
-        '&.ms-ComboBox-container .ms-ComboBox, .ms-BasePicker-text': {
+        '&.ms-ComboBox-container .ms-ComboBox, .ms-SelectionZone, .ms-BasePicker-text': {
             height: '100%'
         },
         //a multiline field asks for the height its rows need, which is taller than the space it was given
