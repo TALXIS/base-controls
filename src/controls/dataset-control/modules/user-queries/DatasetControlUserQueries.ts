@@ -177,7 +177,7 @@ export class DatasetControlUserQueries {
 
     //its own metadata, so the provider setting up one view's column leaves the others alone
     private _toColumn(saved: IUserQueryColumn, definition: IColumn | undefined): IColumn | undefined {
-        return definition ? { ...definition, ...saved, metadata: structuredClone(definition.metadata) } : undefined;
+        return definition ? { ...definition, ...saved, metadata: { ...definition.metadata } } : undefined;
     }
 
     //the switcher reads its items as its menu opens

@@ -51,7 +51,8 @@ const MAX_IDS_PER_REQUEST = 800;
 export class DataverseTaskStore implements ITaskStore {
     protected _parameters: IDataverseTaskStoreParameters;
     protected _taskRuntime: ITaskRuntime;
-    protected _fetchXmlProvider!: FetchXmlDataProvider;
+    protected _fetchXml: string;
+    protected _fetchXmlProvider: FetchXmlDataProvider;
     protected _entityName!: string;
     protected _entitySetName!: string;
     protected _primaryIdAttribute!: string;
@@ -60,11 +61,12 @@ export class DataverseTaskStore implements ITaskStore {
     constructor(parameters: IDataverseTaskStoreParameters) {
         this._parameters = parameters;
         this._taskRuntime = parameters.taskRuntime;
+        //a saved view asks for its columns before the tasks load
+        this._fetchXml = this._renderFetchXml();
+        this._fetchXmlProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
     }
 
     public async onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult> {
-        const fetchXml = this._renderFetchXml();
-        this._fetchXmlProvider = new FetchXmlDataProvider({ fetchXml, loadAllRecords: true });
         this._fetchXmlProvider.setColumns(provider.getColumns());
         this._fetchXmlProvider.setLinking(provider.getLinking());
         await this._fetchXmlProvider.refresh();
@@ -72,7 +74,7 @@ export class DataverseTaskStore implements ITaskStore {
         this._entityName = this._fetchXmlProvider.getEntityName();
         this._entitySetName = metadata.EntitySetName;
         this._primaryIdAttribute = metadata.PrimaryIdAttribute;
-        const [projectLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
+        const [projectLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(this._fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
         this._projectLookup = projectLookup;
         const webApiRecords = new Map(webApiRawRecords.map(record => [record[this._primaryIdAttribute], record]));
         //the FetchXML values win
