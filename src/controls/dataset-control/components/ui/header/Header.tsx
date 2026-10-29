@@ -9,6 +9,8 @@ import { getHeaderUiStyles } from "./styles";
 export interface IHeaderUiProps {
     /** The start and end regions. */
     children?: React.ReactNode;
+    /** Insets the row from the edges, for a control that fills its parent. */
+    isPadded?: boolean;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
@@ -19,7 +21,7 @@ export interface IHeaderUiProps {
 export const Header = (props: IHeaderUiProps) => {
     const components = { ...HeaderUiComponents, ...props.components };
     const [isolated, setIsolated] = useState<Element>();
-    const styles = useMemo(() => getHeaderUiStyles(), []);
+    const styles = useMemo(() => getHeaderUiStyles(!!props.isPadded), [props.isPadded]);
 
     return <SetIsolatedHeaderItemContext.Provider value={setIsolated}>
         <IsolatedHeaderItemContext.Provider value={isolated}>

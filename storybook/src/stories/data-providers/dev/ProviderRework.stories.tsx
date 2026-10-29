@@ -97,6 +97,31 @@ So a custom column only exists in code, added through \`setColumns\` or a \`colu
 
 - **Views:** a system or user view declares its custom columns in its FetchXML, instead of every consumer adding them in code.
 - **User queries:** a user view saved as FetchXML keeps its custom columns, which the provider's available columns don't offer.
+
+## 4. Read the record back after saving
+
+Saving a record can change more than the user edited. Dataverse moves a record to the state its status belongs to, plugins and business rules set other columns, calculated and rollup columns recompute, and \`modifiedon\` moves on. The record in the grid should show what the server stored, without a full reload.
+
+### Today
+
+| Provider | What a saved record shows |
+|---|---|
+| \`FetchXmlDataProvider\` | The values the user sent and nothing else. \`SaveHandler\` writes back only the \`statecode\` it worked out from a saved \`statuscode\`, so the row's lock follows a status change. |
+| \`MemoryDataProvider\` | The values the user sent, which is all there is. |
+| \`TaskDataProvider\` | The values the user sent, plus whatever the store returns as \`updatedRecords\`. \`DataverseTaskStore\` returns none, and Skanska's store reads back only the schedule after a date changes. |
+
+### What every provider should do
+
+- **Read the record back after every successful save,** through the provider's own query filtered to that record, so linked columns, aliases and formatted values come back as they loaded.
+- **Merge it into the record:** what comes back replaces the record's data, and an edit the user made while the save ran is kept on top, still unsaved.
+- **Once per save,** not per column: a record saving several columns is read back once, after the last of them is sent.
+- **A failed read-back doesn't fail the save:** the record keeps the values it sent.
+
+### What would use it
+
+- **Locks:** a row closed through its status locks as soon as the save returns. The \`statecode\` write-back in \`SaveHandler\` then goes.
+- **The task grid:** \`DataverseTaskStore.onSaveTask\` returns the saved task as \`updatedRecords\`, and the store's schedule read-back becomes this general case.
+- **Every grid:** a column a plugin or business rule sets, and a calculated column, show their new value right after a save.
 `
 
 const meta = {

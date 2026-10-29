@@ -42,7 +42,7 @@ const ROW_PATTERNS = [
 export const SkeletonShimmer = (props: ISkeletonShimmerProps) => {
     const theme = useTheme();
     //the rows only grow into a container with a height of its own; without one they define it themselves
-    const styles = React.useMemo(() => getSkeletonStyles(theme, !!props.height), [theme, !!props.height]);
+    const styles = React.useMemo(() => getSkeletonStyles(theme, !!props.height, props.height === '100%'), [theme, props.height]);
     const columns = props.columns ?? DEFAULT_COLUMNS;
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT;
     const showHeader = props.showHeader ?? true;

@@ -1,5 +1,5 @@
 import { ITheme, keyframes, mergeStyleSets } from '@fluentui/react';
-import { HEADER_PART_HEIGHT } from "../layout";
+import { FILLED_HEADER_INSET, HEADER_PART_HEIGHT } from "../layout";
 
 //the same row and gap below as the header it stands in for
 const HEADER_HEIGHT = HEADER_PART_HEIGHT;
@@ -8,7 +8,7 @@ const COLUMN_HEADER_HEIGHT = 42;
 const ROW_HEIGHT = 42;
 const FOOTER_HEIGHT = 44;
 
-export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
+export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean, fillsParent: boolean) => {
     const shimmerKeyframe = keyframes({
         '0%': { backgroundPosition: '-600px 0' },
         '100%': { backgroundPosition: '600px 0' },
@@ -33,6 +33,8 @@ export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
         header: {
             height: HEADER_HEIGHT,
             marginBottom: HEADER_GAP,
+            padding: fillsParent ? `${FILLED_HEADER_INSET}px ${FILLED_HEADER_INSET}px 0` : undefined,
+            boxSizing: 'content-box',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
