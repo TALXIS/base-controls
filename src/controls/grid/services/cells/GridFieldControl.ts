@@ -67,6 +67,7 @@ export class GridFieldControl implements IGridFieldControl {
             value: { raw: this._field.getValue() },
             Column: { raw: column },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
+            ...(column.metadata?.HoursPerDay !== undefined && { HoursPerDay: { raw: column.metadata.HoursPerDay } }),
         };
     }
 

@@ -77,6 +77,8 @@ export interface ITaskRuntime {
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
+    /** How many hours a day of a task's duration holds. */
+    getHoursPerDay(): number;
     /** Runs the operation under the control's loading overlay, and shows its failure once in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;

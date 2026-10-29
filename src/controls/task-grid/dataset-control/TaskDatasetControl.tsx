@@ -24,6 +24,8 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     enableEditing?: boolean;
     /** The Delete command. */
     enableDeletion?: boolean;
+    /** How many hours a day of a task's duration holds; 24 when left out. */
+    hoursPerDay?: number;
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Returns the view's provider and field mapping; called on every mount. */
@@ -71,7 +73,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskRuntime').load(parameters);
 
-    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
 
     return <TaskDatasetControlPropsContext.Provider value={propsContext}>
         <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onReady={onReady} onDestroyed={onDestroyed} onLoad={onLoad} />

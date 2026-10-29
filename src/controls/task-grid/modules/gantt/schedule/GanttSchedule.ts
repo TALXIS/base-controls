@@ -18,7 +18,7 @@ export interface IGanttDurationParameters {
     record?: IRecord;
 }
 
-/** Changes a calculated duration in minutes, which starts as the clock time the span covers. */
+/** Changes a calculated duration in clock minutes, before a day counts as the runtime's hours per day. */
 export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
 
 /** The `schedule` service: how a task's record maps to the span its bar runs over, and back. */
@@ -53,6 +53,8 @@ export interface IGanttSchedule {
     save(record: IRecord, span: IGanttSpan): void;
     /** The span's dates as the record shows them; `range` is a single date when both are the same. */
     format(span: IGanttSpan): { start: string; end: string; range: string };
+    /** Minutes as the duration column shows them. */
+    formatDuration(duration: number): string;
 }
 
 interface ISnapStep {
@@ -129,7 +131,7 @@ export class GanttSchedule implements IGanttSchedule {
     public calculateDuration(span: IGanttSpan, record?: IRecord): number {
         const result = { duration: getClockDuration(span.start, span.end) / 60_000 };
         this._durationHooks.apply(result, { span, record });
-        return result.duration;
+        return this._toWorkingMinutes(result.duration);
     }
 
     public registerDuration(hook: GanttDurationHook, priority?: number): () => void {
@@ -184,6 +186,18 @@ export class GanttSchedule implements IGanttSchedule {
         const start = formatting.format({ value: span.start, column: columns[this._columnNames.start] }) ?? '';
         const end = formatting.format({ value: this._toRecordEnd(span.end), column: columns[this._columnNames.end] }) ?? '';
         return { start, end, range: start === end ? start : `${start} – ${end}` };
+    }
+
+    public formatDuration(duration: number): string {
+        const taskRuntime = this._gantt.getTaskRuntime();
+        return taskRuntime.getProvider().getFormatting().formatDuration(duration, taskRuntime.getHoursPerDay());
+    }
+
+    //a whole day holds the runtime's hours, and part of a day never more than that
+    private _toWorkingMinutes(clockMinutes: number): number {
+        const minutesPerDay = this._gantt.getTaskRuntime().getHoursPerDay() * 60;
+        const days = Math.floor(clockMinutes / 1440);
+        return days * minutesPerDay + Math.min(clockMinutes - days * 1440, minutesPerDay);
     }
 
     //a date-only value is the local day it falls on, as the record saves it

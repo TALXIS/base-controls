@@ -184,6 +184,8 @@ export interface ITaskDataProviderInitializeParameters {
     rootTaskId?: string;
     /** Where a task created with no position of its own goes; `first` when left out. */
     defaultCreatePosition?: TaskCreatePosition;
+    /** How many hours a day of the duration column holds, unless its metadata says otherwise. */
+    hoursPerDay?: number;
 }
 
 /** Changes the columns Edit columns offers, in place. */

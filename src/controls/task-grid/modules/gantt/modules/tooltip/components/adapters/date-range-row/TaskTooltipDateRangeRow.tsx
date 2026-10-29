@@ -11,7 +11,8 @@ export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) =>
     if (!span) {
         return null;
     }
-    const range = gantt.services.get('schedule').format(span).range;
-    const formattedDuration = duration ? gantt.getTaskRuntime().getProvider().getFormatting().formatDuration(duration) : undefined;
+    const schedule = gantt.services.get('schedule');
+    const range = schedule.format(span).range;
+    const formattedDuration = duration ? schedule.formatDuration(duration) : undefined;
     return <TaskTooltipUiDateRange range={range} duration={formattedDuration} components={props.components} />;
 };

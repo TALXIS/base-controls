@@ -29,6 +29,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _columnHandlers: ITaskColumnHandler[] = [];
     private _columnMatchers: ITaskColumnMatcher[] = [];
     private _requiredColumns: IColumn[] = [];
+    private _hoursPerDay?: number;
     private _loadWaiters: TaskLoadWaiter[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
@@ -44,6 +45,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
         this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
+        this._hoursPerDay = parameters.hoursPerDay;
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -96,7 +98,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public setColumns(columns: IColumn[]): void {
         //copied, as the base fills its defaults into the columns it is handed
         this._declaredColumns = columns.map(copyColumn);
-        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(this._withRequired(copyColumn(column))))));
+        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(this._withRequired(copyColumn(column))))).map(this._withHoursPerDay));
     }
 
     public setQuickFindColumns(columnNames: string[]): void {
@@ -455,6 +457,13 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const definition = this._columnCatalogue.get(column.name);
         return definition ? mergeColumn(definition, column) : column;
     }
+
+    private _withHoursPerDay = (column: IColumn): IColumn => {
+        if (this._hoursPerDay === undefined || column.name !== this.getFieldMapping().duration) {
+            return column;
+        }
+        return { ...column, metadata: { HoursPerDay: this._hoursPerDay, ...column.metadata } };
+    };
 
     //added whatever the view shows, so a view never needs to keep them
     private _isAddedColumn(columnName: string): boolean {

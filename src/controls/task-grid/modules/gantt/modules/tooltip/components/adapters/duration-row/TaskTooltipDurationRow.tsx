@@ -15,6 +15,6 @@ export const TaskTooltipDurationRow = (props: ITaskTooltipDurationRowProps) => {
     if (duration === undefined) {
         return null;
     }
-    const text = gantt.getTaskRuntime().getProvider().getFormatting().formatDuration(duration);
+    const text = gantt.services.get('schedule').formatDuration(duration);
     return <TaskTooltipUiFieldRow label={labels.getLocalizedString('duration')} iconName={props.iconName ?? 'Clock'} components={props.components}>{text}</TaskTooltipUiFieldRow>;
 };
