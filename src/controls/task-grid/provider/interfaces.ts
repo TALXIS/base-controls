@@ -86,6 +86,8 @@ export interface ITaskCreateParams {
     stackRank: string;
     /** Column values the task starts with. */
     data?: { [columnName: string]: any };
+    /** The id to create the task with; set for a single task, which the grid already shows. */
+    taskId?: string;
 }
 
 /** Where a task was dropped. */
@@ -143,7 +145,7 @@ export interface ITaskStore {
     /** The columns Edit columns offers: the tasks' own, or those of `options.entityName` when given. */
     onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
     onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
-    /** @returns The created record, or `null` when the user cancelled. */
+    /** Creates the task with `params.taskId`, which the grid already shows it under; `null` drops it. */
     onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null>;
     /** Whether a task may be deleted; every task may when left out. */
     onCanDeleteTask?(task: IRecord): boolean;
@@ -152,9 +154,7 @@ export interface ITaskStore {
      * @returns Which tasks went, or `null` when the user cancelled.
      */
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
-    /** @returns What else changed once moved, or `null` when the user cancelled. */
-    onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null>;
-    /** Saves what the user changed in the task's cells. */
+    /** Saves what changed on the task, its parent and rank after a move included. */
     onSaveTask(task: IRecord): Promise<ITaskSaveResult>;
     /** Opens the tasks in an editor outside the grid, such as a form; `null` when nothing changed. */
     onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
@@ -229,8 +229,15 @@ export interface ITaskDataProvider extends IDataProvider {
     areInactiveTasksHidden(): boolean;
     setInactiveTasksHidden(isHidden: boolean): void;
     isRecordActive(recordId: string): boolean;
-    /** Creates a task under `parentId`, at the default position unless `options` say otherwise. */
-    createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
+    /**
+     * Shows a new task under `parentId` at once, and has the store create it; `whenTaskCreated` follows that.
+     * @returns The task, or `null` under a task the store has not created yet.
+     */
+    createTask(parentId?: string, options?: ICreateTaskOptions): IRecord | null;
+    /** Whether the task is shown but the store has not created it yet. */
+    isTaskPending(taskId: string): boolean;
+    /** Resolves once the store created the task; rejects when it failed, and the task is gone. */
+    whenTaskCreated(taskId: string): Promise<void>;
     /** Adds the tasks `onCreate` makes in the backend, placed as a task created under `parentId` would be. */
     createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null>;
     /** The position a task created since the view last loaded asked for; it shows there whatever the sort and filter. */
@@ -238,8 +245,8 @@ export interface ITaskDataProvider extends IDataProvider {
     getDeletion(taskIds: string[]): ITaskDeletion;
     /** Deletes the tasks and their subtrees bottom-up, keeping the ancestors of a refused or failed task. */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns `true` once moved, or `null` when it did not move. */
-    moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
+    /** Places the task by setting its parent and rank, unsaved; `null` when it cannot go there. */
+    moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): IRecord | null;
     /** Opens the tasks in the store's editor outside the grid, then applies what changed. */
     openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Opens the record a task's lookup points to. */

@@ -3,6 +3,7 @@ import { ErrorHelper } from "@utils/error-handling";
 import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
 import type { ITaskGridLabels } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
+import { runQuietly } from "../runQuietly";
 
 /** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
@@ -12,7 +13,7 @@ export interface ITaskActions {
     open(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
-    /** @returns `true` once moved, or `null` when it did not move. */
+    /** Places the task and saves it under the loading overlay; `null` when it cannot go there. */
     move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
     /** Opens the task, or the record its lookup points to when `columnName` is another column. */
     openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
@@ -31,10 +32,20 @@ export class TaskActions implements ITaskActions {
         if (!this._runtime.isCreationEnabled()) {
             return null;
         }
-        const task = await this._execute(() => this._provider.createTask(parentId, options), 'creatingTask', 'createTaskFailed');
-        if (task) {
-            this._runtime.services.find('taskTree')?.focusNewTask(task.getRecordId());
+        const task = this._provider.createTask(parentId, options);
+        if (!task) {
+            return null;
         }
+        //the task's row shows the wait
+        const isCreated = await this._runtime.execute(async () => {
+            await this._provider.whenTaskCreated(task.getRecordId());
+            return true;
+        }, { loading: { show: false }, error: { title: this._runtime.getLabels().getLocalizedString('createTaskFailed'), rethrow: false } });
+        if (!isCreated) {
+            return null;
+        }
+        //edits wait for the task, so the server's required values are there to save with
+        this._runtime.services.find('taskTree')?.focusNewTask(task.getRecordId());
         return task;
     }
 
@@ -73,7 +84,17 @@ export class TaskActions implements ITaskActions {
     }
 
     public async move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
-        return this._execute(() => this._provider.moveTask(taskId, targetTaskId, position), 'movingTask', 'moveTaskFailed');
+        return this._execute(async () => {
+            const task = this._provider.moveTask(taskId, targetTaskId, position);
+            if (!task) {
+                return null;
+            }
+            const result = await task.save();
+            if (!result.success) {
+                throw new Error(result.errors?.map(error => error.message).join('\n'));
+            }
+            return true;
+        }, 'movingTask', 'moveTaskFailed');
     }
 
     public async openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void> {

@@ -78,7 +78,7 @@ export class MemoryTaskDatabase {
             task[column.name] = null;
         }
         Object.assign(task, structuredClone(data));
-        task[this._metadata.PrimaryIdAttribute!] = crypto.randomUUID();
+        task[this._metadata.PrimaryIdAttribute!] ??= crypto.randomUUID();
         task[fieldMapping.parentId] = parentReference;
         task[fieldMapping.stackRank] = stackRank;
         task[fieldMapping.stateCode] ??= 0;

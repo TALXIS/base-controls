@@ -24,7 +24,7 @@ const GridExample = () => {
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
     const modules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
-        createEditingModule({ autoSave: true }),
+        createTaskEditingModule(),
         createSortingModule(),
         createFilteringModule(),
     ], [])

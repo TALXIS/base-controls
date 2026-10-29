@@ -3,10 +3,11 @@ import type { ITaskRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDeleteTasksResult, ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents } from "./tree";
+import type { ITaskEditingModule } from "./modules/editing";
 
 
-/** A task grid's grid module; the row model is always client-side, and grouping does not mix with a tree. */
-export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'grouping' | 'aggregation' | 'taskTree'>>;
+/** A task grid's grid module; the row model is always client-side, editing always saves, and grouping does not mix with a tree. */
+export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'editing' | 'grouping' | 'aggregation' | 'taskTree'>> | ITaskEditingModule;
 
 /** What a `TaskDatasetControl`'s `onLoad` is called with. */
 export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {

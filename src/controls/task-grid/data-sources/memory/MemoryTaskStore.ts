@@ -2,7 +2,7 @@ import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IRawRecord, 
 import type { ITaskRuntime } from "../../runtime";
 import { simulateBackend } from "./simulateBackend";
 import type { MemoryTaskDatabase } from "./MemoryTaskDatabase";
-import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
@@ -40,7 +40,8 @@ export class MemoryTaskStore implements ITaskStore {
         await simulateBackend();
         const { database, taskRuntime } = this._parameters;
         const provider = taskRuntime.getProvider();
-        const [record] = database.createTasks([{ data: params.data }], params, { fieldMapping: provider.getFieldMapping(), columns: provider.getColumns() });
+        const data = { ...params.data, ...params.taskId && { [provider.getMetadata().PrimaryIdAttribute!]: params.taskId } };
+        const [record] = database.createTasks([{ data }], params, { fieldMapping: provider.getFieldMapping(), columns: provider.getColumns() });
         return { record };
     }
 
@@ -48,14 +49,6 @@ export class MemoryTaskStore implements ITaskStore {
         await simulateBackend();
         this._parameters.database.deleteTasks(params.taskIds);
         return { success: true, deletedTaskIds: params.taskIds };
-    }
-
-    public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
-        await simulateBackend();
-        const { parentId, stackRank } = this._parameters.taskRuntime.getProvider().getFieldMapping();
-        const parentReference = params.parentRecord ? [params.parentRecord.getNamedReference()] : null;
-        this._parameters.database.updateTask(params.movingRecord.getRecordId(), { [parentId]: parentReference, [stackRank]: params.stackRank });
-        return {};
     }
 
     public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {

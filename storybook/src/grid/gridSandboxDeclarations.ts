@@ -4055,6 +4055,8 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
 
 /** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
+/** Lets the task grid's cells be edited, saving each edit straight away. */
+declare function createTaskEditingModule(options?: { onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
 /** Moves tasks by dragging their rows: between rows, sideways between levels, or onto another task; not in a flat list. */
 declare const createTaskDraggingModule: (parameters?: {
     /** Called after a dragged task is moved. */

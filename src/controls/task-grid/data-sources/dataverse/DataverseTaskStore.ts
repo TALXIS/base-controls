@@ -1,11 +1,11 @@
-import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
+import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
 
 /** A form the data source opens. */
-export type DataverseTaskFormOperation = 'create' | 'edit' | 'bulkEdit' | 'open';
+export type DataverseTaskFormOperation = 'edit' | 'bulkEdit' | 'open';
 
 /** What `Xrm.Navigation.navigateTo` is called with to open a form. */
 export interface IDataverseTaskFormParameters {
@@ -15,7 +15,6 @@ export interface IDataverseTaskFormParameters {
 
 /** How the data source opens task forms. */
 export interface IDataverseTaskFormOptions {
-    createId?: string;
     editId?: string;
     bulkEditId?: string;
     /** Changes how a form opens. */
@@ -92,7 +91,7 @@ export class DataverseTaskStore implements ITaskStore {
     public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
         const placement = this._getPlacement(params);
         const defaults = { ...await this._parameters.onGetNewTaskDefaults?.(params), ...params.data };
-        const record = this._isEditingEnabled() ? await this._createThroughWebApi({ ...defaults, ...placement }) : await this._createThroughForm(defaults, placement);
+        const record = await this._createThroughWebApi({ ...defaults, ...placement, ...params.taskId && { [this._primaryIdAttribute]: params.taskId } });
         return record && { record };
     }
 
@@ -101,18 +100,6 @@ export class DataverseTaskStore implements ITaskStore {
         const deletedTaskIds = results.filter(result => result.success).map(result => result.recordId);
         const errors = results.filter(result => !result.success).map(result => ({ id: result.recordId, error: result.errorMessage }));
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
-    }
-
-    public async onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null> {
-        const fieldMapping = this._taskRuntime.getProvider().getFieldMapping();
-        const parentId = params.parentRecord?.getRecordId();
-        const parentNavigationProperty = await this._getNavigationPropertyName(this._entityName, fieldMapping.parentId);
-        const taskId = params.movingRecord.getRecordId();
-        await this._getPcfContext().webAPI.updateRecord(this._entityName, taskId, {
-            [`${parentNavigationProperty}@odata.bind`]: parentId ? `/${this._entitySetName}(${parentId})` : null,
-            [fieldMapping.stackRank]: params.stackRank,
-        });
-        return {};
     }
 
     public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
@@ -208,41 +195,11 @@ export class DataverseTaskStore implements ITaskStore {
         return (await this._getRawRecords([id]))[0] ?? null;
     }
 
-    //the form has no field for the rank
-    protected async _createThroughForm(defaults: IRawRecord, placement: IRawRecord): Promise<IRawRecord | null> {
-        const result = await this._navigate('create', {
-            pageInput: { pageType: 'entityrecord', entityName: this._entityName, formId: this._parameters.form?.createId, data: this._toFormPrefill({ ...defaults, ...placement }) },
-            navigationOptions: SIDE_DIALOG,
-        });
-        const saved = result?.savedEntityReference?.[0];
-        if (!saved) {
-            return null;
-        }
-        const taskId = Sanitizer.Lookup.getEntityReference(saved).id.guid;
-        await this._getPcfContext().webAPI.updateRecord(this._entityName, taskId, await this._toWebApiPayload(placement));
-        return (await this._getRawRecords([taskId]))[0] ?? null;
-    }
-
     protected async _navigate(operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormParameters): Promise<any> {
         const { pageInput, navigationOptions } = this._parameters.form?.onGetParameters?.(operation, defaults) ?? defaults;
         //the PCF typings leave out navigateTo
         const navigation = this._getPcfContext().navigation as ComponentFramework.Navigation & Pick<Xrm.Navigation, 'navigateTo'>;
         return navigation.navigateTo(pageInput, navigationOptions);
-    }
-
-    //a lookup takes three keys in a create form's `data`
-    protected _toFormPrefill(values: IRawRecord): IRawRecord {
-        const data: IRawRecord = {};
-        for (const [columnName, value] of Object.entries(values)) {
-            const reference = this._getReference(value);
-            if (reference) {
-                Object.assign(data, { [columnName]: reference.id.guid, [`${columnName}name`]: reference.name, [`${columnName}type`]: reference.etn });
-            }
-            else {
-                data[columnName] = value;
-            }
-        }
-        return data;
     }
 
     protected async _toWebApiPayload(values: IRawRecord): Promise<IRawRecord> {

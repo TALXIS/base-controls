@@ -22,7 +22,6 @@ export interface ITaskGridLabels {
     taskCannotBeDeleted: string;
     /** Some tasks were not deleted; the details list them. */
     deleteTasksFailed: string;
-    creatingTask: string;
     openingTasks: string;
     deletingTasks: string;
     movingTask: string;
@@ -53,7 +52,6 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     tasksCannotBeDeleted: 'The selected tasks cannot be deleted.',
     taskCannotBeDeleted: 'This task cannot be deleted.',
     deleteTasksFailed: 'Some tasks were not deleted.',
-    creatingTask: 'Creating task...',
     openingTasks: 'Opening tasks...',
     deletingTasks: 'Deleting tasks...',
     movingTask: 'Moving task...',

@@ -1,7 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridCellCommandsHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
@@ -58,6 +58,7 @@ export class TaskTree {
         this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
         services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
+        services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
         this._grid.modules.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
@@ -68,6 +69,7 @@ export class TaskTree {
         this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         this._provider.taskEvents.addEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
+        this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         this._provider.taskEvents.addEventListener('onTasksCreated', this._onTasksCreated);
         this._provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
@@ -154,7 +156,7 @@ export class TaskTree {
         const recordId = record.getRecordId();
         //a pinned row is not one of the tasks
         const isTask = !!this._provider.getRecordsMap()[recordId];
-        if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || !this._provider.isRecordActive(recordId)) {
+        if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || !this._provider.isRecordActive(recordId) || this._provider.isTaskPending(recordId)) {
             return;
         }
         const label = this._runtime.getLabels().getLocalizedString('addChild');
@@ -164,6 +166,12 @@ export class TaskTree {
     private _onLock: GridLockHook = (result, context) => {
         if (context.record && !context.columnName && !this._runtime.isEditingEnabled()) {
             result.isLocked = true;
+        }
+    };
+
+    private _onCellLoading: GridCellLoadingHook = (result, { record }) => {
+        if (this._provider.isTaskPending(record.getRecordId())) {
+            result.isLoading = true;
         }
     };
 
@@ -256,11 +264,17 @@ export class TaskTree {
     };
 
     //AG Grid reads a moved subtree's paths again only for rows it is told were updated
-    private _onTaskMoved = (params: ITaskMoveParams): void => {
-        const movingId = params.movingRecord.getRecordId();
-        const subtree = [params.movingRecord, ...this._provider.getRecordTree().structure.getDescendants(movingId)];
+    private _onRecordColumnValueChanged = (record: IRecord, columnName: string): void => {
+        const { parentId, stackRank } = this._provider.getFieldMapping();
+        if (columnName !== parentId && columnName !== stackRank) {
+            return;
+        }
+        const subtree = [record, ...this._provider.getRecordTree().structure.getDescendants(record.getRecordId())];
         const gridApi = this._gridApi;
         gridApi?.applyTransaction({ update: subtree.filter(task => gridApi.getRowNode(task.getRecordId())) });
+    };
+
+    private _onTaskMoved = (params: ITaskMoveParams): void => {
         if (params.position === 'child') {
             this._expansion.setExpanded(params.targetRecord.getRecordId(), true);
         }
@@ -324,6 +338,7 @@ export class TaskTree {
         this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
         this._provider.taskEvents.removeEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
+        this._provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         this._provider.taskEvents.removeEventListener('onTasksCreated', this._onTasksCreated);
         this._provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
