@@ -109,7 +109,9 @@ export const FilterCallout = (props: IFilterCalloutProps) => {
                                         ...props,
                                         container: {
                                             className: getClassNames([props.container.className, filterCalloutStyles.datasetColumnFilteringButtons])
-                                        }
+                                        },
+                                        onRenderApplyButton: (props, defaultRender) => defaultRender({ ...props, text: labels.getLocalizedString('apply') }),
+                                        onRenderClearButton: (props, defaultRender) => defaultRender({ ...props, text: labels.getLocalizedString('clear') }),
                                     })
                                 }
                             })
