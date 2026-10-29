@@ -97,10 +97,10 @@ export const Duration = (props: IDuration) => {
                 value: valueExtractor(value) as any
             });
         },
-        onChange: (e, value) => {
+        onChange: (e, option, index, freeText) => {
             onNotifyOutputChanged({
                 //any is needed here because we can return string in case of error values
-                value: valueExtractor(value?.text ?? '') as any
+                value: valueExtractor(option?.text ?? freeText ?? '') as any
             });
             //a duration picked from the list is the whole of the input: the editor has nothing left to take
             parameters.Cell?.raw?.finishEditing();
