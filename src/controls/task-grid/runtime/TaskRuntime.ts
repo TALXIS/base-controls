@@ -143,7 +143,8 @@ export class TaskRuntime implements ITaskRuntime {
         const selectedIds = this.getProvider().getSelectedRecordIds();
         const taskCommands: IRibbonCommand[] = [];
         if (this.isCreationEnabled()) {
-            taskCommands.push({ id: 'new', label: labels.get('taskGrid.new'), iconName: 'Add', onExecute: () => runQuietly(() => this.tasks.create()) });
+            //not returned, so the ribbon keeps New enabled while the task is created
+            taskCommands.push({ id: 'new', label: labels.get('taskGrid.new'), iconName: 'Add', onExecute: () => { runQuietly(() => this.tasks.create()); } });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
             taskCommands.push({ id: 'edit', label: labels.get('taskGrid.edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.open(selectedIds)) });

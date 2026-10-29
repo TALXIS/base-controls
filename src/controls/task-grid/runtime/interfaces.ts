@@ -13,8 +13,8 @@ export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
 export interface ITaskGridTree {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
-    /** Moves to a task the user just created and starts editing its subject. */
-    focusNewTask(taskId: string): void;
+    /** Scrolls a task's row into view. */
+    revealTask(taskId: string): void;
 }
 
 /** The services a provider's platform registers; it adds its own by augmenting this. */

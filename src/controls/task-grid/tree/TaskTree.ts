@@ -19,7 +19,7 @@ import { TaskCommandsCell } from "./task-commands-cell";
 import { runQuietly } from "../runtime/runQuietly";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
-const NEW_TASK_FOCUS_ATTEMPTS = 3;
+const REVEAL_TASK_ATTEMPTS = 3;
 
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
@@ -94,8 +94,8 @@ export class TaskTree {
         this._runtime.execute(() => this._syncPathColumn(isFlatList), { error: { rethrow: false } });
     }
 
-    public focusNewTask(taskId: string): void {
-        this._focusNewTask(taskId, NEW_TASK_FOCUS_ATTEMPTS);
+    public revealTask(taskId: string): void {
+        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS);
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -288,31 +288,19 @@ export class TaskTree {
         }
     };
 
-    //AG Grid draws a new row in a later frame, and an edit needs the drawn cell
-    private _focusNewTask(recordId: string, attemptsLeft: number): void {
+    //AG Grid draws a new row in a later frame
+    private _revealTask(recordId: string, attemptsLeft: number): void {
         const gridApi = this._gridApi;
         if (!gridApi || gridApi.isDestroyed()) {
             return;
         }
-        if (!this._tryFocusNewTask(gridApi, recordId) && attemptsLeft > 1) {
-            requestAnimationFrame(() => this._focusNewTask(recordId, attemptsLeft - 1));
-        }
-    }
-
-    private _tryFocusNewTask(gridApi: GridApi<IRecord>, recordId: string): boolean {
         const node = gridApi.getRowNode(recordId);
-        if (node?.rowIndex == null) {
-            return false;
+        if (node?.rowIndex != null) {
+            gridApi.ensureNodeVisible(node);
         }
-        const subject = this._provider.getFieldMapping().subject;
-        gridApi.ensureNodeVisible(node);
-        gridApi.setFocusedCell(node.rowIndex, subject);
-        //a locked task refuses the editor on its own
-        if (!this._grid.modules.find('editing')) {
-            return true;
+        else if (attemptsLeft > 1) {
+            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1));
         }
-        gridApi.startEditingCell({ rowIndex: node.rowIndex, colKey: subject });
-        return gridApi.getEditingCells().some(cell => cell.rowIndex === node.rowIndex && cell.colId === subject);
     }
 
     private _onTasksUpdated = (records: IRecord[]): void => {
