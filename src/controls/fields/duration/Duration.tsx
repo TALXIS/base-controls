@@ -4,7 +4,7 @@ import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { getDefaultDurationTranslations } from './translations';
-import { durationOptions } from "./durationOptions";
+import { DEFAULT_DURATION_OPTIONS, WORKING_DAY_DURATION_OPTIONS } from "./durationOptions";
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
@@ -41,15 +41,11 @@ export const Duration = (props: IDuration) => {
         return result.value;
     };
 
-    const presetOptions = (): IComboBoxOption[] => {
-        const formattedOptions = durationOptions.map(option => ({
-            key: option.Value.toString(),
-            text: formatter(parseInt(option.Label)) ?? "",
-        }));
-        return formattedOptions;
-    };
-
-    const comboBoxOptions: IComboBoxOption[] = presetOptions();
+    const comboBoxOptions: IComboBoxOption[] = useMemo(() => {
+        const defaultOptions = hoursPerDay === 8 ? WORKING_DAY_DURATION_OPTIONS : DEFAULT_DURATION_OPTIONS;
+        const options: number[] = parameters.DurationOptions?.raw ? JSON.parse(parameters.DurationOptions.raw) : defaultOptions;
+        return options.map(minutes => ({ key: minutes.toString(), text: formatter(minutes) ?? '' }));
+    }, [parameters.DurationOptions?.raw, hoursPerDay]);
 
     const { value, labels, sizing, setValue, onNotifyOutputChanged } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
@@ -86,7 +82,7 @@ export const Duration = (props: IDuration) => {
                 alignItems: 'center',
             },
             callout: {
-                height: 300
+                maxHeight: `300px !important`
             }
         },
         onInputValueChange: (text) => {
