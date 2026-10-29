@@ -50,9 +50,8 @@ export class DataverseUserQueriesStore<TData = unknown> implements IUserQueriesS
     }
 }
 
-//a layout from before views kept their columns holds only the data
+//an older layout keeps its data beside the columns, or holds only the data
 const readLayout = <TData,>(json: string | null): IUserQueryView<TData> => {
-    const layout = json ? JSON.parse(json) : {};
-    const isView = Array.isArray(layout.columns) && Object.keys(layout).every(key => ['columns', 'linking', 'data'].includes(key));
-    return isView ? layout : { columns: [], data: layout };
+    const { columns, linking, data, ...rest } = json ? JSON.parse(json) : {};
+    return { columns: Array.isArray(columns) ? columns : [], linking, data: data ?? rest };
 };
