@@ -116,7 +116,7 @@ export class GanttSelection implements IGanttSelection {
     private _onTaskDblClick = (id: string | number): boolean => {
         const record = this._gantt.services.find('tasks')?.getRecord(String(id));
         if (record) {
-            runQuietly(() => this._gantt.getTaskRuntime().tasks.open(record.getNamedReference()));
+            runQuietly(() => this._gantt.getTaskRuntime().tasks.open([record.getRecordId()]));
         }
         return false;
     };

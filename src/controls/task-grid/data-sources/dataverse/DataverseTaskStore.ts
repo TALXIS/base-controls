@@ -1,6 +1,6 @@
 import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeleteTasksResult, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
 
@@ -115,7 +115,7 @@ export class DataverseTaskStore implements ITaskStore {
         return {};
     }
 
-    public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {
+    public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
         return this._fetchXmlProvider.onRecordSave(record);
     }
 
@@ -123,7 +123,7 @@ export class DataverseTaskStore implements ITaskStore {
         await this._navigate('open', { pageInput: { pageType: 'entityrecord', entityName: reference.etn!, entityId: reference.id.guid }, navigationOptions: SIDE_DIALOG });
     }
 
-    public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+    public async onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
         if (taskIds.length === 1) {
             await this._navigate('edit', {
                 pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskRuntime.getProvider().isRecordActive(taskIds[0]) } },

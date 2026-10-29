@@ -16,7 +16,7 @@ export const TaskGridRoot = (props: ITaskGridProps) => {
 
     const context = useMemo((): ITaskGridContext => ({ runtime, components: props.components ?? {} }), [props.components]);
 
-    const onOpenRecord = (params: IGridOpenRecordParams) => runQuietly(() => runtime.tasks.open(params.reference, params.columnName));
+    const onOpenRecord = (params: IGridOpenRecordParams) => runQuietly(() => runtime.tasks.openRecord(params.reference, params.columnName));
 
     return <TaskGridContext.Provider value={context}>
         <Grid enableZebra={false} enableOptionSetColors onOpenRecord={onOpenRecord} {...props} modules={modules} />

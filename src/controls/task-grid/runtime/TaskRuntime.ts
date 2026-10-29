@@ -144,7 +144,7 @@ export class TaskRuntime implements ITaskRuntime {
             taskCommands.push({ id: 'new', label: labels.getLocalizedString('new'), iconName: 'Add', onExecute: () => runQuietly(() => this.tasks.create()) });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.edit(selectedIds)) });
+            taskCommands.push({ id: 'edit', label: labels.getLocalizedString('edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.open(selectedIds)) });
         }
         if (this.isDeletionEnabled() && selectedIds.length > 0) {
             taskCommands.push({ id: 'delete', label: labels.getLocalizedString('delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });

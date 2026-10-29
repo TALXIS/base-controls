@@ -4290,7 +4290,7 @@ interface IChecklistStore {
 }
 
 /** Each task's checklist progress as done/total, in a column Edit columns offers. */
-declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => IChecklistStore; labels?: ChecklistLabels }) => IDatasetControlModule;
+declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, checklist: any) => IChecklistStore; labels?: ChecklistLabels }) => IDatasetControlModule;
 /** Checklists held in memory, by task id. */
 declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]>; labels?: ChecklistLabels }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */

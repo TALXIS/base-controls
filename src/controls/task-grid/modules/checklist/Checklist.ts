@@ -27,10 +27,12 @@ export interface IChecklistItem {
 export interface IChecklistStore {
     /** The items of these tasks, by task id; a task with none may be left out. */
     onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>>;
+    /** Called as the checklist goes. */
+    destroy?(): void;
 }
 
 export interface IChecklistParameters {
-    onCreateStore: (taskRuntime: ITaskRuntime) => IChecklistStore;
+    onCreateStore: (taskRuntime: ITaskRuntime, checklist: IChecklist) => IChecklistStore;
     /** Overrides for the module's strings. */
     labels?: Partial<IChecklistLabels>;
 }
@@ -59,7 +61,7 @@ export class Checklist implements IChecklist {
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.onCreateStore(taskRuntime, this);
         this._labels = new LocalizationService<IChecklistLabels>({ ...CHECKLIST_LABELS, ...parameters.labels });
         this._values = new TaskColumnValues({
             taskRuntime,
@@ -86,6 +88,7 @@ export class Checklist implements IChecklist {
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
         this._values.destroy();
+        this._store.destroy?.();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {

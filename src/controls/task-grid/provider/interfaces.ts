@@ -70,8 +70,8 @@ export type IDeleteTasksResult = ITaskChanges & (
     | { success: true; deletedTaskIds: string[] }
     | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] });
 
-/** How editing went, with the records it changed, and which could not be opened. */
-export type IEditTasksResult = ITaskChanges & (
+/** How opening the tasks went, with the records it changed, and which could not be opened. */
+export type IOpenTasksResult = ITaskChanges & (
     | { success: true }
     | { success: false; errors: IFailedRecord[] });
 
@@ -154,9 +154,10 @@ export interface ITaskStore {
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
     /** @returns What else changed once moved, or `null` when the user cancelled. */
     onMoveTask(params: ITaskMoveParams): Promise<ITaskChanges | null>;
-    onSaveRecord(record: IRecord): Promise<ITaskSaveResult>;
-    /** Lets the user edit the tasks, such as in a form; `null` when nothing changed. */
-    onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Saves what the user changed in the task's cells. */
+    onSaveTask(task: IRecord): Promise<ITaskSaveResult>;
+    /** Opens the tasks in an editor outside the grid, such as a form; `null` when nothing changed. */
+    onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Opens the record a task's lookup points to. */
     onOpenRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
@@ -166,8 +167,10 @@ export interface ITaskDataProviderEvents {
     onTasksCreated: (records: IRecord[], parentId?: string) => void;
     onTasksDeleted: (taskIds: string[]) => void;
     onTaskMoved: (params: ITaskMoveParams) => void;
-    /** Records changed in place, such as after a form closed. */
+    /** Tasks whose data changed in place, whatever changed it. */
     onTasksUpdated: (records: IRecord[]) => void;
+    /** The editor the tasks were opened in outside the grid closed, and what changed is on the tasks. */
+    onEditorClosed: (taskIds: string[]) => void;
     /** The visible tree changed without new data: a move, a create or a delete. */
     onTreeChanged: () => void;
 }
@@ -235,7 +238,8 @@ export interface ITaskDataProvider extends IDataProvider {
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
     /** @returns `true` once moved, or `null` when it did not move. */
     moveTask(movingTaskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
-    editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Opens the tasks in the store's editor outside the grid, then applies what changed. */
+    openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Opens the record a task's lookup points to. */
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */

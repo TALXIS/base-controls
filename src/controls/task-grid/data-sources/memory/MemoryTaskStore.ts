@@ -2,7 +2,7 @@ import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IRawRecord, 
 import type { ITaskRuntime } from "../../runtime";
 import { simulateBackend } from "./simulateBackend";
 import type { MemoryTaskDatabase } from "./MemoryTaskDatabase";
-import { IDeleteTasksResult, IEditTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskMoveParams, ITaskStore } from "../../provider/interfaces";
 
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
@@ -58,7 +58,7 @@ export class MemoryTaskStore implements ITaskStore {
         return {};
     }
 
-    public async onSaveRecord(record: IRecord): Promise<IRecordSaveOperationResult> {
+    public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
         const dirtyFields = record.getFields().filter(field => field.isDirty());
         const values: IRawRecord = {};
         for (const field of dirtyFields) {
@@ -68,7 +68,7 @@ export class MemoryTaskStore implements ITaskStore {
         return { recordId: record.getRecordId(), success: true, fields: Object.keys(values) };
     }
 
-    public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+    public async onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
         await simulateBackend();
         const subject = this._parameters.taskRuntime.getProvider().getFieldMapping().subject;
         const names = taskIds.map(taskId => this._parameters.database.getTask(taskId)?.[subject] ?? taskId).join(', ');

@@ -3,7 +3,7 @@ import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { mergeColumn } from "./mergeColumn";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IEditTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
@@ -180,7 +180,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             }
         }
         if (hasUnhandledField || results.length === 0) {
-            results.push(await this._store.onSaveRecord(record));
+            results.push(await this._store.onSaveTask(record));
         }
         //before returning: the save then marks the values it sent saved, which must still be the dirty ones
         this._applyChanges({ updatedRecords: results.flatMap(result => result.updatedRecords ?? []) });
@@ -285,9 +285,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return true;
     }
 
-    public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
-        const result = await this._store.onEditTasks(taskIds);
-        this._applyChanges(result ?? undefined);
+    public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
+        const result = await this._store.onOpenTasks(taskIds);
+        if (result) {
+            this._applyChanges(result);
+            this.taskEvents.dispatchEvent('onEditorClosed', taskIds);
+        }
         return result;
     }
 

@@ -23,12 +23,12 @@ export interface ITaskGridLabels {
     /** Some tasks were not deleted; the details list them. */
     deleteTasksFailed: string;
     creatingTask: string;
-    editingTasks: string;
+    openingTasks: string;
     deletingTasks: string;
     movingTask: string;
     openingRecord: string;
     createTaskFailed: string;
-    editTasksFailed: string;
+    openTasksFailed: string;
     moveTaskFailed: string;
     openRecordFailed: string;
     /** Titles the error dialog of an action that names none of its own. */
@@ -54,12 +54,12 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     taskCannotBeDeleted: 'This task cannot be deleted.',
     deleteTasksFailed: 'Some tasks were not deleted.',
     creatingTask: 'Creating task...',
-    editingTasks: 'Opening tasks...',
+    openingTasks: 'Opening tasks...',
     deletingTasks: 'Deleting tasks...',
     movingTask: 'Moving task...',
     openingRecord: 'Opening record...',
     createTaskFailed: 'The task could not be created.',
-    editTasksFailed: 'The tasks could not be opened.',
+    openTasksFailed: 'The tasks could not be opened.',
     moveTaskFailed: 'The task could not be moved.',
     openRecordFailed: 'The record could not be opened.',
     actionFailed: 'The action could not be completed.',

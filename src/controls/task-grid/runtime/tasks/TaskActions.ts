@@ -1,6 +1,6 @@
 import type { IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions, IEditTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
+import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
 import type { ITaskGridLabels } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 
@@ -8,13 +8,14 @@ import type { ITaskRuntime } from "../interfaces";
 export interface ITaskActions {
     /** @returns The created task, or `null` when creation is off or the user cancelled. */
     create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
-    edit(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Opens the tasks in an editor outside the grid, such as a form. */
+    open(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
     /** @returns `true` once moved, or `null` when it did not move. */
     move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
-    /** Edits the task, or opens the record its lookup points to when `columnName` is another column. */
-    open(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
+    /** Opens the task, or the record its lookup points to when `columnName` is another column. */
+    openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
@@ -37,8 +38,8 @@ export class TaskActions implements ITaskActions {
         return task;
     }
 
-    public async edit(taskIds: string[]): Promise<IEditTasksResult | null> {
-        return this._execute(() => this._provider.editTasks(taskIds), 'editingTasks', 'editTasksFailed');
+    public async open(taskIds: string[]): Promise<IOpenTasksResult | null> {
+        return this._execute(() => this._provider.openTasks(taskIds), 'openingTasks', 'openTasksFailed');
     }
 
     public async delete(taskIds: string[]): Promise<void> {
@@ -75,9 +76,9 @@ export class TaskActions implements ITaskActions {
         return this._execute(() => this._provider.moveTask(taskId, targetTaskId, position), 'movingTask', 'moveTaskFailed');
     }
 
-    public async open(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void> {
+    public async openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void> {
         if (!columnName || columnName === this._provider.getFieldMapping().subject) {
-            await this.edit([reference.id.guid]);
+            await this.open([reference.id.guid]);
         }
         else {
             await this.openRelatedRecord(reference, columnName);
