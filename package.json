@@ -10,11 +10,23 @@
   "module": "dist/index.js",
   "license": "MIT",
   "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "gantt": [
+        "./dist/controls/task-grid/modules/gantt/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./gantt": {
+      "types": "./dist/controls/task-grid/modules/gantt/index.d.ts",
+      "import": "./dist/controls/task-grid/modules/gantt/index.js",
+      "default": "./dist/controls/task-grid/modules/gantt/index.js"
     },
     "./package.json": "./package.json"
   },
