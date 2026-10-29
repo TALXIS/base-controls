@@ -4338,7 +4338,7 @@ interface IDataverseDependenciesSchema {
 }
 
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
-declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITaskDependenciesStore; labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore; labels?: DependenciesLabels }) => IDatasetControlModule;
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */
 declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[]; labels?: DependenciesLabels }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */

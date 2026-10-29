@@ -42,10 +42,12 @@ export interface ITaskDependenciesStore {
     onCreateDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency>;
     onUpdateDependency(dependency: ITaskDependency): Promise<void>;
     onDeleteDependency(dependencyId: string): Promise<void>;
+    /** Called as the dependencies go. */
+    destroy?(): void;
 }
 
 export interface IDependenciesParameters {
-    onCreateStore: (taskRuntime: ITaskRuntime) => ITaskDependenciesStore;
+    onCreateStore: (taskRuntime: ITaskRuntime, dependencies: IDependencies) => ITaskDependenciesStore;
     /** Overrides for the module's strings. */
     labels?: Partial<IDependenciesLabels>;
 }
@@ -105,7 +107,7 @@ export class Dependencies implements IDependencies {
 
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
         this._taskRuntime = taskRuntime;
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.onCreateStore(taskRuntime, this);
         this._labels = new LocalizationService<IDependenciesLabels>({ ...DEPENDENCIES_LABELS, ...parameters.labels });
         this._values = new TaskColumnValues({
             taskRuntime,
@@ -195,6 +197,7 @@ export class Dependencies implements IDependencies {
         this._unregisters.forEach(unregister => unregister());
         this._values.destroy();
         this.events.clearEventListeners();
+        this._store.destroy?.();
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {

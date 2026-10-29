@@ -1,6 +1,7 @@
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../../runtime";
-import type { ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate, TaskDependencyType } from "../Dependencies";
+import type { ITaskDataProvider } from "../../../provider";
+import type { IDependencies, ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate, TaskDependencyType } from "../Dependencies";
 
 /** A Dataverse table of dependencies: two task lookups and an option set of the type. */
 export interface IDataverseDependenciesSchema {
@@ -17,6 +18,7 @@ export interface IDataverseDependenciesSchema {
 
 export interface IDataverseDependenciesStoreParameters extends IDataverseDependenciesSchema {
     taskRuntime: ITaskRuntime;
+    dependencies: IDependencies;
 }
 
 const MAX_IDS_PER_REQUEST = 800;
@@ -24,10 +26,26 @@ const MAX_IDS_PER_REQUEST = 800;
 /** Dependencies kept in a Dataverse table. */
 export class DataverseDependenciesStore implements ITaskDependenciesStore {
     private _parameters: IDataverseDependenciesStoreParameters;
+    private _unregisters: (() => void)[] = [];
 
     constructor(parameters: IDataverseDependenciesStoreParameters) {
         this._parameters = parameters;
+        parameters.taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
     }
+
+    public destroy(): void {
+        this._unregisters.forEach(unregister => unregister());
+    }
+
+    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
+        provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed);
+        this._unregisters.push(() => provider.taskEvents.removeEventListener('onEditorClosed', this._onEditorClosed));
+    };
+
+    //the editor may have changed the task's dependencies
+    private _onEditorClosed = (taskIds: string[]): void => {
+        this._parameters.dependencies.reload(taskIds);
+    };
 
     public async onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
         const batches: string[][] = [];
