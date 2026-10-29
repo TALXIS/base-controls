@@ -122,6 +122,36 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 - **Locks:** a row closed through its status locks as soon as the save returns. The \`statecode\` write-back in \`SaveHandler\` then goes.
 - **The task grid:** \`DataverseTaskStore.onSaveTask\` returns the saved task as \`updatedRecords\`, and the store's schedule read-back becomes this general case.
 - **Every grid:** a column a plugin or business rule sets, and a calculated column, show their new value right after a save.
+
+## 5. Ask for the definitions of named columns only
+
+\`getAvailableColumns\` is the one place a column's definition comes from: its label, type and metadata. Most callers need only a few of them, the columns a view shows, but every call returns all of them.
+
+### Today
+
+| Provider | What \`getAvailableColumns\` reads |
+|---|---|
+| \`FetchXmlDataProvider\` | Every attribute of the entity: \`Xrm.Utility.getEntityMetadata\` for the attribute names, then again with all of them, so each call carries the metadata of the whole table, option sets included. |
+| \`MemoryDataProvider\` | The columns it was created with. |
+| \`TaskDataProvider\` | Its store's available columns, plus the columns its modules add. |
+
+The callers that need only some:
+
+- **The dataset control** completes a view's columns before setting them, on every load, for the handful of columns the view lists.
+- **The task provider** looks up the definitions of the columns it adds itself, such as the parent and the stack rank.
+
+### What every provider should do
+
+- **Take the names asked for:** \`IAvailableColumnOptions\` gets \`columnNames?: string[]\`, and a provider returns only those. Left out, it returns all of them, as Edit columns needs.
+- **Fetch only those:** the FetchXML provider asks Dataverse for the metadata of the named attributes alone.
+- **Same definition either way:** a column asked for by name is defined exactly as it is in the full list, the hooks a provider runs included.
+- **A name it does not know is left out,** rather than returned as a bare column.
+
+### What would use it
+
+- **The dataset control:** completing a view asks only for the view's columns, and for its related columns by the link they come through.
+- **The task provider:** its own columns' definitions come from one call naming them.
+- **Edit columns** keeps asking for everything, as it lists them all.
 `
 
 const meta = {

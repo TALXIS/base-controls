@@ -6,8 +6,8 @@ import { getRowNode } from "../rows/getRowNode";
 const VIEWPORT_STATE_KEY = 'viewport';
 
 interface IGridViewportState {
-    /** The cell at the top-left of the viewport, by AG Grid's row id and column id. */
-    scroll?: { rowId?: string; columnId?: string };
+    /** The row at the top of the viewport, by AG Grid's row id. */
+    scroll?: { rowId?: string };
     focusedCell?: { rowId: string; columnId: string };
 }
 
@@ -107,7 +107,7 @@ export class GridViewport implements IGridViewport {
             return;
         }
         this._services.get('state').set<IGridViewportState>(VIEWPORT_STATE_KEY, {
-            scroll: { rowId: this._getTopRow(gridApi)?.id, columnId: this._getLeftColumnId(gridApi) },
+            scroll: { rowId: this._getTopRow(gridApi)?.id },
             focusedCell: this._getFocusedCell(gridApi),
         });
     }
@@ -125,9 +125,6 @@ export class GridViewport implements IGridViewport {
         this._stopRestoring();
         if (rowNode) {
             gridApi.ensureNodeVisible(rowNode, 'top');
-        }
-        if (scroll?.columnId && gridApi.getColumn(scroll.columnId)) {
-            gridApi.ensureColumnVisible(scroll.columnId, 'start');
         }
         const focusedNode = focusedCell ? gridApi.getRowNode(focusedCell.rowId) : undefined;
         if (focusedCell && focusedNode?.rowIndex != null) {
@@ -161,13 +158,6 @@ export class GridViewport implements IGridViewport {
             }
         }
         return undefined;
-    }
-
-    private _getLeftColumnId(gridApi: GridApi<IRecord>): string | undefined {
-        const left = gridApi.getHorizontalPixelRange().left;
-        return gridApi.getAllDisplayedColumns()
-            .find(column => !column.getPinned() && (column.getLeft() ?? 0) + column.getActualWidth() > left)
-            ?.getColId();
     }
 
     private _getFocusedCell(gridApi: GridApi<IRecord>): IGridViewportState['focusedCell'] {
