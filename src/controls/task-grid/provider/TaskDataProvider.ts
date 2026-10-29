@@ -2,7 +2,6 @@ import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedC
 import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { mergeColumn } from "./mergeColumn";
 import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
@@ -23,7 +22,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _tree: RecordTree;
     private _hasLoaded = false;
     private _newTaskPositions = new Map<string, TaskCreatePosition>();
-    private _columnCatalogue = new Map<string, IColumn>();
+    private _definitions = new Map<string, IColumn>();
     private _declaredColumns: IColumn[] = [];
     private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
     private _columnHandlers: ITaskColumnHandler[] = [];
@@ -99,8 +98,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public setColumns(columns: IColumn[]): void {
         //copied, as the base fills its defaults into the columns it is handed
-        this._declaredColumns = columns.map(copyColumn);
-        super.setColumns(this._withMappedColumns(this._declaredColumns.map(column => this._withDefinition(this._withRequired(copyColumn(column))))).map(this._withHoursPerDay));
+        this._declaredColumns = columns.filter(column => !column.isHidden || !this._isImplicitColumn(column.name)).map(copyColumn);
+        const declaredNames = new Set(this._declaredColumns.map(column => column.name));
+        const implicitColumns = this._getImplicitColumnNames().filter(name => !declaredNames.has(name)).map(name => ({ ...this._getDefinition(name), isHidden: true }));
+        super.setColumns([...this._declaredColumns.map(this._completeColumn), ...implicitColumns]);
     }
 
     public setQuickFindColumns(columnNames: string[]): void {
@@ -131,8 +132,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
         const columns = await this._store.onGetAvailableColumns(options);
+        if (this._isRelatedEntity(options)) {
+            return columns;
+        }
         //the hooks add columns of the tasks, such as Path
-        return this._isRelatedEntity(options) ? columns : this._withHookColumns(columns);
+        return this._withHookColumns(columns).map(this._withHoursPerDay);
     }
 
     public registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void {
@@ -393,11 +397,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.setMetadata(metadata);
         this.setEntityName(metadata.LogicalName ?? '');
         await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
-        this._columnCatalogue = new Map(this._withHookColumns(columns).map(column => [column.name, column]));
+        //the loaded columns only fill in what the available ones do not know
+        this._definitions = new Map([...columns, ...await this.onGetAvailableColumns()].map(column => [column.name, column]));
         this.setDataSource(rawData);
-        //as declared, since the data-type defaults filled in since would override the catalogue's definitions
-        const currentColumns = this._declaredColumns.filter(column => !column.isHidden || !this._isAddedColumn(column.name));
-        this.setColumns(currentColumns.length > 0 ? currentColumns : columns);
+        //as declared, since the base fills data-type defaults into what getColumns returns
+        this.setColumns(this._declaredColumns.length > 0 ? this._declaredColumns : columns);
         this._hasLoaded = true;
     }
 
@@ -495,41 +499,48 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._tree.view.getOrderedIds().map(recordId => recordsMap[recordId]).filter((record): record is IRecord => !!record);
     }
 
-    //a view that lists a required column keeps what it states, and the rest comes from the requirement
-    private _withRequired(column: IColumn): IColumn {
-        const required = this._requiredColumns.find(requiredColumn => requiredColumn.name === column.name);
-        return required ? mergeColumn(required, column) : column;
+    //a required column, or one the available columns leave out
+    private _completeColumn = (column: IColumn): IColumn => {
+        if (column.dataType && !this._getRequiredColumn(column.name)) {
+            return column;
+        }
+        return this._merge(this._getDefinition(column.name), column);
+    };
+
+    //a module's required column says more, such as that it stays hidden
+    private _getDefinition(columnName: string): IColumn {
+        const definition = this._definitions.get(columnName);
+        const required = this._getRequiredColumn(columnName);
+        if (definition && required) {
+            return this._merge(definition, required);
+        }
+        return required ?? definition ?? { name: columnName, displayName: columnName, dataType: 'SingleLine.Text', order: -1, visualSizeFactor: 100 };
     }
 
-    private _withDefinition(column: IColumn): IColumn {
-        const definition = this._columnCatalogue.get(column.name);
-        return definition ? mergeColumn(definition, column) : column;
+    private _getRequiredColumn(columnName: string): IColumn | undefined {
+        return this._requiredColumns.find(column => column.name === columnName);
+    }
+
+    private _merge(column: IColumn, over: IColumn): IColumn {
+        return { ...column, ...over, metadata: { ...column.metadata, ...over.metadata } };
+    }
+
+    //the tree and the modules read these whatever the view shows
+    private _getImplicitColumnNames(): string[] {
+        const mappedNames = Object.values(this.getFieldMapping()).filter((columnName): columnName is string => !!columnName);
+        return [...new Set([...mappedNames, ...this._requiredColumns.map(column => column.name)])];
+    }
+
+    private _isImplicitColumn(columnName: string): boolean {
+        return this._getImplicitColumnNames().includes(columnName);
     }
 
     private _withHoursPerDay = (column: IColumn): IColumn => {
-        if (this._hoursPerDay === undefined || column.name !== this.getFieldMapping().duration) {
+        if (this._hoursPerDay === undefined || column.name !== this._fieldMapping?.duration) {
             return column;
         }
         return { ...column, metadata: { HoursPerDay: this._hoursPerDay, ...column.metadata } };
     };
-
-    //added whatever the view shows, so a view never needs to keep them
-    private _isAddedColumn(columnName: string): boolean {
-        return Object.values(this.getFieldMapping()).includes(columnName) || this._requiredColumns.some(column => column.name === columnName);
-    }
-
-    //the tree reads these whatever the view shows
-    private _withMappedColumns(columns: IColumn[]): IColumn[] {
-        const columnNames = new Set(columns.map(column => column.name));
-        const missing = Object.values(this.getFieldMapping())
-            .filter((columnName): columnName is string => !!columnName && !columnNames.has(columnName))
-            .map((columnName): IColumn => ({
-                ...(this._columnCatalogue.get(columnName) ?? { name: columnName, displayName: columnName, dataType: 'SingleLine.Text', order: -1, visualSizeFactor: 100 }),
-                isHidden: true,
-            }));
-        const required = this._requiredColumns.filter(column => !columnNames.has(column.name)).map(column => ({ ...column, isHidden: true }));
-        return [...columns, ...missing, ...required];
-    }
 
     private _getStateCodeCondition() {
         return this.getFiltering()?.conditions.find(condition => condition.attributeName === this.getFieldMapping().stateCode

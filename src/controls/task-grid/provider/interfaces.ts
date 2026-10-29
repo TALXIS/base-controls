@@ -135,6 +135,7 @@ export interface ICreateTaskTree {
 export interface ITaskLoadResult {
     rawData: IRawRecord[];
     metadata: IMemoryProviderEntityMetadata;
+    /** Read only for columns the available columns do not offer. */
     columns: IColumn[];
 }
 
@@ -188,7 +189,7 @@ export interface ITaskDataProviderInitializeParameters {
     hoursPerDay?: number;
 }
 
-/** Changes the columns Edit columns offers, in place. */
+/** Adds to the available columns in place, which define the task columns wherever they are shown. */
 export type TaskAvailableColumnsHook = (columns: IColumn[]) => void;
 
 /** Loads and saves columns whose values are kept apart from the tasks, such as custom columns. */
@@ -253,11 +254,11 @@ export interface ITaskDataProvider extends IDataProvider {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
     updateTaskData(rawRecords: IRawRecord[]): void;
-    /** Changes the available columns, also read as definitions for saved views that list them. */
+    /** Adds to the available columns, which complete the columns of every view. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */
     registerColumnHandler(handler: ITaskColumnHandler): () => void;
-    /** Reads the tasks with the column whatever the view shows, hidden; for a field a module reads off the records. */
+    /** Loads the column whatever the view shows, hidden; its fields win over the available column's. */
     registerRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
     registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;

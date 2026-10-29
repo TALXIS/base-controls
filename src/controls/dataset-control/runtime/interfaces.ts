@@ -19,9 +19,12 @@ export interface IDatasetControlViewGroup {
 }
 
 /** What a view sets up, resolved only when it is opened. */
+/** A view's column; what it leaves out comes from the provider's available columns. */
+export type IDatasetControlViewColumn = Pick<IColumn, 'name'> & Partial<IColumn>;
+
 export interface IDatasetControlViewDefinition<TData = unknown> {
-    /** The columns the view shows, set on the provider `onLoad` returns. */
-    columns: IColumn[];
+    /** The columns the view shows, completed from the provider's available columns and set on it. */
+    columns: IDatasetControlViewColumn[];
     /** The related entities the view's columns come from, set on the provider with them. */
     linking?: ILinkEntityExposedExpression[];
     /** What `onLoad` needs to build the view, user views included. */

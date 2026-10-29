@@ -1,8 +1,9 @@
-import { IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
+import { IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import { HookRegistry, IStateStore, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewDefinition } from "./interfaces";
+import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
+import { toScopedColumn } from "../components/adapters/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
@@ -207,8 +208,9 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             if (listed) {
                 view = { ...listed, ...await resolve(provider) };
                 //before the columns, which a related column is resolved through
-                provider.setLinking(view.linking ?? provider.getLinking());
-                provider.setColumns(view.columns);
+                const linking = view.linking ?? provider.getLinking();
+                provider.setLinking(linking);
+                provider.setColumns(await this._completeColumns(provider, view.columns, linking));
             }
             this._state.restore(provider, viewId);
             //onLoad may have prepared and started the first load itself
@@ -229,6 +231,38 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             return;
         }
         this._onLoaded(result, viewId, view);
+    }
+
+    //a column the provider does not offer is kept as the view gives it
+    private async _completeColumns(provider: IDataProvider, columns: IDatasetControlViewColumn[], linking: ILinkEntityExposedExpression[]): Promise<IColumn[]> {
+        const [ownColumns, relatedColumns] = await Promise.all([provider.getAvailableColumns(), this._getRelatedColumns(provider, columns, linking)]);
+        const definitions = new Map([...ownColumns, ...relatedColumns].map(column => [column.name, column]));
+        return columns.map(column => this._completeColumn(column, definitions.get(column.name)));
+    }
+
+    //its own metadata, so the provider setting up one view's column leaves the others alone
+    private _completeColumn(column: IDatasetControlViewColumn, definition: IColumn | undefined): IColumn {
+        return definition ? { ...definition, ...column, metadata: { ...definition.metadata, ...column.metadata } } : column as IColumn;
+    }
+
+    //named as Edit columns names them, through the link each was added through
+    private async _getRelatedColumns(provider: IDataProvider, columns: IDatasetControlViewColumn[], linking: ILinkEntityExposedExpression[]): Promise<IColumn[]> {
+        const aliases = new Set(columns.filter(column => column.name.includes('.')).map(column => column.name.split('.')[0]));
+        const links = linking.filter(link => !!link.alias && aliases.has(link.alias));
+        if (links.length === 0) {
+            return [];
+        }
+        const scopes = await provider.getAvailableRelatedColumns();
+        const related = await Promise.all(links.map(async link => {
+            const scope = scopes.find(scope => this._isScopeOf(scope, link));
+            return scope ? (await provider.getAvailableColumns({ entityName: link.name })).map(column => toScopedColumn(column, link, scope)) : [];
+        }));
+        return related.flat();
+    }
+
+    //Edit columns builds a link from the scope's id attribute and lookup
+    private _isScopeOf(scope: IAvailableRelatedColumn, link: ILinkEntityExposedExpression): boolean {
+        return scope.name === link.to && scope.relatedEntityPrimaryIdAttribute === link.from;
     }
 
     //a retried load starts the modules again from scratch

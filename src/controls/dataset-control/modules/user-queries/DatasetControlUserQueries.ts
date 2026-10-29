@@ -1,9 +1,8 @@
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { EventEmitter, IAvailableRelatedColumn, IColumn, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
 import type { IEventSubscriber, ILocalizationService } from "@utils";
-import { toScopedColumn } from "../../components/adapters/edit-columns/toScopedColumn";
 import type { IUserQueriesLabels } from "./labels";
 import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQuerySavedValueMap, IUserQueryView } from "./interfaces";
 
@@ -140,45 +139,13 @@ export class DatasetControlUserQueries {
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
         const group = { id: USER_QUERIES_GROUP, name: this._labels.getLocalizedString('myViewsHeader') };
-        views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: (provider: IDataProvider) => this._resolveView(id, provider) })));
+        views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: () => this._resolveView(id) })));
     };
 
-    private _resolveView = async (viewId: string, provider: IDataProvider): Promise<IDatasetControlViewDefinition> => {
+    private _resolveView = async (viewId: string): Promise<IDatasetControlViewDefinition> => {
         const { columns, linking = [], data } = await this._store.getView(viewId);
-        const [ownColumns, relatedColumns] = await Promise.all([provider.getAvailableColumns(), this._getRelatedColumns(provider, columns, linking)]);
-        const definitions = new Map([...ownColumns, ...relatedColumns].map(column => [column.name, column]));
-        const definedColumns = columns.map(column => this._toColumn(column, definitions.get(column.name))).filter((column): column is IColumn => !!column);
-        const droppedNames = columns.filter(column => !definitions.has(column.name)).map(column => column.name);
-        if (droppedNames.length > 0) {
-            console.warn(`User view ${viewId} keeps columns the provider no longer offers, so they are left out: ${droppedNames.join(', ')}`);
-        }
-        return { columns: definedColumns, linking, data };
+        return { columns, linking, data };
     };
-
-    //named as Edit columns names them, through the link each was added through
-    private async _getRelatedColumns(provider: IDataProvider, columns: IUserQueryColumn[], linking: ILinkEntityExposedExpression[]): Promise<IColumn[]> {
-        const aliases = new Set(columns.filter(column => column.name.includes('.')).map(column => column.name.split('.')[0]));
-        const links = linking.filter(link => !!link.alias && aliases.has(link.alias));
-        if (links.length === 0) {
-            return [];
-        }
-        const scopes = await provider.getAvailableRelatedColumns();
-        const related = await Promise.all(links.map(async link => {
-            const scope = scopes.find(scope => this._isScopeOf(scope, link));
-            return scope ? (await provider.getAvailableColumns({ entityName: link.name })).map(column => toScopedColumn(column, link, scope)) : [];
-        }));
-        return related.flat();
-    }
-
-    //Edit columns builds a link from the scope's id attribute and lookup
-    private _isScopeOf(scope: IAvailableRelatedColumn, link: ILinkEntityExposedExpression): boolean {
-        return scope.name === link.to && scope.relatedEntityPrimaryIdAttribute === link.from;
-    }
-
-    //its own metadata, so the provider setting up one view's column leaves the others alone
-    private _toColumn(saved: IUserQueryColumn, definition: IColumn | undefined): IColumn | undefined {
-        return definition ? { ...definition, ...saved, metadata: { ...definition.metadata } } : undefined;
-    }
 
     //the switcher reads its items as its menu opens
     private _addViewSwitcherItems = (items: IContextualMenuItem[]): void => {
