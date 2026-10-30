@@ -1,5 +1,5 @@
 import { IStyle, mergeStyleSets } from "@fluentui/react";
-import { FIELD_ERROR_OUTLINE_CLASS_NAME } from "./components/cells/ui/field-error/styles";
+import { FIELD_ERROR_OUTLINE_CLASS_NAME, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./components/cells/ui/field-error/styles";
 
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
@@ -40,7 +40,7 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
                 pointerEvents: 'none',
                 backgroundColor: 'var(--ag-range-selection-background-color)',
             },
-            //an invalid cell's outline stands in for the focus, range and editing borders
+            //a focused invalid cell's outline stands in for the focus, range and editing borders
             [`.ag-cell:has(.${FIELD_ERROR_OUTLINE_CLASS_NAME})`]: {
                 '--ag-range-selection-border-color': 'transparent',
                 '--ag-cell-editing-border': 'solid 1px transparent',
@@ -48,6 +48,11 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
             //the cell renders a control of its own
             '.ag-cell': {
                 overflow: 'hidden',
+                //set on every cell so a grid nested in a focused cell does not inherit it
+                [FIELD_ERROR_OUTLINE_WIDTH_VARIABLE]: '0',
+            },
+            '.ag-cell-focus': {
+                [FIELD_ERROR_OUTLINE_WIDTH_VARIABLE]: '1px',
             },
             '.ag-cell-wrapper:has([data-is-loading="true"])': {
                 height: '100%'

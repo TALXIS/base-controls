@@ -4,12 +4,15 @@ import { IAlignment } from "@utils";
 /** The class the outline of an invalid cell carries. */
 export const FIELD_ERROR_OUTLINE_CLASS_NAME = 'talxis__baseControl__GridCellFieldErrorOutline';
 
+/** How wide the outline of an invalid cell is drawn, set by the cell it is in. */
+export const FIELD_ERROR_OUTLINE_WIDTH_VARIABLE = '--talxis-grid-cell-error-outline-width';
+
 export const getCellUiFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
     outline: {
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        boxShadow: `inset 0 0 0 1px ${theme.semanticColors.errorText}`,
+        boxShadow: `inset 0 0 0 var(${FIELD_ERROR_OUTLINE_WIDTH_VARIABLE}, 0) ${theme.semanticColors.errorText}`,
         zIndex: 2
     },
     fieldErrorRoot: {

@@ -121,7 +121,7 @@ export class GridTheme implements IGridThemeInternal {
             wrapperBorder: false,
             columnBorder: false,
             headerColumnBorder: false,
-            pinnedColumnBorder: false,
+            pinnedColumnBorder: divider,
             rowBorder: divider,
             headerRowBorder: divider,
             //translucent: AG Grid's row states are drawn over the cells
