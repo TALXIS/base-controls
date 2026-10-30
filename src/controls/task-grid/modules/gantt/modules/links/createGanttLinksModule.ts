@@ -9,3 +9,11 @@ export const createGanttLinksModule = (parameters: IGanttLinksParameters = {}): 
     onLoad: gantt => new GanttLinks(gantt, parameters),
     onDestroy: links => links.destroy(),
 });
+
+createGanttLinksModule({
+    components: {
+        tooltip: {
+            
+        }
+    }
+})

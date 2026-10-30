@@ -1,12 +1,22 @@
+import { createElement } from "react";
 import type { GanttStatic, Link } from "dhtmlx-gantt";
 import type { LabelsOf } from "@utils";
 import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
+import type { IGanttSurface } from "../../surfaces";
+import { LinkTooltipRenderer } from "./components";
 import { GANTT_LINKS_LABELS } from "./labels";
 import { getGanttLinksStyles } from "./styles";
 
 export interface IGanttLinksParameters {
+    components?: IGanttLinksComponents;
+}
+
+/** The replaceable pieces of the links. */
+export interface IGanttLinksComponents {
+    /** What a dependency line says when the pointer is on it, composed from `LinkTooltip`'s parts. */
+    onRenderTooltip?: () => JSX.Element | null;
 }
 
 /** The `links` module: the `dependencies` module's dependencies drawn between the bars. */
@@ -30,6 +40,7 @@ const isSameLink = (left: Link | undefined, right: Link | undefined): boolean =>
 
 export class GanttLinks implements IGanttLinks {
     private _gantt: IGantt;
+    private _parameters: IGanttLinksParameters;
     private _dependencies?: IDependencies;
     private _labels: LabelsOf<typeof GANTT_LINKS_LABELS>;
     private _isSyncing = false;
@@ -37,6 +48,7 @@ export class GanttLinks implements IGanttLinks {
 
     constructor(gantt: IGantt, parameters: IGanttLinksParameters) {
         this._gantt = gantt;
+        this._parameters = parameters;
         this._labels = gantt.getLabels(GANTT_LINKS_LABELS);
         this._dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
         if (!this._dependencies) {
@@ -46,6 +58,7 @@ export class GanttLinks implements IGanttLinks {
         this._unregisters.push(
             gantt.registerChartConfig(this._configureChart),
             gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getGanttLinksStyles(theme))),
+            gantt.surfaces.registerSurface(this._onSurfaces),
         );
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
@@ -70,6 +83,11 @@ export class GanttLinks implements IGanttLinks {
         //the library's link drag tooltip reads these
         chart.locale.labels.link_start = this._labels.get('ganttLinks.linkStart');
         chart.locale.labels.link_end = this._labels.get('ganttLinks.linkEnd');
+    };
+
+    private _onSurfaces = (surfaces: IGanttSurface[]): void => {
+        const onRenderTooltip = this._parameters.components?.onRenderTooltip;
+        surfaces.push({ key: 'linkTooltip', onRender: () => onRenderTooltip ? onRenderTooltip() : createElement(LinkTooltipRenderer) });
     };
 
     private _onChartReady = (chart: GanttStatic): void => {

@@ -1,4 +1,5 @@
 export * from './createGanttLinksModule';
 export * from './labels';
 export * from './labels.cs';
-export type { IGanttLinks, IGanttLinksParameters } from './GanttLinks';
+export * from './components';
+export type { IGanttLinks, IGanttLinksParameters, IGanttLinksComponents } from './GanttLinks';

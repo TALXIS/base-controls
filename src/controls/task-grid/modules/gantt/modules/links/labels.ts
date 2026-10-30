@@ -6,4 +6,11 @@ export const GANTT_LINKS_LABELS = defineLabels({
     'ganttLinks.linkStart': ' (start)',
     /** Follows a task's name while a link is drawn from or to its end. */
     'ganttLinks.linkEnd': ' (end)',
+    'ganttLinks.dependency': 'Dependency',
+    'ganttLinks.predecessor': 'Predecessor',
+    'ganttLinks.successor': 'Successor',
+    'ganttLinks.finishToStart': 'Finish to start',
+    'ganttLinks.startToStart': 'Start to start',
+    'ganttLinks.finishToFinish': 'Finish to finish',
+    'ganttLinks.startToFinish': 'Start to finish',
 });
