@@ -19,7 +19,7 @@ export const GanttMarker = (props: IGanttMarkerProps) => {
     const date = marker.date.toDate();
     const left = chart.posFromDate(date);
     const scaleHeight = chart.config.scale_height;
-    const color = marker.color ?? theme.palette.themePrimary;
+    const color = marker.color ?? theme.palette.red;
     const title = gantt.getTaskRuntime().getProvider().getFormatting().formatDateShort(date);
 
     return <GanttMarkerContext.Provider value={{ marker, left }}>

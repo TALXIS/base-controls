@@ -14,7 +14,7 @@ export interface IGanttMarker {
     id: string;
     text: string;
     date: Dayjs;
-    /** The line's and the chip's colour; the theme's primary colour by default. */
+    /** The line's and the chip's colour; the theme's red by default. */
     color?: string;
 }
 
