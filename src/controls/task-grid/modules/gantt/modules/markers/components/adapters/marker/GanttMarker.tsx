@@ -25,7 +25,7 @@ export const GanttMarker = (props: IGanttMarkerProps) => {
     return <GanttMarkerContext.Provider value={{ marker, left }}>
         <GanttMarkerUiColumn left={left} components={components.column}>
             <GanttMarkerUiTrack scaleHeight={scaleHeight} components={components.track}>
-                <GanttMarkerUiLine color={color} components={components.line} />
+                <GanttMarkerUiLine color={color} lineStyle={marker.lineStyle} components={components.line} />
             </GanttMarkerUiTrack>
             <GanttMarkerUiScale scaleHeight={scaleHeight} components={components.scale}>
                 <GanttMarkerUiChip text={marker.text} title={title} color={color} components={components.chip} />

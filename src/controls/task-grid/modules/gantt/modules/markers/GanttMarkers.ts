@@ -16,7 +16,11 @@ export interface IGanttMarker {
     date: Dayjs;
     /** The line's and the chip's colour; the theme's primary colour by default. */
     color?: string;
+    /** How the line is drawn; dotted by default. */
+    lineStyle?: GanttMarkerLineStyle;
 }
+
+export type GanttMarkerLineStyle = 'solid' | 'dotted';
 
 /** Where the markers of the consumer's own come from. */
 export interface IGanttMarkersStore {
@@ -39,6 +43,7 @@ export interface IGanttTodayMarkerParameters {
     /** Defaults to `true`. */
     enableMarker?: boolean;
     color?: string;
+    lineStyle?: GanttMarkerLineStyle;
 }
 
 /** The `project` module's start and end, marked on the timeline. */
@@ -46,6 +51,7 @@ export interface IGanttProjectMarkersParameters {
     /** Defaults to `true`. */
     enableMarkers?: boolean;
     color?: string;
+    lineStyle?: GanttMarkerLineStyle;
 }
 
 export interface IGanttMarkersParameters {
@@ -107,18 +113,18 @@ export class GanttMarkers implements IGanttMarkers {
     public getMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
         if (this._parameters.today?.enableMarker ?? true) {
-            markers.push({ id: 'today', text: this._labels.get('ganttMarkers.today'), date: dayjs(), color: this._parameters.today?.color ?? this._gantt.getTaskRuntime().services.get('datasetControl').getTheme().palette.red });
+            markers.push({ id: 'today', text: this._labels.get('ganttMarkers.today'), date: dayjs(), color: this._parameters.today?.color ?? this._gantt.getTaskRuntime().services.get('datasetControl').getTheme().palette.red, lineStyle: this._parameters.today?.lineStyle });
         }
         if (this._parameters.project?.enableMarkers ?? true) {
-            const color = this._parameters.project?.color;
+            const { color, lineStyle } = this._parameters.project ?? {};
             const project = this._gantt.getTaskRuntime().services.get('datasetControl').modules.find('project');
             const startDate = project?.getStartDate();
             const endDate = project?.getEndDate();
             if (startDate) {
-                markers.push({ id: 'projectStart', text: this._labels.get('ganttMarkers.projectStart'), date: startDate, color });
+                markers.push({ id: 'projectStart', text: this._labels.get('ganttMarkers.projectStart'), date: startDate, color, lineStyle });
             }
             if (endDate) {
-                markers.push({ id: 'projectEnd', text: this._labels.get('ganttMarkers.projectEnd'), date: endDate, color });
+                markers.push({ id: 'projectEnd', text: this._labels.get('ganttMarkers.projectEnd'), date: endDate, color, lineStyle });
             }
         }
         return [...markers, ...this._storeMarkers];
