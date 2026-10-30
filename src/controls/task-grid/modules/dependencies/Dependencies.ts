@@ -156,6 +156,7 @@ export class Dependencies implements IDependencies {
         return this._execute(async () => {
             const created = await this._store.onCreateDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
+            await this._taskRuntime.getProvider().synchronize();
             return created;
         }, 'dependencies.creatingDependency');
     }
@@ -169,6 +170,7 @@ export class Dependencies implements IDependencies {
             const updated = { ...existing, ...changes };
             await this._store.onUpdateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
+            await this._taskRuntime.getProvider().synchronize();
             return true;
         }, 'dependencies.savingDependency');
     }
@@ -181,6 +183,7 @@ export class Dependencies implements IDependencies {
         return this._execute(async () => {
             await this._store.onDeleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
+            await this._taskRuntime.getProvider().synchronize();
             return true;
         }, 'dependencies.deletingDependency');
     }

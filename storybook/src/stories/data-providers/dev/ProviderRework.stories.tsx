@@ -108,7 +108,7 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 |---|---|
 | \`FetchXmlDataProvider\` | The values the user sent and nothing else. \`SaveHandler\` writes back only the \`statecode\` it worked out from a saved \`statuscode\`, so the row's lock follows a status change. |
 | \`MemoryDataProvider\` | The values the user sent, which is all there is. |
-| \`TaskDataProvider\` | The values the user sent, plus whatever the store returns as \`updatedRecords\`. \`DataverseTaskStore\` returns none, and Skanska's store reads back only the schedule after a date changes. |
+| \`TaskDataProvider\` | The values the user sent, then whatever its store's \`onSynchronize\` reports changed since its last read. The provider asks after every write. \`DataverseTaskStore\` reads back every grid task whose \`modifiedon\` moved, the saved one included. |
 
 ### What every provider should do
 
@@ -120,7 +120,7 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 ### What would use it
 
 - **Locks:** a row closed through its status locks as soon as the save returns. The \`statecode\` write-back in \`SaveHandler\` then goes.
-- **The task grid:** \`DataverseTaskStore.onSaveTask\` returns the saved task as \`updatedRecords\`, and the store's schedule read-back becomes this general case.
+- **The task grid:** its synchronize after every write already covers this. It moves into the provider it builds on, and \`DataverseTaskStore.onSynchronize\` keeps only the other tasks a write changed.
 - **Every grid:** a column a plugin or business rule sets, and a calculated column, show their new value right after a save.
 
 ## 5. Ask for the definitions of named columns only
@@ -152,6 +152,46 @@ The callers that need only some:
 - **The dataset control:** completing a view asks only for the view's columns, and for its related columns by the link they come through.
 - **The task provider:** its own columns' definitions come from one call naming them.
 - **Edit columns** keeps asking for everything, as it lists them all.
+
+## 6. Tell the user before a save overwrites a newer change
+
+A record loads, the user edits it, and meanwhile someone else saves the same record: another user, a plugin, a flow. When the user then saves, they write over data they never saw. That shouldn't happen silently. The user should be told the record changed since they opened it, and decide.
+
+### Today
+
+| Provider | When the record changed on the server since it loaded |
+|---|---|
+| \`FetchXmlDataProvider\` | \`SaveHandler\` sends the dirty columns with \`Xrm.WebApi.updateRecord\`, which can't send an \`If-Match\` header. The last save wins. Columns only the other change touched keep their value, columns both touched get the user's value, and nobody is told. |
+| \`MemoryDataProvider\` | Nothing outside the provider changes its records. |
+| \`TaskDataProvider\` | Its store's save, which for \`DataverseTaskStore\` is the FetchXML provider's. The synchronize after the write then shows the overwritten result, without saying what it replaced. |
+
+### What every provider should do
+
+- **Remember the version each record was read at.** Every Dataverse row comes with an \`@odata.etag\` (its \`versionnumber\`). The provider keeps it per record, from the load and from every read-back (requirement 4).
+- **Save only if the record is still that version.**
+  - The update goes with \`If-Match: <etag>\`, so Dataverse answers \`412 Precondition Failed\` when the row changed since.
+  - \`Xrm.WebApi\` can't send that header, so the FetchXML provider calls the Web API itself, as \`PATCH /api/data/v9.2/<entity set>(<id>)\`.
+- **Only the user's columns count.**
+  - On a \`412\`, the provider reads the record again and compares the columns the user changed with the values it loaded them with.
+  - If none of them changed on the server, it isn't a conflict: the provider saves again with the new etag, and the user sees nothing.
+- **A conflict is a result of its own, not a generic error.** The save result says the record is stale, and for each conflicting column carries:
+  - the value the user loaded;
+  - the value the server has now;
+  - the value the user is saving.
+- **The user decides:**
+  - **Overwrite:** save again without the condition.
+  - **Take theirs:** drop the user's edits to those columns and show the server's values.
+
+  Until then the edits stay unsaved, as after any failed save.
+- **A record read back after the user's own save gets the new etag,** so the user's next save doesn't conflict with their last one.
+
+### What would use it
+
+- **Every grid with autosave:** the record save indicator shows a conflict apart from an error. Its callout lists the columns with both values and offers *Overwrite* and *Take theirs*.
+- **The task grid:**
+  - Its synchronize refreshes the etags of the tasks it reads back.
+  - Editing a task the server just rescheduled asks the user, instead of quietly undoing the reschedule.
+- **Forms:** a form saving through the provider asks the same way.
 `
 
 const meta = {

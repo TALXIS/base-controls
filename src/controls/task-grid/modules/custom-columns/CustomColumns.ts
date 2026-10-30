@@ -1,8 +1,8 @@
-import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/components/adapters/edit-columns";
 import { ErrorHelper, type LabelsOf } from "@utils";
-import type { ITaskDataProvider, ITaskSaveResult } from "../../provider";
+import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import { TaskColumnValues } from "../column-values";
 import { CUSTOM_COLUMNS_LABELS } from "./labels";
@@ -13,7 +13,7 @@ export interface ICustomColumnsStore {
     onLoadColumns(): Promise<IColumn[]>;
     /** The custom columns' values of these tasks, by task id and column name. */
     onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<ITaskSaveResult>;
+    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
     /** @returns The new column's name, or `null` when the user cancelled. */
     onCreateColumn(): Promise<string | null>;
     /** @returns The column's name, or `null` when the user cancelled. */

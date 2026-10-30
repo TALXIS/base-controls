@@ -2,7 +2,7 @@ import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedC
 import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskSaveResult, ITaskCreateParams, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParams, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParams, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
@@ -30,6 +30,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _requiredColumns: IColumn[] = [];
     private _hoursPerDay?: number;
     private _pendingTasks = new Map<string, Promise<void>>();
+    private _synchronization?: Promise<void>;
+    private _queuedSynchronization?: Promise<void>;
     private _loadWaiters: TaskLoadWaiter[] = [];
     //the grid reads this on every refresh, so it stays the same array until the tree changes
     private _visibleRecords: IRecord[] = [];
@@ -176,7 +178,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
         await this.whenTaskCreated(record.getRecordId());
-        const results: ITaskSaveResult[] = [];
+        const results: IRecordSaveOperationResult[] = [];
         let hasUnhandledField = false;
         for (const field of record.getFields().filter(field => field.isDirty())) {
             const column = field.getColumn();
@@ -191,8 +193,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (hasUnhandledField || results.length === 0) {
             results.push(await this._store.onSaveTask(record));
         }
-        //before returning: the save then marks the values it sent saved, which must still be the dirty ones
-        this._applyChanges({ updatedRecords: results.flatMap(result => result.updatedRecords ?? []) });
+        if (results.some(result => result.success)) {
+            this._scheduleSynchronization();
+        }
         return {
             recordId: record.getRecordId(),
             success: results.every(result => result.success),
@@ -232,7 +235,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             return null;
         }
         const records = this._addTasks(result.records, resolvedParentId, position);
-        this._applyChanges(result);
+        this._scheduleSynchronization();
         return records;
     }
 
@@ -261,7 +264,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const keptIds = new Set<string>();
         const deletedTaskIds: string[] = [];
         const errors: IFailedRecord[] = [];
-        const updatedRecords: IRawRecord[] = [];
         for (const level of this._getLevelsDeepestFirst(this.getDeletion(taskIds).deletableTaskIds)) {
             const levelIds = level.filter(taskId => !structure.getChildren(taskId).some(child => keptIds.has(child.getRecordId())));
             level.filter(taskId => !levelIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
@@ -273,7 +275,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 break;
             }
             deletedTaskIds.push(...result.deletedTaskIds);
-            updatedRecords.push(...result.updatedRecords ?? []);
             levelIds.filter(taskId => !result.deletedTaskIds.includes(taskId)).forEach(taskId => keptIds.add(taskId));
             if (!result.success) {
                 errors.push(...result.errors);
@@ -288,8 +289,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             this._rebuildTree();
             this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedIds.has(id)));
             this.taskEvents.dispatchEvent('onTasksDeleted', deletedTaskIds);
+            this._scheduleSynchronization();
         }
-        this._applyChanges({ updatedRecords }, new Set(deletedTaskIds));
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
@@ -309,7 +310,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         await Promise.all(taskIds.map(taskId => this.whenTaskCreated(taskId)));
         const result = await this._store.onOpenTasks(taskIds);
         if (result) {
-            this._applyChanges(result);
+            //listeners read what the editor saved from the tasks' data
+            await this.synchronize();
             this.taskEvents.dispatchEvent('onEditorClosed', taskIds);
         }
         return result;
@@ -317,6 +319,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public async openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void> {
         await this._store.onOpenRelatedRecord(reference, columnName);
+    }
+
+    public synchronize(): Promise<void> {
+        if (!this._store.onSynchronize) {
+            return Promise.resolve();
+        }
+        this._queuedSynchronization ??= this._runSynchronization(this._synchronization);
+        return this._queuedSynchronization;
     }
 
     public updateTaskData(rawRecords: IRawRecord[]): void {
@@ -426,12 +436,32 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         edits.forEach(([columnName, value]) => record.setValue(columnName, value));
     }
 
-    private _applyChanges(changes?: ITaskChanges, skippedTaskIds?: Set<string>): void {
-        const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
-        const updatedRecords = (changes?.updatedRecords ?? []).filter(rawRecord => !skippedTaskIds?.has(rawRecord[primaryIdAttribute]));
-        if (updatedRecords.length > 0) {
-            this.updateTaskData(updatedRecords);
+    private _applyChanges(changes?: ITaskChanges): void {
+        if (changes && changes.updatedRecords.length > 0) {
+            this.updateTaskData(changes.updatedRecords);
         }
+    }
+
+    //writes share the queued read until it starts
+    private async _runSynchronization(previous?: Promise<void>): Promise<void> {
+        await previous?.catch(() => undefined);
+        //a macrotask lets a save mark its values saved before the merge
+        await new Promise(resolve => setTimeout(resolve));
+        const run = this._queuedSynchronization;
+        this._queuedSynchronization = undefined;
+        this._synchronization = run;
+        try {
+            this._applyChanges(await this._store.onSynchronize?.());
+        }
+        finally {
+            if (this._synchronization === run) {
+                this._synchronization = undefined;
+            }
+        }
+    }
+
+    private _scheduleSynchronization(): void {
+        this.synchronize().catch(() => undefined);
     }
 
     private _isRelatedEntity(options?: IAvailableColumnOptions): boolean {
@@ -467,7 +497,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         }
         //no longer pending before the merge redraws the row
         this._pendingTasks.delete(params.taskId);
-        this._applyChanges({ ...result, updatedRecords: [result.record, ...result.updatedRecords ?? []] });
+        this._applyChanges({ updatedRecords: [result.record] });
+        this._scheduleSynchronization();
     }
 
     private async _removePendingTask(taskId: string): Promise<void> {

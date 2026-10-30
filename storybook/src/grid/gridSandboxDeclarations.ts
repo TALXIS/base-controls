@@ -4231,7 +4231,6 @@ interface ITemplateTasksCreateParams extends Omit<ITaskCreateParams, 'data'> {
 interface ITasksCreateResult {
     /** Every task created, subtasks included. */
     records: IRawRecord[];
-    updatedRecords?: IRawRecord[];
 }
 
 /** Where templates are kept, and what creates tasks from them. */

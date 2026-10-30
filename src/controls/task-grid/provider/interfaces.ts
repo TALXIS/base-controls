@@ -45,35 +45,32 @@ export interface IFailedRecord {
     error: any;
 }
 
-/** Records the backend changed along with an operation, such as dependent tasks it rescheduled. */
+/** The tasks the backend changed since the store last read them, such as ones it rescheduled. */
 export interface ITaskChanges {
     /** Raw data by the primary id, merged into the loaded tasks; the user's unsaved edits stay. */
-    updatedRecords?: IRawRecord[];
+    updatedRecords: IRawRecord[];
 }
 
-/** The task a create made, with what else the backend changed. */
-export interface ITaskCreateResult extends ITaskChanges {
+/** The task a create made. */
+export interface ITaskCreateResult {
     record: IRawRecord;
 }
 
-/** The tasks a backend created at once, with what else it changed. */
-export interface ITasksCreateResult extends ITaskChanges {
+/** The tasks a backend created at once. */
+export interface ITasksCreateResult {
     /** Every task created, subtasks included. */
     records: IRawRecord[];
 }
 
-/** How a save went, with what else the backend changed. */
-export type ITaskSaveResult = IRecordSaveOperationResult & ITaskChanges;
-
 /** Which tasks a delete removed, and which it could not. */
-export type IDeleteTasksResult = ITaskChanges & (
+export type IDeleteTasksResult =
     | { success: true; deletedTaskIds: string[] }
-    | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] });
+    | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
 
-/** How opening the tasks went, with the records it changed, and which could not be opened. */
-export type IOpenTasksResult = ITaskChanges & (
+/** How opening the tasks went, and which could not be opened. */
+export type IOpenTasksResult =
     | { success: true }
-    | { success: false; errors: IFailedRecord[] });
+    | { success: false; errors: IFailedRecord[] };
 
 /** Where among its parent's children a new task goes. */
 export type TaskCreatePosition = 'first' | 'last';
@@ -156,11 +153,13 @@ export interface ITaskStore {
      */
     onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
     /** Saves what changed on the task, its parent and rank after a move included. */
-    onSaveTask(task: IRecord): Promise<ITaskSaveResult>;
+    onSaveTask(task: IRecord): Promise<IRecordSaveOperationResult>;
     /** Opens the tasks in an editor outside the grid, such as a form; `null` when nothing changed. */
     onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Opens the record a task's lookup points to. */
     onOpenRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
+    /** What the backend changed since the store last read its tasks; the provider asks after every write. */
+    onSynchronize?(): Promise<ITaskChanges>;
 }
 
 /** What the task provider raises once an operation is done. */
@@ -198,7 +197,7 @@ export interface ITaskColumnHandler {
     isHandledColumn(columnName: string): boolean;
     /** The handled columns' values of these tasks, by task id and column name; left out by a handler that writes them itself. */
     onLoadValues?(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<ITaskSaveResult>;
+    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
 }
 
 /** Matches tasks against filters and quick find for columns whose values are kept apart from the tasks. */
@@ -254,6 +253,8 @@ export interface ITaskDataProvider extends IDataProvider {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
     updateTaskData(rawRecords: IRawRecord[]): void;
+    /** Applies what the store reports the backend changed; calls close together share one read. */
+    synchronize(): Promise<void>;
     /** Adds to the available columns, which complete the columns of every view. */
     registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */

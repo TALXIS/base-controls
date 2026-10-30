@@ -1,6 +1,6 @@
-import { FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { FetchXmlBuilder, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../runtime";
 import { TASK_GRID_LABELS } from "../../labels";
@@ -47,6 +47,7 @@ const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { valu
 //the values land inside FetchXML attributes
 const LIQUID = new Liquid({ outputEscape: 'escape' });
 const MAX_IDS_PER_REQUEST = 800;
+const MODIFIED_ON_COLUMN_NAME = 'modifiedon';
 
 /** Tasks in Dataverse, read through FetchXML and opened in their forms. */
 export class DataverseTaskStore implements ITaskStore {
@@ -58,6 +59,8 @@ export class DataverseTaskStore implements ITaskStore {
     protected _entitySetName!: string;
     protected _primaryIdAttribute!: string;
     protected _projectLookup?: { columnName: string; reference: ComponentFramework.EntityReference };
+    //the newest modifiedon the store has read, in server time
+    protected _synchronizedOn?: number;
 
     constructor(parameters: IDataverseTaskStoreParameters) {
         this._parameters = parameters;
@@ -68,6 +71,7 @@ export class DataverseTaskStore implements ITaskStore {
     }
 
     public async onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult> {
+        const loadStartedOn = Date.now();
         this._fetchXmlProvider.setColumns(provider.getColumns());
         this._fetchXmlProvider.setLinking(provider.getLinking());
         await this._fetchXmlProvider.refresh();
@@ -77,6 +81,7 @@ export class DataverseTaskStore implements ITaskStore {
         this._primaryIdAttribute = metadata.PrimaryIdAttribute;
         const [projectLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(this._fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
         this._projectLookup = projectLookup;
+        this._synchronizedOn = this._getLatestModifiedOn(webApiRawRecords) ?? loadStartedOn;
         const webApiRecords = new Map(webApiRawRecords.map(record => [record[this._primaryIdAttribute], record]));
         //the FetchXML values win
         const rawData = this._fetchXmlProvider.getRawData().map(record => ({ ...webApiRecords.get(record[this._primaryIdAttribute]), ...record }));
@@ -109,6 +114,25 @@ export class DataverseTaskStore implements ITaskStore {
         return this._fetchXmlProvider.onRecordSave(record);
     }
 
+    public async onSynchronize(): Promise<ITaskChanges> {
+        if (this._synchronizedOn === undefined) {
+            return { updatedRecords: [] };
+        }
+        const fetch = FetchXmlBuilder.fetch.fromXml(this._renderFetchXml());
+        fetch.entity.attributes = [this._primaryIdAttribute, MODIFIED_ON_COLUMN_NAME].map(name => new FetchXmlBuilder.attribute(name));
+        //modifiedon's whole seconds can return tasks already read
+        fetch.entity.addFilter(new FetchXmlBuilder.filter('and', [
+            new FetchXmlBuilder.condition(MODIFIED_ON_COLUMN_NAME, 'ge', [new FetchXmlBuilder.value(new Date(this._synchronizedOn).toISOString())]),
+        ]));
+        const { entities } = await this._getPcfContext().webAPI.retrieveMultipleRecords(this._entityName, `?fetchXml=${encodeURIComponent(fetch.toXml())}`);
+        if (entities.length === 0) {
+            return { updatedRecords: [] };
+        }
+        const updatedRecords = await this._getRawRecords(entities.map(entity => entity[this._primaryIdAttribute]));
+        this._synchronizedOn = Math.max(this._synchronizedOn, this._getLatestModifiedOn(updatedRecords) ?? this._synchronizedOn);
+        return { updatedRecords };
+    }
+
     public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
         await this._navigate('open', { pageInput: { pageType: 'entityrecord', entityName: reference.etn!, entityId: reference.id.guid }, navigationOptions: SIDE_DIALOG });
     }
@@ -127,7 +151,12 @@ export class DataverseTaskStore implements ITaskStore {
                 navigationOptions: { target: 2, position: 2 },
             });
         }
-        return { success: true, updatedRecords: await this._getRawRecords(taskIds) };
+        return { success: true };
+    }
+
+    protected _getLatestModifiedOn(rawRecords: IRawRecord[]): number | undefined {
+        const times = rawRecords.map(record => Date.parse(record[MODIFIED_ON_COLUMN_NAME])).filter(time => !isNaN(time));
+        return times.length > 0 ? Math.max(...times) : undefined;
     }
 
     protected _getPcfContext(): IPcfContext {
