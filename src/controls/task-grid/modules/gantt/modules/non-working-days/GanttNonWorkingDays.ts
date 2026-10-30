@@ -8,7 +8,7 @@ import type { ITaskGridSetting } from "../../../../dataset-control/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline/GanttTimeline";
-import type { GanttDurationHook } from "../../schedule/GanttSchedule";
+import type { GanttDurationHook, GanttSnapHook, IGanttSpan } from "../../schedule/GanttSchedule";
 import { GANTT_NON_WORKING_DAYS_LABELS } from "./labels";
 import { setScaleIgnores } from "./scaleIgnores";
 import { GANTT_NON_WORKING_DAY_CLASS } from "./classNames";
@@ -18,6 +18,11 @@ import { NonWorkingDayScaleTooltip } from "./components/adapters/scale-tooltip";
 import type { INonWorkingDayTooltipComponents } from "./components/ui/non-working-day-tooltip";
 
 const SHOW_NON_WORKING_DAYS_STATE_KEY = 'showNonWorkingDays';
+//a year of non-working days in a row is a calendar to give up on
+const MAX_DAYS_SEARCHED = 366;
+
+//the end is exclusive, so the last day worked is the one just before it
+const getLastDay = (span: IGanttSpan): Date => new Date(+span.end - 1);
 //a Saturday, so the weekly rule lands on every Saturday and Sunday
 const FIRST_WEEKEND = dayjs('1970-01-03');
 
@@ -52,6 +57,8 @@ export interface IGanttNonWorkingDaysParameters<TData = { [key: string]: unknown
     enableWeekends?: boolean;
     /** Whether non-working days are on the scale until the user hides them. Defaults to `true`. */
     isVisibleByDefault?: boolean;
+    /** Whether a dragged or drawn task may start or end on a non-working day; if not, it snaps to a working one. Defaults to `false`. */
+    enableDropOnNonWorkingDays?: boolean;
     onCreateStore?: (taskRuntime: ITaskRuntime) => IGanttNonWorkingDaysStore<TData>;
     components?: IGanttNonWorkingDaysComponents;
 }
@@ -101,6 +108,9 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
             gantt.surfaces.registerSurface(this._onSurfaces),
             gantt.services.get('schedule').registerDuration(this._countWorkingTime),
         );
+        if (!parameters.enableDropOnNonWorkingDays) {
+            this._unregisters.push(gantt.services.get('schedule').registerSnap(this._keepOffNonWorkingDays));
+        }
         gantt.services.whenAvailable('chart', this._onChartReady);
         gantt.services.whenAvailable('timeline', this._onTimelineReady);
         gantt.getTaskRuntime().services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
@@ -165,6 +175,46 @@ export class GanttNonWorkingDays<TData = { [key: string]: unknown }> implements 
     private _onChartReady = (chart: GanttStatic): void => {
         setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && this._isDayScaleVisible());
     };
+
+    //towards where the pointer went, so a bar dragged back does not jump forward
+    private _keepOffNonWorkingDays: GanttSnapHook = (result, { change, original }) => {
+        const span = result.span;
+        if (change === 'move') {
+            const direction = original && span.start < original.start ? -1 : 1;
+            result.span = this._shiftOffNonWorkingDays(span, direction);
+            return;
+        }
+        const start = change === 'end' ? span.start : this._toWorkingStart(span, change === 'start' && original && span.start < original.start ? -1 : 1);
+        const end = change === 'start' ? span.end : this._toWorkingEnd({ start, end: span.end }, change === 'end' && original && span.end > original.end ? 1 : -1);
+        //a span lying wholly on non-working days has no working edge to shrink to
+        result.span = this._shiftOffNonWorkingDays({ start, end }, 1);
+    };
+
+    //whole days at a time, until neither the first nor the last day is a non-working one
+    private _shiftOffNonWorkingDays(span: IGanttSpan, direction: 1 | -1): IGanttSpan {
+        let shifted = span;
+        for (let days = 0; days < MAX_DAYS_SEARCHED && (this.isNonWorkingDay(shifted.start) || this.isNonWorkingDay(getLastDay(shifted))); days++) {
+            shifted = { start: dayjs(shifted.start).add(direction, 'day').toDate(), end: dayjs(shifted.end).add(direction, 'day').toDate() };
+        }
+        return shifted;
+    }
+
+    private _toWorkingStart(span: IGanttSpan, direction: 1 | -1): Date {
+        let start = dayjs(span.start);
+        for (let days = 0; days < MAX_DAYS_SEARCHED && this.isNonWorkingDay(start.toDate()); days++) {
+            start = start.add(direction, 'day').startOf('day');
+        }
+        //never past the end the other edge keeps
+        return start.isBefore(span.end) ? start.toDate() : span.start;
+    }
+
+    private _toWorkingEnd(span: IGanttSpan, direction: 1 | -1): Date {
+        let end = dayjs(span.end);
+        for (let days = 0; days < MAX_DAYS_SEARCHED && this.isNonWorkingDay(getLastDay({ start: span.start, end: end.toDate() })); days++) {
+            end = end.add(direction, 'day').startOf('day');
+        }
+        return end.isAfter(span.start) ? end.toDate() : span.end;
+    }
 
     private _countWorkingTime: GanttDurationHook = (result, { span }) => {
         result.duration = this._calendar.getWorkingDuration(span.start, span.end) / 60_000;

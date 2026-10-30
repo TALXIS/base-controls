@@ -14,7 +14,7 @@ export interface IGanttTasks {
     getRecord(taskId: string): IRecord | undefined;
     /** Whether the task's record is locked against edits, as the grid beside it decides. */
     isLocked(taskId: string): boolean;
-    /** Whether the task's record has been saving for long enough to show it. */
+    /** Whether the task's record has been saving long enough to show it, until the sync after it ends. */
     isSaving(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
@@ -87,6 +87,7 @@ export class GanttTasks implements IGanttTasks {
     private _motion: GanttTaskMotion;
     private _savingTaskIds = new Set<string>();
     private _savingTimers = new Map<string, number>();
+    private _isDestroyed = false;
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
     private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
@@ -222,6 +223,7 @@ export class GanttTasks implements IGanttTasks {
         if (this._scheduledUpdateFrame !== undefined) {
             cancelAnimationFrame(this._scheduledUpdateFrame);
         }
+        this._isDestroyed = true;
         this._savingTimers.forEach(timer => window.clearTimeout(timer));
         this._unregisters.forEach(unregister => unregister());
     }
@@ -248,13 +250,27 @@ export class GanttTasks implements IGanttTasks {
         }, SAVING_DELAY));
     };
 
-    private _onAfterRecordSaved = (result: IRecordSaveOperationResult): void => {
+    private _onAfterRecordSaved = async (result: IRecordSaveOperationResult): Promise<void> => {
         const taskId = result.recordId;
         window.clearTimeout(this._savingTimers.get(taskId));
         this._savingTimers.delete(taskId);
-        if (this._savingTaskIds.delete(taskId)) {
-            this._refreshTask(taskId);
+        if (!this._savingTaskIds.has(taskId)) {
+            return;
         }
+        //the rescheduled dates arrive with the sync the save starts, which this joins
+        if (result.success) {
+            try {
+                await this._taskRuntime.getProvider().synchronize();
+            }
+            catch {
+                //the provider reports a failed sync where it runs it
+            }
+        }
+        if (this._isDestroyed) {
+            return;
+        }
+        this._savingTaskIds.delete(taskId);
+        this._refreshTask(taskId);
     };
 
     private _refreshTask(taskId: string): void {

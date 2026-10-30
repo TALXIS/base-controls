@@ -21,6 +21,16 @@ export interface IGanttDurationParameters {
 /** Changes a calculated duration in clock minutes, before a day counts as the runtime's hours per day. */
 export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
 
+export interface IGanttSnapParameters {
+    /** What the pointer changed: the whole bar, one of its edges, or a span drawn anew. */
+    change: 'move' | GanttSpanEdge | 'span';
+    /** The span before the change, for a move or an edge. */
+    original?: IGanttSpan;
+}
+
+/** Changes a span after it is snapped to the scale, such as to keep it off certain days. */
+export type GanttSnapHook = (result: { span: IGanttSpan }, parameters: IGanttSnapParameters) => void;
+
 /** The `schedule` service: how a task's record maps to the span its bar runs over, and back. */
 export interface IGanttSchedule {
     /** The display names of the start and end columns. */
@@ -41,10 +51,18 @@ export interface IGanttSchedule {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerDuration(hook: GanttDurationHook, priority?: number): () => void;
+    /**
+     * Registers a hook over each span a drag or a drawn task snaps to.
+     * @param priority Ascending: a higher number gets the later word.
+     */
+    registerSnap(hook: GanttSnapHook, priority?: number): () => void;
     /** The minutes a dragged edge snaps by at the current zoom. */
     getSnapMinutes(edge: GanttSpanEdge): number;
-    /** Snaps one edge, keeping at least one step to the other. */
-    snapEdge(span: IGanttSpan, edge: GanttSpanEdge): IGanttSpan;
+    /**
+     * Snaps one edge, keeping at least one step to the other.
+     * @param original The span before the edge was dragged.
+     */
+    snapEdge(span: IGanttSpan, edge: GanttSpanEdge, original?: IGanttSpan): IGanttSpan;
     /** Snaps the start and keeps the clock-time length of `lengthOf`. */
     snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan;
     /** Snaps both edges, keeping at least one step between them. */
@@ -80,6 +98,7 @@ export class GanttSchedule implements IGanttSchedule {
     private _gantt: IGantt;
     private _columnNames: { start: string; end: string; duration?: string };
     private _durationHooks = new HookRegistry<GanttDurationHook>();
+    private _snapHooks = new HookRegistry<GanttSnapHook>();
 
     constructor(gantt: IGantt) {
         const { startDate, endDate, duration } = gantt.getTaskRuntime().getFieldMapping();
@@ -140,11 +159,34 @@ export class GanttSchedule implements IGanttSchedule {
         return this._durationHooks.register(hook, priority);
     }
 
+    public registerSnap(hook: GanttSnapHook, priority?: number): () => void {
+        return this._snapHooks.register(hook, priority);
+    }
+
     public getSnapMinutes(edge: GanttSpanEdge): number {
         return this._getSnapStep(edge).minutes;
     }
 
-    public snapEdge(span: IGanttSpan, edge: GanttSpanEdge): IGanttSpan {
+    public snapEdge(span: IGanttSpan, edge: GanttSpanEdge, original?: IGanttSpan): IGanttSpan {
+        return this._applySnapHooks(this._snapEdgeToScale(span, edge), { change: edge, original });
+    }
+
+    public snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan {
+        const start = this._snapDate(span.start, 'start');
+        return this._applySnapHooks({ start, end: addClockDuration(start, getClockDuration(lengthOf.start, lengthOf.end)) }, { change: 'move', original: lengthOf });
+    }
+
+    public snapSpan(span: IGanttSpan): IGanttSpan {
+        return this._applySnapHooks(this._snapEdgeToScale({ start: this._snapDate(span.start, 'start'), end: span.end }, 'end'), { change: 'span' });
+    }
+
+    private _applySnapHooks(span: IGanttSpan, parameters: IGanttSnapParameters): IGanttSpan {
+        const result = { span };
+        this._snapHooks.apply(result, parameters);
+        return result.span;
+    }
+
+    private _snapEdgeToScale(span: IGanttSpan, edge: GanttSpanEdge): IGanttSpan {
         const { unit, step } = this._getSnapStep(edge);
         const date = this._gantt.services.get('chart').date;
         if (edge === 'start') {
@@ -153,15 +195,6 @@ export class GanttSchedule implements IGanttSchedule {
         }
         const earliestEnd = date.add(span.start, step, unit);
         return { start: span.start, end: new Date(Math.max(+this._snapDate(span.end, 'end'), +earliestEnd)) };
-    }
-
-    public snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan {
-        const start = this._snapDate(span.start, 'start');
-        return { start, end: addClockDuration(start, getClockDuration(lengthOf.start, lengthOf.end)) };
-    }
-
-    public snapSpan(span: IGanttSpan): IGanttSpan {
-        return this.snapEdge({ start: this._snapDate(span.start, 'start'), end: span.end }, 'end');
     }
 
     public getValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown } {

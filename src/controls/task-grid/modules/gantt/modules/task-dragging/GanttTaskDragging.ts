@@ -137,7 +137,7 @@ export class GanttTaskDragging implements IGanttTaskDragging {
         }
         const schedule = this._gantt.services.get('schedule');
         const edge: GanttSpanEdge = drag.left ? 'start' : 'end';
-        const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original) : schedule.snapEdge(span, edge);
+        const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original) : schedule.snapEdge(span, edge, original);
         task.start_date = snapped.start;
         task.end_date = snapped.end;
     }
