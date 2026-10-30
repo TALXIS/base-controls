@@ -242,11 +242,22 @@ export class DataverseTaskStore implements ITaskStore {
                 const referencedEntitySetName = (await this._getPcfContext().utils.getEntityMetadata(reference.etn!, [])).EntitySetName;
                 payload[`${await this._getNavigationPropertyName(reference.etn!, columnName)}@odata.bind`] = `/${referencedEntitySetName}(${reference.id.guid})`;
             }
+            else if (value instanceof Date) {
+                payload[columnName] = this._toServerDate(columnName, value);
+            }
             else {
                 payload[columnName] = value;
             }
         }
         return payload;
+    }
+
+    //a date-only column takes a bare date, not a timestamp
+    protected _toServerDate(columnName: string, date: Date): string {
+        const provider = this._taskRuntime.getProvider();
+        const column = provider.getColumnsMap()[columnName];
+        const parser = provider.getFormatting().parsing.date;
+        return parser.toServerValue({ date, behavior: parser.getBehavior(column?.metadata), dateOnly: column?.dataType === 'DateAndTime.DateOnly' });
     }
 
     //a lookup arrives bare or as the array a lookup column holds

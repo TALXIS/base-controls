@@ -192,6 +192,34 @@ A record loads, the user edits it, and meanwhile someone else saves the same rec
   - Its synchronize refreshes the etags of the tasks it reads back.
   - Editing a task the server just rescheduled asks the user, instead of quietly undoing the reschedule.
 - **Forms:** a form saving through the provider asks the same way.
+
+## 7. Create a new record through the provider
+
+A provider can make a new record: \`newRecord()\` marks it new, and saving it creates it instead of updating it. That save goes through the same conversion as any edit, so dates, lookups and option sets reach the Web API in its own shape. Code that creates records should use it rather than call the Web API with its own conversion.
+
+### Today
+
+- **\`FetchXmlDataProvider\` refuses most new records before sending them.**
+  - A save first validates the record's fields, and on a new record that covers every column the provider knows, not only the ones that were set.
+  - So columns Dataverse fills in itself on create, such as \`statecode\` and \`ownerid\`, fail as required (*value is required*). So does any required column the creator leaves to the server, such as a task's name.
+- **What works around it:** \`DataverseTaskStore.onCreateTask\` creates through \`Xrm.WebApi.createRecord\` with its own payload.
+  - It has its own lookup binds through the navigation properties.
+  - It has its own date conversion: a date-only column must get a bare date, or the Web API rejects the create.
+  - Both repeat what the provider's \`SaveHandler\` already does for edits.
+
+### What every provider should do
+
+- **Columns the server fills on create are never required on a new record:** \`statecode\`, \`statuscode\`, \`ownerid\` and the other owner columns, and \`createdon\`. A value set for one is still sent.
+- **Only the columns set are validated.** The creator decides what a new record starts with. A required column left empty is the server's to refuse, and its message comes back in the save result.
+- **The save result carries the server's message** when a create fails, the same way it does for an update.
+- **The record keeps the ID it was given,** so a row shown before the create finished, such as the task grid's pending row, is the same record afterwards.
+
+### What would use it
+
+- **The task grid's Dataverse store:**
+  - It creates through \`newRecord\` and \`save\` on its FetchXML provider, after defining any column the new task needs but the view doesn't show, such as the project lookup.
+  - Its \`_toWebApiPayload\`, \`_toServerDate\` and \`_getNavigationPropertyName\` go.
+- **Templates and other modules** that create records get the same conversion for free.
 `
 
 const meta = {
