@@ -7,6 +7,7 @@ import type { ITaskRuntime } from "../../../../runtime";
 import { TASK_GRID_PRIORITY } from "../../../../priorities";
 import type { IGantt } from "../../interfaces";
 import { GridGanttScrollSync } from "./GridGanttScrollSync";
+import { GridGanttHoverSync } from "./GridGanttHoverSync";
 
 const GANTT_SIZE_STATE_KEY = 'ganttSize';
 
@@ -22,6 +23,7 @@ export class GridGanttSplitSync {
     private _state: IStateStore;
     private _grid?: IGrid;
     private _scrollSync?: GridGanttScrollSync;
+    private _hoverSync?: GridGanttHoverSync;
     private _unregisters: (() => void)[] = [];
 
     //registered as the grid is made, before AG Grid reads its options
@@ -72,12 +74,16 @@ export class GridGanttSplitSync {
         const gridScroller = this._grid?.services.find('gridApi') && this._grid.services.get('viewport').getScrollElement();
         if (gridScroller) {
             this._scrollSync = new GridGanttScrollSync(chart, gridScroller);
+            const gridRoot = gridScroller.closest<HTMLElement>('.ag-root-wrapper');
+            this._hoverSync = gridRoot ? new GridGanttHoverSync(chart, gridRoot) : undefined;
         }
     };
 
     private _destroyScrollSync = (): void => {
         this._scrollSync?.destroy();
         this._scrollSync = undefined;
+        this._hoverSync?.destroy();
+        this._hoverSync = undefined;
     };
 
     private _onAgGridInitialOptions = (result: IGridAgGridInitialOptions): void => {
