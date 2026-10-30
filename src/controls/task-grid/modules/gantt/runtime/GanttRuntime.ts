@@ -207,7 +207,10 @@ export class GanttRuntime implements IGantt {
         const limits = this.getProps().timelineLimits;
         const start = (limits?.start ?? dayjs().subtract(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
         const end = (limits?.end ?? dayjs().add(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
-        const tasks = this.services.get('schedule').getRange(Object.values(this._taskRuntime.getProvider().getRecordsMap()));
+        //the chart's tasks, the rows the grid draws: called on every zoom and scroll step
+        const chartTasks = this.services.find('tasks');
+        const records = chartTasks?.getTaskIds().map(taskId => chartTasks.getRecord(taskId)).filter((record): record is IRecord => !!record) ?? [];
+        const tasks = this.services.get('schedule').getRange(records);
         if (!tasks) {
             return { start, end };
         }
