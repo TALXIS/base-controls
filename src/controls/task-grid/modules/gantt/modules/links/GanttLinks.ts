@@ -67,6 +67,9 @@ export class GanttLinks implements IGanttLinks {
     private _configureChart = (chart: GanttStatic): void => {
         chart.config.show_links = true;
         chart.config.drag_links = this.isEditable();
+        //the library's link drag tooltip reads these
+        chart.locale.labels.link_start = this._labels.get('ganttLinks.linkStart');
+        chart.locale.labels.link_end = this._labels.get('ganttLinks.linkEnd');
     };
 
     private _onChartReady = (chart: GanttStatic): void => {
