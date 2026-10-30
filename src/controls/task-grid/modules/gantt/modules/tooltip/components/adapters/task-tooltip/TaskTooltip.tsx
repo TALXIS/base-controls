@@ -1,8 +1,9 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useGantt, useGanttService } from "../../../../../context";
 import type { IGanttDraggingEvents } from "../../../../../dragging/GanttDragging";
+import { isChartPointerBusy, useHoverIntent } from "../../../../../hover";
 import { TaskTooltipContext } from "./context";
 
 export interface ITaskTooltipRootProps {
@@ -21,7 +22,7 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     const dragging = useGanttService('dragging');
     const tasks = useGanttService('tasks');
     const schedule = gantt.services.get('schedule');
-    const [hovered, setHovered] = useState<IHoveredTask>();
+    const [hovered, setHovered] = useHoverIntent<IHoveredTask>();
     const draggedTaskIdRef = useRef<string>();
 
     useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDragStarted', (taskId: string) => draggedTaskIdRef.current = taskId);
@@ -36,13 +37,14 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
             return;
         }
         const onMouseMove = (event: MouseEvent) => {
+            const draggedTaskId = draggedTaskIdRef.current;
             //another gesture has the pointer
-            if (dragging.isDraggingDisabled()) {
+            if (dragging.isDraggingDisabled() || (!draggedTaskId && isChartPointerBusy(chart, event))) {
                 setHovered(undefined);
                 return;
             }
-            const taskId = draggedTaskIdRef.current ?? getBarTaskId(event, chart.config.task_attribute);
-            setHovered(taskId && chart.isTaskExists(taskId) ? { taskId, target: { x: event.clientX + 10, y: event.clientY + 12 } } : undefined);
+            const taskId = draggedTaskId ?? getBarTaskId(event, chart.config.task_attribute);
+            setHovered(taskId && chart.isTaskExists(taskId) ? { taskId, target: { x: event.clientX + 10, y: event.clientY + 12 } } : undefined, !!draggedTaskId);
         };
         const onMouseLeave = () => {
             if (!draggedTaskIdRef.current) {

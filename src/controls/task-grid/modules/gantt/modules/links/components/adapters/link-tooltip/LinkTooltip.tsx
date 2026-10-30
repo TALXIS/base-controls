@@ -1,9 +1,10 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import type { ITaskDependency } from "../../../../../../dependencies";
 import { useGantt, useGanttService } from "../../../../../context";
 import type { IGanttDraggingEvents } from "../../../../../dragging/GanttDragging";
+import { isChartPointerBusy, useHoverIntent } from "../../../../../hover";
 import { LinkTooltipContext } from "./context";
 
 export interface ILinkTooltipRootProps {
@@ -21,7 +22,7 @@ export const LinkTooltipRoot = (props: ILinkTooltipRootProps) => {
     const chart = useGanttService('chart');
     const dragging = useGanttService('dragging');
     const tasks = useGanttService('tasks');
-    const [hovered, setHovered] = useState<IHoveredLink>();
+    const [hovered, setHovered] = useHoverIntent<IHoveredLink>();
 
     useEventEmitter<IGanttDraggingEvents>(dragging?.events, 'onDragStarted', () => setHovered(undefined));
 
@@ -32,7 +33,7 @@ export const LinkTooltipRoot = (props: ILinkTooltipRootProps) => {
         const onMouseMove = (event: MouseEvent) => {
             const linkId = (event.target as HTMLElement | null)?.closest(`.gantt_task_link[${chart.config.link_attribute}]`)?.getAttribute(chart.config.link_attribute);
             const dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
-            const dependency = linkId && !dragging.isDraggingDisabled() && !chart.getState().drag_mode ? dependencies?.getDependencies().find(item => item.id === linkId) : undefined;
+            const dependency = linkId && !dragging.isDraggingDisabled() && !chart.getState().drag_mode && !isChartPointerBusy(chart, event) ? dependencies?.getDependencies().find(item => item.id === linkId) : undefined;
             setHovered(dependency ? { dependency, target: { x: event.clientX + 10, y: event.clientY + 12 } } : undefined);
         };
         const onMouseLeave = () => setHovered(undefined);

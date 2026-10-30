@@ -7,7 +7,7 @@ import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { LinkTooltipRenderer } from "./components";
 import { GANTT_LINKS_LABELS } from "./labels";
-import { getGanttLinksStyles } from "./styles";
+import { GANTT_LINK_DRAG_POINTER_VARIABLES, GANTT_LINK_DRAG_TYPE_CLASS, GANTT_LINK_DROP_ATTRIBUTE, getGanttLinksStyles } from "./styles";
 
 export interface IGanttLinksParameters {
     components?: IGanttLinksComponents;
@@ -34,6 +34,18 @@ const LINK_TYPES: Record<TaskDependencyType, string> = {
     startToFinish: '3',
 };
 
+interface ILinkDrop {
+    targetId: string;
+    isToStart: boolean;
+}
+
+//between the pointer and the tooltip of a link being drawn
+const GANTT_LINK_DRAG_OFFSET = 14;
+
+const getDependencyType = (isFromStart: boolean, isToStart: boolean): TaskDependencyType => {
+    return isFromStart ? (isToStart ? 'startToStart' : 'startToFinish') : (isToStart ? 'finishToStart' : 'finishToFinish');
+};
+
 const isSameLink = (left: Link | undefined, right: Link | undefined): boolean => {
     return !!left && !!right && String(left.source) === String(right.source) && String(left.target) === String(right.target) && String(left.type) === String(right.type);
 };
@@ -44,6 +56,8 @@ export class GanttLinks implements IGanttLinks {
     private _dependencies?: IDependencies;
     private _labels: LabelsOf<typeof GANTT_LINKS_LABELS>;
     private _isSyncing = false;
+    //the end of the task under the pointer that a link being drawn would attach to
+    private _linkDrop?: ILinkDrop;
     private _unregisters: (() => void)[] = [];
 
     constructor(gantt: IGantt, parameters: IGanttLinksParameters) {
@@ -80,10 +94,26 @@ export class GanttLinks implements IGanttLinks {
     private _configureChart = (chart: GanttStatic): void => {
         chart.config.show_links = true;
         chart.config.drag_links = this.isEditable();
-        //the library's link drag tooltip reads these
-        chart.locale.labels.link_start = this._labels.get('ganttLinks.linkStart');
-        chart.locale.labels.link_end = this._labels.get('ganttLinks.linkEnd');
+        chart.templates.drag_link = sourceId => this._getDragLinkHtml(chart, String(sourceId));
+        chart.templates.drag_link_class = sourceId => this._getDragLinkClass(chart, String(sourceId));
     };
+
+    //what is being linked, while the pointer draws the link
+    private _getDragLinkHtml(chart: GanttStatic, sourceId: string): string {
+        const describe = (taskId: string, isStart: boolean) => `<b>${escapeHtml(chart.getTask(taskId).text)}</b>${escapeHtml(this._labels.get(isStart ? 'ganttLinks.linkStart' : 'ganttLinks.linkEnd'))}`;
+        const isFromStart = !!chart.getState().link_from_start;
+        const drop = this._linkDrop;
+        if (!drop || !chart.isTaskExists(drop.targetId)) {
+            return describe(sourceId, isFromStart);
+        }
+        const type = getDependencyType(isFromStart, drop.isToStart);
+        return `<div class="${GANTT_LINK_DRAG_TYPE_CLASS}">${escapeHtml(this._labels.get(`ganttLinks.${type}`))}</div>${describe(sourceId, isFromStart)} → ${describe(drop.targetId, drop.isToStart)}`;
+    }
+
+    private _getDragLinkClass(chart: GanttStatic, sourceId: string): string {
+        const drop = this._linkDrop;
+        return drop && !this._isLinkAllowed(chart, sourceId, drop) ? 'gantt_link_tooltip gantt_link_deny' : 'gantt_link_tooltip';
+    }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
         const onRenderTooltip = this._parameters.components?.onRenderTooltip;
@@ -95,8 +125,67 @@ export class GanttLinks implements IGanttLinks {
         const isTaskVisible = chart.isTaskVisible.bind(chart);
         chart.isTaskVisible = (taskId: string | number) => isTaskVisible(taskId) || (chart.isTaskExists(taskId) && chart.getGlobalTaskIndex(taskId) >= 0);
         chart.attachEvent('onBeforeLinkAdd', this._onBeforeLinkAdd);
+        const document = chart.$root.ownerDocument;
+        //captured, so the drop is known before the library redraws its tooltip for the same move
+        document.addEventListener('mousemove', this._onPointerMove, { capture: true, passive: true });
+        this._unregisters.push(() => document.removeEventListener('mousemove', this._onPointerMove, { capture: true }));
         chart.attachEvent('onLinkDblClick', this._onLinkDblClick);
     };
+
+    private _onPointerMove = (event: MouseEvent): void => {
+        const chart = this._gantt.services.find('chart');
+        const sourceId = chart?.getState().link_source_id;
+        if (!chart || !sourceId) {
+            this._linkDrop = undefined;
+            return;
+        }
+        const document = event.currentTarget as Document;
+        const drop = this._getLinkDrop(chart, event, String(sourceId));
+        const tooltip = document.querySelector('.gantt_drag_marker .gantt_link_tooltip');
+        if (drop?.targetId !== this._linkDrop?.targetId || drop?.isToStart !== this._linkDrop?.isToStart) {
+            this._linkDrop = drop;
+            if (tooltip) {
+                tooltip.innerHTML = this._getDragLinkHtml(chart, String(sourceId));
+                tooltip.className = this._getDragLinkClass(chart, String(sourceId));
+            }
+        }
+        //kept inside the page, which the library does only for where it thinks the tooltip is
+        const width = tooltip?.getBoundingClientRect().width ?? 0;
+        const right = document.documentElement.clientWidth - GANTT_LINK_DRAG_OFFSET;
+        document.documentElement.style.setProperty(GANTT_LINK_DRAG_POINTER_VARIABLES.x, `${Math.max(0, Math.min(event.clientX + GANTT_LINK_DRAG_OFFSET, right - width))}px`);
+        document.documentElement.style.setProperty(GANTT_LINK_DRAG_POINTER_VARIABLES.y, `${event.clientY + GANTT_LINK_DRAG_OFFSET + 4}px`);
+        //after the library redraws the bars this move changes
+        requestAnimationFrame(() => this._markLinkDrop(chart));
+    };
+
+    //anywhere on a task lands, on the end nearer the pointer unless it is on one of the task's handles
+    private _getLinkDrop(chart: GanttStatic, event: MouseEvent, sourceId: string): ILinkDrop | undefined {
+        const targetId = chart.locate(event);
+        const bar = targetId !== null && targetId !== undefined ? chart.getTaskNode(targetId) : null;
+        if (!bar || String(targetId) === sourceId) {
+            return undefined;
+        }
+        const handle = (event.target as HTMLElement | null)?.closest('.gantt_link_control');
+        const rect = bar.getBoundingClientRect();
+        return { targetId: String(targetId), isToStart: handle ? handle.classList.contains('task_start_date') : event.clientX < rect.left + rect.width / 2 };
+    }
+
+    private _markLinkDrop(chart: GanttStatic): void {
+        const document = chart.$root.ownerDocument;
+        document.querySelectorAll(`[${GANTT_LINK_DROP_ATTRIBUTE}]`).forEach(element => element.removeAttribute(GANTT_LINK_DROP_ATTRIBUTE));
+        const drop = this._linkDrop;
+        const sourceId = chart.getState().link_source_id;
+        const bar = drop && sourceId ? chart.getTaskNode(drop.targetId) : null;
+        if (drop && bar && sourceId) {
+            const isAllowed = this._isLinkAllowed(chart, String(sourceId), drop);
+            bar.setAttribute(GANTT_LINK_DROP_ATTRIBUTE, `${drop.isToStart ? 'start' : 'end'}${isAllowed ? '' : '-denied'}`);
+        }
+    }
+
+    private _isLinkAllowed(chart: GanttStatic, sourceId: string, drop: ILinkDrop): boolean {
+        const type = getDependencyType(!!chart.getState().link_from_start, drop.isToStart);
+        return chart.isLinkAllowed({ source: sourceId, target: drop.targetId, type: LINK_TYPES[type] });
+    }
 
     //drawn from the dependencies every time, so the chart never holds a link they do not
     private _syncLinks = (): void => {
@@ -131,7 +220,11 @@ export class GanttLinks implements IGanttLinks {
         if (this._isSyncing) {
             return true;
         }
-        const type = (Object.keys(LINK_TYPES) as TaskDependencyType[]).find(key => LINK_TYPES[key] === String(link.type)) ?? 'finishToStart';
+        const drawnType = (Object.keys(LINK_TYPES) as TaskDependencyType[]).find(key => LINK_TYPES[key] === String(link.type)) ?? 'finishToStart';
+        //the library lands anything off a handle on the start; the drop knows the end the pointer was nearer
+        const drop = this._linkDrop;
+        const type = drop?.targetId === String(link.target) ? getDependencyType(drawnType.startsWith('start'), drop.isToStart) : drawnType;
+        this._linkDrop = undefined;
         runQuietly(async () => {
             await this._dependencies?.createDependency({ predecessorTaskId: String(link.source), successorTaskId: String(link.target), type });
         });
@@ -153,6 +246,8 @@ export class GanttLinks implements IGanttLinks {
         }
     }
 }
+
+const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`);
 
 declare module "../../interfaces" {
     interface IGanttModuleMap {
