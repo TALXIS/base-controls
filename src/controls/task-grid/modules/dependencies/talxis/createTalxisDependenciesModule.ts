@@ -4,7 +4,6 @@ import { createDataverseDependenciesModule, IDataverseDependenciesSchema } from 
 
 const SCHEMA: IDataverseDependenciesSchema = {
     entityName: 'talxis_taskdependency',
-    primaryIdAttribute: 'talxis_taskdependencyid',
     predecessorAttribute: 'talxis_predecessortaskid',
     successorAttribute: 'talxis_successortaskid',
     typeAttribute: 'talxis_dependencytypecode',

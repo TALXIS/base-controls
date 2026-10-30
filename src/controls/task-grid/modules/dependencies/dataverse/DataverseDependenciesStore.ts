@@ -6,7 +6,6 @@ import type { IDependencies, ITaskDependenciesStore, ITaskDependency, ITaskDepen
 /** A Dataverse table of dependencies: two task lookups and an option set of the type. */
 export interface IDataverseDependenciesSchema {
     entityName: string;
-    primaryIdAttribute: string;
     /** Lookup to the task that comes first. */
     predecessorAttribute: string;
     successorAttribute: string;
@@ -52,11 +51,12 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         for (let index = 0; index < taskIds.length; index += MAX_IDS_PER_REQUEST) {
             batches.push(taskIds.slice(index, index + MAX_IDS_PER_REQUEST));
         }
-        const rows = (await Promise.all(batches.map(batch => this._retrieve(batch)))).flat();
+        const primaryIdAttribute = await this._getPrimaryIdAttribute();
+        const rows = (await Promise.all(batches.map(batch => this._retrieve(batch, primaryIdAttribute)))).flat();
         //a dependency whose ends fall in different batches comes back twice
         const dependencies = new Map<string, ITaskDependency>();
         for (const row of rows) {
-            const dependency = this._toDependency(row);
+            const dependency = this._toDependency(row, primaryIdAttribute);
             if (dependency) {
                 dependencies.set(dependency.id, dependency);
             }
@@ -76,18 +76,26 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         throw new Error('Not implemented.');
     }
 
-    private async _retrieve(taskIds: string[]): Promise<ComponentFramework.WebApi.Entity[]> {
-        const { entityName, primaryIdAttribute, predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
+    private async _getPrimaryIdAttribute(): Promise<string> {
+        const metadata: any = await this._getPcfContext().utils.getEntityMetadata(this._parameters.entityName);
+        return metadata.PrimaryIdAttribute;
+    }
+
+    private _getPcfContext(): IPcfContext {
+        return this._parameters.taskRuntime.services.get('pcfContext');
+    }
+
+    private async _retrieve(taskIds: string[], primaryIdAttribute: string): Promise<ComponentFramework.WebApi.Entity[]> {
+        const { entityName, predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
         const ids = taskIds.map(id => `'${id}'`).join(',');
         const filter = `Microsoft.Dynamics.CRM.In(PropertyName='${predecessorAttribute}',PropertyValues=[${ids}]) or Microsoft.Dynamics.CRM.In(PropertyName='${successorAttribute}',PropertyValues=[${ids}])`;
         const select = [primaryIdAttribute, `_${predecessorAttribute}_value`, `_${successorAttribute}_value`, typeAttribute].join(',');
-        const pcfContext: IPcfContext = this._parameters.taskRuntime.services.get('pcfContext');
-        const { entities } = await pcfContext.webAPI.retrieveMultipleRecords(entityName, `?$select=${select}&$filter=${filter}`);
+        const { entities } = await this._getPcfContext().webAPI.retrieveMultipleRecords(entityName, `?$select=${select}&$filter=${filter}`);
         return entities;
     }
 
-    private _toDependency(row: ComponentFramework.WebApi.Entity): ITaskDependency | null {
-        const { primaryIdAttribute, predecessorAttribute, successorAttribute, typeAttribute, dependencyTypeCodes } = this._parameters;
+    private _toDependency(row: ComponentFramework.WebApi.Entity, primaryIdAttribute: string): ITaskDependency | null {
+        const { predecessorAttribute, successorAttribute, typeAttribute, dependencyTypeCodes } = this._parameters;
         const predecessorTaskId: string | null = row[`_${predecessorAttribute}_value`];
         const successorTaskId: string | null = row[`_${successorAttribute}_value`];
         if (!predecessorTaskId || !successorTaskId) {
