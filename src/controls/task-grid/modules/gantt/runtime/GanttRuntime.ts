@@ -1,4 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
+import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
@@ -13,13 +14,15 @@ import { GANTT_LABELS } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
-import { GanttSchedule } from "../schedule/GanttSchedule";
+import { GanttSchedule, IGanttSpan } from "../schedule/GanttSchedule";
 import { GanttTimeline } from "../timeline/GanttTimeline";
 import { GanttZooming } from "../zooming/GanttZooming";
 import { GanttDragging } from "../dragging/GanttDragging";
 import { GanttTasks } from "../tasks/GanttTasks";
 import type { ITaskGanttProps } from "../TaskGantt";
 import type { IGanttLibrary } from "../modules/library";
+
+const DEFAULT_TIMELINE_LIMIT_YEARS = 25;
 
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
@@ -136,7 +139,7 @@ export class GanttRuntime implements IGantt {
         const gantt = this._createChart(grid);
         this._gantt = gantt;
         const schedule = this.services.get('schedule');
-        const timeline = new GanttTimeline(gantt);
+        const timeline = new GanttTimeline({ gantt, onGetLimits: () => this._getTimelineLimits() });
         const dragging = new GanttDragging(gantt);
         const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ gantt, gridApi, runtime: this, schedule, onParsed: this._onTasksParsed });
@@ -198,6 +201,17 @@ export class GanttRuntime implements IGantt {
 
     private get _datasetControl(): IDatasetControl<ITaskViewData> {
         return this._taskRuntime.services.get('datasetControl');
+    }
+
+    private _getTimelineLimits(): IGanttSpan {
+        const limits = this.getProps().timelineLimits;
+        const start = (limits?.start ?? dayjs().subtract(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
+        const end = (limits?.end ?? dayjs().add(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
+        const tasks = this.services.get('schedule').getRange(Object.values(this._taskRuntime.getProvider().getRecordsMap()));
+        if (!tasks) {
+            return { start, end };
+        }
+        return { start: tasks.start < start ? tasks.start : start, end: tasks.end > end ? tasks.end : end };
     }
 
     private _onTasksParsed = (isFirstLoad: boolean): void => {

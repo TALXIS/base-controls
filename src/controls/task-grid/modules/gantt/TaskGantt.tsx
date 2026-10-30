@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@fluentui/react";
+import type { Dayjs } from "dayjs";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { useLocalization } from "@utils";
@@ -18,6 +19,8 @@ export interface ITaskGanttProps {
     modules?: IGanttModule[];
     /** Where the zoom is kept per view; read once, at mount. */
     stateKey?: string;
+    /** How far the timeline scrolls; today ± 25 years by default, widened to fit the tasks. */
+    timelineLimits?: { start?: Dayjs; end?: Dayjs };
     components?: ITaskGanttComponents;
 }
 

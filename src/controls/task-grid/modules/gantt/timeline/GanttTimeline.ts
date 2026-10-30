@@ -1,5 +1,6 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import { HookRegistry } from "@utils";
+import type { IGanttSpan } from "../schedule/GanttSchedule";
 
 /** The rendered date range: wide enough to scroll freely, re-centred only near its edges. */
 export interface IGanttTimeline {
@@ -91,8 +92,15 @@ const MILLISECONDS_PER_UNIT: Record<string, number> = {
     week: 7 * MILLISECONDS_PER_DAY,
 };
 
+export interface IGanttTimelineParameters {
+    gantt: GanttStatic;
+    /** The dates the range never goes past. */
+    onGetLimits: () => IGanttSpan;
+}
+
 export class GanttTimeline implements IGanttTimeline {
     private _gantt: GanttStatic;
+    private _onGetLimits: () => IGanttSpan;
     private _rangeBeforeFitting?: { startDate: Date; endDate: Date };
     private _scrollBlockDepth = 0;
     private _scrollBlockedUntil = 0;
@@ -103,8 +111,10 @@ export class GanttTimeline implements IGanttTimeline {
     private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
     private _scaleCellClassHooks = new HookRegistry<GanttCellClassHook>();
 
-    constructor(gantt: GanttStatic) {
+    constructor(parameters: IGanttTimelineParameters) {
+        const { gantt } = parameters;
         this._gantt = gantt;
+        this._onGetLimits = parameters.onGetLimits;
         this._gantt.templates.timeline_cell_class = (_task: Task, date: Date) => this._getClass(this._cellClassHooks, date);
         this._gantt.templates.scale_cell_class = (date: Date) => this._getClass(this._scaleCellClassHooks, date);
         //scales without a css of their own take scale_cell_class
@@ -130,14 +140,16 @@ export class GanttTimeline implements IGanttTimeline {
         const duration = Math.min(RANGE_COLUMNS * columnDuration, MAX_RANGE_DURATION);
         const margin = Math.min(EDGE_MARGIN_VIEWPORTS * this._getViewportWidth() * millisecondsPerPixel, duration / 4);
         const { start_date: startDate, end_date: endDate } = this._gantt.config;
+        const limits = this._onGetLimits();
+        //a side clamped to its limit has all the room it can get
         const isUsable = !!startDate && !!endDate
-            && +date - +startDate >= margin && +endDate - +date >= margin
+            && (+date - +startDate >= margin || +startDate <= +this._snapRangeStart(limits.start))
+            && (+endDate - +date >= margin || +endDate >= +limits.end)
             && (+endDate - +startDate) / columnDuration <= MAX_RANGE_COLUMNS;
         if (isUsable) {
             return false;
         }
-        this._gantt.config.start_date = this._snapRangeStart(new Date(+date - duration / 2));
-        this._gantt.config.end_date = new Date(+date + duration / 2);
+        this._setRange(new Date(+date - duration / 2), new Date(+date + duration / 2));
         this._rangeBeforeFitting = undefined;
         return true;
     }
@@ -199,12 +211,7 @@ export class GanttTimeline implements IGanttTimeline {
             startDate: this._gantt.config.start_date ?? renderedStart,
             endDate: this._gantt.config.end_date ?? renderedEnd,
         };
-        if (growStart) {
-            this._gantt.config.start_date = this._snapRangeStart(new Date(+startDate - headroom));
-        }
-        if (growEnd) {
-            this._gantt.config.end_date = new Date(+endDate + headroom);
-        }
+        this._setRange(growStart ? new Date(+startDate - headroom) : undefined, growEnd ? new Date(+endDate + headroom) : undefined);
         this._renderKeepingViewport();
     }
 
@@ -214,7 +221,7 @@ export class GanttTimeline implements IGanttTimeline {
         if (!renderedEnd || +date + headroom <= +renderedEnd) {
             return;
         }
-        this._gantt.config.end_date = new Date(+date + headroom * 2);
+        this._setRange(undefined, new Date(+date + headroom * 2));
         this._rangeBeforeFitting = undefined;
         this._renderKeepingViewport();
     }
@@ -225,7 +232,7 @@ export class GanttTimeline implements IGanttTimeline {
         if (!renderedStart || +date - headroom >= +renderedStart) {
             return 0;
         }
-        this._gantt.config.start_date = this._snapRangeStart(new Date(+date - headroom * 2));
+        this._setRange(new Date(+date - headroom * 2), undefined);
         this._rangeBeforeFitting = undefined;
         return this._renderKeepingViewport();
     }
@@ -235,8 +242,7 @@ export class GanttTimeline implements IGanttTimeline {
         if (!previousRange) {
             return;
         }
-        this._gantt.config.start_date = this._snapRangeStart(previousRange.startDate);
-        this._gantt.config.end_date = previousRange.endDate;
+        this._setRange(previousRange.startDate, previousRange.endDate);
         this._rangeBeforeFitting = undefined;
         this._renderKeepingViewport();
     }
@@ -281,6 +287,16 @@ export class GanttTimeline implements IGanttTimeline {
                 }
             });
             internals.$data.tasksStore._skipTaskRecalculation = false;
+        }
+    }
+
+    private _setRange(startDate: Date | undefined, endDate: Date | undefined): void {
+        const limits = this._onGetLimits();
+        if (startDate) {
+            this._gantt.config.start_date = this._snapRangeStart(new Date(Math.max(+startDate, +limits.start)));
+        }
+        if (endDate) {
+            this._gantt.config.end_date = new Date(Math.min(+endDate, +limits.end));
         }
     }
 
