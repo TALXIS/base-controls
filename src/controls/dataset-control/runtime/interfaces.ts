@@ -1,3 +1,4 @@
+import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LocalizationService } from "@utils";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
@@ -128,6 +129,8 @@ export interface IDatasetControl<TData = unknown> {
     retry(): Promise<void>;
     /** The strings of one set, as the control's `LocalizationProvider` gives them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
+    /** The Fluent theme the control is drawn in. */
+    getTheme(): ITheme;
 }
 
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {

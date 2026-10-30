@@ -14,7 +14,7 @@ export interface IGanttMarker {
     id: string;
     text: string;
     date: Dayjs;
-    /** The line's and the chip's colour; the theme's red by default. */
+    /** The line's and the chip's colour; the theme's primary colour by default. */
     color?: string;
 }
 
@@ -107,7 +107,7 @@ export class GanttMarkers implements IGanttMarkers {
     public getMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
         if (this._parameters.today?.enableMarker ?? true) {
-            markers.push({ id: 'today', text: this._labels.get('ganttMarkers.today'), date: dayjs(), color: this._parameters.today?.color });
+            markers.push({ id: 'today', text: this._labels.get('ganttMarkers.today'), date: dayjs(), color: this._parameters.today?.color ?? this._gantt.getTaskRuntime().services.get('datasetControl').getTheme().palette.red });
         }
         if (this._parameters.project?.enableMarkers ?? true) {
             const color = this._parameters.project?.color;

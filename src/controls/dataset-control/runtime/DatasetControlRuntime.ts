@@ -1,3 +1,4 @@
+import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
@@ -42,6 +43,7 @@ export interface IDatasetControlRuntimeParameters {
     /** The control's state, which outlives the runtime. */
     state: DatasetControlState;
     localization: LocalizationService;
+    theme: ITheme;
     /** Mounts the control anew on the view the state is on. */
     onRemount: () => void;
 }
@@ -53,6 +55,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _loadedModules: { module: IDatasetControlModule; instance: unknown }[] = [];
     private _surfaces = new DatasetControlSurfaces();
     private _onGetProps: () => IDatasetControlProps;
+    private _theme: ITheme;
     private _state: DatasetControlState;
     private _onRemount: () => void;
     private _provider?: IDataProvider;
@@ -68,6 +71,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
         this._onGetProps = parameters.onGetProps;
+        this._theme = parameters.theme;
         this._state = parameters.state;
         this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
@@ -126,6 +130,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
         return this._services.get('localization').getLabels(set);
+    }
+
+    public getTheme(): ITheme {
+        return this._theme;
     }
 
     public getHeight(): string | undefined {

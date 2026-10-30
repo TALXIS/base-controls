@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo } from "react";
+import { useTheme } from "@fluentui/react";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { DataProviderContext, ErrorBoundary, useLocalization } from "@utils";
@@ -23,10 +24,12 @@ export interface IDatasetControlMountProps extends IDatasetControlProps {
 export const DatasetControlMount = (props: IDatasetControlMountProps) => {
     const propsRef = useLatest(props);
     const localization = useLocalization();
+    const theme = useTheme();
     const runtime = useMemo(() => new DatasetControlRuntime({
         onGetProps: () => propsRef.current,
         state: props.state,
         localization,
+        theme,
         onRemount: () => propsRef.current.onRemount(),
     }), []);
     const { rerender } = useRerender();

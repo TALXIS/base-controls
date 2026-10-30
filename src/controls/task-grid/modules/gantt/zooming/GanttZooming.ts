@@ -1,9 +1,10 @@
+import dayjs from "dayjs";
 import { EventEmitter, IEventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 import { HookRegistry, IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";
-import type { IGanttSchedule } from "../schedule/GanttSchedule";
+import type { IGanttSchedule, IGanttSpan } from "../schedule/GanttSchedule";
 import type { IGanttTimeline } from "../timeline/GanttTimeline";
 
 const ZOOM_STATE_KEY = 'zoom';
@@ -13,6 +14,8 @@ const MILLISECONDS_PER_DAY = 86_400_000;
 const WHEEL_ZOOM_SPEED = 0.0015;
 const WHEEL_LINE_HEIGHT = 16;
 const FIT_VIEWPORT_MARGIN = 0.1;
+//either side of today, when nothing else has dates to fit
+const FALLBACK_FIT_WEEKS = 4;
 const MIN_COLUMN_WIDTH = 60;
 const MAX_COLUMN_WIDTH = 160;
 //a level is left only past these, so a zoom held at a boundary does not flicker between two
@@ -141,9 +144,9 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public zoomToFit(): void {
-        const range = this._schedule.getRange(this._getZoomToFitRecords());
+        const range = this._getFitRange(this._getZoomToFitRecords());
         const viewportWidth = this._gantt.$task?.offsetWidth;
-        if (!range || !viewportWidth) {
+        if (!viewportWidth) {
             return;
         }
         const days = Math.max(1, (+range.end - +range.start) / MILLISECONDS_PER_DAY);
@@ -352,6 +355,22 @@ export class GanttZooming implements IGanttZooming {
         }
         return true;
     };
+
+    //a view whose tasks have no dates yet still needs a zoom to start from
+    private _getFitRange(records: IRecord[]): IGanttSpan {
+        const range = this._schedule.getRange(records);
+        if (range) {
+            return range;
+        }
+        const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
+        const projectStart = project?.getStartDate();
+        const projectEnd = project?.getEndDate();
+        if (projectStart && projectEnd?.isAfter(projectStart)) {
+            return { start: projectStart.toDate(), end: projectEnd.toDate() };
+        }
+        const today = dayjs().startOf('day');
+        return { start: today.subtract(FALLBACK_FIT_WEEKS, 'week').toDate(), end: today.add(FALLBACK_FIT_WEEKS, 'week').toDate() };
+    }
 
     private _getZoomToFitRecords(): IRecord[] {
         const provider = this._taskRuntime.getProvider();
