@@ -29,6 +29,8 @@ export interface IGanttSchedule {
     hasTimeOfDay(): boolean;
     /** Where the record's bar runs, or `undefined` while it has no valid dates. */
     getSpan(record: IRecord): IGanttSpan | undefined;
+    /** The record's start or end, or `undefined` while that column holds no valid date. */
+    getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined;
     /** From the earliest start to the latest end. */
     getRange(records: IRecord[]): IGanttSpan | undefined;
     /** How long the task takes in minutes: the mapped value, or the calculated one when no duration column is mapped. */
@@ -99,8 +101,8 @@ export class GanttSchedule implements IGanttSchedule {
     }
 
     public getSpan(record: IRecord): IGanttSpan | undefined {
-        const start = this._readDate(record, 'start');
-        const end = this._readDate(record, 'end');
+        const start = this.getDate(record, 'start');
+        const end = this.getDate(record, 'end');
         if (!start || !end || end < start) {
             return undefined;
         }
@@ -201,7 +203,7 @@ export class GanttSchedule implements IGanttSchedule {
     }
 
     //a date-only value is the local day it falls on, as the record saves it
-    private _readDate(record: IRecord, edge: GanttSpanEdge): Date | undefined {
+    public getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined {
         const value = record.getValue(this._columnNames[edge]);
         if (value == null || value === '') {
             return undefined;

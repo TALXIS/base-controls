@@ -42,6 +42,8 @@ export interface IGanttZooming {
     setPosition(position: number): void;
     /** Fits the selected tasks, or every task when none is selected. */
     zoomToFit(): void;
+    /** Zooms so the task's bar fills the timeline, or its one date's day when it has a single date. */
+    showTask(record: IRecord): void;
     /** Whether whole days are columns at the current zoom. */
     isDayScaleVisible(): boolean;
     /** How wide a day is drawn, in pixels. */
@@ -147,6 +149,19 @@ export class GanttZooming implements IGanttZooming {
         const days = Math.max(1, (+range.end - +range.start) / MILLISECONDS_PER_DAY);
         const centreX = this._getViewportCentreX();
         this._rememberAnchor(new Date((+range.start + +range.end) / 2), centreX);
+        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
+    }
+
+    public showTask(record: IRecord): void {
+        const viewportWidth = this._gantt.$task?.offsetWidth;
+        const date = this._schedule.getDate(record, 'start') ?? this._schedule.getDate(record, 'end');
+        const span = this._schedule.getSpan(record) ?? (date && { start: date, end: new Date(+date + MILLISECONDS_PER_DAY) });
+        if (!span || !viewportWidth) {
+            return;
+        }
+        const days = Math.max(1, (+span.end - +span.start) / MILLISECONDS_PER_DAY);
+        const centreX = this._getViewportCentreX();
+        this._rememberAnchor(new Date((+span.start + +span.end) / 2), centreX);
         this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
     }
 

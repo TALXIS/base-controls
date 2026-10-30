@@ -3,11 +3,12 @@ import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
 import type { IRibbonCommand } from "@controls/ribbon";
-import type { IGrid } from "@controls/grid";
+import type { GridCellCommandsHook, IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../../services";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime";
 import type { ITaskViewData } from "../../../provider";
+import { TASK_GRID_PRIORITY } from "../../../priorities";
 import { GANTT_LABELS } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
@@ -39,6 +40,7 @@ export class GanttRuntime implements IGantt {
     private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
     private _destroyables: { destroy(): void }[] = [];
     private _unregisterCommands?: () => void;
+    private _unregisterCellCommands?: () => void;
     private _gantt?: GanttStatic;
     private _zooming?: GanttZooming;
     private _isDestroyed = false;
@@ -99,6 +101,7 @@ export class GanttRuntime implements IGantt {
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
         this._unregisterCommands?.();
+        this._unregisterCellCommands?.();
         this._destroyables.forEach(destroyable => destroyable.destroy());
         for (const { module, instance } of this._loadedModules) {
             module.onDestroy?.(instance as never);
@@ -151,7 +154,19 @@ export class GanttRuntime implements IGantt {
         tasks.parse();
         this.events.dispatchEvent('onChartReady', gantt);
         this._datasetControl.parts.find('ribbon')?.reload();
+        this._unregisterCellCommands = grid.services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
+        gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
     }
+
+    //a task with either date has somewhere on the timeline to show
+    private _onCellCommands: GridCellCommandsHook = (result, { record, columnName }) => {
+        const schedule = this.services.get('schedule');
+        if (columnName !== this._taskRuntime.getFieldMapping().subject || !this._taskRuntime.getProvider().getRecordsMap()[record.getRecordId()] || (!schedule.getDate(record, 'start') && !schedule.getDate(record, 'end'))) {
+            return;
+        }
+        const label = this.getLabels(GANTT_LABELS).get('gantt.showTask');
+        result.items.push({ key: 'showOnTimeline', text: label, iconProps: { iconName: 'Timeline' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => this._zooming?.showTask(record) });
+    };
 
     //every feature starts off until a part or module turns it on
     private _createChart(grid: IGrid<ITaskGridServiceMap>): GanttStatic {
