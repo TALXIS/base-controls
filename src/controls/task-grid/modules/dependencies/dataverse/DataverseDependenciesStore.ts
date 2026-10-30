@@ -64,21 +64,58 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         return [...dependencies.values()];
     }
 
-    public async onCreateDependency(_dependency: ITaskDependencyCreate): Promise<ITaskDependency> {
-        throw new Error('Not implemented.');
+    public async onCreateDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency> {
+        const { id } = await this._getPcfContext().webAPI.createRecord(this._parameters.entityName, await this._toPayload(dependency));
+        return { ...dependency, id };
     }
 
-    public async onUpdateDependency(_dependency: ITaskDependency): Promise<void> {
-        throw new Error('Not implemented.');
+    public async onUpdateDependency(dependency: ITaskDependency): Promise<void> {
+        await this._getPcfContext().webAPI.updateRecord(this._parameters.entityName, dependency.id, await this._toPayload(dependency));
     }
 
-    public async onDeleteDependency(_dependencyId: string): Promise<void> {
-        throw new Error('Not implemented.');
+    public async onDeleteDependency(dependencyId: string): Promise<void> {
+        await this._getPcfContext().webAPI.deleteRecord(this._parameters.entityName, dependencyId);
     }
 
     private async _getPrimaryIdAttribute(): Promise<string> {
         const metadata: any = await this._getPcfContext().utils.getEntityMetadata(this._parameters.entityName);
         return metadata.PrimaryIdAttribute;
+    }
+
+    private async _toPayload(dependency: ITaskDependencyCreate): Promise<ComponentFramework.WebApi.Entity> {
+        const { predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
+        const taskEntityName = this._parameters.taskRuntime.getProvider().getEntityName();
+        const taskEntitySetName = (await this._getPcfContext().utils.getEntityMetadata(taskEntityName, [])).EntitySetName;
+        const navigationPropertyNames = await this._getNavigationPropertyNames(taskEntityName);
+        return {
+            [`${navigationPropertyNames.get(predecessorAttribute)}@odata.bind`]: `/${taskEntitySetName}(${dependency.predecessorTaskId})`,
+            [`${navigationPropertyNames.get(successorAttribute)}@odata.bind`]: `/${taskEntitySetName}(${dependency.successorTaskId})`,
+            [typeAttribute]: this._getTypeCode(dependency.type),
+        };
+    }
+
+    //a lookup is written through its navigation property, which the attribute's name does not give
+    private async _getNavigationPropertyNames(taskEntityName: string): Promise<Map<string, string>> {
+        const { entityName, predecessorAttribute, successorAttribute } = this._parameters;
+        const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);
+        const relationships: { ReferencedEntity: string; ReferencingAttribute: string; ReferencingEntityNavigationPropertyName: string }[] = metadata.ManyToOneRelationships.getAll();
+        const result = new Map<string, string>();
+        for (const attribute of [predecessorAttribute, successorAttribute]) {
+            const relationship = relationships.find(relationship => relationship.ReferencedEntity === taskEntityName && relationship.ReferencingAttribute === attribute);
+            if (!relationship) {
+                throw new Error(`No many-to-one relationship from ${entityName}.${attribute} to ${taskEntityName}.`);
+            }
+            result.set(attribute, relationship.ReferencingEntityNavigationPropertyName);
+        }
+        return result;
+    }
+
+    private _getTypeCode(type: TaskDependencyType): number {
+        const entry = Object.entries(this._parameters.dependencyTypeCodes).find(([, value]) => value === type);
+        if (!entry) {
+            throw new Error(`${type} is not in dependencyTypeCodes.`);
+        }
+        return Number(entry[0]);
     }
 
     private _getPcfContext(): IPcfContext {
