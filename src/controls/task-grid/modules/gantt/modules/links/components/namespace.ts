@@ -13,7 +13,7 @@ export interface ILinkTooltipParts {
     Renderer: typeof LinkTooltipRenderer;
     /** The callout next to the pointer. */
     Callout: typeof LinkTooltipCallout;
-    /** A title, with the dependency's type beside it. */
+    /** The dependency's type. */
     Header: typeof LinkTooltipHeader;
     /** Holds the rows. */
     FieldRows: typeof LinkTooltipFieldRows;

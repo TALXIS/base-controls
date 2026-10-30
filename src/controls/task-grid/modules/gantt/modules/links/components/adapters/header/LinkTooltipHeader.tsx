@@ -7,9 +7,9 @@ export interface ILinkTooltipHeaderProps {
     components?: Partial<ITaskTooltipUiHeaderComponents>;
 }
 
-/** A title, with the dependency's type beside it. */
+/** The dependency's type. */
 export const LinkTooltipHeader = (props: ILinkTooltipHeaderProps) => {
     const { dependency } = useLinkTooltip();
     const labels = useLabels(GANTT_LINKS_LABELS);
-    return <TaskTooltipUiHeader title={labels.get('ganttLinks.dependency')} status={{ text: labels.get(`ganttLinks.${dependency.type}`) }} components={props.components} />;
+    return <TaskTooltipUiHeader title={labels.get(`ganttLinks.${dependency.type}`)} components={props.components} />;
 };
