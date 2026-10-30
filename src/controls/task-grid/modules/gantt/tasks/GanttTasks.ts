@@ -7,6 +7,7 @@ import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
 import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS } from "../chart/classNames";
 import type { IGanttSchedule } from "../schedule/GanttSchedule";
+import { GanttTaskMotion } from "./GanttTaskMotion";
 
 /** The chart's tasks: exactly the rows the grid displays, in its order and at its row heights. */
 export interface IGanttTasks {
@@ -79,6 +80,7 @@ export class GanttTasks implements IGanttTasks {
     private _pendingUpdates = new Map<string, IRecord>();
     private _scheduledUpdateFrame?: number;
     private _unregisters: (() => void)[] = [];
+    private _motion: GanttTaskMotion;
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
     private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
@@ -90,6 +92,7 @@ export class GanttTasks implements IGanttTasks {
         this._taskRuntime = parameters.runtime.getTaskRuntime();
         this._schedule = parameters.schedule;
         this._onParsed = parameters.onParsed;
+        this._motion = new GanttTaskMotion(this._gantt);
         const provider = this._taskRuntime.getProvider();
         this._gantt.templates.task_class = (_start: Date, _end: Date, task: Task) => this.getTaskClass(task);
         this._gantt.templates.task_row_class = (_start: Date, _end: Date, task: Task) => this.getRowClass(task);
@@ -186,11 +189,13 @@ export class GanttTasks implements IGanttTasks {
             this._taskIndexes.set(String(task.id), branchIndex);
             tasks.push({ ...task, parent: parentId, open: true });
         }
+        const before = this._isFirstLoad ? new Map() : this._motion.capture(this._taskIds);
         this._taskIds = tasks.map(task => String(task.id));
         this._gantt.batchUpdate(() => {
             this._gantt.clearAll();
             this._gantt.parse({ data: tasks });
         });
+        this._motion.play(before);
         this._onParsed(this._isFirstLoad);
         this._isFirstLoad = false;
     }
@@ -236,6 +241,7 @@ export class GanttTasks implements IGanttTasks {
     }
 
     private _updateTasks(records: IRecord[]): void {
+        const before = this._motion.capture(records.map(record => record.getRecordId()));
         this._gantt.batchUpdate(() => {
             for (const record of records) {
                 const taskId = record.getRecordId();
@@ -247,6 +253,7 @@ export class GanttTasks implements IGanttTasks {
                 this._gantt.updateTask(taskId);
             }
         });
+        this._motion.play(before);
     }
 
     private _toTask(record: IRecord, node?: IRowNode<IRecord>): Task {
