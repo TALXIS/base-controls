@@ -14,12 +14,13 @@ export const getGanttSelectionStyles = (theme: ITheme): IStyle => ({
             pointerEvents: 'none',
         },
     },
-    //a locked bar folds the brightness into its own filter
+    //a filter keeps the bar's own colour and follows a summary bar's ends
     [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SELECTED_CLASS}`]: {
-        '--gantt-task-brightness': '1.2',
+        //chained unblurred shadows each side draw a 2px edge around the whole shape
+        '--gantt-task-selection-filter': ['brightness(0.92) saturate(1.4)', ...['2px 0', '-2px 0', '0 2px', '0 -2px'].map(offset => `drop-shadow(${offset} 0 ${theme.palette.themePrimary})`)].join(' '),
     },
     [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SELECTED_CLASS}:not(.${GANTT_TASK_LOCKED_CLASS})`]: {
-        filter: 'brightness(var(--gantt-task-brightness))',
+        filter: 'var(--gantt-task-selection-filter)',
     },
     [`.${GANTT_SELECTION_BOX_CLASS}`]: {
         border: `1px solid ${theme.palette.themePrimary}`,

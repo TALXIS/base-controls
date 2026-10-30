@@ -115,8 +115,8 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
             opacity: 0.5,
         },
         [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_LOCKED_CLASS}`]: {
-            //a selected bar sets the brightness
-            filter: 'saturate(0.45) brightness(var(--gantt-task-brightness, 1))',
+            //a selected bar adds its own filter
+            filter: 'saturate(0.45) var(--gantt-task-selection-filter, opacity(1))',
             '::after': {
                 content: '""',
                 position: 'absolute',
