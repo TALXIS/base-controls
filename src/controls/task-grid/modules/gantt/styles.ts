@@ -1,4 +1,4 @@
-import { IStyle, ITheme, mergeStyleSets } from "@fluentui/react";
+import { IStyle, ITheme, keyframes, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
@@ -7,9 +7,15 @@ import {
     GANTT_TASK_INACTIVE_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_LOCKED_CLASS,
+    GANTT_TASK_SAVING_CLASS,
     GANTT_TASK_STARTED_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
 } from "./chart/classNames";
+
+const SAVING_SWEEP = keyframes({
+    from: { backgroundPosition: '100% 0' },
+    to: { backgroundPosition: '-100% 0' },
+});
 
 const SUMMARY_CAP_WIDTH = 7;
 const SUMMARY_CAP_HEIGHT = 6;
@@ -124,6 +130,29 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
                 pointerEvents: 'none',
                 backgroundImage: 'repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px 6px)',
             },
+        },
+        //Fluent's shimmer, swept across the bar while its record saves
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS}::before`]: {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            zIndex: 2,
+            borderRadius: 'inherit',
+            pointerEvents: 'none',
+            backgroundImage: `linear-gradient(90deg, transparent 25%, color-mix(in srgb, ${theme.semanticColors.bodyBackground} 70%, transparent) 50%, transparent 75%)`,
+            backgroundSize: '200% 100%',
+            animation: `${SAVING_SWEEP} 1.2s linear infinite`,
+            '@media (prefers-reduced-motion: reduce)': {
+                animation: 'none',
+                backgroundImage: 'none',
+                background: `color-mix(in srgb, ${theme.semanticColors.bodyBackground} 40%, transparent)`,
+            },
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS}`]: {
+            cursor: 'progress',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .gantt_link_control, .${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .gantt_task_drag`]: {
+            display: 'none !important',
         },
     }, ...moduleStyles],
 });

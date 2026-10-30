@@ -1,6 +1,7 @@
 export const GANTT_DRAGGING_DISABLED_CLASS = 'gantt_dragging_disabled';
 export const GANTT_TASK_INACTIVE_CLASS = 'gantt_task_inactive';
 export const GANTT_TASK_LOCKED_CLASS = 'gantt_task_locked';
+export const GANTT_TASK_SAVING_CLASS = 'gantt_task_saving';
 export const GANTT_TASK_LINE_CLASS = 'gantt_task_line';
 export const GANTT_TASK_SUMMARY_CLASS = 'gantt_task_summary';
 export const GANTT_TASK_STARTED_CLASS = 'gantt_task_started';
