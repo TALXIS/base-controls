@@ -1,4 +1,4 @@
-import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
+import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IFormatting, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { StackRank } from "@utils/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
@@ -6,6 +6,8 @@ import { ITaskDataProviderInitializeParameters, ICreateTaskOptions, IDeleteTasks
 
 export interface ITaskDataProviderParameters {
     store: ITaskStore;
+    /** The formatting values are written and read with; the app user's when left out. */
+    formatting?: IFormatting;
 }
 
 const ACTIVE_STATE_CODE = 0;
@@ -41,7 +43,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public readonly taskEvents = new EventEmitter<ITaskDataProviderEvents>();
 
     constructor(parameters: ITaskDataProviderParameters) {
-        super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' } });
+        super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' }, formatting: parameters.formatting });
         this._store = parameters.store;
         this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
         this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);

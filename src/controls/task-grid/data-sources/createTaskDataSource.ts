@@ -13,5 +13,5 @@ export interface ITaskDataSourceParameters {
 /** Tasks kept by the store `onCreateStore` creates. */
 export const createTaskDataSource = (parameters: ITaskDataSourceParameters): ITaskDataProvider => {
     const { taskRuntime, onCreateStore, provider: Provider = TaskDataProvider } = parameters;
-    return new Provider({ store: onCreateStore(taskRuntime) });
+    return new Provider({ store: onCreateStore(taskRuntime), formatting: taskRuntime.services.get('pcfContext').formatting });
 };
