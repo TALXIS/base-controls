@@ -1,11 +1,11 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttLinks, IGanttLinksParameters } from "./GanttLinks";
+import { Links, ILinksParameters } from "./Links";
 
-export interface IGanttLinksModule extends IGanttModule<'links'> { }
+export interface ILinksModule extends IGanttModule<'links'> { }
 
-/** Draws the `dependencies` module's dependencies; does nothing without that module. */
-export const createGanttLinksModule = (parameters: IGanttLinksParameters = {}): IGanttLinksModule => ({
+/** Draws the `dependencies` module's dependencies, doing nothing without it. */
+export const createLinksModule = (parameters: ILinksParameters = {}): ILinksModule => ({
     name: 'links',
-    onLoad: gantt => new GanttLinks(gantt, parameters),
+    onLoad: gantt => new Links(gantt, parameters),
     onDestroy: links => links.destroy(),
 });

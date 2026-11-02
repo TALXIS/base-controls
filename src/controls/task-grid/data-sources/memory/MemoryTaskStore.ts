@@ -6,13 +6,13 @@ import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreatePar
 
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
-    /** Where the tasks are kept; share it with the memory modules that create tasks too. */
+    /** Where the tasks are kept, shared with the memory modules that create tasks. */
     database: MemoryTaskDatabase;
     /** Every column a view or Edit columns may use. */
     columns: IColumn[];
 }
 
-/** Tasks held in memory; editing one shows an alert. */
+/** Tasks held in memory, opened in an alert. */
 export class MemoryTaskStore implements ITaskStore {
     protected _parameters: IMemoryTaskStoreParameters;
 

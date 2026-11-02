@@ -1,2 +1,2 @@
-export * from './TaskTooltip';
+export * from './TaskTooltipRoot';
 export * from './context';

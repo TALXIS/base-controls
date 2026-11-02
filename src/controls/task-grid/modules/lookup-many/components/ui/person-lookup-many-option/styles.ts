@@ -6,4 +6,7 @@ export const getPersonLookupManyOptionStyles = () => mergeStyleSets({
         alignItems: 'center',
         gap: 8,
     },
+    persona: {
+        margin: 0,
+    },
 });

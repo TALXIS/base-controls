@@ -1,7 +1,7 @@
 import { IOptionTagComponents } from "@ui";
 
 /** The replaceable pieces of the tooltip's header. */
-export interface ITaskTooltipUiHeaderComponents {
+export interface ITooltipUiHeaderComponents {
     /** Holds the title and the status. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTitle: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
@@ -9,8 +9,8 @@ export interface ITaskTooltipUiHeaderComponents {
     status?: Partial<IOptionTagComponents>;
 }
 
-/** The defaults for {@link ITaskTooltipUiHeaderComponents}. */
-export const TaskTooltipUiHeaderComponents: ITaskTooltipUiHeaderComponents = {
+/** The defaults for {@link ITooltipUiHeaderComponents}. */
+export const TooltipUiHeaderComponents: ITooltipUiHeaderComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderTitle: props => <span {...props} />,
 };

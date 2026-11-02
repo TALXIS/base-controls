@@ -1,16 +1,16 @@
 import { ReactNode, useMemo } from "react";
-import { ITaskTooltipUiFieldRowsComponents, TaskTooltipUiFieldRowsComponents } from "./components";
-import { getTaskTooltipUiFieldRowsStyles } from "./styles";
+import { ITooltipUiFieldRowsComponents, TooltipUiFieldRowsComponents } from "./components";
+import { getTooltipUiFieldRowsStyles } from "./styles";
 
-export interface ITaskTooltipUiFieldRowsProps {
+export interface ITooltipUiFieldRowsProps {
     children?: ReactNode;
-    components?: Partial<ITaskTooltipUiFieldRowsComponents>;
+    components?: Partial<ITooltipUiFieldRowsComponents>;
 }
 
 /** The field rows, one under another. */
-export const TaskTooltipUiFieldRows = (props: ITaskTooltipUiFieldRowsProps) => {
-    const components = { ...TaskTooltipUiFieldRowsComponents, ...props.components };
-    const styles = useMemo(() => getTaskTooltipUiFieldRowsStyles(), []);
+export const TooltipUiFieldRows = (props: ITooltipUiFieldRowsProps) => {
+    const components = { ...TooltipUiFieldRowsComponents, ...props.components };
+    const styles = useMemo(() => getTooltipUiFieldRowsStyles(), []);
 
     return components.onRenderContainer({ className: styles.fieldRows, children: props.children });
 };

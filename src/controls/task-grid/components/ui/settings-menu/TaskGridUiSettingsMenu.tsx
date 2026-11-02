@@ -2,24 +2,24 @@ import { useMemo } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
 import { useSurfaceMenuProps } from "@ui";
 import { useCompact } from "@utils";
-import { ISettingsMenuComponents, SettingsMenuComponents } from "./components";
-import { getSettingsMenuStyles } from "./styles";
+import { ITaskGridUiSettingsMenuComponents, TaskGridUiSettingsMenuComponents } from "./components";
+import { getTaskGridUiSettingsMenuStyles } from "./styles";
 
-export interface ISettingsMenuProps {
-    /** The button's text; only its tooltip while the header is compact. */
+export interface ITaskGridUiSettingsMenuProps {
+    /** The button's text, only its tooltip while the header is compact. */
     text: string;
     /** The toggles. */
     items: IContextualMenuItem[];
     disabled?: boolean;
     /** Called as the menu opens. */
     onMenuOpen?: () => void;
-    components?: Partial<ISettingsMenuComponents>;
+    components?: Partial<ITaskGridUiSettingsMenuComponents>;
 }
 
 /** A button opening a menu of toggles. */
-export const SettingsMenu = (props: ISettingsMenuProps) => {
-    const components = { ...SettingsMenuComponents, ...props.components };
-    const styles = useMemo(() => getSettingsMenuStyles(), []);
+export const TaskGridUiSettingsMenu = (props: ITaskGridUiSettingsMenuProps) => {
+    const components = { ...TaskGridUiSettingsMenuComponents, ...props.components };
+    const styles = useMemo(() => getTaskGridUiSettingsMenuStyles(), []);
     const isCompact = useCompact();
     const menuProps = useSurfaceMenuProps({ items: props.items });
 

@@ -6,13 +6,13 @@ export interface IGanttOverlayEvents {
     onVisibilityChanged: (isVisible: boolean) => void;
 }
 
-/** A cover that blocks the Gantt while anything has it shown; the provider shows it while loading. */
+/** A cover that blocks the Gantt while any key, the provider's loading among them, holds it. */
 export interface IGanttOverlay {
     readonly events: IEventEmitter<IGanttOverlayEvents>;
     isVisible(): boolean;
     /** Keeps the cover up until `hide` is called with the same key. */
     show(key: string): void;
-    /** Releases the key; the cover stays while another key holds it. */
+    /** Releases the key, leaving the cover while another key holds it. */
     hide(key: string): void;
 }
 

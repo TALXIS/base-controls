@@ -8,4 +8,7 @@ export const CUSTOM_COLUMNS_LABELS_CS = translateLabels(CUSTOM_COLUMNS_LABELS, {
     'customColumns.confirmColumnDelete': 'Chcete odstranit tento sloupec a jeho hodnoty ve všech úkolech?',
     'customColumns.customColumnsFailed': 'Vlastní sloupec se nepodařilo změnit.',
     'customColumns.loadCustomColumnsFailed': 'Hodnoty vlastních sloupců se nepodařilo načíst.',
+    'customColumns.newColumnName': 'Vlastní sloupec {{ number }}',
+    'customColumns.yes': 'Ano',
+    'customColumns.no': 'Ne',
 });

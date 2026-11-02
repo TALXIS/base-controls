@@ -3,34 +3,34 @@ import { EventEmitter, IEventEmitter, IFormatting, IRecord } from "@talxis/clien
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
 import { HookRegistry, IStateStore } from "@utils";
 import type { ITaskRuntime } from "../../../runtime";
-import type { IGanttSavedZoom, IGanttZoom } from "../interfaces";
-import type { IGanttSchedule, IGanttSpan } from "../schedule/GanttSchedule";
-import type { IGanttTimeline } from "../timeline/GanttTimeline";
+import { DAYS_PER_UNIT, HOURS_PER_DAY, IGanttSchedule, IGanttSpan, MILLISECONDS_PER_DAY } from "../schedule";
+import type { IGanttTimeline } from "../timeline";
+import { WHEEL_LINE_HEIGHT } from "../chart";
 
 const ZOOM_STATE_KEY = 'zoom';
 const ANCHOR_DATE_STATE_KEY = 'anchorDate';
-const MILLISECONDS_PER_DAY = 86_400_000;
-//a wheel notch of 100 zooms by about 14%; a pinch sends many small deltas
+//a wheel notch of 100 zooms by about 14%
 const WHEEL_ZOOM_SPEED = 0.0015;
-const WHEEL_LINE_HEIGHT = 16;
 const FIT_VIEWPORT_MARGIN = 0.1;
-//either side of today, when nothing else has dates to fit
+//either side of today when nothing has dates to fit
 const FALLBACK_FIT_WEEKS = 4;
 const MIN_COLUMN_WIDTH = 60;
 const MAX_COLUMN_WIDTH = 160;
-//a level is left only past these, so a zoom held at a boundary does not flicker between two
+//hysteresis keeps a zoom held at a boundary from flickering between two levels
 const FINER_LEVEL_MARGIN = 1.15;
 const COARSER_LEVEL_MARGIN = 0.85;
 
-//averages for the units of varying length
-const UNIT_DAYS: Record<string, number> = {
-    hour: 1 / 24,
-    day: 1,
-    week: 7,
-    month: 30.4375,
-    quarter: 91.3125,
-    year: 365.25,
-};
+/** How far the chart is zoomed. */
+export interface IGanttZoom {
+    pixelsPerDay: number;
+}
+
+/** The zoom a user view saves, with the date it is centred on. */
+export interface IGanttSavedZoom {
+    zoom: IGanttZoom;
+    /** As an ISO string. */
+    anchorDate?: string;
+}
 
 export interface IGanttZoomingEvents {
     onZoomChanged: () => void;
@@ -41,16 +41,18 @@ export interface IGanttZooming {
     readonly events: IEventEmitter<IGanttZoomingEvents>;
     /** How far in the zoom is, from `0` at the widest view to `1` at the closest. */
     getPosition(): number;
-    /** Zooms around the middle of the viewport; out of range is clamped. */
+    /** Zooms around the middle of the viewport, clamped to the range. */
     setPosition(position: number): void;
     /** Fits the selected tasks, or every task when none is selected. */
     zoomToFit(): void;
-    /** Zooms so the task's bar fills the timeline, or its one date's day when it has a single date. */
+    /** Zooms so the task's bar, or the day of its only date, fills the timeline. */
     showTask(record: IRecord): void;
     /** Whether whole days are columns at the current zoom. */
     isDayScaleVisible(): boolean;
     /** How wide a day is drawn, in pixels. */
     getPixelsPerDay(): number;
+    /** Puts back the session's or the saved view's zoom, or fits the tasks. */
+    restore(): void;
     /**
      * Registers a hook over the label of each scale cell.
      * @param priority Ascending: a higher number gets the later word.
@@ -69,11 +71,11 @@ export interface IGanttScaleLabelParameters {
     row: number;
 }
 
-/** Changes the label of a scale cell, which starts as the built-in one. */
+/** Changes the label of a scale cell, starting from the built-in one. */
 export type GanttScaleLabelHook = (result: { label: string }, parameters: IGanttScaleLabelParameters) => void;
 
 export interface IGanttZoomingParameters {
-    gantt: GanttStatic;
+    chart: GanttStatic;
     taskRuntime: ITaskRuntime;
     schedule: IGanttSchedule;
     timeline: IGanttTimeline;
@@ -94,7 +96,7 @@ interface ILegacyZoom {
 
 export class GanttZooming implements IGanttZooming {
     public readonly events = new EventEmitter<IGanttZoomingEvents>();
-    private _gantt: GanttStatic;
+    private _chart: GanttStatic;
     private _taskRuntime: ITaskRuntime;
     private _schedule: IGanttSchedule;
     private _timeline: IGanttTimeline;
@@ -105,17 +107,17 @@ export class GanttZooming implements IGanttZooming {
     private _maxPixelsPerDay: number;
     private _pixelsPerDay = 0;
     private _levelIndex = -1;
-    //held through a run of zoom steps: re-reading it from pixels each step drifts
+    //held through a run of zoom steps since re-reading it from pixels drifts
     private _anchorDate?: Date;
     private _anchorX?: number;
     private _pending?: IPendingZoom;
     private _frame?: number;
     private _wheelTarget?: HTMLElement;
-    private _unsaveWithView?: () => void;
+    private _unwatchUserQueries: () => void;
     private _scaleLabelHooks = new HookRegistry<GanttScaleLabelHook>();
 
     constructor(parameters: IGanttZoomingParameters) {
-        this._gantt = parameters.gantt;
+        this._chart = parameters.chart;
         this._taskRuntime = parameters.taskRuntime;
         this._schedule = parameters.schedule;
         this._timeline = parameters.timeline;
@@ -125,11 +127,9 @@ export class GanttZooming implements IGanttZooming {
         this._levels = this._schedule.hasTimeOfDay() ? levels : levels.filter(level => this._getFinestScale(level).unit !== 'hour');
         this._minPixelsPerDay = MIN_COLUMN_WIDTH / this._getLevelDays(this._levels[0]);
         this._maxPixelsPerDay = MAX_COLUMN_WIDTH / this._getLevelDays(this._levels[this._levels.length - 1]);
-        this._gantt.attachEvent('onGanttReady', this._onGanttReady);
-        this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
-        this._taskRuntime.services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
-            this._unsaveWithView = userQueries.saveWithView('ganttZoom', this._getSavedZoom);
-        });
+        this._chart.attachEvent('onGanttReady', this._onGanttReady);
+        this._chart.attachEvent('onGanttScroll', this._onGanttScroll);
+        this._unwatchUserQueries = this._taskRuntime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('ganttZoom', this._getSavedZoom));
     }
 
     public getPosition(): number {
@@ -144,28 +144,15 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public zoomToFit(): void {
-        const range = this._getFitRange(this._getZoomToFitRecords());
-        const viewportWidth = this._gantt.$task?.offsetWidth;
-        if (!viewportWidth) {
-            return;
-        }
-        const days = Math.max(1, (+range.end - +range.start) / MILLISECONDS_PER_DAY);
-        const centreX = this._getViewportCentreX();
-        this._rememberAnchor(new Date((+range.start + +range.end) / 2), centreX);
-        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
+        this._fitSpan(this._getFitRange(this._getZoomToFitRecords()));
     }
 
     public showTask(record: IRecord): void {
-        const viewportWidth = this._gantt.$task?.offsetWidth;
         const date = this._schedule.getDate(record, 'start') ?? this._schedule.getDate(record, 'end');
         const span = this._schedule.getSpan(record) ?? (date && { start: date, end: new Date(+date + MILLISECONDS_PER_DAY) });
-        if (!span || !viewportWidth) {
-            return;
+        if (span) {
+            this._fitSpan(span);
         }
-        const days = Math.max(1, (+span.end - +span.start) / MILLISECONDS_PER_DAY);
-        const centreX = this._getViewportCentreX();
-        this._rememberAnchor(new Date((+span.start + +span.end) / 2), centreX);
-        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
     }
 
     public getPixelsPerDay(): number {
@@ -173,19 +160,18 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public isDayScaleVisible(): boolean {
-        const scales = this._gantt.config.scales ?? [];
+        const scales = this._chart.config.scales ?? [];
         if (scales.some(scale => scale.unit === 'day' && (scale.step ?? 1) === 1)) {
             return true;
         }
         const finest = scales[scales.length - 1];
-        return finest?.unit === 'hour' && 24 % (finest.step ?? 1) === 0;
+        return finest?.unit === 'hour' && HOURS_PER_DAY % (finest.step ?? 1) === 0;
     }
 
     public registerScaleLabel(hook: GanttScaleLabelHook, priority?: number): () => void {
         return this._scaleLabelHooks.register(hook, priority);
     }
 
-    /** Puts back the zoom the view was left at, or the one it was saved with, or fits the tasks. */
     public restore(): void {
         const saved = this._taskRuntime.getView()?.data?.ganttZoom;
         const pixelsPerDay = this._toPixelsPerDay(this._state.get<IGanttZoom>(ZOOM_STATE_KEY)) ?? this._toPixelsPerDay(saved?.zoom);
@@ -202,14 +188,25 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public destroy(): void {
-        this._unsaveWithView?.();
+        this._unwatchUserQueries();
         this._detachWheel();
         if (this._frame !== undefined) {
             cancelAnimationFrame(this._frame);
         }
     }
 
-    //batched to one render a frame, however many wheel events arrive in it
+    private _fitSpan(span: IGanttSpan): void {
+        const viewportWidth = this._timeline.getViewportWidth();
+        if (!viewportWidth) {
+            return;
+        }
+        const days = Math.max(1, (+span.end - +span.start) / MILLISECONDS_PER_DAY);
+        const centreX = viewportWidth / 2;
+        this._rememberAnchor(new Date((+span.start + +span.end) / 2), centreX);
+        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
+    }
+
+    //batched to one render a frame
     private _zoomTo(pixelsPerDay: number, anchorX: number): void {
         this._pending = { pixelsPerDay: this._clamp(pixelsPerDay), anchorX };
         this._frame ??= requestAnimationFrame(this._flush);
@@ -229,17 +226,17 @@ export class GanttZooming implements IGanttZooming {
         this._apply(this._clamp(pixelsPerDay), anchorX);
     }
 
-    //scales first, as the range is sized in their columns
+    //scales first since the range is sized in their columns
     private _apply(pixelsPerDay: number, anchorX: number): void {
-        if (!this._gantt.$task) {
+        if (!this._chart.$task) {
             return;
         }
         const anchorDate = this._resolveAnchor(anchorX);
         const levelIndex = this._chooseLevel(pixelsPerDay);
         const level = this._levels[levelIndex];
-        this._gantt.config.scales = level.scales;
-        //whole pixels: the chart spreads a fraction over the columns, by where the range starts
-        this._gantt.config.min_column_width = Math.round(pixelsPerDay * this._getLevelDays(level));
+        this._chart.config.scales = level.scales;
+        //rounded since the chart spreads a fraction unevenly over the columns
+        this._chart.config.min_column_width = Math.round(pixelsPerDay * this._getLevelDays(level));
         if (anchorDate) {
             this._timeline.ensureRange(anchorDate, MILLISECONDS_PER_DAY / pixelsPerDay);
             this._timeline.renderWithDateAt(anchorDate, anchorX);
@@ -247,7 +244,7 @@ export class GanttZooming implements IGanttZooming {
             this._state.set(ANCHOR_DATE_STATE_KEY, anchorDate.toISOString());
         }
         else {
-            this._timeline.executeWithScrollBlock(() => this._gantt.render());
+            this._timeline.executeWithScrollBlock(() => this._chart.render());
         }
         this._pixelsPerDay = pixelsPerDay;
         this._levelIndex = levelIndex;
@@ -255,7 +252,7 @@ export class GanttZooming implements IGanttZooming {
         this.events.dispatchEvent('onZoomChanged');
     }
 
-    //the finest level whose columns are still wide enough, kept until a neighbour clearly fits better
+    //keeps the current level until a neighbour clearly fits better
     private _chooseLevel(pixelsPerDay: number): number {
         const finestWiderThan = (minimumWidth: number) => {
             let chosen = 0;
@@ -282,14 +279,14 @@ export class GanttZooming implements IGanttZooming {
     //how many days a column of the level spans, on average
     private _getLevelDays(level: ZoomLevel): number {
         const { unit, step } = this._getFinestScale(level);
-        return (UNIT_DAYS[unit] ?? 1) * step;
+        return (DAYS_PER_UNIT[unit] ?? 1) * step;
     }
 
     private _toPixelsPerDay(zoom: (Partial<IGanttZoom> & ILegacyZoom) | undefined): number | undefined {
         if (zoom?.pixelsPerDay) {
             return zoom.pixelsPerDay;
         }
-        return zoom?.unit && zoom.columnWidth ? zoom.columnWidth / ((UNIT_DAYS[zoom.unit] ?? 1) * (zoom.step ?? 1)) : undefined;
+        return zoom?.unit && zoom.columnWidth ? zoom.columnWidth / ((DAYS_PER_UNIT[zoom.unit] ?? 1) * (zoom.step ?? 1)) : undefined;
     }
 
     private _clamp(pixelsPerDay: number): number {
@@ -305,7 +302,7 @@ export class GanttZooming implements IGanttZooming {
         if (this._anchorDate && this._anchorX === Math.round(x)) {
             return this._anchorDate;
         }
-        return this._gantt.dateFromPos(this._gantt.getScrollState().x + x) ?? undefined;
+        return this._chart.dateFromPos(this._chart.getScrollState().x + x) ?? undefined;
     }
 
     private _getSavedZoom = (): IGanttSavedZoom | undefined => {
@@ -314,8 +311,8 @@ export class GanttZooming implements IGanttZooming {
 
     private _onGanttReady = (): boolean => {
         this._detachWheel();
-        this._wheelTarget = this._gantt.$task;
-        //not passive: Ctrl+wheel and a pinch would otherwise zoom the page
+        this._wheelTarget = this._chart.$task;
+        //not passive so Ctrl+wheel and a pinch do not zoom the page
         this._wheelTarget?.addEventListener('wheel', this._onWheel, { passive: false });
         this._wheelTarget?.addEventListener('mousewheel', this._onLegacyWheel);
         return true;
@@ -326,7 +323,7 @@ export class GanttZooming implements IGanttZooming {
         this._wheelTarget?.removeEventListener('mousewheel', this._onLegacyWheel);
     }
 
-    //the chart scrolls on the legacy event, which cancelling `wheel` does not stop
+    //cancelling `wheel` does not stop the chart scrolling on the legacy event
     private _onLegacyWheel = (event: Event): void => {
         if ((event as MouseEvent).ctrlKey) {
             event.stopPropagation();
@@ -380,12 +377,12 @@ export class GanttZooming implements IGanttZooming {
     }
 
     private _getPointerX(clientX: number): number {
-        const taskArea = this._gantt.$task;
+        const taskArea = this._chart.$task;
         return taskArea ? clientX - taskArea.getBoundingClientRect().x : this._getViewportCentreX();
     }
 
     private _getViewportCentreX(): number {
-        return (this._gantt.$task?.offsetWidth ?? 0) / 2;
+        return this._timeline.getViewportWidth() / 2;
     }
 
     private _withLabelHooks(scale: ZoomLevel['scales'][number], row: number): ZoomLevel['scales'][number] {
@@ -404,23 +401,23 @@ export class GanttZooming implements IGanttZooming {
 
     //labelled the way the user's settings format dates
     private _createLevels(formatting: IFormatting): ZoomLevel[] {
-        const gantt = this._gantt;
+        const chart = this._chart;
         const monthNames = formatting.dateFormattingInfo.abbreviatedMonthNames;
         const dayNames = formatting.dateFormattingInfo.abbreviatedDayNames;
-        const addDays = (date: Date, days: number) => gantt.date.add(date, days, 'day');
+        const addDays = (date: Date, days: number) => chart.date.add(date, days, 'day');
         const year = (date: Date) => String(date.getFullYear());
         const month = (date: Date) => monthNames[date.getMonth()];
         const shortDate = (date: Date) => formatting.formatDateShort(date);
         const dateSpan = (days: number) => (date: Date) => `${shortDate(date)} – ${shortDate(addDays(date, days))}`;
         const daySpan = (days: number) => (date: Date) => `${date.getDate()} – ${addDays(date, days).getDate()}`;
         const dayHeader = { unit: 'day', step: 1, format: (date: Date) => formatting.formatDateLongAbbreviated(date) };
-        //the formatting's own formatTime writes the date too; the hour cycle comes from the user's pattern
+        //the user's pattern sets the hour cycle
         const timeFormat = new Intl.DateTimeFormat(formatting.locale, { hour: 'numeric', minute: '2-digit', hour12: !formatting.dateFormattingInfo.shortTimePattern.includes('H') });
         const time = (date: Date) => timeFormat.format(date);
 
         const levels: ZoomLevel[] = [
             { name: 'year-quarter', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'quarter', step: 1, format: (date: Date) => `Q${Math.floor(date.getMonth() / 3) + 1}` }] },
-            { name: 'year-2month', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'month', step: 2, format: (date: Date) => `${month(date)} – ${month(gantt.date.add(date, 1, 'month'))}` }] },
+            { name: 'year-2month', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'month', step: 2, format: (date: Date) => `${month(date)} – ${month(chart.date.add(date, 1, 'month'))}` }] },
             { name: 'year-month', scales: [{ unit: 'year', step: 1, format: year }, { unit: 'month', step: 1, format: month }] },
             { name: '8week-2week', scales: [{ unit: 'week', step: 8, format: dateSpan(55) }, { unit: 'week', step: 2, format: daySpan(13) }] },
             { name: '4week-week', scales: [{ unit: 'week', step: 4, format: dateSpan(27) }, { unit: 'week', step: 1, format: daySpan(6) }] },

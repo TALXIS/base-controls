@@ -1,7 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-
-//as the grid's own value renderer
-const PADDING = 9;
+import { CELL_VALUE_PADDING } from "../../../../constants";
 
 export const getDependencyCountStyles = (theme: ITheme) => mergeStyleSets({
     root: {
@@ -9,8 +7,8 @@ export const getDependencyCountStyles = (theme: ITheme) => mergeStyleSets({
         alignItems: 'center',
         gap: 3,
         height: '100%',
-        paddingLeft: PADDING,
-        paddingRight: PADDING,
+        paddingLeft: CELL_VALUE_PADDING,
+        paddingRight: CELL_VALUE_PADDING,
         color: theme.semanticColors.bodyText,
     },
     icon: {

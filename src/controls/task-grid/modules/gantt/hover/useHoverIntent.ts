@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const HOVER_INTENT_DELAY = 350;
 
-/** Holds a hovered thing back until the pointer rests on it, then follows it, and lets go at once. */
+/** Holds a hovered thing back until the pointer rests on it. */
 export const useHoverIntent = <T,>(): [T | undefined, (value: T | undefined, isImmediate?: boolean) => void] => {
     const [shown, setShown] = useState<T>();
     const isShownRef = useRef(false);

@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
-import { getGanttSkeletonShimmerStyles } from "./styles";
+import { getGanttUiSkeletonShimmerStyles } from "./styles";
 
 /** What the placeholder is shaped like. */
-export interface IGanttSkeletonShimmerProps {
-    /** The height of the time scale; defaults to the grid header's. */
+export interface IGanttUiSkeletonShimmerProps {
+    /** The height of the time scale (default `42`). */
     scaleHeight?: number;
-    /** The height of a row; defaults to the grid row's. */
+    /** The height of a row (default `42`). */
     rowHeight?: number;
     /** How many rows the placeholder draws. */
     rowCount?: number;
@@ -48,12 +48,12 @@ const BAR_PATTERNS: IBarPattern[] = [
 const PATTERN_SHIFT = 18;
 
 /** A shimmering placeholder shaped like a time scale over rows of bars. */
-export const GanttSkeletonShimmer = (props: IGanttSkeletonShimmerProps) => {
+export const GanttUiSkeletonShimmer = (props: IGanttUiSkeletonShimmerProps) => {
     const theme = useTheme();
     const scaleHeight = props.scaleHeight ?? DEFAULT_SCALE_HEIGHT;
     const rowHeight = props.rowHeight ?? DEFAULT_ROW_HEIGHT;
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT;
-    const styles = useMemo(() => getGanttSkeletonShimmerStyles(theme, scaleHeight, rowHeight, COLUMN_WIDTH), [theme, scaleHeight, rowHeight]);
+    const styles = useMemo(() => getGanttUiSkeletonShimmerStyles(theme, { scaleHeight, rowHeight, columnWidth: COLUMN_WIDTH, columnsPerSpan: COLUMNS_PER_SPAN, spanLabelWidths: SPAN_LABEL_WIDTHS }), [theme, scaleHeight, rowHeight]);
 
     const renderBar = (pattern: IBarPattern, shift: number) => {
         const left = (pattern.start + shift) * COLUMN_WIDTH;
@@ -67,12 +67,12 @@ export const GanttSkeletonShimmer = (props: IGanttSkeletonShimmerProps) => {
     return <div className={styles.skeleton}>
         <div className={styles.scale}>
             <div className={styles.scaleLine}>
-                {Array.from({ length: COLUMN_COUNT / COLUMNS_PER_SPAN }, (_, index) => <div key={index} className={styles.scaleCell} style={{ width: COLUMNS_PER_SPAN * COLUMN_WIDTH }}>
-                    <div className={styles.spanLabel} style={{ width: SPAN_LABEL_WIDTHS[index % SPAN_LABEL_WIDTHS.length] }} />
+                {Array.from({ length: COLUMN_COUNT / COLUMNS_PER_SPAN }, (_, index) => <div key={index} className={`${styles.scaleCell} ${styles.spanCell}`}>
+                    <div className={styles.spanLabel} />
                 </div>)}
             </div>
             <div className={styles.scaleLine}>
-                {Array.from({ length: COLUMN_COUNT }, (_, index) => <div key={index} className={styles.scaleCell} style={{ width: COLUMN_WIDTH }}>
+                {Array.from({ length: COLUMN_COUNT }, (_, index) => <div key={index} className={`${styles.scaleCell} ${styles.unitCell}`}>
                     <div className={styles.unitLabel} />
                 </div>)}
             </div>

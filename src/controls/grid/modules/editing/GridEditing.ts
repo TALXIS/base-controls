@@ -78,6 +78,7 @@ export class GridEditing implements IGridEditing {
     private _isRecordLockColumnVisible = false;
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
     public readonly locks: IGridLocks;
+    private _unsubscribes: (() => void)[] = [];
 
     constructor(parameters: IGridEditingParameters) {
         this._services = parameters.services;
@@ -87,16 +88,20 @@ export class GridEditing implements IGridEditing {
             this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
         }
         this._registerHooks();
-        this._services.whenAvailable('keyboard', keyboard => keyboard.onKeyDown(event => this._onKeyDown(event)));
-        this._services.whenAvailable('gridApi', gridApi => {
-            gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
-            //an editor AG Grid opens is an edit too
-            gridApi.addEventListener('cellEditingStarted', this._onCellEditingStarted);
-            gridApi.addEventListener('cellEditingStopped', this._onCellEditingStopped);
-            gridApi.addEventListener('cellEditRequest', this._onCellEditRequest);
-            gridApi.addEventListener('modelUpdated', () => this._syncRecordLockColumnVisibility());
-            this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-        });
+        this._unsubscribes.push(
+            this._services.observe('keyboard', keyboard => keyboard.onKeyDown(event => this._onKeyDown(event))),
+            this._services.observe('gridApi', gridApi => {
+                gridApi.addEventListener('cellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
+                //an editor AG Grid opens is an edit too
+                gridApi.addEventListener('cellEditingStarted', this._onCellEditingStarted);
+                gridApi.addEventListener('cellEditingStopped', this._onCellEditingStopped);
+                gridApi.addEventListener('cellEditRequest', this._onCellEditRequest);
+                gridApi.addEventListener('modelUpdated', () => this._syncRecordLockColumnVisibility());
+                const provider = this._provider;
+                provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+                return () => provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+            }),
+        );
     }
 
     public isAutoSaveEnabled(): boolean {
@@ -159,7 +164,7 @@ export class GridEditing implements IGridEditing {
 
     //the provider outlives the grid
     public destroy(): void {
-        this._provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

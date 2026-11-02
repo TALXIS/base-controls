@@ -53,10 +53,13 @@ export const createDealViewDataModule = (): IDatasetControlModule => ({
     name: 'dealViewData',
     onLoad: datasetControl => {
         const provider = () => datasetControl.getProvider()!
-        datasetControl.modules.whenAvailable('userQueries', userQueries => {
-            userQueries.saveWithView('sorting', () => provider().getSorting())
-            userQueries.saveWithView('filtering', () => provider().getFiltering())
-            userQueries.saveWithView('searchQuery', () => provider().getSearchQuery())
+        datasetControl.modules.observe('userQueries', userQueries => {
+            const unsaveWithViews = [
+                userQueries.saveWithView('sorting', () => provider().getSorting()),
+                userQueries.saveWithView('filtering', () => provider().getFiltering()),
+                userQueries.saveWithView('searchQuery', () => provider().getSearchQuery()),
+            ]
+            return () => unsaveWithViews.forEach(unsaveWithView => unsaveWithView())
         })
         return {}
     },

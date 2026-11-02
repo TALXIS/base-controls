@@ -5,7 +5,7 @@ import { Grid, IColumnHeaderRendererProps } from "@controls/grid";
 import type { ILookupManyEvents } from "../../../LookupMany";
 import { LookupManyFilterCallout } from "../lookup-many-filter-callout";
 
-/** A lookup-many column's header: the grid's own, drawing the module's filter callout in place of the grid's. */
+/** A lookup-many column's header with the module's filter callout. */
 export const LookupManyColumnHeader = (props: IColumnHeaderRendererProps) => {
     const { rerender } = useRerender();
     const lookupMany = useDatasetControlModule('lookupMany');

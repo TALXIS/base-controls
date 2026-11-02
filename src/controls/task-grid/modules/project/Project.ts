@@ -17,13 +17,15 @@ export interface IProjectData<TData = { [key: string]: unknown }> {
 export interface IProjectStore<TData = { [key: string]: unknown }> {
     /** Called on every mount, before the tasks load. */
     onLoadProject(): Promise<IProjectData<TData>>;
+    /** Called as the project goes. */
+    destroy?(): void;
 }
 
-export interface IProjectParameters<TData> {
+export interface IProjectParameters<TData = { [key: string]: unknown }> {
     onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData>;
 }
 
-/** The `project` module: the project the tasks belong to. */
+/** The `project` module, the project the tasks belong to. */
 export interface IProject<TData = { [key: string]: unknown }> {
     getId(): string;
     getName(): string | undefined;
@@ -33,6 +35,8 @@ export interface IProject<TData = { [key: string]: unknown }> {
     getEndDate(): Dayjs | undefined;
     /** What else the project carries, such as its own columns. */
     getData(): TData | undefined;
+    /** Called as the mount goes. */
+    destroy(): void;
 }
 
 /** The project the tasks belong to, loaded through its store. */
@@ -44,7 +48,7 @@ export class Project<TData = { [key: string]: unknown }> implements IProject<TDa
         this._store = parameters.onCreateStore(taskRuntime);
     }
 
-    /** Loads the project; the module awaits it before registering. */
+    /** Loads the project before the module registers. */
     public async load(): Promise<void> {
         this._project = await this._store.onLoadProject();
     }
@@ -71,6 +75,10 @@ export class Project<TData = { [key: string]: unknown }> implements IProject<TDa
 
     public getData(): TData | undefined {
         return this._project.data;
+    }
+
+    public destroy(): void {
+        this._store.destroy?.();
     }
 }
 

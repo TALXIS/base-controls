@@ -114,6 +114,7 @@ export class GridGrouping implements IGridGrouping {
     private _toggledGroups = new Map<string, boolean>();
     private _hasReportedChildLimit = false;
     private _isGroupSelectionLimitDialogOpen: boolean = false;
+    private _unsubscribes: (() => void)[] = [];
     public readonly events: IEventEmitter<IGridGroupingEvents> = new EventEmitter<IGridGroupingEvents>();
 
     constructor(parameters: IGridGroupingParameters) {
@@ -133,8 +134,15 @@ export class GridGrouping implements IGridGrouping {
         this._grouping = new Grouping(this._provider);
         //overrides the provider's nested default
         this._provider.setProperty('groupingType', this._settings.type);
-        this._gridServices.get('grid').modules.whenAvailable('rowModel', rowModel => this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault }));
-        this._gridServices.whenAvailable('gridApi', gridApi => gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened));
+        this._unsubscribes.push(
+            this._gridServices.get('grid').modules.observe('rowModel', rowModel => {
+                this._rowModelGrouping = rowModel.createGrouping({ isGroupOpenByDefault: this._isGroupOpenByDefault });
+            }),
+            this._gridServices.observe('gridApi', gridApi => {
+                gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened);
+                return () => !gridApi.isDestroyed() && gridApi.removeEventListener('rowGroupOpened', this._onRowGroupOpened);
+            }),
+        );
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
@@ -149,15 +157,18 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may register after this one
-        this._gridServices.get('grid').modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping));
+        this._unsubscribes.push(this._gridServices.get('grid').modules.observe('editing', editing => editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping)));
         //listed in the column menu after sorting and filtering
         columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
         columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('grid').modules.whenAvailable('rowSelection', selection => {
-            selection.registerSelectRecords(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
-            selection.registerSelectionState(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
-        });
+        this._unsubscribes.push(this._gridServices.get('grid').modules.observe('rowSelection', selection => {
+            const unregisters = [
+                selection.registerSelectRecords(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping),
+                selection.registerSelectionState(this._onSelectionState, GRID_MODULE_PRIORITY.grouping),
+            ];
+            return () => unregisters.forEach(unregister => unregister());
+        }));
     }
 
     public getMaxGroupLoadsPerSelection(): number {
@@ -412,6 +423,7 @@ export class GridGrouping implements IGridGrouping {
 
     //the provider outlives the grid
     public destroy(): void {
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._provider.removeEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
     }

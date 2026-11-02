@@ -23,16 +23,7 @@ export const useGridInternalService = <TKey extends keyof IGridInternalServiceMa
         if (service !== undefined) {
             return;
         }
-        //there is no unsubscribing from whenAvailable
-        let isMounted = true;
-        services.whenAvailable(key, resolved => {
-            if (isMounted) {
-                setService(resolved);
-            }
-        });
-        return () => {
-            isMounted = false;
-        };
+        return services.observe(key, setService);
     }, []);
 
     //the conditional return type is the caller's contract

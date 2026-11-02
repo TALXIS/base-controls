@@ -1,4 +1,4 @@
-import { IServiceLocator } from "./interfaces";
+import { IServiceLocator, ServiceObserver } from "./interfaces";
 
 /**
  * A {@link IServiceLocator}: a map of resolvers and nothing else.
@@ -7,15 +7,20 @@ import { IServiceLocator } from "./interfaces";
  * subclassing. Reaching some other locator from this one is the caller's business: register it under a key
  * of its own.
  */
+interface IObserver {
+    callback: ServiceObserver<any>;
+    cleanup?: () => void;
+}
+
 export class ServiceLocator<TServiceMap extends object> implements IServiceLocator<TServiceMap> {
     private _resolvers: Map<keyof TServiceMap, () => unknown> = new Map();
-    private _pendingCallbacks: Map<keyof TServiceMap, ((service: any) => void)[]> = new Map();
+    private _observers: Map<keyof TServiceMap, Set<IObserver>> = new Map();
     private _isDestroyed = false;
 
     public get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] {
         const service = this.find(key);
         if (service === undefined) {
-            throw new Error(`The "${String(key)}" service is not registered. Use find() if it is optional, or whenAvailable() if it is registered later.`);
+            throw new Error(`The "${String(key)}" service is not registered. Use find() if it is optional, or observe() if it is registered later.`);
         }
         return service;
     }
@@ -31,48 +36,58 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
             return;
         }
         this._resolvers.set(key, resolve);
-        const waiting = this._pendingCallbacks.get(key);
-        //nothing is waiting, so the resolver stays untouched and lazy
-        if (!waiting) {
+        const observers = this._observers.get(key);
+        //nothing observes it, so the resolver stays untouched and lazy
+        if (!observers?.size) {
             return;
         }
-        //a resolver registered over a binding its owner has not assigned yet: still nothing to hand out,
-        //so the callbacks keep waiting for the register that has one
+        //a resolver over a binding its owner has not assigned yet: the observers wait for one that has
         const service = this.find(key);
-        if (service === undefined) {
-            return;
-        }
-        this._pendingCallbacks.delete(key);
-        for (const callback of waiting) {
-            callback(service);
+        if (service !== undefined) {
+            observers.forEach(observer => this._notify(observer, service));
         }
     }
 
-    public whenAvailable<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void): void {
+    public observe<TKey extends keyof TServiceMap>(key: TKey, callback: ServiceObserver<TServiceMap[TKey]>): () => void {
         if (this._isDestroyed) {
-            return;
+            return () => undefined;
         }
+        const observer: IObserver = { callback };
+        const observers = this._observers.get(key) ?? new Set();
+        observers.add(observer);
+        this._observers.set(key, observers);
         const service = this.find(key);
         if (service !== undefined) {
-            callback(service);
-            return;
+            this._notify(observer, service);
         }
-        const waiting = this._pendingCallbacks.get(key);
-        if (waiting) {
-            waiting.push(callback);
-        }
-        else {
-            this._pendingCallbacks.set(key, [callback]);
-        }
+        return () => {
+            if (observers.delete(observer)) {
+                this._cleanUp(observer);
+            }
+        };
     }
 
     public unregister<TKey extends keyof TServiceMap>(key: TKey): void {
         this._resolvers.delete(key);
+        this._observers.get(key)?.forEach(observer => this._cleanUp(observer));
     }
 
     public destroy(): void {
         this._isDestroyed = true;
         this._resolvers.clear();
-        this._pendingCallbacks.clear();
+        this._observers.forEach(observers => observers.forEach(observer => this._cleanUp(observer)));
+        this._observers.clear();
+    }
+
+    private _notify(observer: IObserver, service: unknown): void {
+        this._cleanUp(observer);
+        const cleanup = observer.callback(service);
+        observer.cleanup = typeof cleanup === 'function' ? cleanup : undefined;
+    }
+
+    private _cleanUp(observer: IObserver): void {
+        const cleanup = observer.cleanup;
+        observer.cleanup = undefined;
+        cleanup?.();
     }
 }

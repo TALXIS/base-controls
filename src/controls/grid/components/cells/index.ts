@@ -20,3 +20,4 @@ export type {
     ICellUiLoadingProps, ICellUiLockIconProps, ICellUiContainerComponents, ICellUiFieldErrorComponents, ICellUiResizeGripComponents,
     ICellUiCommandsComponents, ICellUiControlComponents, ICellUiLoadingComponents, ICellUiLockIconComponents,
 } from './ui';
+export { CellUiCommandsComponents } from './ui';

@@ -1,2 +1,2 @@
-export * from './createGanttTaskDraggingModule';
-export type { IGanttTaskDragging, IGanttTaskDraggingParameters } from './GanttTaskDragging';
+export * from './createBarDraggingModule';
+export type { IBarDragging, IBarDraggingParameters } from './BarDragging';

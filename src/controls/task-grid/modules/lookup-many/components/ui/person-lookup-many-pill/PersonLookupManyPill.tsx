@@ -2,12 +2,12 @@ import { useMemo } from "react";
 import { Persona, PersonaSize } from "@fluentui/react";
 import { TooltipHost } from "@ui";
 import { ILookupManyPillProps, LookupManyPill } from "../lookup-many-pill";
-import { getDataValue } from "../getDataValue";
+import { getReferenceDataValue } from "../lookup-many-pill/getReferenceDataValue";
 import { getPersonLookupManyPillStyles } from "./styles";
 
 /** Props for {@link PersonLookupManyPill}. */
 export interface IPersonLookupManyPillProps extends ILookupManyPillProps {
-    /** The record field holding the person's picture; `imageurl` when left out. */
+    /** The record field holding the person's picture, `imageurl` by default. */
     imageUrlPropertyName?: string;
 }
 
@@ -18,7 +18,7 @@ export const PersonLookupManyPill = (props: IPersonLookupManyPillProps) => {
     return <LookupManyPill {...pillProps} className={styles.pill} components={{
         onRenderDot: () => null,
         onRenderLabel: () => <TooltipHost content={props.reference.name}>
-            <Persona text={props.reference.name} imageUrl={getDataValue(props.reference, imageUrlPropertyName)} size={PersonaSize.size24} imageShouldFadeIn={false} hidePersonaDetails styles={{ root: { margin: 0 } }} />
+            <Persona text={props.reference.name} imageUrl={getReferenceDataValue(props.reference, imageUrlPropertyName)} size={PersonaSize.size24} imageShouldFadeIn={false} hidePersonaDetails className={styles.persona} />
         </TooltipHost>,
         ...props.components,
     }} />;

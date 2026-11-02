@@ -1,6 +1,6 @@
-export * from './createGanttMarkersModule';
+export * from './createMarkersModule';
 export * from './labels';
 export * from './labels.cs';
 export * from './memory';
 export * from './components';
-export type { GanttMarkerLineStyle, IGanttMarker, IGanttMarkers, IGanttMarkersComponents, IGanttMarkersEvents, IGanttMarkersParameters, IGanttMarkersStore, IGanttProjectMarkersParameters, IGanttTodayMarkerParameters } from './GanttMarkers';
+export type { IMarker, IMarkers, IMarkersComponents, IMarkersEvents, IMarkersParameters, IMarkersStore, IProjectMarkersParameters, ITodayMarkerParameters } from './Markers';

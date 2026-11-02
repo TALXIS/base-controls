@@ -3,9 +3,9 @@ import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";
 import type { IStateStore } from "@utils";
-import type { ITaskRuntime } from "../../../../runtime";
-import { TASK_GRID_PRIORITY } from "../../../../priorities";
-import type { IGantt } from "../../interfaces";
+import type { ITaskRuntime } from "../../../runtime";
+import { TASK_GRID_PRIORITY } from "../../../priorities";
+import type { IGantt } from "../interfaces";
 import { GridGanttScrollSync } from "./GridGanttScrollSync";
 import { GridGanttHoverSync } from "./GridGanttHoverSync";
 
@@ -17,7 +17,7 @@ export interface IGridGanttSplitSyncParameters {
     state: IStateStore;
 }
 
-/** Keeps the grid and the Gantt beside it lined up, row for row and scrolled together, and the split between them. */
+/** Keeps the grid and the Gantt beside it lined up and scrolled together. */
 export class GridGanttSplitSync {
     private _taskRuntime: ITaskRuntime;
     private _state: IStateStore;
@@ -31,14 +31,14 @@ export class GridGanttSplitSync {
         this._taskRuntime = parameters.taskRuntime;
         this._state = parameters.state;
         const datasetControl = this._taskRuntime.services.get('datasetControl');
-        datasetControl.modules.whenAvailable('userQueries', userQueries => {
-            this._unregisters.push(userQueries.saveWithView('ganttSplitSize', () => this._state.get<number>(GANTT_SIZE_STATE_KEY)));
-        });
-        datasetControl.parts.whenAvailable('grid', this._onGridAvailable);
-        datasetControl.parts.whenAvailable('gantt', this._onGanttAvailable);
+        this._unregisters.push(
+            datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('ganttSplitSize', () => this._state.get<number>(GANTT_SIZE_STATE_KEY))),
+            datasetControl.parts.observe('grid', this._onGridAvailable),
+            datasetControl.parts.observe('gantt', this._onGanttAvailable),
+        );
     }
 
-    /** The Gantt's share of the width, in percent; this session's first, then the saved view's. */
+    /** The Gantt's share of the width in percent, from this session or else the saved view. */
     public getGanttSize(defaultSize: number): number {
         return this._state.get<number>(GANTT_SIZE_STATE_KEY) ?? this._taskRuntime.getView()?.data?.ganttSplitSize ?? defaultSize;
     }
@@ -52,21 +52,25 @@ export class GridGanttSplitSync {
         this._destroyScrollSync();
     }
 
-    private _onGridAvailable = (grid: IGrid): void => {
+    private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid;
-        this._unregisters.push(
+        const unregisters = [
             grid.registerAgGridInitialOptions(this._onAgGridInitialOptions),
             grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1),
-        );
+        ];
+        return () => {
+            unregisters.forEach(unregister => unregister());
+            this._grid = undefined;
+        };
     };
 
-    private _onGanttAvailable = (gantt: IGantt): void => {
+    private _onGanttAvailable = (gantt: IGantt): (() => void) => {
         gantt.events.addEventListener('onChartReady', this._onChartReady);
         gantt.events.addEventListener('onDestroyed', this._destroyScrollSync);
-        this._unregisters.push(
-            () => gantt.events.removeEventListener('onChartReady', this._onChartReady),
-            () => gantt.events.removeEventListener('onDestroyed', this._destroyScrollSync),
-        );
+        return () => {
+            gantt.events.removeEventListener('onChartReady', this._onChartReady);
+            gantt.events.removeEventListener('onDestroyed', this._destroyScrollSync);
+        };
     };
 
     //the chart is drawn only once the grid has an api

@@ -1,16 +1,16 @@
 import { components, OptionProps } from "react-select";
-import type { LookupManyAppearance } from "../../LookupMany";
-import { ColorfulLookupManyOption, ColorfulLookupManyPill, ILookupManyPillProps, LookupManyPill, PersonLookupManyOption, PersonLookupManyPill } from "../ui";
+import type { LookupManyAppearance } from "../../../LookupMany";
+import { ColorfulLookupManyOption, ColorfulLookupManyPill, ILookupManyPillProps, LookupManyPill, PersonLookupManyOption, PersonLookupManyPill } from "../../ui";
 
 type Reference = ComponentFramework.EntityReference;
 
-export interface ILookupManyVariantComponents {
+export interface ILookupManyAppearanceComponents {
     onRenderPill: (props: ILookupManyPillProps) => JSX.Element;
     onRenderOption: (props: OptionProps<Reference, true, never>) => JSX.Element;
 }
 
 /** How a column draws its records, by the appearance the module maps it to. */
-export const getLookupManyComponents = (appearance: LookupManyAppearance = { type: 'plain' }): ILookupManyVariantComponents => {
+export const getLookupManyAppearanceComponents = (appearance: LookupManyAppearance = { type: 'plain' }): ILookupManyAppearanceComponents => {
     switch (appearance.type) {
         case 'colorful': {
             return {

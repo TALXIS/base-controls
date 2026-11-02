@@ -1,20 +1,20 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
-import { ITaskTooltipUiDateRangeComponents, TaskTooltipUiDateRangeComponents } from "./components";
-import { getTaskTooltipUiDateRangeStyles } from "./styles";
+import { ITooltipUiDateRangeComponents, TooltipUiDateRangeComponents } from "./components";
+import { getTooltipUiDateRangeStyles } from "./styles";
 
-export interface ITaskTooltipUiDateRangeProps {
+export interface ITooltipUiDateRangeProps {
     /** Such as `3 Feb – 18 Feb 2026`, or a single date. */
     range: string;
     duration?: string;
-    components?: Partial<ITaskTooltipUiDateRangeComponents>;
+    components?: Partial<ITooltipUiDateRangeComponents>;
 }
 
 /** When something runs, with how long it runs after it. */
-export const TaskTooltipUiDateRange = (props: ITaskTooltipUiDateRangeProps) => {
-    const components = { ...TaskTooltipUiDateRangeComponents, ...props.components };
+export const TooltipUiDateRange = (props: ITooltipUiDateRangeProps) => {
+    const components = { ...TooltipUiDateRangeComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getTaskTooltipUiDateRangeStyles(theme), [theme]);
+    const styles = useMemo(() => getTooltipUiDateRangeStyles(theme), [theme]);
 
     return components.onRenderContainer({
         className: styles.dateRange,

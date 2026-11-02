@@ -1,2 +1,2 @@
-export * from './GanttMarkerUiChip';
+export * from './MarkerUiChip';
 export * from './components';

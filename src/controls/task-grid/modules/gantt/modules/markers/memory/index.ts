@@ -1,1 +1,1 @@
-export * from './createMemoryGanttMarkersModule';
+export * from './createMemoryMarkersModule';

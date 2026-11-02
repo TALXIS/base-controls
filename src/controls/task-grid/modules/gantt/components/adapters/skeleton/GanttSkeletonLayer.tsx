@@ -1,19 +1,24 @@
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
+import { useEffect, useState } from "react";
+import type { IGrid } from "@controls/grid";
 import { useGantt } from "../../../context";
-import type { IGanttEvents } from "../../../interfaces";
-import { GanttSkeleton, IGanttSkeletonUiComponents } from "../../ui/skeleton";
+import { GanttUiSkeleton, IGanttUiSkeletonComponents } from "../../ui/skeleton";
 
 export interface IGanttSkeletonLayerProps {
-    components?: Partial<IGanttSkeletonUiComponents>;
+    components?: Partial<IGanttUiSkeletonComponents>;
 }
 
-/** Covers the chart with the skeleton until it is drawn, which waits for the modules and the grid. */
+/** Covers the chart with the skeleton until it is drawn. */
 export const GanttSkeletonLayer = (props: IGanttSkeletonLayerProps) => {
     const gantt = useGantt();
-    const { rerender } = useRerender();
+    const [grid, setGrid] = useState<IGrid>();
 
-    useEventEmitter<IGanttEvents>(gantt.events, 'onChartReady', rerender);
+    useEffect(() => gantt.getTaskRuntime().services.get('datasetControl').parts.observe('grid', grid => grid.services.observe('gridApi', () => {
+        setGrid(grid);
+        return () => setGrid(undefined);
+    })), []);
 
-    return gantt.services.find('chart') ? null : <GanttSkeleton components={props.components} />;
+    if (gantt.services.find('chart')) {
+        return null;
+    }
+    return <GanttUiSkeleton components={props.components} rowHeight={grid?.services.get('settings').getDefaultRowHeight()} scaleHeight={grid?.services.get('viewport').getHeaderHeight() || undefined} />;
 };

@@ -1,0 +1,3 @@
+export const RECORD_LIST_ITEM_HEIGHT = 36;
+export const RECORD_LIST_HEIGHT = 200;
+export const RECORD_SELECTOR_WIDTH = 300;

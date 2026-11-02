@@ -1,4 +1,4 @@
-import { TaskTooltipRoot } from "./adapters/task-tooltip";
+import { TaskTooltipRoot } from "./adapters/task-tooltip-root";
 import { TaskTooltipRenderer } from "./adapters/renderer";
 import { TaskTooltipCallout } from "./adapters/callout";
 import { TaskTooltipHeader } from "./adapters/header";

@@ -1,22 +1,21 @@
 import { Fragment, useMemo } from "react";
 import { DirectionalHint, useTheme } from "@fluentui/react";
-import type { IGanttNonWorkingDay } from "../../../GanttNonWorkingDays";
-import { INonWorkingDayTooltipComponents, NonWorkingDayTooltipComponents } from "./components";
-import { getNonWorkingDayTooltipStyles } from "./styles";
+import { INonWorkingDaysUiTooltipComponents, INonWorkingDaysUiTooltipDay, NonWorkingDaysUiTooltipComponents } from "./components";
+import { getNonWorkingDaysUiTooltipStyles } from "./styles";
 
-export interface INonWorkingDayTooltipProps {
+export interface INonWorkingDaysUiTooltipProps {
     /** The element the tooltip is drawn under, such as a scale cell. */
     target: HTMLElement;
     /** The days covering the target, each shown by its description. */
-    days: IGanttNonWorkingDay<unknown>[];
-    components?: Partial<INonWorkingDayTooltipComponents>;
+    days: INonWorkingDaysUiTooltipDay[];
+    components?: Partial<INonWorkingDaysUiTooltipComponents>;
 }
 
 /** The descriptions of the non-working days, one per line. */
-export const NonWorkingDayTooltip = (props: INonWorkingDayTooltipProps) => {
-    const components = { ...NonWorkingDayTooltipComponents, ...props.components };
+export const NonWorkingDaysUiTooltip = (props: INonWorkingDaysUiTooltipProps) => {
+    const components = { ...NonWorkingDaysUiTooltipComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getNonWorkingDayTooltipStyles(theme), [theme]);
+    const styles = useMemo(() => getNonWorkingDaysUiTooltipStyles(theme), [theme]);
 
     return components.onRenderCallout({
         target: props.target,

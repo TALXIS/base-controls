@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttTaskCreate } from "./GanttTaskCreate";
+import { TaskDrawing, ITaskDrawingParameters } from "./TaskDrawing";
 
-export interface IGanttTaskCreateModule extends IGanttModule<'taskCreate'> { }
+export interface ITaskDrawingModule extends IGanttModule<'taskDrawing'> { }
 
-export const createGanttTaskCreateModule = (): IGanttTaskCreateModule => ({
-    name: 'taskCreate',
-    onLoad: gantt => new GanttTaskCreate(gantt),
-    onDestroy: taskCreate => taskCreate.destroy(),
+export const createTaskDrawingModule = (parameters: ITaskDrawingParameters = {}): ITaskDrawingModule => ({
+    name: 'taskDrawing',
+    onLoad: gantt => new TaskDrawing(gantt, parameters),
+    onDestroy: taskDrawing => taskDrawing.destroy(),
 });

@@ -1,5 +1,5 @@
-import { EventEmitter, IEventEmitter, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { HookRegistry } from "@utils";
+import { EventEmitter, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { HookRegistry, IEventSubscriber } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 
 //a save quicker than this is not worth a flicker
@@ -19,16 +19,22 @@ export type TaskSavingChainLinksHook = (result: { linkedTaskIds: string[] }, par
 
 /** The tasks a save can reach, held as saving until the save and the sync after it settle. */
 export interface ITaskSavingChains {
-    readonly events: IEventEmitter<ITaskSavingChainsEvents>;
-    /** Whether the task is in a chain being saved, once its save has run long enough to show it. */
+    readonly events: IEventSubscriber<ITaskSavingChainsEvents>;
+    /** Whether the task is in a chain whose save has run long enough to show. */
     isTaskSaving(taskId: string): boolean;
     /**
-     * Registers a hook over the tasks a change to one task moves; each is followed in turn, with its parents.
+     * Registers a hook over the tasks a change to one task moves.
      * @param priority Ascending: a higher number gets the later word.
      */
     registerLinks(hook: TaskSavingChainLinksHook, priority?: number): () => void;
-    /** Runs a write that is not a record save, holding the chain of the tasks it touches until it settles. */
+    /** Runs a write other than a record save, holding the chain of the tasks it touches. */
     track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T>;
+}
+
+interface ITaskSaves {
+    count: number;
+    timer?: number;
+    chain?: Set<string>;
 }
 
 export class TaskSavingChains implements ITaskSavingChains {
@@ -37,8 +43,8 @@ export class TaskSavingChains implements ITaskSavingChains {
     private _linksHooks = new HookRegistry<TaskSavingChainLinksHook>();
     //how many chains being shown each task is in
     private _counts = new Map<string, number>();
-    private _saveTimers = new Map<string, number>();
-    private _saveChains = new Map<string, Set<string>>();
+    //counted until each save and the sync after it settle
+    private _saves = new Map<string, ITaskSaves>();
     private _isDestroyed = false;
 
     /** Starts following the provider's saves. */
@@ -72,7 +78,7 @@ export class TaskSavingChains implements ITaskSavingChains {
 
     public destroy(): void {
         this._isDestroyed = true;
-        this._saveTimers.forEach(timer => window.clearTimeout(timer));
+        this._saves.forEach(saves => window.clearTimeout(saves.timer));
         this._provider?.removeEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
         this._provider?.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
         this.events.clearEventListeners();
@@ -80,24 +86,24 @@ export class TaskSavingChains implements ITaskSavingChains {
 
     private _onBeforeRecordSaved = (record: IRecord): void => {
         const taskId = record.getRecordId();
-        window.clearTimeout(this._saveTimers.get(taskId));
-        this._saveTimers.set(taskId, window.setTimeout(() => {
-            this._saveTimers.delete(taskId);
-            if (!this._saveChains.has(taskId)) {
-                this._saveChains.set(taskId, this._hold([taskId]));
-            }
-        }, SAVING_DELAY));
+        const saves = this._saves.get(taskId) ?? { count: 0 };
+        saves.count++;
+        if (!saves.chain && saves.timer === undefined) {
+            saves.timer = window.setTimeout(() => {
+                saves.timer = undefined;
+                saves.chain = this._hold([taskId]);
+            }, SAVING_DELAY);
+        }
+        this._saves.set(taskId, saves);
     };
 
     private _onAfterRecordSaved = async (result: IRecordSaveOperationResult): Promise<void> => {
         const taskId = result.recordId;
-        window.clearTimeout(this._saveTimers.get(taskId));
-        this._saveTimers.delete(taskId);
-        const chain = this._saveChains.get(taskId);
-        if (!chain) {
+        const saves = this._saves.get(taskId);
+        if (!saves) {
             return;
         }
-        //the rescheduled dates arrive with the sync the save starts, which this joins
+        //joins the sync the save starts to get the rescheduled dates
         if (result.success) {
             try {
                 await this._provider?.synchronize();
@@ -106,8 +112,15 @@ export class TaskSavingChains implements ITaskSavingChains {
                 //the provider reports a failed sync where it runs it
             }
         }
-        this._saveChains.delete(taskId);
-        this._release(chain);
+        saves.count--;
+        if (saves.count > 0) {
+            return;
+        }
+        window.clearTimeout(saves.timer);
+        this._saves.delete(taskId);
+        if (saves.chain) {
+            this._release(saves.chain);
+        }
     };
 
     private _hold(taskIds: string[]): Set<string> {
@@ -133,7 +146,7 @@ export class TaskSavingChains implements ITaskSavingChains {
         this.events.dispatchEvent('onChainsChanged', [...chain]);
     }
 
-    //what a save can move: the tasks and their subtasks, what their links reach, and the parents of all of it
+    //the tasks, their subtasks, what their links reach and the parents of all of it
     private _getChain(taskIds: string[]): Set<string> {
         const structure = this._provider?.getRecordTree().structure;
         const reached = new Set<string>();

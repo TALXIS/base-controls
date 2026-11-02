@@ -1,21 +1,21 @@
 import { ReactNode, useMemo } from "react";
 import { useTheme } from "@fluentui/react";
-import { ITaskTooltipUiFieldRowComponents, TaskTooltipUiFieldRowComponents } from "./components";
-import { getTaskTooltipUiFieldRowStyles } from "./styles";
+import { ITooltipUiFieldRowComponents, TooltipUiFieldRowComponents } from "./components";
+import { getTooltipUiFieldRowStyles } from "./styles";
 
-export interface ITaskTooltipUiFieldRowProps {
+export interface ITooltipUiFieldRowProps {
     label: string;
     iconName?: string;
     /** The field's value. */
     children?: ReactNode;
-    components?: Partial<ITaskTooltipUiFieldRowComponents>;
+    components?: Partial<ITooltipUiFieldRowComponents>;
 }
 
 /** One field: its icon, its label and its value. */
-export const TaskTooltipUiFieldRow = (props: ITaskTooltipUiFieldRowProps) => {
-    const components = { ...TaskTooltipUiFieldRowComponents, ...props.components };
+export const TooltipUiFieldRow = (props: ITooltipUiFieldRowProps) => {
+    const components = { ...TooltipUiFieldRowComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getTaskTooltipUiFieldRowStyles(theme), [theme]);
+    const styles = useMemo(() => getTooltipUiFieldRowStyles(theme), [theme]);
 
     return components.onRenderContainer({
         className: styles.fieldRow,

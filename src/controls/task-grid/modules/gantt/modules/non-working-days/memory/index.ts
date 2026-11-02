@@ -1,1 +1,1 @@
-export * from './createMemoryGanttNonWorkingDaysModule';
+export * from './createMemoryNonWorkingDaysModule';

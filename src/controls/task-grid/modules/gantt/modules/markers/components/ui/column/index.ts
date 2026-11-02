@@ -1,2 +1,2 @@
-export * from './GanttMarkerUiColumn';
+export * from './MarkerUiColumn';
 export * from './components';

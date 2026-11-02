@@ -1,14 +1,15 @@
 import type { ColDef } from "ag-grid-community";
-import { DataTypes, IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
+import type { IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import type { LabelsOf } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { TaskColumnValues } from "../column-values";
+import { createReadOnlyLookupColumn, TaskColumnValues } from "../column-values";
 import { CHECKLIST_LABELS } from "./labels";
 import { ChecklistCell } from "./components/adapters/checklist-cell";
+import type { IChecklistProgressComponents } from "./components/ui/checklist-progress";
 
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 
@@ -24,14 +25,23 @@ export interface IChecklistItem {
 
 /** Where checklist items are kept. */
 export interface IChecklistStore {
-    /** The items of these tasks, by task id; a task with none may be left out. */
+    /** The items of these tasks by task id. */
     onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>>;
     /** Called as the checklist goes. */
     destroy?(): void;
 }
 
+/** The replaceable parts of what the checklist draws, by the piece they belong to. */
+export interface IChecklistComponents {
+    /** The progress in a checklist cell. */
+    progress?: Partial<IChecklistProgressComponents>;
+}
+
 export interface IChecklistParameters {
-    onCreateStore: (taskRuntime: ITaskRuntime, checklist: IChecklist) => IChecklistStore;
+    onCreateStore: (taskRuntime: ITaskRuntime) => IChecklistStore;
+    /** Loads a task's items again once its editor closes. */
+    reloadOnEditorClosed?: boolean;
+    components?: IChecklistComponents;
 }
 
 /** What a checklist item's reference on the task's record carries. */
@@ -39,8 +49,9 @@ export interface IChecklistItemData {
     isCompleted: boolean;
 }
 
-/** The `checklist` module: each task's checklist items, loaded through its store onto the task's record. */
+/** The `checklist` module, loading each task's items through its store. */
 export interface IChecklist {
+    readonly components: IChecklistComponents;
     /** What the last load threw, until the next one starts. */
     getError(): unknown;
     /** Loads the tasks' checklist items again, every loaded task's when none are given. */
@@ -51,22 +62,27 @@ export interface IChecklist {
 
 /** Each task's checklist progress, in a column Edit columns offers. */
 export class Checklist implements IChecklist {
+    public readonly components: IChecklistComponents;
     private _store: IChecklistStore;
     private _labels: LabelsOf<typeof CHECKLIST_LABELS>;
     private _values: TaskColumnValues;
     private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
-        this._store = parameters.onCreateStore(taskRuntime, this);
+        this.components = parameters.components ?? {};
+        this._store = parameters.onCreateStore(taskRuntime);
         this._labels = taskRuntime.getLabels(CHECKLIST_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => [CHECKLIST_COLUMN_NAME],
             onLoad: this._loadItems,
             errorMessage: () => this._labels.get('checklist.loadChecklistFailed'),
+            reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
-        taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
+        this._unregisters.push(
+            taskRuntime.services.observe('provider', this._onProviderAvailable),
+            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
+        );
     }
 
     public getError(): unknown {
@@ -83,8 +99,8 @@ export class Checklist implements IChecklist {
         this._store.destroy?.();
     }
 
-    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        this._unregisters.push(provider.registerAvailableColumns(this._addColumn));
+    private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
+        return provider.registerAvailableColumns(this._addColumn);
     };
 
     //a task the store leaves out has no items left
@@ -101,23 +117,14 @@ export class Checklist implements IChecklist {
     });
 
     private _addColumn = (columns: IColumn[]): void => {
-        const column: IColumn = {
-            name: CHECKLIST_COLUMN_NAME,
-            displayName: this._labels.get('checklist.checklist'),
-            dataType: DataTypes.LookupSimple,
-            isVirtual: true,
-            visualSizeFactor: 100,
-            disableSorting: true,
-            metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
-        };
         if (!columns.some(existing => existing.name === CHECKLIST_COLUMN_NAME)) {
-            columns.push(column);
+            columns.push(createReadOnlyLookupColumn(CHECKLIST_COLUMN_NAME, this._labels.get('checklist.checklist')));
         }
     };
 
-    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
-        this._unregisters.push(grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20));
-    }
+    private _onGridAvailable = (grid: IGrid): (() => void) => {
+        return (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+    };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
         const colDef = columnDefs.find(colDef => colDef.colId === CHECKLIST_COLUMN_NAME);

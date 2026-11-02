@@ -1,22 +1,27 @@
 import { ICalloutProps } from "@fluentui/react";
 import { Callout } from "@ui";
-import type { IGanttNonWorkingDay } from "../../../GanttNonWorkingDays";
 
-export interface INonWorkingDayTooltipDescriptionProps extends React.HTMLAttributes<HTMLSpanElement> {
+/** A day the tooltip describes. */
+export interface INonWorkingDaysUiTooltipDay {
+    id: string;
+    description: string;
+}
+
+export interface INonWorkingDaysUiTooltipDescriptionProps extends React.HTMLAttributes<HTMLSpanElement> {
     /** The day the description belongs to. */
-    day: IGanttNonWorkingDay<unknown>;
+    day: INonWorkingDaysUiTooltipDay;
 }
 
 /** The replaceable pieces of a non-working day's tooltip. */
-export interface INonWorkingDayTooltipComponents {
+export interface INonWorkingDaysUiTooltipComponents {
     onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
     /** Holds the descriptions, inside the callout. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-    onRenderDescription: (props: INonWorkingDayTooltipDescriptionProps) => JSX.Element | null;
+    onRenderDescription: (props: INonWorkingDaysUiTooltipDescriptionProps) => JSX.Element | null;
 }
 
-/** The defaults for {@link INonWorkingDayTooltipComponents}. */
-export const NonWorkingDayTooltipComponents: INonWorkingDayTooltipComponents = {
+/** The defaults for {@link INonWorkingDaysUiTooltipComponents}. */
+export const NonWorkingDaysUiTooltipComponents: INonWorkingDaysUiTooltipComponents = {
     onRenderCallout: props => <Callout {...props} />,
     onRenderContainer: props => <div {...props} />,
     onRenderDescription: ({ day, ...props }) => <span {...props} />,

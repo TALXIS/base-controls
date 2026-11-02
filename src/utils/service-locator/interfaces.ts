@@ -28,25 +28,25 @@ export interface IServiceLocator<TServiceMap extends object> {
      *   resolves the key, so a part whose *construction* is the point must be built before it is
      *   registered rather than inside the resolver.
      * - A resolver can be registered before what it returns exists, which is what makes
-     *   {@link IServiceLocator.whenAvailable} and resolving-in-methods work.
+     *   {@link IServiceLocator.observe} and resolving-in-methods work.
      */
     register<TKey extends keyof TServiceMap>(key: TKey, resolve: () => TServiceMap[TKey]): void;
     /**
-     * Runs the callback with the service as soon as there is one — immediately when it already resolves,
-     * otherwise the moment something registers it. For wiring that belongs in a constructor but needs a
-     * service that has not been built yet.
-     *
-     * Runs at most once per callback. A service that is never registered simply never calls back.
+     * Runs the callback with the service now if there is one, and again each time something registers it.
+     * @returns Stops observing and runs the last cleanup; call it as the owner goes.
      */
-    whenAvailable<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void): void;
-    /** Removes the key's resolver, so `find` returns `undefined` until something registers it again. */
+    observe<TKey extends keyof TServiceMap>(key: TKey, callback: ServiceObserver<TServiceMap[TKey]>): () => void;
+    /** Removes the key's resolver and runs its observers' cleanups, until something registers it again. */
     unregister<TKey extends keyof TServiceMap>(key: TKey): void;
     /**
-     * Releases what the locator holds: the resolvers, and the callbacks still waiting on a key. Both close
+     * Releases what the locator holds: the resolvers, and the observers after their cleanups. Both close
      * over whatever built them, so this is what stops a locator from keeping its owner reachable.
      *
-     * Afterwards `find` returns `undefined` and `get` throws, while `register` and `whenAvailable` do
+     * Afterwards `find` returns `undefined` and `get` throws, while `register` and `observe` do
      * nothing — a late registration from something still tearing down is not an error.
      */
     destroy(): void;
 }
+
+/** Handed the service each time it is registered; what it returns runs before the next call and as it stops. */
+export type ServiceObserver<TService> = (service: TService) => void | (() => void);

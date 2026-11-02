@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getCreatePreviewStyles = (theme: ITheme) => mergeStyleSets({
+export const getTaskDrawingUiPreviewStyles = (theme: ITheme) => mergeStyleSets({
     row: {
         position: 'absolute',
         left: 0,

@@ -2,8 +2,9 @@ import { ReactNode, useEffect } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import type { ITaskDependency } from "../../../../../../dependencies";
+import { GANTT_TASK_LINK_CLASS } from "../../../../../chart";
 import { useGantt, useGanttService } from "../../../../../context";
-import type { IGanttDraggingEvents } from "../../../../../dragging/GanttDragging";
+import type { IGanttDraggingEvents } from "../../../../../dragging";
 import { isChartPointerBusy, useHoverIntent } from "../../../../../hover";
 import { LinkTooltipContext } from "./context";
 
@@ -31,7 +32,7 @@ export const LinkTooltipRoot = (props: ILinkTooltipRootProps) => {
             return;
         }
         const onMouseMove = (event: MouseEvent) => {
-            const linkId = (event.target as HTMLElement | null)?.closest(`.gantt_task_link[${chart.config.link_attribute}]`)?.getAttribute(chart.config.link_attribute);
+            const linkId = (event.target as HTMLElement | null)?.closest(`.${GANTT_TASK_LINK_CLASS}[${chart.config.link_attribute}]`)?.getAttribute(chart.config.link_attribute);
             const dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
             const dependency = linkId && !dragging.isDraggingDisabled() && !chart.getState().drag_mode && !isChartPointerBusy(chart, event) ? dependencies?.getDependencies().find(item => item.id === linkId) : undefined;
             setHovered(dependency ? { dependency, target: { x: event.clientX + 10, y: event.clientY + 12 } } : undefined);

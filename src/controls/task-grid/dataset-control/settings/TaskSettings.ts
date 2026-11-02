@@ -2,7 +2,8 @@ import { HookRegistry } from "@utils";
 import type { LabelsOf, LocalizationService } from "@utils";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../../runtime";
-import type { ISettingsProps } from "./Settings";
+import { runQuietly } from "../../runtime/runQuietly";
+import type { ISettingsProps } from "../../components/adapters/settings";
 
 /** A toggle in `TaskDatasetControl.Settings`. */
 export interface ITaskGridSetting {
@@ -12,14 +13,13 @@ export interface ITaskGridSetting {
     onChange: (isChecked: boolean) => void;
 }
 
-/** A hook over the toggles `TaskDatasetControl.Settings` shows, which it adds to or changes in place. */
+/** A hook that adds to or changes the toggles `TaskDatasetControl.Settings` shows. */
 export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
 
-/** The toggles of `TaskDatasetControl.Settings`; reach it through `control.parts.whenAvailable('taskSettings', ...)`. */
+/** The toggles of `TaskDatasetControl.Settings`, the `taskSettings` part. */
 export interface ITaskSettings {
     /**
      * Registers a hook over the toggles the menu shows.
-     *
      * @param priority Ascending: a higher number gets the later word.
      */
     registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void;
@@ -65,7 +65,7 @@ export class TaskSettings implements ITaskSettings {
                 key: 'hideInactiveTasks',
                 label: this._labels.get('taskGrid.hideInactiveTasks'),
                 isChecked: provider.areInactiveTasksHidden(),
-                onChange: isChecked => provider.setInactiveTasksHidden(isChecked),
+                onChange: isChecked => { runQuietly(() => provider.setInactiveTasksHidden(isChecked)); },
             });
         }
         this._settingsHooks.apply(settings);

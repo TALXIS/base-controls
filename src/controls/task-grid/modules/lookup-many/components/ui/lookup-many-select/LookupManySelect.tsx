@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Layer, useTheme } from "@fluentui/react";
 import { MultiValueProps, OptionProps } from "react-select";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { ILookupManySelectComponents, LookupManySelectComponents } from "./components";
 import { LookupManySelectContext, useLookupManySelectContext } from "./context";
+import { getLookupManySelectStyles } from "./styles";
 
 type Reference = ComponentFramework.EntityReference;
 
@@ -18,20 +19,19 @@ export interface ILookupManySelectProps {
     defaultSearchQuery?: string;
     noRecordsFoundText: string;
     loadingText: string;
+    /** The accessible name of a pick's remove button. */
+    getRemoveText: (reference: Reference) => string;
     components?: Partial<ILookupManySelectComponents>;
     placeholder?: string;
-    /** Draws as a field whose records open in a popup over the page, in place of a list under the picks. */
+    /** Draws as a field whose records open in a popup over the page. */
     isMenuPopup?: boolean;
     onChange?: (value: Reference[]) => void;
 }
 
-//as the grid's own value renderer
-const PADDING = 9;
-
-//module level: react-select remounts a slot whose component changes
+//react-select remounts a slot whose component changes
 const MultiValue = (props: MultiValueProps<Reference, true, never>) => {
-    const { components, onRemove } = useLookupManySelectContext();
-    return components.onRenderPill({ reference: props.data, onRemove: props.isDisabled ? undefined : onRemove });
+    const { components, onRemove, getRemoveText } = useLookupManySelectContext();
+    return components.onRenderPill({ reference: props.data, onRemove: props.isDisabled ? undefined : onRemove, removeText: getRemoveText(props.data) });
 };
 
 const Option = (props: OptionProps<Reference, true, never>) => useLookupManySelectContext().components.onRenderOption(props);
@@ -40,6 +40,8 @@ const Option = (props: OptionProps<Reference, true, never>) => useLookupManySele
 export const LookupManySelect = (props: ILookupManySelectProps) => {
     const components = { ...LookupManySelectComponents, ...props.components };
     const theme = useTheme();
+    const isMenuPopup = !!props.isMenuPopup;
+    const styles = useMemo(() => getLookupManySelectStyles(theme, isMenuPopup), [theme, isMenuPopup]);
     const value = props.value ?? [];
     const isMountedRef = useRef(true);
     const [menuPortal, setMenuPortal] = useState<HTMLDivElement | null>(null);
@@ -58,8 +60,8 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
 
     const onRemove = (reference: Reference) => props.onChange?.(value.filter(picked => picked.id.guid !== reference.id.guid));
 
-    return <LookupManySelectContext.Provider value={{ components, onRemove }}>
-        {/* a Fluent layer, so a callout around it counts a pick as inside */}
+    return <LookupManySelectContext.Provider value={{ components, onRemove, getRemoveText: props.getRemoveText }}>
+        {/* a callout around a Fluent layer counts a pick as inside */}
         {props.isMenuPopup && <Layer><div ref={setMenuPortal} /></Layer>}
         {components.onRenderSelect({
             isMulti: true,
@@ -84,20 +86,7 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
             getOptionLabel: reference => reference.name ?? '',
             loadOptions,
             onChange: picked => props.onChange?.([...picked]),
-            styles: {
-                control: base => props.isMenuPopup
-                    ? { ...base, minHeight: 32, padding: `2px ${PADDING}px`, border: 'none', borderRadius: 0, background: theme.palette.neutralLighter, boxShadow: 'none', cursor: 'text' }
-                    : { ...base, minHeight: 0, padding: `4px ${PADDING}px`, border: 'none', borderBottom: `1px solid ${theme.palette.neutralLight}`, borderRadius: 0, background: 'none', boxShadow: 'none' },
-                valueContainer: base => ({ ...base, gap: 4, padding: 0 }),
-                input: base => ({ ...base, margin: 0, padding: 0, color: theme.semanticColors.inputText }),
-                menu: base => props.isMenuPopup
-                    ? { ...base, zIndex: 1, margin: 0, borderRadius: 0, background: theme.semanticColors.bodyBackground, boxShadow: theme.effects.elevation8 }
-                    : { ...base, position: 'static', margin: 0, boxShadow: 'none', borderRadius: 0, background: 'none' },
-                menuList: base => ({ ...base, maxHeight: 240 }),
-                option: (base, state) => ({ ...base, paddingLeft: PADDING, paddingRight: PADDING, cursor: 'pointer', color: theme.semanticColors.bodyText, backgroundColor: state.isFocused ? theme.palette.neutralLighter : 'transparent' }),
-                noOptionsMessage: base => ({ ...base, paddingLeft: PADDING, paddingRight: PADDING, textAlign: 'left', color: theme.semanticColors.bodySubtext }),
-                loadingMessage: base => ({ ...base, paddingLeft: PADDING, paddingRight: PADDING, textAlign: 'left', color: theme.semanticColors.bodySubtext }),
-            },
+            styles,
             components: {
                 MultiValue,
                 Option,

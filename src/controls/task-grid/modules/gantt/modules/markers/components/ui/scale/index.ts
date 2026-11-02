@@ -1,2 +1,2 @@
-export * from './GanttMarkerUiScale';
+export * from './MarkerUiScale';
 export * from './components';

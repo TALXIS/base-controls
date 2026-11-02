@@ -21,7 +21,7 @@ import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastControll
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
-import { TaskGantt, createGanttLibraryModule, createGanttProLibraryModule, createGanttMarkersModule, createMemoryGanttMarkersModule, createGanttNonWorkingDaysModule, createMemoryGanttNonWorkingDaysModule, createGanttTaskDraggingModule, createGanttTaskCreateModule, createGanttSelectionModule, createGanttTooltipModule, createGanttLinksModule, TaskTooltip, useGanttMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
+import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { NON_WORKING_DAYS } from '../task-grid/memoryNonWorkingDayData'
@@ -171,19 +171,19 @@ export const GRID_SANDBOX_SCOPE = {
     createDependenciesModule,
     createMemoryDependenciesModule,
     TaskGantt,
-    createGanttLibraryModule,
-    createGanttProLibraryModule,
-    createGanttMarkersModule,
-    createMemoryGanttMarkersModule,
-    createGanttNonWorkingDaysModule,
-    createMemoryGanttNonWorkingDaysModule,
-    createGanttTaskDraggingModule,
-    createGanttTaskCreateModule,
-    createGanttSelectionModule,
-    createGanttTooltipModule,
-    createGanttLinksModule,
+    createLibraryModule,
+    createProLibraryModule,
+    createMarkersModule,
+    createMemoryMarkersModule,
+    createNonWorkingDaysModule,
+    createMemoryNonWorkingDaysModule,
+    createBarDraggingModule,
+    createTaskDrawingModule,
+    createTaskSelectionModule,
+    createTaskTooltipModule,
+    createLinksModule,
     TaskTooltip,
-    useGanttMarker,
+    useMarker,
     createDataverseDependenciesModule,
     createTalxisDependenciesModule,
     DEPENDENCIES,

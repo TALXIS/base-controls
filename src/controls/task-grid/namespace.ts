@@ -1,8 +1,6 @@
 import { TaskGridRoot } from "./TaskGrid";
 import { TaskDatasetControlRoot } from "./dataset-control/TaskDatasetControl";
-import { Settings } from "./dataset-control/settings";
-import { PageSizeSwitcher } from "./dataset-control/page-size-switcher";
-import { Ribbon } from "./dataset-control/ribbon";
+import { PageSizeSwitcher, Ribbon, Settings } from "./components/adapters";
 
 export interface ITaskDatasetControlParts {
     /** A menu of the task grid's toggles, such as Show hierarchy. */
@@ -16,5 +14,5 @@ export interface ITaskDatasetControlParts {
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 export const TaskDatasetControl: typeof TaskDatasetControlRoot & ITaskDatasetControlParts = Object.assign(TaskDatasetControlRoot, { Settings, PageSizeSwitcher, Ribbon });
 
-/** The tasks of a `TaskDatasetControl`, drawn as a tree; goes in its body. */
+/** The tasks of a `TaskDatasetControl`, drawn as a tree in its body. */
 export const TaskGrid = TaskGridRoot;

@@ -1,25 +1,29 @@
 import { useMemo } from "react";
-import { Icon, Text, useTheme } from "@fluentui/react";
-import type { IEntityReference } from "@talxis/client-libraries";
-import type { IChecklistItemData } from "../../../Checklist";
+import { useTheme } from "@fluentui/react";
+import { ChecklistProgressComponents, IChecklistProgressComponents } from "./components";
 import { getChecklistProgressStyles } from "./styles";
 
 export interface IChecklistProgressProps {
-    items: IEntityReference<IChecklistItemData>[];
+    completedCount: number;
+    totalCount: number;
+    components?: Partial<IChecklistProgressComponents>;
 }
 
-/** How far a checklist has got, as `done/total`; nothing for no items. */
+/** How far a checklist has got, as `done/total`. */
 export const ChecklistProgress = (props: IChecklistProgressProps) => {
-    const { items } = props;
+    const { completedCount, totalCount } = props;
+    const components = { ...ChecklistProgressComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getChecklistProgressStyles(theme), [theme]);
 
-    if (items.length === 0) {
+    if (totalCount === 0) {
         return null;
     }
-    const completedCount = items.filter(item => item.data?.isCompleted).length;
-    return <div className={styles.root}>
-        <Icon iconName='Completed' className={completedCount === items.length ? styles.completedIcon : styles.icon} />
-        <Text>{completedCount}/{items.length}</Text>
-    </div>;
+    return components.onRenderContainer({
+        className: styles.root,
+        children: <>
+            {components.onRenderIcon({ iconName: 'Completed', className: completedCount === totalCount ? styles.completedIcon : styles.icon })}
+            {components.onRenderText({ children: `${completedCount}/${totalCount}` })}
+        </>,
+    });
 };

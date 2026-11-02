@@ -1,2 +1,3 @@
-export * from './createGanttTaskCreateModule';
-export type { IGanttTaskCreate } from './GanttTaskCreate';
+export * from './createTaskDrawingModule';
+export * from './components';
+export type { ITaskDrawing, ITaskDrawingComponents, ITaskDrawingParameters } from './TaskDrawing';

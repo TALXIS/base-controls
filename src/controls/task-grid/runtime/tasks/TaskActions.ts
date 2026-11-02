@@ -3,27 +3,26 @@ import { ErrorHelper } from "@utils/error-handling";
 import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
-import { runQuietly } from "../runQuietly";
 
 type TaskLoadingLabel = 'taskGrid.openingTasks' | 'taskGrid.deletingTasks' | 'taskGrid.movingTask' | 'taskGrid.openingRecord';
 type TaskErrorLabel = 'taskGrid.openTasksFailed' | 'taskGrid.deleteTasksFailed' | 'taskGrid.moveTaskFailed' | 'taskGrid.openRecordFailed';
 
 /** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
-    /** @returns The created task, or `null` when creation is off or the user cancelled. */
+    /** @returns The created task, or `null` when it was not created. */
     create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
     /** Opens the tasks in an editor outside the grid, such as a form. */
     open(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
-    /** Places the task and saves it under the loading overlay; `null` when it cannot go there. */
+    /** Places the task and saves it, or returns `null` when it cannot go there. */
     move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
     /** Opens the task, or the record its lookup points to when `columnName` is another column. */
     openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
-/** Runs the provider's task actions under the loading overlay, their errors shown, and what the user sees around them. */
+/** Runs the provider's task actions under the loading overlay with their errors shown. */
 export class TaskActions implements ITaskActions {
     private _runtime: ITaskRuntime;
 
@@ -43,10 +42,7 @@ export class TaskActions implements ITaskActions {
             this._runtime.services.find('taskTree')?.revealTask(task.getRecordId());
         }
         //the task's row shows the wait
-        const isCreated = await this._runtime.execute(async () => {
-            await this._provider.whenTaskCreated(task.getRecordId());
-            return true;
-        }, { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
+        const isCreated = await this._runtime.execute(() => this._provider.whenTaskCreated(task.getRecordId()), { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
         return isCreated ? task : null;
     }
 

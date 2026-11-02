@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import { GANTT_DATA_AREA_CLASS, GANTT_TASK_BG_CLASS, GANTT_TASK_CELL_CLASS, GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS, GANTT_TASK_ROW_CLASS } from "../../chart/classNames";
+import { GANTT_DATA_AREA_CLASS, GANTT_TASK_BG_CLASS, GANTT_TASK_CELL_CLASS, GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_LINE_CLASS, GANTT_TASK_ROW_CLASS } from "../../chart";
 
 /** The row a drawn task goes above, relative to the chart's root. */
 export interface ITimelineCreateTarget {
@@ -26,7 +26,7 @@ export const getCreateTarget = (gantt: GanttStatic, target: EventTarget | null):
         const rowRect = rowElement.getBoundingClientRect();
         return { rowTaskId: rowElement.getAttribute(GANTT_TASK_ID_ATTRIBUTE) ?? undefined, rowTop: rowRect.top - rootTop, rowHeight: rowRect.height };
     }
-    //a bar has no row element to measure; its row is centred on it
+    //a bar has no row element to measure but its row is centred on it
     const taskElement = element.closest<HTMLElement>(`[${GANTT_TASK_ID_ATTRIBUTE}]`);
     const rowTaskId = taskElement?.getAttribute(GANTT_TASK_ID_ATTRIBUTE) ?? undefined;
     if (!taskElement || !rowTaskId || !gantt.isTaskExists(rowTaskId)) {

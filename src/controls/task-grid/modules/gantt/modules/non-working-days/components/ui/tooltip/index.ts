@@ -1,2 +1,2 @@
-export * from './NonWorkingDayTooltip';
+export * from './NonWorkingDaysUiTooltip';
 export * from './components';

@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskTooltipUiDateRangeStyles = (theme: ITheme) => mergeStyleSets({
+export const getTooltipUiDateRangeStyles = (theme: ITheme) => mergeStyleSets({
     dateRange: {
         ...theme.fonts.small,
         display: 'flex',

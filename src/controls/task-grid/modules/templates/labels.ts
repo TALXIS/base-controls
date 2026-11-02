@@ -8,6 +8,8 @@ export const TEMPLATES_LABELS = defineLabels({
     'templates.saveAsTemplate': 'Save as template',
     'templates.searchTemplates': 'Search templates',
     'templates.noTemplates': 'No templates found',
+    /** The column of the template list. */
+    'templates.name': 'Name',
     'templates.creatingTasksFromTemplate': 'Creating tasks from template...',
     'templates.savingTemplate': 'Saving template...',
     /** Titles the dialog an operation on a template failed with. */

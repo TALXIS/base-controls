@@ -3,32 +3,32 @@ import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";
-import type { IGanttSchedule } from "./schedule/GanttSchedule";
-import type { IGanttZooming } from "./zooming/GanttZooming";
-import type { IGanttTimeline } from "./timeline/GanttTimeline";
-import type { IGanttDragging } from "./dragging/GanttDragging";
-import type { IGanttTasks } from "./tasks/GanttTasks";
+import type { IGanttSchedule } from "./schedule";
+import type { IGanttSavedZoom, IGanttZooming } from "./zooming";
+import type { IGanttTimeline } from "./timeline";
+import type { IGanttDragging } from "./dragging";
+import type { IGanttTasks } from "./tasks";
 import type { IGanttSurfaces } from "./surfaces";
 import type { IGanttTheme } from "./theme";
 import type { IGanttOverlay } from "./overlay";
 import type { ITaskGanttProps } from "./TaskGantt";
-import type { IGanttLibrary } from "./modules/library";
+import type { ILibrary } from "./modules/library";
 
-/** The modules a Gantt loaded, by name; each module adds its own entry. */
+/** The modules a Gantt loaded by name, each adding its own entry. */
 export interface IGanttModuleMap { }
 
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
 export interface IGanttModule<TName extends keyof IGanttModuleMap = keyof IGanttModuleMap> {
-    /** Unique within the Gantt; what `onLoad` returns is registered under it. */
+    /** Unique within the Gantt and the key `onLoad`'s result is registered under. */
     name: TName;
     onLoad(gantt: IGantt): IGanttModuleMap[TName] | Promise<IGanttModuleMap[TName]>;
     /** Called as the Gantt goes, with what `onLoad` returned. */
     onDestroy?(instance: IGanttModuleMap[TName]): void;
 }
 
-export type IGanttModuleLocator = Pick<IServiceLocator<IGanttModuleMap>, 'get' | 'find' | 'whenAvailable'>;
+export type IGanttModuleLocator = Pick<IServiceLocator<IGanttModuleMap>, 'get' | 'find' | 'observe'>;
 
-/** The services the modules register; a module adds its own by augmenting this. */
+/** The services the modules register by augmenting this. */
 export interface IGanttModuleServiceMap { }
 
 export interface IGanttServiceMap extends IGanttModuleServiceMap {
@@ -57,7 +57,7 @@ export type IGanttServiceLocator = IServiceLocator<IGanttServiceMap>;
 export type IGanttDeferredService = keyof IGanttModuleServiceMap | 'chart' | 'zooming' | 'timeline' | 'dragging' | 'grid' | 'tasks';
 
 export interface IGanttEvents {
-    /** The chart is drawn, and its services are there. */
+    /** The chart is drawn with its services registered. */
     onChartReady: (chart: GanttStatic) => void;
     /** The chart's tasks were rebuilt from the grid's rows. */
     onTasksParsed: (isFirstLoad: boolean) => void;
@@ -74,12 +74,14 @@ export interface IGantt {
     readonly modules: IGanttModuleLocator;
     /** What the modules draw over the chart. */
     readonly surfaces: IGanttSurfaces;
+    /** The styles the chart is drawn with. */
+    readonly theme: IGanttTheme;
     /** The `TaskGantt`'s props as they are now. */
     getProps(): ITaskGanttProps;
     getTaskRuntime(): ITaskRuntime;
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** The build the chart is created from, there before any other module loads. */
-    getLibrary(): IGanttLibrary;
+    getLibrary(): ILibrary;
     /**
      * Registers a hook that sets the chart's config, templates and plugins before it is drawn.
      * @param priority Ascending: a higher number gets the later word.
@@ -87,18 +89,6 @@ export interface IGantt {
     registerChartConfig(hook: GanttChartConfigHook, priority?: number): () => void;
     /** Redraws the chart, such as after a hook's answer changed. */
     render(): void;
-}
-
-/** How far the chart is zoomed. */
-export interface IGanttZoom {
-    pixelsPerDay: number;
-}
-
-/** The zoom a user view saves, with the date it is centred on. */
-export interface IGanttSavedZoom {
-    zoom: IGanttZoom;
-    /** As an ISO string. */
-    anchorDate?: string;
 }
 
 declare module "@controls/dataset-control/modules/user-queries/interfaces" {

@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
-import { ITaskTooltipUiCalloutComponents, TaskTooltipUiCallout } from "../../ui";
-import { useTaskTooltip } from "../task-tooltip";
+import { ITooltipUiCalloutComponents, TooltipUiCallout } from "../../../../../components/ui/tooltip";
+import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipCalloutProps {
     children?: ReactNode;
-    components?: Partial<ITaskTooltipUiCalloutComponents>;
+    components?: Partial<ITooltipUiCalloutComponents>;
 }
 
 /** The callout the tooltip is drawn in, next to the pointer. */
 export const TaskTooltipCallout = (props: ITaskTooltipCalloutProps) => {
     const { target } = useTaskTooltip();
-    return <TaskTooltipUiCallout target={target} components={props.components}>{props.children}</TaskTooltipUiCallout>;
+    return <TooltipUiCallout target={target} components={props.components}>{props.children}</TooltipUiCallout>;
 };

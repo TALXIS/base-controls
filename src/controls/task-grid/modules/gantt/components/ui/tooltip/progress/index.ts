@@ -1,2 +1,2 @@
-export * from './TaskTooltipUiProgress';
+export * from './TooltipUiProgress';
 export * from './components';

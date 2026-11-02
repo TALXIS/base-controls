@@ -1,8 +1,9 @@
 import { ReactNode, useEffect, useRef } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
+import { GANTT_TASK_LINE_CLASS } from "../../../../../chart";
 import { useGantt, useGanttService } from "../../../../../context";
-import type { IGanttDraggingEvents } from "../../../../../dragging/GanttDragging";
+import type { IGanttDraggingEvents } from "../../../../../dragging";
 import { isChartPointerBusy, useHoverIntent } from "../../../../../hover";
 import { TaskTooltipContext } from "./context";
 
@@ -76,5 +77,5 @@ const getBarColor = (bar: HTMLElement | null): string | undefined => {
 };
 
 const getBarTaskId = (event: MouseEvent, taskAttribute: string): string | undefined => {
-    return (event.target as HTMLElement | null)?.closest(`.gantt_task_line[${taskAttribute}]`)?.getAttribute(taskAttribute) ?? undefined;
+    return (event.target as HTMLElement | null)?.closest(`.${GANTT_TASK_LINE_CLASS}[${taskAttribute}]`)?.getAttribute(taskAttribute) ?? undefined;
 };

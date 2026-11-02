@@ -930,8 +930,8 @@ interface IServiceLocator<TServiceMap extends object> {
     find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined;
     /** The resolver runs on every lookup. */
     register<TKey extends keyof TServiceMap>(key: TKey, resolve: () => TServiceMap[TKey]): void;
-    /** Runs the callback as soon as the service is registered. */
-    whenAvailable<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void): void;
+    /** Runs the callback now and on every register; what it returns runs before the next call. */
+    observe<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void | (() => void)): () => void;
     destroy(): void;
 }
 
@@ -1844,7 +1844,7 @@ interface IGrid {
     /** Every part of the grid, by key. */
     readonly services: IGridServiceLocator;
     /** The modules the grid was given, by name. */
-    readonly modules: { get(name: string): any; find(name: string): any; whenAvailable(name: string, callback: (instance: any) => void): void };
+    readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (instance: any) => void | (() => void)): () => void };
     /** A hook over the options AG Grid reads once, when it is created. */
     registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
     /** AG Grid is handed an option again whenever its reference changes. */
@@ -3686,8 +3686,8 @@ interface IDatasetControlPartLocator {
     /** Throws when the part is not rendered. */
     get<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K];
     find<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K] | undefined;
-    /** Calls back once the part is rendered. */
-    whenAvailable<K extends keyof IDatasetControlPartMap>(key: K, callback: (part: IDatasetControlPartMap[K]) => void): void;
+    /** Calls back each time the part is rendered; what it returns runs before the next call. */
+    observe<K extends keyof IDatasetControlPartMap>(key: K, callback: (part: IDatasetControlPartMap[K]) => void | (() => void)): () => void;
 }
 
 /** The DatasetControl as its consumer drives it. */
@@ -3707,7 +3707,7 @@ interface IDatasetControl<TData = unknown> {
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     readonly parts: IDatasetControlPartLocator;
     /** The modules the control loaded, by name. */
-    readonly modules: { get(name: string): any; find(name: string): any; whenAvailable(name: string, callback: (module: any) => void): void };
+    readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (module: any) => void | (() => void)): () => void };
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, from the last load that succeeded. */
@@ -3943,7 +3943,7 @@ interface ITaskActions {
 }
 
 interface ITaskRuntime {
-    readonly services: { get(key: string): any; find(key: string): any; whenAvailable(key: string, callback: (service: any) => void): void; register(key: string, resolve: () => any): void };
+    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, callback: (service: any) => void | (() => void)): () => void; register(key: string, resolve: () => any): void };
     readonly events: { addEventListener(event: 'onDestroyed', listener: () => void): void };
     getProvider(): ITaskDataProvider;
     /** The view this mount loaded. */
@@ -4096,14 +4096,13 @@ interface ICustomColumnDefinition {
     options?: string[];
 }
 
-/** The user's own task columns kept in the browser's IndexedDB; a new one is a sample text column, and editing one is not implemented. */
+/** The user's own task columns kept in the browser's IndexedDB; a new one is a sample text column. */
 declare const createIndexedDbCustomColumnsModule: (parameters: {
     /** The IndexedDB database the columns and their values are kept in; one per control. */
     databaseName: string;
     /** The columns a new database starts with. */
     columns?: ICustomColumnDefinition[];
     enableCreation?: boolean;
-    enableEditing?: boolean;
     enableDeletion?: boolean;
     labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
@@ -4423,7 +4422,7 @@ interface IGanttModule {
 }
 
 /** A date marked on the timeline with a line and a chip on the scale. */
-interface IGanttMarker {
+interface IMarker {
     id: string;
     text: string;
     date: import('dayjs').Dayjs;
@@ -4431,27 +4430,27 @@ interface IGanttMarker {
     color?: string;
 }
 
-type GanttMarkerSlot = (props: any) => JSX.Element | null;
+type MarkerSlot = (props: any) => JSX.Element | null;
 
-interface IGanttMarkersOptions {
+interface IMarkersOptions {
     /** Today: enableMarker defaults to \`true\`, color to the theme's primary colour. */
     today?: { enableMarker?: boolean; color?: string };
     /** The project module's start and end: enableMarkers defaults to \`true\`, color to the theme's primary colour. */
     project?: { enableMarkers?: boolean; color?: string };
     /** The replaceable pieces of the markers: layer, column, track, scale and line each have onRenderContainer; chip has onRenderTooltip and onRenderChip. */
     components?: {
-        layer?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
-        column?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
-        track?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
-        scale?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
-        line?: Partial<{ onRenderContainer: GanttMarkerSlot }>;
-        chip?: Partial<{ onRenderTooltip: GanttMarkerSlot; onRenderChip: GanttMarkerSlot }>;
+        layer?: Partial<{ onRenderContainer: MarkerSlot }>;
+        column?: Partial<{ onRenderContainer: MarkerSlot }>;
+        track?: Partial<{ onRenderContainer: MarkerSlot }>;
+        scale?: Partial<{ onRenderContainer: MarkerSlot }>;
+        line?: Partial<{ onRenderContainer: MarkerSlot }>;
+        chip?: Partial<{ onRenderTooltip: MarkerSlot; onRenderChip: MarkerSlot }>;
     };
     labels?: Partial<{ today: string; projectStart: string; projectEnd: string; loadMarkersFailed: string }>;
 }
 
 /** The marker a slot is drawn for, inside a Gantt marker. */
-declare const useGanttMarker: () => { marker: IGanttMarker; left: number };
+declare const useMarker: () => { marker: IMarker; left: number };
 
 /** The tasks on a timeline, row for row with the TaskGrid beside it; needs startDate and endDate in the field mapping. */
 declare const TaskGantt: ((props: {
@@ -4460,21 +4459,21 @@ declare const TaskGantt: ((props: {
     labels?: Partial<{ zoomSlider: string; zoomToFit: string; goToToday: string }>;
 }) => JSX.Element) & {
     /** The Gantt's zoom; goes in the header. */
-    ZoomSlider: () => JSX.Element;
+    ZoomSlider: (props: { components?: { [slot: string]: unknown } }) => JSX.Element;
     /** The grid and the Gantt side by side; goes in the body. */
     Split: (props: { children: [React.ReactNode, React.ReactNode]; stateKey?: string; defaultGanttSize?: number }) => JSX.Element;
 };
 
 /** The free MIT build of DHTMLX Gantt; every TaskGantt needs a library module. */
-declare const createGanttLibraryModule: () => IGanttModule;
+declare const createLibraryModule: () => IGanttModule;
 /** A PRO build of DHTMLX Gantt, passed as its Gantt export. */
-declare const createGanttProLibraryModule: (Gantt: unknown) => IGanttModule;
+declare const createProLibraryModule: (parameters: { Gantt: unknown }) => IGanttModule;
 /** Today, the project's start and end, and the store's own markers. */
-declare const createGanttMarkersModule: (parameters?: IGanttMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IGanttMarker[]> } }) => IGanttModule;
+declare const createMarkersModule: (parameters?: IMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IMarker[]> } }) => IGanttModule;
 /** Markers held in memory. */
-declare const createMemoryGanttMarkersModule: (parameters: IGanttMarkersOptions & { markers: IGanttMarker[] }) => IGanttModule;
+declare const createMemoryMarkersModule: (parameters: IMarkersOptions & { markers: IMarker[] }) => IGanttModule;
 /** A day, or a run of days, on which tasks are not worked on. */
-interface IGanttNonWorkingDay {
+interface INonWorkingDay {
     id: string;
     /** The first day, of the first occurrence when it recurs. */
     date: import('dayjs').Dayjs;
@@ -4488,7 +4487,7 @@ interface IGanttNonWorkingDay {
     data?: { [key: string]: unknown };
 }
 
-interface IGanttNonWorkingDaysOptions {
+interface INonWorkingDaysOptions {
     /** Whether Saturdays and Sundays are non-working days. Defaults to true. */
     enableWeekends?: boolean;
     isVisibleByDefault?: boolean;
@@ -4497,25 +4496,25 @@ interface IGanttNonWorkingDaysOptions {
         tooltip?: Partial<{
             onRenderCallout: (props: any) => JSX.Element | null;
             onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-            onRenderDescription: (props: React.HTMLAttributes<HTMLSpanElement> & { day: IGanttNonWorkingDay }) => JSX.Element | null;
+            onRenderDescription: (props: React.HTMLAttributes<HTMLSpanElement> & { day: { id: string; description: string } }) => JSX.Element | null;
         }>;
     };
     labels?: Partial<{ hideNonWorkingDays: string; weekend: string; loadNonWorkingDaysFailed: string }>;
 }
 
 /** Common holidays, plus a few company days, for the sample Gantt. */
-declare const NON_WORKING_DAYS: IGanttNonWorkingDay[];
+declare const NON_WORKING_DAYS: INonWorkingDay[];
 
 /** Weekends and the store's days, shaded on the timeline and hidden from TaskDatasetControl.Settings. */
-declare const createGanttNonWorkingDaysModule: (parameters?: IGanttNonWorkingDaysOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadNonWorkingDays(): Promise<IGanttNonWorkingDay[]> } }) => IGanttModule;
+declare const createNonWorkingDaysModule: (parameters?: INonWorkingDaysOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadNonWorkingDays(): Promise<INonWorkingDay[]> } }) => IGanttModule;
 /** Non-working days held in memory. */
-declare const createMemoryGanttNonWorkingDaysModule: (parameters: IGanttNonWorkingDaysOptions & { nonWorkingDays: IGanttNonWorkingDay[] }) => IGanttModule;
+declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: INonWorkingDay[] }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
-declare const createGanttTaskDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
+declare const createBarDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
 /** Ctrl+drag over the timeline draws a new task. */
-declare const createGanttTaskCreateModule: () => IGanttModule;
+declare const createTaskDrawingModule: (parameters?: { components?: { preview?: { [slot: string]: unknown } } }) => IGanttModule;
 /** Selects tasks from the chart; Shift+drag selects the bars under a band. */
-declare const createGanttSelectionModule: (parameters?: { enableSelectionBox?: boolean }) => IGanttModule;
+declare const createTaskSelectionModule: (parameters?: { enableSelectionBox?: boolean }) => IGanttModule;
 type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | null }>;
 
 /** Finds the hovered or dragged bar; its parts go inside it. */
@@ -4543,8 +4542,8 @@ declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Eleme
 };
 
 /** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
-declare const createGanttTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string; labels?: Partial<{ duration: string }> }) => IGanttModule;
+declare const createTaskTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string; labels?: Partial<{ duration: string }> }) => IGanttModule;
 /** Draws the dependencies module's dependencies between the bars. */
-declare const createGanttLinksModule: (parameters?: { labels?: Partial<{ confirmDeleteLink: string }> }) => IGanttModule;
+declare const createLinksModule: (parameters?: { labels?: Partial<{ confirmDeleteLink: string }> }) => IGanttModule;
 
 `

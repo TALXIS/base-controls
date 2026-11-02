@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttMarkers, IGanttMarkersParameters } from "./GanttMarkers";
+import { Markers, IMarkersParameters } from "./Markers";
 
-export interface IGanttMarkersModule extends IGanttModule<'markers'> { }
+export interface IMarkersModule extends IGanttModule<'markers'> { }
 
-export const createGanttMarkersModule = (parameters: IGanttMarkersParameters = {}): IGanttMarkersModule => ({
+export const createMarkersModule = (parameters: IMarkersParameters = {}): IMarkersModule => ({
     name: 'markers',
-    onLoad: gantt => new GanttMarkers(gantt, parameters),
+    onLoad: gantt => new Markers(gantt, parameters),
     onDestroy: markers => markers.destroy(),
 });

@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGanttMarkerUiLayerStyles = () => mergeStyleSets({
+export const getMarkerUiLayerStyles = () => mergeStyleSets({
     layer: {
         position: 'absolute',
         top: 0,

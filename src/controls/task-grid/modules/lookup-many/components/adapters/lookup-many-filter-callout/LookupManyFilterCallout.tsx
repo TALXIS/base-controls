@@ -3,9 +3,9 @@ import { Operators } from "@talxis/client-libraries";
 import { useLabels, usePcfContext } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS, GRID_FILTERING_LABELS, useGridColumnHeader, useGridService } from "@controls/grid";
-import { useTaskGridContext } from "../../../../../context";
+import { useTaskRuntime } from "../../../../../dataset-control/context";
 import { LookupManyFilter, LookupManyFilterValueKind } from "../../ui";
-import { getLookupManyComponents } from "../getLookupManyComponents";
+import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";
 import { LOOKUP_MANY_LABELS } from "../../../labels";
 
 type Reference = ComponentFramework.EntityReference;
@@ -35,36 +35,40 @@ const wrapText = (operator: number, text: string): string => {
 
 const unwrapText = (value: string): string => value.replace(/^%|%$/g, '');
 
-/** A lookup-many column's filter callout, picking among the module's records and writing the condition into the tasks' filter. */
+/** A lookup-many column's filter callout, writing the condition into the tasks' filter. */
 export const LookupManyFilterCallout = () => {
     const header = useGridColumnHeader();
     const context = usePcfContext();
     const operatorLabels = useLabels(FILTER_OPERATORS_LABELS);
     const column = header.getColumn()!;
     const lookupMany = useDatasetControlModule('lookupMany');
-    const { runtime } = useTaskGridContext();
+    const runtime = useTaskRuntime();
     const filteringLabels = useLabels(GRID_FILTERING_LABELS);
     const calloutComponents = useGridService('grid').modules.find('filtering')?.components.filterCallout;
     const labels = useLabels(LOOKUP_MANY_LABELS);
-    const condition = useMemo(() => lookupMany.getFilterCondition(column.name), []);
-    const [operator, setOperator] = useState<number>(condition?.conditionOperator ?? Operators.ContainValues.Value);
-    const [records, setRecords] = useState<Reference[]>(() => getSavedRecords(condition));
-    const [text, setText] = useState(() => condition && getValueKind(condition.conditionOperator) === 'text' ? unwrapText(`${condition.value ?? ''}`) : '');
-    const optionsProvider = useMemo(() => lookupMany.createOptionsProvider(undefined, column), [column]);
-    const appearance = lookupMany.getColumn(column.name)?.appearance;
-    const selectComponents = useMemo(() => getLookupManyComponents(appearance), [appearance]);
-    const valueKind = getValueKind(operator);
-    useEffect(() => () => optionsProvider?.destroy(), [optionsProvider]);
-
     //the names of saved ids come from the records the tasks hold
-    function getSavedRecords(saved: Condition | undefined): Reference[] {
+    const getSavedRecords = (saved: Condition | undefined): Reference[] => {
         if (!saved || getValueKind(saved.conditionOperator) !== 'records') {
             return [];
         }
         const ids: string[] = Array.isArray(saved.value) ? saved.value : [saved.value];
         const known = new Map(runtime.getProvider().getAllRecords().flatMap(record => lookupMany.getValue(record.getRecordId(), column.name)).map(reference => [reference.id.guid, reference]));
         return ids.map(id => known.get(id) ?? { id: { guid: id }, name: id, etn: lookupMany.getColumn(column.name)?.entityName });
-    }
+    };
+    const [condition] = useState(() => lookupMany.getFilterCondition(column.name));
+    const [operator, setOperator] = useState<number>(condition?.conditionOperator ?? Operators.ContainValues.Value);
+    const [records, setRecords] = useState<Reference[]>(() => getSavedRecords(condition));
+    const [text, setText] = useState(() => condition && getValueKind(condition.conditionOperator) === 'text' ? unwrapText(`${condition.value ?? ''}`) : '');
+    const optionsProvider = useMemo(() => lookupMany.createOptionsProvider(undefined, column), [column]);
+    const appearance = lookupMany.getColumn(column.name)?.appearance;
+    const filterComponents = lookupMany.components.filter;
+    const components = useMemo(() => ({
+        ...filterComponents,
+        callout: { ...calloutComponents, ...filterComponents?.callout },
+        select: { ...getLookupManyAppearanceComponents(appearance), ...filterComponents?.select },
+    }), [appearance]);
+    const valueKind = getValueKind(operator);
+    useEffect(() => () => optionsProvider?.destroy(), [optionsProvider]);
 
     const getConditionValue = (): string | string[] | null => {
         switch (valueKind) {
@@ -107,9 +111,9 @@ export const LookupManyFilterCallout = () => {
         clearText={filteringLabels.get('gridFiltering.clear')}
         noRecordsFoundText={labels.get('lookupMany.noRecordsFound')}
         loadingText={labels.get('lookupMany.loading')}
+        getRemoveText={reference => labels.get('lookupMany.remove', { name: reference.name ?? '' })}
         isClearDisabled={records.length === 0 && !text}
-        selectComponents={selectComponents}
-        calloutComponents={calloutComponents}
+        components={components}
         onOperatorChange={setOperator}
         onRecordsChange={setRecords}
         onTextChange={setText}

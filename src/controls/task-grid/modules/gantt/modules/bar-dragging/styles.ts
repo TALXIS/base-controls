@@ -1,11 +1,11 @@
 import type { IStyle } from "@fluentui/react";
-import { GANTT_TASK_LINE_CLASS, GANTT_TASK_LOCKED_CLASS } from "../../chart/classNames";
+import { GANTT_TASK_DRAG_END_CLASS, GANTT_TASK_DRAG_HANDLE_CLASS, GANTT_TASK_DRAG_START_CLASS, GANTT_TASK_LINE_CLASS, GANTT_TASK_LOCKED_CLASS } from "../../chart";
 
 const HANDLE_WIDTH = 10;
 
-//inside the bar's ends, so the links' dots just outside them keep their own room
-export const getGanttTaskDraggingStyles = (): IStyle => ({
-    [`.${GANTT_TASK_LINE_CLASS} .gantt_task_drag`]: {
+//inside the bar's ends so the link dots just outside keep their room
+export const getBarDraggingStyles = (): IStyle => ({
+    [`.${GANTT_TASK_LINE_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}`]: {
         top: 0,
         height: '100%',
         minHeight: 0,
@@ -21,15 +21,15 @@ export const getGanttTaskDraggingStyles = (): IStyle => ({
             backgroundColor: 'rgba(255, 255, 255, 0.75)',
         },
     },
-    [`.${GANTT_TASK_LINE_CLASS} .gantt_task_drag.task_left`]: {
+    [`.${GANTT_TASK_LINE_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}.${GANTT_TASK_DRAG_START_CLASS}`]: {
         left: 0,
         '::after': { left: 3 },
     },
-    [`.${GANTT_TASK_LINE_CLASS} .gantt_task_drag.task_right`]: {
+    [`.${GANTT_TASK_LINE_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}.${GANTT_TASK_DRAG_END_CLASS}`]: {
         right: 0,
         '::after': { right: 3 },
     },
-    [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_LOCKED_CLASS} .gantt_task_drag`]: {
+    [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_LOCKED_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}`]: {
         display: 'none',
     },
 });

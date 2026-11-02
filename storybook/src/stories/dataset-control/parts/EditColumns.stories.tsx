@@ -60,7 +60,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 A module adds what it needs through the two hooks, such as a command that creates a column:
 
 \`\`\`ts
-control.parts.whenAvailable('editColumns', editColumns => editColumns.registerCommands((commands, session) => {
+control.parts.observe('editColumns', editColumns => editColumns.registerCommands((commands, session) => {
     commands.push({ key: 'addColumn', text: 'Add column', iconProps: { iconName: 'Add' }, onClick: () => { addColumn(session) } })
 }))
 \`\`\`

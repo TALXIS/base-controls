@@ -1,18 +1,18 @@
 import { ReactNode, useMemo } from "react";
-import { GanttMarkerUiScaleComponents, IGanttMarkerUiScaleComponents } from "./components";
-import { getGanttMarkerUiScaleStyles } from "./styles";
+import { MarkerUiScaleComponents, IMarkerUiScaleComponents } from "./components";
+import { getMarkerUiScaleStyles } from "./styles";
 
-export interface IGanttMarkerUiScaleProps {
+export interface IMarkerUiScaleProps {
     scaleHeight: number;
     /** The chip. */
     children?: ReactNode;
-    components?: Partial<IGanttMarkerUiScaleComponents>;
+    components?: Partial<IMarkerUiScaleComponents>;
 }
 
 /** The part of a column on the scale, where the chip sits. */
-export const GanttMarkerUiScale = (props: IGanttMarkerUiScaleProps) => {
-    const components = { ...GanttMarkerUiScaleComponents, ...props.components };
-    const styles = useMemo(() => getGanttMarkerUiScaleStyles(), []);
+export const MarkerUiScale = (props: IMarkerUiScaleProps) => {
+    const components = { ...MarkerUiScaleComponents, ...props.components };
+    const styles = useMemo(() => getMarkerUiScaleStyles(), []);
 
     return components.onRenderContainer({ className: styles.scale, style: { height: props.scaleHeight }, children: props.children });
 };

@@ -1,19 +1,19 @@
 import { ReactNode, useMemo } from "react";
 import { DirectionalHint, IPoint, useTheme } from "@fluentui/react";
-import { ITaskTooltipUiCalloutComponents, TaskTooltipUiCalloutComponents } from "./components";
-import { getTaskTooltipUiCalloutStyles } from "./styles";
+import { ITooltipUiCalloutComponents, TooltipUiCalloutComponents } from "./components";
+import { getTooltipUiCalloutStyles } from "./styles";
 
-export interface ITaskTooltipUiCalloutProps {
+export interface ITooltipUiCalloutProps {
     target: IPoint;
     children?: ReactNode;
-    components?: Partial<ITaskTooltipUiCalloutComponents>;
+    components?: Partial<ITooltipUiCalloutComponents>;
 }
 
 /** The callout a tooltip is drawn in, next to a point. */
-export const TaskTooltipUiCallout = (props: ITaskTooltipUiCalloutProps) => {
-    const components = { ...TaskTooltipUiCalloutComponents, ...props.components };
+export const TooltipUiCallout = (props: ITooltipUiCalloutProps) => {
+    const components = { ...TooltipUiCalloutComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getTaskTooltipUiCalloutStyles(theme), [theme]);
+    const styles = useMemo(() => getTooltipUiCalloutStyles(theme), [theme]);
 
     return components.onRenderCallout({
         target: props.target,

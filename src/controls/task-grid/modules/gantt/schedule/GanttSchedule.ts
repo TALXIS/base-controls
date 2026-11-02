@@ -3,8 +3,9 @@ import { DataTypes, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import type { IGantt } from "../interfaces";
 import { addClockDuration, getClockDuration } from "./clockTime";
+import { MILLISECONDS_PER_MINUTE, MINUTES_PER_DAY, MINUTES_PER_HOUR } from "./timeUnits";
 
-/** Where a task's bar runs; `end` is exclusive, the day after a date-only end. */
+/** Where a task's bar runs, with `end` exclusive like the day after a date-only end. */
 export interface IGanttSpan {
     start: Date;
     end: Date;
@@ -18,7 +19,7 @@ export interface IGanttDurationParameters {
     record?: IRecord;
 }
 
-/** Changes a calculated duration in clock minutes, before a day counts as the runtime's hours per day. */
+/** Changes a calculated duration in clock minutes. */
 export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
 
 export interface IGanttSnapParameters {
@@ -34,7 +35,7 @@ export type GanttSnapHook = (result: { span: IGanttSpan }, parameters: IGanttSna
 /** The `schedule` service: how a task's record maps to the span its bar runs over, and back. */
 export interface IGanttSchedule {
     /** The display names of the start and end columns. */
-    getLabels(): { start: string; end: string };
+    getColumnLabels(): { start: string; end: string };
     /** Whether either date column holds a time of day. */
     hasTimeOfDay(): boolean;
     /** Where the record's bar runs, or `undefined` while it has no valid dates. */
@@ -43,7 +44,7 @@ export interface IGanttSchedule {
     getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined;
     /** From the earliest start to the latest end. */
     getRange(records: IRecord[]): IGanttSpan | undefined;
-    /** How long the task takes in minutes: the mapped value, or the calculated one when no duration column is mapped. */
+    /** The task's duration in minutes, mapped or else calculated. */
     getDuration(record: IRecord): number | undefined;
     calculateDuration(span: IGanttSpan, record?: IRecord): number;
     /**
@@ -67,12 +68,12 @@ export interface IGanttSchedule {
     snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan;
     /** Snaps both edges, keeping at least one step between them. */
     snapSpan(span: IGanttSpan): IGanttSpan;
-    /** The values the columns take for a span: dates as the record keeps them, and the duration when one is mapped. */
-    getValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown };
+    /** The column values for a span, the duration among them when one is mapped. */
+    getColumnValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown };
     /** Writes a span to its record, saved as an edit in the grid is. */
     save(record: IRecord, span: IGanttSpan): void;
-    /** The span's dates as the record shows them; `range` is a single date when both are the same. */
-    format(span: IGanttSpan): { start: string; end: string; range: string };
+    /** The span's start, end and range as the record shows them. */
+    formatSpan(span: IGanttSpan): { start: string; end: string; range: string };
     /** Minutes as the duration column shows them. */
     formatDuration(duration: number): string;
 }
@@ -84,14 +85,14 @@ interface ISnapStep {
 }
 
 const MIN_SNAP_WIDTH = 12;
-const DAY_STEP: ISnapStep = { unit: 'day', step: 1, minutes: 1440 };
+const DAY_STEP: ISnapStep = { unit: 'day', step: 1, minutes: MINUTES_PER_DAY };
 const TIME_STEPS: ISnapStep[] = [
     { unit: 'minute', step: 15, minutes: 15 },
     { unit: 'minute', step: 30, minutes: 30 },
-    { unit: 'hour', step: 1, minutes: 60 },
-    { unit: 'hour', step: 3, minutes: 180 },
-    { unit: 'hour', step: 6, minutes: 360 },
-    { unit: 'hour', step: 12, minutes: 720 },
+    { unit: 'hour', step: 1, minutes: MINUTES_PER_HOUR },
+    { unit: 'hour', step: 3, minutes: 3 * MINUTES_PER_HOUR },
+    { unit: 'hour', step: 6, minutes: 6 * MINUTES_PER_HOUR },
+    { unit: 'hour', step: 12, minutes: 12 * MINUTES_PER_HOUR },
 ];
 
 export class GanttSchedule implements IGanttSchedule {
@@ -109,7 +110,7 @@ export class GanttSchedule implements IGanttSchedule {
         this._columnNames = { start: startDate, end: endDate, duration };
     }
 
-    public getLabels(): { start: string; end: string } {
+    public getColumnLabels(): { start: string; end: string } {
         const columns = this._gantt.getTaskRuntime().getProvider().getColumnsMap();
         const { start, end } = this._columnNames;
         return { start: columns[start]?.displayName ?? start, end: columns[end]?.displayName ?? end };
@@ -150,7 +151,7 @@ export class GanttSchedule implements IGanttSchedule {
     }
 
     public calculateDuration(span: IGanttSpan, record?: IRecord): number {
-        const result = { duration: getClockDuration(span.start, span.end) / 60_000 };
+        const result = { duration: getClockDuration(span.start, span.end) / MILLISECONDS_PER_MINUTE };
         this._durationHooks.apply(result, { span, record });
         return this._toWorkingMinutes(result.duration);
     }
@@ -180,6 +181,50 @@ export class GanttSchedule implements IGanttSchedule {
         return this._applySnapHooks(this._snapEdgeToScale({ start: this._snapDate(span.start, 'start'), end: span.end }, 'end'), { change: 'span' });
     }
 
+    public getColumnValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown } {
+        const { start, end, duration } = this._columnNames;
+        const values: { [columnName: string]: unknown } = { [start]: span.start, [end]: this._toRecordEnd(span.end) };
+        if (duration) {
+            values[duration] = Math.round(this.calculateDuration(span, record));
+        }
+        return values;
+    }
+
+    public save(record: IRecord, span: IGanttSpan): void {
+        const endColumnName = this._columnNames.end;
+        const { [endColumnName]: end, ...values } = this.getColumnValues(span, record);
+        Object.entries(values).forEach(([columnName, value]) => record.setValue(columnName, value));
+        //written last through the grid's field so it saves as a grid edit
+        this._gantt.services.get('grid').services.get('fields').get(record, endColumnName).setValue(end);
+    }
+
+    public formatSpan(span: IGanttSpan): { start: string; end: string; range: string } {
+        const provider = this._gantt.getTaskRuntime().getProvider();
+        const columns = provider.getColumnsMap();
+        const formatting = provider.getFormatting();
+        const start = formatting.format({ value: span.start, column: columns[this._columnNames.start] }) ?? '';
+        const end = formatting.format({ value: this._toRecordEnd(span.end), column: columns[this._columnNames.end] }) ?? '';
+        return { start, end, range: start === end ? start : `${start} – ${end}` };
+    }
+
+    public formatDuration(duration: number): string {
+        const taskRuntime = this._gantt.getTaskRuntime();
+        return taskRuntime.getProvider().getFormatting().formatDuration(duration, taskRuntime.getHoursPerDay());
+    }
+
+    //a date-only value is the local day the record saves
+    public getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined {
+        const value = record.getValue(this._columnNames[edge]);
+        if (value == null || value === '') {
+            return undefined;
+        }
+        const date = dayjs(value as string | Date);
+        if (!date.isValid()) {
+            return undefined;
+        }
+        return this._isDateOnly(edge) ? date.startOf('day').toDate() : date.toDate();
+    }
+
     private _applySnapHooks(span: IGanttSpan, parameters: IGanttSnapParameters): IGanttSpan {
         const result = { span };
         this._snapHooks.apply(result, parameters);
@@ -197,55 +242,11 @@ export class GanttSchedule implements IGanttSchedule {
         return { start: span.start, end: new Date(Math.max(+this._snapDate(span.end, 'end'), +earliestEnd)) };
     }
 
-    public getValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown } {
-        const { start, end, duration } = this._columnNames;
-        const values: { [columnName: string]: unknown } = { [start]: span.start, [end]: this._toRecordEnd(span.end) };
-        if (duration) {
-            values[duration] = Math.round(this.calculateDuration(span, record));
-        }
-        return values;
-    }
-
-    public save(record: IRecord, span: IGanttSpan): void {
-        const endColumnName = this._columnNames.end;
-        const { [endColumnName]: end, ...values } = this.getValues(span, record);
-        Object.entries(values).forEach(([columnName, value]) => record.setValue(columnName, value));
-        //last and through the grid's field, which saves the record as an edit in the grid does
-        this._gantt.services.get('grid').services.get('fields').get(record, endColumnName).setValue(end);
-    }
-
-    public format(span: IGanttSpan): { start: string; end: string; range: string } {
-        const provider = this._gantt.getTaskRuntime().getProvider();
-        const columns = provider.getColumnsMap();
-        const formatting = provider.getFormatting();
-        const start = formatting.format({ value: span.start, column: columns[this._columnNames.start] }) ?? '';
-        const end = formatting.format({ value: this._toRecordEnd(span.end), column: columns[this._columnNames.end] }) ?? '';
-        return { start, end, range: start === end ? start : `${start} – ${end}` };
-    }
-
-    public formatDuration(duration: number): string {
-        const taskRuntime = this._gantt.getTaskRuntime();
-        return taskRuntime.getProvider().getFormatting().formatDuration(duration, taskRuntime.getHoursPerDay());
-    }
-
-    //a whole day holds the runtime's hours, and part of a day never more than that
+    //a day counts at most the runtime's hours
     private _toWorkingMinutes(clockMinutes: number): number {
-        const minutesPerDay = this._gantt.getTaskRuntime().getHoursPerDay() * 60;
-        const days = Math.floor(clockMinutes / 1440);
-        return days * minutesPerDay + Math.min(clockMinutes - days * 1440, minutesPerDay);
-    }
-
-    //a date-only value is the local day it falls on, as the record saves it
-    public getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined {
-        const value = record.getValue(this._columnNames[edge]);
-        if (value == null || value === '') {
-            return undefined;
-        }
-        const date = dayjs(value as string | Date);
-        if (!date.isValid()) {
-            return undefined;
-        }
-        return this._isDateOnly(edge) ? date.startOf('day').toDate() : date.toDate();
+        const minutesPerDay = this._gantt.getTaskRuntime().getHoursPerDay() * MINUTES_PER_HOUR;
+        const days = Math.floor(clockMinutes / MINUTES_PER_DAY);
+        return days * minutesPerDay + Math.min(clockMinutes - days * MINUTES_PER_DAY, minutesPerDay);
     }
 
     private _toRecordEnd(end: Date): Date {
@@ -266,6 +267,6 @@ export class GanttSchedule implements IGanttSchedule {
             return DAY_STEP;
         }
         const pixelsPerDay = this._gantt.services.find('zooming')?.getPixelsPerDay() ?? 0;
-        return TIME_STEPS.find(snapStep => pixelsPerDay * snapStep.minutes / 1440 >= MIN_SNAP_WIDTH) ?? DAY_STEP;
+        return TIME_STEPS.find(snapStep => pixelsPerDay * snapStep.minutes / MINUTES_PER_DAY >= MIN_SNAP_WIDTH) ?? DAY_STEP;
     }
 }

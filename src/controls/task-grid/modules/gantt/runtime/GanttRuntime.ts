@@ -14,13 +14,15 @@ import { GANTT_LABELS } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
-import { GanttSchedule, IGanttSpan } from "../schedule/GanttSchedule";
-import { GanttTimeline } from "../timeline/GanttTimeline";
-import { GanttZooming } from "../zooming/GanttZooming";
-import { GanttDragging } from "../dragging/GanttDragging";
-import { GanttTasks } from "../tasks/GanttTasks";
+import { GanttSchedule, IGanttSpan } from "../schedule";
+import { GanttTimeline } from "../timeline";
+import { GanttZooming } from "../zooming";
+import { GanttDragging } from "../dragging";
+import { GanttTasks } from "../tasks";
+import { GanttOverlay } from "../overlay";
+import { GANTT_CONTAINER_CLASS } from "../chart";
 import type { ITaskGanttProps } from "../TaskGantt";
-import type { IGanttLibrary } from "../modules/library";
+import type { ILibrary } from "../modules/library";
 
 const DEFAULT_TIMELINE_LIMIT_YEARS = 25;
 
@@ -42,10 +44,11 @@ export class GanttRuntime implements IGantt {
     private _loadedModules: { module: IGanttModule; instance: unknown }[] = [];
     private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
     private _destroyables: { destroy(): void }[] = [];
-    private _unregisterCommands?: () => void;
     private _unregisterCellCommands?: () => void;
-    private _gantt?: GanttStatic;
-    private _zooming?: GanttZooming;
+    private _unsubscribes: (() => void)[] = [];
+    private _gridApi?: GridApi<IRecord>;
+    private _taskRange?: IGanttSpan;
+    private _isTaskRangeStale = true;
     private _isDestroyed = false;
 
     constructor(parameters: IGanttRuntimeParameters) {
@@ -57,7 +60,10 @@ export class GanttRuntime implements IGantt {
         this.services.register('state', () => parameters.state);
         const schedule = new GanttSchedule(this);
         this.services.register('schedule', () => schedule);
-        this._datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
+        const overlay = new GanttOverlay(parameters.taskRuntime.getProvider());
+        this.services.register('overlay', () => overlay);
+        this._destroyables.push(overlay);
+        this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands)));
     }
 
     public getProps(): ITaskGanttProps {
@@ -72,7 +78,7 @@ export class GanttRuntime implements IGantt {
         return this.services.get('localization').getLabels(set);
     }
 
-    public getLibrary(): IGanttLibrary {
+    public getLibrary(): ILibrary {
         return this.modules.get('library');
     }
 
@@ -81,35 +87,38 @@ export class GanttRuntime implements IGantt {
     }
 
     public render(): void {
-        this._gantt?.render();
+        this.services.find('chart')?.render();
     }
 
-    /** Loads the modules, then draws the chart into the container once the grid beside it is ready. */
+    /** Loads the modules and draws the chart once the grid beside it is ready. */
     public async mount(container: HTMLElement): Promise<void> {
         await this._loadModules();
         if (this._isDestroyed) {
             return;
         }
-        this._datasetControl.parts.whenAvailable('grid', grid => {
+        this._unsubscribes.push(this._datasetControl.parts.observe('grid', grid => {
             const taskGrid = grid as IGrid<ITaskGridServiceMap>;
-            taskGrid.services.whenAvailable('gridApi', gridApi => {
-                if (!this._isDestroyed && !this._gantt) {
+            return taskGrid.services.observe('gridApi', gridApi => {
+                if (!this.services.find('chart')) {
                     this._draw(container, taskGrid, gridApi);
                 }
             });
-        });
+        }));
     }
 
     public destroy(): void {
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
-        this._unregisterCommands?.();
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._unregisterCellCommands?.();
+        if (this._unregisterCellCommands && this._gridApi && !this._gridApi.isDestroyed()) {
+            this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
+        }
         this._destroyables.forEach(destroyable => destroyable.destroy());
         for (const { module, instance } of this._loadedModules) {
             module.onDestroy?.(instance as never);
         }
-        this._gantt?.destructor();
+        this.services.find('chart')?.destructor();
         this.events.clearEventListeners();
         this.services.destroy();
         this.modules.destroy();
@@ -119,7 +128,7 @@ export class GanttRuntime implements IGantt {
         const modules = this._onGetProps().modules ?? [];
         const library = modules.find(module => module.name === 'library');
         if (!library) {
-            throw new Error('TaskGantt needs a library module: createGanttLibraryModule() or createGanttProLibraryModule(Gantt).');
+            throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
         }
         const names = new Set<string>();
         //other modules read the library as they load
@@ -129,33 +138,37 @@ export class GanttRuntime implements IGantt {
             }
             names.add(module.name);
             const instance = await module.onLoad(this);
+            if (this._isDestroyed) {
+                module.onDestroy?.(instance as never);
+                return;
+            }
             this._loadedModules.push({ module, instance });
             this.modules.register(module.name, () => instance as IGanttModuleMap[typeof module.name]);
         }
     }
 
-    //parts and module hooks configure the chart before init; services exist only after it
+    //config hooks run before init and the services register after it
     private _draw(container: HTMLElement, grid: IGrid<ITaskGridServiceMap>, gridApi: GridApi<IRecord>): void {
-        const gantt = this._createChart(grid);
-        this._gantt = gantt;
+        const chart = this._createChart(grid);
+        this._gridApi = gridApi;
         const schedule = this.services.get('schedule');
-        const timeline = new GanttTimeline({ gantt, onGetLimits: () => this._getTimelineLimits() });
-        const dragging = new GanttDragging(gantt);
-        const zooming = new GanttZooming({ gantt, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
-        const tasks = new GanttTasks({ gantt, gridApi, runtime: this, schedule, onParsed: this._onTasksParsed });
-        this._zooming = zooming;
-        this._destroyables.push(timeline, zooming, tasks);
-        this._chartConfigHooks.apply(gantt);
-        gantt.init(container);
+        const timeline = new GanttTimeline({ chart, onGetLimits: () => this._getTimelineLimits() });
+        const dragging = new GanttDragging(chart);
+        const zooming = new GanttZooming({ chart, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
+        const tasks = new GanttTasks({ chart, gridApi, gantt: this, schedule, onParsed: this._onTasksParsed });
+        this._destroyables.push(timeline, zooming, tasks, dragging);
+        this._chartConfigHooks.apply(chart);
+        chart.init(container);
 
-        this.services.register('chart', () => gantt);
+        this.services.register('chart', () => chart);
         this.services.register('timeline', () => timeline);
         this.services.register('dragging', () => dragging);
         this.services.register('zooming', () => zooming);
         this.services.register('grid', () => grid);
         this.services.register('tasks', () => tasks);
+        this._watchTaskRange();
         tasks.parse();
-        this.events.dispatchEvent('onChartReady', gantt);
+        this.events.dispatchEvent('onChartReady', chart);
         this._datasetControl.parts.find('ribbon')?.reload();
         this._unregisterCellCommands = grid.services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
         gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
@@ -168,35 +181,35 @@ export class GanttRuntime implements IGantt {
             return;
         }
         const label = this.getLabels(GANTT_LABELS).get('gantt.showTask');
-        result.items.push({ key: 'showOnTimeline', text: label, iconProps: { iconName: 'Timeline' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => this._zooming?.showTask(record) });
+        result.items.push({ key: 'showOnTimeline', text: label, iconProps: { iconName: 'Timeline' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => this.services.find('zooming')?.showTask(record) });
     };
 
     //every feature starts off until a part or module turns it on
     private _createChart(grid: IGrid<ITaskGridServiceMap>): GanttStatic {
-        const gantt = this.getLibrary().Gantt.getGanttInstance();
-        gantt.config.show_grid = false;
-        gantt.config.select_task = false;
-        gantt.config.details_on_dblclick = false;
-        gantt.config.show_unscheduled = true;
-        gantt.config.show_tasks_outside_timescale = true;
-        gantt.config.task_scroll_offset = 200;
-        //otherwise each parse, such as on every expand, scrolls to the first task
-        gantt.config.initial_scroll = false;
-        gantt.config.show_links = false;
-        gantt.config.drag_links = false;
-        gantt.config.drag_move = false;
-        gantt.config.drag_resize = false;
-        gantt.config.drag_progress = false;
-        gantt.config.row_height = grid.services.get('settings').getDefaultRowHeight();
-        gantt.config.scale_height = grid.services.get('viewport').getHeaderHeight() || gantt.config.scale_height;
-        gantt.config.layout = {
-            css: 'gantt_container',
+        const chart = this.getLibrary().Gantt.getGanttInstance();
+        chart.config.show_grid = false;
+        chart.config.select_task = false;
+        chart.config.details_on_dblclick = false;
+        chart.config.show_unscheduled = true;
+        chart.config.show_tasks_outside_timescale = true;
+        chart.config.task_scroll_offset = 200;
+        //otherwise every parse scrolls to the first task
+        chart.config.initial_scroll = false;
+        chart.config.show_links = false;
+        chart.config.drag_links = false;
+        chart.config.drag_move = false;
+        chart.config.drag_resize = false;
+        chart.config.drag_progress = false;
+        chart.config.row_height = grid.services.get('settings').getDefaultRowHeight();
+        chart.config.scale_height = grid.services.get('viewport').getHeaderHeight() || chart.config.scale_height;
+        chart.config.layout = {
+            css: GANTT_CONTAINER_CLASS,
             rows: [
                 { cols: [{ view: 'timeline', scrollX: 'scrollHor', scrollY: 'scrollVer' }, { view: 'scrollbar', id: 'scrollVer' }] },
                 { view: 'scrollbar', id: 'scrollHor' },
             ],
         };
-        return gantt;
+        return chart;
     }
 
     private get _datasetControl(): IDatasetControl<ITaskViewData> {
@@ -207,34 +220,61 @@ export class GanttRuntime implements IGantt {
         const limits = this.getProps().timelineLimits;
         const start = (limits?.start ?? dayjs().subtract(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
         const end = (limits?.end ?? dayjs().add(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
-        //the chart's tasks, the rows the grid draws: called on every zoom and scroll step
-        const chartTasks = this.services.find('tasks');
-        const records = chartTasks?.getTaskIds().map(taskId => chartTasks.getRecord(taskId)).filter((record): record is IRecord => !!record) ?? [];
-        const tasks = this.services.get('schedule').getRange(records);
+        const tasks = this._getTaskRange();
         if (!tasks) {
             return { start, end };
         }
         return { start: tasks.start < start ? tasks.start : start, end: tasks.end > end ? tasks.end : end };
     }
 
+    //called on every zoom and scroll step
+    private _getTaskRange(): IGanttSpan | undefined {
+        if (this._isTaskRangeStale) {
+            const chartTasks = this.services.find('tasks');
+            const records = chartTasks?.getTaskIds().map(taskId => chartTasks.getRecord(taskId)).filter((record): record is IRecord => !!record) ?? [];
+            this._taskRange = this.services.get('schedule').getRange(records);
+            this._isTaskRangeStale = !chartTasks;
+        }
+        return this._taskRange;
+    }
+
+    private _watchTaskRange(): void {
+        const provider = this._taskRuntime.getProvider();
+        provider.addEventListener('onRecordColumnValueChanged', this._invalidateTaskRange);
+        provider.taskEvents.addEventListener('onTasksUpdated', this._invalidateTaskRange);
+        this._destroyables.push({
+            destroy: () => {
+                provider.removeEventListener('onRecordColumnValueChanged', this._invalidateTaskRange);
+                provider.taskEvents.removeEventListener('onTasksUpdated', this._invalidateTaskRange);
+            },
+        });
+    }
+
+    private _invalidateTaskRange = (): void => {
+        this._isTaskRangeStale = true;
+    };
+
     private _onTasksParsed = (isFirstLoad: boolean): void => {
+        this._isTaskRangeStale = true;
         if (isFirstLoad) {
             this._restoreZoomOnceSized();
         }
         this.events.dispatchEvent('onTasksParsed', isFirstLoad);
     };
 
-    //a fit measures the viewport, which is 0 wide until a hidden or opening pane is laid out
+    //a fit needs a viewport laid out with a width
     private _restoreZoomOnceSized(): void {
-        const taskArea = this._gantt?.$task;
-        if (!taskArea || taskArea.offsetWidth > 0) {
-            this._zooming?.restore();
+        const taskArea = this.services.find('chart')?.$task;
+        const timeline = this.services.find('timeline');
+        const zooming = this.services.find('zooming');
+        if (!taskArea || !timeline || timeline.getViewportWidth() > 0) {
+            zooming?.restore();
             return;
         }
         const observer = new ResizeObserver(() => {
-            if (taskArea.offsetWidth > 0) {
+            if (timeline.getViewportWidth() > 0) {
                 observer.disconnect();
-                this._zooming?.restore();
+                zooming?.restore();
             }
         });
         observer.observe(taskArea);

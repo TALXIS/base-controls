@@ -39,6 +39,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     private _services: IGridServiceLocator;
     private _openNotification?: IAddControlNotificationOptions;
     private _openTarget?: Target;
+    private _unsubscribes: (() => void)[] = [];
     public readonly events: IEventEmitter<IGridLegacyClientApiCompatibilityEvents> = new EventEmitter<IGridLegacyClientApiCompatibilityEvents>();
 
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
@@ -46,14 +47,18 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         const cells = parameters.services.get('cells');
         parameters.services.get('surfaces').registerSurface(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may register after this one
-        parameters.services.get('grid').modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY));
+        this._unsubscribes.push(parameters.services.get('grid').modules.observe('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY)));
         cells.registerCellLoading(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellTheme(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellCommands(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControl(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlParameters(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
-        parameters.services.whenAvailable('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
+        this._unsubscribes.push(parameters.services.observe('gridApi', () => {
+            const provider = this._provider;
+            provider.addEventListener('onRenderRequested', this._onRenderRequested);
+            return () => provider.removeEventListener('onRenderRequested', this._onRenderRequested);
+        }));
     }
 
     public getOpenNotification(): IAddControlNotificationOptions | undefined {
@@ -87,7 +92,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
 
     //the provider outlives the grid
     public destroy(): void {
-        this._provider.removeEventListener('onRenderRequested', this._onRenderRequested);
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
     private get _provider() {

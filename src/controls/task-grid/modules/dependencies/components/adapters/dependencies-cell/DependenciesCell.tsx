@@ -11,11 +11,11 @@ const DependenciesCellCount = () => {
     const direction = cell.getColumnName() === PREDECESSORS_COLUMN_NAME ? 'predecessors' : 'successors';
     const count = (field?.getValue() ?? []).length;
     return <ErrorBoundary error={dependencies.getError()}>
-        <DependencyCount direction={direction} count={count} />
+        <DependencyCount direction={direction} count={count} components={dependencies.components.count} />
     </ErrorBoundary>;
 };
 
-/** A dependencies cell: how many tasks this one waits on, or how many wait on it. */
+/** A dependencies cell counting the tasks this one waits on or that wait on it. */
 export const DependenciesCell = (props: IGridCellParams) => {
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
         <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <DependenciesCellCount /> } }} />

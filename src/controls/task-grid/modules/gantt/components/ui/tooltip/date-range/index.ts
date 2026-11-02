@@ -1,2 +1,2 @@
-export * from './TaskTooltipUiDateRange';
+export * from './TooltipUiDateRange';
 export * from './components';

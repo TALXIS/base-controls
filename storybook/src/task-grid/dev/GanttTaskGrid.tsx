@@ -68,7 +68,7 @@ const betaCutoffStyles = mergeStyleSets({
 })
 
 const BetaCutoffChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    const { marker } = useGanttMarker()
+    const { marker } = useMarker()
     if (marker.id !== 'betaCutoff') {
         return <div {...props} />
     }
@@ -91,7 +91,7 @@ const weekOfYear = (date: Date) => {
 const fiscalScaleModule = {
     name: 'fiscalScale',
     onLoad: (gantt: any) => {
-        gantt.services.whenAvailable('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
+        gantt.services.observe('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
             if (cell.unit === 'quarter') {
                 const fiscalYear = cell.date.getMonth() >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
                 result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((cell.date.getMonth() + 6) % 12) / 3) + 1)
@@ -105,7 +105,7 @@ const fiscalScaleModule = {
 }
 
 const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    const { marker } = useGanttMarker()
+    const { marker } = useMarker()
     if (marker.id !== 'betaCutoff') {
         return <div {...props} />
     }
@@ -136,9 +136,9 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
     const ganttModules = React.useMemo(() => [
-        createGanttLibraryModule(),
+        createLibraryModule(),
         fiscalScaleModule,
-        createMemoryGanttMarkersModule({
+        createMemoryMarkersModule({
             markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8' }],
             project: { color: '#ca5010' },
             components: {
@@ -146,10 +146,10 @@ const GridExample = () => {
                 line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
             },
         }),
-        createGanttTaskDraggingModule(),
-        createGanttTaskCreateModule(),
-        createGanttSelectionModule(),
-        createGanttTooltipModule({
+        createBarDraggingModule(),
+        createTaskDrawingModule(),
+        createTaskSelectionModule(),
+        createTaskTooltipModule({
             statusColumnName: 'statuscode',
             onRender: () => <TaskTooltip>
                 <TaskTooltip.Callout>
@@ -163,7 +163,7 @@ const GridExample = () => {
                 </TaskTooltip.Callout>
             </TaskTooltip>,
         }),
-        createGanttLinksModule(),
+        createLinksModule(),
     ], [])
 
     const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping })

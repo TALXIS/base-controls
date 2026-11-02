@@ -1,15 +1,15 @@
 import { defineLabels } from "@utils";
 
-export const GANTT_LINKS_LABELS = defineLabels({
-    'ganttLinks.confirmDeleteLink': 'Delete this dependency?',
+export const LINKS_LABELS = defineLabels({
+    'links.confirmDeleteLink': 'Delete this dependency?',
     /** Follows a task's name while a link is drawn from or to its start. */
-    'ganttLinks.linkStart': ' (start)',
+    'links.linkStart': ' (start)',
     /** Follows a task's name while a link is drawn from or to its end. */
-    'ganttLinks.linkEnd': ' (end)',
-    'ganttLinks.predecessor': 'Predecessor',
-    'ganttLinks.successor': 'Successor',
-    'ganttLinks.finishToStart': 'Finish to start',
-    'ganttLinks.startToStart': 'Start to start',
-    'ganttLinks.finishToFinish': 'Finish to finish',
-    'ganttLinks.startToFinish': 'Start to finish',
+    'links.linkEnd': ' (end)',
+    'links.predecessor': 'Predecessor',
+    'links.successor': 'Successor',
+    'links.finishToStart': 'Finish to start',
+    'links.startToStart': 'Start to start',
+    'links.finishToFinish': 'Finish to finish',
+    'links.startToFinish': 'Start to finish',
 });

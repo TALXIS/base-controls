@@ -1,4 +1,4 @@
-import { LinkTooltipRoot } from "./adapters/link-tooltip";
+import { LinkTooltipRoot } from "./adapters/link-tooltip-root";
 import { LinkTooltipRenderer } from "./adapters/renderer";
 import { LinkTooltipCallout } from "./adapters/callout";
 import { LinkTooltipHeader } from "./adapters/header";

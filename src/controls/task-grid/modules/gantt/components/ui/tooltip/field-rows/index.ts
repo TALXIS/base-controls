@@ -1,2 +1,2 @@
-export * from './TaskTooltipUiFieldRows';
+export * from './TooltipUiFieldRows';
 export * from './components';

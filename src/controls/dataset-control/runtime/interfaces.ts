@@ -79,7 +79,7 @@ export interface IDatasetControlPartMap {
 }
 
 /** Looks up the parts rendered right now. */
-export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'whenAvailable'>;
+export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'observe'>;
 
 /** The modules a DatasetControl loaded, by name; each module adds its own entry. */
 export interface IDatasetControlModuleMap { }
@@ -95,7 +95,7 @@ export interface IDatasetControlModule<TName extends keyof IDatasetControlModule
 }
 
 /** Looks up the modules the control loaded. */
-export type IDatasetControlModuleLocator = Pick<IServiceLocator<IDatasetControlModuleMap>, 'get' | 'find' | 'whenAvailable'>;
+export type IDatasetControlModuleLocator = Pick<IServiceLocator<IDatasetControlModuleMap>, 'get' | 'find' | 'observe'>;
 
 /** The DatasetControl as its consumer drives it. */
 export interface IDatasetControl<TData = unknown> {

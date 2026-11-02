@@ -1,5 +1,5 @@
-export * from './createGanttTooltipModule';
+export * from './createTaskTooltipModule';
 export * from './labels';
 export * from './labels.cs';
 export * from './components';
-export type { IGanttTooltip, IGanttTooltipParameters } from './GanttTooltip';
+export type { ITaskTooltip, ITaskTooltipParameters } from './TaskTooltipModule';

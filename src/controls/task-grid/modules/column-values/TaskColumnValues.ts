@@ -7,35 +7,37 @@ import { TASK_GRID_PRIORITY } from "../../priorities";
 
 export interface ITaskColumnValuesParameters {
     taskRuntime: ITaskRuntime;
-    /** The columns the values fill: a query on one waits for them, and they show loading. */
+    /** The columns the values fill. */
     columnNames: () => string[];
-    /**
-     * Fetches the tasks' values, by task id and column name; they are written onto the tasks.
-     * A module that writes its values itself returns nothing.
-     */
+    /** Fetches the tasks' values by task id and column name, or writes them itself. */
     onLoad: (taskIds: string[]) => Promise<Map<string, IRawRecord> | void>;
     /** What a failed load is kept as. */
     errorMessage: () => string;
+    /** Loads a task's values again once its editor closes. */
+    reloadOnEditorClosed?: boolean;
 }
 
-/** Loads values kept apart from the tasks after the tasks, unless a query needs them first, and shows them loading. */
+/** Loads values kept apart from the tasks after the tasks, or first when a query needs them. */
 export class TaskColumnValues {
     private _parameters: ITaskColumnValuesParameters;
     private _grid?: IGrid<ITaskGridServiceMap>;
-    private _isLoading = false;
+    private _loadingCount = 0;
+    private _lastLoadId = 0;
     private _hasStartedLoading = false;
-    private _currentLoad?: Promise<void>;
+    private _taskLoads = new Map<string, Promise<void>>();
     private _error?: unknown;
     private _unregisters: (() => void)[] = [];
 
     constructor(parameters: ITaskColumnValuesParameters) {
         this._parameters = parameters;
-        parameters.taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        parameters.taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
+        this._unregisters.push(
+            parameters.taskRuntime.services.observe('provider', this._onProviderAvailable),
+            parameters.taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
+        );
     }
 
     public isLoading(): boolean {
-        return this._isLoading;
+        return this._loadingCount > 0;
     }
 
     /** What the last load threw, until the next one starts. */
@@ -59,12 +61,21 @@ export class TaskColumnValues {
         this._unregisters.forEach(unregister => unregister());
     }
 
-    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
+    private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-        this._unregisters.push(
-            provider.registerLoadWaiter(this._waitForValues),
-            () => provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded),
-        );
+        const unregisterLoadWaiter = provider.registerLoadWaiter(this._waitForValues);
+        if (this._parameters.reloadOnEditorClosed) {
+            provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed);
+        }
+        return () => {
+            unregisterLoadWaiter();
+            provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
+            provider.taskEvents.removeEventListener('onEditorClosed', this._onEditorClosed);
+        };
+    };
+
+    private _onEditorClosed = (taskIds: string[]): void => {
+        this.reload(taskIds);
     };
 
     private _onFirstDataLoaded = (): void => {
@@ -77,22 +88,26 @@ export class TaskColumnValues {
     private _waitForValues: TaskLoadWaiter = async params => {
         const provider = this._parameters.taskRuntime.getProvider();
         if (this._parameters.columnNames().some(columnName => provider.isColumnQueried(columnName))) {
-            await (this._hasStartedLoading ? this._currentLoad : this._load(params.taskIds));
+            const notLoadedTaskIds = params.taskIds.filter(taskId => !this._taskLoads.has(taskId));
+            this._load(notLoadedTaskIds);
+            await Promise.all(params.taskIds.map(taskId => this._taskLoads.get(taskId)));
         }
     };
 
     private _load(taskIds: string[]): Promise<void> {
         this._hasStartedLoading = true;
-        this._currentLoad = this._loadValues(taskIds);
-        return this._currentLoad;
+        const load = this._loadValues(taskIds);
+        taskIds.forEach(taskId => this._taskLoads.set(taskId, load));
+        return load;
     }
 
     private async _loadValues(taskIds: string[]): Promise<void> {
         if (taskIds.length === 0) {
             return;
         }
+        const loadId = ++this._lastLoadId;
         this._error = undefined;
-        this._setLoading(true);
+        this._changeLoadingCount(1);
         try {
             const values = await this._parameters.onLoad(taskIds);
             if (values) {
@@ -100,26 +115,32 @@ export class TaskColumnValues {
             }
         }
         catch (error) {
-            this._error = new Error(this._parameters.errorMessage(), { cause: error });
+            if (loadId === this._lastLoadId) {
+                this._error = new Error(this._parameters.errorMessage(), { cause: error });
+            }
         }
         finally {
-            this._setLoading(false);
+            this._changeLoadingCount(-1);
         }
     }
 
     //the cells read the loading state while they draw
-    private _setLoading(isLoading: boolean): void {
-        this._isLoading = isLoading;
+    private _changeLoadingCount(change: number): void {
+        this._loadingCount += change;
         this._grid?.services.get('cells').render({ columnNames: this._parameters.columnNames() });
     }
 
-    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
-        this._grid = grid;
-        this._unregisters.push(grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20));
-    }
+    private _onGridAvailable = (grid: IGrid): (() => void) => {
+        this._grid = grid as IGrid<ITaskGridServiceMap>;
+        const unregisterCellLoading = grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        return () => {
+            unregisterCellLoading();
+            this._grid = undefined;
+        };
+    };
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {
-        if (this._isLoading && this._parameters.columnNames().includes(params.columnName)) {
+        if (this.isLoading() && this._parameters.columnNames().includes(params.columnName)) {
             result.isLoading = true;
         }
     };

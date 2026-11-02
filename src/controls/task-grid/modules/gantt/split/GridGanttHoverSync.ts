@@ -1,24 +1,24 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import { GANTT_TASK_ID_ATTRIBUTE, GANTT_TASK_ROW_CLASS } from "../../chart/classNames";
+import { GANTT_TASK_ID_ATTRIBUTE } from "../chart";
+import { getChartRowHoverRule, getGridRowHoverColor, GRID_ROW_HOVER_CLASS } from "./styles";
 
-const GRID_ROW_SELECTOR = '.ag-row[row-id]';
-const GRID_ROW_HOVER_CLASS = 'ag-row-hover';
+const GRID_ROW_ID_ATTRIBUTE = 'row-id';
 
-/** Hovering a task on either side highlights its row on both, as one table. */
+const getGridRowSelector = (taskId?: string): string => `.ag-row[${GRID_ROW_ID_ATTRIBUTE}${taskId === undefined ? '' : `="${CSS.escape(taskId)}"`}]`;
+
+/** Hovering a task on either side highlights its row on both. */
 export class GridGanttHoverSync {
     private _gridRoot: HTMLElement;
     private _chartArea: HTMLElement;
     //a rule survives the chart redrawing its rows
     private _chartStyle: HTMLStyleElement;
-    private _hoverColor: string;
     private _taskId?: string;
 
-    constructor(gantt: GanttStatic, gridRoot: HTMLElement) {
+    constructor(chart: GanttStatic, gridRoot: HTMLElement) {
         this._gridRoot = gridRoot;
-        this._chartArea = gantt.$task_data;
-        this._hoverColor = getComputedStyle(gridRoot).getPropertyValue('--ag-row-hover-color').trim();
-        this._chartStyle = gantt.$root.ownerDocument.createElement('style');
-        gantt.$root.ownerDocument.head.appendChild(this._chartStyle);
+        this._chartArea = chart.$task_data;
+        this._chartStyle = chart.$root.ownerDocument.createElement('style');
+        chart.$root.ownerDocument.head.appendChild(this._chartStyle);
         this._gridRoot.addEventListener('mouseover', this._onGridMouseOver);
         this._gridRoot.addEventListener('mouseleave', this._onMouseLeave);
         this._chartArea.addEventListener('mouseover', this._onChartMouseOver);
@@ -35,7 +35,7 @@ export class GridGanttHoverSync {
     }
 
     private _onGridMouseOver = (event: MouseEvent): void => {
-        this._setHoveredTask((event.target as HTMLElement).closest(GRID_ROW_SELECTOR)?.getAttribute('row-id') ?? undefined);
+        this._setHoveredTask((event.target as HTMLElement).closest(getGridRowSelector())?.getAttribute(GRID_ROW_ID_ATTRIBUTE) ?? undefined);
     };
 
     private _onChartMouseOver = (event: MouseEvent): void => {
@@ -53,7 +53,7 @@ export class GridGanttHoverSync {
         this._toggleGridRows(this._taskId, false);
         this._taskId = taskId;
         this._toggleGridRows(taskId, true);
-        this._chartStyle.textContent = taskId ? `.${GANTT_TASK_ROW_CLASS}[${GANTT_TASK_ID_ATTRIBUTE}="${CSS.escape(taskId)}"] { background-color: ${this._hoverColor}; }` : '';
+        this._chartStyle.textContent = taskId ? getChartRowHoverRule(taskId, getGridRowHoverColor(this._gridRoot)) : '';
     }
 
     //the row has a part in each AG Grid container
@@ -61,6 +61,6 @@ export class GridGanttHoverSync {
         if (!taskId) {
             return;
         }
-        this._gridRoot.querySelectorAll(`.ag-row[row-id="${CSS.escape(taskId)}"]`).forEach(row => row.classList.toggle(GRID_ROW_HOVER_CLASS, isHovered));
+        this._gridRoot.querySelectorAll(getGridRowSelector(taskId)).forEach(row => row.classList.toggle(GRID_ROW_HOVER_CLASS, isHovered));
     }
 }

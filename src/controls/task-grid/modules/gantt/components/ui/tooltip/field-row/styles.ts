@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskTooltipUiFieldRowStyles = (theme: ITheme) => mergeStyleSets({
+export const getTooltipUiFieldRowStyles = (theme: ITheme) => mergeStyleSets({
     fieldRow: {
         display: 'flex',
         alignItems: 'center',

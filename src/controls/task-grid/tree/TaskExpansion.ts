@@ -1,6 +1,6 @@
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
-import type { IEventSubscriber, IStateStore } from "@utils";
+import type { IEventSubscriber } from "@utils";
 import type { ITaskDataProvider } from "../provider";
 
 /** One change to which tasks are expanded. */
@@ -13,7 +13,7 @@ export interface ITaskExpansionEvents {
     onExpansionChanged: (delta: ITaskExpansionDelta) => void;
 }
 
-/** Which tasks are expanded; every surface draws what this says and reports what the user did. */
+/** Which tasks are expanded, for every surface that draws the tree. */
 export interface ITaskExpansion {
     readonly events: IEventSubscriber<ITaskExpansionEvents>;
     /** Whether the row is drawn expanded. */
@@ -29,16 +29,11 @@ export interface ITaskExpansion {
     getExpandedIds(): string[];
 }
 
-/** What a task grid keeps of its tree per view. */
-export interface ITaskTreeState {
-    expandedIds?: string[];
-    isFlatList?: boolean;
-}
-
 export interface ITaskExpansionParameters {
     provider: ITaskDataProvider;
-    state: IStateStore;
+    expandedIds: string[];
     onIsFlatList: () => boolean;
+    onExpandedIdsChanged: (expandedIds: string[]) => void;
 }
 
 interface IDisplayedParent {
@@ -47,12 +42,10 @@ interface IDisplayedParent {
     isExpanded: boolean;
 }
 
-export const TASK_TREE_STATE_KEY = 'taskTree';
-
 export class TaskExpansion implements ITaskExpansion {
     private _provider: ITaskDataProvider;
-    private _state: IStateStore;
     private _onIsFlatList: () => boolean;
+    private _onExpandedIdsChanged: (expandedIds: string[]) => void;
     private _intent = new Map<string, boolean>();
     private _gridApi?: GridApi<IRecord>;
     private _isApplying = false;
@@ -61,15 +54,16 @@ export class TaskExpansion implements ITaskExpansion {
 
     constructor(parameters: ITaskExpansionParameters) {
         this._provider = parameters.provider;
-        this._state = parameters.state;
         this._onIsFlatList = parameters.onIsFlatList;
-        for (const recordId of this._getState().expandedIds ?? []) {
+        this._onExpandedIdsChanged = parameters.onExpandedIdsChanged;
+        for (const recordId of parameters.expandedIds) {
             this._intent.set(recordId, true);
         }
     }
 
     /** Keeps AG Grid's expanded rows in step with this. */
     public attach(gridApi: GridApi<IRecord>): void {
+        this._detach();
         this._gridApi = gridApi;
         gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened);
     }
@@ -96,7 +90,7 @@ export class TaskExpansion implements ITaskExpansion {
         this._apply({ recordIds: [recordId], expanded });
     }
 
-    //flips what the row shows, which a parent kept open for its matches overrides
+    //flips what the row shows, even for a parent kept open for its matches
     public toggle(recordId: string): void {
         this.setExpanded(recordId, !(this._isShownExpanded(recordId) ?? this.isExpanded(recordId)));
     }
@@ -134,6 +128,18 @@ export class TaskExpansion implements ITaskExpansion {
             }
         }
         this._store();
+    }
+
+    public destroy(): void {
+        this._detach();
+        this.events.clearEventListeners();
+    }
+
+    private _detach(): void {
+        if (this._gridApi && !this._gridApi.isDestroyed()) {
+            this._gridApi.removeEventListener('rowGroupOpened', this._onRowGroupOpened);
+        }
+        this._gridApi = undefined;
     }
 
     private _change(recordIds: string[], expanded: boolean): void {
@@ -188,7 +194,7 @@ export class TaskExpansion implements ITaskExpansion {
         return this._gridApi?.getRowNode(recordId)?.expanded;
     }
 
-    //one walk of the rows: a lookup by id walks them all
+    //a lookup by id walks every row
     private _setNodesExpanded(gridApi: GridApi<IRecord>, recordIds: Set<string>, expanded: boolean): void {
         const nodes: IRowNode<IRecord>[] = [];
         gridApi.forEachNode(node => {
@@ -212,11 +218,7 @@ export class TaskExpansion implements ITaskExpansion {
         }
     };
 
-    private _getState(): ITaskTreeState {
-        return this._state.get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
-    }
-
     private _store(): void {
-        this._state.set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), expandedIds: this.getExpandedIds() });
+        this._onExpandedIdsChanged(this.getExpandedIds());
     }
 }

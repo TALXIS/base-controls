@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttTooltip, IGanttTooltipParameters } from "./GanttTooltip";
+import { TaskTooltipModule, ITaskTooltipParameters } from "./TaskTooltipModule";
 
-export interface IGanttTooltipModule extends IGanttModule<'tooltip'> { }
+export interface ITaskTooltipModule extends IGanttModule<'taskTooltip'> { }
 
-export const createGanttTooltipModule = (parameters: IGanttTooltipParameters = {}): IGanttTooltipModule => ({
-    name: 'tooltip',
-    onLoad: gantt => new GanttTooltip(gantt, parameters),
+export const createTaskTooltipModule = (parameters: ITaskTooltipParameters = {}): ITaskTooltipModule => ({
+    name: 'taskTooltip',
+    onLoad: gantt => new TaskTooltipModule(gantt, parameters),
     onDestroy: tooltip => tooltip.destroy(),
 });

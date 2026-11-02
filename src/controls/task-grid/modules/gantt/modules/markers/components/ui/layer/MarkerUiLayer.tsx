@@ -1,17 +1,17 @@
 import { ReactNode, useMemo } from "react";
-import { GanttMarkerUiLayerComponents, IGanttMarkerUiLayerComponents } from "./components";
-import { getGanttMarkerUiLayerStyles } from "./styles";
+import { MarkerUiLayerComponents, IMarkerUiLayerComponents } from "./components";
+import { getMarkerUiLayerStyles } from "./styles";
 
-export interface IGanttMarkerUiLayerProps {
+export interface IMarkerUiLayerProps {
     /** The markers. */
     children?: ReactNode;
-    components?: Partial<IGanttMarkerUiLayerComponents>;
+    components?: Partial<IMarkerUiLayerComponents>;
 }
 
 /** A layer over the timeline, above the bars, that lets the pointer through. */
-export const GanttMarkerUiLayer = (props: IGanttMarkerUiLayerProps) => {
-    const components = { ...GanttMarkerUiLayerComponents, ...props.components };
-    const styles = useMemo(() => getGanttMarkerUiLayerStyles(), []);
+export const MarkerUiLayer = (props: IMarkerUiLayerProps) => {
+    const components = { ...MarkerUiLayerComponents, ...props.components };
+    const styles = useMemo(() => getMarkerUiLayerStyles(), []);
 
     return components.onRenderContainer({ className: styles.layer, children: props.children });
 };

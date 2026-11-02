@@ -8,7 +8,7 @@ export const TaskRuntimeContext = createContext<ITaskRuntime | null>(null);
 
 TaskRuntimeContext.displayName = "TaskRuntimeContext";
 
-/** The task runtime of the enclosing `TaskDatasetControl`; throws outside one. */
+/** The task runtime of the enclosing `TaskDatasetControl`. */
 export const useTaskRuntime = (): ITaskRuntime => useContextWithNullCheck(TaskRuntimeContext);
 
 export interface ITaskDatasetControlPropsContext {
@@ -16,7 +16,7 @@ export interface ITaskDatasetControlPropsContext {
     propsRef: MutableRefObject<ITaskDatasetControlProps>;
 }
 
-//the scope is a stable component, so it reads the props from here
+//the scope is a stable component
 export const TaskDatasetControlPropsContext = createContext<ITaskDatasetControlPropsContext | null>(null);
 
 TaskDatasetControlPropsContext.displayName = "TaskDatasetControlPropsContext";

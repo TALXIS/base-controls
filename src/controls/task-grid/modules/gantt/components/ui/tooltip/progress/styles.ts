@@ -1,6 +1,6 @@
 import { FontWeights, ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskTooltipUiProgressStyles = (theme: ITheme) => mergeStyleSets({
+export const getTooltipUiProgressStyles = (theme: ITheme) => mergeStyleSets({
     progress: {
         display: 'flex',
         alignItems: 'center',

@@ -6,4 +6,4 @@ export * from './components';
 export * from './memory';
 export * from './dataverse';
 export * from './talxis';
-export type { IDependencies, IDependenciesEvents, IDependenciesParameters, ITaskDependency, ITaskDependencyData, ITaskDependencyCreate, ITaskDependenciesStore, TaskDependencyType } from './Dependencies';
+export type { IDependencies, IDependenciesComponents, IDependenciesEvents, IDependenciesParameters, ITaskDependency, ITaskDependencyData, TaskDependencyCreate, IDependenciesStore, TaskDependencyType } from './Dependencies';

@@ -40,6 +40,7 @@ export class DatasetControlUserQueries {
     private _commands: IUserQueriesCommands;
     private _views: IUserQueryListItem[] = [];
     private _manageProvider?: IDataProvider;
+    private _unwatchViewSwitcher: () => void;
 
     constructor(parameters: IDatasetControlUserQueriesParameters) {
         this._datasetControl = parameters.datasetControl;
@@ -47,7 +48,7 @@ export class DatasetControlUserQueries {
         this._labels = parameters.datasetControl.getLabels(USER_QUERIES_LABELS);
         this._commands = parameters.commands ?? {};
         this._datasetControl.registerViews(this._addViews);
-        this._datasetControl.parts.whenAvailable('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
+        this._unwatchViewSwitcher = this._datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addViewSwitcherItems));
     }
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {
@@ -128,6 +129,7 @@ export class DatasetControlUserQueries {
     }
 
     public destroy(): void {
+        this._unwatchViewSwitcher();
         this._manageProvider?.destroy();
     }
 

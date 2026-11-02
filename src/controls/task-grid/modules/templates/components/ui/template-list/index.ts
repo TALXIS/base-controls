@@ -1,1 +1,2 @@
-export * from './TemplateSelector';
+export * from './TemplateList';
+export * from './components';

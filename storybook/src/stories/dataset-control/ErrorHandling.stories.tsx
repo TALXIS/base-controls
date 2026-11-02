@@ -65,14 +65,12 @@ The dialog opens either way. To also log a failure, or show it elsewhere, listen
 | \`onLoadFailed\` | \`control.events\` | \`error\` |
 | \`onExecuteFailed\` | The ribbon's \`events\` | \`command\`, \`error\` |
 
-The ribbon mounts anew on every load, so add its listener once each load finishes:
+The ribbon mounts anew on every load, so observe it: the callback runs for each new ribbon:
 
 \`\`\`tsx
 const onMounted = (control: IDatasetControl) => {
     control.events.addEventListener('onLoadFailed', error => logError('load', error))
-    control.events.addEventListener('onLoaded', () => {
-        control.parts.whenAvailable('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => logError(command.id, error)))
-    })
+    control.parts.observe('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => logError(command.id, error)))
 }
 \`\`\`
 

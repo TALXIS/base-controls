@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { components, OptionProps } from "react-select";
-import { getDataValue } from "../getDataValue";
+import { getReferenceDataValue } from "../lookup-many-pill/getReferenceDataValue";
 import { getColorfulLookupManyOptionStyles } from "./styles";
 
 /** Props for {@link ColorfulLookupManyOption}. */
 export interface IColorfulLookupManyOptionProps extends OptionProps<ComponentFramework.EntityReference, true, never> {
-    /** The record field holding its colour; `color` when left out. */
+    /** The record field holding its colour, `color` by default. */
     colorPropertyName?: string;
 }
 
@@ -14,7 +14,7 @@ export interface IColorfulLookupManyOptionProps extends OptionProps<ComponentFra
 export const ColorfulLookupManyOption = (props: IColorfulLookupManyOptionProps) => {
     const { colorPropertyName = 'color', ...optionProps } = props;
     const theme = useTheme();
-    const color = getDataValue(props.data, colorPropertyName) ?? theme.palette.neutralLight;
+    const color = getReferenceDataValue(props.data, colorPropertyName) ?? theme.palette.neutralLight;
     const styles = useMemo(() => getColorfulLookupManyOptionStyles(color), [color]);
     return <components.Option {...optionProps}>
         <div className={styles.option}>

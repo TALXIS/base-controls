@@ -9,7 +9,7 @@ import { CUSTOM_COLUMNS_LABELS } from "./labels";
 
 /** Where custom column definitions and values are kept. */
 export interface ICustomColumnsStore {
-    /** Loads the column definitions; called on every mount, before the tasks load. */
+    /** Loads the column definitions on every mount, before the tasks load. */
     onLoadColumns(): Promise<IColumn[]>;
     /** The custom columns' values of these tasks, by task id and column name. */
     onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
@@ -20,6 +20,8 @@ export interface ICustomColumnsStore {
     onUpdateColumn(columnName: string): Promise<string | null>;
     /** @returns The column's name, or `null` when the user cancelled. */
     onDeleteColumn(columnName: string): Promise<string | null>;
+    /** Called as the custom columns go. */
+    destroy?(): void;
 }
 
 export interface ICustomColumnsParameters {
@@ -32,8 +34,20 @@ export interface ICustomColumnsParameters {
     enableDeletion?: boolean;
 }
 
-/** The user's own task columns: offered in Edit columns, and loaded and saved through their store. */
-export class CustomColumns {
+/** The `customColumns` module, loaded and saved through its store. */
+export interface ICustomColumns {
+    getColumns(): IColumn[];
+    isCustomColumn(columnName: string): boolean;
+    /** What the last load threw, until the next one starts. */
+    getError(): unknown;
+    /** Loads the tasks' custom column values again, every loaded task's when none are given. */
+    reload(taskIds?: string[]): Promise<void>;
+    /** Called as the mount goes. */
+    destroy(): void;
+}
+
+/** The user's own task columns, offered in Edit columns. */
+export class CustomColumns implements ICustomColumns {
     private _taskRuntime: ITaskRuntime;
     private _parameters: ICustomColumnsParameters;
     private _store: ICustomColumnsStore;
@@ -58,8 +72,10 @@ export class CustomColumns {
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */
     public async load(): Promise<void> {
         this._columns = await this._store.onLoadColumns();
-        this._taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
-        this._taskRuntime.services.get('datasetControl').parts.whenAvailable('editColumns', this._onEditColumnsAvailable);
+        this._unregisters.push(
+            this._taskRuntime.services.observe('provider', this._onProviderAvailable),
+            this._taskRuntime.services.get('datasetControl').parts.observe('editColumns', this._onEditColumnsAvailable),
+        );
     }
 
     public getColumns(): IColumn[] {
@@ -70,12 +86,10 @@ export class CustomColumns {
         return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX);
     }
 
-    /** What the last load threw, until the next one starts. */
     public getError(): unknown {
         return this._values.getError();
     }
 
-    /** Loads the tasks' custom column values again, every loaded task's when none are given. */
     public reload(taskIds?: string[]): Promise<void> {
         return this._values.reload(taskIds);
     }
@@ -83,17 +97,18 @@ export class CustomColumns {
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
         this._values.destroy();
+        this._store.destroy?.();
     }
 
-    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        const store = this._store;
-        this._unregisters.push(
+    private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
+        const unregisters = [
             provider.registerColumnHandler({
                 isHandledColumn: columnName => this.isCustomColumn(columnName),
-                onSaveValue: (record, column, value) => store.onSaveValue(record, column, value),
+                onSaveValue: (record, column, value) => this._store.onSaveValue(record, column, value),
             }),
             provider.registerAvailableColumns(this._addAvailableColumns),
-        );
+        ];
+        return () => unregisters.forEach(unregister => unregister());
     };
 
     //a task the store leaves out holds none
@@ -116,11 +131,12 @@ export class CustomColumns {
         }
     };
 
-    private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): void => {
-        this._unregisters.push(
+    private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): (() => void) => {
+        const unregisters = [
             editColumns.registerCommands(this._addCommands),
             editColumns.registerColumnCommands(this._addColumnCommands),
-        );
+        ];
+        return () => unregisters.forEach(unregister => unregister());
     };
 
     private _addCommands = (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession): void => {
@@ -129,7 +145,7 @@ export class CustomColumns {
         }
     };
 
-    //dnd-kit swallows the click, so they act on mouse up
+    //dnd-kit swallows the click
     private _addColumnCommands = (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession): void => {
         if (!this.isCustomColumn(column.name)) {
             return;

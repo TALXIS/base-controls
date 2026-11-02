@@ -5,77 +5,76 @@ import type { ITaskDataProvider } from "../../../../provider";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import type { IGanttTasks } from "../../tasks/GanttTasks";
+import type { IGanttTasks } from "../../tasks";
 import type { IGanttStyles } from "../../theme";
-import { GANTT_ROW_SELECTED_CLASS, GANTT_TASK_SELECTED_CLASS } from "./classNames";
+import { ROW_SELECTED_CLASS, BAR_SELECTED_CLASS } from "./classNames";
 import { SelectionBoxLayer } from "./components/adapters/selection-box-layer";
-import { getGanttSelectionStyles } from "./styles";
+import { getTaskSelectionStyles } from "./styles";
 
-export interface IGanttSelectionParameters {
-    /** Shift+drag selects the bars under a band. Defaults to `true`. */
+export interface ITaskSelectionParameters {
+    /** Shift+drag selects the bars under a band (default `true`). */
     enableSelectionBox?: boolean;
 }
 
-/** The `selection` module: selects tasks from the chart, through the provider's selection. */
-export interface IGanttSelection {
+/** The `taskSelection` module: selects tasks from the chart, through the provider's selection. */
+export interface ITaskSelection {
     isSelected(taskId: string): boolean;
     /** Selects exactly these tasks, or adds them to the selection. */
     select(taskIds: string[], options?: { isAdditive?: boolean }): void;
-    isSelectionBoxEnabled(): boolean;
     /** Called as the Gantt goes. */
     destroy(): void;
 }
 
-export class GanttSelection implements IGanttSelection {
+export class TaskSelection implements ITaskSelection {
     private _gantt: IGantt;
     private _provider: ITaskDataProvider;
-    private _isSelectionBoxEnabled: boolean;
     private _rangeAnchorTaskId?: string;
+    private _selectedTaskIds?: Set<string>;
     private _unregisters: (() => void)[] = [];
 
-    constructor(gantt: IGantt, parameters: IGanttSelectionParameters) {
+    constructor(gantt: IGantt, parameters: ITaskSelectionParameters) {
         this._gantt = gantt;
         this._provider = gantt.getTaskRuntime().getProvider();
-        this._isSelectionBoxEnabled = parameters.enableSelectionBox ?? true;
         this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
         this._unregisters.push(() => this._provider.removeEventListener('onRecordsSelected', this._onSelectionChanged));
-        gantt.services.whenAvailable('chart', this._onChartReady);
-        gantt.services.whenAvailable('tasks', this._onTasksReady);
-        this._unregisters.push(gantt.services.get('theme').registerStyles(this._onStyles));
-        if (this._isSelectionBoxEnabled) {
+        this._unregisters.push(
+            gantt.services.observe('chart', this._onChartReady),
+            gantt.services.observe('tasks', this._onTasksReady),
+            gantt.services.get('theme').registerStyles(this._onStyles),
+        );
+        if (parameters.enableSelectionBox ?? true) {
             this._unregisters.push(gantt.surfaces.registerSurface(this._onSurfaces));
         }
     }
 
     public isSelected(taskId: string): boolean {
-        return this._provider.getSelectedRecordIds().includes(taskId);
+        this._selectedTaskIds ??= new Set(this._provider.getSelectedRecordIds());
+        return this._selectedTaskIds.has(taskId);
     }
 
     public select(taskIds: string[], options?: { isAdditive?: boolean }): void {
         this._provider.setSelectedRecordIds(options?.isAdditive ? [...new Set([...this._provider.getSelectedRecordIds(), ...taskIds])] : taskIds);
-    }
-
-    public isSelectionBoxEnabled(): boolean {
-        return this._isSelectionBoxEnabled;
+        this._selectedTaskIds = undefined;
     }
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
     }
 
-    private _onChartReady = (chart: GanttStatic): void => {
+    private _onChartReady = (chart: GanttStatic): (() => void) => {
         const eventIds = [
             chart.attachEvent('onTaskClick', this._onTaskClick),
             chart.attachEvent('onTaskDblClick', this._onTaskDblClick),
         ];
-        this._unregisters.push(() => eventIds.forEach(eventId => chart.detachEvent(eventId)));
+        return () => eventIds.forEach(eventId => chart.detachEvent(eventId));
     };
 
-    private _onTasksReady = (tasks: IGanttTasks): void => {
-        this._unregisters.push(
-            tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), GANTT_ROW_SELECTED_CLASS)),
-            tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), GANTT_TASK_SELECTED_CLASS)),
-        );
+    private _onTasksReady = (tasks: IGanttTasks): (() => void) => {
+        const unregisters = [
+            tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS)),
+            tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS)),
+        ];
+        return () => unregisters.forEach(unregister => unregister());
     };
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
@@ -83,10 +82,11 @@ export class GanttSelection implements IGanttSelection {
     };
 
     private _onStyles = (result: IGanttStyles, theme: ITheme): void => {
-        result.styles.push(getGanttSelectionStyles(theme));
+        result.styles.push(getTaskSelectionStyles(theme));
     };
 
     private _onSelectionChanged = (): void => {
+        this._selectedTaskIds = undefined;
         this._gantt.render();
     };
 
@@ -106,6 +106,7 @@ export class GanttSelection implements IGanttSelection {
         this._rangeAnchorTaskId = taskId;
         if (isToggle) {
             this._provider.toggleSelectedRecordId(taskId);
+            this._selectedTaskIds = undefined;
         }
         else {
             this.select([taskId]);
@@ -134,6 +135,6 @@ export class GanttSelection implements IGanttSelection {
 declare module "../../interfaces" {
     interface IGanttModuleMap {
         /** Selecting tasks from the chart. */
-        selection: IGanttSelection;
+        taskSelection: ITaskSelection;
     }
 }

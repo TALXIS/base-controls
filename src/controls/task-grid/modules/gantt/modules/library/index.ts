@@ -1,3 +1,3 @@
-export * from './createGanttLibraryModule';
-export * from './createGanttProLibraryModule';
-export type { IGanttLibrary } from './GanttLibrary';
+export * from './createLibraryModule';
+export * from './createProLibraryModule';
+export type { ILibrary } from './Library';

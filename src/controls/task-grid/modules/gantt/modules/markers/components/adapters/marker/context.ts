@@ -1,19 +1,19 @@
 import { createContext, useContext } from "react";
-import type { IGanttMarker } from "../../../GanttMarkers";
+import type { IMarker } from "../../../Markers";
 
 /** The marker a part is drawn for. */
-export interface IGanttMarkerContext {
-    marker: IGanttMarker;
+export interface IMarkerContext {
+    marker: IMarker;
     /** Where the marker's date is on the timeline, in pixels. */
     left: number;
 }
 
-export const GanttMarkerContext = createContext<IGanttMarkerContext | undefined>(undefined);
-GanttMarkerContext.displayName = 'GanttMarker';
+export const MarkerContext = createContext<IMarkerContext | undefined>(undefined);
+MarkerContext.displayName = 'Marker';
 
 /** The marker this is drawn for. */
-export const useGanttMarker = (): IGanttMarkerContext => {
-    const context = useContext(GanttMarkerContext);
+export const useMarker = (): IMarkerContext => {
+    const context = useContext(MarkerContext);
     if (!context) {
         throw new Error('This has to be drawn inside a Gantt marker.');
     }

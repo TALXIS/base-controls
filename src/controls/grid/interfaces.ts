@@ -21,7 +21,7 @@ export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridMod
 }
 
 /** Where the grid's loaded modules are found, by name. */
-export type IGridModuleLocator = Pick<IServiceLocator<IGridModuleMap>, 'get' | 'find' | 'whenAvailable'>;
+export type IGridModuleLocator = Pick<IServiceLocator<IGridModuleMap>, 'get' | 'find' | 'observe'>;
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
 export interface IGridOpenRecordParams {

@@ -4,12 +4,16 @@ import { useEventEmitter } from "@hooks";
 import { DataProviderContext, useContextWithNullCheck } from "@utils";
 import type { ITaskDataProvider, ITaskDataProviderEvents } from "../provider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
-import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
+import { useDatasetControlPart } from "@controls/dataset-control";
 import { TaskRuntime } from "../runtime/TaskRuntime";
 import { TaskRuntimeContext, TaskDatasetControlPropsContext } from "./context";
 
-/** One mount's task runtime: there before the mount loads, gone with it. */
-export const TaskDatasetControlScope = (props: { children: ReactNode }) => {
+export interface ITaskDatasetControlScopeProps {
+    children: ReactNode;
+}
+
+/** One mount's task runtime, there before the mount loads. */
+export const TaskDatasetControlScope = (props: ITaskDatasetControlScopeProps) => {
     const datasetControl = useRequiredDatasetControlRuntime();
     const { pcfContext, propsRef } = useContextWithNullCheck(TaskDatasetControlPropsContext);
     const runtime = useDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }));

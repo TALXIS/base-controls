@@ -1,4 +1,4 @@
-import { LinkTooltipRoot } from "../link-tooltip";
+import { LinkTooltipRoot } from "../link-tooltip-root";
 import { LinkTooltipCallout } from "../callout";
 import { LinkTooltipHeader } from "../header";
 import { LinkTooltipFieldRows } from "../field-rows";

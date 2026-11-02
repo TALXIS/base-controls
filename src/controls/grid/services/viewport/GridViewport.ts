@@ -36,7 +36,7 @@ export class GridViewport implements IGridViewport {
         this._services = parameters.services;
         this._pending = this._services.get('state').get<IGridViewportState>(VIEWPORT_STATE_KEY);
         this._services.get('grid').events.addEventListener('onDataLoaded', this._onDataLoaded);
-        this._services.whenAvailable('gridApi', this._onGridApiAvailable);
+        this._services.observe('gridApi', this._onGridApiAvailable);
     }
 
     public getScrollTop(): number {

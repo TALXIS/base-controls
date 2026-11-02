@@ -1,24 +1,26 @@
-import type { IGanttNonWorkingDay, IGanttNonWorkingDaysParameters, IGanttNonWorkingDaysStore } from "../GanttNonWorkingDays";
-import { createGanttNonWorkingDaysModule, IGanttNonWorkingDaysModule } from "../createGanttNonWorkingDaysModule";
+import { simulateBackend } from "../../../../../data-sources/memory/simulateBackend";
+import type { INonWorkingDay, INonWorkingDaysParameters, INonWorkingDaysStore } from "../NonWorkingDays";
+import { createNonWorkingDaysModule, INonWorkingDaysModule } from "../createNonWorkingDaysModule";
 
-export interface IMemoryGanttNonWorkingDaysModuleParameters<TData> extends Omit<IGanttNonWorkingDaysParameters<TData>, 'onCreateStore'> {
-    nonWorkingDays: IGanttNonWorkingDay<TData>[];
+export interface IMemoryNonWorkingDaysModuleParameters<TData> extends Omit<INonWorkingDaysParameters<TData>, 'onCreateStore'> {
+    nonWorkingDays: INonWorkingDay<TData>[];
 }
 
-class MemoryGanttNonWorkingDaysStore<TData> implements IGanttNonWorkingDaysStore<TData> {
-    private _nonWorkingDays: IGanttNonWorkingDay<TData>[];
+class MemoryNonWorkingDaysStore<TData> implements INonWorkingDaysStore<TData> {
+    private _nonWorkingDays: INonWorkingDay<TData>[];
 
-    constructor(nonWorkingDays: IGanttNonWorkingDay<TData>[]) {
+    constructor(nonWorkingDays: INonWorkingDay<TData>[]) {
         this._nonWorkingDays = nonWorkingDays;
     }
 
-    public async onLoadNonWorkingDays(): Promise<IGanttNonWorkingDay<TData>[]> {
+    public async onLoadNonWorkingDays(): Promise<INonWorkingDay<TData>[]> {
+        await simulateBackend();
         return this._nonWorkingDays;
     }
 }
 
 /** Non-working days held in memory. */
-export const createMemoryGanttNonWorkingDaysModule = <TData,>(parameters: IMemoryGanttNonWorkingDaysModuleParameters<TData>): IGanttNonWorkingDaysModule => {
+export const createMemoryNonWorkingDaysModule = <TData,>(parameters: IMemoryNonWorkingDaysModuleParameters<TData>): INonWorkingDaysModule => {
     const { nonWorkingDays, ...moduleParameters } = parameters;
-    return createGanttNonWorkingDaysModule<TData>({ ...moduleParameters, onCreateStore: () => new MemoryGanttNonWorkingDaysStore(nonWorkingDays) });
+    return createNonWorkingDaysModule<TData>({ ...moduleParameters, onCreateStore: () => new MemoryNonWorkingDaysStore(nonWorkingDays) });
 };

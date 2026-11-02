@@ -1,15 +1,16 @@
 import { useMemo } from "react";
-import { DefaultButton, PrimaryButton, Target } from "@fluentui/react";
+import type { Target } from "@fluentui/react";
 import { IOptionSet, OptionSet } from "@controls/fields/option-set";
 import { TextField } from "@controls/fields/text-field";
 import type { IDataProvider } from "@talxis/client-libraries";
-import { FilteringUi, IFilteringUiCalloutComponents } from "@controls/grid";
-import { ILookupManySelectComponents, LookupManySelect } from "../lookup-many-select";
+import { FilteringUi } from "@controls/grid";
+import { LookupManySelect } from "../lookup-many-select";
+import { ILookupManyFilterComponents, LookupManyFilterComponents } from "./components";
 import { getLookupManyFilterStyles } from "./styles";
 
 type Reference = ComponentFramework.EntityReference;
 
-/** What the chosen operator compares with: picked records, a name fragment, or nothing. */
+/** What the chosen operator compares with. */
 export type LookupManyFilterValueKind = 'records' | 'text' | 'none';
 
 export interface ILookupManyFilterProps {
@@ -28,9 +29,10 @@ export interface ILookupManyFilterProps {
     clearText: string;
     noRecordsFoundText: string;
     loadingText: string;
+    /** The accessible name of a picked record's remove button. */
+    getRemoveText: (reference: Reference) => string;
     isClearDisabled: boolean;
-    selectComponents?: Partial<ILookupManySelectComponents>;
-    calloutComponents?: Partial<IFilteringUiCalloutComponents>;
+    components?: Partial<ILookupManyFilterComponents>;
     onOperatorChange: (operator: number) => void;
     onRecordsChange: (records: Reference[]) => void;
     onTextChange: (text: string) => void;
@@ -39,36 +41,47 @@ export interface ILookupManyFilterProps {
     onDismiss: () => void;
 }
 
-/** A lookup-many column's filter: an operator, what it compares with, and Apply and Clear. */
+/** A lookup-many column's filter with an operator, its value, and Apply and Clear. */
 export const LookupManyFilter = (props: ILookupManyFilterProps) => {
+    const components = { ...LookupManyFilterComponents, ...props.components };
     const styles = useMemo(() => getLookupManyFilterStyles(), []);
 
-    return <FilteringUi.Callout target={props.target} title={props.title} onDismiss={props.onDismiss} components={props.calloutComponents}>
-        <div className={styles.root}>
-            <OptionSet
-                context={props.context}
-                parameters={{ value: { raw: props.operator, attributes: { Options: props.operators.map(operator => ({ Value: operator.value, Label: operator.label, Color: '' })) } } as IOptionSet['parameters']['value'] }}
-                onNotifyOutputChanged={outputs => outputs.value != null && props.onOperatorChange(outputs.value)} />
-            <div className={styles.value}>
-                {props.valueKind === 'records' && <LookupManySelect
-                    dataProvider={props.dataProvider}
-                    value={props.records}
-                    autoFocus
-                    noRecordsFoundText={props.noRecordsFoundText}
-                    loadingText={props.loadingText}
-                    components={props.selectComponents}
-                    placeholder='---'
-                    isMenuPopup
-                    onChange={props.onRecordsChange} />}
-                {props.valueKind === 'text' && <TextField
+    return <FilteringUi.Callout target={props.target} title={props.title} onDismiss={props.onDismiss} components={components.callout}>
+        {components.onRenderContainer({
+            className: styles.root,
+            children: <>
+                <OptionSet
                     context={props.context}
-                    parameters={{ value: { raw: props.text }, AutoFocus: { raw: true } }}
-                    onNotifyOutputChanged={outputs => props.onTextChange(outputs.value ?? '')} />}
-            </div>
-            <div className={styles.buttons}>
-                <PrimaryButton text={props.applyText} onClick={props.onApply} />
-                <DefaultButton text={props.clearText} disabled={props.isClearDisabled} onClick={props.onClear} />
-            </div>
-        </div>
+                    parameters={{ value: { raw: props.operator, attributes: { Options: props.operators.map(operator => ({ Value: operator.value, Label: operator.label, Color: '' })) } } as IOptionSet['parameters']['value'] }}
+                    onNotifyOutputChanged={outputs => outputs.value != null && props.onOperatorChange(outputs.value)} />
+                {components.onRenderValue({
+                    className: styles.value,
+                    children: <>
+                        {props.valueKind === 'records' && <LookupManySelect
+                            dataProvider={props.dataProvider}
+                            value={props.records}
+                            autoFocus
+                            noRecordsFoundText={props.noRecordsFoundText}
+                            loadingText={props.loadingText}
+                            getRemoveText={props.getRemoveText}
+                            components={components.select}
+                            placeholder='---'
+                            isMenuPopup
+                            onChange={props.onRecordsChange} />}
+                        {props.valueKind === 'text' && <TextField
+                            context={props.context}
+                            parameters={{ value: { raw: props.text }, AutoFocus: { raw: true } }}
+                            onNotifyOutputChanged={outputs => props.onTextChange(outputs.value ?? '')} />}
+                    </>,
+                })}
+                {components.onRenderButtons({
+                    className: styles.buttons,
+                    children: <>
+                        {components.onRenderApplyButton({ text: props.applyText, onClick: props.onApply })}
+                        {components.onRenderClearButton({ text: props.clearText, disabled: props.isClearDisabled, onClick: props.onClear })}
+                    </>,
+                })}
+            </>,
+        })}
     </FilteringUi.Callout>;
 };

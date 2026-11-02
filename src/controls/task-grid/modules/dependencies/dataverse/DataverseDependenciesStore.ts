@@ -1,9 +1,9 @@
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../../runtime";
-import type { ITaskDataProvider } from "../../../provider";
-import type { IDependencies, ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate, TaskDependencyType } from "../Dependencies";
+import type { IDependenciesStore, ITaskDependency, TaskDependencyCreate, TaskDependencyType } from "../Dependencies";
+import { retrieveInBatches } from "../../dataverse";
 
-/** A Dataverse table of dependencies: two task lookups and an option set of the type. */
+/** A Dataverse table of dependencies with two task lookups and a type option set. */
 export interface IDataverseDependenciesSchema {
     entityName: string;
     /** Lookup to the task that comes first. */
@@ -17,42 +17,27 @@ export interface IDataverseDependenciesSchema {
 
 export interface IDataverseDependenciesStoreParameters extends IDataverseDependenciesSchema {
     taskRuntime: ITaskRuntime;
-    dependencies: IDependencies;
 }
 
-const MAX_IDS_PER_REQUEST = 800;
+interface IDependencyEntityMetadata {
+    primaryIdAttribute: string;
+    taskEntitySetName: string;
+    //a lookup is written through its navigation property
+    navigationPropertyNames: Map<string, string>;
+}
 
 /** Dependencies kept in a Dataverse table. */
-export class DataverseDependenciesStore implements ITaskDependenciesStore {
+export class DataverseDependenciesStore implements IDependenciesStore {
     private _parameters: IDataverseDependenciesStoreParameters;
-    private _unregisters: (() => void)[] = [];
+    private _metadata?: IDependencyEntityMetadata;
 
     constructor(parameters: IDataverseDependenciesStoreParameters) {
         this._parameters = parameters;
-        parameters.taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
     }
-
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-    }
-
-    private _onProviderAvailable = (provider: ITaskDataProvider): void => {
-        provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed);
-        this._unregisters.push(() => provider.taskEvents.removeEventListener('onEditorClosed', this._onEditorClosed));
-    };
-
-    //the editor may have changed the task's dependencies
-    private _onEditorClosed = (taskIds: string[]): void => {
-        this._parameters.dependencies.reload(taskIds);
-    };
 
     public async onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
-        const batches: string[][] = [];
-        for (let index = 0; index < taskIds.length; index += MAX_IDS_PER_REQUEST) {
-            batches.push(taskIds.slice(index, index + MAX_IDS_PER_REQUEST));
-        }
-        const primaryIdAttribute = await this._getPrimaryIdAttribute();
-        const rows = (await Promise.all(batches.map(batch => this._retrieve(batch, primaryIdAttribute)))).flat();
+        const { primaryIdAttribute } = await this._getMetadata();
+        const rows = await retrieveInBatches(taskIds, ids => this._retrieve(ids, primaryIdAttribute));
         //a dependency whose ends fall in different batches comes back twice
         const dependencies = new Map<string, ITaskDependency>();
         for (const row of rows) {
@@ -64,7 +49,7 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         return [...dependencies.values()];
     }
 
-    public async onCreateDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency> {
+    public async onCreateDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency> {
         const { id } = await this._getPcfContext().webAPI.createRecord(this._parameters.entityName, await this._toPayload(dependency));
         return { ...dependency, id };
     }
@@ -77,16 +62,9 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         await this._getPcfContext().webAPI.deleteRecord(this._parameters.entityName, dependencyId);
     }
 
-    private async _getPrimaryIdAttribute(): Promise<string> {
-        const metadata: any = await this._getPcfContext().utils.getEntityMetadata(this._parameters.entityName);
-        return metadata.PrimaryIdAttribute;
-    }
-
-    private async _toPayload(dependency: ITaskDependencyCreate): Promise<ComponentFramework.WebApi.Entity> {
+    private async _toPayload(dependency: TaskDependencyCreate): Promise<ComponentFramework.WebApi.Entity> {
         const { predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
-        const taskEntityName = this._parameters.taskRuntime.getProvider().getEntityName();
-        const taskEntitySetName = (await this._getPcfContext().utils.getEntityMetadata(taskEntityName, [])).EntitySetName;
-        const navigationPropertyNames = await this._getNavigationPropertyNames(taskEntityName);
+        const { taskEntitySetName, navigationPropertyNames } = await this._getMetadata();
         return {
             [`${navigationPropertyNames.get(predecessorAttribute)}@odata.bind`]: `/${taskEntitySetName}(${dependency.predecessorTaskId})`,
             [`${navigationPropertyNames.get(successorAttribute)}@odata.bind`]: `/${taskEntitySetName}(${dependency.successorTaskId})`,
@@ -94,20 +72,25 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         };
     }
 
-    //a lookup is written through its navigation property, which the attribute's name does not give
-    private async _getNavigationPropertyNames(taskEntityName: string): Promise<Map<string, string>> {
+    private async _getMetadata(): Promise<IDependencyEntityMetadata> {
+        this._metadata ??= await this._loadMetadata();
+        return this._metadata;
+    }
+
+    private async _loadMetadata(): Promise<IDependencyEntityMetadata> {
         const { entityName, predecessorAttribute, successorAttribute } = this._parameters;
-        const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);
+        const taskEntityName = this._parameters.taskRuntime.getProvider().getEntityName();
+        const [metadata, taskMetadata]: any[] = await Promise.all([this._getPcfContext().utils.getEntityMetadata(entityName), this._getPcfContext().utils.getEntityMetadata(taskEntityName, [])]);
         const relationships: { ReferencedEntity: string; ReferencingAttribute: string; ReferencingEntityNavigationPropertyName: string }[] = metadata.ManyToOneRelationships.getAll();
-        const result = new Map<string, string>();
+        const navigationPropertyNames = new Map<string, string>();
         for (const attribute of [predecessorAttribute, successorAttribute]) {
             const relationship = relationships.find(relationship => relationship.ReferencedEntity === taskEntityName && relationship.ReferencingAttribute === attribute);
             if (!relationship) {
                 throw new Error(`No many-to-one relationship from ${entityName}.${attribute} to ${taskEntityName}.`);
             }
-            result.set(attribute, relationship.ReferencingEntityNavigationPropertyName);
+            navigationPropertyNames.set(attribute, relationship.ReferencingEntityNavigationPropertyName);
         }
-        return result;
+        return { primaryIdAttribute: metadata.PrimaryIdAttribute, taskEntitySetName: taskMetadata.EntitySetName, navigationPropertyNames };
     }
 
     private _getTypeCode(type: TaskDependencyType): number {
@@ -122,9 +105,8 @@ export class DataverseDependenciesStore implements ITaskDependenciesStore {
         return this._parameters.taskRuntime.services.get('pcfContext');
     }
 
-    private async _retrieve(taskIds: string[], primaryIdAttribute: string): Promise<ComponentFramework.WebApi.Entity[]> {
+    private async _retrieve(ids: string, primaryIdAttribute: string): Promise<ComponentFramework.WebApi.Entity[]> {
         const { entityName, predecessorAttribute, successorAttribute, typeAttribute } = this._parameters;
-        const ids = taskIds.map(id => `'${id}'`).join(',');
         const filter = `Microsoft.Dynamics.CRM.In(PropertyName='${predecessorAttribute}',PropertyValues=[${ids}]) or Microsoft.Dynamics.CRM.In(PropertyName='${successorAttribute}',PropertyValues=[${ids}])`;
         const select = [primaryIdAttribute, `_${predecessorAttribute}_value`, `_${successorAttribute}_value`, typeAttribute].join(',');
         const { entities } = await this._getPcfContext().webAPI.retrieveMultipleRecords(entityName, `?$select=${select}&$filter=${filter}`);

@@ -19,6 +19,7 @@ export class CheckListReordering {
     private _isEditing = false;
     //the item being dragged, until a drop in the grid settles where it goes
     private _draggedRecord?: IRecord;
+    private _unwatchGridApi: () => void;
 
     constructor(parameters: ICheckListReorderingParameters) {
         this._grid = parameters.grid;
@@ -27,7 +28,11 @@ export class CheckListReordering {
         this._grid.registerAgGridOptions(this._onAgGridOptions);
         this._grid.services.get('gridTheme').registerStyles(this._onStyles);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-        this._grid.services.whenAvailable('gridApi', this._onGridApiAvailable);
+        this._unwatchGridApi = this._grid.services.observe('gridApi', this._onGridApiAvailable);
+    }
+
+    public destroy(): void {
+        this._unwatchGridApi();
     }
 
     private _onAgGridInitialOptions = (result: IGridAgGridInitialOptions): void => {
@@ -57,12 +62,21 @@ export class CheckListReordering {
         }
     };
 
-    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
+    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): (() => void) => {
         gridApi.addEventListener('rowDragEnter', this._onRowDragEnter);
         gridApi.addEventListener('rowDragEnd', this._onRowDragEnd);
         //fired on every mouse up of a drag, after rowDragEnd when the drop landed in the grid
         gridApi.addEventListener('dragStopped', this._restoreDraggedRow);
         gridApi.addEventListener('rowDragCancel', this._restoreDraggedRow);
+        return () => {
+            if (gridApi.isDestroyed()) {
+                return;
+            }
+            gridApi.removeEventListener('rowDragEnter', this._onRowDragEnter);
+            gridApi.removeEventListener('rowDragEnd', this._onRowDragEnd);
+            gridApi.removeEventListener('dragStopped', this._restoreDraggedRow);
+            gridApi.removeEventListener('rowDragCancel', this._restoreDraggedRow);
+        };
     };
 
     private _onRowDragEnter = (event: RowDragEnterEvent<IRecord>): void => {

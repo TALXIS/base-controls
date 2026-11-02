@@ -6,9 +6,8 @@ import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels } fr
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
 import type { ITaskActions } from "./tasks";
 
-/** A hook over an item `TaskDatasetControl.Ribbon` draws, which it changes in place, such as to give a menu content of its own. */
+/** A hook that changes an item `TaskDatasetControl.Ribbon` draws in place. */
 export type TaskRibbonCommandUiHook = (item: IContextualMenuItem) => void;
-
 
 /** What the runtime reads of the grid's task tree. */
 export interface ITaskGridTree {
@@ -18,7 +17,7 @@ export interface ITaskGridTree {
     revealTask(taskId: string): void;
 }
 
-/** The services a provider's platform registers; it adds its own by augmenting this. */
+/** The services a provider's platform registers by augmenting this. */
 export interface ITaskRuntimeModuleServiceMap { }
 
 export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
@@ -29,29 +28,28 @@ export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     provider: ITaskDataProvider;
     /** The tree of the grid in the body, while it is drawn. */
     taskTree: ITaskGridTree;
-    /** The tasks a save can reach, held as saving until it settles; there from the start. */
+    /** The tasks a save can reach, held as saving until it settles. */
     savingChains: ITaskSavingChains;
 }
 
 export interface ITaskRuntimeEvents {
-    /** The mount is going; release what was wired outside it. */
+    /** The mount is going. */
     onDestroyed: () => void;
 }
 
-/** One mount of a `TaskDatasetControl`: what its modules register on and its parts read. */
-/** How `execute` shows a run while it goes; by default it shows the loading. */
+/** How `execute` shows a run while it goes. */
 export interface ITaskExecuteLoading {
-    /** Defaults to `true`; `false` for a run in the background. */
+    /** `false` for a run in the background. */
     show?: boolean;
     /** Shown in the control's loading overlay. */
     message?: string;
 }
 
-/** How `execute` handles a run's failure; by default it shows the dialog and rethrows. */
+/** How `execute` handles a run's failure. */
 export interface ITaskExecuteError {
     /** Titles the error dialog. */
     title?: string;
-    /** Defaults to `true`; `false` resolves `undefined` once the dialog is shown. */
+    /** `false` resolves `undefined` once the dialog is shown. */
     rethrow?: boolean;
 }
 
@@ -60,6 +58,7 @@ export interface ITaskExecuteOptions {
     error?: ITaskExecuteError;
 }
 
+/** One mount of a `TaskDatasetControl`. */
 export interface ITaskRuntime {
     readonly services: IServiceLocator<ITaskRuntimeServiceMap>;
     readonly events: IEventSubscriber<ITaskRuntimeEvents>;
@@ -73,7 +72,7 @@ export interface ITaskRuntime {
     getProvider(): ITaskDataProvider;
     /** The strings of one set, as the control's localization gives them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
-    /** Whether the matching tasks are listed on their own, without the tree; remembered per view. */
+    /** Whether the matching tasks are listed on their own, without the tree. */
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     isCreationEnabled(): boolean;
@@ -81,11 +80,11 @@ export interface ITaskRuntime {
     isDeletionEnabled(): boolean;
     /** How many hours a day of a task's duration holds. */
     getHoursPerDay(): number;
-    /** Runs the operation under the control's loading overlay, and shows its failure once in a dialog. */
+    /** Runs the operation under the loading overlay and shows its failure in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     /**
-     * Registers a hook over every item `TaskDatasetControl.Ribbon` draws, the ones in its menus included.
+     * Registers a hook over every item `TaskDatasetControl.Ribbon` draws, menus included.
      * @param priority Ascending: a higher number gets the later word.
      */
     registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void;

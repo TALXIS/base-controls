@@ -49,7 +49,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 | From | Reach it with |
 |---|---|
-| A module's \`onLoad\` | \`grid.services.whenAvailable('gridApi', gridApi => ...)\`. \`find('gridApi')\` is still \`undefined\` there. |
+| A module's \`onLoad\` | \`grid.services.observe('gridApi', gridApi => ...)\`. \`find('gridApi')\` is still \`undefined\` there. |
 | Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 

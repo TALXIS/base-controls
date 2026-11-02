@@ -1,3 +1,2 @@
-export * from './GanttSkeleton';
-export * from './GanttSkeletonShimmer';
+export * from './GanttUiSkeleton';
 export * from './components';

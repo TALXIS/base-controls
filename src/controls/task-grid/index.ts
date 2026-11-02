@@ -10,6 +10,6 @@ export * from './modules';
 export * from './priorities';
 export * from './data-sources';
 export type { ITaskRuntime, ITaskActions, ITaskExecuteOptions, ITaskRuntimeServiceMap, ITaskRuntimeModuleServiceMap, ITaskRuntimeEvents, TaskRibbonCommandUiHook } from './runtime';
-export type { ITaskDatasetControlProps, ISettingsProps, ITaskRibbonProps, ITaskSettings, ITaskGridSetting, TaskGridSettingsHook } from './dataset-control';
+export type { ITaskDatasetControlProps, ITaskSettings, ITaskGridSetting, TaskGridSettingsHook } from './dataset-control';
 export { useTaskRuntime } from './dataset-control';
-export { useTaskGridService, useTaskGridServices } from './useTaskGrid';
+export { useTaskGridService, useTaskGridServices } from './useTaskGridServices';

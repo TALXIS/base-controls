@@ -1,8 +1,8 @@
-import { ITaskTooltipUiDateRangeComponents, TaskTooltipUiDateRange } from "../../ui";
-import { useTaskTooltip } from "../task-tooltip";
+import { ITooltipUiDateRangeComponents, TooltipUiDateRange } from "../../../../../components/ui/tooltip";
+import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipDateRangeRowProps {
-    components?: Partial<ITaskTooltipUiDateRangeComponents>;
+    components?: Partial<ITooltipUiDateRangeComponents>;
 }
 
 /** The task's start, end and duration as the timeline draws them, not as the record holds them. */
@@ -12,7 +12,7 @@ export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) =>
         return null;
     }
     const schedule = gantt.services.get('schedule');
-    const range = schedule.format(span).range;
+    const range = schedule.formatSpan(span).range;
     const formattedDuration = duration ? schedule.formatDuration(duration) : undefined;
-    return <TaskTooltipUiDateRange range={range} duration={formattedDuration} components={props.components} />;
+    return <TooltipUiDateRange range={range} duration={formattedDuration} components={props.components} />;
 };

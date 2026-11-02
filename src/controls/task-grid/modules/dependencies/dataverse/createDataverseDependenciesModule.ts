@@ -6,5 +6,7 @@ export interface IDataverseDependenciesModuleParameters extends IDataverseDepend
 
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
 export const createDataverseDependenciesModule = (parameters: IDataverseDependenciesModuleParameters): IDependenciesModule => {
-    return createDependenciesModule({ onCreateStore: (taskRuntime, dependencies) => new DataverseDependenciesStore({ ...parameters, taskRuntime, dependencies }) });
+    const { entityName, predecessorAttribute, successorAttribute, typeAttribute, dependencyTypeCodes, ...moduleParameters } = parameters;
+    const schema: IDataverseDependenciesSchema = { entityName, predecessorAttribute, successorAttribute, typeAttribute, dependencyTypeCodes };
+    return createDependenciesModule({ reloadOnEditorClosed: true, ...moduleParameters, onCreateStore: taskRuntime => new DataverseDependenciesStore({ ...schema, taskRuntime }) });
 };

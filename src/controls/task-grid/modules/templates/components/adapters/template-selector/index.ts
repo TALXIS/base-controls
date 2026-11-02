@@ -1,1 +1,1 @@
-export * from './TemplateSelectorAdapter';
+export * from './TemplateSelector';

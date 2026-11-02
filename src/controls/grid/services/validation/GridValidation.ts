@@ -34,10 +34,11 @@ export class GridValidation implements IGridValidationInternal {
     //once set, every column stays registered: an expression cannot be taken off a record
     private _hasHooks = false;
     private _isDestroyed = false;
+    private _unwatchGridApi: () => void;
 
     constructor(parameters: IGridValidationParameters) {
         this._services = parameters.services;
-        this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
+        this._unwatchGridApi = this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
         this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
@@ -59,16 +60,18 @@ export class GridValidation implements IGridValidationInternal {
         return unregister;
     }
 
-    private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
+    private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
+        const provider = this._provider;
         this._syncValidatedColumns();
         gridApi.addEventListener('newColumnsLoaded', () => this._syncValidatedColumns());
-        this._provider.addEventListener('onRecordLoaded', this._onRecordLoaded);
+        provider.addEventListener('onRecordLoaded', this._onRecordLoaded);
+        return () => provider.removeEventListener('onRecordLoaded', this._onRecordLoaded);
     }
 
     //the provider outlives the grid
     private _onDestroyed = (): void => {
         this._isDestroyed = true;
-        this._provider.removeEventListener('onRecordLoaded', this._onRecordLoaded);
+        this._unwatchGridApi();
     };
 
     //a reload clears a record's fields, and the expressions set on them

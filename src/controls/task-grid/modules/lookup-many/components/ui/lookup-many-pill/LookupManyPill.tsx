@@ -7,11 +7,13 @@ import { getLookupManyPillStyles } from "./styles";
 /** Props for {@link LookupManyPill}. */
 export interface ILookupManyPillProps {
     reference: ComponentFramework.EntityReference;
-    /** Opens the record; the pill is plain text without it. */
+    /** Opens the record, plain text without it. */
     onOpen?: (reference: ComponentFramework.EntityReference) => void;
-    /** Removes the record; the pill has no remove button without it. */
+    /** Removes the record, no remove button without it. */
     onRemove?: (reference: ComponentFramework.EntityReference) => void;
-    /** The colour it is tinted with; the theme's neutral one when left out. */
+    /** The remove button's accessible name. */
+    removeText?: string;
+    /** The colour it is tinted with, the theme's neutral one by default. */
     color?: string;
     className?: string;
     /** The pieces of the option tag it is drawn as. */
@@ -40,7 +42,7 @@ export const LookupManyPill = (props: ILookupManyPillProps) => {
         ...containerProps,
         children: <>
             {containerProps.children}
-            {onRemove && <span role="button" aria-label={`Remove ${reference.name}`} className={styles.remove} onMouseDown={event => event.stopPropagation()} onClick={() => onRemove(reference)}>
+            {onRemove && <span role="button" aria-label={props.removeText} className={styles.remove} onMouseDown={event => event.stopPropagation()} onClick={() => onRemove(reference)}>
                 <Icon iconName="Cancel" className={styles.removeIcon} />
             </span>}
         </>,

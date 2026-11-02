@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getGridGanttSplitStyles = (theme: ITheme) => mergeStyleSets({
+export const getGridGanttUiSplitStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         flexGrow: 1,
         minHeight: 0,

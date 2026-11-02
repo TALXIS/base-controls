@@ -27,11 +27,10 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
-    private _unsaveWithViews: (() => void)[] = [];
+    private _unsubscribes: (() => void)[] = [];
     private _view?: ITaskView;
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
-    private _unregisterCommands?: () => void;
     private _savingChains = new TaskSavingChains();
 
     constructor(parameters: ITaskRuntimeParameters) {
@@ -40,21 +39,26 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('pcfContext', () => parameters.pcfContext);
         this.services.register('savingChains', () => this._savingChains);
-        this.services.whenAvailable('provider', provider => this._savingChains.attach(provider));
-        datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
-        datasetControl.modules.whenAvailable('userQueries', userQueries => this._unsaveWithViews.push(
-            userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
-            userQueries.saveWithView('filtering', () => this.getProvider().getFiltering()),
-            userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name)),
-            userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined),
-        ));
+        this._unsubscribes.push(
+            this.services.observe('provider', provider => this._savingChains.attach(provider)),
+            datasetControl.parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands)),
+            datasetControl.modules.observe('userQueries', userQueries => {
+                const unsaveWithViews = [
+                    userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
+                    userQueries.saveWithView('filtering', () => this.getProvider().getFiltering()),
+                    userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name)),
+                    userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined),
+                ];
+                return () => unsaveWithViews.forEach(unsaveWithView => unsaveWithView());
+            }),
+        );
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
         const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskRuntime: this });
         provider.initialize({ fieldMapping, rootTaskId, defaultCreatePosition: this._onGetProps().defaultCreatePosition, hoursPerDay: this._onGetProps().hoursPerDay });
         provider.registerAvailableColumns(this._addPathColumn);
-        //modules waiting for it add their columns, which a user view may keep
+        //modules waiting for it add columns a user view may keep
         this.services.register('provider', () => provider);
         if (parameters.view) {
             const definition = await parameters.view.resolve(provider);
@@ -116,8 +120,7 @@ export class TaskRuntime implements ITaskRuntime {
     public destroy(): void {
         this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
-        this._unregisterCommands?.();
-        this._unsaveWithViews.forEach(unregister => unregister());
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._savingChains.destroy();
         this.services.destroy();
     }
@@ -148,7 +151,7 @@ export class TaskRuntime implements ITaskRuntime {
         const selectedIds = this.getProvider().getSelectedRecordIds();
         const taskCommands: IRibbonCommand[] = [];
         if (this.isCreationEnabled()) {
-            //not returned, so the ribbon keeps New enabled while the task is created
+            //not returned to keep New enabled while the task is created
             taskCommands.push({ id: 'new', label: labels.get('taskGrid.new'), iconName: 'Add', onExecute: () => { runQuietly(() => this.tasks.create()); } });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
@@ -160,8 +163,6 @@ export class TaskRuntime implements ITaskRuntime {
         commands.unshift(...taskCommands);
     };
 
-    //TODO: this kind of handling should be moved to some utility, as it's not specific to the task grid
-    //form/dataset controls could use it too to display loading and handler errors the way it suits the app, instead of the default PCF error dialog
     public execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
     public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
     public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T | undefined> {

@@ -1,23 +1,23 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
-import { ITaskTooltipUiProgressComponents, TaskTooltipUiProgressComponents } from "./components";
-import { getTaskTooltipUiProgressStyles } from "./styles";
+import { ITooltipUiProgressComponents, TooltipUiProgressComponents } from "./components";
+import { getTooltipUiProgressStyles } from "./styles";
 
-export interface ITaskTooltipUiProgressProps {
+export interface ITooltipUiProgressProps {
     /** From 0 to 100. */
     percent: number;
     /** Such as `40%`. */
     text: string;
-    /** The fill's colour; the theme's without it. */
+    /** The fill's colour, the theme's by default. */
     color?: string;
-    components?: Partial<ITaskTooltipUiProgressComponents>;
+    components?: Partial<ITooltipUiProgressComponents>;
 }
 
 /** A bar filled to the progress, with the progress after it. */
-export const TaskTooltipUiProgress = (props: ITaskTooltipUiProgressProps) => {
-    const components = { ...TaskTooltipUiProgressComponents, ...props.components };
+export const TooltipUiProgress = (props: ITooltipUiProgressProps) => {
+    const components = { ...TooltipUiProgressComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getTaskTooltipUiProgressStyles(theme), [theme]);
+    const styles = useMemo(() => getTooltipUiProgressStyles(theme), [theme]);
     const percent = Math.min(100, Math.max(0, props.percent));
 
     return components.onRenderContainer({

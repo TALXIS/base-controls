@@ -6,10 +6,10 @@ export const GanttContext = createContext<IGantt | null>(null);
 
 GanttContext.displayName = "GanttContext";
 
-/** The Gantt of the enclosing `TaskGantt`; throws outside one. */
+/** The Gantt of the enclosing `TaskGantt`, throwing outside one. */
 export const useGantt = (): IGantt => useContextWithNullCheck(GanttContext);
 
-/** The module the enclosing `TaskGantt` loaded under `name`; throws when it is not loaded. */
+/** The module the enclosing `TaskGantt` loaded under `name`, throwing when absent. */
 export const useGanttModule = <TName extends keyof IGanttModuleMap>(name: TName): IGanttModuleMap[TName] => {
     return useGantt().modules.get(name);
 };
@@ -24,16 +24,7 @@ export const useGanttService = <TKey extends keyof IGanttServiceMap>(key: TKey):
         if (service !== undefined) {
             return;
         }
-        //there is no unsubscribing from whenAvailable
-        let isMounted = true;
-        services.whenAvailable(key, resolved => {
-            if (isMounted) {
-                setService(resolved);
-            }
-        });
-        return () => {
-            isMounted = false;
-        };
+        return services.observe(key, setService);
     }, []);
 
     //the conditional return type is the caller's contract

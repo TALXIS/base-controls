@@ -1,2 +1,2 @@
-export * from './TaskTooltipUiCallout';
+export * from './TooltipUiCallout';
 export * from './components';

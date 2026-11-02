@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getSettingsMenuStyles = () => mergeStyleSets({
+export const getTaskGridUiSettingsMenuStyles = () => mergeStyleSets({
     tooltipHost: {
         display: 'inline-flex',
         flexShrink: 0,

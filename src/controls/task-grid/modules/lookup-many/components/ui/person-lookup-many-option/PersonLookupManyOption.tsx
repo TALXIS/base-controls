@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { Persona, PersonaSize } from "@fluentui/react";
 import { components, OptionProps } from "react-select";
-import { getDataValue } from "../getDataValue";
+import { getReferenceDataValue } from "../lookup-many-pill/getReferenceDataValue";
 import { getPersonLookupManyOptionStyles } from "./styles";
 
 /** Props for {@link PersonLookupManyOption}. */
 export interface IPersonLookupManyOptionProps extends OptionProps<ComponentFramework.EntityReference, true, never> {
-    /** The record field holding the person's picture; `imageurl` when left out. */
+    /** The record field holding the person's picture, `imageurl` by default. */
     imageUrlPropertyName?: string;
 }
 
@@ -16,7 +16,7 @@ export const PersonLookupManyOption = (props: IPersonLookupManyOptionProps) => {
     const styles = useMemo(() => getPersonLookupManyOptionStyles(), []);
     return <components.Option {...optionProps}>
         <div className={styles.option}>
-            <Persona text={props.data.name} imageUrl={getDataValue(props.data, imageUrlPropertyName)} size={PersonaSize.size24} hidePersonaDetails styles={{ root: { margin: 0 } }} />
+            <Persona text={props.data.name} imageUrl={getReferenceDataValue(props.data, imageUrlPropertyName)} size={PersonaSize.size24} hidePersonaDetails className={styles.persona} />
             {props.children}
         </div>
     </components.Option>;

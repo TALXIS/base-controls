@@ -1,12 +1,12 @@
 import { Gantt } from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
 import type { IGanttModule } from "../../interfaces";
-import { GanttLibrary } from "./GanttLibrary";
+import { Library } from "./Library";
 
-export interface IGanttLibraryModule extends IGanttModule<'library'> { }
+export interface ILibraryModule extends IGanttModule<'library'> { }
 
 /** The free MIT build of DHTMLX Gantt. */
-export const createGanttLibraryModule = (): IGanttLibraryModule => ({
+export const createLibraryModule = (): ILibraryModule => ({
     name: 'library',
-    onLoad: () => new GanttLibrary({ Gantt, isPro: false }),
+    onLoad: () => new Library({ Gantt, isPro: false }),
 });

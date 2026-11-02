@@ -4,4 +4,4 @@ export * from './labels.cs';
 export * from './components';
 export * from './memory';
 export * from './dataverse';
-export type { ILookupMany, ILookupManyEvents, ILookupManyStore, LookupManyAppearance, ILookupManyColumn, ILookupManyParameters, ILookupManyOptionsParameters } from './LookupMany';
+export type { ILookupMany, ILookupManyComponents, ILookupManyEvents, ILookupManyStore, LookupManyAppearance, ILookupManyColumn, ILookupManyParameters, ILookupManyOptionsParameters } from './LookupMany';

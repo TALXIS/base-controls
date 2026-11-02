@@ -7,7 +7,7 @@ import { getLookupManyPillsStyles, LOOKUP_MANY_PILLS_GAP, LOOKUP_MANY_PILLS_PADD
 /** Props for {@link LookupManyPills}. */
 export interface ILookupManyPillsProps {
     value: ComponentFramework.EntityReference[];
-    /** Opens a pill's record; pills are plain text without it. */
+    /** Opens a pill's record, plain text without it. */
     onOpen?: (reference: ComponentFramework.EntityReference) => void;
     components?: Partial<ILookupManyPillsComponents>;
 }

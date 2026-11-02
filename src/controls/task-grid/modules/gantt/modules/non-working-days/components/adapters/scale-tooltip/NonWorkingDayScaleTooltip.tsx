@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useGanttModule, useGanttService } from "../../../../../context";
-import { GANTT_NON_WORKING_DAY_CLASS } from "../../../classNames";
-import type { IGanttNonWorkingDay } from "../../../GanttNonWorkingDays";
-import { NonWorkingDayTooltip } from "../../ui/non-working-day-tooltip";
+import { GANTT_SCALE_CELL_CLASS } from "../../../../../chart";
+import { NON_WORKING_DAY_CLASS } from "../../../classNames";
+import { INonWorkingDaysUiTooltipDay, NonWorkingDaysUiTooltip } from "../../ui/tooltip";
 
 interface IHoveredCell {
     cell: HTMLElement;
-    days: IGanttNonWorkingDay<unknown>[];
+    days: INonWorkingDaysUiTooltipDay[];
 }
 
 /** Finds the shaded scale cell under the pointer and shows its day's descriptions. */
@@ -21,13 +21,13 @@ export const NonWorkingDayScaleTooltip = () => {
             return;
         }
         const onMouseMove = (event: MouseEvent) => {
-            const cell = (event.target as HTMLElement | null)?.closest<HTMLElement>(`.gantt_scale_cell.${GANTT_NON_WORKING_DAY_CLASS}`);
+            const cell = (event.target as HTMLElement | null)?.closest<HTMLElement>(`.${GANTT_SCALE_CELL_CLASS}.${NON_WORKING_DAY_CLASS}`);
             if (!cell) {
                 setHovered(undefined);
                 return;
             }
             const date = chart.dateFromPos(timeline.getTimelineX(event.clientX));
-            const days = nonWorkingDays.getNonWorkingDays(date).filter(day => day.description);
+            const days = nonWorkingDays.getNonWorkingDays(date).flatMap(day => day.description ? [{ id: day.id, description: day.description }] : []);
             setHovered(current => current?.cell === cell ? current : days.length > 0 ? { cell, days } : undefined);
         };
         const onMouseLeave = () => setHovered(undefined);
@@ -39,5 +39,5 @@ export const NonWorkingDayScaleTooltip = () => {
         };
     }, [chart, timeline]);
 
-    return hovered ? <NonWorkingDayTooltip target={hovered.cell} days={hovered.days} components={nonWorkingDays.getComponents().tooltip} /> : null;
+    return hovered ? <NonWorkingDaysUiTooltip target={hovered.cell} days={hovered.days} components={nonWorkingDays.getComponents().tooltip} /> : null;
 };

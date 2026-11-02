@@ -1,6 +1,6 @@
 import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { GANTT_DRAGGING_DISABLED_CLASS, GANTT_TASK_LINE_CLASS } from "../chart/classNames";
+import { GANTT_DRAGGING_DISABLED_CLASS, GANTT_TASK_LINE_CLASS } from "../chart";
 
 export interface IGanttDraggingEvents {
     onDragStarted: (taskId: string) => void;
@@ -12,39 +12,62 @@ export interface IGanttDraggingEvents {
 /** Who owns the pointer on the chart, and when a bar is being dragged. */
 export interface IGanttDragging {
     readonly events: IEventEmitter<IGanttDraggingEvents>;
-    /** Keeps bars still, for a gesture that wants the pointer for something else. */
-    setDraggingDisabled(isDisabled: boolean): void;
+    /**
+     * Keeps bars still while any caller holds the pointer for another gesture.
+     * @returns Gives the pointer back.
+     */
+    disableDragging(): () => void;
     isDraggingDisabled(): boolean;
 }
 
 export class GanttDragging implements IGanttDragging {
     public readonly events = new EventEmitter<IGanttDraggingEvents>();
-    private _gantt: GanttStatic;
+    private _chart: GanttStatic;
     private _draggedTaskId?: string;
+    private _disablers = new Set<symbol>();
+    private _eventIds: string[];
 
-    constructor(gantt: GanttStatic) {
-        this._gantt = gantt;
-        //before the config, which the plugin resets as it starts
-        gantt.plugins({ drag_timeline: true });
-        gantt.config.drag_timeline = { ignore: `.${GANTT_DRAGGING_DISABLED_CLASS}, .${GANTT_TASK_LINE_CLASS}` };
-        gantt.attachEvent('onBeforeTaskDrag', () => !this.isDraggingDisabled());
-        gantt.attachEvent('onTaskDrag', this._onTaskDrag);
-        gantt.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
+    constructor(chart: GanttStatic) {
+        this._chart = chart;
+        //the plugin resets this config as it starts
+        chart.plugins({ drag_timeline: true });
+        chart.config.drag_timeline = { ignore: `.${GANTT_DRAGGING_DISABLED_CLASS}, .${GANTT_TASK_LINE_CLASS}` };
+        this._eventIds = [
+            chart.attachEvent('onBeforeTaskDrag', () => !this.isDraggingDisabled()),
+            chart.attachEvent('onTaskDrag', this._onTaskDrag),
+            chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag),
+        ];
     }
 
-    public setDraggingDisabled(isDisabled: boolean): void {
-        if (isDisabled === this.isDraggingDisabled()) {
-            return;
+    public disableDragging(): () => void {
+        const disabler = Symbol();
+        this._disablers.add(disabler);
+        if (this._disablers.size === 1) {
+            this._onDisabledChanged(true);
         }
-        this._gantt.$root?.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, isDisabled);
-        this.events.dispatchEvent('onDraggingDisabledChanged', isDisabled);
+        return () => {
+            if (this._disablers.delete(disabler) && this._disablers.size === 0) {
+                this._onDisabledChanged(false);
+            }
+        };
     }
 
     public isDraggingDisabled(): boolean {
-        return this._gantt.$root?.classList.contains(GANTT_DRAGGING_DISABLED_CLASS) ?? false;
+        return this._disablers.size > 0;
     }
 
-    //on the first movement, as another handler may still refuse the drag
+    public destroy(): void {
+        this._eventIds.forEach(eventId => this._chart.detachEvent(eventId));
+        this._disablers.clear();
+        this.events.clearEventListeners();
+    }
+
+    private _onDisabledChanged(isDisabled: boolean): void {
+        this._chart.$root?.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, isDisabled);
+        this.events.dispatchEvent('onDraggingDisabledChanged', isDisabled);
+    }
+
+    //on the first movement since another handler may still refuse the drag
     private _onTaskDrag = (taskId: string | number): void => {
         if (this._draggedTaskId === String(taskId)) {
             return;

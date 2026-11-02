@@ -1,6 +1,6 @@
 export * from './createTemplatesModule';
 export * from './labels';
 export * from './labels.cs';
-export * from './components/ui';
+export * from './components';
 export * from './memory';
-export type { ITemplate, ITemplates, ITemplatesStore, ITemplatesParameters, ITemplateTasksCreateParams } from './Templates';
+export type { ITemplate, ITemplates, ITemplatesComponents, ITemplatesStore, ITemplatesParameters, ITemplateTasksCreateParams } from './Templates';

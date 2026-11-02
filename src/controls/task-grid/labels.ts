@@ -22,7 +22,7 @@ export const TASK_GRID_LABELS = defineLabels({
     'taskGrid.tasksCannotBeDeleted': 'The selected tasks cannot be deleted.',
     /** Why the store kept a task. */
     'taskGrid.taskCannotBeDeleted': 'This task cannot be deleted.',
-    /** Some tasks were not deleted; the details list them. */
+    /** Some tasks were not deleted, listed in the details. */
     'taskGrid.deleteTasksFailed': 'Some tasks were not deleted.',
     'taskGrid.openingTasks': 'Opening tasks...',
     'taskGrid.deletingTasks': 'Deleting tasks...',

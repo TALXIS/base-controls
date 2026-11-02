@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import type { IGanttNonWorkingDay } from "@talxis/base-controls/controls/task-grid/modules/gantt";
+import type { INonWorkingDay } from "@talxis/base-controls/controls/task-grid/modules/gantt";
 
 /** Common holidays, plus a few company days, for the sample Gantt. */
-export const NON_WORKING_DAYS: IGanttNonWorkingDay[] = [
+export const NON_WORKING_DAYS: INonWorkingDay[] = [
     { id: 'newYearsDay', date: dayjs('2020-01-01'), description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
     { id: 'goodFriday', date: dayjs('2020-01-01'), description: 'Good Friday', recurrence: 'FREQ=YEARLY;BYEASTER=-2' },
     { id: 'easterMonday', date: dayjs('2020-01-01'), description: 'Easter Monday', recurrence: 'FREQ=YEARLY;BYEASTER=1' },

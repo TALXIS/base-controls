@@ -58,7 +58,7 @@ quickFind.search()
 
 - \`get(key)\` returns the part, and throws when it isn't rendered.
 - \`find(key)\` returns \`undefined\` instead, for a part that may not be there.
-- \`whenAvailable(key, callback)\` calls back once the part is rendered.
+- \`observe(key, callback)\` calls back with the part each time it is rendered, and returns the function that stops observing.
 
 | Key | Part | Description |
 |---|---|---|
@@ -78,8 +78,7 @@ Each part's page lists everything it offers, under *From your code*.
 Every load mounts the parts anew on the new provider: the first load, a view switch, \`loadView()\`, \`reload()\` and \`retry()\`. While a load runs, the placeholder shows in their place. So:
 
 - \`control.parts.get(...)\` throws while a load runs; use \`find\` where that can happen.
-- A listener on a part's \`events\` is gone after the next load: add it again in the control's \`onLoaded\` event.
-- \`whenAvailable\` calls back once, for the part as it is then.
+- A listener on a part's \`events\` is gone after the next load: add it in \`observe\`, which calls back for each new part.
 
 {{story: Drive the control from a toolbar}}
 

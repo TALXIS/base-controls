@@ -1,1 +1,2 @@
-export * from './ZoomSlider';
+export * from './GanttUiZoomSlider';
+export * from './components';

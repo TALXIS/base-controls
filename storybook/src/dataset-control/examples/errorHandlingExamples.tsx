@@ -46,7 +46,7 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label
 const serverGuardModule: IDatasetControlModule = {
     name: 'serverGuard',
     onLoad: datasetControl => {
-        datasetControl.modules.whenAvailable('userQueries', userQueries => userQueries.saveWithView('serverGuard', () => {
+        datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('serverGuard', () => {
             if (server.isDown) {
                 throw new Error('The view could not be saved while the server is down.')
             }

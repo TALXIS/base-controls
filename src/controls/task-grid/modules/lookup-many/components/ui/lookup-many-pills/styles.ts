@@ -1,8 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
+import { CELL_VALUE_PADDING } from "../../../../constants";
 
 const GAP = 4;
-//as the grid's own value renderer
-const PADDING = 9;
 
 export const getLookupManyPillsStyles = () => {
     return mergeStyleSets({
@@ -13,8 +12,8 @@ export const getLookupManyPillsStyles = () => {
             gap: GAP,
             width: '100%',
             minWidth: 0,
-            paddingLeft: PADDING,
-            paddingRight: PADDING,
+            paddingLeft: CELL_VALUE_PADDING,
+            paddingRight: CELL_VALUE_PADDING,
             boxSizing: 'border-box',
             overflow: 'hidden',
             '& > *': { flexShrink: 0 },
@@ -24,7 +23,7 @@ export const getLookupManyPillsStyles = () => {
         measurer: {
             position: 'absolute',
             top: 0,
-            left: PADDING,
+            left: CELL_VALUE_PADDING,
             display: 'flex',
             gap: GAP,
             visibility: 'hidden',
@@ -48,4 +47,4 @@ export const getLookupManyPillsStyles = () => {
 };
 
 export const LOOKUP_MANY_PILLS_GAP = GAP;
-export const LOOKUP_MANY_PILLS_PADDING = PADDING;
+export const LOOKUP_MANY_PILLS_PADDING = CELL_VALUE_PADDING;

@@ -141,7 +141,7 @@ export class GridCells implements IGridCellsInternal {
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
-        this._services.whenAvailable('gridApi', gridApi => {
+        this._services.observe('gridApi', gridApi => {
             gridApi.addEventListener('cellFocused', this._onCellFocused);
         });
     }

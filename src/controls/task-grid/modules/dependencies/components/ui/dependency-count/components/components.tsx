@@ -1,0 +1,18 @@
+import { Icon, IIconProps, ITextProps, Text } from "@fluentui/react";
+
+/** The replaceable pieces of {@link DependencyCount}. */
+export interface IDependencyCountComponents {
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderIcon: (props: IIconProps) => JSX.Element | null;
+    /** Points down for predecessors and up for successors. */
+    onRenderArrow: (props: IIconProps) => JSX.Element | null;
+    onRenderCount: (props: ITextProps) => JSX.Element | null;
+}
+
+/** The defaults for {@link IDependencyCountComponents}. */
+export const DependencyCountComponents: IDependencyCountComponents = {
+    onRenderContainer: props => <div {...props} />,
+    onRenderIcon: props => <Icon {...props} />,
+    onRenderArrow: props => <Icon {...props} />,
+    onRenderCount: props => <Text {...props} />,
+};

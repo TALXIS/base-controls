@@ -3,13 +3,13 @@ import { StackRank } from "@utils/stack-rank";
 import type { ICreateTaskTree, IFieldMapping, ITaskCreateParams } from "../../provider";
 
 export interface IMemoryTaskDatabaseParameters {
-    /** The tasks to start with; copied, so changes never reach this array. */
+    /** The tasks to start with, copied. */
     records: IRawRecord[];
     /** `PrimaryIdAttribute` is required. */
     metadata: IMemoryProviderEntityMetadata;
 }
 
-/** What the grid's tasks look like: the columns a new task starts with, and where it keeps its place. */
+/** The columns a new task starts with and where it keeps its place. */
 export interface IMemoryTaskShape {
     fieldMapping: IFieldMapping;
     columns: IColumn[];
@@ -38,7 +38,7 @@ export class MemoryTaskDatabase {
         return task && structuredClone(task);
     }
 
-    /** Creates the tasks with their subtrees, the first at the rank `params` give and the rest after it. */
+    /** Creates the tasks with their subtrees from the rank `params` give. */
     public createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>, shape: IMemoryTaskShape): IRawRecord[] {
         const parentReference = params.parentRecord ? [params.parentRecord.getNamedReference()] : null;
         return this._createTrees(trees, shape, parentReference, params.stackRank);

@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttTaskDragging, IGanttTaskDraggingParameters } from "./GanttTaskDragging";
+import { BarDragging, IBarDraggingParameters } from "./BarDragging";
 
-export interface IGanttTaskDraggingModule extends IGanttModule<'taskDragging'> { }
+export interface IBarDraggingModule extends IGanttModule<'barDragging'> { }
 
-export const createGanttTaskDraggingModule = (parameters: IGanttTaskDraggingParameters = {}): IGanttTaskDraggingModule => ({
-    name: 'taskDragging',
-    onLoad: gantt => new GanttTaskDragging(gantt, parameters),
-    onDestroy: taskDragging => taskDragging.destroy(),
+export const createBarDraggingModule = (parameters: IBarDraggingParameters = {}): IBarDraggingModule => ({
+    name: 'barDragging',
+    onLoad: gantt => new BarDragging(gantt, parameters),
+    onDestroy: barDragging => barDragging.destroy(),
 });

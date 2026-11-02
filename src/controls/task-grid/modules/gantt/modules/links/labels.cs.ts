@@ -1,14 +1,14 @@
 import { translateLabels } from "@utils";
-import { GANTT_LINKS_LABELS } from "./labels";
+import { LINKS_LABELS } from "./labels";
 
-export const GANTT_LINKS_LABELS_CS = translateLabels(GANTT_LINKS_LABELS, {
-    'ganttLinks.confirmDeleteLink': 'Odstranit tuto závislost?',
-    'ganttLinks.linkStart': ' (začátek)',
-    'ganttLinks.linkEnd': ' (konec)',
-    'ganttLinks.predecessor': 'Předchůdce',
-    'ganttLinks.successor': 'Následník',
-    'ganttLinks.finishToStart': 'Konec → začátek',
-    'ganttLinks.startToStart': 'Začátek → začátek',
-    'ganttLinks.finishToFinish': 'Konec → konec',
-    'ganttLinks.startToFinish': 'Začátek → konec',
+export const LINKS_LABELS_CS = translateLabels(LINKS_LABELS, {
+    'links.confirmDeleteLink': 'Odstranit tuto závislost?',
+    'links.linkStart': ' (začátek)',
+    'links.linkEnd': ' (konec)',
+    'links.predecessor': 'Předchůdce',
+    'links.successor': 'Následník',
+    'links.finishToStart': 'Konec → začátek',
+    'links.startToStart': 'Začátek → začátek',
+    'links.finishToFinish': 'Konec → konec',
+    'links.startToFinish': 'Začátek → konec',
 });

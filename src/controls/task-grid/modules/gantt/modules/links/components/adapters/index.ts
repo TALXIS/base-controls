@@ -1,4 +1,4 @@
-export * from './link-tooltip';
+export * from './link-tooltip-root';
 export * from './callout';
 export * from './header';
 export * from './field-rows';

@@ -1,10 +1,10 @@
 import dayjs, { Dayjs } from "dayjs";
 import { RRule } from "rrule";
-import type { IGanttNonWorkingDay } from "./GanttNonWorkingDays";
-import { getClockDuration } from "../../schedule/clockTime";
+import type { INonWorkingDay } from "./NonWorkingDays";
+import { getClockDuration } from "../../schedule";
 
 interface ICalendarEntry<TData> {
-    day: IGanttNonWorkingDay<TData>;
+    day: INonWorkingDay<TData>;
     start: Dayjs;
     spanDays: number;
     rule?: RRule;
@@ -12,16 +12,16 @@ interface ICalendarEntry<TData> {
 
 const getDayKey = (date: Dayjs): string => date.format('YYYY-MM-DD');
 
-//rrule reads and writes dates as UTC, so a local day travels as the same UTC day
+//rrule works in UTC so a local day travels as the same UTC day
 const toRuleDate = (date: Dayjs): Date => new Date(Date.UTC(date.year(), date.month(), date.date()));
 const fromRuleDate = (date: Date): Dayjs => dayjs(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 
 /** The days each non-working day covers, worked out one year at a time. */
 export class NonWorkingDayCalendar<TData> {
     private _entries: ICalendarEntry<TData>[];
-    private _years = new Map<number, Map<string, IGanttNonWorkingDay<TData>[]>>();
+    private _years = new Map<number, Map<string, INonWorkingDay<TData>[]>>();
 
-    constructor(days: IGanttNonWorkingDay<TData>[]) {
+    constructor(days: INonWorkingDay<TData>[]) {
         this._entries = days.map(day => {
             const start = day.date.startOf('day');
             const spanDays = day.endDate ? Math.max(0, day.endDate.startOf('day').diff(start, 'day')) : 0;
@@ -30,7 +30,7 @@ export class NonWorkingDayCalendar<TData> {
         });
     }
 
-    public getDays(date: Date): IGanttNonWorkingDay<TData>[] {
+    public getDays(date: Date): INonWorkingDay<TData>[] {
         const day = dayjs(date);
         return this._getYear(day.year()).get(getDayKey(day)) ?? [];
     }
@@ -53,12 +53,12 @@ export class NonWorkingDayCalendar<TData> {
         return duration;
     }
 
-    private _getYear(year: number): Map<string, IGanttNonWorkingDay<TData>[]> {
+    private _getYear(year: number): Map<string, INonWorkingDay<TData>[]> {
         const cached = this._years.get(year);
         if (cached) {
             return cached;
         }
-        const days = new Map<string, IGanttNonWorkingDay<TData>[]>();
+        const days = new Map<string, INonWorkingDay<TData>[]>();
         const yearStart = dayjs(new Date(year, 0, 1));
         for (const entry of this._entries) {
             for (const start of this._getStartsTouching(entry, yearStart)) {

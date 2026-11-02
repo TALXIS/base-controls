@@ -1,26 +1,26 @@
 import { simulateBackend } from "../../../../../data-sources/memory/simulateBackend";
-import type { IGanttMarker, IGanttMarkersParameters, IGanttMarkersStore } from "../GanttMarkers";
-import { createGanttMarkersModule, IGanttMarkersModule } from "../createGanttMarkersModule";
+import type { IMarker, IMarkersParameters, IMarkersStore } from "../Markers";
+import { createMarkersModule, IMarkersModule } from "../createMarkersModule";
 
-export interface IMemoryGanttMarkersModuleParameters extends Omit<IGanttMarkersParameters, 'onCreateStore'> {
-    markers: IGanttMarker[];
+export interface IMemoryMarkersModuleParameters extends Omit<IMarkersParameters, 'onCreateStore'> {
+    markers: IMarker[];
 }
 
-class MemoryGanttMarkersStore implements IGanttMarkersStore {
-    private _markers: IGanttMarker[];
+class MemoryMarkersStore implements IMarkersStore {
+    private _markers: IMarker[];
 
-    constructor(markers: IGanttMarker[]) {
+    constructor(markers: IMarker[]) {
         this._markers = markers;
     }
 
-    public async onLoadMarkers(): Promise<IGanttMarker[]> {
+    public async onLoadMarkers(): Promise<IMarker[]> {
         await simulateBackend();
         return this._markers;
     }
 }
 
 /** Markers held in memory. */
-export const createMemoryGanttMarkersModule = (parameters: IMemoryGanttMarkersModuleParameters): IGanttMarkersModule => {
+export const createMemoryMarkersModule = (parameters: IMemoryMarkersModuleParameters): IMarkersModule => {
     const { markers, ...moduleParameters } = parameters;
-    return createGanttMarkersModule({ ...moduleParameters, onCreateStore: () => new MemoryGanttMarkersStore(markers) });
+    return createMarkersModule({ ...moduleParameters, onCreateStore: () => new MemoryMarkersStore(markers) });
 };

@@ -1,2 +1,2 @@
-export * from './GanttMarkerUiLine';
+export * from './MarkerUiLine';
 export * from './components';

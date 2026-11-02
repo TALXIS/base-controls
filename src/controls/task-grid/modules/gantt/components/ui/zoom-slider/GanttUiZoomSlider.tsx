@@ -1,37 +1,38 @@
-import { IconButton, useTheme } from "@fluentui/react";
+import { useTheme } from "@fluentui/react";
 import { useEffect, useMemo, useRef } from "react";
-import { IZoomSliderComponents, ZoomSliderComponents } from "./components";
-import { getZoomSliderStyles } from "./styles";
+import { GanttUiZoomSliderComponents, IGanttUiZoomSliderComponents } from "./components";
+import { getGanttUiZoomSliderStyles } from "./styles";
 import { useLatest } from "@hooks";
 
 const HOLD_DELAY = 300;
 const HOLD_INTERVAL = 75;
 
-export interface IZoomSliderProps {
+export interface IGanttUiZoomSliderProps {
     value: number;
     onChange: (value: number) => void;
     /** Defaults to `0`. */
     min?: number;
     /** Defaults to `100`. */
     max?: number;
-    /** What the slider snaps to, and what the buttons move by unless `buttonStep` is set. Defaults to `1`. */
+    /** What the slider snaps to and the buttons move by without `buttonStep` (default `1`). */
     step?: number;
-    /** What the buttons move by. Defaults to `step`. */
+    /** What the buttons move by (default `step`). */
     buttonStep?: number;
     disabled?: boolean;
     /** Accessible name of the slider itself. */
     ariaLabel?: string;
-    components?: Partial<IZoomSliderComponents>;
+    components?: Partial<IGanttUiZoomSliderComponents>;
 }
 
-export const ZoomSlider = (props: IZoomSliderProps) => {
+export const GanttUiZoomSlider = (props: IGanttUiZoomSliderProps) => {
     const { onChange, disabled, min = 0, max = 100, step = 1 } = props;
     const valueRef = useLatest(props.value);
     const theme = useTheme();
-    const components = useMemo(() => ({ ...ZoomSliderComponents, ...props.components }), []);
-    const styles = useMemo(() => getZoomSliderStyles(theme, disabled), [disabled, theme]);
+    const components = { ...GanttUiZoomSliderComponents, ...props.components };
+    const styles = useMemo(() => getGanttUiZoomSliderStyles(theme, disabled), [disabled, theme]);
     const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hasHeldRef = useRef(false);
 
     const changeZoomLevel = (direction: number) => {
         onChange(Math.max(min, Math.min(max, valueRef.current + direction * (props.buttonStep ?? step))));
@@ -48,13 +49,22 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
         }
     };
 
-    const startHold = (step: number) => {
+    const startHold = (direction: number) => {
         stopHold();
+        hasHeldRef.current = false;
         holdTimeoutRef.current = setTimeout(() => {
             holdIntervalRef.current = setInterval(() => {
-                changeZoomLevel(step);
+                hasHeldRef.current = true;
+                changeZoomLevel(direction);
             }, HOLD_INTERVAL);
         }, HOLD_DELAY);
+    };
+
+    const onButtonClick = (direction: number) => {
+        if (!hasHeldRef.current) {
+            changeZoomLevel(direction);
+        }
+        hasHeldRef.current = false;
     };
 
     useEffect(() => {
@@ -63,18 +73,18 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
         };
     }, []);
 
-
-    return (
-        <div className={styles.root}>
-            <IconButton
-                disabled={disabled}
-                className={styles.zoomButton}
-                iconProps={{ iconName: 'Remove' }}
-                onClick={() => changeZoomLevel(-1)}
-                onMouseDown={() => startHold(-1)}
-                onMouseUp={stopHold}
-                onMouseLeave={stopHold}
-            />
+    return components.onRenderContainer({
+        className: styles.root,
+        children: <>
+            {components.onRenderZoomButton({
+                disabled: disabled,
+                className: styles.zoomButton,
+                iconProps: { iconName: 'Remove' },
+                onClick: () => onButtonClick(-1),
+                onMouseDown: () => startHold(-1),
+                onMouseUp: stopHold,
+                onMouseLeave: stopHold,
+            })}
             {components.onRenderSlider({
                 disabled: disabled,
                 ariaLabel: props.ariaLabel,
@@ -90,15 +100,15 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
                 },
                 onChange: onChange
             })}
-            <IconButton
-                disabled={disabled}
-                className={styles.zoomButton}
-                iconProps={{ iconName: 'Add' }}
-                onClick={() => changeZoomLevel(1)}
-                onMouseDown={() => startHold(1)}
-                onMouseUp={stopHold}
-                onMouseLeave={stopHold}
-            />
-        </div>
-    );
-}
+            {components.onRenderZoomButton({
+                disabled: disabled,
+                className: styles.zoomButton,
+                iconProps: { iconName: 'Add' },
+                onClick: () => onButtonClick(1),
+                onMouseDown: () => startHold(1),
+                onMouseUp: stopHold,
+                onMouseLeave: stopHold,
+            })}
+        </>,
+    });
+};

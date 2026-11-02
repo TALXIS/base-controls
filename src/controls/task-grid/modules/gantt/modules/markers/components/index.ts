@@ -1,3 +1,3 @@
 export * from './ui';
-export { useGanttMarker } from './adapters/marker';
-export type { IGanttMarkerContext } from './adapters/marker';
+export { useMarker } from './adapters/marker';
+export type { IMarkerContext } from './adapters/marker';

@@ -1,6 +1,9 @@
 import { IStyle, ITheme, keyframes, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
+    GANTT_LINK_CONTROL_CLASS,
+    GANTT_MILESTONE_CLASS,
+    GANTT_TASK_DRAG_HANDLE_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
     GANTT_TASK_CONTENT_CLASS,
     GANTT_TASK_DONE_CLASS,
@@ -9,15 +12,16 @@ import {
     GANTT_TASK_LOCKED_CLASS,
     GANTT_TASK_SAVING_CLASS,
     GANTT_TASK_STARTED_CLASS,
+    GANTT_TASK_SCALE_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
-} from "./chart/classNames";
+} from "../../../chart";
 
 const SAVING_SWEEP = keyframes({
     from: { backgroundPosition: '100% 0' },
     to: { backgroundPosition: '-100% 0' },
 });
 
-//Fluent 2's cornflower: apart from the theme's primary, which selection and links draw in
+//Fluent 2's cornflower, distinct from the primary that selection and links use
 const TASK_COLOR = '#4F6BED';
 
 const SUMMARY_CAP_WIDTH = 7;
@@ -26,7 +30,7 @@ const SUMMARY_CAP_HEIGHT = 6;
 //a task's `color` tints the track and fills the done part
 const getTrackColor = (theme: ITheme) => `color-mix(in srgb, var(--dhx-gantt-task-background) 24%, ${theme.semanticColors.bodyBackground})`;
 
-export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
+export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => mergeStyleSets({
     root: {
         position: 'relative',
         width: '100%',
@@ -102,13 +106,13 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}.${GANTT_TASK_DONE_CLASS} .${GANTT_TASK_CONTENT_CLASS}::after`]: {
             background: 'var(--dhx-gantt-task-background)',
         },
-        [`.${GANTT_TASK_LINE_CLASS}.gantt_milestone`]: {
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_MILESTONE_CLASS}`]: {
             background: 'var(--dhx-gantt-task-background)',
             [`.${GANTT_TASK_CONTENT_CLASS}`]: {
                 borderRadius: theme.effects.roundedCorner2,
             },
         },
-        '.gantt_task_scale': {
+        [`.${GANTT_TASK_SCALE_CLASS}`]: {
             fontWeight: 600,
         },
         [`.${GANTT_DATA_AREA_CLASS}`]: {
@@ -154,7 +158,7 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS}`]: {
             cursor: 'progress',
         },
-        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .gantt_link_control, .${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .gantt_task_drag`]: {
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .${GANTT_LINK_CONTROL_CLASS}, .${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}`]: {
             display: 'none !important',
         },
     }, ...moduleStyles],

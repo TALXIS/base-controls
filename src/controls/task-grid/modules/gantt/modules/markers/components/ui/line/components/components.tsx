@@ -1,10 +1,10 @@
 /** The replaceable pieces of a marker's line. */
-export interface IGanttMarkerUiLineComponents {
+export interface IMarkerUiLineComponents {
     /** The line itself, down the whole timeline. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IGanttMarkerUiLineComponents}. */
-export const GanttMarkerUiLineComponents: IGanttMarkerUiLineComponents = {
+/** The defaults for {@link IMarkerUiLineComponents}. */
+export const MarkerUiLineComponents: IMarkerUiLineComponents = {
     onRenderContainer: props => <div {...props} />,
 };

@@ -1,6 +1,6 @@
 import { IMemoryProvider, IRecord } from "@talxis/client-libraries";
 
-/** Makes a throwaway provider sort and filter the record instances it is handed instead of building its own. */
+/** Makes a throwaway provider sort and filter the record instances it is handed. */
 export const patchDataBuilderPrepare = (options: { provider: IMemoryProvider; records: IRecord[] }) => {
     const { provider, records } = options;
     //private api of the memory provider

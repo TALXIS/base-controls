@@ -11,7 +11,7 @@ const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValu
 const closedDealsModule: IGridModule = {
     name: 'closedDeals',
     onLoad: grid => {
-        grid.modules.whenAvailable('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
+        grid.modules.observe('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }

@@ -1,26 +1,26 @@
 import { useMemo } from "react";
 import { useTheme } from "@fluentui/react";
 import { OptionTag } from "@ui";
-import { ITaskTooltipUiHeaderComponents, TaskTooltipUiHeaderComponents } from "./components";
-import { getTaskTooltipUiHeaderStyles } from "./styles";
+import { ITooltipUiHeaderComponents, TooltipUiHeaderComponents } from "./components";
+import { getTooltipUiHeaderStyles } from "./styles";
 
-export interface ITaskTooltipUiHeaderStatus {
+export interface ITooltipUiHeaderStatus {
     text: string;
-    /** The tag's colour; the theme's neutral one without it. */
+    /** The tag's colour, the theme's neutral one by default. */
     color?: string;
 }
 
-export interface ITaskTooltipUiHeaderProps {
+export interface ITooltipUiHeaderProps {
     title: string;
-    status?: ITaskTooltipUiHeaderStatus;
-    components?: Partial<ITaskTooltipUiHeaderComponents>;
+    status?: ITooltipUiHeaderStatus;
+    components?: Partial<ITooltipUiHeaderComponents>;
 }
 
 /** A title, with the status beside it as an option tag. */
-export const TaskTooltipUiHeader = (props: ITaskTooltipUiHeaderProps) => {
-    const components = { ...TaskTooltipUiHeaderComponents, ...props.components };
+export const TooltipUiHeader = (props: ITooltipUiHeaderProps) => {
+    const components = { ...TooltipUiHeaderComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getTaskTooltipUiHeaderStyles(theme), [theme]);
+    const styles = useMemo(() => getTooltipUiHeaderStyles(theme), [theme]);
 
     return components.onRenderContainer({
         className: styles.header,

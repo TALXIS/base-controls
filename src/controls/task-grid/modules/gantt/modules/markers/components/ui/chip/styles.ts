@@ -1,7 +1,7 @@
 import { FontWeights, ITheme, mergeStyleSets } from "@fluentui/react";
 import { getTextColorForBackground } from "@theme";
 
-export const getGanttMarkerUiChipStyles = (theme: ITheme, color: string) => mergeStyleSets({
+export const getMarkerUiChipStyles = (theme: ITheme, color: string) => mergeStyleSets({
     host: {
         display: 'inline-block',
         pointerEvents: 'auto',

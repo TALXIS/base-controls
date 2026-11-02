@@ -1,10 +1,8 @@
 import { createContext } from "react";
 import { useContextWithNullCheck } from "@utils";
-import type { ITaskRuntime } from "./runtime";
 import type { ITaskGridComponents } from "./interfaces";
 
 export interface ITaskGridContext {
-    runtime: ITaskRuntime;
     components: ITaskGridComponents;
 }
 

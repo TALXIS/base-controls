@@ -1,21 +1,13 @@
-import { useLabels } from "@utils";
-import { GANTT_LINKS_LABELS } from "../../../labels";
-import { ITaskTooltipUiFieldRowComponents, TaskTooltipUiFieldRow } from "../../../../tooltip/components/ui";
-import { useLinkTooltip } from "../link-tooltip";
+import type { ITooltipUiFieldRowComponents } from "../../../../../components/ui/tooltip";
+import { LinkTooltipTaskRow } from "../task-row";
 
 export interface ILinkTooltipPredecessorRowProps {
     /** Defaults to `Previous`. */
     iconName?: string;
-    components?: Partial<ITaskTooltipUiFieldRowComponents>;
+    components?: Partial<ITooltipUiFieldRowComponents>;
 }
 
 /** The name of the dependency's predecessor. */
 export const LinkTooltipPredecessorRow = (props: ILinkTooltipPredecessorRowProps) => {
-    const { gantt, dependency } = useLinkTooltip();
-    const labels = useLabels(GANTT_LINKS_LABELS);
-    const chart = gantt.services.get('chart');
-    const taskId = dependency.predecessorTaskId;
-    return <TaskTooltipUiFieldRow label={labels.get('ganttLinks.predecessor')} iconName={props.iconName ?? 'Previous'} components={props.components}>
-        {chart.isTaskExists(taskId) ? chart.getTask(taskId).text : ''}
-    </TaskTooltipUiFieldRow>;
+    return <LinkTooltipTaskRow end="predecessor" iconName={props.iconName ?? 'Previous'} components={props.components} />;
 };

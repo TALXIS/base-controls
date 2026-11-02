@@ -23,12 +23,12 @@ export class GridKeyboard implements IGridKeyboard {
     private _services: IGridInternalServiceLocator;
     private _keyBeingPressed?: KeyboardEvent;
     private _keyDownHandlers: GridKeyDownHandler[] = [];
-    private _document?: Document;
     private _gridRoot?: HTMLElement;
+    private _unwatchGridRoot: () => void;
 
     constructor(parameters: IGridKeyboardParameters) {
         this._services = parameters.services;
-        this._services.whenAvailable('gridRoot', gridRoot => this._listen(gridRoot));
+        this._unwatchGridRoot = this._services.observe('gridRoot', gridRoot => this._listen(gridRoot));
         this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
@@ -44,19 +44,22 @@ export class GridKeyboard implements IGridKeyboard {
     }
 
     private _onDestroyed = (): void => {
-        this._document?.removeEventListener('keydown', this._onKeyDown, true);
-        this._document?.removeEventListener('keyup', this._onKeyUp, true);
-        this._document?.removeEventListener('pointerdown', this._onKeyUp, true);
+        this._unwatchGridRoot();
     };
 
     /** Listens on the grid's document. */
-    private _listen(gridRoot: HTMLElement): void {
+    private _listen(gridRoot: HTMLElement): () => void {
         this._gridRoot = gridRoot;
-        this._document = gridRoot.ownerDocument;
-        this._document.addEventListener('keydown', this._onKeyDown, true);
-        this._document.addEventListener('keyup', this._onKeyUp, true);
+        const ownerDocument = gridRoot.ownerDocument;
+        ownerDocument.addEventListener('keydown', this._onKeyDown, true);
+        ownerDocument.addEventListener('keyup', this._onKeyUp, true);
         //a release heard nowhere would leave the key reading as held
-        this._document.addEventListener('pointerdown', this._onKeyUp, true);
+        ownerDocument.addEventListener('pointerdown', this._onKeyUp, true);
+        return () => {
+            ownerDocument.removeEventListener('keydown', this._onKeyDown, true);
+            ownerDocument.removeEventListener('keyup', this._onKeyUp, true);
+            ownerDocument.removeEventListener('pointerdown', this._onKeyUp, true);
+        };
     }
 
     private _onKeyDown = (event: KeyboardEvent): void => {

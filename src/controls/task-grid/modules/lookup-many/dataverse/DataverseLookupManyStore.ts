@@ -4,8 +4,23 @@ import type { IPcfContext } from "@interfaces";
 import type { ITaskDataProvider } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDataverseHostRecord } from "../../../data-sources/dataverse/DataverseTaskStore";
-import type { ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
-import type { IDataverseLookupManyColumn } from "./createDataverseLookupManyModule";
+import type { ILookupManyColumn, ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
+import { retrieveInBatches } from "../../dataverse";
+
+/** One Dataverse lookup-many column with the relationship it is reached through. */
+export interface IDataverseLookupManyColumn extends ILookupManyColumn {
+    /** Either side's navigation property of the 1:N or N:N relationship. */
+    navigationPropertyName: string;
+    /** The related records' columns to read, comma separated. */
+    select?: string;
+    /** Set when the relationship goes through an intersection entity of your own. */
+    customIntersection?: {
+        /** The intersection entity's navigation property to the related record. */
+        navigationPropertyName: string;
+    };
+    /** Liquid FetchXML over `task`, `project` and `hostRecord` for the records offered. */
+    fetchXml?: string;
+}
 
 export interface IDataverseLookupManyStoreParameters {
     taskRuntime: ITaskRuntime;
@@ -25,10 +40,10 @@ interface IResolvedColumn {
     relationshipSchemaName: string;
     /** The entity associated with the task, the intersection one for a custom intersection. */
     associatedEntityName: string;
+    target: { primaryIdAttribute: string; primaryNameAttribute: string };
     intersection?: { entityName: string; primaryIdAttribute: string; taskNavigationPropertyName: string };
 }
 
-const MAX_IDS_PER_REQUEST = 800;
 const ONE_TO_MANY = 0;
 const MANY_TO_MANY = 1;
 
@@ -41,7 +56,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     private _columns: { [columnName: string]: IDataverseLookupManyColumn };
     private _hostRecord?: IDataverseHostRecord;
     private _resolvedColumns = new Map<string, IResolvedColumn>();
-    //keyed by task id and column name, what was last loaded or saved, to diff a save against
+    //what was last loaded or saved by task id and column name
     private _savedValues = new Map<string, Reference[]>();
 
     constructor(parameters: IDataverseLookupManyStoreParameters) {
@@ -63,7 +78,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
             const taskValues: { [columnName: string]: Reference[] } = {};
             for (const resolvedColumn of resolved) {
                 const items: IRawRecord[] = [...entity[resolvedColumn.expandName] ?? [], ...await this._getNextPages(entity[`${resolvedColumn.expandName}@odata.nextLink`])];
-                const references = await this._toReferences(items, resolvedColumn);
+                const references = this._toReferences(items, resolvedColumn);
                 this._savedValues.set(this._getKey(taskId, resolvedColumn.columnName), references);
                 taskValues[resolvedColumn.columnName] = references;
             }
@@ -78,9 +93,16 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         const removed = previous.filter(reference => !value.some(kept => kept.id.guid === reference.id.guid));
         const added = value.filter(reference => !previous.some(existing => existing.id.guid === reference.id.guid));
         const resolved = await this._resolve(columnName);
-        await this._disassociate(taskId, removed, resolved);
-        await this._associate(taskId, added, resolved);
-        this._savedValues.set(key, value);
+        const saved = new Map(previous.map(reference => [reference.id.guid, reference]));
+        await this._disassociate(taskId, removed, resolved, reference => {
+            saved.delete(reference.id.guid);
+            this._savedValues.set(key, [...saved.values()]);
+        });
+        await this._associate(taskId, added, resolved, reference => {
+            saved.set(reference.id.guid, reference);
+            this._savedValues.set(key, [...saved.values()]);
+        });
+        this._savedValues.set(key, value.map(reference => saved.get(reference.id.guid) ?? reference));
     }
 
     //a column offers what its FetchXML selects, rendered for the task
@@ -101,17 +123,11 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
 
     private async _getTasks(taskIds: string[], primaryIdAttribute: string, resolved: IResolvedColumn[]): Promise<IRawRecord[]> {
         const expand = resolved.map(resolvedColumn => this._getExpand(resolvedColumn)).join(',');
-        const batches: string[][] = [];
-        for (let index = 0; index < taskIds.length; index += MAX_IDS_PER_REQUEST) {
-            batches.push(taskIds.slice(index, index + MAX_IDS_PER_REQUEST));
-        }
-        const results = await Promise.all(batches.map(async batch => {
-            const ids = batch.map(id => `'${id}'`).join(',');
+        return retrieveInBatches(taskIds, async ids => {
             const query = `?$select=${primaryIdAttribute}&$expand=${expand}&$filter=Microsoft.Dynamics.CRM.In(PropertyName='${primaryIdAttribute}', PropertyValues=[${ids}])`;
             const { entities } = await this._pcfContext.webAPI.retrieveMultipleRecords(this._provider.getEntityName(), query);
             return entities;
-        }));
-        return results.flat();
+        });
     }
 
     private _getExpand(resolvedColumn: IResolvedColumn): string {
@@ -140,18 +156,17 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         return items;
     }
 
-    private async _toReferences(items: IRawRecord[], resolvedColumn: IResolvedColumn): Promise<Reference[]> {
-        const targetEntityName = resolvedColumn.settings.entityName;
-        const metadata: any = await this._pcfContext.utils.getEntityMetadata(targetEntityName);
-        const relatedNavigationPropertyName = resolvedColumn.settings.customIntersection?.navigationPropertyName;
+    private _toReferences(items: IRawRecord[], resolvedColumn: IResolvedColumn): Reference[] {
+        const { target, settings } = resolvedColumn;
+        const relatedNavigationPropertyName = settings.customIntersection?.navigationPropertyName;
         return items.map(item => {
             const related: IRawRecord = relatedNavigationPropertyName ? item[relatedNavigationPropertyName] ?? {} : item;
             const data = resolvedColumn.intersection ? { ...related, __intersectionId: item[resolvedColumn.intersection.primaryIdAttribute] } : related;
-            return { id: { guid: related[metadata.PrimaryIdAttribute] }, name: related[metadata.PrimaryNameAttribute], etn: targetEntityName, data };
+            return { id: { guid: related[target.primaryIdAttribute] }, name: related[target.primaryNameAttribute], etn: settings.entityName, data };
         });
     }
 
-    //cached by column, since the metadata does not change while the mount lasts
+    //the metadata does not change while the mount lasts
     private async _resolve(columnName: string): Promise<IResolvedColumn> {
         const cached = this._resolvedColumns.get(columnName);
         if (cached) {
@@ -170,12 +185,14 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         }
         const isOneToMany = relationship.RelationshipType === ONE_TO_MANY;
         const associatedEntityName = isOneToMany ? relationship.ReferencingEntity : relationship.Entity1LogicalName === entityName ? relationship.Entity2LogicalName : relationship.Entity1LogicalName;
+        const targetMetadata: any = await this._pcfContext.utils.getEntityMetadata(settings.entityName);
         const resolved: IResolvedColumn = {
             columnName,
             settings,
             expandName: isOneToMany ? relationship.ReferencedEntityNavigationPropertyName : navigationPropertyName,
             relationshipSchemaName: relationship.SchemaName,
             associatedEntityName,
+            target: { primaryIdAttribute: targetMetadata.PrimaryIdAttribute, primaryNameAttribute: targetMetadata.PrimaryNameAttribute },
         };
         if (settings.customIntersection) {
             const intersectionMetadata: any = await this._pcfContext.utils.getEntityMetadata(associatedEntityName);
@@ -185,18 +202,19 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         return resolved;
     }
 
-    private async _associate(taskId: string, references: Reference[], resolved: IResolvedColumn): Promise<void> {
+    private async _associate(taskId: string, references: Reference[], resolved: IResolvedColumn, onAssociated: (reference: Reference) => void): Promise<void> {
         if (references.length === 0) {
             return;
         }
         if (resolved.intersection) {
-            await Promise.all(references.map(reference => this._createIntersection(taskId, reference, resolved)));
+            await Promise.all(references.map(async reference => onAssociated(await this._createIntersection(taskId, reference, resolved))));
             return;
         }
         await this._execute('Associate', taskId, resolved, { relatedEntities: references.map(reference => ({ id: reference.id.guid, entityType: resolved.associatedEntityName })) });
+        references.forEach(onAssociated);
     }
 
-    private async _disassociate(taskId: string, references: Reference[], resolved: IResolvedColumn): Promise<void> {
+    private async _disassociate(taskId: string, references: Reference[], resolved: IResolvedColumn, onDisassociated: (reference: Reference) => void): Promise<void> {
         if (resolved.intersection) {
             await Promise.all(references.map(async reference => {
                 const intersectionId = reference.data?.__intersectionId;
@@ -204,13 +222,17 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
                     throw new Error(`${reference.name} has no intersection record to delete.`);
                 }
                 await this._pcfContext.webAPI.deleteRecord(resolved.intersection!.entityName, intersectionId);
+                onDisassociated(reference);
             }));
             return;
         }
-        await Promise.all(references.map(reference => this._execute('Disassociate', taskId, resolved, { relatedEntityId: reference.id.guid })));
+        await Promise.all(references.map(async reference => {
+            await this._execute('Disassociate', taskId, resolved, { relatedEntityId: reference.id.guid });
+            onDisassociated(reference);
+        }));
     }
 
-    private async _createIntersection(taskId: string, reference: Reference, resolved: IResolvedColumn): Promise<void> {
+    private async _createIntersection(taskId: string, reference: Reference, resolved: IResolvedColumn): Promise<Reference> {
         const intersection = resolved.intersection!;
         const relatedNavigationPropertyName = resolved.settings.customIntersection!.navigationPropertyName;
         const [taskMetadata, relatedMetadata]: any[] = await Promise.all([this._pcfContext.utils.getEntityMetadata(this._provider.getEntityName()), this._pcfContext.utils.getEntityMetadata(reference.etn!)]);
@@ -218,7 +240,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
             [`${intersection.taskNavigationPropertyName}@odata.bind`]: `/${taskMetadata.EntitySetName}(${taskId})`,
             [`${relatedNavigationPropertyName}@odata.bind`]: `/${relatedMetadata.EntitySetName}(${reference.id.guid})`,
         });
-        reference.data = { ...reference.data, __intersectionId: created.id };
+        return { ...reference, data: { ...reference.data, __intersectionId: created.id } };
     }
 
     //the PCF Web API has no execute

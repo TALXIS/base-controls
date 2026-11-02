@@ -2,18 +2,22 @@ import { useEffect, useState } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { useDataProviderEvents, useLabels } from "@utils";
-import { ZoomSlider } from "../../ui/zoom-slider";
+import { GanttUiZoomSlider, IGanttUiZoomSliderComponents } from "../../ui/zoom-slider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import type { IGantt, IGanttEvents } from "../../../interfaces";
-import type { IGanttZoomingEvents } from "../../../zooming/GanttZooming";
+import type { IGanttZoomingEvents } from "../../../zooming";
 import { GANTT_LABELS } from "../../../labels";
 
 //fine enough that dragging the slider zooms continuously
 const SLIDER_RESOLUTION = 1000;
 const BUTTON_STEPS = 12;
 
-/** The zoom of the `TaskGantt` in the body; goes in the header. */
-export const GanttZoomSlider = () => {
+export interface IGanttZoomSliderProps {
+    components?: Partial<IGanttUiZoomSliderComponents>;
+}
+
+/** The zoom of the `TaskGantt` in the body, for the header. */
+export const GanttZoomSlider = (props: IGanttZoomSliderProps) => {
     const datasetControl = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);
     const [gantt, setGantt] = useState<IGantt | undefined>(() => datasetControl.parts.find('gantt'));
@@ -22,16 +26,20 @@ export const GanttZoomSlider = () => {
     const labels = useLabels(GANTT_LABELS);
 
     //the header renders before the body that holds the Gantt
-    useEffect(() => datasetControl.parts.whenAvailable('gantt', setGantt), []);
+    useEffect(() => datasetControl.parts.observe('gantt', gantt => {
+        setGantt(gantt);
+        return () => setGantt(undefined);
+    }), []);
     useEventEmitter<IGanttEvents>(gantt?.events, 'onChartReady', rerender);
     useEventEmitter<IGanttZoomingEvents>(zooming?.events, 'onZoomChanged', rerender);
 
-    return <ZoomSlider
+    return <GanttUiZoomSlider
         ariaLabel={labels.get('gantt.zoomSlider')}
         min={0}
         max={SLIDER_RESOLUTION}
         buttonStep={SLIDER_RESOLUTION / BUTTON_STEPS}
         value={Math.round((zooming?.getPosition() ?? 0) * SLIDER_RESOLUTION)}
         disabled={!zooming || provider.isLoading()}
-        onChange={value => zooming?.setPosition(value / SLIDER_RESOLUTION)} />;
+        onChange={value => zooming?.setPosition(value / SLIDER_RESOLUTION)}
+        components={props.components} />;
 };

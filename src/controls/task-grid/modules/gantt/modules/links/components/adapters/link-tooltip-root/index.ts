@@ -1,2 +1,2 @@
-export * from './LinkTooltip';
+export * from './LinkTooltipRoot';
 export * from './context';

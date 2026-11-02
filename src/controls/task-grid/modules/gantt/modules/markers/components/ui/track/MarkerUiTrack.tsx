@@ -1,18 +1,18 @@
 import { ReactNode, useMemo } from "react";
-import { GanttMarkerUiTrackComponents, IGanttMarkerUiTrackComponents } from "./components";
-import { getGanttMarkerUiTrackStyles } from "./styles";
+import { MarkerUiTrackComponents, IMarkerUiTrackComponents } from "./components";
+import { getMarkerUiTrackStyles } from "./styles";
 
-export interface IGanttMarkerUiTrackProps {
+export interface IMarkerUiTrackProps {
     scaleHeight: number;
     /** The line. */
     children?: ReactNode;
-    components?: Partial<IGanttMarkerUiTrackComponents>;
+    components?: Partial<IMarkerUiTrackComponents>;
 }
 
 /** The part of a column below the scale, where the line runs. */
-export const GanttMarkerUiTrack = (props: IGanttMarkerUiTrackProps) => {
-    const components = { ...GanttMarkerUiTrackComponents, ...props.components };
-    const styles = useMemo(() => getGanttMarkerUiTrackStyles(), []);
+export const MarkerUiTrack = (props: IMarkerUiTrackProps) => {
+    const components = { ...MarkerUiTrackComponents, ...props.components };
+    const styles = useMemo(() => getMarkerUiTrackStyles(), []);
 
     return components.onRenderContainer({ className: styles.track, style: { top: props.scaleHeight }, children: props.children });
 };

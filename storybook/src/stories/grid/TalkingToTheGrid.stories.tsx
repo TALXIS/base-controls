@@ -59,10 +59,10 @@ The grid is made of services, and \`grid.services\` finds them by key:
 |---|---|
 | \`get(key)\` | The service. Throws when nothing registered it, so use it for the services every grid has. |
 | \`find(key)\` | The service, or \`undefined\`. Use it for \`gridApi\` before AG Grid is ready. |
-| \`whenAvailable(key, callback)\` | Calls \`callback\` with the service as soon as there is one: at once, or the moment something registers it. |
+| \`observe(key, callback)\` | Calls \`callback\` with the service now if there is one, and again each time something registers it. A function it returns runs before the next call; \`observe\` returns the function that stops observing. |
 | \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 
-Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`whenAvailable\` do nothing.
+Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
 
 ### In every grid
 
@@ -93,7 +93,7 @@ What the hooks decide, and the order they run in, is on [**Hooks**](?path=/docs/
 
 ## Modules
 
-\`grid.modules\` finds the modules the grid was given by name, with the same \`get\`, \`find\` and \`whenAvailable\`. A module reaches the ones before it in \`modules\` with \`get\` or \`find\`, and later ones with \`whenAvailable\`.
+\`grid.modules\` finds the modules the grid was given by name, with the same \`get\`, \`find\` and \`observe\`. A module reaches the ones before it in \`modules\` with \`get\` or \`find\`, and later ones with \`observe\`.
 
 | Name | Given | Description |
 |---|---|---|

@@ -49,8 +49,8 @@ export const TicketQueue = (props: { provider: IDataProvider }) => <DatasetContr
 \`\`\`
 
 - Build a module once, as a constant or in \`useMemo\`. \`modules\` is read at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview).
-- Modules load in array order, so the ones before yours, such as \`grid.modules.find('rowSelection')\`, are already there in your \`onLoad\`. Reach later ones with \`grid.modules.whenAvailable\`.
-- \`onLoad\` runs before AG Grid exists: reach its api with \`grid.services.whenAvailable('gridApi', gridApi => ...)\`. It also runs while \`<Grid />\` renders for the first time, so it must not set React state.
+- Modules load in array order, so the ones before yours, such as \`grid.modules.find('rowSelection')\`, are already there in your \`onLoad\`. Reach later ones with \`grid.modules.observe\`.
+- \`onLoad\` runs before AG Grid exists: reach its api with \`grid.services.observe('gridApi', gridApi => ...)\`. It also runs while \`<Grid />\` renders for the first time, so it must not set React state.
 - Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, rather than from outside, and it works in any grid.
 - A module that needs options, or state of your app, is a function that builds one: \`createCopyColumnModule(onCopied)\`. Read state that changes through a getter or a ref, since the module is built once. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
 

@@ -46,14 +46,14 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
     ], [database])
     const ganttModules = React.useMemo(() => [
-        createGanttLibraryModule(),
-        createGanttMarkersModule(),
-        createMemoryGanttNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
-        createGanttTaskDraggingModule(),
-        createGanttTaskCreateModule(),
-        createGanttSelectionModule(),
-        createGanttTooltipModule({ statusColumnName: 'statuscode' }),
-        createGanttLinksModule(),
+        createLibraryModule(),
+        createMarkersModule(),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
+        createBarDraggingModule(),
+        createTaskDrawingModule(),
+        createTaskSelectionModule(),
+        createTaskTooltipModule({ statusColumnName: 'statuscode' }),
+        createLinksModule(),
     ], [])
 
     const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping })

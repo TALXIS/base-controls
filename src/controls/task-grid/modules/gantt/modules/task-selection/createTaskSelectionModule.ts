@@ -1,10 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttSelection, IGanttSelectionParameters } from "./GanttSelection";
+import { TaskSelection, ITaskSelectionParameters } from "./TaskSelection";
 
-export interface IGanttSelectionModule extends IGanttModule<'selection'> { }
+export interface ITaskSelectionModule extends IGanttModule<'taskSelection'> { }
 
-export const createGanttSelectionModule = (parameters: IGanttSelectionParameters = {}): IGanttSelectionModule => ({
-    name: 'selection',
-    onLoad: gantt => new GanttSelection(gantt, parameters),
+export const createTaskSelectionModule = (parameters: ITaskSelectionParameters = {}): ITaskSelectionModule => ({
+    name: 'taskSelection',
+    onLoad: gantt => new TaskSelection(gantt, parameters),
     onDestroy: selection => selection.destroy(),
 });

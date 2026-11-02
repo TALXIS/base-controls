@@ -7,19 +7,22 @@ import type { IStateStore } from "@utils";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../services";
-import type { ITaskRuntime } from "../runtime";
+import type { ITaskGridTree, ITaskRuntime } from "../runtime";
 import { TASK_GRID_PRIORITY } from "../priorities";
 import { TASK_GRID_LABELS } from "../labels";
-import { TaskExpansion, ITaskTreeState, TASK_TREE_STATE_KEY } from "./TaskExpansion";
-import { TreeCell } from "./tree-cell";
-import { PercentCompleteCell } from "./percent-complete-cell";
-import { ExpansionHeader } from "./expansion-header";
+import { TaskExpansion } from "./TaskExpansion";
+import { ExpansionHeader, PercentCompleteCell, TaskCommandsCell, TreeCell } from "../components/adapters";
 import { TASK_COMMANDS_COLUMN_KEY } from "./constants";
-import { TaskCommandsCell } from "./task-commands-cell";
 import { runQuietly } from "../runtime/runQuietly";
 
 const LEADING_COLUMN_KEYS = new Set([SELECTION_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, RECORD_LOCK_COLUMN_KEY]);
 const REVEAL_TASK_ATTEMPTS = 3;
+const TASK_TREE_STATE_KEY = 'taskTree';
+
+interface ITaskTreeState {
+    expandedIds?: string[];
+    isFlatList?: boolean;
+}
 
 export interface ITaskTreeParameters {
     grid: IGrid<ITaskGridServiceMap>;
@@ -28,8 +31,8 @@ export interface ITaskTreeParameters {
     state: IStateStore;
 }
 
-/** Draws the tasks as a tree on the grid: the rows, the subject column, dragging and expansion. */
-export class TaskTree {
+/** Draws the tasks as a tree on the grid. */
+export class TaskTree implements ITaskGridTree {
     private _grid: IGrid<ITaskGridServiceMap>;
     private _runtime: ITaskRuntime;
     private _state: IStateStore;
@@ -39,7 +42,7 @@ export class TaskTree {
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
-    private _unsaveWithView?: () => void;
+    private _unsubscribes: (() => void)[] = [];
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -48,11 +51,14 @@ export class TaskTree {
         const services = this._grid.services;
         this._provider = services.get('provider');
         this._isFlatList = this._getState().isFlatList ?? parameters.runtime.getView()?.data?.isFlatList ?? false;
-        this._expansion = new TaskExpansion({ provider: this._provider, state: this._state, onIsFlatList: () => this._isFlatList });
-        parameters.runtime.services.register('taskTree', () => this);
-        parameters.runtime.services.get('datasetControl').modules.whenAvailable('userQueries', userQueries => {
-            this._unsaveWithView = userQueries.saveWithView('isFlatList', () => this._isFlatList);
+        this._expansion = new TaskExpansion({
+            provider: this._provider,
+            expandedIds: this._getState().expandedIds ?? [],
+            onIsFlatList: () => this._isFlatList,
+            onExpandedIdsChanged: expandedIds => this._setState({ expandedIds }),
         });
+        parameters.runtime.services.register('taskTree', () => this);
+        this._unsubscribes.push(parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)));
         services.register('taskExpansion', () => this._expansion);
 
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
@@ -62,11 +68,12 @@ export class TaskTree {
         services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
-        this._grid.modules.whenAvailable('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree));
-        this._grid.modules.whenAvailable('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree));
-
-        services.whenAvailable('gridApi', this._onGridApi);
-        //ahead of row selection's listener, which redraws the checkboxes
+        this._unsubscribes.push(
+            this._grid.modules.observe('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree)),
+            this._grid.modules.observe('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree)),
+            services.observe('gridApi', this._onGridApi),
+        );
+        //before row selection redraws the checkboxes
         this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         this._provider.taskEvents.addEventListener('onTreeChanged', this._onTreeChanged);
         this._provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
@@ -87,7 +94,7 @@ export class TaskTree {
             return;
         }
         this._isFlatList = isFlatList;
-        this._state.set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), isFlatList });
+        this._setState({ isFlatList });
         this._grid.refreshAgGridOptions();
         this._gridApi?.setColumnsVisible([TASK_COMMANDS_COLUMN_KEY], !isFlatList);
         this._gridApi?.refreshCells({ columns: [this._provider.getFieldMapping().subject], force: true });
@@ -187,7 +194,7 @@ export class TaskTree {
         }
     };
 
-    //the same array until the rows change, so AG Grid is not handed new rows on every refresh
+    //AG Grid takes a new array as new rows
     private _getFlatRows(treeRows: IRecord[]): IRecord[] {
         if (treeRows !== this._treeRows) {
             const view = this._provider.getRecordTree().view;
@@ -200,7 +207,7 @@ export class TaskTree {
     //runs only on a switch
     private async _syncPathColumn(isFlatList: boolean): Promise<void> {
         const provider = this._provider;
-        //not the columns map, which keeps a column once defined
+        //the columns map keeps a column once defined
         const pathColumn = provider.getColumns().find(column => column.name === PATH_COLUMN_NAME);
         const columns = provider.getColumns().filter(column => column.name !== PATH_COLUMN_NAME);
         if (isFlatList && (!pathColumn || pathColumn.isHidden)) {
@@ -224,6 +231,10 @@ export class TaskTree {
 
     private _getState(): ITaskTreeState {
         return this._state.get<ITaskTreeState>(TASK_TREE_STATE_KEY) ?? {};
+    }
+
+    private _setState(state: ITaskTreeState): void {
+        this._state.set<ITaskTreeState>(TASK_TREE_STATE_KEY, { ...this._getState(), ...state });
     }
 
     private _onNewDataLoaded = (): void => {
@@ -320,7 +331,7 @@ export class TaskTree {
 
     /** Called as the grid tears down. */
     public destroy(): void {
-        this._unsaveWithView?.();
+        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }
@@ -332,5 +343,6 @@ export class TaskTree {
         this._provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
         this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
         this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._expansion.destroy();
     }
 }

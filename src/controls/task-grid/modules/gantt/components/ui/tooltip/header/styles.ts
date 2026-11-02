@@ -1,6 +1,6 @@
 import { FontWeights, ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskTooltipUiHeaderStyles = (theme: ITheme) => mergeStyleSets({
+export const getTooltipUiHeaderStyles = (theme: ITheme) => mergeStyleSets({
     header: {
         display: 'flex',
         alignItems: 'flex-start',

@@ -1,9 +1,17 @@
-import { ISliderProps, Slider } from "@fluentui/react";
+import { IButtonProps, IconButton, ISliderProps, Slider } from "@fluentui/react";
 
-export interface IZoomSliderComponents {
-    onRenderSlider: (props: ISliderProps) => JSX.Element
+/** The replaceable pieces of the zoom slider. */
+export interface IGanttUiZoomSliderComponents {
+    /** Holds the buttons and the slider between them. */
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderSlider: (props: ISliderProps) => JSX.Element | null;
+    /** The buttons that zoom out and in by a step. */
+    onRenderZoomButton: (props: IButtonProps) => JSX.Element | null;
 }
 
-export const ZoomSliderComponents: IZoomSliderComponents = {
-    onRenderSlider: (props) => <Slider {...props} />
+/** The defaults for {@link IGanttUiZoomSliderComponents}. */
+export const GanttUiZoomSliderComponents: IGanttUiZoomSliderComponents = {
+    onRenderContainer: props => <div {...props} />,
+    onRenderSlider: props => <Slider {...props} />,
+    onRenderZoomButton: props => <IconButton {...props} />,
 };

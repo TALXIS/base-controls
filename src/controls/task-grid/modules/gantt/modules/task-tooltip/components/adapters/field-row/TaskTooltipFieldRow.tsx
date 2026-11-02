@@ -1,13 +1,13 @@
-import { ITaskTooltipUiFieldRowComponents, TaskTooltipUiFieldRow } from "../../ui";
-import { useTaskTooltip } from "../task-tooltip";
+import { ITooltipUiFieldRowComponents, TooltipUiFieldRow } from "../../../../../components/ui/tooltip";
+import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipFieldRowProps {
     columnName: string;
     iconName?: string;
-    components?: Partial<ITaskTooltipUiFieldRowComponents>;
+    components?: Partial<ITooltipUiFieldRowComponents>;
 }
 
-/** One column of the task under its display name; nothing while it is empty. */
+/** One column of the task under its display name, nothing while empty. */
 export const TaskTooltipFieldRow = (props: ITaskTooltipFieldRowProps) => {
     const { gantt, record } = useTaskTooltip();
     const value = record.getFormattedValue(props.columnName);
@@ -15,5 +15,5 @@ export const TaskTooltipFieldRow = (props: ITaskTooltipFieldRowProps) => {
         return null;
     }
     const label = gantt.getTaskRuntime().getProvider().getColumnsMap()[props.columnName]?.displayName ?? props.columnName;
-    return <TaskTooltipUiFieldRow label={label} iconName={props.iconName} components={props.components}>{value}</TaskTooltipUiFieldRow>;
+    return <TooltipUiFieldRow label={label} iconName={props.iconName} components={props.components}>{value}</TooltipUiFieldRow>;
 };

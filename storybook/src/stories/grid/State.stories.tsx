@@ -49,7 +49,7 @@ const createPreviewModule = (onOpen: (recordId: string) => void): IGridModule =>
         if (recordId) {
             onOpen(recordId)
         }
-        grid.services.whenAvailable('gridApi', gridApi => gridApi.addEventListener('rowClicked', event => {
+        grid.services.observe('gridApi', gridApi => gridApi.addEventListener('rowClicked', event => {
             state.set<IPreviewState>('preview', { recordId: event.data?.getRecordId() })
         }))
     },

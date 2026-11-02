@@ -1,2 +1,2 @@
-export * from './GanttMarkerUiLayer';
+export * from './MarkerUiLayer';
 export * from './components';

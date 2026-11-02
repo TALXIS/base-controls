@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGanttMarkerUiTrackStyles = () => mergeStyleSets({
+export const getMarkerUiTrackStyles = () => mergeStyleSets({
     track: {
         position: 'absolute',
         left: 0,

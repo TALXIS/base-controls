@@ -1,40 +1,9 @@
-import type { IDependenciesParameters, ITaskDependenciesStore, ITaskDependency, ITaskDependencyCreate } from "../Dependencies";
+import type { IDependenciesParameters, ITaskDependency } from "../Dependencies";
 import { createDependenciesModule, IDependenciesModule } from "../createDependenciesModule";
-import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
+import { MemoryDependenciesStore } from "./MemoryDependenciesStore";
 
 export interface IMemoryDependenciesModuleParameters extends Omit<IDependenciesParameters, 'onCreateStore'> {
     dependencies: ITaskDependency[];
-}
-
-class MemoryDependenciesStore implements ITaskDependenciesStore {
-    private _dependencies: ITaskDependency[];
-
-    constructor(dependencies: ITaskDependency[]) {
-        this._dependencies = structuredClone(dependencies);
-    }
-
-    public async onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
-        await simulateBackend(3000);
-        const loadedTaskIds = new Set(taskIds);
-        return this._dependencies.filter(dependency => loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
-    }
-
-    public async onCreateDependency(dependency: ITaskDependencyCreate): Promise<ITaskDependency> {
-        await simulateBackend();
-        const created = { ...dependency, id: crypto.randomUUID() };
-        this._dependencies.push(created);
-        return created;
-    }
-
-    public async onUpdateDependency(dependency: ITaskDependency): Promise<void> {
-        await simulateBackend();
-        this._dependencies = this._dependencies.map(existing => existing.id === dependency.id ? dependency : existing);
-    }
-
-    public async onDeleteDependency(dependencyId: string): Promise<void> {
-        await simulateBackend();
-        this._dependencies = this._dependencies.filter(dependency => dependency.id !== dependencyId);
-    }
 }
 
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */

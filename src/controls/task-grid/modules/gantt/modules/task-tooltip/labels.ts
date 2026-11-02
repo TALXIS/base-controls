@@ -1,5 +1,5 @@
 import { defineLabels } from "@utils";
 
-export const GANTT_TOOLTIP_LABELS = defineLabels({
-    'ganttTooltip.duration': 'Duration',
+export const TASK_TOOLTIP_LABELS = defineLabels({
+    'taskTooltip.duration': 'Duration',
 });

@@ -9,38 +9,52 @@ import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
 import { TEMPLATES_LABELS } from "./labels";
-import { TemplateSelectorAdapter } from "./components/adapters/template-selector";
+import { TemplateSelector } from "./components/adapters/template-selector";
+import type { ITemplateListComponents } from "./components/ui";
+import type { IRecordSelectorFrameComponents } from "../../components/record-selector";
 import { runQuietly } from "../../runtime/runQuietly";
 
-/** A template: its own task, named after it, with the tasks under it. */
+/** A template's own task, named after it, with the tasks under it. */
 export interface ITemplate {
     name: string;
     tree: ICreateTaskTree;
 }
 
-/** Where a template's tasks go: the template, and where its own task lands. */
+/** The template and where its own task lands. */
 export interface ITemplateTasksCreateParams extends Omit<ITaskCreateParams, 'data'> {
     templateId: string;
 }
 
 /** Where templates are kept, and what creates tasks from them. */
 export interface ITemplatesStore {
-    /** A provider over the templates, searched by the selector; made each time it opens. */
+    /** A provider over the templates, made each time the selector opens. */
     onCreateTemplatesProvider(): IDataProvider;
     /** @returns The tasks created, or `null` when there were none or the user cancelled. */
     onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
     /** Without it, tasks cannot be saved as templates. */
     onCreateTemplate?(template: ITemplate): Promise<void>;
+    /** Called as the templates go. */
+    destroy?(): void;
+}
+
+/** The replaceable parts of what the templates draw, by the piece they belong to. */
+export interface ITemplatesComponents {
+    /** The box the selector is drawn in, in the New and row add menus. */
+    selector?: Partial<IRecordSelectorFrameComponents>;
+    /** The templates offered in the selector. */
+    list?: Partial<ITemplateListComponents>;
 }
 
 export interface ITemplatesParameters {
     onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore;
+    components?: ITemplatesComponents;
 }
 
-/** The `templates` module: tasks created from templates, and templates captured from tasks. */
+/** The `templates` module, creating tasks from templates and templates from tasks. */
 export interface ITemplates {
+    readonly components: ITemplatesComponents;
     createTemplatesProvider(): IDataProvider;
-    /** Under `parentId`, or at the top level without it; rejects when the store fails. */
+    /** Under `parentId`, or at the top level without it. */
     createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRecord[] | null>;
     /** Rejects when the store fails or keeps no templates of its own. */
     createTemplateFromTask(task: IRecord): Promise<void>;
@@ -54,6 +68,7 @@ const FROM_TEMPLATE_COMMAND_ID = 'newFromTemplate';
 
 /** Templates offered from the ribbon's New and from each row's add command. */
 export class Templates implements ITemplates {
+    public readonly components: ITemplatesComponents;
     private _taskRuntime: ITaskRuntime;
     private _store: ITemplatesStore;
     private _labels: LabelsOf<typeof TEMPLATES_LABELS>;
@@ -61,11 +76,14 @@ export class Templates implements ITemplates {
 
     constructor(taskRuntime: ITaskRuntime, parameters: ITemplatesParameters) {
         this._taskRuntime = taskRuntime;
+        this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
         this._labels = taskRuntime.getLabels(TEMPLATES_LABELS);
-        taskRuntime.services.get('datasetControl').parts.whenAvailable('ribbon', ribbon => this._unregisters.push(ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)));
-        this._unregisters.push(taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi));
-        taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
+        this._unregisters.push(
+            taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)),
+            taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi),
+            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
+        );
     }
 
     public createTemplatesProvider(): IDataProvider {
@@ -80,25 +98,27 @@ export class Templates implements ITemplates {
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
-        if (!this._store.onCreateTemplate) {
+        const onCreateTemplate = this._store.onCreateTemplate?.bind(this._store);
+        if (!onCreateTemplate) {
             throw new Error('The templates store keeps no templates of its own.');
         }
         await this._execute('templates.savingTemplate', async () => {
             const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
             const { data, children } = this._toTemplateTree(task);
             const { [subject]: name, ...rootData } = data ?? {};
-            await this._store.onCreateTemplate?.({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
+            await onCreateTemplate({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
         });
     }
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
+        this._store.destroy?.();
     }
 
-    private _onGridAvailable(grid: IGrid<ITaskGridServiceMap>): void {
-        //after the tree's own add command
-        this._unregisters.push(grid.services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30));
-    }
+    //after the tree's own add command
+    private _onGridAvailable = (grid: IGrid): (() => void) => {
+        return (grid as IGrid<ITaskGridServiceMap>).services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30);
+    };
 
     private _addCommands = (commands: IRibbonCommand[]): void => {
         const provider = this._taskRuntime.getProvider();
@@ -119,7 +139,7 @@ export class Templates implements ITemplates {
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
         if (task && this._store.onCreateTemplate) {
-            commands.splice(newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.get('templates.saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
+            commands.splice(newIndex === -1 ? commands.length : newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.get('templates.saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
         }
     };
 
@@ -154,8 +174,7 @@ export class Templates implements ITemplates {
     };
 
     private _renderSelector(onDismiss: () => void, parentId?: string): JSX.Element {
-        return createElement(TemplateSelectorAdapter, {
-            templates: this,
+        return createElement(TemplateSelector, {
             onTemplateSelected: templateId => {
                 onDismiss();
                 runQuietly(() => this.createTasksFromTemplate(templateId, parentId));

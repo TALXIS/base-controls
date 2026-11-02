@@ -1,4 +1,4 @@
-export * from './task-tooltip';
+export * from './task-tooltip-root';
 export * from './callout';
 export * from './header';
 export * from './field-rows';

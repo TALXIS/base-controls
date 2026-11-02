@@ -26,10 +26,10 @@ import { CHECKLIST_LABELS_CS } from '../controls/task-grid/modules/checklist/lab
 import { CUSTOM_COLUMNS_LABELS_CS } from '../controls/task-grid/modules/custom-columns/labels.cs';
 import { DEPENDENCIES_LABELS_CS } from '../controls/task-grid/modules/dependencies/labels.cs';
 import { GANTT_LABELS_CS } from '../controls/task-grid/modules/gantt/labels.cs';
-import { GANTT_LINKS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/links/labels.cs';
-import { GANTT_MARKERS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/markers/labels.cs';
-import { GANTT_NON_WORKING_DAYS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/non-working-days/labels.cs';
-import { GANTT_TOOLTIP_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/tooltip/labels.cs';
+import { LINKS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/links/labels.cs';
+import { MARKERS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/markers/labels.cs';
+import { NON_WORKING_DAYS_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/non-working-days/labels.cs';
+import { TASK_TOOLTIP_LABELS_CS } from '../controls/task-grid/modules/gantt/modules/task-tooltip/labels.cs';
 import { LOOKUP_MANY_LABELS_CS } from '../controls/task-grid/modules/lookup-many/labels.cs';
 import { TEMPLATES_LABELS_CS } from '../controls/task-grid/modules/templates/labels.cs';
 import { LEGACY_DATASET_CONTROL_LABELS_CS } from '../legacy/react-components/dataset-control/labels.cs';
@@ -68,10 +68,10 @@ export const CZECH_LABELS: Labels = {
     ...CUSTOM_COLUMNS_LABELS_CS,
     ...DEPENDENCIES_LABELS_CS,
     ...GANTT_LABELS_CS,
-    ...GANTT_LINKS_LABELS_CS,
-    ...GANTT_MARKERS_LABELS_CS,
-    ...GANTT_NON_WORKING_DAYS_LABELS_CS,
-    ...GANTT_TOOLTIP_LABELS_CS,
+    ...LINKS_LABELS_CS,
+    ...MARKERS_LABELS_CS,
+    ...NON_WORKING_DAYS_LABELS_CS,
+    ...TASK_TOOLTIP_LABELS_CS,
     ...LOOKUP_MANY_LABELS_CS,
     ...TEMPLATES_LABELS_CS,
     ...LEGACY_DATASET_CONTROL_LABELS_CS,

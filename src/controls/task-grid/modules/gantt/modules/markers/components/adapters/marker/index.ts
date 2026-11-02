@@ -1,2 +1,2 @@
-export * from './GanttMarker';
+export * from './Marker';
 export * from './context';

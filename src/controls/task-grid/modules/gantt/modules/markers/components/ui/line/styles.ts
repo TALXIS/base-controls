@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGanttMarkerUiLineStyles = () => mergeStyleSets({
+export const getMarkerUiLineStyles = () => mergeStyleSets({
     line: {
         position: 'absolute',
         top: 0,

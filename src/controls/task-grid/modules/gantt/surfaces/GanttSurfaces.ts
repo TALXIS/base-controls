@@ -14,7 +14,6 @@ export type GanttSurfacesHook = (surfaces: IGanttSurface[]) => void;
 export interface IGanttSurfaces {
     /**
      * Registers a hook over what the modules draw over the Gantt, once its chart is drawn.
-     *
      * @param priority Ascending: a lower number is drawn first.
      */
     registerSurface(hook: GanttSurfacesHook, priority?: number): () => void;

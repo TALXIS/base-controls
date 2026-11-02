@@ -6,15 +6,15 @@ import { patchDataBuilderPrepare } from "./patchDataBuilderPrepare";
 /** The column a task's ancestor names are written to, when a view has it. */
 export const PATH_COLUMN_NAME = 'path__virtual';
 
-/** The tree as the grid shows it: filter, quick find and root scoping applied. */
+/** The tree as the grid shows it, filtered and scoped. */
 export interface IRecordTreeView {
-    /** The children drawn under a record, in order; the top level without an argument. */
+    /** The children drawn under a record in order, the top level without an argument. */
     getChildren(parentRecordId?: string | null): IRecord[];
     /** Whether the record has a child the view shows. */
     hasChildren(recordId: string): boolean;
     /** The record's ancestors the view shows and the record itself, from the top. */
     getPath(recordId: string): string[];
-    /** Whether the record itself matches the filter and quick find, or is a task created since the view loaded. */
+    /** Whether the record matches the filter and quick find or is new since the view loaded. */
     isMatching(recordId: string): boolean;
     getCount(): number;
     /** Every record the view shows, in the order it shows them. */
@@ -23,7 +23,7 @@ export interface IRecordTreeView {
 
 /** The whole tree, ignoring what the view hides. */
 export interface IRecordStructure {
-    /** The children of a record, in order; the top level without an argument. */
+    /** The children of a record in order, the top level without an argument. */
     getChildren(parentRecordId?: string | null): IRecord[];
     getParent(recordId: string): IRecord | null;
     /** The ids from the top down to the record itself. */
@@ -48,7 +48,7 @@ interface IHierarchyIndex {
     parentById: Map<string, string | null>;
     ancestorIds: Map<string, string[]>;
     ancestorNames: Map<string, string[]>;
-    //records in a parent chain that loops, which no row can show
+    //records in a parent chain that loops
     unreachable: Set<string>;
 }
 
@@ -99,7 +99,7 @@ export class RecordTree implements IRecordTree {
         const index = this._buildIndex();
         this._index = index;
         this._descendants.clear();
-        //before the sort and the filter below, which may read the path
+        //the sort and the filter below may read the path
         this._patchRecordPaths(index);
         const matchingIds = this._buildMatchingIds(index);
         //a new task stays shown whatever the filter
@@ -170,7 +170,7 @@ export class RecordTree implements IRecordTree {
 
     private _buildIndex(): IHierarchyIndex {
         const stackRank = this._provider.getFieldMapping().stackRank;
-        //a copy in stack order, as the provider's own array must keep its order
+        //the provider's own array must keep its order
         const records = [...this._provider.getAllRecords()].sort((a, b) => StackRank.compare(a.getValue(stackRank), b.getValue(stackRank)));
         const recordsMap = this._provider.getRecordsMap();
         const parentIdColumn = this._provider.getFieldMapping().parentId;
@@ -263,9 +263,9 @@ export class RecordTree implements IRecordTree {
         return unreachable;
     }
 
-    //copies, as the structure keeps the stack order whatever the view sorts by
+    //the structure keeps the stack order whatever the view sorts by
     private _sortForDisplay(index: IHierarchyIndex, sortingMap: { [recordId: string]: number }): Pick<IHierarchyIndex, 'records' | 'childrenByParent'> {
-        //a new task stays at the end it asked for, in stack order among the other new tasks there
+        //a new task stays at the end it asked for
         const getGroup = (record: IRecord): number => {
             const position = this._provider.getNewTaskPosition(record.getRecordId());
             return position === 'first' ? 0 : position === 'last' ? 2 : 1;
@@ -325,7 +325,7 @@ export class RecordTree implements IRecordTree {
         return descendants;
     }
 
-    //the column matchers answer for their columns, the memory provider for the rest
+    //the memory provider matches the columns no matcher claims
     private _buildMatchingIds(index: IHierarchyIndex): Set<string> {
         const conditionMatchingIds = this._getConditionMatchingIds(index.records);
         const searchMatchingIds = this._getSearchMatchingIds(index.records);
@@ -371,7 +371,9 @@ export class RecordTree implements IRecordTree {
         provider.setSorting([]);
         setUp(provider);
         provider.refreshSync();
-        return new Set(Object.keys(provider.getRecordsMap()));
+        const matchingIds = new Set(Object.keys(provider.getRecordsMap()));
+        provider.destroy();
+        return matchingIds;
     }
 
     private _buildSortingMap(index: IHierarchyIndex): { [recordId: string]: number } {
@@ -382,6 +384,7 @@ export class RecordTree implements IRecordTree {
             sortingMap[record.getRecordId()] = ++position;
         });
         provider.refreshSync();
+        provider.destroy();
         return sortingMap;
     }
 

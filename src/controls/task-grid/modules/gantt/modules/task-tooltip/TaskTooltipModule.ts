@@ -1,28 +1,30 @@
 import { createElement } from "react";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { TaskTooltipRenderer } from "./components/adapters/renderer";
+import { ITaskTooltipRendererComponents, TaskTooltipRenderer } from "./components/adapters/renderer";
 
-export interface IGanttTooltipParameters {
+export interface ITaskTooltipParameters {
     /** The whole tooltip, composed from `TaskTooltip`'s parts. */
     onRender?: () => JSX.Element | null;
+    /** The replaceable pieces of the default tooltip, unused with `onRender`. */
+    components?: ITaskTooltipRendererComponents;
     /** An option set column the header shows as a pill in its option's colour. */
     statusColumnName?: string;
 }
 
-/** The `tooltip` module: what a bar says when the pointer is on it. */
-export interface IGanttTooltip {
+/** The `taskTooltip` module: what a bar says when the pointer is on it. */
+export interface ITaskTooltip {
     getStatusColumnName(): string | undefined;
-    render(): JSX.Element | null;
+    getComponents(): ITaskTooltipRendererComponents;
     /** Called as the Gantt goes. */
     destroy(): void;
 }
 
-export class GanttTooltip implements IGanttTooltip {
-    private _parameters: IGanttTooltipParameters;
+export class TaskTooltipModule implements ITaskTooltip {
+    private _parameters: ITaskTooltipParameters;
     private _unregisterSurface: () => void;
 
-    constructor(gantt: IGantt, parameters: IGanttTooltipParameters) {
+    constructor(gantt: IGantt, parameters: ITaskTooltipParameters) {
         this._parameters = parameters;
         this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
     }
@@ -31,22 +33,26 @@ export class GanttTooltip implements IGanttTooltip {
         return this._parameters.statusColumnName;
     }
 
-    public render(): JSX.Element | null {
-        return this._parameters.onRender ? this._parameters.onRender() : createElement(TaskTooltipRenderer);
+    public getComponents(): ITaskTooltipRendererComponents {
+        return this._parameters.components ?? {};
     }
 
     public destroy(): void {
         this._unregisterSurface();
     }
 
+    private _render(): JSX.Element | null {
+        return this._parameters.onRender ? this._parameters.onRender() : createElement(TaskTooltipRenderer, { components: this.getComponents() });
+    }
+
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
-        surfaces.push({ key: 'tooltip', onRender: () => this.render() });
+        surfaces.push({ key: 'taskTooltip', onRender: () => this._render() });
     };
 }
 
 declare module "../../interfaces" {
     interface IGanttModuleMap {
         /** What a bar says when the pointer is on it. */
-        tooltip: IGanttTooltip;
+        taskTooltip: ITaskTooltip;
     }
 }

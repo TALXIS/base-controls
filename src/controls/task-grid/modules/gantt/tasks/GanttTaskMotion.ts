@@ -13,10 +13,10 @@ const MAX_ANIMATED_BARS = 150;
 
 /** Slides bars to where new dates put them, instead of letting them jump there. */
 export class GanttTaskMotion {
-    private _gantt: GanttStatic;
+    private _chart: GanttStatic;
 
-    constructor(gantt: GanttStatic) {
-        this._gantt = gantt;
+    constructor(chart: GanttStatic) {
+        this._chart = chart;
     }
 
     /** Where the tasks' bars are drawn now, to slide them from once they are redrawn. */
@@ -54,8 +54,8 @@ export class GanttTaskMotion {
 
     //a bar being dragged follows the pointer
     private _isEnabled(): boolean {
-        const window = this._gantt.$root?.ownerDocument.defaultView;
-        return !!window && !this._gantt.getState().drag_id && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const view = this._chart.$root?.ownerDocument.defaultView;
+        return !!view && !this._chart.getState().drag_id && !view.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     private _getBox(taskId: string): IBarBox | undefined {
@@ -64,7 +64,7 @@ export class GanttTaskMotion {
     }
 
     private _getBar(taskId: string): HTMLElement | undefined {
-        return this._gantt.isTaskExists(taskId) ? this._gantt.getTaskNode(taskId) ?? undefined : undefined;
+        return this._chart.isTaskExists(taskId) ? this._chart.getTaskNode(taskId) ?? undefined : undefined;
     }
 }
 

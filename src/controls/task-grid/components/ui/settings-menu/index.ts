@@ -1,2 +1,2 @@
-export * from './SettingsMenu';
+export * from './TaskGridUiSettingsMenu';
 export * from './components';

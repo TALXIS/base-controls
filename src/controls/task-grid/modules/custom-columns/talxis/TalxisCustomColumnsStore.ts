@@ -4,13 +4,13 @@ import type { Attribute as IAttribute } from "@talxis/client-metadata/dist/inter
 import type { IPcfContext } from "@interfaces";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ICustomColumnsStore } from "../CustomColumns";
+import { retrieveInBatches } from "../../dataverse";
 
 /** The table holding custom column definitions. */
-export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
+const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 /** The table holding custom column values. */
-export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
+const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 
-const MAX_IDS_PER_REQUEST = 800;
 const VALUE_FIELDS = ['talxis_attributevalueid', 'talxis_serialized_value', 'talxis_text_value', 'talxis_int_value', 'talxis_decimal_value', '_talxis_choice_value_value', 'talxis_bit_value', 'talxis_date_value', 'talxis_datetime_userlocal_value', 'talxis_datetime_tzi_value', '_talxis_attributedefinitionid_value'];
 
 export interface ITalxisCustomColumnsStoreParameters {
@@ -19,7 +19,7 @@ export interface ITalxisCustomColumnsStoreParameters {
     entityName: string;
     /** Only the definitions of this record, such as the project. */
     recordId?: string;
-    /** The relationship between the entity and `talxis_attributevalue` the values hang off; needed only when there are several. */
+    /** The relationship to `talxis_attributevalue` holding the values, when there are several. */
     navigationPropertyName?: string;
 }
 
@@ -30,7 +30,7 @@ interface IValueRelationship {
     entitySetName: string;
 }
 
-/** Custom columns as TALXIS `talxis_attributedefinition` records, with each value a `talxis_attributevalue` record. */
+/** Custom columns as `talxis_attributedefinition` records with `talxis_attributevalue` values. */
 export class TalxisCustomColumnsStore implements ICustomColumnsStore {
     private _parameters: ITalxisCustomColumnsStoreParameters;
     private _columns: IColumn[] = [];
@@ -127,17 +127,11 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
     }
 
     private async _getRawValues(taskIds: string[], referencingAttribute: string, taskIdField: string): Promise<IRawRecord[]> {
-        const batches: string[][] = [];
-        for (let index = 0; index < taskIds.length; index += MAX_IDS_PER_REQUEST) {
-            batches.push(taskIds.slice(index, index + MAX_IDS_PER_REQUEST));
-        }
-        const results = await Promise.all(batches.map(async batch => {
-            const ids = batch.map(id => `'${id}'`).join(',');
+        return retrieveInBatches(taskIds, async ids => {
             const query = `?$select=${[...VALUE_FIELDS, taskIdField].join(',')}&$filter=Microsoft.Dynamics.CRM.In(PropertyName='${referencingAttribute}', PropertyValues=[${ids}])`;
             const { entities } = await this._getPcfContext().webAPI.retrieveMultipleRecords(ATTRIBUTE_VALUE_ENTITY_NAME, query);
             return entities;
-        }));
-        return results.flat();
+        });
     }
 
     //the side dialog the definition forms open in
@@ -158,7 +152,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         return this._relationship;
     }
 
-    //a schema has one relationship to the values; `navigationPropertyName` picks one when there are several
+    //`navigationPropertyName` picks the relationship to the values when there are several
     private async _resolveRelationship(): Promise<IValueRelationship> {
         const { entityName, navigationPropertyName } = this._parameters;
         const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);

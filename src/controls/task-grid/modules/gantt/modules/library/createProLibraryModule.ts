@@ -1,9 +1,14 @@
 import type { GanttEnterprise } from "dhtmlx-gantt";
-import type { IGanttLibraryModule } from "./createGanttLibraryModule";
-import { GanttLibrary } from "./GanttLibrary";
+import type { ILibraryModule } from "./createLibraryModule";
+import { Library } from "./Library";
+
+export interface IProLibraryModuleParameters {
+    /** The PRO build's `Gantt` export. */
+    Gantt: GanttEnterprise;
+}
 
 /** A PRO build of DHTMLX Gantt, whose stylesheet the consumer imports. */
-export const createGanttProLibraryModule = (Gantt: GanttEnterprise): IGanttLibraryModule => ({
+export const createProLibraryModule = (parameters: IProLibraryModuleParameters): ILibraryModule => ({
     name: 'library',
-    onLoad: () => new GanttLibrary({ Gantt, isPro: true }),
+    onLoad: () => new Library({ Gantt: parameters.Gantt, isPro: true }),
 });

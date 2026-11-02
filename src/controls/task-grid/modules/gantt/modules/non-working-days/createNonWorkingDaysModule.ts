@@ -1,14 +1,10 @@
 import type { IGanttModule } from "../../interfaces";
-import { GanttNonWorkingDays, IGanttNonWorkingDaysParameters } from "./GanttNonWorkingDays";
+import { NonWorkingDays, INonWorkingDaysParameters } from "./NonWorkingDays";
 
-export interface IGanttNonWorkingDaysModule extends IGanttModule<'nonWorkingDays'> { }
+export interface INonWorkingDaysModule extends IGanttModule<'nonWorkingDays'> { }
 
-export const createGanttNonWorkingDaysModule = <TData,>(parameters: IGanttNonWorkingDaysParameters<TData> = {}): IGanttNonWorkingDaysModule => ({
+export const createNonWorkingDaysModule = <TData,>(parameters: INonWorkingDaysParameters<TData> = {}): INonWorkingDaysModule => ({
     name: 'nonWorkingDays',
-    onLoad: async gantt => {
-        const nonWorkingDays = new GanttNonWorkingDays<TData>(gantt, parameters);
-        await nonWorkingDays.reload();
-        return nonWorkingDays as GanttNonWorkingDays<unknown>;
-    },
+    onLoad: gantt => new NonWorkingDays<TData>(gantt, parameters) as NonWorkingDays<unknown>,
     onDestroy: nonWorkingDays => nonWorkingDays.destroy(),
 });

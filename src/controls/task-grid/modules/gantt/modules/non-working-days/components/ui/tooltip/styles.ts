@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getNonWorkingDayTooltipStyles = (theme: ITheme) => mergeStyleSets({
+export const getNonWorkingDaysUiTooltipStyles = (theme: ITheme) => mergeStyleSets({
     callout: {
         borderRadius: theme.effects.roundedCorner4,
         boxShadow: theme.effects.elevation8,

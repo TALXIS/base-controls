@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getGanttMarkerUiColumnStyles = () => mergeStyleSets({
+export const getMarkerUiColumnStyles = () => mergeStyleSets({
     column: {
         position: 'absolute',
         top: 0,

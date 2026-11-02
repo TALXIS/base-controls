@@ -1,2 +1,2 @@
-export * from './createGanttSelectionModule';
-export type { IGanttSelection, IGanttSelectionParameters } from './GanttSelection';
+export * from './createTaskSelectionModule';
+export type { ITaskSelection, ITaskSelectionParameters } from './TaskSelection';

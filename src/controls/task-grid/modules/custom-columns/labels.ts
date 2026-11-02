@@ -9,4 +9,7 @@ export const CUSTOM_COLUMNS_LABELS = defineLabels({
     /** Titles the dialog an operation on a custom column failed with. */
     'customColumns.customColumnsFailed': 'The custom column could not be changed.',
     'customColumns.loadCustomColumnsFailed': 'The custom column values could not be loaded.',
+    'customColumns.newColumnName': 'Custom column {{ number }}',
+    'customColumns.yes': 'Yes',
+    'customColumns.no': 'No',
 });

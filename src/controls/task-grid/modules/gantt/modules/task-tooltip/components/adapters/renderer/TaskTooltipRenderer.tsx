@@ -1,4 +1,4 @@
-import { TaskTooltipRoot } from "../task-tooltip";
+import { TaskTooltipRoot } from "../task-tooltip-root";
 import { TaskTooltipCallout } from "../callout";
 import { TaskTooltipHeader } from "../header";
 import { TaskTooltipProgressRow } from "../progress-row";

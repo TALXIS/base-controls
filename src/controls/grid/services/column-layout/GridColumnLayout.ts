@@ -18,7 +18,7 @@ export class GridColumnLayout {
 
     constructor(parameters: IGridColumnLayoutParameters) {
         this._services = parameters.services;
-        this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
+        this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {

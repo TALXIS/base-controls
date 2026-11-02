@@ -4,10 +4,11 @@ import type { MemoryTaskDatabase } from "../../../data-sources/memory/MemoryTask
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParams } from "../Templates";
 import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
+import { TEMPLATES_LABELS } from "../labels";
 
 /** One task of a memory template, with its subtree. */
 export interface IMemoryTemplateTask extends ICreateTaskTree {
-    /** Column values of the task; its id, parent and position are always the grid's. */
+    /** Column values of the task other than its id, parent and position. */
     data?: { [columnName: string]: unknown };
     children?: IMemoryTemplateTask[];
 }
@@ -20,9 +21,9 @@ export interface IMemoryTemplate extends IMemoryTemplateTask {
 
 export interface IMemoryTemplatesStoreParameters {
     taskRuntime: ITaskRuntime;
-    /** Where a template's tasks are created; the one the grid's memory task store reads. */
+    /** Where a template's tasks are created, the one the grid's memory task store reads. */
     database: MemoryTaskDatabase;
-    /** Copied in; a template captured later is kept in the copy. */
+    /** Copied in with the templates captured later. */
     templates: IMemoryTemplate[];
 }
 
@@ -47,7 +48,7 @@ export class MemoryTemplatesStore implements ITemplatesStore {
 
     public onCreateTemplatesProvider(): MemoryDataProvider {
         const provider = new MemoryDataProvider({ dataSource: this._templates.map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
-        provider.setColumns([{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 }]);
+        provider.setColumns([{ name: 'name', displayName: this._taskRuntime.getLabels(TEMPLATES_LABELS).get('templates.name'), dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 }]);
         return provider;
     }
 

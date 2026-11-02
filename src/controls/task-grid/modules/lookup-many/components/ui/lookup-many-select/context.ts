@@ -4,6 +4,7 @@ import type { ILookupManySelectComponents } from "./components";
 export interface ILookupManySelectContext {
     components: ILookupManySelectComponents;
     onRemove: (reference: ComponentFramework.EntityReference) => void;
+    getRemoveText: (reference: ComponentFramework.EntityReference) => string;
 }
 
 export const LookupManySelectContext = createContext<ILookupManySelectContext | null>(null);

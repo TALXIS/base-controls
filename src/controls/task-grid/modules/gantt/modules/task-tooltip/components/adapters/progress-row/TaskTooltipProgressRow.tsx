@@ -1,11 +1,11 @@
-import { ITaskTooltipUiProgressComponents, TaskTooltipUiProgress } from "../../ui";
-import { useTaskTooltip } from "../task-tooltip";
+import { ITooltipUiProgressComponents, TooltipUiProgress } from "../../../../../components/ui/tooltip";
+import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipProgressRowProps {
-    components?: Partial<ITaskTooltipUiProgressComponents>;
+    components?: Partial<ITooltipUiProgressComponents>;
 }
 
-/** The task's `percentComplete` as a bar; nothing when it is not mapped or empty. */
+/** The task's `percentComplete` as a bar, nothing when unmapped or empty. */
 export const TaskTooltipProgressRow = (props: ITaskTooltipProgressRowProps) => {
     const { gantt, record, color } = useTaskTooltip();
     const columnName = gantt.getTaskRuntime().getFieldMapping().percentComplete;
@@ -14,5 +14,8 @@ export const TaskTooltipProgressRow = (props: ITaskTooltipProgressRowProps) => {
         return null;
     }
     const percent = Number(value);
-    return <TaskTooltipUiProgress percent={percent} text={`${Math.round(percent)}%`} color={color} components={props.components} />;
+    if (!Number.isFinite(percent)) {
+        return null;
+    }
+    return <TooltipUiProgress percent={percent} text={`${Math.round(percent)}%`} color={color} components={props.components} />;
 };

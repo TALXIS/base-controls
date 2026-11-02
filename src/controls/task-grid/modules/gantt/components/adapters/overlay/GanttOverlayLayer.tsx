@@ -1,21 +1,19 @@
-import { useEffect, useMemo } from "react";
-import { useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { useCreateGanttService, useGantt } from "../../context";
-import { GanttOverlay, IGanttOverlayEvents } from "../../overlay";
-import { getGanttOverlayLayerStyles } from "./styles";
+import { useGanttService } from "../../../context";
+import type { IGanttOverlayEvents } from "../../../overlay";
+import { GanttUiOverlay, IGanttUiOverlayComponents } from "../../ui/overlay";
 
-/** Creates the `overlay` service and draws its cover over the Gantt. */
-export const GanttOverlayLayer = () => {
-    const gantt = useGantt();
-    const overlay = useCreateGanttService('overlay', () => new GanttOverlay(gantt.getTaskRuntime().getProvider()));
-    const theme = useTheme();
-    const styles = useMemo(() => getGanttOverlayLayerStyles(theme), [theme]);
+export interface IGanttOverlayLayerProps {
+    components?: Partial<IGanttUiOverlayComponents>;
+}
+
+/** Draws the cover over the Gantt while the `overlay` service has it shown. */
+export const GanttOverlayLayer = (props: IGanttOverlayLayerProps) => {
+    const overlay = useGanttService('overlay');
     const { rerender } = useRerender();
 
-    useEffect(() => () => overlay.destroy(), []);
     useEventEmitter<IGanttOverlayEvents>(overlay.events, 'onVisibilityChanged', rerender);
 
-    return overlay.isVisible() ? <div className={styles.root} /> : null;
+    return overlay.isVisible() ? <GanttUiOverlay components={props.components} /> : null;
 };
