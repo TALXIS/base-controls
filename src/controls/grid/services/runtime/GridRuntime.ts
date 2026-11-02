@@ -72,14 +72,13 @@ export class GridRuntime implements IGrid {
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
     private _columnDefs?: ColDef<IRecord>[];
-    private _unsubscribes: (() => void)[] = [];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
     constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, localization }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
         //first api listener so the others find the options applied
-        this._unsubscribes.push(this._services.observe('gridApi', () => this.refreshAgGridOptions()));
+        this._services.observe('gridApi', () => this.refreshAgGridOptions());
 
         //everything below reads the props and the provider through these
         const settings = new GridSettings({ onGetProps, datasetControl });
@@ -114,7 +113,7 @@ export class GridRuntime implements IGrid {
 
         this._loadModules(onGetProps().modules);
         //after the modules so their api and provider listeners run first
-        this._unsubscribes.push(this._services.observe('gridApi', () => this._onGridApiAvailable()));
+        this._services.observe('gridApi', () => this._onGridApiAvailable());
     }
 
     public get services(): IGridInternalServiceLocator {
@@ -172,15 +171,11 @@ export class GridRuntime implements IGrid {
     }
 
     public destroy(): void {
-        //the provider outlives the grid
-        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this.events.dispatchEvent('onDestroyed');
         for (const { module, instance } of this._loadedModules) {
             module.onDestroy?.(instance as never);
-            this._modules.unregister(module.name);
         }
         this._loadedModules = [];
-        this.events.clearEventListeners();
         this._services.destroy();
         this._modules.destroy();
     }
@@ -237,7 +232,7 @@ export class GridRuntime implements IGrid {
 
     private _onGridApiAvailable(): () => void {
         const provider = this._provider;
-        provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        const unsubscribe = provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         //loading the provider is the DatasetControl's, so the grid only draws what is there or waits for it
         if (provider.isFirstLoadRequested() && !provider.isLoading()) {
             this._onNewDataLoaded();
@@ -246,7 +241,7 @@ export class GridRuntime implements IGrid {
             this._columnDefs = this._services.get('columns').getColumnDefinitions();
             this.refreshAgGridOptions();
         }
-        return () => provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        return unsubscribe;
     }
 
     private _onNewDataLoaded = (): void => {

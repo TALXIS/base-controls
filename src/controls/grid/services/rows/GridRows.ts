@@ -65,17 +65,15 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     private _rowClassRuleMap = new Map<string, GridRowClassRule>();
     //one object, so the options are not handed to AG Grid again on every refresh
     private _rowClassRules: RowClassRules<IRecord> = {};
-    private _unwatchGridApi: () => void;
 
     constructor(parameters: IGridRowsParameters) {
         super();
         this._services = parameters.services;
-        this._unwatchGridApi = this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
+        this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
         this._services.get('grid').registerAgGridOptions(result => {
             result.options.getRowHeight = this._getRowHeight;
             result.options.rowClassRules = this._rowClassRules;
         });
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public isHighlighted(record: IRecord): boolean {
@@ -139,9 +137,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     };
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
-        const provider = this._services.get('provider');
-        //a selection reaches the cells nowhere else
-        provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
         gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setHighlightedRow('hovered', event.data?.getRecordId()));
         //AG Grid reports the cell the pointer left
         gridApi.addEventListener('cellMouseOut', (event: CellMouseOutEvent<IRecord>) => {
@@ -151,7 +146,8 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         });
         gridApi.addEventListener('cellFocused', this._onCellFocused);
         gridApi.addEventListener('rowClicked', this._onRowClicked);
-        return () => provider.removeEventListener('onRecordsSelected', this._onSelectionChanged);
+        //a selection reaches the cells nowhere else
+        return this._services.get('provider').addEventListener('onRecordsSelected', this._onSelectionChanged);
     }
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
@@ -163,11 +159,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         if (event.data) {
             this.dispatchEvent('onRowClicked', event.data);
         }
-    };
-
-    //the provider outlives the grid
-    private _onDestroyed = (): void => {
-        this._unwatchGridApi();
     };
 
     private _onSelectionChanged = (): void => {

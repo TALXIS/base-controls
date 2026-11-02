@@ -94,7 +94,8 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
     private _components: INonWorkingDaysComponents;
     private _calendar: NonWorkingDayCalendar<TData>;
     private _isDestroyed = false;
-    private _unregisters: (() => void)[] = [];
+    private _unwatchUserQueries: () => void;
+    private _unwatchTaskSettings: () => void;
 
     constructor(gantt: IGantt, parameters: INonWorkingDaysParameters<TData>) {
         this._gantt = gantt;
@@ -104,20 +105,17 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         this._labels = gantt.getLabels(NON_WORKING_DAYS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         this._calendar = new NonWorkingDayCalendar(this._getWeekends());
-        this._unregisters.push(
-            gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme))),
-            gantt.surfaces.registerSurface(this._onSurfaces),
-            gantt.services.get('schedule').registerDuration(this._countWorkingTime),
-        );
+        gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
+        gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.services.get('schedule').registerDuration(this._countWorkingTime);
         if (!parameters.enableDropOnNonWorkingDays) {
-            this._unregisters.push(gantt.services.get('schedule').registerSnap(this._keepOffNonWorkingDays));
+            gantt.services.get('schedule').registerSnap(this._keepOffNonWorkingDays);
         }
-        this._unregisters.push(
-            gantt.services.observe('chart', this._onChartReady),
-            gantt.services.observe('timeline', this._onTimelineReady),
-            gantt.getTaskRuntime().services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('showNonWorkingDays', () => this.isVisible())),
-            gantt.getTaskRuntime().services.get('datasetControl').parts.observe('taskSettings', settings => settings.registerSettings(this._addSettings)),
-        );
+        gantt.services.observe('chart', this._onChartReady);
+        gantt.services.observe('timeline', this._onTimelineReady);
+        const datasetControl = gantt.getTaskRuntime().services.get('datasetControl');
+        this._unwatchUserQueries = datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('showNonWorkingDays', () => this.isVisible()));
+        this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.registerSettings(this._addSettings));
         //not awaited so the chart draws before the store's days load
         this.reload();
     }
@@ -163,8 +161,8 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
 
     public destroy(): void {
         this._isDestroyed = true;
-        this._unregisters.forEach(unregister => unregister());
-        this.events.clearEventListeners();
+        this._unwatchUserQueries();
+        this._unwatchTaskSettings();
     }
 
     private _getWeekends(): INonWorkingDay<TData>[] {
@@ -224,14 +222,14 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
     };
 
     //only day and hour cells are shaded since week cells start on a Monday
-    private _onTimelineReady = (timeline: IGanttTimeline): (() => void) => {
+    private _onTimelineReady = (timeline: IGanttTimeline): void => {
         const addNonWorkingDayClass: GanttCellClassHook = (classNames, { date }) => {
             if (this.isNonWorkingDay(date) && this._isDayScaleVisible()) {
                 classNames.push(NON_WORKING_DAY_CLASS);
             }
         };
-        const unregisters = [timeline.registerCellClass(addNonWorkingDayClass), timeline.registerScaleCellClass(addNonWorkingDayClass)];
-        return () => unregisters.forEach(unregister => unregister());
+        timeline.registerCellClass(addNonWorkingDayClass);
+        timeline.registerScaleCellClass(addNonWorkingDayClass);
     };
 
     //read while drawing: the zoom is registered after the chart

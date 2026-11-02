@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const FLUENT_V9_CODE = `import { createDealViewDataModule, IDealViewData, loadDeals, loadDealViews } from './views'
+const FLUENT_V9_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
@@ -19,9 +19,9 @@ const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews' }), createDealViewDataModule()], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews' })], [])
 
-    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} stateKey='fluentV9' height='560px' components={V9.control}>
+    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} onMounted={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher components={V9.viewSwitcher}>
@@ -265,7 +265,7 @@ const MenuFromButton = (props: IButtonProps) => <Menu onOpenChange={(_, data) =>
 const getIntent = (messages: { level: string }[]) => messages.some(message => message.level === 'ERROR') ? 'error' : messages.some(message => message.level === 'WARNING') ? 'warning' : 'info'
 
 //more than one message collapses under a summary, as the default bar does
-const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[], labels?: { groupedNotificationsSummary?: string } }) => {
+const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[], groupedNotificationsSummary?: string }) => {
     const [isExpanded, setIsExpanded] = React.useState(false)
     const messages = props.messages ?? []
     if (messages.length === 0) {
@@ -274,7 +274,7 @@ const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WAR
     if (messages.length === 1) {
         return <MessageBar intent={getIntent(messages)} style={{ margin: '0 8px 8px' }}><MessageBarBody>{messages[0].text}</MessageBarBody></MessageBar>
     }
-    const summary = (props.labels?.groupedNotificationsSummary ?? 'You have {{ count }} notifications.').replace('{{ count }}', \`\${messages.length}\`)
+    const summary = props.groupedNotificationsSummary
     return <div style={{ margin: '0 8px 8px', display: 'grid', gap: 4 }}>
         <MessageBar intent={getIntent(messages)}>
             <MessageBarBody>{summary}</MessageBarBody>
@@ -342,7 +342,7 @@ export const V9 = {
                 <Button size='small' appearance='transparent' icon={<SearchRegular />} onClick={props.suffixItems?.[0]?.onClick} />
             </>} />,
         compact: {
-            onRenderButton: props => withTooltip(props.text, <Button appearance='subtle' icon={<SearchRegular />} disabled={props.disabled} onClick={props.onClick as any} />),
+            onRenderButton: props => withTooltip(props.title, <Button appearance='subtle' icon={<SearchRegular />} aria-label={props.ariaLabel} disabled={props.disabled} onClick={props.onClick as any} />),
         },
         callout: {
             //a v9 popover positioned on the field the quick find hands it

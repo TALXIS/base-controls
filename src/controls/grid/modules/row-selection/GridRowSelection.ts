@@ -77,8 +77,6 @@ export interface IGridRowSelection {
     getRecordSelectionState(node: IRowNode<IRecord>): IGridRowSelectionState;
     /** Whether a record refuses selection at all. */
     isRecordSelectionDisabled(record: IRecord): boolean;
-    /** Called as the grid tears down. */
-    destroy(): void;
 }
 
 export class GridRowSelection implements IGridRowSelection {
@@ -91,12 +89,11 @@ export class GridRowSelection implements IGridRowSelection {
     private _selectRecordsHooks = new HookRegistry<GridSelectRecordsHook>();
     private _selectionStateHooks = new HookRegistry<GridSelectionStateHook>();
     public readonly events: IEventEmitter<IGridRowSelectionEvents> = new EventEmitter<IGridRowSelectionEvents>();
-    private _unwatchGridApi: () => void;
 
     constructor(parameters: IGridRowSelectionParameters) {
         this._services = parameters.services;
         this._mode = parameters.mode;
-        this._unwatchGridApi = this._services.get('gridServices').observe('gridApi', () => this._onGridApiAvailable());
+        this._services.get('gridServices').observe('gridApi', () => this._onGridApiAvailable());
         this._registerEvents(parameters);
         this._registerHooks();
     }
@@ -210,27 +207,16 @@ export class GridRowSelection implements IGridRowSelection {
         return this.isSelectionColumn(params.column?.getColId()) || isCommand || (isGroupRow && !hasModifier);
     }
 
-    public destroy(): void {
-        this._unwatchGridApi();
-    }
-
     private _onGridApiAvailable(): () => void {
         const provider = this._provider;
         const gridApi = this._gridApi;
-        provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
         gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
         //the host's persisted selection, restored once its rows are in
         this._pendingRestoreRecordIds = provider.getSelectedRecordIds();
         if (this._pendingRestoreRecordIds.length) {
             gridApi.addEventListener('modelUpdated', this._onModelUpdated);
         }
-        return () => {
-            provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
-            if (!gridApi.isDestroyed()) {
-                gridApi.removeEventListener('selectionChanged', this._onGridSelectionChanged);
-                gridApi.removeEventListener('modelUpdated', this._onModelUpdated);
-            }
-        };
+        return provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
     }
 
     private _onGridSelectionChanged = (event: SelectionChangedEvent<IRecord>): void => {

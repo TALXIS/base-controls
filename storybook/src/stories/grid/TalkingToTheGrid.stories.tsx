@@ -41,7 +41,7 @@ const urgentTicketsModule: IGridModule = {
 <Grid modules={[createClientSideRowModelModule(), urgentTicketsModule]} />
 \`\`\`
 
-\`onDestroyed\` passes it once more as the grid unmounts, while AG Grid still works. How to write a module is on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
+\`onDestroyed\` passes it once more as AG Grid is about to be destroyed. How to write a module is on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 
 | Member | Description |
 |---|---|
@@ -50,6 +50,7 @@ const urgentTicketsModule: IGridModule = {
 | \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
+| \`getLabels(set)\` | A set of labels as the grid resolves them. See *In your own module* on [**Localization**](?path=/docs/grid-localization--overview). |
 
 ## Services
 
@@ -59,8 +60,19 @@ The grid is made of services, and \`grid.services\` finds them by key:
 |---|---|
 | \`get(key)\` | The service. Throws when nothing registered it, so use it for the services every grid has. |
 | \`find(key)\` | The service, or \`undefined\`. Use it for \`gridApi\` before AG Grid is ready. |
-| \`observe(key, callback)\` | Calls \`callback\` with the service now if there is one, and again each time something registers it. A function it returns runs before the next call; \`observe\` returns the function that stops observing. |
+| \`observe(key, callback)\` | Calls \`callback\` with the service now if there is one, and again each time something registers it. Returns the function that stops observing. |
 | \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
+| \`unregister(key)\` | Removes the service, until something registers it again. |
+
+A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered, such as \`gridApi\` as AG Grid is destroyed, when you stop observing, and when the grid unmounts. Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup:
+
+\`\`\`ts
+grid.services.observe('gridApi', gridApi => {
+    const onResize = () => gridApi.sizeColumnsToFit()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+})
+\`\`\`
 
 Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
 
@@ -72,13 +84,14 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | \`fields\` | A record's column: \`get(record, columnName)\` returns an \`IGridField\` with \`getValue()\`, \`getFormattedValue()\`, \`isValid()\` and \`setValue(value)\`, which saves as a cell would. |
 | \`cells\` | The cells on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, and the cell hooks. |
 | \`columns\` | The column definitions hook, and \`headers\`: \`render()\` and the header hooks. |
-| \`rows\` | The row height and row class hooks, and \`refreshRowClasses(records)\`. |
+| \`rows\` | \`registerRowHeight\`, \`registerRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
 | \`validation\` | The validation hook. |
 | \`surfaces\` | The surface hook, for drawing inside the grid. |
 | \`gridTheme\` | The AG Grid theme and the root element's styles: \`registerTheme\`, \`registerStyles\`. |
 | \`state\` | The grid's store under its \`stateKey\`: \`get\`, \`set\`, \`delete\`. See [**State**](?path=/docs/grid-state--overview). |
 | \`settings\` | The props, with their defaults applied. |
-| \`labels\` | The grid's strings: \`getLocalizedString(key)\`. |
+| \`localization\` | The labels the grid mounted with: \`getLabels(set)\`. |
+| \`viewport\` | The vertical scroll and the header: \`getScrollTop()\`, \`setScrollTop(top)\`, \`getScrollElement()\` and \`getHeaderHeight()\`, for something drawn beside the rows. |
 | \`theme\`, \`pcfContext\` | The Fluent theme and the PCF context the grid mounted with. |
 | \`keyboard\` | \`onKeyDown(handler)\` for every key pressed inside the grid, before AG Grid sees it; \`getKeyBeingPressed()\`. |
 | \`grid\` | The \`IGrid\`, for a part that only has the services. |
@@ -98,35 +111,39 @@ What the hooks decide, and the order they run in, is on [**Hooks**](?path=/docs/
 | Name | Given | Description |
 |---|---|---|
 | \`rowModel\` | In every grid | The row model; its \`type\` is \`'clientSide'\` or \`'serverSide'\`. |
+| \`legacyClientApiCompatibility\` | With \`createLegacyClientApiCompatibilityModule()\` | See [**Legacy client API**](?path=/docs/grid-modules-legacy-client-api--overview). |
 | \`editing\` | With \`createEditingModule()\` | See *From your code* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
 | \`rowSelection\` | With \`createRowSelectionModule()\` | See *From your code* on [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
 | \`sorting\`, \`filtering\` | With \`createSortingModule()\`, \`createFilteringModule()\` | See *From your code* on [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview). |
 | \`grouping\`, \`aggregation\` | With \`createGroupingModule()\`, \`createAggregationModule()\` | See *From your code* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
+| \`cellSelection\`, \`clipboard\` | With \`createCellSelectionModule()\`, \`createClipboardModule()\` | See [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview). |
 | Your own | With your module in \`modules\` | See [**Write a module**](?path=/docs/grid-extending-write-a-module--overview). |
 
 ## Inside what the grid draws
 
-A custom cell, a header part, an overlay or a surface reads a service with \`useGridService(key)\`, and a module with \`useGridModule(name)\`:
+A custom cell, a header part, an overlay or a surface reads the grid through two hooks. Both work only inside the grid's own React tree, not in the component that renders \`<Grid />\`.
 
-- It works only inside the grid's own React tree; in the component that renders \`<Grid />\`, it throws.
-- A service every grid has is there on the first render. An optional one is \`undefined\` until it is registered, and the component renders again when it arrives. \`useGridModule\` throws when the grid was not given the module.
-- It returns the service, not its state: to redraw when the service changes, subscribe to it, as the bar on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) does.
+| Hook | Returns |
+|---|---|
+| \`useGridService(key)\` | The service. \`gridApi\` is \`undefined\` until AG Grid is ready, and the component renders again when it arrives. |
+| \`useGridModule(name)\` | The module's instance. Throws when the grid was not given the module. |
+
+They return the service, not its state. To redraw when it changes, subscribe to it, as the bar on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) does.
 
 ## Events
 
-Subscribe with \`addEventListener(event, callback)\`, and stop with \`removeEventListener(event, callback)\` and the same function.
+\`addEventListener(event, callback)\` subscribes and returns the function that unsubscribes. Listeners on the grid's own emitters go with the grid; what to clean up is under *Clean up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
 
 | Emitter | Event | Arguments | When it fires |
 |---|---|---|---|
 | \`grid.events\` | \`onDataLoaded\` | None | After every load of the provider, once the grid has its new columns and rows. When AG Grid is ready and the provider has already loaded, it fires once, just before \`onReady\`. |
-| \`grid.events\` | \`onDestroyed\` | None | As the grid unmounts. Remove your provider listeners here. |
+| \`grid.events\` | \`onDestroyed\` | None | As the grid unmounts, after AG Grid is gone. |
 | \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each \`{ recordId, columnName }\` | An editor opens or closes, or the user steps into or out of an in-place cell. |
 | \`rowSelection.events\` | \`onSelectionChanged\` | \`selectedRecordIds\` | The selection changes. |
-| \`filtering.events\` | \`onFilterOpened\`, \`onFilterClosed\` | \`columnName\` | A column's filter callout opens or closes. |
+| \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
+| \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
 
-- The grid's events also reach \`<Grid />\` as props, and a module's through its options: see [**Props and events**](?path=/docs/grid-props-and-events--overview).
-- No event fires when sorting, filters, grouping or totals change. They reload the provider, so follow \`onDataLoaded\` and read the provider.
-- The provider has events of its own, such as \`onRecordColumnValueChanged\` and \`onAfterRecordSaved\`: see *Events* on [**Data providers**](?path=/docs/data-providers--overview).
+The grid's events also reach \`<Grid />\` as props, and a module's through its options: see [**Props and events**](?path=/docs/grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider. The provider has events of its own, such as \`onRecordColumnValueChanged\`: see *Events* on [**Data providers**](?path=/docs/data-providers--overview).
 
 ## Redrawing
 
@@ -135,7 +152,8 @@ The grid runs the hooks and the column callbacks when it draws, and nothing tell
 | What changed | When the grid runs it | Call |
 |---|---|---|
 | A cell's colours, loading, commands, control, parameters, lock or validation | Each time the cell draws | \`grid.services.get('cells').render()\`, or \`render()\` on one cell from \`cells.getCell(record, columnName)\` |
-| A record's lock | Each time one of its cells draws; the dimmed row on the record's next change or the next load | \`cells.render()\` |
+| A record's lock | Each time one of its cells draws; the dimmed row when AG Grid updates the row | \`cells.render()\`, and \`rows.refreshRowClasses(records)\` for the dimmed row |
+| A row class rule | When AG Grid updates the row | \`grid.services.get('rows').refreshRowClasses(records)\` |
 | A column's lock, a header's adornments or colours | Each time the header draws | \`grid.services.get('columns').headers.render()\` |
 | A column's menu | Each time it opens | Nothing |
 | A row's height | When AG Grid lays the row out | \`resetRowHeights()\` on the \`gridApi\` service |

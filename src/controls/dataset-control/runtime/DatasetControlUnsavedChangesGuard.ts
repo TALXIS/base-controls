@@ -13,10 +13,16 @@ export class DatasetControlUnsavedChangesGuard {
     constructor(parameters: IDatasetControlUnsavedChangesGuardParameters) {
         this._runtime = parameters.runtime;
         this._runtime.events.addEventListener('onLoaded', this._onLoaded);
+        this._runtime.events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     private _onLoaded = (provider: IDataProvider): void => {
         (provider as IInternalDataProvider).setInterceptor('__unsavedChangesBlocker', this._onBlock);
+    };
+
+    //the provider has no way to drop an interceptor
+    private _onDestroyed = (): void => {
+        (this._runtime.getProvider() as IInternalDataProvider | undefined)?.setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => defaultAction(parameters));
     };
 
     private _onBlock = (parameters: any, defaultAction: (parameters: any) => any): any => {

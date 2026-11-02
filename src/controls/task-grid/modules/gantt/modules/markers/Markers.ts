@@ -72,8 +72,6 @@ export interface IMarkers {
     /** Reads the store's markers again and redraws every marker. */
     reload(): Promise<void>;
     getComponents(): IMarkersComponents;
-    /** Called as the Gantt goes. */
-    destroy(): void;
 }
 
 
@@ -84,17 +82,14 @@ export class Markers implements IMarkers {
     private _labels: LabelsOf<typeof MARKERS_LABELS>;
     private _store?: IMarkersStore;
     private _storeMarkers: IMarker[] = [];
-    private _unregisters: (() => void)[];
 
     constructor(gantt: IGantt, parameters: IMarkersParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
         this._labels = gantt.getLabels(MARKERS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
-        this._unregisters = [
-            gantt.surfaces.registerSurface(this._onSurfaces),
-            gantt.services.get('theme').registerStyles(result => result.styles.push(getMarkersStyles())),
-        ];
+        gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.services.get('theme').registerStyles(result => result.styles.push(getMarkersStyles()));
         //not awaited so the chart draws before the store's markers load
         this.reload();
     }
@@ -134,11 +129,6 @@ export class Markers implements IMarkers {
 
     public getComponents(): IMarkersComponents {
         return this._parameters.components ?? {};
-    }
-
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-        this.events.clearEventListeners();
     }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

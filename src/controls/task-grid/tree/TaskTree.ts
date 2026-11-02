@@ -42,7 +42,7 @@ export class TaskTree implements ITaskGridTree {
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
-    private _unsubscribes: (() => void)[] = [];
+    private _unsubscribes: (() => void)[];
 
     constructor(parameters: ITaskTreeParameters) {
         this._grid = parameters.grid;
@@ -58,7 +58,6 @@ export class TaskTree implements ITaskGridTree {
             onExpandedIdsChanged: expandedIds => this._setState({ expandedIds }),
         });
         parameters.runtime.services.register('taskTree', () => this);
-        this._unsubscribes.push(parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)));
         services.register('taskExpansion', () => this._expansion);
 
         this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
@@ -68,20 +67,21 @@ export class TaskTree implements ITaskGridTree {
         services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree);
         services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
-        this._unsubscribes.push(
-            this._grid.modules.observe('rowSelection', selection => selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree)),
-            this._grid.modules.observe('editing', editing => editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree)),
-            services.observe('gridApi', this._onGridApi),
-        );
-        //before row selection redraws the checkboxes
-        this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected);
-        this._provider.taskEvents.addEventListener('onTreeChanged', this._onTreeChanged);
-        this._provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
-        this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-        this._provider.taskEvents.addEventListener('onTasksCreated', this._onTasksCreated);
-        this._provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
-        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        this._grid.modules.observe('rowSelection', selection => { selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
+        this._grid.modules.observe('editing', editing => { editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree); });
+        services.observe('gridApi', this._onGridApi);
+        this._unsubscribes = [
+            parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)),
+            //before row selection redraws the checkboxes
+            this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected),
+            this._provider.taskEvents.addEventListener('onTreeChanged', this._onTreeChanged),
+            this._provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved),
+            this._provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged),
+            this._provider.taskEvents.addEventListener('onTasksCreated', this._onTasksCreated),
+            this._provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated),
+            this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded),
+            this._provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved),
+        ];
     }
 
     /** Whether the matching tasks are listed on their own, without the tree. */
@@ -335,14 +335,5 @@ export class TaskTree implements ITaskGridTree {
         if (this._runtime.services.find('taskTree') === this) {
             this._runtime.services.unregister('taskTree');
         }
-        this._provider.removeEventListener('onRecordsSelected', this._onRecordsSelected);
-        this._provider.taskEvents.removeEventListener('onTreeChanged', this._onTreeChanged);
-        this._provider.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
-        this._provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-        this._provider.taskEvents.removeEventListener('onTasksCreated', this._onTasksCreated);
-        this._provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated);
-        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this._provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        this._expansion.destroy();
     }
 }

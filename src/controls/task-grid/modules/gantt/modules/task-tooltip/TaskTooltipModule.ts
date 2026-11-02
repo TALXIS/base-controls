@@ -16,17 +16,14 @@ export interface ITaskTooltipParameters {
 export interface ITaskTooltip {
     getStatusColumnName(): string | undefined;
     getComponents(): ITaskTooltipRendererComponents;
-    /** Called as the Gantt goes. */
-    destroy(): void;
 }
 
 export class TaskTooltipModule implements ITaskTooltip {
     private _parameters: ITaskTooltipParameters;
-    private _unregisterSurface: () => void;
 
     constructor(gantt: IGantt, parameters: ITaskTooltipParameters) {
         this._parameters = parameters;
-        this._unregisterSurface = gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.surfaces.registerSurface(this._onSurfaces);
     }
 
     public getStatusColumnName(): string | undefined {
@@ -35,10 +32,6 @@ export class TaskTooltipModule implements ITaskTooltip {
 
     public getComponents(): ITaskTooltipRendererComponents {
         return this._parameters.components ?? {};
-    }
-
-    public destroy(): void {
-        this._unregisterSurface();
     }
 
     private _render(): JSX.Element | null {

@@ -42,7 +42,6 @@ export interface IGridCheckList {
 export class GridCheckList implements IGridCheckList {
     private _grid: IGrid;
     private _fieldMapping: ICheckListFieldMapping;
-    private _reordering?: CheckListReordering;
     private _newItemRow?: CheckListNewItemRow;
 
     constructor(parameters: IGridCheckListParameters) {
@@ -51,13 +50,12 @@ export class GridCheckList implements IGridCheckList {
         this._warnWhenUnsorted();
         new CheckListColumns({ services: this._grid.services, checkList: this });
         if (this._grid.modules.find('editing')) {
-            this._reordering = new CheckListReordering({ grid: this._grid, checkList: this });
+            new CheckListReordering({ grid: this._grid, checkList: this });
             this._newItemRow = new CheckListNewItemRow({ grid: this._grid, checkList: this });
         }
     }
 
     public destroy(): void {
-        this._reordering?.destroy();
         this._newItemRow?.destroy();
     }
 

@@ -26,24 +26,20 @@ export class GridOverlays {
     private _visibleOverlay: GridOverlay = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
-    private _unwatchGridApi: () => void;
 
     constructor(parameters: IGridOverlaysParameters) {
         this._services = parameters.services;
         //AG Grid's own overlays would answer to its state, not the provider's
         this._services.get('grid').registerAgGridInitialOptions(result => result.options.suppressOverlays = ['loading', 'noRows', 'noMatchingRows']);
         this._services.get('grid').registerAgGridOptions(this._onAgGridOptions);
-        this._unwatchGridApi = this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
 
     /** Listens to the two things an overlay is decided from. */
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
-        const provider = this._provider;
-        provider.addEventListener('onLoading', this._onLoading);
         gridApi.addEventListener('modelUpdated', () => this._reconcile());
         gridApi.addEventListener('gridPreDestroyed', () => this._clearPendingLoading());
-        return () => provider.removeEventListener('onLoading', this._onLoading);
+        return this._provider.addEventListener('onLoading', this._onLoading);
     }
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
@@ -51,12 +47,6 @@ export class GridOverlays {
     };
 
     private _onLoading = (): void => this._reconcile();
-
-    //the provider outlives the grid
-    private _onDestroyed = (): void => {
-        this._unwatchGridApi();
-        this._clearPendingLoading();
-    };
 
     /** Shows whichever overlay the current state calls for. */
     private _reconcile(): void {

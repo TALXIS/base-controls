@@ -60,7 +60,4 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
         this._itemsHooks.apply(result);
         return result;
     }
-
-    public destroy(): void {
-    }
 }

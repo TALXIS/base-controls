@@ -12,7 +12,7 @@ Below is a sales pipeline. Try: switch the view, search, sort, and select deals 
 
 {{canvas: Overview}}
 
-## Your first DatasetControl
+## Basic usage
 
 A *provider* holds the records and everything about them: their columns, sorting, paging and selection. Creating one is on [**Data providers**](?path=/docs/data-providers--overview).
 
@@ -53,37 +53,40 @@ export const Deals = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-You should see a placeholder while the deals load, then the grid with *All deals* in the view switcher, a search box and the page buttons.
+You should see a placeholder while the deals load, then the grid with *All deals* in the view switcher, a search box and the page buttons. \`PcfContextProvider\` must wrap the control (see [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview)).
 
 ## How it fits together
 
-1. **The control's \`onLoad\` returns a provider for the view the user is on.** The control calls it at mount and on every view switch, and shows a placeholder until the provider's first page is in. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
-2. **The parts work on that provider.** Place them in the header, body and footer regions and leave out the ones you don't need. \`Grid\` takes no provider of its own: it uses the control's. See [**Layout**](?path=/docs/datasetcontrol-layout--overview).
-3. **The views come from the control's \`onLoadViews\`,** each listed by name and resolving what \`onLoad\` needs only when it is opened, and the ribbon's commands from the ribbon's own \`onLoad\`. See [**Views**](?path=/docs/datasetcontrol-views--overview) and [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview).
-4. **Throw when something fails.** The control shows the error to the user, with *Try again* where it can. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
-5. **Your code talks to the control** through \`useDatasetControl()\` inside it, or \`onMounted\` outside: switch views, reload, follow every load, and reach any part, such as \`control.parts.get('quickFind').search()\`. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+The control's \`onLoad\` returns a provider for the view the user is on, and every part inside the control works on that provider. \`Grid\` takes no provider of its own: it uses the control's. Each load, whether the first one, a view switch or a reload, mounts the parts anew on a new provider.
 
-\`PcfContextProvider\` must wrap the control. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
+| To | Use | See |
+|---|---|---|
+| Load the records of a view | \`onLoad\`, and \`onLoadDependencies\` for what every load needs first | [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview) |
+| List views to switch between | \`onLoadViews\` and \`DatasetControl.ViewSwitcher\` | [**Views**](?path=/docs/datasetcontrol-views--overview) |
+| Place the parts | \`Header\`, \`Body\` and \`Footer\`, each with a start and an end | [**Layout**](?path=/docs/datasetcontrol-layout--overview) |
+| Show a failure | Throw. The control shows it, with *Try again* where it can. | [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview) |
+| Drive the control from your code | \`useDatasetControl()\` inside it, \`onMounted\` outside | [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview) |
+| Bring the user back where they left off | \`stateKey\` | [**State**](?path=/docs/datasetcontrol-state--overview) |
+| Change what a part draws, or translate it | \`components\`, \`LocalizationProvider\` | [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/datasetcontrol-localization--overview) |
 
 ## Props
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | Returns the provider for a view. See [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview). |
-| \`onLoadViews\` | \`() => Promise<IDatasetControlView<TData>[]>\` | None | Returns the views to switch between, before every \`onLoad\`. \`TData\` is the type of every view's \`data\`. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
-| \`onLoadDependencies\` | \`() => Promise<unknown>\` | None | Loads what the modules and \`onLoad\` need first, awaited before them on every load. They read it with \`getDependencies()\` on the control. |
-| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as \`createLocalStorageUserQueriesModule\` for the user's own views. Read on every load. See *Let users save their own views* on [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`onLoadViews\` | \`() => Promise<IDatasetControlView<TData>[]>\` | None | Returns the views to switch between, on every load. \`TData\` is the type of every view's \`data\`. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`onLoadDependencies\` | \`() => Promise<unknown>\` | None | Loads what the modules and \`onLoad\` need, first on every load. They read it with \`getDependencies()\`. |
+| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as the user's own views. Read on every load. See *Modules* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
 | \`children\` | \`ReactNode\` | Required | The regions and the parts. See [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
-| \`height\` | \`string\` | None | The control's height. See *Size the control* on [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
+| \`height\` | \`string\` | None | See *Size the control* on [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
 | \`className\` | \`string\` | None | Added to the control's box. |
-| \`stateKey\` | \`string\` | None | Brings the user back where they left off on the next mount. Read at mount. See [**State**](?path=/docs/datasetcontrol-state--overview). |
+| \`stateKey\` | \`string\` | None | Keeps where the user left off in the state store, for the next mount. Read once. See [**State**](?path=/docs/datasetcontrol-state--overview). |
 | \`destroyProviderOnUnmount\` | \`boolean\` | \`true\` | Whether the control destroys the providers it lets go of. See *Keep a shared provider* on [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview). |
-| \`labels\` | \`Partial<IDatasetControlLabels>\` | English | The control's own strings. Read at mount. See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`IDatasetControlComponents\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`IDatasetControlComponents\` | Defaults | The control's box, placeholder, error and loading overlay. See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 | \`scope\` | \`ComponentType<{ children: ReactNode }>\` | None | Wraps everything inside the control, such as in a context provider of yours. Pass the same component on every render. |
-| \`onMounted\` | \`(control: IDatasetControl) => void\` | None | Passes you the control on every mount, before its load. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
-| \`onReady\` | \`(control: IDatasetControl) => void\` | None | Passes you the control on every mount, once its load succeeded. |
-| \`onDestroyed\` | \`(control: IDatasetControl) => void\` | None | Passes you the control as it unmounts, while its provider still holds its data. |
+| \`onMounted\`, \`onReady\`, \`onDestroyed\` | \`(control: IDatasetControl<TData>) => void\` | None | Pass you the control before each load, once it succeeded, and as it goes. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
+
+The control's strings are translated through \`LocalizationProvider\`: see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
 
 ## Where next
 
@@ -99,7 +102,7 @@ const EXPLORE: IExploreCard[] = [
     { title: 'Layout that adapts', iconName: 'ResponsiveDesign', href: '?path=/docs/datasetcontrol-layout--overview', text: 'Left and right regions, a height that fills any space, and a header that gives way on a narrow screen.' },
     { title: 'Back where they left off', iconName: 'History', href: '?path=/docs/datasetcontrol-state--overview', text: 'Every view keeps its sorting, search, paging and scroll, and the control reopens on the view the user was on.' },
     { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/datasetcontrol-your-own-ui--overview', text: 'Replace any piece a part draws, add parts of your own, and show the records as a list, cards or a chart.' },
-    { title: 'Your language', iconName: 'Color', href: '?path=/docs/datasetcontrol-localization--overview', text: 'Translate every string the control and its parts show.' },
+    { title: 'Your language', iconName: 'Color', href: '?path=/docs/datasetcontrol-localization--overview', text: 'Every key the control and its parts show, for LocalizationProvider to translate.' },
 ]
 
 const meta = {

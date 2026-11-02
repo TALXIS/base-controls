@@ -24,18 +24,18 @@ export class GridGanttSplitSync {
     private _grid?: IGrid;
     private _scrollSync?: GridGanttScrollSync;
     private _hoverSync?: GridGanttHoverSync;
-    private _unregisters: (() => void)[] = [];
+    private _unregisters: (() => void)[];
 
     //registered as the grid is made, before AG Grid reads its options
     constructor(parameters: IGridGanttSplitSyncParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._state = parameters.state;
         const datasetControl = this._taskRuntime.services.get('datasetControl');
-        this._unregisters.push(
+        this._unregisters = [
             datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('ganttSplitSize', () => this._state.get<number>(GANTT_SIZE_STATE_KEY))),
             datasetControl.parts.observe('grid', this._onGridAvailable),
             datasetControl.parts.observe('gantt', this._onGanttAvailable),
-        );
+        ];
     }
 
     /** The Gantt's share of the width in percent, from this session or else the saved view. */
@@ -49,32 +49,26 @@ export class GridGanttSplitSync {
 
     public destroy(): void {
         this._unregisters.forEach(unregister => unregister());
-        this._destroyScrollSync();
     }
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid;
-        const unregisters = [
-            grid.registerAgGridInitialOptions(this._onAgGridInitialOptions),
-            grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1),
-        ];
+        grid.registerAgGridInitialOptions(this._onAgGridInitialOptions);
+        grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1);
         return () => {
-            unregisters.forEach(unregister => unregister());
+            this._destroySync();
             this._grid = undefined;
         };
     };
 
     private _onGanttAvailable = (gantt: IGantt): (() => void) => {
         gantt.events.addEventListener('onChartReady', this._onChartReady);
-        gantt.events.addEventListener('onDestroyed', this._destroyScrollSync);
-        return () => {
-            gantt.events.removeEventListener('onChartReady', this._onChartReady);
-            gantt.events.removeEventListener('onDestroyed', this._destroyScrollSync);
-        };
+        return this._destroySync;
     };
 
     //the chart is drawn only once the grid has an api
     private _onChartReady = (chart: GanttStatic): void => {
+        this._destroySync();
         const gridScroller = this._grid?.services.find('gridApi') && this._grid.services.get('viewport').getScrollElement();
         if (gridScroller) {
             this._scrollSync = new GridGanttScrollSync(chart, gridScroller);
@@ -83,7 +77,7 @@ export class GridGanttSplitSync {
         }
     };
 
-    private _destroyScrollSync = (): void => {
+    private _destroySync = (): void => {
         this._scrollSync?.destroy();
         this._scrollSync = undefined;
         this._hoverSync?.destroy();

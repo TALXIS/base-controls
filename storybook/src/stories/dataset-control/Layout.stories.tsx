@@ -39,9 +39,7 @@ The control is laid out in *regions*: a header above the records, a body that ho
 | \`Footer\` | The row below the records, with a line above it. |
 | \`Footer.Start\`, \`Footer.End\` | The footer's left and right side. |
 
-- Each region takes \`className\`, and \`components\` to replace its box: see *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
-- A region takes your own content too, such as a page title placed directly in \`Header\`, as the full-page example below does.
-- Anything else you put inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
+Each region takes \`className\`, and \`components\` for its box (see [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview)). A region takes your own content too, such as the page title placed directly in \`Header\` in the full-page example below. Anything else inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
 
 ## Size the control
 
@@ -59,20 +57,17 @@ A grid in the body takes its height from the control, so it needs none of its ow
 
 ## Place the parts
 
-Any part works in any region. \`Start\` puts it on the left and \`End\` on the right, and the parts keep the order you write them in. A part that lines up its buttons, such as the ribbon or the paging, starts them on the left in \`Start\` and on the right in \`End\`.
-
-The examples here put the view switcher in \`Header.Start\`, the ribbon, Edit columns and the quick find in \`Header.End\`, the page size switcher in \`Footer.Start\` and the paging in \`Footer.End\`.
+Any part works in any region. \`Start\` puts it on the left and \`End\` on the right, and the parts keep the order you write them in. A part that lines up its buttons, such as the ribbon or the paging, starts them on the left in \`Start\` and on the right in \`End\`. A part of your own reads which side it is on with \`useDatasetControlRegion()\`.
 
 ## Fit a narrow screen
 
-The layout follows the control's own width, not the window's. As it narrows:
+The layout follows the control's own width, not the window's.
 
-1. The view switcher and the ribbon share the free space. A long view name is cut with an ellipsis, and the ribbon moves its commands into its overflow menu.
-2. The quick find shrinks from 230px to 160px.
-3. Once the header's parts no longer fit on one line, the header turns *compact*:
-    - the ribbon and Edit columns show only their icons, with their names in a tooltip;
-    - the quick find becomes a search button, with a dot while the field holds text. Clicking it opens the field across the whole header, and the other parts come back once you leave it.
-4. The footer's \`End\` moves onto a line of its own.
+| As the control narrows | What gives way |
+|---|---|
+| The free space runs out | The view switcher and the ribbon share what is left: a long view name ends in an ellipsis, and the ribbon moves commands into its overflow menu. The quick find shrinks from 230px to 160px. |
+| The header's parts no longer fit on one line | The header turns *compact*: the ribbon and Edit columns show only their icons, with their names in a tooltip, and the quick find becomes a search button, with a dot while it holds a query. Clicking it opens the field across the whole header until you leave it. |
+| The footer's parts no longer fit | The footer's \`End\` moves onto a line of its own. |
 
 The header stays compact until the control is wider than it was when the parts ran out of room, or until you take a part out.
 

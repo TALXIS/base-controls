@@ -9,7 +9,7 @@ const DESCRIPTION = `
 
 {{story: Plan a launch}}
 
-## Your first checklist
+## Basic usage
 
 A *provider* holds the records and everything about them; the checklist only draws it. Creating one is on [**Data providers**](?path=/docs/data-providers--overview).
 

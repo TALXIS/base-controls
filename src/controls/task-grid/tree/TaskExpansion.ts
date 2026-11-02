@@ -63,7 +63,6 @@ export class TaskExpansion implements ITaskExpansion {
 
     /** Keeps AG Grid's expanded rows in step with this. */
     public attach(gridApi: GridApi<IRecord>): void {
-        this._detach();
         this._gridApi = gridApi;
         gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened);
     }
@@ -128,18 +127,6 @@ export class TaskExpansion implements ITaskExpansion {
             }
         }
         this._store();
-    }
-
-    public destroy(): void {
-        this._detach();
-        this.events.clearEventListeners();
-    }
-
-    private _detach(): void {
-        if (this._gridApi && !this._gridApi.isDestroyed()) {
-            this._gridApi.removeEventListener('rowGroupOpened', this._onRowGroupOpened);
-        }
-        this._gridApi = undefined;
     }
 
     private _change(recordIds: string[], expanded: boolean): void {

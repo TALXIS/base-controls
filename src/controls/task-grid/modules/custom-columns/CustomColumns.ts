@@ -54,7 +54,6 @@ export class CustomColumns implements ICustomColumns {
     private _labels: LabelsOf<typeof CUSTOM_COLUMNS_LABELS>;
     private _columns: IColumn[] = [];
     private _values: TaskColumnValues;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: ICustomColumnsParameters) {
         this._taskRuntime = taskRuntime;
@@ -72,10 +71,8 @@ export class CustomColumns implements ICustomColumns {
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */
     public async load(): Promise<void> {
         this._columns = await this._store.onLoadColumns();
-        this._unregisters.push(
-            this._taskRuntime.services.observe('provider', this._onProviderAvailable),
-            this._taskRuntime.services.get('datasetControl').parts.observe('editColumns', this._onEditColumnsAvailable),
-        );
+        this._taskRuntime.services.observe('provider', this._onProviderAvailable);
+        this._taskRuntime.services.get('datasetControl').parts.observe('editColumns', this._onEditColumnsAvailable);
     }
 
     public getColumns(): IColumn[] {
@@ -95,8 +92,6 @@ export class CustomColumns implements ICustomColumns {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-        this._values.destroy();
         this._store.destroy?.();
     }
 
@@ -131,12 +126,9 @@ export class CustomColumns implements ICustomColumns {
         }
     };
 
-    private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): (() => void) => {
-        const unregisters = [
-            editColumns.registerCommands(this._addCommands),
-            editColumns.registerColumnCommands(this._addColumnCommands),
-        ];
-        return () => unregisters.forEach(unregister => unregister());
+    private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): void => {
+        editColumns.registerCommands(this._addCommands);
+        editColumns.registerColumnCommands(this._addColumnCommands);
     };
 
     private _addCommands = (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession): void => {

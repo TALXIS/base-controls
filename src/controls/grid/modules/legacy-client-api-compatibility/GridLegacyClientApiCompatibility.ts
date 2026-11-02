@@ -30,8 +30,6 @@ export interface IGridLegacyClientApiCompatibility {
     getOpenTarget(): Target | undefined;
     openNotification(notification: IAddControlNotificationOptions, target?: Target): void;
     closeNotification(): void;
-    /** Called as the grid tears down. */
-    destroy(): void;
 }
 
 /** What the legacy client API sets on a record's field, handed to the cells hooks. */
@@ -39,7 +37,6 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     private _services: IGridServiceLocator;
     private _openNotification?: IAddControlNotificationOptions;
     private _openTarget?: Target;
-    private _unsubscribes: (() => void)[] = [];
     public readonly events: IEventEmitter<IGridLegacyClientApiCompatibilityEvents> = new EventEmitter<IGridLegacyClientApiCompatibilityEvents>();
 
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
@@ -47,18 +44,16 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         const cells = parameters.services.get('cells');
         parameters.services.get('surfaces').registerSurface(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may register after this one
-        this._unsubscribes.push(parameters.services.get('grid').modules.observe('editing', editing => editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY)));
+        parameters.services.get('grid').modules.observe('editing', editing => {
+            editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
+        });
         cells.registerCellLoading(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellTheme(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerCellCommands(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControl(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
         cells.registerControlParameters(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
-        this._unsubscribes.push(parameters.services.observe('gridApi', () => {
-            const provider = this._provider;
-            provider.addEventListener('onRenderRequested', this._onRenderRequested);
-            return () => provider.removeEventListener('onRenderRequested', this._onRenderRequested);
-        }));
+        parameters.services.observe('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
     }
 
     public getOpenNotification(): IAddControlNotificationOptions | undefined {
@@ -89,11 +84,6 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         this._services.get('cells').render();
         this._services.get('columns').headers.render();
     };
-
-    //the provider outlives the grid
-    public destroy(): void {
-        this._unsubscribes.forEach(unsubscribe => unsubscribe());
-    }
 
     private get _provider() {
         return this._services.get('provider');

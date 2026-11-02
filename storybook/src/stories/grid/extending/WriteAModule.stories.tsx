@@ -7,22 +7,8 @@ import { UnsavedChangesBarExample } from '../../../grid/examples/writeModuleExam
 const DESCRIPTION = `
 A module packages a feature of your own: it registers hooks, follows events, shares an instance other parts of the grid can use, and draws its own UI inside the grid. The built-in modules are written the same way, against the same \`IGrid\`.
 
-## What a module is
-
-A module is an \`IGridModule\`:
-
-| Member | Description |
-|---|---|
-| \`name\` | Unique within the grid. What \`onLoad\` returns is registered under it. |
-| \`onLoad(grid)\` | Called once, as the grid mounts, with the grid. Register your hooks and listeners here. |
-| \`onDestroy(instance)\` | Called as the grid tears down, with what \`onLoad\` returned. |
-| \`agGridModules\` | AG Grid modules the feature needs, registered as the grid mounts. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
-
-Add your modules to the \`modules\` array:
-
 \`\`\`tsx
 import { createClientSideRowModelModule, DatasetControl, Grid, IGridModule } from '@talxis/base-controls'
-import { IDataProvider } from '@talxis/client-libraries'
 
 const HIGH = 1
 
@@ -37,26 +23,41 @@ export const urgentTicketsModule: IGridModule = {
     },
 }
 
-export const TicketQueue = (props: { provider: IDataProvider }) => <DatasetControl onLoad={async () => ({ provider: props.provider })}>
+<DatasetControl onLoad={loadTickets}>
     <DatasetControl.Body>
-        <Grid
-            modules={[
-                createClientSideRowModelModule(),
-                urgentTicketsModule,
-            ]} />
+        <Grid modules={[createClientSideRowModelModule(), urgentTicketsModule]} />
     </DatasetControl.Body>
 </DatasetControl>
 \`\`\`
 
-- Build a module once, as a constant or in \`useMemo\`. \`modules\` is read at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview).
-- Modules load in array order, so the ones before yours, such as \`grid.modules.find('rowSelection')\`, are already there in your \`onLoad\`. Reach later ones with \`grid.modules.observe\`.
-- \`onLoad\` runs before AG Grid exists: reach its api with \`grid.services.observe('gridApi', gridApi => ...)\`. It also runs while \`<Grid />\` renders for the first time, so it must not set React state.
-- Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, rather than from outside, and it works in any grid.
-- A module that needs options, or state of your app, is a function that builds one: \`createCopyColumnModule(onCopied)\`. Read state that changes through a getter or a ref, since the module is built once. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
+{{story: Show an unsaved changes bar}}
+
+## What a module is
+
+| Member | Description |
+|---|---|
+| \`name\` | Unique within the grid. What \`onLoad\` returns is registered under it. |
+| \`onLoad(grid)\` | Called once as the grid mounts, before AG Grid exists. Register your hooks and listeners here. |
+| \`onDestroy(instance)\` | Called as the grid unmounts, with what \`onLoad\` returned. |
+| \`agGridModules\` | AG Grid modules the feature needs. See *AG Grid modules* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
+
+Build a module once, as a constant or in \`useMemo\`: \`modules\` is read at mount, see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview). A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\`, and reads state that changes through a getter or a ref. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
+
+Modules load in the order of the array, so in your \`onLoad\` the ones before yours are there for \`grid.modules.find\`; reach later ones with \`grid.modules.observe\`. AG Grid's api arrives later too: reach it with \`grid.services.observe('gridApi', ...)\`. \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
+
+Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
 
 ## Clean up
 
-The provider outlives the grid. A listener you add to it stays, and keeps your module alive, until you remove it. Remove it on the grid's \`onDestroyed\` event, which fires as the grid unmounts:
+What you register on the grid goes with it. Anything that outlives the grid keeps your module alive until you unsubscribe:
+
+| You subscribed to | Clean up |
+|---|---|
+| Hooks, \`grid.events\`, the events of the grid's services and modules, AG Grid's api | Nothing. They go with the grid. |
+| The provider, \`window\`, a timer or anything else outside the grid | Subscribe inside \`grid.services.observe('gridApi', ...)\` and return the unsubscribe. It runs as AG Grid is destroyed. |
+| Something outside the grid that must be followed from \`onLoad\` on, before AG Grid is ready | Keep the unsubscribe in the instance and call it in \`onDestroy\`. |
+
+\`addEventListener\` returns its own unsubscribe, so the usual case is a few lines:
 
 \`\`\`tsx
 import { IGridModule } from '@talxis/base-controls'
@@ -72,21 +73,20 @@ export const refusedSavesModule: IGridModule = {
                 telemetry.track('saveRefused', { recordId: result.recordId })
             }
         }
-        provider.addEventListener('onAfterRecordSaved', onRecordSaved)
-        grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onAfterRecordSaved', onRecordSaved))
+        grid.services.observe('gridApi', () => {
+            return provider.addEventListener('onAfterRecordSaved', onRecordSaved)
+        })
     },
 }
 \`\`\`
 
-The same goes for anything else outside the grid, such as a timer or a listener on \`window\`. Hooks, listeners on the grid's services and AG Grid's api go with the grid.
+What the \`observe\` callback returns is taken as its cleanup: see *Services* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
 
 ## Share what your module builds
 
-What \`onLoad\` returns is registered under the module's \`name\`. Other modules then reach it with \`grid.modules.find(name)\`, and anything the grid draws with \`useGridModule(name)\`.
+What \`onLoad\` returns is registered under the module's \`name\`. Other modules reach it with \`grid.modules.find(name)\`, and anything the grid draws with \`useGridModule(name)\`. An instance does not redraw anything by itself: when its state changes, tell whoever draws it, as the bar's \`subscribe\` does.
 
-- An instance does not redraw anything. When its state changes, tell whoever draws it, as the bar's \`subscribe\` does.
-
-Declare the name once in your project, next to the module, and the name, the instance's type and its methods are typed everywhere you reach it:
+Add the name to \`IGridModuleMap\` once in your project, next to the module, and the instance is typed wherever you reach it:
 
 \`\`\`tsx
 export interface IUnsavedChanges {
@@ -101,20 +101,19 @@ declare module '@talxis/base-controls' {
 }
 \`\`\`
 
-- The file has to import or export something, as this one exports \`IUnsavedChanges\`. In a file that does neither, \`declare module\` replaces the package's types instead of adding to them.
-- Every module needs an entry; one whose \`onLoad\` returns nothing is \`void\`.
-- A name in \`IGridModuleMap\` is one a grid may not have, so \`find\` returns \`IUnsavedChanges | undefined\`, and \`get\` and \`useGridModule\` throw in a grid without your module.
+The file has to import or export something, as this one exports \`IUnsavedChanges\`; otherwise \`declare module\` replaces the package's types instead of adding to them. A module whose \`onLoad\` returns nothing still needs an entry, typed \`void\`. A grid may not have your module, so \`find\` returns \`IUnsavedChanges | undefined\`, and \`get\` and \`useGridModule\` throw without it.
 
 ## Draw inside the grid
 
-\`grid.services.get('surfaces').registerSurface(hook, priority?)\` adds something to what the grid draws inside its own element, after the rows. The hook pushes \`{ key, onRender }\` onto the list, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show.
+\`grid.services.get('surfaces').registerSurface(hook, priority?)\` adds something to what the grid draws inside its own element, after the rows. The hook pushes \`{ key, onRender }\`, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show. A surface is inside the grid's React tree and theme, so it can call \`useGridService\` and \`useGridModule\`.
 
-- Surfaces are drawn in ascending priority. The built-in ones are the filter callout (\`'filterCallout'\`), the dialog grouping opens when a selection would load too many groups (\`'groupSelectionLimit'\`), and the legacy client API's notification callout (\`'notificationCallout'\`).
-- A surface is inside the grid's React tree, so its components can call \`useGridService\` and \`useGridModule\`, and they are drawn in the grid's theme.
-- The list is read each time \`<Grid />\` renders, not when your state changes, so a surface's component follows its own state, as the bar subscribes to its module. A surface hook registered after the grid mounted appears the next time \`<Grid />\` renders.
-- A surface that draws a block, such as the bar, makes a grid without \`height\` taller, as the example shows. Callouts, panels and dialogs draw in a layer of their own and take no room.
+The list is read each time \`<Grid />\` renders, so a surface follows its own state, as the bar subscribes to its module. A surface that draws a block, such as the bar, makes a grid without \`height\` taller; callouts, panels and dialogs take no room. Surfaces are drawn in ascending priority, beside the built-in ones:
 
-{{story: Show an unsaved changes bar}}
+| Key | Drawn by |
+|---|---|
+| \`'filterCallout'\` | The filtering module, for a column's filter |
+| \`'groupSelectionLimit'\` | The grouping module, when a selection would load too many groups |
+| \`'notificationCallout'\` | The legacy client API module |
 `
 
 const meta = {

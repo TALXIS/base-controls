@@ -54,10 +54,6 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
         };
         chart.$root.addEventListener('mousemove', onMouseMove);
         chart.$root.addEventListener('mouseleave', onMouseLeave);
-        return () => {
-            chart.$root?.removeEventListener('mousemove', onMouseMove);
-            chart.$root?.removeEventListener('mouseleave', onMouseLeave);
-        };
     }, [chart, dragging]);
 
     const record = hovered && tasks?.getRecord(hovered.taskId);

@@ -25,11 +25,9 @@ Every provider column becomes a grid column. \`colDefs\` changes those columns a
 
 \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads about the column, listed under *The column context* below.
 
-- An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set. Any other key adds a column at the end.
-- A function entry receives the column as built (\`null\` for an added one) and returns what to change.
-- \`colDefs\` runs after every module, so it overrides what they set.
-- The grid's own columns have keys too: \`RECORD_SAVE_COLUMN_KEY\`, \`RECORD_LOCK_COLUMN_KEY\`, \`SELECTION_COLUMN_KEY\` and \`GROUP_EXPANSION_COLUMN_KEY\`.
-- Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
+An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set; any other key adds a column at the end. A function entry receives the column as built, \`null\` for an added one, and returns what to change. \`colDefs\` runs after every module, so it overrides what they set.
+
+The modules' own columns have keys too: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (editing), \`SELECTION_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (grouping). Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
 
 ## Pin and size columns
 
@@ -45,20 +43,15 @@ Every provider column becomes a grid column. \`colDefs\` changes those columns a
 
 ## Add a calculated column
 
-Give \`colDefs\` a key that isn't a provider column, and calculate its value from the record:
+Give \`colDefs\` a key that isn't a provider column, and calculate its value from the record. \`valueGetter\` returns the value, which copying uses too. \`cellRenderer\` draws the cell: reuse the grid's cell or build your own, both on [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview), and read the record with \`useGridCell()\` inside it so the value follows the record. Without a \`cellRenderer\` the cell is empty.
 
-- \`valueGetter\` returns the value. Copying uses it too.
-- \`cellRenderer\` draws the cell: reuse the grid's cell or build your own, both on [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview). Read the record with \`useGridCell()\` inside it, so the value follows the record.
-- The column is placed last and keeps its \`initialWidth\`. It has no menu or editor, and is not kept with the column layout.
-- Group rows and the totals row draw it too, so draw nothing for them. See *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The column takes the grid's header, is placed last and keeps its \`initialWidth\`. The modules add nothing to its menu, it has no editor, and it is not kept with the column layout. Group rows and the totals row draw it too, so draw nothing for them: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
 {{story: Calculate the stock value}}
 
 ## Add cell commands
 
-\`context.cell.onGetCommands(result, { record })\` adds commands to the column's cells. They show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record.
-
-- Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
+\`context.cell.onGetCommands(result, { record })\` adds commands to the column's cells. They show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record. Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
 
 {{story: Reorder from the row}}
 
@@ -66,10 +59,12 @@ Give \`colDefs\` a key that isn't a provider column, and calculate its value fro
 
 Clicking a header opens its menu. \`context.header\` adds to the header and its menu:
 
-- \`onGetAdornments(adornments)\`: push \`{ key, placement: 'prefix' | 'suffix', title?, onRender? }\` to draw beside the name.
-- \`onGetMenuSections(sections)\`: push \`{ key, title, items }\`, or remove a module's section by its key.
-- \`onGetMenuItems(items)\`: change the final menu items.
-- \`onGetTheme(theme)\`: colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/grid-appearance--overview).
+| Callback | Does |
+|---|---|
+| \`onGetAdornments(adornments)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
+| \`onGetMenuSections(sections)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
+| \`onGetMenuItems(items)\` | Change the final menu items. |
+| \`onGetTheme(theme)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/grid-appearance--overview). |
 
 The menu is built each time it opens, and adornments each time the header draws. After a change the header should show, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
 
@@ -100,15 +95,16 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | Key | Type | Description |
 |---|---|---|
 | \`isPrimary\` | \`boolean\` | Draws the value as a link to the record. |
-| \`isRequired\` | \`boolean\` | Draws the required marker in the header. It validates nothing: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
-| \`isLocked\` | \`boolean\` | Locks the column for good, with the editing module. See *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
-| \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from. |
+| \`isRequired\` | \`boolean\` | Draws the required marker in the header; the editing module sets it from \`RequiredLevel\`. It validates nothing: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`isLocked\` | \`boolean\` | With the editing module: locks the column for good. The module sets it from \`IsValidForUpdate\`. See *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from. Numbers and currency default to \`'right'\`. |
+| \`widthOffset\` | \`number\` | Pixels added to the column's width for what a module draws in it, such as grouping's indent. Not saved with the layout. |
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |
-| \`cell.oneClickEdit\` | \`boolean\` | Draws the editing control in the cell itself. See *Edit in place* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`cell.oneClickEdit\` | \`boolean\` | With the editing module: draws the editing control in the cell itself. See *Edit in place* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
 | \`cell.onGetCommands\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands* above. |
 | \`cell.onGetTheme\` | \`(theme, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/grid-appearance--overview). |
 | \`cell.onGetLoading\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
-| \`cell.onGetLock\` | \`(result, { record }) => void\` | Locks the cell. See *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`cell.onGetLock\` | \`(result, { record }) => void\` | With the editing module: locks the cell. See *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
 | \`cell.onGetValidation\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview). |
 | \`cell.onGetControlParameters\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters* below. |
 | \`header.onGetAdornments\`, \`header.onGetMenuSections\`, \`header.onGetMenuItems\`, \`header.onGetTheme\` | Callbacks | See *Extend the header* above. |
@@ -127,8 +123,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-- An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`.
-- The value renderer reads the value from the record, so changing \`value\` here shows nothing. To change how a value reads, use \`record.expressions.setFormattedValueExpression\`: see *Record expressions* on [**Data providers**](?path=/docs/data-providers--overview).
+An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. The value renderer reads the value from the record, so changing \`value\` here shows nothing. To change how a value reads, use \`record.expressions.setFormattedValueExpression\`: see *Record expressions* on [**Data providers**](?path=/docs/data-providers--overview).
 `
 
 const meta = {

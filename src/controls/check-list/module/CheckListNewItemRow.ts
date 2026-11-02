@@ -27,7 +27,7 @@ export class CheckListNewItemRow {
     private _pinnedRows?: IRecord[];
     private _pinnedDraft?: IRecord;
     private _upstreamPinnedRows?: IRecord[];
-    private _unwatchGridApi: () => void;
+    private _startEditingTimeout?: ReturnType<typeof setTimeout>;
 
     constructor(parameters: ICheckListNewItemRowParameters) {
         this._grid = parameters.grid;
@@ -36,13 +36,12 @@ export class CheckListNewItemRow {
         this._grid.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
         this._grid.services.get('cells').registerControlParameters(this._onControlParameters);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-        this._unwatchGridApi = this._grid.services.observe('gridApi', this._onGridApiAvailable);
+        this._grid.services.observe('gridApi', this._onGridApiAvailable);
     }
 
-    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): (() => void) => {
+    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
         gridApi.addEventListener('cellFocused', this._onCellFocused);
         this._resetDraft();
-        return () => !gridApi.isDestroyed() && gridApi.removeEventListener('cellFocused', this._onCellFocused);
     };
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
@@ -98,7 +97,7 @@ export class CheckListNewItemRow {
         gridApi.applyTransaction({ add: [record], addIndex: rowCount });
         gridApi.ensureIndexVisible(rowCount);
         //the pinned row is rebuilt from the new draft before its cell can be edited
-        setTimeout(() => this._startEditingDraft(gridApi));
+        this._startEditingTimeout = setTimeout(() => this._startEditingDraft(gridApi));
         this._grid.services.get('fields').get(record, stackRankColumn).setValue(StackRank.between(lastRecord?.getValue(stackRankColumn), undefined));
     }
 
@@ -122,7 +121,7 @@ export class CheckListNewItemRow {
     }
 
     public destroy(): void {
-        this._unwatchGridApi();
+        clearTimeout(this._startEditingTimeout);
         this._retiredDraftProviders.forEach(provider => provider.destroy());
         this._retiredDraftProviders = [];
         this._draftProvider?.destroy();

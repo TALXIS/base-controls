@@ -1,7 +1,5 @@
 import React from 'react'
-import { IColumn } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createTimesheetsProvider } from '../data'
 
 export const BREACH_DEADLINES_CODE = `const RESOLVED = 4
 const AT_RISK_HOURS = 24
@@ -203,12 +201,11 @@ const reviewModule: IGridModule = {
         })
         //a header draws again after a load, not when a value changes
         const redraw = () => headers.render()
-        provider.addEventListener('onRecordColumnValueChanged', redraw)
-        provider.addEventListener('onAfterSaved', redraw)
-        grid.events.addEventListener('onDestroyed', () => {
-            provider.removeEventListener('onRecordColumnValueChanged', redraw)
-            provider.removeEventListener('onAfterSaved', redraw)
-        })
+        const unsubscribes = [
+            provider.addEventListener('onRecordColumnValueChanged', redraw),
+            provider.addEventListener('onAfterSaved', redraw),
+        ]
+        grid.events.addEventListener('onDestroyed', () => unsubscribes.forEach(unsubscribe => unsubscribe()))
     },
 }
 
@@ -242,91 +239,85 @@ const GridExample = () => {
 }
 `
 
-export const CZECH_LABELS_CODE = `const APPROVED = 3
+export const INVOICE_LINES_CODE = `const CATALOGUE = [
+    { item: 'Standing desk', unitprice: 640 },
+    { item: 'Ergonomic chair', unitprice: 410 },
+    { item: 'Monitor arm', unitprice: 85 },
+    { item: 'Desk lamp', unitprice: 45 },
+    { item: 'Filing cabinet', unitprice: 230 },
+    { item: 'Footrest', unitprice: 35 },
+    { item: 'Whiteboard', unitprice: 140 },
+    { item: 'Cable tray', unitprice: 25 },
+]
 
-const CZECH_LABELS: IGridLabels = {
-    noRecordsFound: 'Nenašli jsme žádné záznamy.',
-    valueLocked: 'Tuto hodnotu nelze upravit.',
-    recordLocked: 'Tento záznam nelze upravit.',
-    columnLocked: 'Tento sloupec nelze upravit.',
-    recordSaveErrorTitle: 'Změny se nepodařilo uložit',
-    recordSaveErrorDismiss: 'Zavřít',
+const toLine = (index: number): IRawRecord => ({ lineid: 'line-' + (index + 1), ...CATALOGUE[index % CATALOGUE.length], quantity: (index % 3) + 1 })
+
+const createInvoiceLines = () => new MemoryDataProvider({
+    dataSource: [0, 1, 2].map(toLine),
+    metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'item', LogicalName: 'invoiceline' },
+    columns: [
+        { name: 'item', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
+        { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
+        { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
+    ],
+})
+
+const GridExample = () => {
+    const lines = React.useMemo(createInvoiceLines, [])
+    const lineCount = React.useRef(3)
+    const control = React.useRef<IDatasetControl>()
+    const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
+
+    const showLines = async (count: number) => {
+        lines.setDataSource(Array.from({ length: count }, (_, index) => toLine(index)))
+        lineCount.current = count
+        await lines.refresh()
+        //the ribbon reloads on its own only when the selection changes
+        control.current?.parts.find('ribbon')?.reload()
+    }
+
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'add', label: 'Add line', iconName: 'Add', onExecute: () => showLines(lineCount.current + 1) },
+        { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
+    ]
+
+    return <DatasetControl onLoad={async () => ({ provider: lines })} onMounted={datasetControl => control.current = datasetControl}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon onLoad={loadCommands} />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
+                    <Text>Rows before it scrolls</Text>
+                    <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
+                </Stack>
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid modules={[createClientSideRowModelModule()]} maxVisibleRows={maxVisibleRows} />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
+`
 
-const czechSorting = createSortingModule({
-    labels: {
-        sortTextAscending: 'Seřadit od A do Z',
-        sortTextDescending: 'Seřadit od Z do A',
-        sortDateAscending: 'Seřadit od nejstarších',
-        sortDateDescending: 'Seřadit od nejnovějších',
-        sortNumberAscending: 'Seřadit od nejmenších',
-        sortNumberDescending: 'Seřadit od největších',
-        sortTwoOptionsJoint: 'až',
-        clear: 'Zrušit řazení',
-        menuSection: 'Řazení',
-    },
+export const FILL_CONTAINER_CODE = `const styles = mergeStyleSets({
+    container: { border: '1px solid #edebe9', borderRadius: 4, overflow: 'hidden' },
 })
 
-const czechFiltering = createFilteringModule({
-    labels: {
-        filterMenuFilterBy: 'Filtrovat podle',
-        clear: 'Zrušit filtr',
-        menuSection: 'Filtrování',
-    },
-})
+const GridExample = () => {
+    const [containerHeight, setContainerHeight] = React.useState(360)
 
-const czechGrouping = createGroupingModule({
-    labels: {
-        group: 'Seskupit',
-        ungroup: 'Zrušit seskupení',
-        maximumGroupChildrenLimitReached: 'Bylo dosaženo limitu {{maxGroupChildren}} podřízených záznamů. Záznamy nad tento limit se nenačtou.',
-        headerTitle: 'Seskupeno',
-        menuSection: 'Seskupení',
-        expandLevel: 'Rozbalit o úroveň',
-        collapseLevel: 'Sbalit o úroveň',
-        groupSelectionLimitMessage: 'Tento výběr by načetl záznamy víc než {{maxGroupLoads}} skupin. Vyberte méně skupin, nebo je rozbalte a vyberte jejich záznamy.',
-        groupSelectionLimitConfirm: 'OK',
-    },
-})
-
-const czechTotals = createAggregationModule({
-    labels: {
-        totalNone: 'Žádný',
-        totalAverage: 'Průměr',
-        totalMaximum: 'Maximum',
-        totalMinimum: 'Minimum',
-        totalSum: 'Součet',
-        totalCount: 'Počet (včetně prázdných)',
-        totalCountColumn: 'Počet',
-        menuSection: 'Součty',
-    },
-})
-
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[
-                createClientSideRowModelModule(),
-                createEditingModule(),
-                czechSorting,
-                czechFiltering,
-                czechGrouping,
-                czechTotals,
-            ]}
-            labels={CZECH_LABELS}
-            colDefs={{
-                employee: { context: { isLocked: true } },
-            }}
-            rowSettings={{
-                onGetLock: (result, { record }) => {
-                    if (Number(record.getValue('status')) === APPROVED) {
-                        result.isLocked = true
-                    }
-                },
-            }}
-            height='460px' />
-    </DatasetControl.Body>
-</DatasetControl>
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
+        <div className={styles.container} style={{ height: containerHeight }}>
+            <DatasetControl height='100%' onLoad={async () => ({ provider: provider })}>
+                <DatasetControl.Body>
+                    <Grid modules={[createClientSideRowModelModule()]} />
+                </DatasetControl.Body>
+            </DatasetControl>
+        </div>
+    </Stack>
+}
 `
 
 export const SpotBreachesExample = () => <GridExampleRunner seedCode={BREACH_DEADLINES_CODE} dataset='tickets' />
@@ -341,41 +332,6 @@ export const ColumnLinesExample = () => <GridExampleRunner seedCode={COLUMN_LINE
 
 export const HeaderColoursExample = () => <GridExampleRunner seedCode={HEADER_COLOURS_CODE} dataset='timesheets' />
 
+export const InvoiceLinesExample = () => <GridExampleRunner seedCode={INVOICE_LINES_CODE} />
 
-const CZECH_COLUMN_NAMES: { [columnName: string]: string } = {
-    description: 'Popis práce',
-    employee: 'Zaměstnanec',
-    project: 'Projekt',
-    date: 'Datum',
-    hours: 'Hodiny',
-    billable: 'Fakturovat',
-    rate: 'Hodinová sazba',
-    status: 'Stav',
-    comment: 'Komentář',
-}
-
-const CZECH_OPTION_LABELS: { [columnName: string]: { [value: number]: string } } = {
-    project: { 4: 'Interní' },
-    billable: { 0: 'Ne', 1: 'Ano' },
-    status: { 1: 'Koncept', 2: 'Odesláno', 3: 'Schváleno', 4: 'Zamítnuto' },
-}
-
-const toCzech = (column: IColumn): IColumn => ({
-    ...column,
-    displayName: CZECH_COLUMN_NAMES[column.name] ?? column.displayName,
-    metadata: {
-        ...column.metadata,
-        OptionSet: column.metadata?.OptionSet?.map(option => ({ ...option, Label: CZECH_OPTION_LABELS[column.name]?.[option.Value] ?? option.Label })),
-    },
-})
-
-//a Czech user's provider names its columns and options in Czech
-const createCzechTimesheetsProvider = () => {
-    const provider = createTimesheetsProvider()
-    provider.setColumns(provider.getColumns().map(toCzech))
-    provider.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
-    provider.refresh()
-    return provider
-}
-
-export const CzechLabelsExample = () => <GridExampleRunner seedCode={CZECH_LABELS_CODE} onCreateProvider={createCzechTimesheetsProvider} />
+export const FillContainerExample = () => <GridExampleRunner seedCode={FILL_CONTAINER_CODE} />

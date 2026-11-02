@@ -4,21 +4,18 @@ import { GridExampleRunner } from '../GridExampleRunner'
 import { createProductsProvider } from '../data'
 
 export const STARRED_PRODUCTS_CODE = `const styles = mergeStyleSets({
-    star: { color: '#8a8886' },
-    starred: { color: '#c19c00' },
+    star: { fontSize: 16, color: '#8a8886', cursor: 'pointer' },
+    starred: { fontSize: 16, color: '#c19c00', cursor: 'pointer' },
 })
 
-const Star = (props: ICheckboxProps) => <IconButton
-    iconProps={{ iconName: props.checked ? 'FavoriteStarFill' : 'FavoriteStar' }}
-    className={props.checked ? styles.starred : styles.star}
-    title={props.ariaLabel}
-    onClick={event => props.onChange?.(event as React.MouseEvent<HTMLElement>, !props.checked)} />
-
+//the container around it takes the click and toggles the row
 const STAR: ISelectionCellComponents = {
-    checkbox: { onRenderCheckbox: props => <Star {...props} /> },
+    checkbox: {
+        onRenderCheckbox: props => <Icon
+            iconName={props.checked ? 'FavoriteStarFill' : 'FavoriteStar'}
+            className={props.checked ? styles.starred : styles.star} />,
+    },
 }
-
-const StarCell = (props: IGridCellParams) => <SelectionCell {...props} components={STAR} />
 
 const GridExample = () => {
     const [starred, setStarred] = React.useState<string[]>([])
@@ -31,7 +28,7 @@ const GridExample = () => {
                     createClientSideRowModelModule(),
                     createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
                 ]}
-                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRenderer: StarCell } }}
+                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRendererParams: { components: STAR } } }}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>

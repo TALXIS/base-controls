@@ -40,10 +40,6 @@ export const LinkTooltipRoot = (props: ILinkTooltipRootProps) => {
         const onMouseLeave = () => setHovered(undefined);
         chart.$root.addEventListener('mousemove', onMouseMove);
         chart.$root.addEventListener('mouseleave', onMouseLeave);
-        return () => {
-            chart.$root?.removeEventListener('mousemove', onMouseMove);
-            chart.$root?.removeEventListener('mouseleave', onMouseLeave);
-        };
     }, [chart, dragging]);
 
     if (!tasks || !hovered) {

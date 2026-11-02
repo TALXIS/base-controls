@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
 import { useLabels, useDataProviderEvents } from "@utils";
@@ -26,8 +26,6 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const views = viewSwitcher.getViews();
     const currentView = viewSwitcher.getCurrentView();
     const { rerender } = useRerender();
-
-    useEffect(() => () => viewSwitcher.destroy(), []);
 
     const getGroups = (): Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }> => {
         const ungrouped: IDatasetControlViewGroup = { id: 'ungrouped', name: labels.get('viewSwitcher.ungroupedViewsHeader') };

@@ -23,22 +23,17 @@ export interface ITaskDrawing {
     /** Creates a task first under the row's parent, running over the span. */
     create(rowTaskId: string, span: IGanttSpan): Promise<void>;
     getComponents(): ITaskDrawingComponents;
-    /** Called as the Gantt goes. */
-    destroy(): void;
 }
 
 export class TaskDrawing implements ITaskDrawing {
     private _gantt: IGantt;
     private _parameters: ITaskDrawingParameters;
-    private _unregisters: (() => void)[];
 
     constructor(gantt: IGantt, parameters: ITaskDrawingParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._unregisters = [
-            gantt.surfaces.registerSurface(this._onSurfaces),
-            gantt.services.get('theme').registerStyles(result => result.styles.push(getTaskDrawingStyles())),
-        ];
+        gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.services.get('theme').registerStyles(result => result.styles.push(getTaskDrawingStyles()));
     }
 
     public isEnabled(): boolean {
@@ -53,10 +48,6 @@ export class TaskDrawing implements ITaskDrawing {
 
     public getComponents(): ITaskDrawingComponents {
         return this._parameters.components ?? {};
-    }
-
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
     }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

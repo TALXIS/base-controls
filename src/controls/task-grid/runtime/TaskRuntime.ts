@@ -27,7 +27,6 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
-    private _unsubscribes: (() => void)[] = [];
     private _view?: ITaskView;
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
@@ -39,19 +38,14 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('pcfContext', () => parameters.pcfContext);
         this.services.register('savingChains', () => this._savingChains);
-        this._unsubscribes.push(
-            this.services.observe('provider', provider => this._savingChains.attach(provider)),
-            datasetControl.parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands)),
-            datasetControl.modules.observe('userQueries', userQueries => {
-                const unsaveWithViews = [
-                    userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
-                    userQueries.saveWithView('filtering', () => this.getProvider().getFiltering()),
-                    userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name)),
-                    userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined),
-                ];
-                return () => unsaveWithViews.forEach(unsaveWithView => unsaveWithView());
-            }),
-        );
+        this.services.observe('provider', provider => this._savingChains.attach(provider));
+        datasetControl.parts.observe('ribbon', ribbon => { ribbon.registerCommands(this._addCommands); });
+        datasetControl.modules.observe('userQueries', userQueries => {
+            userQueries.saveWithView('sorting', () => this.getProvider().getSorting());
+            userQueries.saveWithView('filtering', () => this.getProvider().getFiltering());
+            userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name));
+            userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined);
+        });
     }
 
     public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
@@ -119,8 +113,6 @@ export class TaskRuntime implements ITaskRuntime {
     /** Called as the mount goes. */
     public destroy(): void {
         this.events.dispatchEvent('onDestroyed');
-        this.events.clearEventListeners();
-        this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._savingChains.destroy();
         this.services.destroy();
     }

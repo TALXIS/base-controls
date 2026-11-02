@@ -16,5 +16,4 @@ export const createEditingModule = (options?: IEditingModuleOptions): IEditingMo
     name: 'editing',
     agGridModules: [CustomEditorModule],
     onLoad: ({ services }) => new GridEditing({ services, autoSave: options?.autoSave, onEditedCellChanged: options?.onEditedCellChanged }),
-    onDestroy: editing => editing.destroy(),
 });

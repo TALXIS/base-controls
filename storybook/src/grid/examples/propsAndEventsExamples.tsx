@@ -1,87 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const INVOICE_LINES_CODE = `const CATALOGUE = [
-    { item: 'Standing desk', unitprice: 640 },
-    { item: 'Ergonomic chair', unitprice: 410 },
-    { item: 'Monitor arm', unitprice: 85 },
-    { item: 'Desk lamp', unitprice: 45 },
-    { item: 'Filing cabinet', unitprice: 230 },
-    { item: 'Footrest', unitprice: 35 },
-    { item: 'Whiteboard', unitprice: 140 },
-    { item: 'Cable tray', unitprice: 25 },
-]
-
-const toLine = (index: number): IRawRecord => ({ lineid: 'line-' + (index + 1), ...CATALOGUE[index % CATALOGUE.length], quantity: (index % 3) + 1 })
-
-const createInvoiceLines = () => new MemoryDataProvider({
-    dataSource: [0, 1, 2].map(toLine),
-    metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'item', LogicalName: 'invoiceline' },
-    columns: [
-        { name: 'item', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
-        { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
-        { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
-    ],
-})
-
-const GridExample = () => {
-    const lines = React.useMemo(createInvoiceLines, [])
-    const lineCount = React.useRef(3)
-    const control = React.useRef<IDatasetControl>()
-    const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
-
-    const showLines = async (count: number) => {
-        lines.setDataSource(Array.from({ length: count }, (_, index) => toLine(index)))
-        lineCount.current = count
-        await lines.refresh()
-        //the ribbon reloads on its own only when the selection changes
-        control.current?.parts.find('ribbon')?.reload()
-    }
-
-    const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'add', label: 'Add line', iconName: 'Add', onExecute: () => showLines(lineCount.current + 1) },
-        { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
-    ]
-
-    return <DatasetControl onLoad={async () => ({ provider: lines })} onMounted={datasetControl => control.current = datasetControl}>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} />
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
-                    <Text>Rows before it scrolls</Text>
-                    <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
-                </Stack>
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule()]} maxVisibleRows={maxVisibleRows} />
-        </DatasetControl.Body>
-    </DatasetControl>
-}
-`
-
-export const FILL_CONTAINER_CODE = `const styles = mergeStyleSets({
-    container: { border: '1px solid #edebe9', borderRadius: 4, overflow: 'hidden' },
-})
-
-const GridExample = () => {
-    const [containerHeight, setContainerHeight] = React.useState(360)
-
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
-        <div className={styles.container} style={{ height: containerHeight }}>
-            <DatasetControl height='100%' onLoad={async () => ({ provider: provider })}>
-                <DatasetControl.Body>
-                    <Grid modules={[createClientSideRowModelModule()]} />
-                </DatasetControl.Body>
-            </DatasetControl>
-        </div>
-    </Stack>
-}
-`
-
 export const WATCH_EVERY_EVENT_CODE = `interface ILogEntry {
     id: number
     time: string
@@ -237,10 +156,6 @@ const GridExample = () => {
     </div>
 }
 `
-
-export const InvoiceLinesExample = () => <GridExampleRunner seedCode={INVOICE_LINES_CODE} />
-
-export const FillContainerExample = () => <GridExampleRunner seedCode={FILL_CONTAINER_CODE} />
 
 export const WatchEveryEventExample = () => <GridExampleRunner seedCode={WATCH_EVERY_EVENT_CODE} dataset='tickets' />
 

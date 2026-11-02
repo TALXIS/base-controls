@@ -165,12 +165,11 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     public destroy(): void {
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
-        this._destroyModules();
+        this._loadedModules.forEach(({ module, instance }) => module.onDestroy?.(instance as never));
         if (this._provider) {
             this._state.save(this._provider, this._viewId);
             this._releaseProvider(this._provider);
         }
-        this.events.clearEventListeners();
         this._services.destroy();
         this._modules.destroy();
     }
@@ -285,6 +284,10 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             }
             names.add(module.name);
             const instance = await module.onLoad(this);
+            if (this._isDestroyed) {
+                module.onDestroy?.(instance as never);
+                return;
+            }
             this._loadedModules.push({ module, instance });
             this._modules.register(module.name, () => instance as IDatasetControlModuleMap[typeof module.name]);
         }

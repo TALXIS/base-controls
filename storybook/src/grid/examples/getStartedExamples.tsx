@@ -527,7 +527,7 @@ export const TOASTER_ID = 'deals'
 export type IToasts = ReturnType<typeof useToastController>
 
 /** What a feature adds to the grid, and to what is drawn around it. */
-export type IFeatureProps = Omit<Partial<IGrid>, 'modules'> & { modules?: IGridModule[]; frame?: IFeatureFrameProps }
+export type IFeatureProps = Omit<Partial<IGridProps>, 'modules'> & { modules?: IGridModule[]; frame?: IFeatureFrameProps }
 
 /** What the feature code shares. */
 export interface IFeatureContext {

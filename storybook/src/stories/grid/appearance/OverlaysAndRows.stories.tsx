@@ -5,42 +5,47 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseLoadingExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-When the grid has no records to draw, it draws something in their place: an overlay over the rows while the provider loads or holds nothing, and a row in place of records that are still loading or failed to load. Change how each looks through \`components\` on \`<Grid />\`.
+When the grid has no records to draw, it draws something in their place: an overlay over the rows while the provider loads or holds nothing, and a row in place of records that are still loading or failed to load. These are the only parts \`<Grid>\` itself takes \`components\` for.
 
 \`\`\`tsx
-<DatasetControl onLoad={loadProducts}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
-            components={{
-                overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } },
-                rows: { error: { onRenderMessageBar: props => <MessageBar {...props} messageBarType={MessageBarType.warning} /> } },
-            }} />
-    </DatasetControl.Body>
-</DatasetControl>
+<Grid
+    modules={[createClientSideRowModelModule()]}
+    components={{
+        overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } },
+        rows: { error: { onRenderMessageBar: props => <MessageBar {...props} messageBarType={MessageBarType.warning} /> } },
+    }} />
 \`\`\`
 
-Every key and part is optional and follows the \`components\` rules. See *Replace what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
+## Changing how it looks
+
+\`<Grid>\` takes \`components\`, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`overlays.emptyRecords\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyRecordsUiComponents\` | The overlay of a grid with no rows; its text is \`grid.noRecordsFound\` |
+| \`overlays.loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
+| \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load on the server-side row model |
+| \`rows.error\` | \`onRenderMessageBar\` | | Records or totals that failed to load, with the provider's error message |
 
 ## No records
 
-\`overlays.emptyRecords\` draws a grid with no rows, with the grid's \`noRecordsFound\` label as its text. Its parts are \`onRenderContainer\`, \`onRenderIcon\` and \`onRenderText\`. To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
+\`overlays.emptyRecords\` draws the grid's empty state. Its text is the \`grid.noRecordsFound\` label, which you change through \`LocalizationProvider\` (see [**Localization**](?path=/docs/grid-localization--overview)). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
 
 {{story: Show an empty catalogue}}
 
 ## Loading
 
-\`overlays.loading\` draws over the rows while the provider loads. Its text is the message the provider loads with, \`provider.setLoading(true, message)\`, drawn only while there is one. Its parts are \`onRenderContainer\`, \`onRenderSpinner\` and \`onRenderText\`.
+\`overlays.loading\` draws over the rows while the provider loads. Its text is the message the provider loads with, \`provider.setLoading(true, message)\`.
 
 {{story: Wait for the warehouse}}
 
-\`rows.loading\` draws a group's records while they load on the server-side row model, through \`onRenderShimmer\`.
+\`rows.loading\` draws a group's records while they load on the server-side row model.
 
 {{story: Show rows that are still loading}}
 
 ## Failed loads
 
-\`rows.error\` draws records or totals that failed to load, with the provider's error message, through \`onRenderMessageBar\`.
+\`rows.error\` draws a group's records that failed to load on the server-side row model, and a totals row whose query failed.
 
 {{story: Try a category again}}
 `
@@ -67,7 +72,7 @@ export const AnEmptyCatalogue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`overlays.emptyRecords\` swaps the icon and adds a hint under the message.`,
+                story: `\`overlays.emptyRecords\` swaps the icon and adds a hint under the message, and \`LocalizationProvider\` rewords \`grid.noRecordsFound\`.`,
             },
         },
     },

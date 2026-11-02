@@ -98,15 +98,11 @@ export class GanttTasks implements IGanttTasks {
         this._chart.templates.task_text = () => '';
         setTaskIndexResolver(this._chart, taskId => this._taskIndexes.get(taskId) ?? -1);
         this._gridApi.addEventListener('modelUpdated', this._scheduleParse);
-        provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-        provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
-        const savingChains = this._taskRuntime.services.get('savingChains');
-        savingChains.events.addEventListener('onChainsChanged', this._onSavingChainsChanged);
         this._unregisters.push(
-            () => savingChains.events.removeEventListener('onChainsChanged', this._onSavingChainsChanged),
             () => !this._gridApi.isDestroyed() && this._gridApi.removeEventListener('modelUpdated', this._scheduleParse),
-            () => provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged),
-            () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
+            provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged),
+            provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated),
+            this._taskRuntime.services.get('savingChains').events.addEventListener('onChainsChanged', this._onSavingChainsChanged),
         );
     }
 

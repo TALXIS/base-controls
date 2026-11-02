@@ -82,7 +82,6 @@ export class GanttTimeline implements IGanttTimeline {
     private _scrollBlockedUntil = 0;
     private _isDestroyed = false;
     private _edgeFrame?: number;
-    private _scrollbar?: HTMLElement;
     private _view?: Window;
     private _isScrollbarHeld = false;
     private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
@@ -228,7 +227,7 @@ export class GanttTimeline implements IGanttTimeline {
 
     public destroy(): void {
         this._isDestroyed = true;
-        this._detachPointerListeners();
+        this._view?.removeEventListener('mouseup', this._onPointerUp);
         if (this._edgeFrame !== undefined) {
             cancelAnimationFrame(this._edgeFrame);
         }
@@ -312,11 +311,6 @@ export class GanttTimeline implements IGanttTimeline {
         return leftDate && rightDate ? +rightDate - +leftDate : FALLBACK_HEADROOM;
     }
 
-    private _detachPointerListeners(): void {
-        this._scrollbar?.removeEventListener('mousedown', this._onScrollbarDown);
-        this._view?.removeEventListener('mouseup', this._onPointerUp);
-    }
-
     //runs even under a scroll block since no scroll event follows at the very edge
     private _onGanttScroll = (): boolean => {
         syncWheelScrollOrigin(this._chart);
@@ -328,10 +322,8 @@ export class GanttTimeline implements IGanttTimeline {
 
     //a held thumb follows the pointer and would undo a re-centre
     private _onGanttReady = (): boolean => {
-        this._detachPointerListeners();
-        this._scrollbar = getHorizontalScrollbar(this._chart);
         this._view = this._chart.$root.ownerDocument.defaultView ?? undefined;
-        this._scrollbar?.addEventListener('mousedown', this._onScrollbarDown);
+        getHorizontalScrollbar(this._chart)?.addEventListener('mousedown', this._onScrollbarDown);
         this._view?.addEventListener('mouseup', this._onPointerUp);
         return true;
     };

@@ -1,0 +1,187 @@
+import React from 'react'
+import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import { withTasks } from './shared'
+
+interface IGanttExample {
+    /** Declarations above the component. */
+    setup?: string
+    /** The Gantt modules after the library module, as array items. */
+    ganttModules: string
+    /** The control modules, as array items over `database`. */
+    controlModules?: string
+    /** The `TaskDatasetControl` props beyond the ones every example sets. */
+    controlProps?: string
+}
+
+const createGanttCode = (example: IGanttExample) => `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+${example.setup ?? ''}
+const GridExample = () => {
+    const database = React.useMemo(createTaskDatabase, [])
+    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
+    const controlModules = React.useMemo(() => [${example.controlModules ?? ''}], [database])
+    const ganttModules = React.useMemo(() => [
+        createLibraryModule(),${example.ganttModules}
+    ], [])
+
+    return <TaskDatasetControl modules={controlModules}${example.controlProps ?? ''} onLoadViews={loadTaskViews} onLoad={loadTasks} height='520px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.ViewSwitcher />
+                <TaskGantt.ZoomSlider />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <TaskDatasetControl.Ribbon />
+                <TaskDatasetControl.Settings />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <TaskGantt.Split>
+                <TaskGrid modules={gridModules} />
+                <TaskGantt modules={ganttModules} />
+            </TaskGantt.Split>
+        </DatasetControl.Body>
+    </TaskDatasetControl>
+}
+`
+
+const PROJECT = `
+        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),`
+
+const SHOWCASE_CODE = createGanttCode({
+    controlProps: ' enableCreation enableEditing enableDeletion',
+    controlModules: `${PROJECT}
+        createTaskDraggingModule(),
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+    `,
+    ganttModules: `
+        createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
+        createBarDraggingModule(),
+        createTaskDrawingModule(),
+        createTaskSelectionModule(),
+        createTaskTooltipModule({ statusColumnName: 'statuscode' }),
+        createLinksModule(),`,
+})
+
+const EDITING_CODE = createGanttCode({
+    controlProps: ' enableCreation enableEditing',
+    ganttModules: `
+        createBarDraggingModule({ enableMove: true, enableResize: true }),
+        createTaskDrawingModule(),
+        createTaskSelectionModule({ enableSelectionBox: true }),`,
+})
+
+const MARKERS_CODE = createGanttCode({
+    setup: `
+const RELEASES: IMarker[] = [
+    { id: 'beta', text: 'Beta', date: dayjs('2025-12-01'), color: '#8764b8' },
+    { id: 'launch', text: 'Launch', date: dayjs('2026-01-20'), color: '#107c10' },
+]
+
+//the launch marker's chip shows how far away it is
+const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    const { marker } = useMarker()
+    if (marker.id !== 'launch') {
+        return <div {...props} />
+    }
+    const days = marker.date.diff(dayjs().startOf('day'), 'day')
+    return <div {...props}>{marker.text} · {days >= 0 ? 'in ' + days + ' days' : Math.abs(days) + ' days ago'}</div>
+}
+`,
+    controlModules: PROJECT,
+    ganttModules: `
+        createMemoryMarkersModule({
+            markers: RELEASES,
+            today: { color: '#d13438' },
+            project: { color: '#ca5010' },
+            components: { chip: { onRenderChip: props => <LaunchChip {...props} /> } },
+        }),`,
+})
+
+const NON_WORKING_DAYS_CODE = createGanttCode({
+    controlProps: ' enableEditing',
+    setup: `
+const COMPANY_DAYS: INonWorkingDay[] = [
+    ...NON_WORKING_DAYS,
+    { id: 'hackathon', date: dayjs('2025-11-24'), endDate: dayjs('2025-11-26'), description: 'Hackathon' },
+]
+`,
+    ganttModules: `
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: COMPANY_DAYS, enableWeekends: true }),
+        createBarDraggingModule(),`,
+})
+
+const TOOLTIP_CODE = createGanttCode({
+    controlProps: ' enableEditing',
+    ganttModules: `
+        createBarDraggingModule(),
+        createTaskTooltipModule({
+            statusColumnName: 'statuscode',
+            onRender: () => <TaskTooltip>
+                <TaskTooltip.Callout>
+                    <TaskTooltip.Header />
+                    <TaskTooltip.ProgressRow />
+                    <TaskTooltip.FieldRows>
+                        <TaskTooltip.FieldRow columnName='priority' iconName='Flag' />
+                        <TaskTooltip.FieldRow columnName='estimatedeffort' iconName='Clock' />
+                    </TaskTooltip.FieldRows>
+                    <TaskTooltip.DateRangeRow />
+                </TaskTooltip.Callout>
+            </TaskTooltip>,
+        }),`,
+})
+
+const LINKS_CODE = createGanttCode({
+    controlProps: ' enableEditing',
+    controlModules: `
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+    `,
+    ganttModules: `
+        createBarDraggingModule(),
+        createLinksModule(),`,
+})
+
+const OWN_MODULE_CODE = createGanttCode({
+    controlProps: ' enableEditing',
+    setup: `
+//fiscal years start in July
+const fiscalScaleModule = {
+    name: 'fiscalScale',
+    onLoad: (gantt: any) => {
+        gantt.services.observe('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string }) => {
+            if (cell.unit === 'quarter') {
+                const month = cell.date.getMonth()
+                const fiscalYear = month >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
+                result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((month + 6) % 12) / 3) + 1)
+            }
+        }))
+        return {}
+    },
+}
+
+//critical tasks are drawn red
+const criticalTasksModule = {
+    name: 'criticalTasks',
+    onLoad: (gantt: any) => {
+        gantt.services.observe('tasks', (tasks: any) => tasks.registerTask((task: any, { record }: { record: IRecord }) => {
+            if (record.getValue('priority') === '3') {
+                task.color = '#d13438'
+            }
+        }))
+        return {}
+    },
+}
+`,
+    ganttModules: `
+        fiscalScaleModule,
+        criticalTasksModule,`,
+})
+
+export const GanttShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
+export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} />
+export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(MARKERS_CODE)} />
+export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} />
+export const GanttTooltipExample = () => <GridExampleRunner seedCode={withTasks(TOOLTIP_CODE)} />
+export const GanttLinksExample = () => <GridExampleRunner seedCode={withTasks(LINKS_CODE)} />
+export const GanttOwnModuleExample = () => <GridExampleRunner seedCode={withTasks(OWN_MODULE_CODE)} />

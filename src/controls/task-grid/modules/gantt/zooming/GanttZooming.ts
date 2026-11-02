@@ -112,7 +112,6 @@ export class GanttZooming implements IGanttZooming {
     private _anchorX?: number;
     private _pending?: IPendingZoom;
     private _frame?: number;
-    private _wheelTarget?: HTMLElement;
     private _unwatchUserQueries: () => void;
     private _scaleLabelHooks = new HookRegistry<GanttScaleLabelHook>();
 
@@ -189,7 +188,6 @@ export class GanttZooming implements IGanttZooming {
 
     public destroy(): void {
         this._unwatchUserQueries();
-        this._detachWheel();
         if (this._frame !== undefined) {
             cancelAnimationFrame(this._frame);
         }
@@ -310,18 +308,11 @@ export class GanttZooming implements IGanttZooming {
     };
 
     private _onGanttReady = (): boolean => {
-        this._detachWheel();
-        this._wheelTarget = this._chart.$task;
         //not passive so Ctrl+wheel and a pinch do not zoom the page
-        this._wheelTarget?.addEventListener('wheel', this._onWheel, { passive: false });
-        this._wheelTarget?.addEventListener('mousewheel', this._onLegacyWheel);
+        this._chart.$task?.addEventListener('wheel', this._onWheel, { passive: false });
+        this._chart.$task?.addEventListener('mousewheel', this._onLegacyWheel);
         return true;
     };
-
-    private _detachWheel(): void {
-        this._wheelTarget?.removeEventListener('wheel', this._onWheel);
-        this._wheelTarget?.removeEventListener('mousewheel', this._onLegacyWheel);
-    }
 
     //cancelling `wheel` does not stop the chart scrolling on the legacy event
     private _onLegacyWheel = (event: Event): void => {

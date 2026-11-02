@@ -28,37 +28,36 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-const FAILED_ACTIONS_CODE = `import { createDealViewDataModule, IDealViewData, loadDeals, loadDealViews } from './views'
+const FAILED_ACTIONS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
 
 //stands in for your server, which the toggle takes down
 const server = { isDown: false }
 
-const syncToCrm = async () => {
+const callServer = async (failure: string) => {
     await new Promise(resolve => setTimeout(resolve, 800))
     if (server.isDown) {
-        throw new Error('The CRM did not respond.')
+        throw new Error(failure)
     }
 }
 
-const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync to CRM', iconName: 'Sync', onExecute: syncToCrm }]
+const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync to CRM', iconName: 'Sync', onExecute: () => callServer('The CRM did not respond.') }]
 
-//a saved value that throws stops the save
-const serverGuardModule: IDatasetControlModule = {
-    name: 'serverGuard',
-    onLoad: datasetControl => {
-        datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('serverGuard', () => {
-            if (server.isDown) {
-                throw new Error('The view could not be saved while the server is down.')
-            }
-            return undefined
-        }))
-        return {}
-    },
+//the views are kept in this browser, but saving one goes through the server first
+class DealViewsStore extends LocalStorageUserQueriesStore<IDealViewData> {
+    public async createView(name: string, view: IUserQueryView<IDealViewData>): Promise<string> {
+        await callServer('The view could not be saved while the server is down.')
+        return super.createView(name, view)
+    }
+
+    public async updateView(viewId: string, view: IUserQueryView<IDealViewData>): Promise<void> {
+        await callServer('The view could not be saved while the server is down.')
+        await super.updateView(viewId, view)
+    }
 }
 
 const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.failingDealViews' }), createDealViewDataModule(), serverGuardModule], [])
+    const modules = React.useMemo(() => [createUserQueriesModule<IDealViewData>({ onCreateStore: () => new DealViewsStore({ storageKey: 'docs.failingDealViews' }) })], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked
@@ -67,7 +66,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel checked={isDown} onChange={(_, checked) => toggleServer(!!checked)} />
-        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} stateKey='failingDeals' height='420px'>
+        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='failingDeals' height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>

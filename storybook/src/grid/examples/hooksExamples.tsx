@@ -19,15 +19,18 @@ const closedDealsModule: IGridModule = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), closedDealsModule]}
-            enableOptionSetColors
-            labels={{ valueLocked: 'A closed deal keeps its numbers. Reopen it to change them.' }}
-            height='420px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const LABELS = { 'grid.valueLocked': 'A closed deal keeps its numbers. Reopen it to change them.' }
+
+const GridExample = () => <LocalizationProvider labels={LABELS}>
+    <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), closedDealsModule]}
+                enableOptionSetColors
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+</LocalizationProvider>
 `
 
 export const DAY_UNDER_TEN_HOURS_CODE = `const MAX_HOURS_A_DAY = 10
@@ -56,9 +59,10 @@ const dayLimitModule: IGridModule = {
                 cells.render()
             }
         }
-        timesheets.addEventListener('onRecordColumnValueChanged', redrawDay)
         //the provider outlives the grid
-        grid.events.addEventListener('onDestroyed', () => timesheets.removeEventListener('onRecordColumnValueChanged', redrawDay))
+        grid.services.observe('gridApi', () => {
+            return timesheets.addEventListener('onRecordColumnValueChanged', redrawDay)
+        })
     },
 }
 
@@ -139,13 +143,14 @@ const urgentRowsModule: IGridModule = {
             }
         })
         //AG Grid asks for a row's height again only when it is told to
-        const resizeRows = (_record: IRecord, columnName: string) => {
-            if (columnName === 'priority') {
-                grid.services.find('gridApi')?.resetRowHeights()
+        grid.services.observe('gridApi', gridApi => {
+            const resizeRows = (_record: IRecord, columnName: string) => {
+                if (columnName === 'priority') {
+                    gridApi.resetRowHeights()
+                }
             }
-        }
-        tickets.addEventListener('onRecordColumnValueChanged', resizeRows)
-        grid.events.addEventListener('onDestroyed', () => tickets.removeEventListener('onRecordColumnValueChanged', resizeRows))
+            return tickets.addEventListener('onRecordColumnValueChanged', resizeRows)
+        })
     },
 }
 

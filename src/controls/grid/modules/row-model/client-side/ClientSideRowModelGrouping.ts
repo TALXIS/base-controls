@@ -27,8 +27,9 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         //`getDataPath` is `@initial`
         this._services.get('grid').registerAgGridInitialOptions(result => result.options.getDataPath = getRecordPath);
         //ahead of the grid's refresh on the same event
-        this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        const unsubscribe = this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
+        //the provider outlives the grid
+        this._services.get('grid').events.addEventListener('onDestroyed', unsubscribe);
         //a provider that loaded before the grid mounted sends no event for it
         if (!this._provider.isLoading()) {
             this._loadEveryLevel();
@@ -47,11 +48,6 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     public getRows(): IRecord[] {
         return flattenGroupedRecords(this._provider.getRecords());
     }
-
-    //the provider outlives the grid
-    private _onDestroyed = (): void => {
-        this._provider.removeEventListener('onNewDataLoaded', this._onNewDataLoaded);
-    };
 
     private _onNewDataLoaded = (): void => {
         this._isTree = this._getIsTree();

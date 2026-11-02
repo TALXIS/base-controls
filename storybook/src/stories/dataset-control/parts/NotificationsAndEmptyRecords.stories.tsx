@@ -38,20 +38,18 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`messages\` | \`INotificationMessage[]\` | None | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
-| \`labels\` | \`Partial<IDatasetControlNotificationsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 \`EmptyRecords\`:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`children\` | \`ReactNode\` | None | What shows the records, drawn while there are some. |
-| \`labels\` | \`Partial<IEmptyRecordsLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('notifications')\` returns the notifications part while it is rendered. See *Parts live as long as a load* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+\`control.parts.get('notifications')\` returns the notifications part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)).
 
 | Member | Description |
 |---|---|

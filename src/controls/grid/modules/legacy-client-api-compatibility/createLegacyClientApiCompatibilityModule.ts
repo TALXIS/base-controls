@@ -14,5 +14,4 @@ declare module "../../interfaces" {
 export const createLegacyClientApiCompatibilityModule = (): ILegacyClientApiCompatibilityModule => ({
     name: 'legacyClientApiCompatibility',
     onLoad: ({ services }) => new GridLegacyClientApiCompatibility({ services }),
-    onDestroy: compatibility => compatibility.destroy(),
 });

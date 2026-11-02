@@ -65,7 +65,7 @@ export class Links implements ILinks {
     //the end of the task under the pointer that a link being drawn would attach to
     private _linkDrop?: ILinkDrop;
     private _markLinkDropFrame?: number;
-    private _unregisters: (() => void)[] = [];
+    private _offDependenciesChanged?: () => void;
 
     constructor(gantt: IGantt, parameters: ILinksParameters) {
         this._gantt = gantt;
@@ -75,19 +75,12 @@ export class Links implements ILinks {
         if (!this._dependencies) {
             return;
         }
-        const dependencies = this._dependencies;
-        this._unregisters.push(
-            gantt.registerChartConfig(this._configureChart),
-            gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getLinksStyles(theme))),
-            gantt.surfaces.registerSurface(this._onSurfaces),
-        );
+        gantt.registerChartConfig(this._configureChart);
+        gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getLinksStyles(theme)));
+        gantt.surfaces.registerSurface(this._onSurfaces);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
-        dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
-        this._unregisters.push(
-            gantt.services.observe('chart', this._onChartReady),
-            () => gantt.events.removeEventListener('onTasksParsed', this._syncLinks),
-            () => dependencies.events.removeEventListener('onDependenciesChanged', this._syncLinks),
-        );
+        this._offDependenciesChanged = this._dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
+        gantt.services.observe('chart', this._onChartReady);
     }
 
     public isEditable(): boolean {
@@ -99,7 +92,7 @@ export class Links implements ILinks {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+        this._offDependenciesChanged?.();
     }
 
     private _configureChart = (chart: GanttStatic): void => {
@@ -138,18 +131,14 @@ export class Links implements ILinks {
 
     private _onChartReady = (chart: GanttStatic): (() => void) => {
         //the chart hides links to tasks outside the rendered range
-        const restoreTaskVisibility = extendTaskVisibility(chart, taskId => chart.isTaskExists(taskId) && chart.getGlobalTaskIndex(taskId) >= 0);
-        const eventIds = [
-            chart.attachEvent('onBeforeLinkAdd', this._onBeforeLinkAdd),
-            chart.attachEvent('onLinkDblClick', this._onLinkDblClick),
-        ];
+        extendTaskVisibility(chart, taskId => chart.isTaskExists(taskId) && chart.getGlobalTaskIndex(taskId) >= 0);
+        chart.attachEvent('onBeforeLinkAdd', this._onBeforeLinkAdd);
+        chart.attachEvent('onLinkDblClick', this._onLinkDblClick);
         const document = chart.$root.ownerDocument;
         //captured so the drop is known before the library redraws its tooltip
         document.addEventListener('mousemove', this._onPointerMove, { capture: true, passive: true });
         return () => {
             document.removeEventListener('mousemove', this._onPointerMove, { capture: true });
-            eventIds.forEach(eventId => chart.detachEvent(eventId));
-            restoreTaskVisibility();
             this._cancelMarkLinkDrop();
             document.documentElement.style.removeProperty(LINK_DRAG_POINTER_VARIABLES.x);
             document.documentElement.style.removeProperty(LINK_DRAG_POINTER_VARIABLES.y);

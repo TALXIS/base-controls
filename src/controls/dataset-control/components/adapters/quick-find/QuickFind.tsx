@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { DatasetControlUi, IQuickFindUiComponents } from "../../ui";
@@ -21,7 +20,6 @@ export const QuickFind = (props: IQuickFindProps) => {
     const { rerender } = useRerender();
 
     useEventEmitter<IDatasetControlQuickFindEvents>(quickFind.events, 'onQueryChanged', rerender);
-    useEffect(() => () => quickFind.destroy(), []);
 
     return <DatasetControlUi.QuickFind
         value={quickFind.getQuery()}

@@ -23,11 +23,14 @@ export interface IDatasetControlNotifications {
 export class DatasetControlNotifications implements IDatasetControlNotifications {
     public readonly events: IEventEmitter<IDatasetControlNotificationsEvents> = new EventEmitter<IDatasetControlNotificationsEvents>();
     private _provider: IDataProvider;
+    private _providerUnsubscribes: (() => void)[];
 
     constructor(parameters: IDatasetControlNotificationsParameters) {
         this._provider = parameters.provider;
-        this._provider.addEventListener('onError', this._onChanged);
-        this._provider.addEventListener('onNewDataLoaded', this._onChanged);
+        this._providerUnsubscribes = [
+            this._provider.addEventListener('onError', this._onChanged),
+            this._provider.addEventListener('onNewDataLoaded', this._onChanged),
+        ];
     }
 
     /** The provider's load error, while there is one. */
@@ -37,9 +40,7 @@ export class DatasetControlNotifications implements IDatasetControlNotifications
 
     //the provider outlives the notifications
     public destroy(): void {
-        this._provider.removeEventListener('onError', this._onChanged);
-        this._provider.removeEventListener('onNewDataLoaded', this._onChanged);
-        this.events.clearEventListeners();
+        this._providerUnsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
 

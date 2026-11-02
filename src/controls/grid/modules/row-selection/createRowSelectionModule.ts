@@ -22,5 +22,4 @@ export const createRowSelectionModule = (options: IRowSelectionModuleOptions): I
         services.register('gridServices', () => gridServices);
         return new GridRowSelection({ services, mode: options.mode, onSelectionChanged: options.onSelectionChanged });
     },
-    onDestroy: selection => selection.destroy(),
 });

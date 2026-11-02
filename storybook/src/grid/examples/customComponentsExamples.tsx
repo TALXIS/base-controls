@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createDocsDataset, createProductsProvider, PRODUCT_COLUMNS, PRODUCT_ROWS } from '../data'
+import { createProductsProvider, PRODUCT_COLUMNS, PRODUCT_ROWS } from '../data'
 import { createMemoryProvider, metadataFor } from '../data/metadata'
 
 export const WIN_CHANCE_CODE = `const STAGE_COLORS: { [stage: number]: string } = { 1: '#8a8886', 2: '#0078d4', 3: '#c19c00', 4: '#107c10', 5: '#a4262c' }
@@ -137,8 +137,6 @@ const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
     label: { onRenderText: props => <CaptionedLabel {...props} /> },
 }
 
-const CaptionedHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={CAPTIONED_HEADER} />
-
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
@@ -147,9 +145,9 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createSortingModule(),
             ]}
             colDefs={{
-                price: { headerComponent: CaptionedHeader },
-                instock: { headerComponent: CaptionedHeader },
-                reorderlevel: { headerComponent: CaptionedHeader },
+                price: { headerComponentParams: { components: CAPTIONED_HEADER } },
+                instock: { headerComponentParams: { components: CAPTIONED_HEADER } },
+                reorderlevel: { headerComponentParams: { components: CAPTIONED_HEADER } },
             }}
             height='440px' />
     </DatasetControl.Body>
@@ -203,13 +201,11 @@ const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
     //the totals load on their own, so the headers are redrawn once they arrive
-    React.useEffect(() => {
-        totals.getDataProvider().addEventListener('onLoading', isLoading => {
-            if (!isLoading) {
-                gridRef.current?.services.get('columns').headers.render()
-            }
-        })
-    }, [])
+    React.useEffect(() => totals.getDataProvider().addEventListener('onLoading', isLoading => {
+        if (!isLoading) {
+            gridRef.current?.services.get('columns').headers.render()
+        }
+    }), [])
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
@@ -238,15 +234,18 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
-            labels={{ noRecordsFound: 'Your catalogue has no products yet.' }}
-            components={COMPONENTS}
-            height='360px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const LABELS = { 'grid.noRecordsFound': 'Your catalogue has no products yet.' }
+
+const GridExample = () => <LocalizationProvider labels={LABELS}>
+    <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule()]}
+                components={COMPONENTS}
+                height='360px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+</LocalizationProvider>
 `
 
 export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({
@@ -347,34 +346,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
-    const product = useGridCell().getRecord()
-    return <Text {...props}>{product.getFormattedValue('name')}: {props.children}</Text>
-}
-
-const SAVE_STATUS: IRecordSaveUiComponents = {
-    indicator: {
-        onRenderButton: ({ state, ...props }) => <ActionButton {...props} text={state === 'failed' ? 'Not saved' : 'Saved'} />,
-    },
-    errorCallout: {
-        onRenderTitle: props => <SaveErrorTitle {...props} />,
-    },
-}
-
-const SaveStatusCell = (props: IGridCellParams) => <RecordSaveIndicatorCell {...props} components={SAVE_STATUS} />
-
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
-            colDefs={{
-                [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRenderer: SaveStatusCell },
-            }}
-            height='440px' />
-    </DatasetControl.Body>
-</DatasetControl>
-`
-
 const WAREHOUSE_DELAY = 2500
 const GROUP_DELAY = 2000
 
@@ -424,22 +395,6 @@ const createEmptyCatalogue = () => {
     return provider
 }
 
-const PRICE_APPROVAL_LIMIT = 1000
-const PRICING_DELAY = 600
-
-//stands in for a pricing service that sends big prices to a manager first
-const createPricingProvider = () => {
-    const provider = createDocsDataset('products')
-    provider.setInterceptor('onRecordSave', async (record, defaultAction) => {
-        await new Promise(resolve => window.setTimeout(resolve, PRICING_DELAY))
-        if (!record.isDirty('price') || Number(record.getValue('price') ?? 0) <= PRICE_APPROVAL_LIMIT) {
-            return defaultAction(record)
-        }
-        return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'price', message: "A price over $1,000 needs the category manager's approval." }] }
-    })
-    return provider
-}
-
 export const RICH_TEXT_CODE = `const styles = mergeStyleSets({
     html: {
         width: '100%',
@@ -485,22 +440,14 @@ const HTML_EDITOR: IEditingCellEditorComponents = {
     columnControl: { onRenderControl: () => <RichTextInput /> },
 }
 
-const HtmlCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
-    <Grid.Cell.Renderer {...props} components={HTML_RENDERER} />
-</Grid.Cell.Field>
-
-const HtmlEditor = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
-    <EditingCell.Editor {...props} components={HTML_EDITOR} />
-</Grid.Cell.Field>
-
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{
                 description: {
-                    cellRenderer: HtmlCell,
-                    cellEditor: HtmlEditor,
+                    cellRendererParams: { components: HTML_RENDERER },
+                    cellEditorParams: { components: HTML_EDITOR },
                     cellEditorPopup: true,
                     autoHeight: true,
                     //Enter starts a new line in the editor rather than closing it
@@ -557,5 +504,4 @@ export const LoadingRowsExample = () => <GridExampleRunner seedCode={LOADING_ROW
 
 export const ErrorRowsExample = () => <GridExampleRunner seedCode={ERROR_ROWS_CODE} onCreateProvider={() => createWarehouseProvider(true, true)} />
 
-export const SaveStatusExample = () => <GridExampleRunner seedCode={SAVE_STATUS_CODE} onCreateProvider={createPricingProvider} />
 

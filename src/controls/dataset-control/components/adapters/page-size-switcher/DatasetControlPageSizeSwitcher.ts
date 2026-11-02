@@ -48,12 +48,15 @@ export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSw
     public readonly events: IEventEmitter<IDatasetControlPageSizeSwitcherEvents> = new EventEmitter<IDatasetControlPageSizeSwitcherEvents>();
     private _provider: IInternalDataProvider;
     private _pageSizes: number[];
+    private _providerUnsubscribes: (() => void)[];
 
     constructor(parameters: IDatasetControlPageSizeSwitcherParameters) {
         this._provider = parameters.provider as IInternalDataProvider;
         this._pageSizes = parameters.pageSizes ?? DEFAULT_PAGE_SIZES;
-        this._provider.addEventListener('onNewDataLoaded', this._onChanged);
-        this._provider.addEventListener('onLoading', this._onChanged);
+        this._providerUnsubscribes = [
+            this._provider.addEventListener('onNewDataLoaded', this._onChanged),
+            this._provider.addEventListener('onLoading', this._onChanged),
+        ];
     }
 
     public getPageSize(): number {
@@ -91,9 +94,7 @@ export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSw
     }
 
     public destroy(): void {
-        this._provider.removeEventListener('onNewDataLoaded', this._onChanged);
-        this._provider.removeEventListener('onLoading', this._onChanged);
-        this.events.clearEventListeners();
+        this._providerUnsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
 

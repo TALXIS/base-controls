@@ -15,6 +15,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     private _deps: IDeps;
     private _commands: ICommand[] = [];
     private _loading: boolean = true;
+    private _recordUnsubscribes: (() => void)[] = [];
     constructor(deps: IDeps) {
         super();
         this._deps = deps;
@@ -25,7 +26,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
         return this._commands;
     }
     public destroy() {
-        this._unregisterEventListeners();
+        this._recordUnsubscribes.forEach(unsubscribe => unsubscribe());
     }
     public isLoading(): boolean {
         return this._loading;
@@ -48,12 +49,10 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     }
 
     private _registerEventListeners() {
-        this._getRecord().addEventListener('onFieldValueChanged', this.refreshCommands);
-        this._getRecord().addEventListener('onAfterSaved', this.refreshCommands);
-    }
-    private _unregisterEventListeners() {
-        this._getRecord().removeEventListener('onFieldValueChanged', this.refreshCommands);
-        this._getRecord().removeEventListener('onAfterSaved', this.refreshCommands);
+        this._recordUnsubscribes = [
+            this._getRecord().addEventListener('onFieldValueChanged', this.refreshCommands),
+            this._getRecord().addEventListener('onAfterSaved', this.refreshCommands),
+        ];
     }
     private _getRecord() {
         return this._deps.onGetRecord();

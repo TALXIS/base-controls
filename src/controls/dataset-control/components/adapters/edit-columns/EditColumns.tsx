@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DatasetConstants, IAvailableRelatedColumn, IColumn } from "@talxis/client-libraries";
 import { useEventEmitter } from "@hooks";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
@@ -54,7 +54,6 @@ export const EditColumns = (props: IEditColumnsProps) => {
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onScopeChanged', () => setScopeVersion(version => version + 1));
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onLoadFailed', rerender);
     useEventEmitter<IDatasetControlEditColumnsSessionEvents>(session?.events, 'onScopesLoaded', rerender);
-    useEffect(() => () => editColumns.destroy(), []);
 
     const retry = () => {
         session?.clearError();

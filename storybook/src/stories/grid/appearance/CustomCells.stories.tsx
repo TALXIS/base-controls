@@ -5,68 +5,80 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RichTextExample, WinChanceExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-Every column draws its cells with the grid's own cell, which shows the value the way its data type reads. When a column needs something else, give it a cell of your own: \`cellRenderer\` in \`colDefs\` draws its cells, and \`cellEditor\` edits them with the editing module.
+Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
 \`\`\`tsx
-<DatasetControl onLoad={loadDeals}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule()]}
-            colDefs={{ description: { cellRenderer: HtmlCell, cellEditor: HtmlEditor } }} />
-    </DatasetControl.Body>
-</DatasetControl>
+const HTML_RENDERER: ICellRendererComponents = {
+    columnControl: { onRenderControl: () => <HtmlValue /> },
+}
+
+<Grid
+    modules={[createClientSideRowModelModule(), createEditingModule()]}
+    colDefs={{ description: { cellRendererParams: { components: HTML_RENDERER } } }} />
 \`\`\`
 
-Either way you build it, your cell keeps what the grid gives every cell: themes, validation errors, loading, commands, locks and row resizing.
+Either way, your cell keeps what the grid gives every cell: themes, validation errors, loading, commands, locks and row resizing.
 
-## Reuse the grid's cell
+## Changing how it looks
 
-Render \`Grid.Cell.Renderer\`, or \`EditingCell.Editor\` for an editor, and replace the parts you need through \`components\`. Wrap it in \`Grid.Cell.Field\` to bind it to its column's value, with its formatting and validation; leave that out for a column you add.
+\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 {{story: Edit descriptions as rich text}}
 
-| Key | Parts | Description |
-|---|---|---|
-| \`columnControl\` | \`onRenderControl(props, defaultRender)\` | The value. Call \`defaultRender\` to fall back to the grid's for some records. |
-| \`control\` | \`onRenderContainer\` | The room the value is drawn in. |
-| \`container\` | \`onRenderContainer\` | The whole cell. |
-| \`loading\` | \`onRenderShimmer\` | The shimmer while the record loads. |
-| \`commands\` | \`onRenderContainer\`, \`onRenderCommandBar\` | The column's commands. |
-| \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` | The validation outline and message. Keep the \`className\` \`onRenderOutline\` receives: the grid hides the focus border of an invalid cell by it. |
-| \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | The grip a row is dragged taller by. |
-| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | The lock, drawn only with the editing module. |
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`columnControl\` | \`onRenderControl(props, defaultRender)\` | \`CellColumnControlComponents\` | The value. The only slot handed a \`defaultRender\`, to fall back to the grid's drawing for some records |
+| \`control\` | \`onRenderContainer\` | | The room the value is drawn in |
+| \`container\` | \`onRenderContainer\` | | The whole cell |
+| \`loading\` | \`onRenderShimmer\` | | The shimmer while the cell waits |
+| \`commands\` | \`onRenderContainer\`, \`onRenderCommandBar\` | \`CellUiCommandsComponents\` | The column's commands |
+| \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` | | The validation outline and message. Keep the \`className\` \`onRenderOutline\` gets: the grid hides an invalid cell's focus border by it |
+| \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
+| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
 
-The parts follow the \`components\` rules. See *Replace what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
+The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`; in an editor, \`columnControl\` draws the input. Group rows and totals draw their own cells, restyled through the grouping and aggregation modules: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+
+## Write a cell of your own
+
+A \`cellRenderer\` of your own is any component that gets AG Grid's cell params, \`IGridCellParams\`. Render \`Grid.Cell.Renderer\` inside it, with \`components\` of its own, and wrap it in \`Grid.Cell.Field\` to bind it to its column's value, formatting and validation:
+
+\`\`\`tsx
+const HtmlCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
+    <Grid.Cell.Renderer {...props} components={HTML_RENDERER} />
+</Grid.Cell.Field>
+\`\`\`
+
+A column you add in \`colDefs\` holds no value of the provider's: draw it with \`Grid.Cell.Renderer\` and no \`Field\`, or with \`Grid.Cell.EmptyRenderer\` for an empty cell. An editor of your own renders \`EditingCell.Editor\` the same way.
 
 ## Compose it from the parts
 
-When you want to lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings one piece of the grid's behaviour, so the cell keeps only what you include. List them in this order:
+To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings one piece of the grid's behaviour, so the cell keeps only what you include. Nest them in this order:
 
-| Part | Description |
+| Part | What it brings |
 |---|---|
 | \`Field\` | Binds the cell to a record's column, for \`useGridField()\`. Leave it out for a column you add. |
-| \`Root\` | Makes it a cell and redraws it when the record changes. Required. In an editor, pass \`takesInput\`. |
+| \`Root\` | Makes it a cell and redraws it when the record changes. Required; in an editor, pass \`takesInput\`. |
 | \`Theme\` | The cell's colours: zebra rows and colour rules. |
 | \`ResizeGrip\` | The grip a row is dragged taller by. |
 | \`Container\` | Fills the cell in the theme's font and text colour. |
-| \`Loading\` | The shimmer while the record loads, in place of what it wraps. |
-| \`Control\` | The room the value is drawn in. The commands, error icon and lock keep to its edge. |
+| \`Loading\` | The shimmer while the cell waits, in place of what it wraps. |
+| \`LockIcon\` | The lock of a locked cell, with the editing module. Goes inside \`Loading\`, before \`Control\`. |
+| \`Control\` | The room the value is drawn in; the commands, error icon and lock keep to its edge. |
 | \`ColumnControl\` | Draws the value: the grid's value renderer, a PCF control the column names, or your \`onRenderControl\`. Goes inside \`Control\`. |
 | \`Commands\` | The column's commands, shown while the row is hovered. |
 | \`FieldError\` | The validation outline and its message. |
-| \`LockIcon\` | The lock of a cell locked for its record, with the editing module. Goes inside \`Loading\`, before the value. |
 
 To draw a value of your own, put it inside \`Control\` in place of \`ColumnControl\`, and every other part keeps its place.
 
 {{story: Forecast the win chance}}
 
-### Reading the cell
+## Read the cell
 
 Call these React hooks in a component inside the cell, so it redraws when a value changes:
 
 | Hook | Returns |
 |---|---|
-| \`useGridCell()\` | The cell: its record, column, context, \`isLocked()\`, \`isLoading()\`, \`isBeingEdited()\` and \`render()\` |
+| \`useGridCell()\` | The cell: its record, column, context, theme, \`isLocked()\`, \`isLoading()\`, \`isBeingEdited()\` and \`render()\` |
 | \`useGridField()\` | The field: its value, formatted value, \`isValid()\` and \`setValue(value)\`, which saves with the editing module's \`autoSave\` |
 `
 
@@ -92,7 +104,7 @@ export const EditDescriptionsAsRichText: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`Grid.Cell.Renderer\` draws the HTML description, sanitized with DOMPurify, and \`EditingCell.Editor\` edits it in a rich text editor, both through \`columnControl.onRenderControl\`. Try: double-click a description and add bold, a list or a link; the row grows to fit with \`autoHeight\`.`,
+                story: `\`cellRendererParams\` draw the HTML description, sanitized with DOMPurify, and \`cellEditorParams\` edit it in a rich text editor, both through \`columnControl.onRenderControl\`. Try: double-click a description and add bold, a list or a link; the row grows to fit with \`autoHeight\`.`,
             },
         },
     },

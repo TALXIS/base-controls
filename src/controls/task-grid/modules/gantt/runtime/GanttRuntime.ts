@@ -40,6 +40,7 @@ export class GanttRuntime implements IGantt {
     public readonly surfaces = new GanttSurfaces();
     public readonly theme = new GanttTheme();
     private _taskRuntime: ITaskRuntime;
+    private _datasetControl: IDatasetControl<ITaskViewData>;
     private _onGetProps: () => ITaskGanttProps;
     private _loadedModules: { module: IGanttModule; instance: unknown }[] = [];
     private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
@@ -53,6 +54,7 @@ export class GanttRuntime implements IGantt {
 
     constructor(parameters: IGanttRuntimeParameters) {
         this._taskRuntime = parameters.taskRuntime;
+        this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
         this._onGetProps = parameters.onGetProps;
         this.services.register('taskRuntime', () => parameters.taskRuntime);
         this.services.register('localization', () => parameters.localization);
@@ -110,6 +112,7 @@ export class GanttRuntime implements IGantt {
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
         this._unsubscribes.forEach(unsubscribe => unsubscribe());
+        this._datasetControl.parts.find('ribbon')?.reload();
         this._unregisterCellCommands?.();
         if (this._unregisterCellCommands && this._gridApi && !this._gridApi.isDestroyed()) {
             this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
@@ -119,7 +122,6 @@ export class GanttRuntime implements IGantt {
             module.onDestroy?.(instance as never);
         }
         this.services.find('chart')?.destructor();
-        this.events.clearEventListeners();
         this.services.destroy();
         this.modules.destroy();
     }
@@ -156,7 +158,7 @@ export class GanttRuntime implements IGantt {
         const dragging = new GanttDragging(chart);
         const zooming = new GanttZooming({ chart, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ chart, gridApi, gantt: this, schedule, onParsed: this._onTasksParsed });
-        this._destroyables.push(timeline, zooming, tasks, dragging);
+        this._destroyables.push(timeline, zooming, tasks);
         this._chartConfigHooks.apply(chart);
         chart.init(container);
 
@@ -212,10 +214,6 @@ export class GanttRuntime implements IGantt {
         return chart;
     }
 
-    private get _datasetControl(): IDatasetControl<ITaskViewData> {
-        return this._taskRuntime.services.get('datasetControl');
-    }
-
     private _getTimelineLimits(): IGanttSpan {
         const limits = this.getProps().timelineLimits;
         const start = (limits?.start ?? dayjs().subtract(DEFAULT_TIMELINE_LIMIT_YEARS, 'year')).toDate();
@@ -240,14 +238,10 @@ export class GanttRuntime implements IGantt {
 
     private _watchTaskRange(): void {
         const provider = this._taskRuntime.getProvider();
-        provider.addEventListener('onRecordColumnValueChanged', this._invalidateTaskRange);
-        provider.taskEvents.addEventListener('onTasksUpdated', this._invalidateTaskRange);
-        this._destroyables.push({
-            destroy: () => {
-                provider.removeEventListener('onRecordColumnValueChanged', this._invalidateTaskRange);
-                provider.taskEvents.removeEventListener('onTasksUpdated', this._invalidateTaskRange);
-            },
-        });
+        this._unsubscribes.push(
+            provider.addEventListener('onRecordColumnValueChanged', this._invalidateTaskRange),
+            provider.taskEvents.addEventListener('onTasksUpdated', this._invalidateTaskRange),
+        );
     }
 
     private _invalidateTaskRange = (): void => {
@@ -278,7 +272,6 @@ export class GanttRuntime implements IGantt {
             }
         });
         observer.observe(taskArea);
-        this._destroyables.push({ destroy: () => observer.disconnect() });
     }
 
     private _addCommands = (commands: IRibbonCommand[]): void => {

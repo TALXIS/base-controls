@@ -30,20 +30,17 @@ export class TaskSelection implements ITaskSelection {
     private _provider: ITaskDataProvider;
     private _rangeAnchorTaskId?: string;
     private _selectedTaskIds?: Set<string>;
-    private _unregisters: (() => void)[] = [];
+    private _offSelectionChanged: () => void;
 
     constructor(gantt: IGantt, parameters: ITaskSelectionParameters) {
         this._gantt = gantt;
         this._provider = gantt.getTaskRuntime().getProvider();
-        this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
-        this._unregisters.push(() => this._provider.removeEventListener('onRecordsSelected', this._onSelectionChanged));
-        this._unregisters.push(
-            gantt.services.observe('chart', this._onChartReady),
-            gantt.services.observe('tasks', this._onTasksReady),
-            gantt.services.get('theme').registerStyles(this._onStyles),
-        );
+        this._offSelectionChanged = this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
+        gantt.services.observe('chart', this._onChartReady);
+        gantt.services.observe('tasks', this._onTasksReady);
+        gantt.services.get('theme').registerStyles(this._onStyles);
         if (parameters.enableSelectionBox ?? true) {
-            this._unregisters.push(gantt.surfaces.registerSurface(this._onSurfaces));
+            gantt.surfaces.registerSurface(this._onSurfaces);
         }
     }
 
@@ -58,23 +55,17 @@ export class TaskSelection implements ITaskSelection {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+        this._offSelectionChanged();
     }
 
-    private _onChartReady = (chart: GanttStatic): (() => void) => {
-        const eventIds = [
-            chart.attachEvent('onTaskClick', this._onTaskClick),
-            chart.attachEvent('onTaskDblClick', this._onTaskDblClick),
-        ];
-        return () => eventIds.forEach(eventId => chart.detachEvent(eventId));
+    private _onChartReady = (chart: GanttStatic): void => {
+        chart.attachEvent('onTaskClick', this._onTaskClick);
+        chart.attachEvent('onTaskDblClick', this._onTaskDblClick);
     };
 
-    private _onTasksReady = (tasks: IGanttTasks): (() => void) => {
-        const unregisters = [
-            tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS)),
-            tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS)),
-        ];
-        return () => unregisters.forEach(unregister => unregister());
+    private _onTasksReady = (tasks: IGanttTasks): void => {
+        tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS));
+        tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS));
     };
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

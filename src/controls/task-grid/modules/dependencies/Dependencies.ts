@@ -115,7 +115,6 @@ export class Dependencies implements IDependencies {
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
     private _values: TaskColumnValues;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
         this._taskRuntime = taskRuntime;
@@ -129,11 +128,9 @@ export class Dependencies implements IDependencies {
             errorMessage: () => this._labels.get('dependencies.loadDependenciesFailed'),
             reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
-        this._unregisters.push(
-            taskRuntime.services.observe('provider', this._onProviderAvailable),
-            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-            taskRuntime.services.get('savingChains').registerLinks(this._addDependencyLinks),
-        );
+        taskRuntime.services.observe('provider', this._onProviderAvailable);
+        taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
+        taskRuntime.services.get('savingChains').registerLinks(this._addDependencyLinks);
     }
 
     public getDependencies(): ITaskDependency[] {
@@ -215,9 +212,6 @@ export class Dependencies implements IDependencies {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-        this._values.destroy();
-        this.events.clearEventListeners();
         this._store.destroy?.();
     }
 
@@ -231,12 +225,9 @@ export class Dependencies implements IDependencies {
     };
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
+        const offTasksDeleted = provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
         const unregisterColumns = provider.registerAvailableColumns(this._addColumns);
-        return () => {
-            unregisterColumns();
-            provider.taskEvents.removeEventListener('onTasksDeleted', this._onTasksDeleted);
-        };
+        return () => { offTasksDeleted(); unregisterColumns(); };
     };
 
     private _onTasksDeleted = (taskIds: string[]): void => {
@@ -316,8 +307,8 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _onGridAvailable = (grid: IGrid): (() => void) => {
-        return (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+    private _onGridAvailable = (grid: IGrid): void => {
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

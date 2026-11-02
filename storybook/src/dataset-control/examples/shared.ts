@@ -48,22 +48,15 @@ export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealVie
     return { provider }
 }
 
-/** Saves what the deals show beside their columns with every user view. */
-export const createDealViewDataModule = (): IDatasetControlModule => ({
-    name: 'dealViewData',
-    onLoad: datasetControl => {
-        const provider = () => datasetControl.getProvider()!
-        datasetControl.modules.observe('userQueries', userQueries => {
-            const unsaveWithViews = [
-                userQueries.saveWithView('sorting', () => provider().getSorting()),
-                userQueries.saveWithView('filtering', () => provider().getFiltering()),
-                userQueries.saveWithView('searchQuery', () => provider().getSearchQuery()),
-            ]
-            return () => unsaveWithViews.forEach(unsaveWithView => unsaveWithView())
-        })
-        return {}
-    },
-})
+/** Saves the sorting, filter and search with every user view; pass it as the control's onMounted. */
+export const saveDealViewData = (control: IDatasetControl<IDealViewData>) => {
+    const provider = () => control.getProvider()!
+    control.modules.observe('userQueries', userQueries => {
+        userQueries.saveWithView('sorting', () => provider().getSorting())
+        userQueries.saveWithView('filtering', () => provider().getFiltering())
+        userQueries.saveWithView('searchQuery', () => provider().getSearchQuery())
+    })
+}
 
 //the views to switch between
 export const loadDealViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => {

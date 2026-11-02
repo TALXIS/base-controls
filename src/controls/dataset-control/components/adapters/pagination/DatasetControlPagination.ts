@@ -32,11 +32,14 @@ export interface IDatasetControlPagination {
 export class DatasetControlPagination implements IDatasetControlPagination {
     public readonly events: IEventEmitter<IDatasetControlPaginationEvents> = new EventEmitter<IDatasetControlPaginationEvents>();
     private _provider: IInternalDataProvider;
+    private _providerUnsubscribes: (() => void)[];
 
     constructor(parameters: IDatasetControlPaginationParameters) {
         this._provider = parameters.provider as IInternalDataProvider;
-        this._provider.addEventListener('onNewDataLoaded', this._onPagingChanged);
-        this._provider.addEventListener('onLoading', this._onPagingChanged);
+        this._providerUnsubscribes = [
+            this._provider.addEventListener('onNewDataLoaded', this._onPagingChanged),
+            this._provider.addEventListener('onLoading', this._onPagingChanged),
+        ];
     }
 
     public getPageNumber(): number {
@@ -65,9 +68,7 @@ export class DatasetControlPagination implements IDatasetControlPagination {
 
     //the provider outlives the pagination
     public destroy(): void {
-        this._provider.removeEventListener('onNewDataLoaded', this._onPagingChanged);
-        this._provider.removeEventListener('onLoading', this._onPagingChanged);
-        this.events.clearEventListeners();
+        this._providerUnsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
 

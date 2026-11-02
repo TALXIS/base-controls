@@ -29,12 +29,8 @@ export const MarkerLayer = () => {
             rerender();
             return true;
         };
-        const eventId = chart.attachEvent('onGanttRender', place);
+        chart.attachEvent('onGanttRender', place);
         place();
-        return () => {
-            chart.detachEvent(eventId);
-            mountPoint.remove();
-        };
     }, [chart]);
 
     if (!chart) {

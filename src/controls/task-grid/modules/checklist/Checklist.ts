@@ -66,7 +66,6 @@ export class Checklist implements IChecklist {
     private _store: IChecklistStore;
     private _labels: LabelsOf<typeof CHECKLIST_LABELS>;
     private _values: TaskColumnValues;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
         this.components = parameters.components ?? {};
@@ -79,10 +78,8 @@ export class Checklist implements IChecklist {
             errorMessage: () => this._labels.get('checklist.loadChecklistFailed'),
             reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
-        this._unregisters.push(
-            taskRuntime.services.observe('provider', this._onProviderAvailable),
-            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-        );
+        taskRuntime.services.observe('provider', this._onProviderAvailable);
+        taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
     public getError(): unknown {
@@ -94,8 +91,6 @@ export class Checklist implements IChecklist {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-        this._values.destroy();
         this._store.destroy?.();
     }
 
@@ -122,8 +117,8 @@ export class Checklist implements IChecklist {
         }
     };
 
-    private _onGridAvailable = (grid: IGrid): (() => void) => {
-        return (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+    private _onGridAvailable = (grid: IGrid): void => {
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

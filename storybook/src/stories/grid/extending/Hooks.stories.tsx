@@ -30,13 +30,22 @@ const closedDealsModule: IGridModule = {
 
 ## How hooks run
 
-- The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
-- Every \`register...\` call takes an optional \`priority\` and returns a function that removes the hook.
-- Hooks of one kind run in ascending priority, and in the order they were registered within one priority. The built-in modules register before yours.
-- The default priority is \`0\`, which runs before every built-in module, so a module that sets the same thing later overwrites it. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`.
-- \`GRID_MODULE_PRIORITY\` runs the modules in this order: \`legacyClientApiCompatibility\` (\`0\`), \`rowModel\`, \`editing\`, \`rowSelection\`, \`cellSelection\`, \`sorting\`, \`filtering\`, \`grouping\`, \`aggregation\`, \`clipboard\` (\`80\`). Zebra rows are drawn before every cell theme hook, and grouping and aggregation shade their own rows.
-- The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook.
-- Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
+
+Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`, which runs before every built-in module except the legacy client API's, so a module that sets the same thing later overwrites yours. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
+
+| Module | \`GRID_MODULE_PRIORITY\` |
+|---|---|
+| \`legacyClientApiCompatibility\` | \`0\` |
+| \`rowModel\` | \`10\` |
+| \`editing\` | \`15\` |
+| \`rowSelection\` | \`20\` |
+| \`cellSelection\` | \`30\` |
+| \`sorting\`, \`filtering\` | \`40\`, \`50\` |
+| \`grouping\`, \`aggregation\` | \`60\`, \`70\` |
+| \`clipboard\` | \`80\` |
+
+The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
 
 ## Locks
 
@@ -56,8 +65,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Keep a day under ten hours}}
 
-- The hook runs for every column of every record, so check \`columnName\` first.
-- A rule that reads other records changes its result whenever one of them changes, so redraw the cells with \`cells.render()\`, as this module does.
+The hook runs for every column of every record, so check \`columnName\` first. A rule that reads other records changes whenever one of them does, so redraw the cells with \`cells.render()\`, as this module does.
 
 ## Cells
 
@@ -79,9 +87,9 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Make urgent tickets taller}}
 
-- \`rowSettings.onGetHeight\` runs after the hooks, and a height set with \`rows.setRowHeight\`, as a user's drag on a row's resize grip does, wins over both.
-- AG Grid asks for a row's height when it lays the row out. After a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
-- Taller rows reach the grid's height sooner: see *Size the grid* on [**Appearance**](?path=/docs/grid-appearance--overview).
+\`rowSettings.onGetHeight\` runs after the hooks, and a height the user drags on a row's resize grip wins over both. AG Grid asks for a row's height when it lays the row out, so after a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
+
+\`registerRowClass(className, rule)\` puts a class on every row whose record the rule holds for, such as the editing module's \`LOCKED_RECORD_ROW_CLASS\` on a locked record. Pinned rows never take it. AG Grid runs the rules when it updates a row, so call \`rows.refreshRowClasses(records)\` after a change.
 
 ## Columns
 
@@ -89,10 +97,9 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Show columns by role}}
 
-- It receives one definition per provider column that is not hidden, with the column's name as \`colId\`, plus what earlier hooks added, such as the save and lock columns and the checkbox column.
-- Read a definition's \`context\` with \`getColumnContext(colDef)\`.
-- It runs when the grid is ready and on every load of the provider, so a change to what it reads shows after \`provider.refresh()\`.
-- At the default priority the modules can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module.
+It receives one definition per provider column that is not hidden, with the column's name as \`colId\`, plus what earlier hooks added, such as the save and lock columns and the checkbox column. Read a definition's \`context\` with \`getColumnContext(colDef)\`. A column you add takes the grid's header, and draws an empty cell unless you give it a \`cellRenderer\`.
+
+It runs when the grid is ready and on every load of the provider, so a change to what it reads shows after \`provider.refresh()\`. At the default priority the modules can overwrite what it sets: sorting sets \`sortable\` on every provider column, and grouping pins grouped columns and moves them first. \`GRID_MODULE_PRIORITY.clipboard + 1\` runs after every built-in module.
 
 ## Headers
 
@@ -100,10 +107,11 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 {{story: Copy a column's values}}
 
-- \`registerColumnMenuItems\` runs after the sections are laid out and receives every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
-- \`header\` is an \`IGridColumnHeader\`: \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\`, \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` read and drive the rest.
+\`registerColumnMenuItems\` runs after the sections are laid out and receives every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
 
-\`registerColumnHeaderAdornments\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. The modules add the sort arrow, the filter funnel and the total's title after the name, and the group icon before it; at the default priority, yours come first on the same side.
+Every header hook receives an \`IGridColumnHeader\`. \`getColumn()\` is the provider's column, \`undefined\` for a column you added; \`getColDef()\`, \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\`, \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\`, \`getElement()\`, \`openMenu()\` and \`closeMenu()\` read and drive the rest.
+
+\`registerColumnHeaderAdornments\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. After the name, the modules add the lock of a locked column (\`'lock'\`, editing), the sort arrow, the filter funnel and the total's title; before it, the group icon. At the default priority, yours come first on the same side.
 
 {{story: Show the currency in the header}}
 
@@ -117,6 +125,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 | \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | None |
 | \`cells\` | \`registerControlParameters\` | The parameters a cell's control receives | \`result: IParameters\`, \`{ record, columnName, takesInput }\` | \`context.cell.onGetControlParameters\` |
 | \`rows\` | \`registerRowHeight\` | A row's height, in pixels: \`result.height\` | \`result: IGridRowHeight\`, \`{ record, node }\` | \`rowSettings.onGetHeight\` |
+| \`rows\` | \`registerRowClass(className, rule)\` | Whether a row takes the class: the rule returns \`true\`. Takes no priority | \`{ record, node }\` | None |
 | \`editing.locks\` | \`registerLock\` | Whether a column, a row or a cell is locked: \`result.isLocked\` | \`result: IGridLock\`, \`{ record?, columnName? }\` | \`rowSettings.onGetLock\`, \`context.cell.onGetLock\` |
 | \`validation\` | \`registerValidation\` | Whether a value is valid: \`result.error\`, \`result.errorMessage\` | \`result: IFieldValidationResult\`, \`{ record, columnName }\` | \`context.cell.onGetValidation\` |
 | \`columns\` | \`registerColumnDefinitions\` | The column definitions AG Grid receives | \`columnDefs: ColDef<IRecord>[]\` | \`colDefs\` |
@@ -126,6 +135,9 @@ Check the context before you read it. A hook that reads \`record\` without check
 | \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`context.header.onGetTheme\` |
 | \`surfaces\` | \`registerSurface\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | None |
 | \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | None |
+| \`rowSelection\` | \`registerSelectRecords\` | The records about to be selected: change \`selection.recordIds\`, or set \`selection.isCancelled\`. May be async; each is awaited in turn | \`selection\`, \`{ provider }\` | None |
+| \`rowSelection\` | \`registerSelectionState\` | How a row's checkbox reads: \`result.state\` is \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\` | \`result\`, \`{ record, node }\` | None |
+| \`keyboard\` | \`onKeyDown(handler)\` | Runs for every key pressed inside the grid, before what it lands in. Takes no priority | \`event: KeyboardEvent\` | None |
 | The grid | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\` | AG Grid's options: see [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result: { options }\` | None |
 | \`gridTheme\` | \`registerTheme\`, \`registerStyles\` | The AG Grid theme and the root element's styles: see *The AG Grid theme* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result\`, \`fluentTheme\` | None |
 `
@@ -152,7 +164,7 @@ export const LockTheCellsOfClosedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A won or lost deal keeps its numbers: \`registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`valueLocked\` label says why. Try: set a deal's Stage to Won; its numbers lock and Stage stays open.`,
+                story: `A won or lost deal keeps its numbers: \`registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`grid.valueLocked\` label, set through \`LocalizationProvider\`, says why. Try: set a deal's Stage to Won; its numbers lock and Stage stays open.`,
             },
         },
     },

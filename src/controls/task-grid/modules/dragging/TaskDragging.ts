@@ -39,17 +39,13 @@ export interface ITaskDraggingParameters {
 }
 
 /** The `dragging` module, moving a task by dragging its row. */
-export interface ITaskDragging {
-    /** Called as the mount goes. */
-    destroy(): void;
-}
+export interface ITaskDragging { }
 
 /** Moves a task by dragging its row between rows, levels or onto another task. */
 export class TaskDragging implements ITaskDragging {
     private _grid!: IGrid<ITaskGridServiceMap>;
     private _taskRuntime: ITaskRuntime;
     private _parameters: ITaskDraggingParameters;
-    private _unsubscribes: (() => void)[] = [];
     private _isEditing = false;
     private _dragStart?: IDragStart;
     private _dropInto?: IRowNode<IRecord>;
@@ -64,37 +60,21 @@ export class TaskDragging implements ITaskDragging {
     constructor(taskRuntime: ITaskRuntime, parameters: ITaskDraggingParameters) {
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
-        this._unsubscribes.push(
-            taskRuntime.services.observe('provider', this._onProviderAvailable),
-            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-        );
-    }
-
-    public destroy(): void {
-        this._unsubscribes.forEach(unsubscribe => unsubscribe());
+        taskRuntime.services.observe('provider', this._onProviderAvailable);
+        taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
     private _onGridAvailable = (taskGrid: IGrid): (() => void) => {
         const grid = taskGrid as IGrid<ITaskGridServiceMap>;
         this._grid = grid;
         const services = grid.services;
-        const unsubscribes = [
-            grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree),
-            grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree),
-            services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_PRIORITY.tree),
-            services.get('rows').registerRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record),
-            grid.modules.observe('editing', editing => {
-                editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
-                return () => editing.events.removeEventListener('onEditedCellChanged', this._onEditedCellChanged);
-            }),
-            services.observe('gridApi', this._onGridApiAvailable),
-        ];
-        grid.events.addEventListener('onDestroyed', this._onDestroyed);
-        return () => {
-            unsubscribes.forEach(unsubscribe => unsubscribe());
-            grid.events.removeEventListener('onDestroyed', this._onDestroyed);
-            this._onDestroyed();
-        };
+        grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_PRIORITY.tree);
+        services.get('rows').registerRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
+        grid.modules.observe('editing', editing => { editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged); });
+        services.observe('gridApi', this._onGridApiAvailable);
+        return this._clearTimers;
     };
 
     private get _provider(): ITaskDataProvider {
@@ -296,34 +276,22 @@ export class TaskDragging implements ITaskDragging {
     //a sort by another column turns dragging off
     private _onBeforeNewDataLoaded = (): void => this._grid?.refreshAgGridOptions();
 
-    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): (() => void) => {
+    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
         gridApi.addEventListener('rowDragEnter', this._onRowDragEnter);
         gridApi.addEventListener('rowDragEnd', this._onRowDragEnd);
         gridApi.addEventListener('dragStopped', this._restoreDraggedRow);
         gridApi.addEventListener('rowDragCancel', this._restoreDraggedRow);
-        return () => {
-            if (gridApi.isDestroyed()) {
-                return;
-            }
-            gridApi.removeEventListener('rowDragEnter', this._onRowDragEnter);
-            gridApi.removeEventListener('rowDragEnd', this._onRowDragEnd);
-            gridApi.removeEventListener('dragStopped', this._restoreDraggedRow);
-            gridApi.removeEventListener('rowDragCancel', this._restoreDraggedRow);
-        };
     };
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
-        provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
-        return () => {
-            provider.taskEvents.removeEventListener('onTaskMoved', this._onTaskMoved);
-            provider.removeEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
-        };
+        const offTaskMoved = provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
+        const offBeforeNewDataLoaded = provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
+        return () => { offTaskMoved(); offBeforeNewDataLoaded(); };
     };
 
     private _onTaskMoved = (params: ITaskMoveParams): void => this._parameters.onTaskMoved?.(params);
 
-    private _onDestroyed = (): void => {
+    private _clearTimers = (): void => {
         window.clearTimeout(this._dropIntoTimer);
         window.clearTimeout(this._expandTimer);
         window.clearTimeout(this._animationTimer);

@@ -5,6 +5,17 @@ export const APPROVE_IN_BULK_CODE = `const SUBMITTED = 2
 const APPROVED = 3
 const REJECTED = 4
 
+//approved entries are final, so the grid never selects them
+const keepApprovedUnselected: IGridModule = {
+    name: 'keepApprovedUnselected',
+    onLoad: grid => {
+        grid.modules.observe('rowSelection', selection => selection.registerSelectRecords((selection, { provider }) => {
+            const records = provider.getRecordsMap()
+            selection.recordIds = selection.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
+        }))
+    },
+}
+
 const GridExample = () => {
     const [selectedIds, setSelectedIds] = React.useState<string[]>([])
     const gridRef = React.useRef<IGrid>()
@@ -50,6 +61,7 @@ const GridExample = () => {
                     createEditingModule({ autoSave: true }),
                     createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
                     createSortingModule(),
+                    keepApprovedUnselected,
                 ]}
                 enableOptionSetColors
                 onReady={grid => gridRef.current = grid}

@@ -119,7 +119,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _labels: LabelsOf<typeof LOOKUP_MANY_LABELS>;
     private _values: TaskColumnValues;
     private _openFilter?: string;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: ILookupManyParameters<TColumn>) {
         this._taskRuntime = taskRuntime;
@@ -133,10 +132,8 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             onLoad: this._loadValues,
             errorMessage: () => this._labels.get('lookupMany.loadLookupManyFailed'),
         });
-        this._unregisters.push(
-            taskRuntime.services.observe('provider', this._onProviderAvailable),
-            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-        );
+        taskRuntime.services.observe('provider', this._onProviderAvailable);
+        taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
     public getColumn(columnName: string): TColumn | undefined {
@@ -192,9 +189,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-        this._values.destroy();
-        this.events.clearEventListeners();
         this._store.destroy?.();
     }
 
@@ -251,8 +245,8 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     };
 
     //after the editing module whose editor this replaces
-    private _onGridAvailable = (grid: IGrid): (() => void) => {
-        return (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+    private _onGridAvailable = (grid: IGrid): void => {
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

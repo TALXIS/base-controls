@@ -52,9 +52,7 @@ export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
 
     //React would hear the press after the row AG Grid drags by
     useEffect(() => {
-        const grip = gripRef.current;
-        grip?.addEventListener('pointerdown', onPointerDown);
-        return () => grip?.removeEventListener('pointerdown', onPointerDown);
+        gripRef.current?.addEventListener('pointerdown', onPointerDown);
     }, []);
 
     return components.onRenderContainer({

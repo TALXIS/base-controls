@@ -6,12 +6,12 @@ import { ProviderViewsExample } from '../../dataset-control/examples/viewsExampl
 import { UserViewsExample } from '../../dataset-control/examples/userViewsExamples'
 
 const DESCRIPTION = `
-A view is a way of looking at the records, such as *All deals* or *Won deals*. You list the views, \`DatasetControl.ViewSwitcher\` shows them, and the one the user picks is loaded through \`onLoad\`.
+A view is a way of looking at the records, such as *All deals* or *Won deals*. \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and the one the user picks is loaded through \`onLoad\`.
 
 \`\`\`tsx
 const loadViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => [
-    { id: 'all', name: 'All deals', resolve: () => ({ columns: [NAME, OWNER, VALUE] }) },
-    { id: 'won', name: 'Won deals', resolve: () => ({ columns: [NAME, VALUE], data: { stage: 4 } }) },
+    { id: 'all', name: 'All deals', resolve: () => ({ columns: [{ name: 'name' }, { name: 'owner' }, { name: 'value' }] }) },
+    { id: 'won', name: 'Won deals', resolve: () => ({ columns: [{ name: 'name' }, { name: 'value' }], data: { stage: 4 } }) },
 ]
 
 <DatasetControl onLoadViews={loadViews} onLoad={loadDeals}>
@@ -24,33 +24,26 @@ const loadViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => [
 </DatasetControl>
 \`\`\`
 
-## How a view opens
+## Describe a view
 
-1. \`onLoadViews\` lists the views. The switcher needs only their names.
-2. The user picks one, or the control takes the one they left, else the first.
-3. \`onLoad\` gets that view as listed. It creates the provider, calls \`view.resolve(provider)\` for the rest of the view, and sets the provider up from it.
-4. The control sets the view's linking and columns on the provider, then puts back what the user changed in that view, such as Edit columns. See [**State**](?path=/docs/datasetcontrol-state--overview).
-
-Only the opened view is resolved, and only once. If \`onLoad\` doesn't call \`resolve\`, the control calls it after \`onLoad\`.
+The switcher needs only a view's name. What the view shows is resolved when it opens, so it can be fetched then.
 
 | View field | Description |
 |---|---|
 | \`id\` | Identifies the view. |
 | \`name\` | Shown in the switcher. |
 | \`group\` | \`{ id, name }\`, the header it is listed under. Views without one go under *System views*. |
-| \`resolve(provider)\` | Required. Returns what the view shows, below, given the provider it opens on. Can be async, to fetch it as the view opens. |
+| \`resolve(provider)\` | Required. Returns what the view shows, given the provider it opens on. Can be async. |
 
-| \`resolve(provider)\` returns | Description |
-|---|---|
-| \`columns\` | Required. The columns the view shows, complete and in order. |
-| \`linking\` | The related entities its columns come from. |
-| \`data\` | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
-
-If \`onLoadViews\`, \`resolve\` or \`onLoad\` throws, the control shows the error. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
+| \`resolve\` returns | Default | Description |
+|---|---|---|
+| \`columns\` | Required | The columns the view shows, in order: each a \`name\` and what it changes of that column. The rest comes from the provider's available columns, the ones Edit columns offers. A column the provider does not offer is used as the view gives it. |
+| \`linking\` | The provider's own | The related entities its columns come from, as \`alias.column\`. |
+| \`data\` | None | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
 
 ## Load the view
 
-Create the provider, resolve the view with it, and set the provider up from the view's \`data\`. Leave the columns alone: the control sets them.
+\`onLoad\` gets the view as listed. Create the provider, call \`view.resolve(provider)\` and set the provider up from the view's \`data\`. Leave the columns and linking alone: the control sets them after \`onLoad\`, then puts back what the user changed in the view. The full sequence is under *What runs, in order* on [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
 
 \`\`\`tsx
 const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
@@ -65,19 +58,20 @@ const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>)
 
 {{story: Views that set up the provider}}
 
-Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards instead of a grid. See *Your own collection view* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
+Switching the view asks first when the records have unsaved changes. Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards instead of a grid: see *Your own collection view* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
 
 ## Let users save their own views
 
-Add a user queries module and put \`DatasetControl.UserQueries\` in the switcher. The user's views are listed under *My views*, and the switcher gets *Save changes*, *Save as new view* and *Manage views*.
+Add a user queries module and put \`DatasetControl.UserQueries\` in the switcher. The user's views are listed under *My views*, and the switcher gets *Save changes* (while a user view is open), *Save as new view* and *Manage views*.
 
 \`\`\`tsx
-const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({
-    storageKey: 'deals.views',
-    onGetViewData: control => ({ sorting: control.getProvider()?.getSorting() }),
-})], [])
+const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'deals.views' })], [])
 
-<DatasetControl modules={modules} onLoadViews={loadViews} onLoad={loadDeals}>
+const saveViewData = (control: IDatasetControl<IDealViewData>) => control.modules.observe('userQueries', userQueries => {
+    userQueries.saveWithView('sorting', () => control.getProvider()!.getSorting())
+})
+
+<DatasetControl modules={modules} onLoadViews={loadViews} onLoad={loadDeals} onMounted={saveViewData}>
     ...
     <DatasetControl.ViewSwitcher>
         <DatasetControl.UserQueries />
@@ -86,12 +80,14 @@ const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealVi
 </DatasetControl>
 \`\`\`
 
-A user view opens like any other view, so \`onLoad\` needs nothing new. What it keeps:
+A user view opens like any other, so \`onLoad\` needs nothing new. What it keeps:
 
 | | Saved | Opened |
 |---|---|---|
-| Columns | Each shown column's name, order, width, visibility, grouping and aggregation, and the links its related columns come through. | Looked up among the provider's available columns, the ones Edit columns offers, and the saved layout goes over each. A related column is looked up through its saved link. A column the provider no longer offers is left out. |
-| Data | What \`onGetViewData(control)\` returns. Throw to stop the save. | Comes back as \`data\` from \`view.resolve(provider)\`. |
+| Columns | Every column, hidden ones too: its name, order, width, visibility, grouping and aggregation, and the links its related columns come through. | Completed from the provider's available columns, as above. |
+| Data | What each \`saveWithView(key, getter)\` returns, under its key. A getter that returns \`undefined\` saves nothing; one that throws stops the save. | Comes back as \`data\` from \`view.resolve(provider)\`. |
+
+\`saveWithView\` belongs to the module of one mount, so register it in \`onMounted\` through \`control.modules.observe\`, or from a module of your own. It returns its unregistration. See *Modules* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
 
 {{story: Save your own views}}
 
@@ -99,17 +95,17 @@ A user view opens like any other view, so \`onLoad\` needs nothing new. What it 
 
 | Factory | Keeps the views |
 |---|---|
-| \`createLocalStorageUserQueriesModule\` | In this browser, under \`storageKey\`. |
-| \`createTalxisUserQueriesModule\` | As \`talxis_userquery\` records. |
-| \`createDataverseUserQueriesModule\` | As records of a Dataverse table you map. |
-| \`createUserQueriesModule\` | In a store of yours. |
+| \`createLocalStorageUserQueriesModule({ storageKey })\` | In this browser, under \`storageKey\`. |
+| \`createTalxisUserQueriesModule({ entityName })\` | As \`talxis_userquery\` records. |
+| \`createDataverseUserQueriesModule({ entityName, table })\` | As records of a Dataverse table you map. |
+| \`createUserQueriesModule({ onCreateStore })\` | In a store of yours. |
 
-Every factory also takes \`onGetViewData\`, and \`labels\` for its strings; see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
+Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`. Each command is on unless set to \`false\`. Its strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
 
 ### Dataverse
 
 \`\`\`tsx
-createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal', onGetViewData: captureViewData })
+createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal' })
 
 createDataverseUserQueriesModule<IDealViewData>({
     entityName: 'deal',
@@ -121,14 +117,12 @@ createDataverseUserQueriesModule<IDealViewData>({
 |---|---|
 | \`entityName\` | Required. The entity the views are of. |
 | \`table\` | Required for \`createDataverseUserQueriesModule\`: the table's name, and which of its columns hold the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`). Optionally a \`description\`, shown in *Manage views*, and a \`recordId\`. |
-| \`recordId\` | Only the views of this record. Needs \`recordId\` mapped on the table. |
+| \`recordId\` | Only the views of this record; without it, only views of no record. Needs \`recordId\` mapped on the table. |
 | \`ownerId\` | Only the views this user owns. |
 
 The switcher fetches only the views' names. A view's layout is fetched when it opens.
 
 ### Your own store
-
-\`createUserQueriesModule\` keeps the views wherever your store does:
 
 \`\`\`tsx
 const store: IUserQueriesStore<IDealViewData> = {
@@ -139,28 +133,24 @@ const store: IUserQueriesStore<IDealViewData> = {
     createManageProvider: () => createSavedViewsProvider(),
 }
 
-createUserQueriesModule<IDealViewData>({ onCreateStore: () => store, onGetViewData: captureViewData })
+createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })
 \`\`\`
 
 | Store member | Description |
 |---|---|
 | \`getViews()\` | The views to list, as \`{ id, name }\`. |
 | \`getView(viewId)\` | The saved view: \`{ columns, linking, data }\`. |
-| \`createView(name, view)\` | Saves a new view and returns its id. |
+| \`createView(name, view)\` | Saves a new view and returns its id. The control then opens it. |
 | \`updateView(viewId, view)\` | Saves the view again. |
-| \`createManageProvider()\` | A provider with one record per view, which *Manage views* renames and deletes in. |
+| \`createManageProvider()\` | A provider with one record per view, which *Manage views* renames and deletes in. Closing *Manage views* loads the control again. |
 
-## Switching views
-
-- With unsaved changes, the control asks before switching.
-- A view comes back as the user left it. See [**State**](?path=/docs/datasetcontrol-state--overview).
+\`onCreateStore\` gets the control, so a store can read \`control.getDependencies()\`. \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend.
 
 ## ViewSwitcher props
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`labels\` | \`Partial<IViewSwitcherLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`IViewSwitcherComponents\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 | \`children\` | \`ReactNode\` | None | What adds to the switcher, such as \`DatasetControl.UserQueries\`. |
 
 ## From your code
@@ -169,14 +159,22 @@ createUserQueriesModule<IDealViewData>({ onCreateStore: () => store, onGetViewDa
 |---|---|
 | \`loadView(viewId)\` | Opens the view, as picking it does. |
 | \`reload()\` | Lists the views and opens the current one again. |
-| \`getViews()\` | The views as listed. |
-| \`getView()\` | The open view, with what \`resolve(provider)\` returned. |
+| \`getViews()\` | The views as listed for this mount, user views included. |
+| \`getView()\` | The open view, with what \`resolve\` returned. |
 
 | On \`control.parts.get('viewSwitcher')\` | Description |
 |---|---|
-| \`getCurrentView()\` | The open view as listed; \`undefined\` when it is not among the views. |
+| \`getViews()\`, \`getCurrentView()\` | The views, and the open one as listed; \`undefined\` when it is not among them. |
 | \`select(viewId)\` | Opens the view; nothing when it is already open. |
-| \`registerItems(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns a function that removes it. |
+| \`registerItems(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its unregistration. |
+
+| On \`control.modules.get('userQueries')\` | Description |
+|---|---|
+| \`saveWithView(key, getter)\` | Saves what \`getter\` returns with every user view. Returns its unregistration. |
+| \`isUserView(viewId)\` | Whether the view is one of the user's. |
+| \`saveAsNew()\`, \`create(name)\` | Saves what the control shows as a new view, asking for a name or under \`name\`, and opens it. |
+| \`save()\` | Saves what the control shows into the open user view. |
+| \`events\` | \`onManageRequested\`, \`onOperationFailed(error)\`. |
 
 See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
 `
@@ -215,7 +213,7 @@ export const SaveYourOwnViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Views kept in this browser. Try: change the columns or the sorting, *Save as new view*, reload the page, then *Save changes* and *Manage views*.`,
+                story: `Views kept in this browser. Try: sort or search, change the columns, *Save as new view*, reload the page, then *Save changes* and *Manage views*. The sorting, filter and search are saved through \`saveWithView\` in *views.ts*.`,
             },
         },
     },

@@ -138,26 +138,19 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
     }), [chart, dragging, taskDrawing]);
 
     useEffect(() => {
-        const root = chart.$root;
-        window.addEventListener('keydown', listeners.onKeyDown);
-        window.addEventListener('keyup', listeners.onKeyUp);
-        window.addEventListener('mousemove', listeners.onMouseMove);
-        window.addEventListener('mouseup', listeners.onMouseUp);
-        window.addEventListener('blur', listeners.onBlur);
+        const windowListeners = new AbortController();
+        const { signal } = windowListeners;
+        window.addEventListener('keydown', listeners.onKeyDown, { signal });
+        window.addEventListener('keyup', listeners.onKeyUp, { signal });
+        window.addEventListener('mousemove', listeners.onMouseMove, { signal });
+        window.addEventListener('mouseup', listeners.onMouseUp, { signal });
+        window.addEventListener('blur', listeners.onBlur, { signal });
         //captured, ahead of the chart's own mousedown
-        root.addEventListener('mousedown', listeners.onMouseDown, true);
-        root.addEventListener('contextmenu', listeners.onContextMenu, true);
+        chart.$root.addEventListener('mousedown', listeners.onMouseDown, true);
+        chart.$root.addEventListener('contextmenu', listeners.onContextMenu, true);
         return () => {
-            window.removeEventListener('keydown', listeners.onKeyDown);
-            window.removeEventListener('keyup', listeners.onKeyUp);
-            window.removeEventListener('mousemove', listeners.onMouseMove);
-            window.removeEventListener('mouseup', listeners.onMouseUp);
-            window.removeEventListener('blur', listeners.onBlur);
-            root.removeEventListener('mousedown', listeners.onMouseDown, true);
-            root.removeEventListener('contextmenu', listeners.onContextMenu, true);
-            activeDragRef.current = undefined;
+            windowListeners.abort();
             autoScroll.stop();
-            setArmed(false);
         };
     }, [chart, listeners]);
 

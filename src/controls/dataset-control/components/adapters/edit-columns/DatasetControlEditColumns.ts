@@ -80,7 +80,6 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         if (!this._session) {
             return;
         }
-        this._session.destroy();
         this._session = undefined;
         this.events.dispatchEvent('onOpenChanged');
     }
@@ -117,10 +116,5 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         const commands = [removeCommand];
         this._columnCommandsHooks.apply(commands, column, session);
         return commands;
-    }
-
-    public destroy(): void {
-        this._session?.destroy();
-        this.events.clearEventListeners();
     }
 }

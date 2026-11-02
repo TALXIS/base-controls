@@ -134,10 +134,6 @@ export class DatasetControlEditColumnsSession {
         provider.clearSelectedRecordIds();
     }
 
-    public destroy(): void {
-        this.events.clearEventListeners();
-    }
-
 
     private async _loadRelatedScopes(): Promise<void> {
         this._relatedScopes = await this._load(() => this._provider.getAvailableRelatedColumns());

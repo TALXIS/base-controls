@@ -25,18 +25,15 @@ export class GanttDragging implements IGanttDragging {
     private _chart: GanttStatic;
     private _draggedTaskId?: string;
     private _disablers = new Set<symbol>();
-    private _eventIds: string[];
 
     constructor(chart: GanttStatic) {
         this._chart = chart;
         //the plugin resets this config as it starts
         chart.plugins({ drag_timeline: true });
         chart.config.drag_timeline = { ignore: `.${GANTT_DRAGGING_DISABLED_CLASS}, .${GANTT_TASK_LINE_CLASS}` };
-        this._eventIds = [
-            chart.attachEvent('onBeforeTaskDrag', () => !this.isDraggingDisabled()),
-            chart.attachEvent('onTaskDrag', this._onTaskDrag),
-            chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag),
-        ];
+        chart.attachEvent('onBeforeTaskDrag', () => !this.isDraggingDisabled());
+        chart.attachEvent('onTaskDrag', this._onTaskDrag);
+        chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
     }
 
     public disableDragging(): () => void {
@@ -54,12 +51,6 @@ export class GanttDragging implements IGanttDragging {
 
     public isDraggingDisabled(): boolean {
         return this._disablers.size > 0;
-    }
-
-    public destroy(): void {
-        this._eventIds.forEach(eventId => this._chart.detachEvent(eventId));
-        this._disablers.clear();
-        this.events.clearEventListeners();
     }
 
     private _onDisabledChanged(isDisabled: boolean): void {

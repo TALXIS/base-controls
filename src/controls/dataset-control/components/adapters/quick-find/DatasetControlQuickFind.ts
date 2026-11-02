@@ -71,8 +71,4 @@ export class DatasetControlQuickFind implements IDatasetControlQuickFind {
         this.setQuery('');
         this.search();
     }
-
-    public destroy(): void {
-        this.events.clearEventListeners();
-    }
 }

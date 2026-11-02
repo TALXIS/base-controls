@@ -18,9 +18,7 @@ const DESCRIPTION = `
 </DatasetControl.Footer>
 \`\`\`
 
-- Without a total from the provider, the range ends with a \`+\` while there are more pages. Past the provider's count limit, the total shows as *5000+*.
-- The paging buttons are disabled while there is no page to move to.
-- Moving to another page, or changing the page size, asks first when there are unsaved changes.
+Without a total from the provider, the range ends with a \`+\` while there are more pages; past the provider's count limit, the total shows as *5000+*. The paging buttons are disabled while there is no page to move to, and moving to another page or changing the page size asks first when there are unsaved changes.
 
 {{story: Page through the deals}}
 
@@ -31,14 +29,13 @@ const DESCRIPTION = `
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. Read at mount. |
-| \`labels\` | \`Partial<IPageSizeSwitcherLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
-\`Pagination\` takes \`labels\` and \`components\` the same way.
+\`Pagination\` takes \`components\` the same way.
 
 ## From your code
 
-\`control.parts.get('pagination')\` returns the page buttons, and \`control.parts.get('pageSizeSwitcher')\` the page size switcher, while they are rendered. See *Parts live as long as a load* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). Paging the provider directly is under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
+\`control.parts.get('pagination')\` returns the page buttons, and \`control.parts.get('pageSizeSwitcher')\` the page size switcher, once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). Paging the provider directly is under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
 
 \`\`\`tsx
 control.parts.get('pageSizeSwitcher').setPageSize(100)

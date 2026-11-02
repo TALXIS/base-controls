@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { QuickFindExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.QuickFind\` searches the records, in the provider's quick find columns, or its primary column when it has none.
+\`DatasetControl.QuickFind\` searches the records in the provider's quick find columns, or its primary column when it has none.
 
 \`\`\`tsx
 <DatasetControl.Header.End>
@@ -13,24 +13,21 @@ const DESCRIPTION = `
 </DatasetControl.Header.End>
 \`\`\`
 
-- Type and press Enter, or the search icon, to search. The cross clears the search.
-- A leading \`*\` matches anywhere in the value, more slowly, and the callout warns about it.
-- Focusing the field shows which columns it searches.
-- The placeholder names the records from the provider's metadata, or *records* without any.
-- The field is disabled while the provider loads, and when there is no column to search.
-
 {{story: Find a deal}}
+
+Type and press Enter, or the search icon, to search; the cross clears the search. Clicking the field opens a callout listing the columns it searches. A leading \`*\` matches anywhere in the value, more slowly, and the callout warns about it. The placeholder names the records from the provider's metadata, or says *records*. The field is disabled while the provider loads, and when there is no column to search. Searching asks first when the records have unsaved changes.
+
+In a compact header the field collapses to a search button, with a dot while it holds a query; clicking it opens the field across the whole header. See *Fit a narrow screen* on [**Layout**](?path=/docs/datasetcontrol-layout--overview).
 
 ## Props
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`labels\` | \`Partial<IQuickFindLabels>\` | English | See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
-| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See *Replace pieces of the parts* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('quickFind')\` returns the quick find while it is rendered. See *Parts live as long as a load* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). Put a query in it and search, as if the user typed it:
+\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). Put a query in it and search, as if the user typed it:
 
 \`\`\`tsx
 const quickFind = control.parts.get('quickFind')
@@ -71,7 +68,7 @@ export const FindADeal: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Try: search for *Contoso*, then for *\\*rollout*, which matches anywhere in the name, and focus the field to see which columns it searches.`,
+                story: `Try: search for *Contoso*, then for *\\*rollout*, which matches anywhere in the name, and click the field to see which columns it searches.`,
             },
         },
     },

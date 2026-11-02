@@ -55,14 +55,14 @@ const unsavedChangesModule: IGridModule = {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
 
-        provider.addEventListener('onRecordColumnValueChanged', notify)
-        provider.addEventListener('onAfterRecordSaved', notify)
-        provider.addEventListener('onNewDataLoaded', notify)
-        //the provider outlives the grid
-        grid.events.addEventListener('onDestroyed', () => {
-            provider.removeEventListener('onRecordColumnValueChanged', notify)
-            provider.removeEventListener('onAfterRecordSaved', notify)
-            provider.removeEventListener('onNewDataLoaded', notify)
+        //the provider outlives the grid, so its listeners go when AG Grid does
+        grid.services.observe('gridApi', () => {
+            const unsubscribes = [
+                provider.addEventListener('onRecordColumnValueChanged', notify),
+                provider.addEventListener('onAfterRecordSaved', notify),
+                provider.addEventListener('onNewDataLoaded', notify),
+            ]
+            return () => unsubscribes.forEach(unsubscribe => unsubscribe())
         })
         return unsavedChanges
     },

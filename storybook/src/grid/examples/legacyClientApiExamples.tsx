@@ -66,9 +66,9 @@ const supportDeskScript: IGridModule = {
         const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('title', () => getRecommendations(record))
         provider.getRecords().forEach(addRecommendations)
         //a reload or a save clears a record's expressions
-        provider.addEventListener('onRecordLoaded', addRecommendations)
+        const unsubscribe = provider.addEventListener('onRecordLoaded', addRecommendations)
         //the provider outlives the grid
-        grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addRecommendations))
+        grid.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 
@@ -116,8 +116,8 @@ const stockScript: IGridModule = {
     name: 'stockScript',
     onLoad: grid => {
         provider.getRecords().forEach(addStockScript)
-        provider.addEventListener('onRecordLoaded', addStockScript)
-        grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addStockScript))
+        const unsubscribe = provider.addEventListener('onRecordLoaded', addStockScript)
+        grid.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 
@@ -168,8 +168,8 @@ const triageScript: IGridModule = {
     name: 'triageScript',
     onLoad: grid => {
         provider.getRecords().forEach(addAssigneePlaceholder)
-        provider.addEventListener('onRecordLoaded', addAssigneePlaceholder)
-        grid.events.addEventListener('onDestroyed', () => provider.removeEventListener('onRecordLoaded', addAssigneePlaceholder))
+        const unsubscribe = provider.addEventListener('onRecordLoaded', addAssigneePlaceholder)
+        grid.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 

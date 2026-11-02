@@ -1,13 +1,13 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createTimesheetsProvider } from '../data'
+import { createDocsDataset, createTimesheetsProvider } from '../data'
 
 export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provider.getRecordsMap()[recordId]?.getValue('description')
 
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change the hours of an entry: it saves as soon as you leave the cell.')
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })} onMounted={datasetControl => control.current = datasetControl}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
@@ -109,51 +109,54 @@ const GridExample = () => {
 
 export const FREEZE_APPROVED_CODE = `const APPROVED = 3
 
+const LOCK_LABELS = {
+    'grid.columnLocked': 'An entry stays with the employee who logged it.',
+    'grid.recordLocked': 'Approved entries cannot be changed.',
+    'grid.valueLocked': 'Only billable work has an hourly rate.',
+}
+
 //a two-options value reads as '1' or '0'
 const isBillable = (record: IRecord) => record.getValue('billable') === '1'
 
 const GridExample = () => {
     const [isWeekClosed, setIsWeekClosed] = React.useState(false)
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
-            </DatasetControl.Header.Start>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <Grid
-                key={isWeekClosed ? 'closed' : 'open'}
-                modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ autoSave: true })])]}
-                rowSettings={{
-                    onGetLock: (result, { record }) => {
-                        if (Number(record.getValue('status')) === APPROVED) {
-                            result.isLocked = true
-                        }
-                    },
-                }}
-                colDefs={{
-                    employee: { context: { isLocked: true } },
-                    rate: {
-                        context: {
-                            cell: {
-                                onGetLock: (result, { record }) => {
-                                    if (!isBillable(record)) {
-                                        result.isLocked = true
-                                    }
+    return <LocalizationProvider labels={LOCK_LABELS}>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Header>
+                <DatasetControl.Header.Start>
+                    <Toggle label='Close the week' inlineLabel checked={isWeekClosed} onChange={(_, checked) => setIsWeekClosed(!!checked)} />
+                </DatasetControl.Header.Start>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid
+                    key={isWeekClosed ? 'closed' : 'open'}
+                    modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ autoSave: true })])]}
+                    rowSettings={{
+                        onGetLock: (result, { record }) => {
+                            if (Number(record.getValue('status')) === APPROVED) {
+                                result.isLocked = true
+                            }
+                        },
+                    }}
+                    colDefs={{
+                        employee: { context: { isLocked: true } },
+                        rate: {
+                            context: {
+                                cell: {
+                                    onGetLock: (result, { record }) => {
+                                        if (!isBillable(record)) {
+                                            result.isLocked = true
+                                        }
+                                    },
                                 },
                             },
                         },
-                    },
-                }}
-                labels={{
-                    columnLocked: 'An entry stays with the employee who logged it.',
-                    recordLocked: 'Approved entries cannot be changed.',
-                    valueLocked: 'Only billable work has an hourly rate.',
-                }}
-                height='440px' />
-        </DatasetControl.Body>
-    </DatasetControl>
+                    }}
+                    height='440px' />
+            </DatasetControl.Body>
+        </DatasetControl>
+    </LocalizationProvider>
 }
 `
 
@@ -220,6 +223,48 @@ const GridExample = () => {
 }
 `
 
+export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
+    const product = useGridCell().getRecord()
+    return <Text {...props}>{product.getFormattedValue('name')}: {props.children}</Text>
+}
+
+const SAVE_STATUS: IRecordSaveUiComponents = {
+    indicator: {
+        onRenderButton: ({ state, ...props }) => <ActionButton {...props} text={state === 'failed' ? 'Not saved' : 'Saved'} />,
+    },
+    errorCallout: {
+        onRenderTitle: props => <SaveErrorTitle {...props} />,
+    },
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid
+            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+            colDefs={{
+                [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRendererParams: { components: SAVE_STATUS } },
+            }}
+            height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
+`
+
+const PRICE_APPROVAL_LIMIT = 1000
+const PRICING_DELAY = 600
+
+//stands in for a pricing service that sends big prices to a manager first
+const createPricingProvider = () => {
+    const provider = createDocsDataset('products')
+    provider.setInterceptor('onRecordSave', async (record, defaultAction) => {
+        await new Promise(resolve => window.setTimeout(resolve, PRICING_DELAY))
+        if (!record.isDirty('price') || Number(record.getValue('price') ?? 0) <= PRICE_APPROVAL_LIMIT) {
+            return defaultAction(record)
+        }
+        return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'price', message: "A price over $1,000 needs the category manager's approval." }] }
+    })
+    return provider
+}
+
 //a server takes a moment to answer
 const createSlowTimesheetsProvider = () => {
     const provider = createTimesheetsProvider()
@@ -242,3 +287,5 @@ export const FreezeApprovedExample = () => <GridExampleRunner seedCode={FREEZE_A
 export const ServerRefusesExample = () => <GridExampleRunner seedCode={SERVER_REFUSES_CODE} dataset='timesheets' />
 
 export const TickBillableExample = () => <GridExampleRunner seedCode={TICK_BILLABLE_CODE} dataset='timesheets' />
+
+export const SaveStatusExample = () => <GridExampleRunner seedCode={SAVE_STATUS_CODE} onCreateProvider={createPricingProvider} />

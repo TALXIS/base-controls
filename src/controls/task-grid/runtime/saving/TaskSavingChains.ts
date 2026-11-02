@@ -47,11 +47,12 @@ export class TaskSavingChains implements ITaskSavingChains {
     private _saves = new Map<string, ITaskSaves>();
     private _isDestroyed = false;
 
-    /** Starts following the provider's saves. */
-    public attach(provider: ITaskDataProvider): void {
+    /** Starts following the provider's saves; the returned function stops it. */
+    public attach(provider: ITaskDataProvider): () => void {
         this._provider = provider;
-        provider.addEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
-        provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        const offBeforeSaved = provider.addEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
+        const offAfterSaved = provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        return () => { offBeforeSaved(); offAfterSaved(); };
     }
 
     public isTaskSaving(taskId: string): boolean {
@@ -79,9 +80,6 @@ export class TaskSavingChains implements ITaskSavingChains {
     public destroy(): void {
         this._isDestroyed = true;
         this._saves.forEach(saves => window.clearTimeout(saves.timer));
-        this._provider?.removeEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
-        this._provider?.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        this.events.clearEventListeners();
     }
 
     private _onBeforeRecordSaved = (record: IRecord): void => {

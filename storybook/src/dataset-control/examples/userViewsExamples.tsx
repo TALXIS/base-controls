@@ -2,13 +2,12 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const USER_VIEWS_CODE = `import { createDealViewDataModule, IDealViewData, loadDeals, loadDealViews } from './views'
+const USER_VIEWS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
 
 const GridExample = () => {
-    //the columns are kept for you and come back from the provider; createDealViewDataModule registers what else a view keeps
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.dealViews' }), createDealViewDataModule()], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.dealViews' })], [])
 
-    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} stateKey='userViews' height='480px'>
+    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViews' height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

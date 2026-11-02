@@ -101,18 +101,16 @@ export const SelectionBoxLayer = () => {
             isBandOpen = false;
             setArmed(!!event.inputEvent?.shiftKey);
         });
-        window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('keyup', onKeyUp);
-        window.addEventListener('blur', onBlur);
-        window.addEventListener('mousemove', onMouseMove);
+        const windowListeners = new AbortController();
+        const { signal } = windowListeners;
+        window.addEventListener('keydown', onKeyDown, { signal });
+        window.addEventListener('keyup', onKeyUp, { signal });
+        window.addEventListener('blur', onBlur, { signal });
+        window.addEventListener('mousemove', onMouseMove, { signal });
         return () => {
             selecto.destroy();
             clearTimeout(unblockDeselectionTimeout);
-            window.removeEventListener('keydown', onKeyDown);
-            window.removeEventListener('keyup', onKeyUp);
-            window.removeEventListener('blur', onBlur);
-            window.removeEventListener('mousemove', onMouseMove);
-            setArmed(false);
+            windowListeners.abort();
         };
     }, [chart, dragging, selection]);
 

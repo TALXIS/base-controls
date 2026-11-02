@@ -20,10 +20,11 @@ export class GanttOverlay implements IGanttOverlay {
     public readonly events = new EventEmitter<IGanttOverlayEvents>();
     private _provider: IDataProvider;
     private _keys = new Set<string>();
+    private _offLoading: () => void;
 
     constructor(provider: IDataProvider) {
         this._provider = provider;
-        this._provider.addEventListener('onLoading', this._onLoading);
+        this._offLoading = provider.addEventListener('onLoading', this._onLoading);
         this._onLoading();
     }
 
@@ -45,8 +46,7 @@ export class GanttOverlay implements IGanttOverlay {
 
     //the provider outlives the Gantt
     public destroy(): void {
-        this._provider.removeEventListener('onLoading', this._onLoading);
-        this.events.clearEventListeners();
+        this._offLoading();
     }
 
     private _onLoading = (): void => {

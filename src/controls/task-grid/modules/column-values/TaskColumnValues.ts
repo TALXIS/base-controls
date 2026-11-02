@@ -26,14 +26,11 @@ export class TaskColumnValues {
     private _hasStartedLoading = false;
     private _taskLoads = new Map<string, Promise<void>>();
     private _error?: unknown;
-    private _unregisters: (() => void)[] = [];
 
     constructor(parameters: ITaskColumnValuesParameters) {
         this._parameters = parameters;
-        this._unregisters.push(
-            parameters.taskRuntime.services.observe('provider', this._onProviderAvailable),
-            parameters.taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-        );
+        parameters.taskRuntime.services.observe('provider', this._onProviderAvailable);
+        parameters.taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
     public isLoading(): boolean {
@@ -57,20 +54,14 @@ export class TaskColumnValues {
         provider.updateTaskData([...values].map(([taskId, taskValues]) => ({ ...taskValues, [primaryIdAttribute]: taskId })));
     }
 
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
-    }
-
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
+        const offFirstDataLoaded = provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
         const unregisterLoadWaiter = provider.registerLoadWaiter(this._waitForValues);
-        if (this._parameters.reloadOnEditorClosed) {
-            provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed);
-        }
+        const offEditorClosed = this._parameters.reloadOnEditorClosed ? provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed) : undefined;
         return () => {
+            offFirstDataLoaded();
             unregisterLoadWaiter();
-            provider.removeEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-            provider.taskEvents.removeEventListener('onEditorClosed', this._onEditorClosed);
+            offEditorClosed?.();
         };
     };
 
@@ -132,11 +123,8 @@ export class TaskColumnValues {
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid as IGrid<ITaskGridServiceMap>;
-        const unregisterCellLoading = grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
-        return () => {
-            unregisterCellLoading();
-            this._grid = undefined;
-        };
+        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        return () => this._grid = undefined;
     };
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {

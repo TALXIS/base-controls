@@ -11,7 +11,6 @@ The checklist is a grid with a few columns of its own, so it is customized like 
 <CheckList
     fieldMapping={FIELD_MAPPING}
     modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
-    labels={{ newItemPlaceholder: 'Add a task...' }}
     colDefs={{ name: { context: { isPrimary: true } } }}
     onOpenRecord={({ record }) => openItem(record)} />
 \`\`\`
@@ -28,14 +27,14 @@ Without the editing module the list is read-only: no ticking, renaming, adding, 
 
 ## Change its wording
 
-Pass the checklist's labels in \`labels\`, beside the grid's own. \`CHECK_LIST_LABELS\` holds the English defaults, and the grid's are on [**Localization**](?path=/docs/grid-localization--overview).
+Its strings are labels, replaced through a \`LocalizationProvider\` around it (see [**LocalizationProvider**](?path=/docs/providers-localizationprovider--overview)), such as \`<LocalizationProvider labels={{ 'checkList.newItemPlaceholder': 'Add a task...' }}>\`. The grid's own keys are on [**Grid › Localization**](?path=/docs/grid-localization--overview).
 
 | Key | Default | Description |
 |---|---|---|
-| \`newItemPlaceholder\` | Add an item... | The bottom row, while it is empty |
-| \`markItemFinished\` | Mark as finished | The checkbox's tooltip, and its name for screen readers |
-| \`deleteItem\` | Delete | The delete button's tooltip |
-| \`confirmDialog.deleteItem.text\` | Are you sure you want to delete this item? | The dialog that confirms a delete |
+| \`checkList.newItemPlaceholder\` | Add an item... | The bottom row, while it is empty |
+| \`checkList.markItemFinished\` | Mark as finished | The checkbox's tooltip, and its name for screen readers |
+| \`checkList.deleteItem\` | Delete | The delete button's tooltip |
+| \`checkList.confirmDialog.deleteItem.text\` | Are you sure you want to delete this item? | The dialog that confirms a delete |
 
 ## Configure the grid
 

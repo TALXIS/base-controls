@@ -15,5 +15,4 @@ declare module "@controls/dataset-control/runtime/interfaces" {
 export const createTaskDraggingModule = (parameters: ITaskDraggingParameters = {}): ITaskDraggingModule => ({
     name: 'dragging',
     onLoad: datasetControl => new TaskDragging(datasetControl.parts.get('taskRuntime'), parameters),
-    onDestroy: dragging => dragging.destroy(),
 });

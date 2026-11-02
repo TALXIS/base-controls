@@ -75,12 +75,11 @@ export class GridAggregation implements IGridAggregation {
     private _pendingRecord?: IRecord;
     private _isTotalRowSubscribed = false;
     private _pinnedBottomRowData?: IRecord[];
-    private _unwatchGridApi: () => void;
 
     constructor(parameters: IGridAggregationParameters) {
         this._services = parameters.services;
         this._allowUserAggregation = parameters.allowUserAggregation ?? true;
-        this._unwatchGridApi = this._gridServices.observe('gridApi', () => this._onGridApiAvailable());
+        this._gridServices.observe('gridApi', () => this._onGridApiAvailable());
         this._registerHooks();
     }
 
@@ -298,21 +297,17 @@ export class GridAggregation implements IGridAggregation {
 
     private _onGridApiAvailable(): () => void {
         const provider = this._provider;
-        //a view change can bring in an aggregated column
-        provider.addEventListener('onFirstDataLoaded', this._syncTotalRow);
-        provider.addEventListener('onNewDataLoaded', this._syncTotalRow);
-        //a save or a delete changes what the totals are over
-        provider.addEventListener('onAfterSaved', this._onAfterSaved);
-        provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        provider.addEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted);
+        const unsubscribes = [
+            //a view change can bring in an aggregated column
+            provider.addEventListener('onFirstDataLoaded', this._syncTotalRow),
+            provider.addEventListener('onNewDataLoaded', this._syncTotalRow),
+            //a save or a delete changes what the totals are over
+            provider.addEventListener('onAfterSaved', this._onAfterSaved),
+            provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved),
+            provider.addEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted),
+        ];
         this._syncTotalRow();
-        return () => {
-            provider.removeEventListener('onFirstDataLoaded', this._syncTotalRow);
-            provider.removeEventListener('onNewDataLoaded', this._syncTotalRow);
-            provider.removeEventListener('onAfterSaved', this._onAfterSaved);
-            provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-            provider.removeEventListener('onAfterRecordsDeleted', this._onAfterRecordsDeleted);
-        };
+        return () => unsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
     private _onAfterSaved = (): void => {
@@ -327,9 +322,7 @@ export class GridAggregation implements IGridAggregation {
         this._totalRow?.refresh();
     };
 
-    //the provider outlives the grid
     public destroy(): void {
-        this._unwatchGridApi();
         this._totalRow?.destroy();
     }
 

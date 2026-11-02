@@ -71,18 +71,15 @@ export class Templates implements ITemplates {
     private _taskRuntime: ITaskRuntime;
     private _store: ITemplatesStore;
     private _labels: LabelsOf<typeof TEMPLATES_LABELS>;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime, parameters: ITemplatesParameters) {
         this._taskRuntime = taskRuntime;
         this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
         this._labels = taskRuntime.getLabels(TEMPLATES_LABELS);
-        this._unregisters.push(
-            taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY)),
-            taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi),
-            taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable),
-        );
+        taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => { ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY); });
+        taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi);
+        taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
     public createTemplatesProvider(): IDataProvider {
@@ -110,13 +107,12 @@ export class Templates implements ITemplates {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
         this._store.destroy?.();
     }
 
     //after the tree's own add command
-    private _onGridAvailable = (grid: IGrid): (() => void) => {
-        return (grid as IGrid<ITaskGridServiceMap>).services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30);
+    private _onGridAvailable = (grid: IGrid): void => {
+        (grid as IGrid<ITaskGridServiceMap>).services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30);
     };
 
     private _addCommands = (commands: IRibbonCommand[]): void => {

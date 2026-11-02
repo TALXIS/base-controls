@@ -28,12 +28,12 @@ Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how
 
 ### Metadata
 
-A column's \`metadata\` says what can be done with it. The provider fills in the keys you leave out, as the *Default* column says.
+A column's \`metadata\` says what can be done with it. The provider fills in the keys you leave out, as the *Default* column says. Without the [**Editing**](?path=/docs/grid-modules-editing--overview) module every cell is read-only, and \`IsValidForUpdate\` and \`RequiredLevel\` draw nothing.
 
 | Key | Default | Description |
 |---|---|---|
-| \`IsValidForUpdate\` | \`true\`; \`false\` for files and images | Lets the column be edited. \`false\` locks it and shows a lock in its header. |
-| \`RequiredLevel\` | Not required | \`1\` or \`2\` make a value required: an empty one is outlined in red and the record won't save. |
+| \`IsValidForUpdate\` | \`true\`; \`false\` for files and images | With editing, \`false\` locks the column and shows a lock in its header. |
+| \`RequiredLevel\` | Not required | \`1\` or \`2\` make a value required: with editing, the header shows the required marker, an empty value is outlined in red and the record won't save. |
 | \`SupportedFilterConditionOperators\` | All operators of the data type | The operators its filter offers. \`[]\` turns filtering off. |
 | \`CanBeGrouped\` | \`true\`; \`false\` for files, images and multi-select option sets | Lets the column be grouped by. |
 | \`SupportedAggregations\` | All for numbers, currency and durations; \`count\`, \`countcolumn\`, \`min\`, \`max\` for dates; \`count\` and \`countcolumn\` for the rest | The totals its menu offers. |
@@ -45,7 +45,7 @@ A column's \`metadata\` says what can be done with it. The provider fills in the
 
 ## Data types
 
-Each data type has its own way of drawing a value and its own editor.
+Each data type has its own way of drawing a value, and its own editor once the editing module is on.
 
 {{story: See every data type}}
 

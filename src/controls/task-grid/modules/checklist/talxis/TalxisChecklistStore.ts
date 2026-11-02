@@ -8,15 +8,10 @@ const CHECKLIST_FIELD = 'talxis_checklistjson';
 //the items come with the tasks
 export class TalxisChecklistStore implements IChecklistStore {
     private _taskRuntime: ITaskRuntime;
-    private _unregisters: (() => void)[] = [];
 
     constructor(taskRuntime: ITaskRuntime) {
         this._taskRuntime = taskRuntime;
-        this._unregisters.push(taskRuntime.services.observe('provider', this._onProviderAvailable));
-    }
-
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+        taskRuntime.services.observe('provider', this._onProviderAvailable);
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {

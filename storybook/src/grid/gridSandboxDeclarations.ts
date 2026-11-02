@@ -128,7 +128,8 @@ declare namespace ComponentFramework {
 }
 
 interface IEventEmitter<T extends { [K in keyof T]: (...args: any[]) => any }> {
-    addEventListener<K extends keyof T>(event: K, callback: T[K]): void;
+    /** Returns the function that removes the listener again. */
+    addEventListener<K extends keyof T>(event: K, callback: T[K]): () => void;
     removeEventListener<K extends keyof T>(event: K, callbackToRemove: T[K]): void;
     dispatchEvent<K extends keyof T>(event: K, ...args: Parameters<T[K]>): boolean;
     clearEventListeners<K extends keyof T>(eventsToIgnore?: Set<K>): void;
@@ -673,7 +674,7 @@ interface IDataProvider extends IEventEmitter<IDataProviderEventListeners> {
     getLoadingMessage(): string;
     /** The message shows in the grid's loading overlay. */
     setLoading(value: boolean, message?: string): void;
-    addEventListener<K extends keyof IDataProviderEventListeners>(event: K, eventListener: IDataProviderEventListeners[K]): void;
+    addEventListener<K extends keyof IDataProviderEventListeners>(event: K, eventListener: IDataProviderEventListeners[K]): () => void;
     setInterceptor<K extends keyof IDataProviderInterceptors>(name: K, interceptor: IInterceptor<IDataProviderInterceptors, K>): void;
     setProperty<K extends keyof IDataProviderProperties>(name: K, value: IDataProviderProperties[K]): void;
     getProperty<K extends keyof IDataProviderProperties>(name: K): IDataProviderProperties[K];
@@ -919,8 +920,19 @@ interface IParameters {
     [key: string]: any;
 }
 
-interface ILocalizationService<T> {
-    getLocalizedString(key: keyof T, variables?: { [key: string]: string }): string;
+/** A component's strings: label keys and their English defaults. */
+interface ILabelSet {
+    readonly defaults: { [key: string]: string };
+}
+
+/** The strings of one label set, as the nearest LocalizationProvider gives them. */
+interface ILabels {
+    get(key: string, variables?: { [name: string]: string | number }): string;
+}
+
+/** Resolves strings from label sets. */
+interface ILocalizationService {
+    getLabels(set: ILabelSet): ILabels;
 }
 
 interface IServiceLocator<TServiceMap extends object> {
@@ -1333,6 +1345,8 @@ interface IGridColDef {
     cellRendererSelector?: (params: ICellRendererParams<IRecord>) => CellRendererSelectorResult | undefined;
     cellEditor?: any;
     cellEditorParams?: any;
+    /** Draws the editor in a popup over the cell. */
+    cellEditorPopup?: boolean;
     cellClass?: string | string[] | ((params: CellClassParams<IRecord>) => string | string[] | null | undefined);
     cellClassRules?: { [cssClassName: string]: ((params: CellClassParams<IRecord>) => boolean) | string };
     cellStyle?: { [cssProperty: string]: string | number } | ((params: CellClassParams<IRecord>) => { [cssProperty: string]: string | number } | null | undefined);
@@ -1853,6 +1867,8 @@ interface IGrid {
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
+    /** A label set's strings, as the LocalizationProvider around the grid gives them. */
+    getLabels(set: ILabelSet): ILabels;
 }
 
 interface IGridOpenRecordParams {
@@ -1918,7 +1934,6 @@ type GridFilterControlParametersHook = (result: IParameters, params: { column: I
 
 interface IGridFiltering {
     readonly events: IEventEmitter<IGridFilteringEvents>;
-    getLabels(): ILocalizationService<IGridFilteringLabels>;
     getFiltering(): Filtering;
     /** Whether the column lists SupportedFilterConditionOperators. */
     isColumnFilterable(column: IColumn): boolean;
@@ -1945,7 +1960,6 @@ interface IGridGrouping {
     getMaxGroupLoadsPerSelection(): number;
     isGroupSelectionLimitDialogOpen(): boolean;
     closeGroupSelectionLimitDialog(): void;
-    getLabels(): ILocalizationService<IGridGroupingLabels>;
     isColumnGrouped(column: IColumn): boolean;
     canColumnBeGrouped(column: IColumn): boolean;
     /** Whether the row stands for a group rather than for a record. */
@@ -2000,8 +2014,10 @@ interface IGridServiceMap {
     validation: IGridValidation;
     provider: IDataProvider;
     pcfContext: IPcfContext;
-    /** Every string the grid renders, resolved. */
-    labels: ILocalizationService<IGridLabels>;
+    /** Resolves the strings the grid draws. */
+    localization: ILocalizationService;
+    /** The scroll position and the header's height. */
+    viewport: { getScrollTop(): number; setScrollTop(top: number): void; getScrollElement(): HTMLElement | undefined; getHeaderHeight(): number };
     /** The theme the grid was given. */
     theme: ITheme;
     /** The AG Grid theme made from it, and the root element's styles. */
@@ -2128,65 +2144,11 @@ declare const GROUP_EXPANSION_COLUMN_KEY: 'groupExpansion';
 /** The width of a column that does not say, in pixels. */
 declare const DEFAULT_COLUMN_WIDTH: 200;
 
-interface IGridLabels {
-    noRecordsFound: string;
-    valueLocked: string;
-    recordLocked: string;
-    columnLocked: string;
-    recordSaveErrorTitle: string;
-    recordSaveErrorDismiss: string;
-}
-
-interface IGridSortingLabels {
-    sortTextAscending: string;
-    sortTextDescending: string;
-    sortDateAscending: string;
-    sortDateDescending: string;
-    sortNumberAscending: string;
-    sortNumberDescending: string;
-    /** Joins a two-options column's labels, as in "No to Yes". */
-    sortTwoOptionsJoint: string;
-    clear: string;
-    menuSection: string;
-}
-
-interface IGridFilteringLabels {
-    filterMenuFilterBy: string;
-    clear: string;
-    menuSection: string;
-}
-
-interface IGridGroupingLabels {
-    group: string;
-    ungroup: string;
-    /** Takes {{maxGroupChildren}}. */
-    maximumGroupChildrenLimitReached: string;
-    headerTitle: string;
-    menuSection: string;
-    expandLevel: string;
-    collapseLevel: string;
-    /** Takes {{maxGroupLoads}}. */
-    groupSelectionLimitMessage: string;
-    groupSelectionLimitConfirm: string;
-}
-
-interface IGridAggregationLabels {
-    totalNone: string;
-    totalAverage: string;
-    totalMaximum: string;
-    totalMinimum: string;
-    totalSum: string;
-    totalCount: string;
-    totalCountColumn: string;
-    menuSection: string;
-}
-
-/** The English defaults of the strings the grid itself renders. */
-declare const GRID_LABELS: IGridLabels;
-declare const GRID_SORTING_LABELS: IGridSortingLabels;
-declare const GRID_FILTERING_LABELS: IGridFilteringLabels;
-declare const GRID_GROUPING_LABELS: IGridGroupingLabels;
-declare const GRID_AGGREGATION_LABELS: IGridAggregationLabels;
+declare const GRID_LABELS: ILabelSet;
+declare const GRID_SORTING_LABELS: ILabelSet;
+declare const GRID_FILTERING_LABELS: ILabelSet;
+declare const GRID_GROUPING_LABELS: ILabelSet;
+declare const GRID_AGGREGATION_LABELS: ILabelSet;
 
 interface ICellUiContainerComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
@@ -2929,7 +2891,6 @@ interface IGridProps extends Partial<IGridEventHandlers> {
     className?: string;
     components?: IGridComponents;
     /** Read once, at mount. */
-    labels?: Partial<IGridLabels>;
     /** Applied by id on every column build, after every module's hook. */
     colDefs?: { [colId: string]: IGridColDefOverride };
     /** Read whenever the grid asks. */
@@ -3028,7 +2989,6 @@ interface IGridSortingComponents {
 }
 
 interface ISortingModuleOptions {
-    labels?: Partial<IGridSortingLabels>;
     components?: IGridSortingComponents;
 }
 
@@ -3052,7 +3012,6 @@ interface IGridFilteringComponents {
 }
 
 interface IFilteringModuleOptions {
-    labels?: Partial<IGridFilteringLabels>;
     components?: IGridFilteringComponents;
 }
 
@@ -3102,7 +3061,6 @@ interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
 }
 
 interface IGroupingModuleOptions {
-    labels?: Partial<IGridGroupingLabels>;
     components?: IGridGroupingComponents;
     /** True by default. */
     allowUserGrouping?: boolean;
@@ -3137,7 +3095,6 @@ interface IGridAggregationComponents {
 }
 
 interface IAggregationModuleOptions {
-    labels?: Partial<IGridAggregationLabels>;
     /** True by default. */
     allowUserAggregation?: boolean;
     components?: IGridAggregationComponents;
@@ -3281,16 +3238,12 @@ interface INotificationCardProps {
 /** A notification read in full, as a cell's notification callout shows it. */
 declare const NotificationCard: (props: INotificationCardProps) => JSX.Element;
 
-interface INotificationMessageBarLabels {
-    /** Takes {{ count }}. */
-    groupedNotificationsSummary: string;
-}
-
 interface INotificationMessageBarProps {
     /** Several messages fold into one bar. */
     messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[];
     components?: {};
-    labels?: Partial<INotificationMessageBarLabels>;
+    /** The summary shown over several messages, already localized. */
+    groupedNotificationsSummary?: string;
 }
 
 declare const NotificationMessageBar: (props: INotificationMessageBarProps) => JSX.Element;
@@ -3357,22 +3310,15 @@ interface ICheckListFieldMapping {
 }
 
 /** The strings a checklist draws on top of the grid's own. */
-interface ICheckListLabels {
-    newItemPlaceholder: string;
-    markItemFinished: string;
-    deleteItem: string;
-    'confirmDialog.deleteItem.text': string;
-}
 
-declare const CHECK_LIST_LABELS: ICheckListLabels;
+declare const CHECK_LIST_LABELS: ILabelSet;
 
-interface ICheckListProps extends Omit<IGridProps, 'modules' | 'labels'> {
+interface ICheckListProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount. */
     fieldMapping: ICheckListFieldMapping;
     /** Defaults to an auto-saving editing module; a list without editing is read-only. Read once, at mount. */
     modules?: IGridModule[];
     /** The grid's strings and the checklist's own. Read once, at mount. */
-    labels?: Partial<IGridLabels & ICheckListLabels>;
 }
 
 /** A grid over the provider's records as a checklist. */
@@ -3417,8 +3363,6 @@ interface IDatasetControlLoadResult {
     provider: IDataProvider;
 }
 
-interface IDatasetControlLabels { unsavedChangesConfirmation: string }
-interface IViewSwitcherLabels { ungroupedViewsHeader: string }
 
 /** The views the switcher's onLoad returns, and switching between them. */
 interface IDatasetControlViewSwitcher {
@@ -3430,7 +3374,6 @@ interface IDatasetControlViewSwitcher {
 }
 
 interface IViewSwitcherProps {
-    labels?: Partial<IViewSwitcherLabels>;
     components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
     /** What adds to the switcher, such as DatasetControl.UserQueries. */
     children?: React.ReactNode;
@@ -3488,30 +3431,20 @@ interface IDatasetControlUserQueries {
     saveWithView(key: string, onGetValue: () => unknown): () => void;
 }
 
-type IUserQueriesLabelOverrides = Partial<{ myViewsHeader: string; saveChanges: string; saveAsNewView: string; manageViews: string; viewName: string; save: string; delete: string; confirmDeleteViews: string; close: string; saveFailed: string; deleteFailed: string }>;
 
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
 declare const createUserQueriesModule: <TData>(parameters: {
     /** Makes the store the user's views are kept in. */
     onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
-    /** Overrides for every string of the user queries. */
-    labels?: IUserQueriesLabelOverrides;
 } & IUserQueriesCommands) => IDatasetControlModule;
 
 /** The user's views kept in the browser's localStorage, with their columns and data as JSON. */
 declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
     /** The localStorage entry the views are kept in; one per control. */
     storageKey: string;
-    /** Overrides for every string of the user queries. */
-    labels?: IUserQueriesLabelOverrides;
 } & IUserQueriesCommands) => IDatasetControlModule;
 
 
-interface IQuickFindLabels { searchPlaceholder: string; defaultCollectionName: string; leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }
-interface IPaginationLabels { firstPageTooltip: string; previousPageTooltip: string; nextPageTooltip: string; currentPage: string }
-interface IPageSizeSwitcherLabels { recordRange: string; recordTotal: string; pageSizeTooltip: string }
-interface IDatasetControlNotificationsLabels { groupedNotificationsSummary: string }
-interface IEditColumnsLabels { editColumns: string; save: string; cancel: string; scopeSelectorLabel: string; columnSelectorPlaceholder: string; customColumnTooltip: string; unnamed: string; noResults: string; loading: string }
 
 interface IDatasetControlEvents {
     /** A load started: the first one, a view switch or a reload. */
@@ -3560,7 +3493,7 @@ interface IRibbonRuntimeEvents {
 
 /** The ribbon's commands, and which of them are running. */
 interface IRibbonRuntime {
-    readonly events: { addEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void; removeEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void };
+    readonly events: { addEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): () => void; removeEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void };
     /** undefined until the first load finishes. */
     getCommands(): IRibbonCommand[] | undefined;
     /** What the last load threw, until the next one starts. */
@@ -3602,7 +3535,7 @@ declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['comp
 
 /** Subscribing to an emitter's events, without dispatching them. */
 type IEventSubscriber<T> = {
-    addEventListener<K extends keyof T>(event: K, listener: T[K]): void;
+    addEventListener<K extends keyof T>(event: K, listener: T[K]): () => void;
     removeEventListener<K extends keyof T>(event: K, listener: T[K]): void;
 };
 
@@ -3730,6 +3663,9 @@ interface IDatasetControl<TData = unknown> {
     reload(): Promise<void>;
     /** Runs the load that failed again. */
     retry(): Promise<void>;
+    /** A label set's strings, as the LocalizationProvider around the control gives them. */
+    getLabels(set: ILabelSet): ILabels;
+    getTheme(): ITheme;
 }
 
 interface IDatasetControlProps<TData = unknown> {
@@ -3749,7 +3685,6 @@ interface IDatasetControlProps<TData = unknown> {
     stateKey?: string;
     /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to true. */
     destroyProviderOnUnmount?: boolean;
-    labels?: Partial<IDatasetControlLabels>;
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
@@ -3768,6 +3703,22 @@ interface IErrorMessageBarComponents {
     onRenderTitle: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
     /** The details and retry commands; an override can add its own items. */
     onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
+}
+
+/** The quick find's slots. */
+interface IQuickFindUiComponents {
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderTextField: (props: any) => JSX.Element | null;
+    /** The search button drawn in place of the field while the quick find is compact. */
+    compact: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    /** What explains how the search matches, under the field. */
+    callout: Partial<{
+        onRenderCallout: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
+        onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
+        onRenderDescription: (props: { leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }) => JSX.Element | null;
+        onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+        onRenderColumn: (props: { column: IColumn }) => JSX.Element | null;
+    }>;
 }
 
 type IDatasetControlCommandBarProps = import('@fluentui/react').ICommandBarProps;
@@ -3805,30 +3756,15 @@ interface IDatasetControlNamespace {
     /** Reach it through control.parts.get('ribbon'). */
     Ribbon: (props: Omit<IRibbonProps, 'onReady' | 'align'>) => JSX.Element;
     QuickFind: (props: {
-        labels?: Partial<IQuickFindLabels>;
-        components?: Partial<{
-            onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-            onRenderTextField: (props: any) => JSX.Element | null;
-            /** The search button drawn in place of the field while the quick find is compact. */
-            compact: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
-            /** What explains how the search matches, under the field. */
-            callout: Partial<{
-                onRenderCallout: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
-                onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
-                onRenderDescription: (props: { leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }) => JSX.Element | null;
-                onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-                onRenderColumn: (props: { column: IColumn }) => JSX.Element | null;
-            }>;
-        }>;
+        components?: Partial<IQuickFindUiComponents>;
     }) => JSX.Element;
-    Notifications: (props: { labels?: Partial<IDatasetControlNotificationsLabels>; messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
-    Pagination: (props: { labels?: Partial<IPaginationLabels>; components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
-    PageSizeSwitcher: (props: { pageSizes?: number[]; labels?: Partial<IPageSizeSwitcherLabels>; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
+    Pagination: (props: { components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
+    PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
-    EmptyRecords: (props: { children?: React.ReactNode; labels?: Partial<{ noRecordsFound: string }>; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
+    EmptyRecords: (props: { children?: React.ReactNode; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: (props: {
-        labels?: Partial<IEditColumnsLabels>;
         components?: IEditColumnsComponents;
     }) => JSX.Element;
     /** Saving and managing the user's own views; goes inside ViewSwitcher, with the user queries module. */
@@ -3932,13 +3868,14 @@ interface ITaskExecuteOptions {
 interface ITaskActions {
     /** The created task, or null when creation is off or the user cancelled. */
     create(parentId?: string, options?: { position?: TaskCreatePosition; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
-    edit(taskIds: string[]): Promise<any>;
+    /** Opens the tasks in an editor outside the grid, such as a form. */
+    open(taskIds: string[]): Promise<any>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
     /** true once moved, or null when it did not move. */
     move(taskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): Promise<true | null>;
-    /** Edits the task, or opens the record its lookup points to when columnName is another column. */
-    open(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
+    /** Opens the task, or the record its lookup points to when columnName is another column. */
+    openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
@@ -4026,6 +3963,8 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     modules?: IDatasetControlModule[];
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
     onMounted?: (taskRuntime: ITaskRuntime) => void;
+    /** Hours in a day of a task's duration; 24 when left out. */
+    hoursPerDay?: number;
     /** Called on every mount once its load succeeded. */
     onReady?: (taskRuntime: ITaskRuntime) => void;
     /** Called as each mount goes, while its provider still holds its data. */
@@ -4052,6 +3991,27 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount; the task tree and the client-side row model are always added. */
     modules?: IGridModule[];
 }
+
+/** A label set's strings, as the nearest LocalizationProvider gives them. */
+declare const useLabels: (set: ILabelSet) => ILabels;
+/** User views kept in localStorage; extend it to change how a view is written. */
+declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQueriesStore<TData> {
+    constructor(parameters: { storageKey: string });
+    [member: string]: any;
+}
+/** The quick find's default slots. */
+declare const QuickFindUiComponents: IQuickFindUiComponents;
+/** The pagination's default slots. */
+declare const PaginationUiComponents: { onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
+/** The empty records part's default slots. */
+declare const EmptyRecordsUiComponents: IEmptyRecordsUiComponents;
+
+/** The task runtime of the TaskDatasetControl around the component. */
+declare const useTaskRuntime: () => ITaskRuntime;
+/** Provides the strings of every component mounted below it, by label key. */
+declare const LocalizationProvider: (props: { labels: { [key: string]: string }; children: React.ReactNode }) => JSX.Element;
+/** The Czech translation of every label. */
+declare const CZECH_LABELS: { [key: string]: string };
 
 /** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
@@ -4082,7 +4042,6 @@ declare const createCustomColumnsModule: (parameters: {
     enableEditing?: boolean;
     /** The delete command on each custom column in Edit columns. */
     enableDeletion?: boolean;
-    labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
 
 /** A custom column as the IndexedDB store keeps it. */
@@ -4104,7 +4063,6 @@ declare const createIndexedDbCustomColumnsModule: (parameters: {
     columns?: ICustomColumnDefinition[];
     enableCreation?: boolean;
     enableDeletion?: boolean;
-    labels?: Partial<{ addCustomColumn: string; editCustomColumn: string; deleteCustomColumn: string; confirmColumnDelete: string; customColumnsFailed: string }>;
 }) => IDatasetControlModule;
 
 /** How a lookup-many column draws its records. */
@@ -4141,15 +4099,11 @@ interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn
     onCreateOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
 }
 
-/** Strings of the lookup-many module. */
-type LookupManyLabels = Partial<{ noRecordsFound: string; loading: string; loadLookupManyFailed: string }>;
-
 /** The task columns in columns, drawn as pills and picked in a pop-out editor. */
 declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: TColumn };
     onCreateStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
-    labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 
 /** Lookup-many columns over records held in memory, starting over on every mount like the memory tasks. */
@@ -4159,7 +4113,6 @@ declare const createMemoryLookupManyModule: (parameters: {
     columns: { [columnName: string]: ILookupManyColumn };
     /** The tasks' references, by task id and column name. */
     values: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
-    labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 
 /** One Dataverse lookup-many column: the relationship it is reached through, and what it offers. */
@@ -4179,7 +4132,6 @@ declare const createDataverseLookupManyModule: (parameters: {
     columns: { [columnName: string]: IDataverseLookupManyColumn };
     /** The record the grid sits on, as hostRecord in a column's FetchXML. */
     hostRecord?: any;
-    labels?: LookupManyLabels;
 }) => IDatasetControlModule;
 
 /** The people, tags and teams the sample tasks' lookup-many columns pick from. */
@@ -4192,9 +4144,6 @@ declare const LOOKUP_MANY_VIEW_COLUMNS: IColumn[];
 declare const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
 /** Moves the tasks' lookup-many references out of the records, by task id, as the lookup-many module keeps them. */
 declare const takeLookupManyValues: (tasks: IRawRecord[]) => { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
-
-/** Strings of the templates module. */
-type TemplatesLabels = Partial<{ task: string; fromTemplate: string; saveAsTemplate: string; searchTemplates: string; noTemplates: string; creatingTasksFromTemplate: string; savingTemplate: string; templatesFailed: string }>;
 
 /** A task to create, with the tasks to create under it. */
 interface ICreateTaskTree {
@@ -4243,7 +4192,7 @@ interface ITemplatesStore {
 }
 
 /** Offers New, From template and Save as template in the ribbon, and From template on each row. */
-declare const createTemplatesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore; labels?: TemplatesLabels }) => IDatasetControlModule;
+declare const createTemplatesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore }) => IDatasetControlModule;
 
 /** One task of a memory template, with its subtree. */
 interface IMemoryTemplateTask {
@@ -4268,13 +4217,10 @@ declare class MemoryTemplatesStore implements ITemplatesStore {
 }
 
 /** Task templates held in memory, the ones captured since kept for as long as the module is. */
-declare const createMemoryTemplatesModule: (parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[]; labels?: TemplatesLabels }) => IDatasetControlModule;
+declare const createMemoryTemplatesModule: (parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[] }) => IDatasetControlModule;
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
-
-/** Strings of the checklist module. */
-type ChecklistLabels = Partial<{ checklist: string; loadChecklistFailed: string }>;
 
 /** One item of a task's checklist. */
 interface IChecklistItem {
@@ -4290,11 +4236,11 @@ interface IChecklistStore {
 }
 
 /** Each task's checklist progress as done/total, in a column Edit columns offers. */
-declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, checklist: any) => IChecklistStore; labels?: ChecklistLabels }) => IDatasetControlModule;
+declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, checklist: any) => IChecklistStore }) => IDatasetControlModule;
 /** Checklists held in memory, by task id. */
-declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]>; labels?: ChecklistLabels }) => IDatasetControlModule;
+declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]> }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */
-declare const createTalxisChecklistModule: (parameters?: { labels?: ChecklistLabels }) => IDatasetControlModule;
+declare const createTalxisChecklistModule: (parameters?: {}) => IDatasetControlModule;
 
 /** The checklists of the sample tasks. */
 declare const CHECKLIST_ITEMS: Record<string, IChecklistItem[]>;
@@ -4302,9 +4248,6 @@ declare const CHECKLIST_ITEMS: Record<string, IChecklistItem[]>;
 declare const CHECKLIST_COLUMN: IColumn;
 /** Checklists for generated tasks, ticked as far as each task's progress. */
 declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, IChecklistItem[]>;
-
-/** Strings of the dependencies module. */
-type DependenciesLabels = Partial<{ predecessors: string; successors: string; creatingDependency: string; savingDependency: string; deletingDependency: string; dependenciesFailed: string; loadDependenciesFailed: string }>;
 
 /** How the two tasks of a dependency relate in time. */
 type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
@@ -4338,13 +4281,13 @@ interface IDataverseDependenciesSchema {
 }
 
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
-declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore; labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore }) => IDatasetControlModule;
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */
-declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[]; labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[] }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
-declare const createDataverseDependenciesModule: (parameters: IDataverseDependenciesSchema & { labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createDataverseDependenciesModule: (parameters: IDataverseDependenciesSchema) => IDatasetControlModule;
 /** Dependencies kept in TALXIS's task dependency table. */
-declare const createTalxisDependenciesModule: (parameters?: { labels?: DependenciesLabels }) => IDatasetControlModule;
+declare const createTalxisDependenciesModule: (parameters?: {}) => IDatasetControlModule;
 
 /** The dependencies of the sample tasks. */
 declare const DEPENDENCIES: ITaskDependency[];
@@ -4446,7 +4389,6 @@ interface IMarkersOptions {
         line?: Partial<{ onRenderContainer: MarkerSlot }>;
         chip?: Partial<{ onRenderTooltip: MarkerSlot; onRenderChip: MarkerSlot }>;
     };
-    labels?: Partial<{ today: string; projectStart: string; projectEnd: string; loadMarkersFailed: string }>;
 }
 
 /** The marker a slot is drawn for, inside a Gantt marker. */
@@ -4456,7 +4398,6 @@ declare const useMarker: () => { marker: IMarker; left: number };
 declare const TaskGantt: ((props: {
     modules?: IGanttModule[];
     stateKey?: string;
-    labels?: Partial<{ zoomSlider: string; zoomToFit: string; goToToday: string }>;
 }) => JSX.Element) & {
     /** The Gantt's zoom; goes in the header. */
     ZoomSlider: (props: { components?: { [slot: string]: unknown } }) => JSX.Element;
@@ -4499,7 +4440,6 @@ interface INonWorkingDaysOptions {
             onRenderDescription: (props: React.HTMLAttributes<HTMLSpanElement> & { day: { id: string; description: string } }) => JSX.Element | null;
         }>;
     };
-    labels?: Partial<{ hideNonWorkingDays: string; weekend: string; loadNonWorkingDaysFailed: string }>;
 }
 
 /** Common holidays, plus a few company days, for the sample Gantt. */
@@ -4542,8 +4482,8 @@ declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Eleme
 };
 
 /** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
-declare const createTaskTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string; labels?: Partial<{ duration: string }> }) => IGanttModule;
+declare const createTaskTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string }) => IGanttModule;
 /** Draws the dependencies module's dependencies between the bars. */
-declare const createLinksModule: (parameters?: { labels?: Partial<{ confirmDeleteLink: string }> }) => IGanttModule;
+declare const createLinksModule: (parameters?: {}) => IGanttModule;
 
 `

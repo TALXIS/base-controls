@@ -20,12 +20,14 @@ Sorting and filtering let users order a long list and narrow it down from each c
 
 ## The column menu
 
-Clicking a column's header opens its menu; it never sorts by itself. With both modules on, the menu has two sections:
+Clicking a column's header opens its menu; it never sorts by itself. Each module adds a section:
 
-- **Sorting** offers the two directions, worded by the column's data type: *Sort A to Z*, *Sort older to newer*, *Sort smaller to larger*, or a yes/no column's own labels, such as *No to Yes*. Shift+click on one adds the column as a further sort level instead of replacing the sort. *Clear* appears while the column is sorted, and a sorted column shows an arrow after its name.
-- **Filtering** offers *Filter By*, which opens a callout under the header: pick an operator, enter a value and press *Apply*. *Clear* appears while the column is filtered, and a filtered column shows a funnel after its name.
+| Section | Offers | The header shows |
+|---|---|---|
+| Sorting | The two directions, worded by the column's data type: *Sort A to Z*, *Sort older to newer*, *Sort smaller to larger*, or a yes/no column's own labels such as *No to Yes*. Shift+click adds the column as a further sort level. *Clear* while the column is sorted. | An arrow after the name |
+| Filtering | *Filter By*, which opens a callout under the header: pick an operator, enter a value and press *Apply*. *Clear* while the column is filtered. | A funnel after the name |
 
-A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider.
+A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider. The menu texts are label keys under \`gridSorting.*\` and \`gridFiltering.*\`, and the operators' names under \`filterOperators.*\`: see [**Localization**](?path=/docs/grid-localization--overview).
 
 ## What a column needs
 
@@ -38,16 +40,18 @@ The provider's defaults are on [**Data**](?path=/docs/grid-data--overview). To d
 
 ## Open the grid sorted and filtered
 
-The provider holds the sort and the filter, and both modules read them from it. Call \`provider.setSorting()\` and \`provider.setFiltering()\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
+Call \`provider.setSorting()\` and \`provider.setFiltering()\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
 
 {{story: Open on the tickets that matter}}
 
 Write condition values the way the filter callout does, or it opens with nothing picked:
 
-- Option set values as strings (\`'4'\`), and an array of them for \`In\` and \`NotIn\`.
-- Dates as \`'YYYY-MM-DD'\`, and two of them for \`Between\`.
-- \`'%invoice%'\` for \`Like\`, which the callout calls *Contains*.
-- \`''\` for an operator that takes no value, such as \`Today\`.
+| Value | Write it as |
+|---|---|
+| An option set value | A string, \`'4'\`; an array of them for \`In\` and \`NotIn\` |
+| A date | \`'YYYY-MM-DD'\`; two of them for \`Between\` |
+| *Contains* text | \`Like\` with \`'%invoice%'\` |
+| An operator with no value, such as \`Today\` | \`''\` |
 
 Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required: an OR becomes an AND, and nested filters or conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
@@ -57,7 +61,7 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 
 ## Narrow what a filter offers
 
-\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in the order you give them, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, which is what \`Operators.GetOperatorsForDataType(dataType)\` returns:
+\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, which is what \`Operators.GetOperatorsForDataType(dataType)\` returns:
 
 | Data type | Operators |
 |---|---|
@@ -67,69 +71,57 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 | Multi-select option set | \`Equal\`, \`DoesNotEqual\`, \`ContainValues\`, \`DoesNotContainValues\`, \`ContainsData\`, \`DoesNotContainData\` |
 | File, image | \`ContainsData\`, \`DoesNotContainData\` |
 
-- An unfiltered column's callout opens on its data type's own operator, whatever the list holds: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with no operator picked and still filters by it.
-- On an option set or a yes/no column, *Equals* and *Does not equal* take several options, and reach the provider as \`In\` and \`NotIn\` once more than one is picked. Leave \`In\` and \`NotIn\` out of their lists.
-- Dates are compared by day.
+An unfiltered column's callout opens on its data type's own operator, whatever the list holds: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with nothing picked. On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists. Dates are compared by day.
 
-\`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`.
+\`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`: \`control\` is \`'operator'\` or \`'value'\`, and \`index\` is \`1\` for the second value of *Between*. It runs after the grid's own parameters, so it can change those too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
 
 {{story: Offer only the filters that make sense}}
 
-The hook receives \`(result, { column, control, index })\`:
-
-- \`control\` is \`'operator'\` for the operator picker and \`'value'\` for a value control.
-- \`index\` is \`0\`, or \`1\` for the second value of *Between*.
-- It runs after the grid's own parameters, so it can change them too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
-
-## Module options
-
-| Option | Type | Default | Description |
-|---|---|---|---|
-| \`labels\` | \`Partial<IGridSortingLabels>\`, \`Partial<IGridFilteringLabels>\` | English | The module's strings. See [**Localization**](?path=/docs/grid-localization--overview). |
-| \`components\` | \`IGridSortingComponents\`, \`IGridFilteringComponents\` | \`{}\` | What the module draws. See *Changing how it looks* below. |
-
-Both are read at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview).
-
 ## From your code
 
-The sorting and filtering modules' instances are \`grid.modules.find('sorting')\` and \`grid.modules.find('filtering')\`, or \`useGridModule\` in a part the grid draws. Without its module, \`find\` returns \`undefined\` and \`useGridModule\` throws.
+The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filtering')\`, or \`useGridModule\` inside what the grid draws.
 
 | \`sorting\` member | Description |
 |---|---|
-| \`sortColumn(columnName, descending?, appendToExisting?)\` | Sorts by the column and reloads. \`descending\` defaults to \`false\`. \`appendToExisting: true\` adds a sort level, as Shift+click does. |
+| \`sortColumn(columnName, descending?, appendToExisting?)\` | Sorts by the column and reloads. \`appendToExisting: true\` adds a sort level, as Shift+click does. |
 | \`clearColumnSorting(columnName)\` | Takes the column out of the sort and reloads. |
 | \`isSorted(column)\`, \`isSortedDescending(column)\` | Whether the provider sorts by the column, and in which direction. |
 | \`isColumnSortable(column)\` | Whether the column does not set \`disableSorting\`. It does not look at \`colDefs\`. |
 | \`getSortingLabel(columnName, descending?)\` | The text of the column's sort item, such as *Sort older to newer*. |
+| \`getSorting()\` | The \`Sorting\` helper from \`@talxis/client-libraries\` the module writes the provider's sort through. |
+| \`components\` | The \`components\` the module was given. |
 
 | \`filtering\` member | Description |
 |---|---|
 | \`openFilter(columnName, target?)\` | Opens the column's callout, pointed at \`target\`. Pass the column's header element: without one the callout has nothing to point at. |
 | \`closeFilter()\` | Closes the callout. |
-| \`getOpenColumnName()\` | The column whose callout is open, if any. |
+| \`getOpenColumnName()\`, \`getOpenTarget()\` | The column whose callout is open, and the element it points at. |
 | \`isColumnFilterable(column)\` | Whether \`SupportedFilterConditionOperators\` holds an operator. |
 | \`isFiltered(column)\` | Whether a condition on the column is applied to the provider. |
+| \`getColumnFilter(columnName)\` | The column's \`ColumnFilter\`, applied or not. |
 | \`removeColumnFilter(columnName, saveToDataset?)\` | With \`saveToDataset: true\`, takes the column's condition out of the provider's filter and reloads, as *Clear* does. Without it, only a condition not yet applied is dropped. |
-| \`registerFilterControlParameters(hook, priority?)\` | See above. |
+| \`getFiltering()\` | The \`Filtering\` helper from \`@talxis/client-libraries\` that holds every column's filter. |
+| \`registerFilterControlParameters(hook, priority?)\` | See *Narrow what a filter offers*. |
+| \`getFilterControlParameters(parameters, { column, control, index })\` | The parameters a callout control gets: yours, the grid's defaults, then the hooks. |
+| \`components\` | The \`components\` the module was given. |
 | \`events\` | \`onFilterOpened(columnName)\` and \`onFilterClosed()\`, which *Apply* fires too. No event says what was applied. |
 
 ## Changing how it looks
 
-The sorting module draws an arrow in the header of every sorted column, and the filtering module a funnel in every filtered one and the callout a filter is set in. To change them across the grid, pass \`components\` to the module:
+Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
 
 \`\`\`tsx
-createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} /> } } })
+createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} className={styles.arrow} /> } } })
 createFilteringModule({ components: { filterIcon: { onRenderIcon: props => <Icon {...props} iconName='FilterSolid' /> } } })
 \`\`\`
 
-| Module | Key | Parts | Description |
-|---|---|---|---|
-| Sorting | \`sortIcon\` | \`onRenderIcon\` | The arrow of a sorted column, with \`descending\`. |
-| Filtering | \`filterIcon\` | \`onRenderIcon\` | The icon of a filtered column. |
-| Filtering | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | The callout a filter is set in. |
+| Module | Key | Slots | Default | Draws |
+|---|---|---|---|---|
+| Sorting | \`sortIcon\` | \`onRenderIcon\` (with \`descending\`) | \`GridSortingIconComponents\` | The arrow of a sorted column |
+| Filtering | \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
+| | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the callout a filter is set in |
 
-- The parts follow the \`components\` rules. See *Replace what the grid draws* on [**Appearance**](?path=/docs/grid-appearance--overview).
-- To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in the column's \`context.header.onGetAdornments\`. The callout is one for the whole grid.
+What the callout holds, the operator and value controls and the *Apply* and *Clear* buttons, has no slots; change the controls' parameters with \`registerFilterControlParameters\`. To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in that column's \`context.header.onGetAdornments\`.
 
 {{story: Draw your own sort arrows}}
 

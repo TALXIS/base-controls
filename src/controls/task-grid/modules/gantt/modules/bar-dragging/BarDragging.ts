@@ -15,30 +15,20 @@ export interface IBarDraggingParameters {
 }
 
 /** The `barDragging` module: moves and resizes bars, writing the dates once the bar is dropped. */
-export interface IBarDragging {
-    /** Called as the Gantt goes. */
-    destroy(): void;
-}
+export interface IBarDragging { }
 
 export class BarDragging implements IBarDragging {
     private _gantt: IGantt;
     private _isMoveEnabled: boolean;
     private _isResizeEnabled: boolean;
-    private _unregisters: (() => void)[] = [];
 
     constructor(gantt: IGantt, parameters: IBarDraggingParameters) {
         this._gantt = gantt;
         this._isMoveEnabled = parameters.enableMove ?? true;
         this._isResizeEnabled = parameters.enableResize ?? true;
-        this._unregisters.push(
-            gantt.registerChartConfig(this._configureChart),
-            gantt.services.get('theme').registerStyles(result => result.styles.push(getBarDraggingStyles())),
-            gantt.services.observe('chart', this._onChartReady),
-        );
-    }
-
-    public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+        gantt.registerChartConfig(this._configureChart);
+        gantt.services.get('theme').registerStyles(result => result.styles.push(getBarDraggingStyles()));
+        gantt.services.observe('chart', this._onChartReady);
     }
 
     private _configureChart = (chart: GanttStatic): void => {
@@ -50,21 +40,14 @@ export class BarDragging implements IBarDragging {
     };
 
     private _onChartReady = (chart: GanttStatic): (() => void) => {
-        const eventIds = [
-            chart.attachEvent('onBeforeTaskDrag', this._onBeforeTaskDrag),
-            chart.attachEvent('onTaskDrag', this._onTaskDrag),
-            chart.attachEvent('onBeforeTaskChanged', this._onBeforeTaskChanged),
-            chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag),
-        ];
-        const root = chart.$root;
+        chart.attachEvent('onBeforeTaskDrag', this._onBeforeTaskDrag);
+        chart.attachEvent('onTaskDrag', this._onTaskDrag);
+        chart.attachEvent('onBeforeTaskChanged', this._onBeforeTaskChanged);
+        chart.attachEvent('onAfterTaskDrag', this._onAfterTaskDrag);
         //captured since the chart measures the bar in its own mousedown
-        root.addEventListener('mousedown', this._onPointerDown, true);
+        chart.$root.addEventListener('mousedown', this._onPointerDown, true);
         document.addEventListener('mouseup', this._onPointerUp);
-        return () => {
-            eventIds.forEach(eventId => chart.detachEvent(eventId));
-            root.removeEventListener('mousedown', this._onPointerDown, true);
-            document.removeEventListener('mouseup', this._onPointerUp);
-        };
+        return () => document.removeEventListener('mouseup', this._onPointerUp);
     };
 
     private _onPointerDown = (event: MouseEvent): void => {
