@@ -67,7 +67,7 @@ The control's \`onLoad\` returns a provider for the view the user is on, and eve
 | Show a failure | Throw. The control shows it, with *Try again* where it can. | [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview) |
 | Drive the control from your code | \`useDatasetControl()\` inside it, \`onMounted\` outside | [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview) |
 | Bring the user back where they left off | \`stateKey\` | [**State**](?path=/docs/datasetcontrol-state--overview) |
-| Change what a part draws, or translate it | \`components\`, \`LocalizationProvider\` | [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/localization--overview) |
+| Change what a part draws, or translate it | \`components\`, \`LabelsProvider\` | [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/localization--overview) |
 
 ## Props
 

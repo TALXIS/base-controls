@@ -413,7 +413,7 @@ export class GridAggregation implements IGridAggregation {
     }
 
     private get _labels(): LabelsOf<typeof GRID_AGGREGATION_LABELS> {
-        return this._services.get('gridServices').get('localization').getLabels(GRID_AGGREGATION_LABELS);
+        return this._services.get('gridServices').get('labels').getLabels(GRID_AGGREGATION_LABELS);
     }
 
     private get _gridServices() {

@@ -5,16 +5,16 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { SwitchLanguageExample } from '../../localization/localizationExamples'
 
 const DESCRIPTION = `
-Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. \`LocalizationProvider\` replaces labels for everything below it, whichever control draws them. No control takes strings through its own props.
+Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. \`LabelsProvider\` replaces labels for everything below it, whichever control draws them. No control takes strings through its own props.
 
 \`\`\`tsx
-import { CZECH_LABELS, LocalizationProvider } from '@talxis/base-controls'
+import { CZECH_LABELS, LabelsProvider } from '@talxis/base-controls'
 
 const labels = { ...CZECH_LABELS, 'taskGrid.addChild': 'Rozdělit úkol' }
 
-<LocalizationProvider labels={labels}>
+<LabelsProvider labels={labels}>
     <TaskDatasetControl onLoad={loadTasks}>...</TaskDatasetControl>
-</LocalizationProvider>
+</LabelsProvider>
 \`\`\`
 
 Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese from a translation the example brings in \`japanese.ts\`, and your own. Switch language and open the view switcher, Edit columns, the settings, *New* or a column menu, point at a bar or a link, then pick *Your own wording*, change a label and press *Apply*.
@@ -26,12 +26,12 @@ Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese
 \`labels\` maps keys to strings. A key you leave out falls back to the provider above, and then to its English default, so a page can set its language once and one control can still reword a label of its own:
 
 \`\`\`tsx
-<LocalizationProvider labels={CZECH_LABELS}>
+<LabelsProvider labels={CZECH_LABELS}>
     <Header />
-    <LocalizationProvider labels={{ 'grid.noRecordsFound': 'Žádné faktury.' }}>
+    <LabelsProvider labels={{ 'grid.noRecordsFound': 'Žádné faktury.' }}>
         <InvoicesControl />
-    </LocalizationProvider>
-</LocalizationProvider>
+    </LabelsProvider>
+</LabelsProvider>
 \`\`\`
 
 Some labels hold placeholders, such as \`Page {{ number }}\`: keep them in a translation and they are filled in. View, column and option names are not labels: they come from the data, so the example's views carry them per language, in \`columns.ts\`.
@@ -42,7 +42,7 @@ Labels translate the strings; dates, numbers and durations follow the user's for
 
 \`\`\`tsx
 <PcfContextProvider userSettings={{ lcid: 1029, formatInfoCultureName: 'cs-CZ' }}>
-    <LocalizationProvider labels={CZECH_LABELS}>...</LocalizationProvider>
+    <LabelsProvider labels={CZECH_LABELS}>...</LabelsProvider>
 </PcfContextProvider>
 \`\`\`
 

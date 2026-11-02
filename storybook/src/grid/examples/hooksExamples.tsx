@@ -21,7 +21,7 @@ const closedDealsModule: IGridModule = {
 
 const LABELS = { 'grid.valueLocked': 'A closed deal keeps its numbers. Reopen it to change them.' }
 
-const GridExample = () => <LocalizationProvider labels={LABELS}>
+const GridExample = () => <LabelsProvider labels={LABELS}>
     <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
@@ -30,7 +30,7 @@ const GridExample = () => <LocalizationProvider labels={LABELS}>
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
-</LocalizationProvider>
+</LabelsProvider>
 `
 
 export const DAY_UNDER_TEN_HOURS_CODE = `const MAX_HOURS_A_DAY = 10

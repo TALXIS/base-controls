@@ -474,7 +474,7 @@ export class GridGrouping implements IGridGrouping {
     }
 
     private get _labels(): LabelsOf<typeof GRID_GROUPING_LABELS> {
-        return this._services.get('gridServices').get('localization').getLabels(GRID_GROUPING_LABELS);
+        return this._services.get('gridServices').get('labels').getLabels(GRID_GROUPING_LABELS);
     }
 
     private get _gridServices() {

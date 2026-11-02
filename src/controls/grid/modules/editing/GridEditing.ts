@@ -277,7 +277,7 @@ export class GridEditing implements IGridEditing {
         adornments.push({
             key: 'lock',
             placement: 'suffix',
-            onRender: () => createElement(CellUi.LockIcon, { message: this._services.get('localization').getLabels(GRID_LABELS).get('grid.columnLocked') }),
+            onRender: () => createElement(CellUi.LockIcon, { message: this._services.get('labels').getLabels(GRID_LABELS).get('grid.columnLocked') }),
         });
     };
 

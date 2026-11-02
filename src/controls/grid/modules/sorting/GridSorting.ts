@@ -203,6 +203,6 @@ export class GridSorting implements IGridSorting {
     }
 
     private get _labels(): LabelsOf<typeof GRID_SORTING_LABELS> {
-        return this._services.get('gridServices').get('localization').getLabels(GRID_SORTING_LABELS);
+        return this._services.get('gridServices').get('labels').getLabels(GRID_SORTING_LABELS);
     }
 }

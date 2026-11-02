@@ -164,7 +164,7 @@ export const LockTheCellsOfClosedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A won or lost deal keeps its numbers: \`registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`grid.valueLocked\` label, set through \`LocalizationProvider\`, says why. Try: set a deal's Stage to Won; its numbers lock and Stage stays open.`,
+                story: `A won or lost deal keeps its numbers: \`registerLock\`, asked about a cell, locks Products, Value, Probability and Close date once a deal is closed, and the \`grid.valueLocked\` label, set through \`LabelsProvider\`, says why. Try: set a deal's Stage to Won; its numbers lock and Stage stays open.`,
             },
         },
     },

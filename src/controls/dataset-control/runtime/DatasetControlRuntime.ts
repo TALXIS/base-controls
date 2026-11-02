@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LabelsService, ServiceLocator } from "@utils";
 import type { IDatasetControlProps } from "../components/adapters/root/Root";
 import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
 import { toScopedColumn } from "../components/adapters/edit-columns/toScopedColumn";
@@ -42,7 +42,7 @@ export interface IDatasetControlRuntimeParameters {
     onGetProps: () => IDatasetControlProps;
     /** The control's state, which outlives the runtime. */
     state: DatasetControlState;
-    localization: LocalizationService;
+    labelsService: LabelsService;
     theme: ITheme;
     /** Mounts the control anew on the view the state is on. */
     onRemount: () => void;
@@ -75,7 +75,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._state = parameters.state;
         this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
-        this._services.register('localization', () => parameters.localization);
+        this._services.register('labels', () => parameters.labelsService);
         this._services.register('surfaces', () => this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this });
     }
@@ -129,7 +129,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
-        return this._services.get('localization').getLabels(set);
+        return this._services.get('labels').getLabels(set);
     }
 
     public getTheme(): ITheme {

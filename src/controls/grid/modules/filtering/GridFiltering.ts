@@ -235,6 +235,6 @@ export class GridFiltering implements IGridFiltering {
     }
 
     private get _labels(): LabelsOf<typeof GRID_FILTERING_LABELS> {
-        return this._services.get('gridServices').get('localization').getLabels(GRID_FILTERING_LABELS);
+        return this._services.get('gridServices').get('labels').getLabels(GRID_FILTERING_LABELS);
     }
 }

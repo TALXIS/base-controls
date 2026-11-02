@@ -45,7 +45,7 @@ Every \`register…\` returns the function that unregisters it, and takes an opt
 
 ## Services
 
-\`taskRuntime\`, \`schedule\`, \`theme\`, \`overlay\`, \`state\` and \`localization\` are there from the start. The rest come once the chart is drawn, so reach them with \`services.observe(key, callback)\`:
+\`taskRuntime\`, \`schedule\`, \`theme\`, \`overlay\`, \`state\` and \`labels\` are there from the start. The rest come once the chart is drawn, so reach them with \`services.observe(key, callback)\`:
 
 | Key | Hooks and members |
 |---|---|

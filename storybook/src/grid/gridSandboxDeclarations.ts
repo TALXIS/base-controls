@@ -925,13 +925,13 @@ interface ILabelSet {
     readonly defaults: { [key: string]: string };
 }
 
-/** The strings of one label set, as the nearest LocalizationProvider gives them. */
+/** The strings of one label set, as the nearest LabelsProvider gives them. */
 interface ILabels {
     get(key: string, variables?: { [name: string]: string | number }): string;
 }
 
 /** Resolves strings from label sets. */
-interface ILocalizationService {
+interface ILabelsService {
     getLabels(set: ILabelSet): ILabels;
 }
 
@@ -1867,7 +1867,7 @@ interface IGrid {
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
     openRecord(params: IGridOpenRecordParams): void;
-    /** A label set's strings, as the LocalizationProvider around the grid gives them. */
+    /** A label set's strings, as the LabelsProvider around the grid gives them. */
     getLabels(set: ILabelSet): ILabels;
 }
 
@@ -2015,7 +2015,7 @@ interface IGridServiceMap {
     provider: IDataProvider;
     pcfContext: IPcfContext;
     /** Resolves the strings the grid draws. */
-    localization: ILocalizationService;
+    labels: ILabelsService;
     /** The scroll position and the header's height. */
     viewport: { getScrollTop(): number; setScrollTop(top: number): void; getScrollElement(): HTMLElement | undefined; getHeaderHeight(): number };
     /** The theme the grid was given. */
@@ -3663,7 +3663,7 @@ interface IDatasetControl<TData = unknown> {
     reload(): Promise<void>;
     /** Runs the load that failed again. */
     retry(): Promise<void>;
-    /** A label set's strings, as the LocalizationProvider around the control gives them. */
+    /** A label set's strings, as the LabelsProvider around the control gives them. */
     getLabels(set: ILabelSet): ILabels;
     getTheme(): ITheme;
 }
@@ -3992,7 +3992,7 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     modules?: IGridModule[];
 }
 
-/** A label set's strings, as the nearest LocalizationProvider gives them. */
+/** A label set's strings, as the nearest LabelsProvider gives them. */
 declare const useLabels: (set: ILabelSet) => ILabels;
 /** User views kept in localStorage; extend it to change how a view is written. */
 declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQueriesStore<TData> {
@@ -4009,7 +4009,7 @@ declare const EmptyRecordsUiComponents: IEmptyRecordsUiComponents;
 /** The task runtime of the TaskDatasetControl around the component. */
 declare const useTaskRuntime: () => ITaskRuntime;
 /** Provides the strings of every component mounted below it, by label key. */
-declare const LocalizationProvider: (props: { labels: { [key: string]: string }; children: React.ReactNode }) => JSX.Element;
+declare const LabelsProvider: (props: { labels: { [key: string]: string }; children: React.ReactNode }) => JSX.Element;
 /** Provides the PCF context below it; userSettings set the language and formatting outside a hosted PCF control. */
 declare const PcfContextProvider: (props: { context?: any; userSettings?: { lcid?: number; formatInfoCultureName?: string }; children?: React.ReactNode }) => JSX.Element;
 /** The Czech translation of every label. */

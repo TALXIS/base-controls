@@ -72,7 +72,7 @@ export const AnEmptyCatalogue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`overlays.emptyRecords\` swaps the icon and adds a hint under the message, and \`LocalizationProvider\` rewords \`grid.noRecordsFound\`.`,
+                story: `\`overlays.emptyRecords\` swaps the icon and adds a hint under the message, and \`LabelsProvider\` rewords \`grid.noRecordsFound\`.`,
             },
         },
     },

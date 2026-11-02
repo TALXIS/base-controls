@@ -93,7 +93,7 @@ export class CheckListColumns {
         if (!this._checkList.isItem(params.record)) {
             return;
         }
-        const label = this._services.get('localization').getLabels(CHECK_LIST_LABELS).get('checkList.deleteItem');
+        const label = this._services.get('labels').getLabels(CHECK_LIST_LABELS).get('checkList.deleteItem');
         const iconStyle = { color: this._services.get('theme').semanticColors.errorIcon };
         result.items.push({
             key: 'delete',
@@ -110,7 +110,7 @@ export class CheckListColumns {
 
     private async _deleteItem(record: IRecord): Promise<void> {
         const confirmation = await this._services.get('pcfContext').navigation.openConfirmDialog({
-            text: this._services.get('localization').getLabels(CHECK_LIST_LABELS).get('checkList.confirmDialog.deleteItem.text'),
+            text: this._services.get('labels').getLabels(CHECK_LIST_LABELS).get('checkList.confirmDialog.deleteItem.text'),
         });
         if (!confirmation.confirmed) {
             return;

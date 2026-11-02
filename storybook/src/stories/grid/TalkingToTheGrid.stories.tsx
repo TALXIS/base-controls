@@ -90,7 +90,7 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and
 | \`gridTheme\` | The AG Grid theme and the root element's styles: \`registerTheme\`, \`registerStyles\`. |
 | \`state\` | The grid's store under its \`stateKey\`: \`get\`, \`set\`, \`delete\`. See [**State**](?path=/docs/grid-state--overview). |
 | \`settings\` | The props, with their defaults applied. |
-| \`localization\` | The labels the grid mounted with: \`getLabels(set)\`. |
+| \`labels\` | The labels the grid mounted with: \`getLabels(set)\`. |
 | \`viewport\` | The vertical scroll and the header: \`getScrollTop()\`, \`setScrollTop(top)\`, \`getScrollElement()\` and \`getHeaderHeight()\`, for something drawn beside the rows. |
 | \`theme\`, \`pcfContext\` | The Fluent theme and the PCF context the grid mounted with. |
 | \`keyboard\` | \`onKeyDown(handler)\` for every key pressed inside the grid, before AG Grid sees it; \`getKeyBeingPressed()\`. |

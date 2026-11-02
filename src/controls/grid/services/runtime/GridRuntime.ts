@@ -3,7 +3,7 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LabelsService, ServiceLocator } from "@utils";
 import { RowLoading } from "@controls/grid/components/rows/loading";
 import { LoadingOverlay } from "@controls/grid/components/overlays/loading";
 import { EmptyRecordsOverlay } from "@controls/grid/components/overlays/empty-records";
@@ -58,7 +58,7 @@ export interface IGridRuntimeParameters {
     /** The DatasetControl the grid is inside, if any. */
     datasetControl?: IDatasetControlRuntime;
     /** Resolves the strings the grid and its modules render. */
-    localization: LocalizationService;
+    labelsService: LabelsService;
 }
 
 export class GridRuntime implements IGrid {
@@ -74,7 +74,7 @@ export class GridRuntime implements IGrid {
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
-    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, localization }: IGridRuntimeParameters) {
+    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, labelsService }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
         //first api listener so the others find the options applied
@@ -82,7 +82,7 @@ export class GridRuntime implements IGrid {
 
         //everything below reads the props and the provider through these
         const settings = new GridSettings({ onGetProps, datasetControl });
-        this._services.register('localization', () => localization);
+        this._services.register('labels', () => labelsService);
         this._services.register('settings', () => settings);
         this._services.register('state', () => state);
         this._services.register('pcfContext', () => pcfContext);
@@ -125,7 +125,7 @@ export class GridRuntime implements IGrid {
     }
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
-        return this._services.get('localization').getLabels(set);
+        return this._services.get('labels').getLabels(set);
     }
 
     public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {

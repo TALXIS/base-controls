@@ -244,7 +244,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Approved entries are locked by \`rowSettings.onGetLock\`, Hourly rate by \`context.cell.onGetLock\` wherever the work is not billable, and Employee for good by \`context.isLocked\`; \`LocalizationProvider\` words each lock's tooltip. Try: hover a lock, approve a Submitted entry, then close the week to remount the grid without the editing module.`,
+                story: `Approved entries are locked by \`rowSettings.onGetLock\`, Hourly rate by \`context.cell.onGetLock\` wherever the work is not billable, and Employee for good by \`context.isLocked\`; \`LabelsProvider\` words each lock's tooltip. Try: hover a lock, approve a Submitted entry, then close the week to remount the grid without the editing module.`,
             },
         },
     },

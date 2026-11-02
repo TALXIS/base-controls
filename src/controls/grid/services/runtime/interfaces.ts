@@ -29,7 +29,7 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
      * @param priority Ascending: a higher number gets the later word.
      */
     registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
-    /** The strings of one set, as the grid's localization resolves them. */
+    /** The strings of one set, as the grid's labelsService resolves them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;

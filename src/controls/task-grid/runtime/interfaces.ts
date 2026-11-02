@@ -70,7 +70,7 @@ export interface ITaskRuntime {
     getView(): ITaskView | undefined;
     getFieldMapping(): IFieldMapping;
     getProvider(): ITaskDataProvider;
-    /** The strings of one set, as the control's localization gives them. */
+    /** The strings of one set, as the control's labelsService gives them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Whether the matching tasks are listed on their own, without the tree. */
     isFlatList(): boolean;

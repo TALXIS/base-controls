@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LocalizationService } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LabelsService } from "@utils";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";
@@ -33,7 +33,7 @@ export interface IGanttModuleServiceMap { }
 
 export interface IGanttServiceMap extends IGanttModuleServiceMap {
     taskRuntime: ITaskRuntime;
-    localization: LocalizationService;
+    labels: LabelsService;
     theme: IGanttTheme;
     overlay: IGanttOverlay;
     /** What the Gantt keeps per view. */

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { DatasetControl } from "@controls/dataset-control";
-import { Labels, LocalizationProvider, useDataProviderEvents } from "@utils";
+import { Labels, LabelsProvider, useDataProviderEvents } from "@utils";
 import { RecordList, RecordSelectorFrame } from "../../ui";
 import { IRecordSelectorComponents } from "./components";
 
@@ -30,7 +30,7 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
     }), [searchPlaceholder, noRecordsFound]);
 
     return <RecordSelectorFrame components={props.components?.frame}>
-        {parts => <LocalizationProvider labels={labels}>
+        {parts => <LabelsProvider labels={labels}>
             <DatasetControl height='100%' onLoad={async () => ({ provider: props.onCreateProvider() })}>
                 <DatasetControl.Header components={parts.header}>
                     <DatasetControl.Header.Start>
@@ -48,6 +48,6 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
                     </DatasetControl.Footer.End>
                 </DatasetControl.Footer>
             </DatasetControl>
-        </LocalizationProvider>}
+        </LabelsProvider>}
     </RecordSelectorFrame>;
 };

@@ -77,7 +77,7 @@ const Plan = React.memo((props: IPlanProps) => {
     ], [])
 
     return <PcfContextProvider userSettings={{ lcid: props.lcid, formatInfoCultureName: props.culture }}>
-        <LocalizationProvider labels={props.labels}>
+        <LabelsProvider labels={props.labels}>
             <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoadViews={loadViews} onLoad={loadTasks} height='560px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
@@ -105,7 +105,7 @@ const Plan = React.memo((props: IPlanProps) => {
                     </DatasetControl.Footer.Start>
                 </DatasetControl.Footer>
             </TaskDatasetControl>
-        </LocalizationProvider>
+        </LabelsProvider>
     </PcfContextProvider>
 })
 

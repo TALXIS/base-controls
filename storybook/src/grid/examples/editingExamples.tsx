@@ -121,7 +121,7 @@ const isBillable = (record: IRecord) => record.getValue('billable') === '1'
 const GridExample = () => {
     const [isWeekClosed, setIsWeekClosed] = React.useState(false)
 
-    return <LocalizationProvider labels={LOCK_LABELS}>
+    return <LabelsProvider labels={LOCK_LABELS}>
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
@@ -156,7 +156,7 @@ const GridExample = () => {
                     height='440px' />
             </DatasetControl.Body>
         </DatasetControl>
-    </LocalizationProvider>
+    </LabelsProvider>
 }
 `
 

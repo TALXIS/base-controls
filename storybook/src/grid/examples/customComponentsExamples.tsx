@@ -236,7 +236,7 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
 
 const LABELS = { 'grid.noRecordsFound': 'Your catalogue has no products yet.' }
 
-const GridExample = () => <LocalizationProvider labels={LABELS}>
+const GridExample = () => <LabelsProvider labels={LABELS}>
     <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
@@ -245,7 +245,7 @@ const GridExample = () => <LocalizationProvider labels={LABELS}>
                 height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
-</LocalizationProvider>
+</LabelsProvider>
 `
 
 export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({

@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LocalizationService } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LabelsService } from "@utils";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
 import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "../components/adapters/quick-find/DatasetControlQuickFind";
@@ -127,7 +127,7 @@ export interface IDatasetControl<TData = unknown> {
     reload(): Promise<void>;
     /** Mounts the control anew on the view that failed to load. */
     retry(): Promise<void>;
-    /** The strings of one set, as the control's `LocalizationProvider` gives them. */
+    /** The strings of one set, as the control's `LabelsProvider` gives them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** The Fluent theme the control is drawn in. */
     getTheme(): ITheme;
@@ -135,7 +135,7 @@ export interface IDatasetControl<TData = unknown> {
 
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     runtime: IDatasetControlRuntime;
-    localization: LocalizationService;
+    labels: LabelsService;
     surfaces: DatasetControlSurfaces;
     viewSwitcher: DatasetControlViewSwitcher;
     quickFind: DatasetControlQuickFind;

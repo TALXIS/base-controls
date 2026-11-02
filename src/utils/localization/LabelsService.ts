@@ -5,7 +5,7 @@ import type { ILabels, Labels } from "./types";
 const LIQUID = new Liquid();
 
 /** Resolves every component's strings from one set of labels. */
-export class LocalizationService {
+export class LabelsService {
     private _labels: Labels;
 
     constructor(labels: Labels = {}) {
@@ -23,7 +23,7 @@ export class LocalizationService {
     }
 
     /** A service with `labels` laid over these. */
-    public merge(labels: Labels): LocalizationService {
-        return new LocalizationService({ ...this._labels, ...labels });
+    public merge(labels: Labels): LabelsService {
+        return new LabelsService({ ...this._labels, ...labels });
     }
 }

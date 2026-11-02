@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LocalizationService, ServiceLocator } from "@utils";
+import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LabelsService, ServiceLocator } from "@utils";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../../services";
@@ -29,7 +29,7 @@ const DEFAULT_TIMELINE_LIMIT_YEARS = 25;
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
     state: IStateStore;
-    localization: LocalizationService;
+    labelsService: LabelsService;
     onGetProps: () => ITaskGanttProps;
 }
 
@@ -57,7 +57,7 @@ export class GanttRuntime implements IGantt {
         this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
         this._onGetProps = parameters.onGetProps;
         this.services.register('taskRuntime', () => parameters.taskRuntime);
-        this.services.register('localization', () => parameters.localization);
+        this.services.register('labels', () => parameters.labelsService);
         this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
         const schedule = new GanttSchedule(this);
@@ -77,7 +77,7 @@ export class GanttRuntime implements IGantt {
     }
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
-        return this.services.get('localization').getLabels(set);
+        return this.services.get('labels').getLabels(set);
     }
 
     public getLibrary(): ILibrary {

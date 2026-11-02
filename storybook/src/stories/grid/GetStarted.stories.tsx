@@ -59,7 +59,7 @@ The grid takes no provider prop. It shows the provider around it: the one a [**D
 | \`modules\` | Add the features, each with its own options, look and instance. | [**Modules**](?path=/docs/grid-modules--overview) |
 | \`IGrid\` | What your code talks to, passed by \`onReady\`: \`grid.modules.find('sorting')?.sortColumn('price')\`. | [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview) |
 | Appearance | Restyle or replace what the grid draws, from a cell's colour to the whole cell. | [**Appearance**](?path=/docs/grid-appearance--overview) |
-| Labels | Translate every string through a \`LocalizationProvider\`. | [**Localization**](?path=/docs/localization--overview) |
+| Labels | Translate every string through a \`LabelsProvider\`. | [**Localization**](?path=/docs/localization--overview) |
 
 Every prop and event of \`<Grid />\` is on [**Props and events**](?path=/docs/grid-props-and-events--overview).
 
