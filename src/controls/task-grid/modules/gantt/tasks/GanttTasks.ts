@@ -1,7 +1,7 @@
 import { HookRegistry } from "@utils";
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { GridApi, IRowNode } from "ag-grid-community";
-import type { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import type { IRecord } from "@talxis/client-libraries";
 import type { ITaskDataProviderEvents } from "../../../provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
@@ -14,7 +14,7 @@ export interface IGanttTasks {
     getRecord(taskId: string): IRecord | undefined;
     /** Whether the task's record is locked against edits, as the grid beside it decides. */
     isLocked(taskId: string): boolean;
-    /** Whether the task's record has been saving long enough to show it, until the sync after it ends. */
+    /** Whether the task is in a chain being saved, which holds it as it is. */
     isSaving(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
@@ -57,8 +57,6 @@ export interface IGanttTaskClassParameters {
 export type GanttTaskClassHook = (classNames: string[], parameters: IGanttTaskClassParameters) => void;
 
 const SUMMARY_BAR_HEIGHT = 12;
-//a save quicker than this is not worth a flicker
-const SAVING_DELAY = 300;
 /** How tall a task's bar is drawn, other than a summary's. */
 export const TASK_BAR_HEIGHT = 20;
 
@@ -85,9 +83,6 @@ export class GanttTasks implements IGanttTasks {
     private _scheduledUpdateFrame?: number;
     private _unregisters: (() => void)[] = [];
     private _motion: GanttTaskMotion;
-    private _savingTaskIds = new Set<string>();
-    private _savingTimers = new Map<string, number>();
-    private _isDestroyed = false;
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
     private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
@@ -110,11 +105,10 @@ export class GanttTasks implements IGanttTasks {
         this._gridApi.addEventListener('modelUpdated', this._scheduleParse);
         provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated);
-        provider.addEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved);
-        provider.addEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
+        const savingChains = this._taskRuntime.services.get('savingChains');
+        savingChains.events.addEventListener('onChainsChanged', this._onSavingChainsChanged);
         this._unregisters.push(
-            () => provider.removeEventListener('onBeforeRecordSaved', this._onBeforeRecordSaved),
-            () => provider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved),
+            () => savingChains.events.removeEventListener('onChainsChanged', this._onSavingChainsChanged),
             () => !this._gridApi.isDestroyed() && this._gridApi.removeEventListener('modelUpdated', this._scheduleParse),
             () => provider.removeEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged),
             () => provider.taskEvents.removeEventListener('onTasksUpdated', this._onTasksUpdated),
@@ -131,7 +125,7 @@ export class GanttTasks implements IGanttTasks {
     }
 
     public isSaving(taskId: string): boolean {
-        return this._savingTaskIds.has(taskId);
+        return this._taskRuntime.services.get('savingChains').isTaskSaving(taskId);
     }
 
     public getTaskIds(): string[] {
@@ -223,8 +217,6 @@ export class GanttTasks implements IGanttTasks {
         if (this._scheduledUpdateFrame !== undefined) {
             cancelAnimationFrame(this._scheduledUpdateFrame);
         }
-        this._isDestroyed = true;
-        this._savingTimers.forEach(timer => window.clearTimeout(timer));
         this._unregisters.forEach(unregister => unregister());
     }
 
@@ -240,44 +232,9 @@ export class GanttTasks implements IGanttTasks {
         }
     }
 
-    private _onBeforeRecordSaved = (record: IRecord): void => {
-        const taskId = record.getRecordId();
-        window.clearTimeout(this._savingTimers.get(taskId));
-        this._savingTimers.set(taskId, window.setTimeout(() => {
-            this._savingTimers.delete(taskId);
-            this._savingTaskIds.add(taskId);
-            this._refreshTask(taskId);
-        }, SAVING_DELAY));
+    private _onSavingChainsChanged = (taskIds: string[]): void => {
+        this._gantt.batchUpdate(() => taskIds.forEach(taskId => this._gantt.isTaskExists(taskId) && this._gantt.refreshTask(taskId)));
     };
-
-    private _onAfterRecordSaved = async (result: IRecordSaveOperationResult): Promise<void> => {
-        const taskId = result.recordId;
-        window.clearTimeout(this._savingTimers.get(taskId));
-        this._savingTimers.delete(taskId);
-        if (!this._savingTaskIds.has(taskId)) {
-            return;
-        }
-        //the rescheduled dates arrive with the sync the save starts, which this joins
-        if (result.success) {
-            try {
-                await this._taskRuntime.getProvider().synchronize();
-            }
-            catch {
-                //the provider reports a failed sync where it runs it
-            }
-        }
-        if (this._isDestroyed) {
-            return;
-        }
-        this._savingTaskIds.delete(taskId);
-        this._refreshTask(taskId);
-    };
-
-    private _refreshTask(taskId: string): void {
-        if (this._gantt.isTaskExists(taskId)) {
-            this._gantt.refreshTask(taskId);
-        }
-    }
 
     //a task hook may read any column
     private _onRecordColumnValueChanged = (record: IRecord): void => {

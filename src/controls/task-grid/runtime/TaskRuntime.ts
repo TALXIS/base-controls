@@ -12,6 +12,7 @@ import type { ITaskDatasetControlProps } from "../dataset-control/TaskDatasetCon
 import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
 import { TaskExecutor } from "./TaskExecutor";
+import { TaskSavingChains } from "./saving";
 import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
@@ -31,12 +32,15 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
     private _unregisterCommands?: () => void;
+    private _savingChains = new TaskSavingChains();
 
     constructor(parameters: ITaskRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
         this._onGetProps = parameters.onGetProps;
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('pcfContext', () => parameters.pcfContext);
+        this.services.register('savingChains', () => this._savingChains);
+        this.services.whenAvailable('provider', provider => this._savingChains.attach(provider));
         datasetControl.parts.whenAvailable('ribbon', ribbon => this._unregisterCommands = ribbon.registerCommands(this._addCommands));
         datasetControl.modules.whenAvailable('userQueries', userQueries => this._unsaveWithViews.push(
             userQueries.saveWithView('sorting', () => this.getProvider().getSorting()),
@@ -114,6 +118,7 @@ export class TaskRuntime implements ITaskRuntime {
         this.events.clearEventListeners();
         this._unregisterCommands?.();
         this._unsaveWithViews.forEach(unregister => unregister());
+        this._savingChains.destroy();
         this.services.destroy();
     }
 

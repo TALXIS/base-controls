@@ -7,7 +7,7 @@ import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { LinkTooltipRenderer } from "./components";
 import { GANTT_LINKS_LABELS } from "./labels";
-import { GANTT_LINK_DRAG_POINTER_VARIABLES, GANTT_LINK_DRAG_TYPE_CLASS, GANTT_LINK_DROP_ATTRIBUTE, getGanttLinksStyles } from "./styles";
+import { GANTT_LINK_DRAG_POINTER_VARIABLES, GANTT_LINK_DRAG_TYPE_CLASS, GANTT_LINK_DROP_ATTRIBUTE, GANTT_LINK_SAVING_CLASS, getGanttLinksStyles } from "./styles";
 
 export interface IGanttLinksParameters {
     components?: IGanttLinksComponents;
@@ -96,6 +96,7 @@ export class GanttLinks implements IGanttLinks {
         chart.config.drag_links = this.isEditable();
         chart.templates.drag_link = sourceId => this._getDragLinkHtml(chart, String(sourceId));
         chart.templates.drag_link_class = sourceId => this._getDragLinkClass(chart, String(sourceId));
+        chart.templates.link_class = link => this._isLinkSaving(link) ? GANTT_LINK_SAVING_CLASS : '';
     };
 
     //what is being linked, while the pointer draws the link
@@ -182,7 +183,15 @@ export class GanttLinks implements IGanttLinks {
         }
     }
 
+    private _isLinkSaving(link: Link): boolean {
+        return !!this._dependencies?.isDependencySaving({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) });
+    }
+
+    //a task in a chain being saved stays as it is, links included
     private _isLinkAllowed(chart: GanttStatic, sourceId: string, drop: ILinkDrop): boolean {
+        if (this._dependencies?.isDependencySaving({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
+            return false;
+        }
         const type = getDependencyType(!!chart.getState().link_from_start, drop.isToStart);
         return chart.isLinkAllowed({ source: sourceId, target: drop.targetId, type: LINK_TYPES[type] });
     }
@@ -232,7 +241,9 @@ export class GanttLinks implements IGanttLinks {
     };
 
     private _onLinkDblClick = (id: string | number): boolean => {
-        if (this.isEditable()) {
+        const chart = this._gantt.services.find('chart');
+        const link = chart?.isLinkExists(id) ? chart.getLink(id) : undefined;
+        if (this.isEditable() && link && !this._isLinkSaving(link)) {
             runQuietly(() => this._deleteLink(String(id)));
         }
         return false;

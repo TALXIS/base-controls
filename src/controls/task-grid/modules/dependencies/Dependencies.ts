@@ -3,7 +3,7 @@ import { DataTypes, EventEmitter, IColumn, IEntityReference, IEventEmitter, IRec
 import type { IGrid } from "@controls/grid";
 import type { LabelsOf } from "@utils";
 import type { ITaskDataProvider } from "../../provider";
-import type { ITaskRuntime } from "../../runtime";
+import type { ITaskRuntime, TaskSavingChainLinksHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TaskColumnValues } from "../column-values";
@@ -68,6 +68,8 @@ export interface IDependencies {
     reload(taskIds?: string[]): Promise<void>;
     /** Whether dependencies can be created, retyped and deleted. */
     isEditable(): boolean;
+    /** Whether either task of the dependency is in a chain being saved; the timeline holds such a dependency as it is. */
+    isDependencySaving(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean;
     /** Whether the dependency may be created: no self-link, duplicate or cycle. */
     canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean;
     /**
@@ -90,6 +92,8 @@ export interface IDependencies {
 }
 
 /** Each task's dependencies, held for the grid and written through the store. */
+type DependencyLoadingLabel = 'dependencies.creatingDependency' | 'dependencies.savingDependency' | 'dependencies.deletingDependency';
+
 export class Dependencies implements IDependencies {
     public events = new EventEmitter<IDependenciesEvents>();
     private _taskRuntime: ITaskRuntime;
@@ -113,6 +117,7 @@ export class Dependencies implements IDependencies {
         });
         taskRuntime.services.whenAvailable('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.whenAvailable('grid', grid => this._onGridAvailable(grid as IGrid<ITaskGridServiceMap>));
+        this._unregisters.push(taskRuntime.services.get('savingChains').registerLinks(this._addDependencyLinks));
     }
 
     public getDependencies(): ITaskDependency[] {
@@ -139,6 +144,11 @@ export class Dependencies implements IDependencies {
         return this._taskRuntime.isEditingEnabled();
     }
 
+    public isDependencySaving(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean {
+        const savingChains = this._taskRuntime.services.get('savingChains');
+        return savingChains.isTaskSaving(dependency.predecessorTaskId) || savingChains.isTaskSaving(dependency.successorTaskId);
+    }
+
     public canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean {
         if (predecessorTaskId === successorTaskId) {
             return false;
@@ -153,7 +163,7 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !this.canCreateDependency(dependency.predecessorTaskId, dependency.successorTaskId)) {
             return null;
         }
-        return this._execute(async () => {
+        return this._executeInChain(dependency, async () => {
             const created = await this._store.onCreateDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
             await this._taskRuntime.getProvider().synchronize();
@@ -166,7 +176,7 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !existing) {
             return false;
         }
-        return this._execute(async () => {
+        return this._executeInChain(existing, async () => {
             const updated = { ...existing, ...changes };
             await this._store.onUpdateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
@@ -180,7 +190,7 @@ export class Dependencies implements IDependencies {
         if (!this.isEditable() || !existing) {
             return false;
         }
-        return this._execute(async () => {
+        return this._executeInChain(existing, async () => {
             await this._store.onDeleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             await this._taskRuntime.getProvider().synchronize();
@@ -194,6 +204,15 @@ export class Dependencies implements IDependencies {
         this.events.clearEventListeners();
         this._store.destroy?.();
     }
+
+    //both tasks and whatever comes after them stay put until the write and its sync settle
+    private _executeInChain<T>(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>, operation: () => Promise<T>, loadingLabel: DependencyLoadingLabel): Promise<T> {
+        return this._taskRuntime.services.get('savingChains').track([dependency.predecessorTaskId, dependency.successorTaskId], () => this._execute(operation, loadingLabel));
+    }
+
+    private _addDependencyLinks: TaskSavingChainLinksHook = (result, { taskId }) => {
+        result.linkedTaskIds.push(...this.getSuccessors(taskId).map(dependency => dependency.successorTaskId));
+    };
 
     private _onProviderAvailable = (provider: ITaskDataProvider): void => {
         provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
@@ -301,7 +320,7 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _execute<T>(operation: () => Promise<T>, loadingLabel: 'dependencies.creatingDependency' | 'dependencies.savingDependency' | 'dependencies.deletingDependency'): Promise<T> {
+    private _execute<T>(operation: () => Promise<T>, loadingLabel: DependencyLoadingLabel): Promise<T> {
         return this._taskRuntime.execute(operation, { loading: { message: this._labels.get(loadingLabel) }, error: { title: this._labels.get('dependencies.dependenciesFailed') } });
     }
 }

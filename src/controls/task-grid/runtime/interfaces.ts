@@ -1,4 +1,5 @@
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
+import type { ITaskSavingChains } from "./saving";
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@interfaces";
 import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels } from "@utils";
@@ -28,6 +29,8 @@ export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     provider: ITaskDataProvider;
     /** The tree of the grid in the body, while it is drawn. */
     taskTree: ITaskGridTree;
+    /** The tasks a save can reach, held as saving until it settles; there from the start. */
+    savingChains: ITaskSavingChains;
 }
 
 export interface ITaskRuntimeEvents {

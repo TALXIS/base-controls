@@ -1,8 +1,16 @@
-import { FontWeights, IStyle, ITheme } from "@fluentui/react";
+import { FontWeights, IStyle, ITheme, keyframes } from "@fluentui/react";
 import { GANTT_TASK_LINE_CLASS } from "../../chart/classNames";
 
 /** The dependency type above the tasks, in the tooltip of a link being drawn. */
 export const GANTT_LINK_DRAG_TYPE_CLASS = 'talxis-gantt-link-drag-type';
+
+/** A dependency line between tasks in a chain being saved. */
+export const GANTT_LINK_SAVING_CLASS = 'talxis-gantt-link-saving';
+
+const SAVING_PULSE = keyframes({
+    '0%, 100%': { opacity: 1 },
+    '50%': { opacity: 0.35 },
+});
 
 /** On the task a link being drawn would land on: the end it would attach to, and whether it may. */
 export const GANTT_LINK_DROP_ATTRIBUTE = 'data-talxis-link-drop';
@@ -46,6 +54,13 @@ export const getGanttLinksStyles = (theme: ITheme): IStyle => ({
     [`.${GANTT_TASK_LINE_CLASS}[${GANTT_LINK_DROP_ATTRIBUTE}="start-denied"] .task_start_date div, .${GANTT_TASK_LINE_CLASS}[${GANTT_LINK_DROP_ATTRIBUTE}="end-denied"] .task_end_date div`]: {
         borderColor: theme.semanticColors.errorIcon,
         background: theme.semanticColors.errorIcon,
+    },
+    [`.gantt_task_link.${GANTT_LINK_SAVING_CLASS}`]: {
+        animation: `${SAVING_PULSE} 1.2s ease-in-out infinite`,
+        '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none',
+            opacity: 0.5,
+        },
     },
     '.gantt_link_direction': {
         borderBottom: `2px dashed ${theme.palette.themePrimary}`,
