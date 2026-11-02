@@ -64,13 +64,13 @@ export interface IChecklist {
 export class Checklist implements IChecklist {
     public readonly components: IChecklistComponents;
     private _store: IChecklistStore;
-    private _labels: LabelsOf<typeof CHECKLIST_LABELS>;
+    private _taskRuntime: ITaskRuntime;
     private _values: TaskColumnValues;
 
     constructor(taskRuntime: ITaskRuntime, parameters: IChecklistParameters) {
         this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = taskRuntime.getLabels(CHECKLIST_LABELS);
+        this._taskRuntime = taskRuntime;
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => [CHECKLIST_COLUMN_NAME],
@@ -80,6 +80,10 @@ export class Checklist implements IChecklist {
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
+    }
+
+    private get _labels(): LabelsOf<typeof CHECKLIST_LABELS> {
+        return this._taskRuntime.getLabels(CHECKLIST_LABELS);
     }
 
     public getError(): unknown {

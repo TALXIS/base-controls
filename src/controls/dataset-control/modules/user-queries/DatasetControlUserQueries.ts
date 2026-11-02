@@ -35,7 +35,6 @@ export class DatasetControlUserQueries {
     private _events = new EventEmitter<IDatasetControlUserQueriesEvents>();
     private _datasetControl: IDatasetControlRuntime;
     private _store: IUserQueriesStore;
-    private _labels: LabelsOf<typeof USER_QUERIES_LABELS>;
     private _savedValues = new Map<string, () => unknown>();
     private _commands: IUserQueriesCommands;
     private _views: IUserQueryListItem[] = [];
@@ -44,12 +43,15 @@ export class DatasetControlUserQueries {
     constructor(parameters: IDatasetControlUserQueriesParameters) {
         this._datasetControl = parameters.datasetControl;
         this._store = parameters.store;
-        this._labels = parameters.datasetControl.getLabels(USER_QUERIES_LABELS);
         this._commands = parameters.commands ?? {};
         this._datasetControl.registerViews(this._addViews);
         this._datasetControl.parts.observe('viewSwitcher', viewSwitcher => {
             viewSwitcher.registerItems(this._addViewSwitcherItems);
         });
+    }
+
+    private get _labels(): LabelsOf<typeof USER_QUERIES_LABELS> {
+        return this._datasetControl.getLabels(USER_QUERIES_LABELS);
     }
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {

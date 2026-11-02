@@ -58,7 +58,7 @@ export interface IGridRuntimeParameters {
     /** The DatasetControl the grid is inside, if any. */
     datasetControl?: IDatasetControlRuntime;
     /** Resolves the strings the grid and its modules render. */
-    labelsService: LabelsService;
+    onGetLabelsService: () => LabelsService;
 }
 
 export class GridRuntime implements IGrid {
@@ -74,7 +74,7 @@ export class GridRuntime implements IGrid {
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
-    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, labelsService }: IGridRuntimeParameters) {
+    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, onGetLabelsService }: IGridRuntimeParameters) {
         this._onGetProps = onGetProps;
         this._services.register('grid', () => this);
         //first api listener so the others find the options applied
@@ -82,7 +82,7 @@ export class GridRuntime implements IGrid {
 
         //everything below reads the props and the provider through these
         const settings = new GridSettings({ onGetProps, datasetControl });
-        this._services.register('labels', () => labelsService);
+        this._services.register('labels', onGetLabelsService);
         this._services.register('settings', () => settings);
         this._services.register('state', () => state);
         this._services.register('pcfContext', () => pcfContext);

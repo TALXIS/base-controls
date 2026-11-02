@@ -41,8 +41,8 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     const taskRuntime = useTaskRuntime();
     const state = useControlStateStore(props.stateKey);
     const propsRef = useLatest(props);
-    const labelsService = useLabelsService();
-    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, labelsService, onGetProps: () => propsRef.current }));
+    const labelsServiceRef = useLatest(useLabelsService());
+    const gantt = useDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, onGetLabelsService: () => labelsServiceRef.current, onGetProps: () => propsRef.current }));
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const [error, setError] = useState<unknown>();

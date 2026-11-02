@@ -70,16 +70,18 @@ export class Templates implements ITemplates {
     public readonly components: ITemplatesComponents;
     private _taskRuntime: ITaskRuntime;
     private _store: ITemplatesStore;
-    private _labels: LabelsOf<typeof TEMPLATES_LABELS>;
 
     constructor(taskRuntime: ITaskRuntime, parameters: ITemplatesParameters) {
         this._taskRuntime = taskRuntime;
         this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = taskRuntime.getLabels(TEMPLATES_LABELS);
         taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => { ribbon.registerCommands(this._addCommands, RIBBON_PRIORITY); });
         taskRuntime.registerRibbonCommandUi(this._onRibbonCommandUi);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
+    }
+
+    private get _labels(): LabelsOf<typeof TEMPLATES_LABELS> {
+        return this._taskRuntime.getLabels(TEMPLATES_LABELS);
     }
 
     public createTemplatesProvider(): IDataProvider {

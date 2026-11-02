@@ -60,7 +60,6 @@ export class Links implements ILinks {
     private _gantt: IGantt;
     private _parameters: ILinksParameters;
     private _dependencies?: IDependencies;
-    private _labels: LabelsOf<typeof LINKS_LABELS>;
     private _isSyncing = false;
     //the end of the task under the pointer that a link being drawn would attach to
     private _linkDrop?: ILinkDrop;
@@ -70,7 +69,6 @@ export class Links implements ILinks {
     constructor(gantt: IGantt, parameters: ILinksParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._labels = gantt.getLabels(LINKS_LABELS);
         this._dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
         if (!this._dependencies) {
             return;
@@ -81,6 +79,10 @@ export class Links implements ILinks {
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
         this._offDependenciesChanged = this._dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
         gantt.services.observe('chart', this._onChartReady);
+    }
+
+    private get _labels(): LabelsOf<typeof LINKS_LABELS> {
+        return this._gantt.getLabels(LINKS_LABELS);
     }
 
     public isEditable(): boolean {

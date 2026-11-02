@@ -89,7 +89,6 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
     private _gantt: IGantt;
     private _isVisibleByDefault: boolean;
     private _isWeekendEnabled: boolean;
-    private _labels: LabelsOf<typeof NON_WORKING_DAYS_LABELS>;
     private _store?: INonWorkingDaysStore<TData>;
     private _components: INonWorkingDaysComponents;
     private _calendar: NonWorkingDayCalendar<TData>;
@@ -102,7 +101,6 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         this._isVisibleByDefault = parameters.isVisibleByDefault ?? true;
         this._isWeekendEnabled = parameters.enableWeekends ?? true;
         this._components = parameters.components ?? {};
-        this._labels = gantt.getLabels(NON_WORKING_DAYS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         this._calendar = new NonWorkingDayCalendar(this._getWeekends());
         gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
@@ -118,6 +116,10 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.registerSettings(this._addSettings));
         //not awaited so the chart draws before the store's days load
         this.reload();
+    }
+
+    private get _labels(): LabelsOf<typeof NON_WORKING_DAYS_LABELS> {
+        return this._gantt.getLabels(NON_WORKING_DAYS_LABELS);
     }
 
     public isVisible(): boolean {

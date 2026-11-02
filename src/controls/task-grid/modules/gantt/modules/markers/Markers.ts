@@ -79,19 +79,21 @@ export class Markers implements IMarkers {
     public readonly events = new EventEmitter<IMarkersEvents>();
     private _gantt: IGantt;
     private _parameters: IMarkersParameters;
-    private _labels: LabelsOf<typeof MARKERS_LABELS>;
     private _store?: IMarkersStore;
     private _storeMarkers: IMarker[] = [];
 
     constructor(gantt: IGantt, parameters: IMarkersParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._labels = gantt.getLabels(MARKERS_LABELS);
         this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
         gantt.surfaces.registerSurface(this._onSurfaces);
         gantt.services.get('theme').registerStyles(result => result.styles.push(getMarkersStyles()));
         //not awaited so the chart draws before the store's markers load
         this.reload();
+    }
+
+    private get _labels(): LabelsOf<typeof MARKERS_LABELS> {
+        return this._gantt.getLabels(MARKERS_LABELS);
     }
 
     public async reload(): Promise<void> {

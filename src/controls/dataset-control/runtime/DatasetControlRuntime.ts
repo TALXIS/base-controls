@@ -42,7 +42,7 @@ export interface IDatasetControlRuntimeParameters {
     onGetProps: () => IDatasetControlProps;
     /** The control's state, which outlives the runtime. */
     state: DatasetControlState;
-    labelsService: LabelsService;
+    onGetLabelsService: () => LabelsService;
     theme: ITheme;
     /** Mounts the control anew on the view the state is on. */
     onRemount: () => void;
@@ -75,7 +75,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         this._state = parameters.state;
         this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
-        this._services.register('labels', () => parameters.labelsService);
+        this._services.register('labels', parameters.onGetLabelsService);
         this._services.register('surfaces', () => this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this });
     }

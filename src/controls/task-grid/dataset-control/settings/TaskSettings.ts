@@ -1,5 +1,5 @@
 import { HookRegistry } from "@utils";
-import type { LabelsOf, LabelsService } from "@utils";
+import type { LabelsOf } from "@utils";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../../runtime";
 import { runQuietly } from "../../runtime/runQuietly";
@@ -28,20 +28,21 @@ export interface ITaskSettings {
 
 export interface ITaskSettingsParameters {
     taskRuntime: ITaskRuntime;
-    labelsService: LabelsService;
     onGetProps: () => ISettingsProps;
 }
 
 export class TaskSettings implements ITaskSettings {
     private _taskRuntime: ITaskRuntime;
     private _onGetProps: () => ISettingsProps;
-    private _labels: LabelsOf<typeof TASK_GRID_LABELS>;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
 
     constructor(parameters: ITaskSettingsParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._onGetProps = parameters.onGetProps;
-        this._labels = parameters.labelsService.getLabels(TASK_GRID_LABELS);
+    }
+
+    private get _labels(): LabelsOf<typeof TASK_GRID_LABELS> {
+        return this._taskRuntime.getLabels(TASK_GRID_LABELS);
     }
 
     public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {

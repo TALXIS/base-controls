@@ -110,7 +110,6 @@ export class Dependencies implements IDependencies {
     public readonly components: IDependenciesComponents;
     private _taskRuntime: ITaskRuntime;
     private _store: IDependenciesStore;
-    private _labels: LabelsOf<typeof DEPENDENCIES_LABELS>;
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor = new Map<string, ITaskDependency[]>();
     private _bySuccessor = new Map<string, ITaskDependency[]>();
@@ -120,7 +119,6 @@ export class Dependencies implements IDependencies {
         this._taskRuntime = taskRuntime;
         this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = taskRuntime.getLabels(DEPENDENCIES_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => DEPENDENCY_COLUMN_NAMES,
@@ -131,6 +129,10 @@ export class Dependencies implements IDependencies {
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
         taskRuntime.services.get('savingChains').registerLinks(this._addDependencyLinks);
+    }
+
+    private get _labels(): LabelsOf<typeof DEPENDENCIES_LABELS> {
+        return this._taskRuntime.getLabels(DEPENDENCIES_LABELS);
     }
 
     public getDependencies(): ITaskDependency[] {

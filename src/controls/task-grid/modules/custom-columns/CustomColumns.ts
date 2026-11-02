@@ -51,7 +51,6 @@ export class CustomColumns implements ICustomColumns {
     private _taskRuntime: ITaskRuntime;
     private _parameters: ICustomColumnsParameters;
     private _store: ICustomColumnsStore;
-    private _labels: LabelsOf<typeof CUSTOM_COLUMNS_LABELS>;
     private _columns: IColumn[] = [];
     private _values: TaskColumnValues;
 
@@ -59,13 +58,16 @@ export class CustomColumns implements ICustomColumns {
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = taskRuntime.getLabels(CUSTOM_COLUMNS_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => this._columns.map(column => column.name),
             onLoad: this._loadValues,
             errorMessage: () => this._labels.get('customColumns.loadCustomColumnsFailed'),
         });
+    }
+
+    private get _labels(): LabelsOf<typeof CUSTOM_COLUMNS_LABELS> {
+        return this._taskRuntime.getLabels(CUSTOM_COLUMNS_LABELS);
     }
 
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */

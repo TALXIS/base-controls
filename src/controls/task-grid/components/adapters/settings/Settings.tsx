@@ -1,6 +1,6 @@
 import { IContextualMenuItem } from "@fluentui/react";
 import { useRerender } from "@legacy";
-import { useDataProviderEvents, useLabels, useLabelsService } from "@utils";
+import { useDataProviderEvents, useLabels } from "@utils";
 import { useLatest } from "@hooks";
 import { useDatasetControlPart } from "@controls/dataset-control";
 import { ITaskGridUiSettingsMenuComponents, TaskGridUiSettingsMenu } from "../../ui";
@@ -21,9 +21,8 @@ export interface ISettingsProps {
 export const Settings = (props: ISettingsProps) => {
     const taskRuntime = useTaskRuntime();
     const propsRef = useLatest(props);
-    const labelsService = useLabelsService();
     const labels = useLabels(TASK_GRID_LABELS);
-    const settings = useDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, labelsService, onGetProps: () => propsRef.current }));
+    const settings = useDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, onGetProps: () => propsRef.current }));
     const provider = useDataProviderEvents(['onLoading']);
     const { rerender } = useRerender();
 

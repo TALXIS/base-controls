@@ -21,7 +21,7 @@ Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` wi
 |---|---|
 | A key you leave out | Falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label |
 | \`{{ placeholders }}\` | Keep them in a translation |
-| Ribbon commands, column menus and other strings a module builds | Read when the control mounts: give it a new \`key\` when the language changes |
+| Changing labels after mount | Because of memoization, a change may not show until the affected component draws again. Trigger that on the component directly: components have an API for it, such as the grid's \`cells.render()\` and \`columns.headers.render()\` |
 | View, column and option names | Data, not labels: the demo translates them in \`columns.ts\` |
 | Dates and numbers | Follow the culture in \`PcfContextProvider\`'s \`userSettings\` |
 

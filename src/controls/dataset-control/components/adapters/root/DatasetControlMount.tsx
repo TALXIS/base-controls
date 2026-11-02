@@ -23,12 +23,12 @@ export interface IDatasetControlMountProps extends IDatasetControlProps {
 /** One mount of the control: its runtime, its one load and the parts on it. */
 export const DatasetControlMount = (props: IDatasetControlMountProps) => {
     const propsRef = useLatest(props);
-    const labelsService = useLabelsService();
+    const labelsServiceRef = useLatest(useLabelsService());
     const theme = useTheme();
     const runtime = useMemo(() => new DatasetControlRuntime({
         onGetProps: () => propsRef.current,
         state: props.state,
-        labelsService,
+        onGetLabelsService: () => labelsServiceRef.current,
         theme,
         onRemount: () => propsRef.current.onRemount(),
     }), []);

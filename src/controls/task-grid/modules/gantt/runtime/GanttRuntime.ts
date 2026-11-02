@@ -29,7 +29,7 @@ const DEFAULT_TIMELINE_LIMIT_YEARS = 25;
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
     state: IStateStore;
-    labelsService: LabelsService;
+    onGetLabelsService: () => LabelsService;
     onGetProps: () => ITaskGanttProps;
 }
 
@@ -57,7 +57,7 @@ export class GanttRuntime implements IGantt {
         this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
         this._onGetProps = parameters.onGetProps;
         this.services.register('taskRuntime', () => parameters.taskRuntime);
-        this.services.register('labels', () => parameters.labelsService);
+        this.services.register('labels', parameters.onGetLabelsService);
         this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
         const schedule = new GanttSchedule(this);

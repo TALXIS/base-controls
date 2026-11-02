@@ -116,7 +116,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _taskRuntime: ITaskRuntime;
     private _parameters: ILookupManyParameters<TColumn>;
     private _store: ILookupManyStore<TColumn>;
-    private _labels: LabelsOf<typeof LOOKUP_MANY_LABELS>;
     private _values: TaskColumnValues;
     private _openFilter?: string;
 
@@ -125,7 +124,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         this._parameters = parameters;
         this.components = parameters.components ?? {};
         this._store = parameters.onCreateStore(taskRuntime);
-        this._labels = taskRuntime.getLabels(LOOKUP_MANY_LABELS);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => Object.keys(parameters.columns),
@@ -134,6 +132,10 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
+    }
+
+    private get _labels(): LabelsOf<typeof LOOKUP_MANY_LABELS> {
+        return this._taskRuntime.getLabels(LOOKUP_MANY_LABELS);
     }
 
     public getColumn(columnName: string): TColumn | undefined {

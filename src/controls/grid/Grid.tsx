@@ -26,7 +26,7 @@ export const GridRoot = (props: IGridProps) => {
     const theme = useTheme();
     const state = useControlStateStore(props.stateKey);
     const datasetControl = useDatasetControlRuntime();
-    const labelsService = useLabelsService();
+    const labelsServiceRef = useLatest(useLabelsService());
     const propsRef = useLatest(props);
 
     const runtime = useDatasetControlPart('grid', () => new GridRuntime({
@@ -36,7 +36,7 @@ export const GridRoot = (props: IGridProps) => {
         theme: theme,
         state: state,
         datasetControl: datasetControl,
-        labelsService: labelsService,
+        onGetLabelsService: () => labelsServiceRef.current,
     }));
 
     const settings = runtime.services.get('settings');
