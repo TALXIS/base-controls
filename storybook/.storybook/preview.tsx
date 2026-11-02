@@ -121,6 +121,7 @@ const preview: Preview = {
           ],
           'Data providers',
           'Localization',
+          'Theming',
           'State persistence',
           'PCF context',
           'Control isolation',

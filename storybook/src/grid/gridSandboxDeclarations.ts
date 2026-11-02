@@ -908,6 +908,18 @@ type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
 /** An element that draws everything inside it in a theme. */
 declare const ThemeProvider: (props: IThemeProviderProps & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
 
+/** The theme of the nearest provider above. */
+declare const useTheme: () => ITheme;
+
+/** Fluent's callout, drawn in the surface theme. */
+declare const Callout: (props: import('@fluentui/react').ICalloutProps & { children?: React.ReactNode }) => JSX.Element;
+
+/** What a callout, menu or tooltip is drawn in: the surface theme above, or the theme where none is. */
+declare function useSurfaceTheme(): ITheme;
+
+/** The theme these colours generate, kept while they are the colours. */
+declare function useThemeGenerator(colors: IThemeColors): ITheme;
+
 /** A text colour that reads on the background. */
 declare function getTextColorForBackground(backgroundColor: string): string;
 
