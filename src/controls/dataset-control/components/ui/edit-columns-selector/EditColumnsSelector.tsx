@@ -4,6 +4,7 @@ import { components as selectComponents, GroupBase, SelectInstance } from "react
 import AsyncSelect from "react-select/async";
 import { AsyncProps } from "react-select/dist/declarations/src/useAsync";
 import { Callout, TooltipHost } from "@ui";
+import { useSurfaceTheme } from "@theme";
 import { EditColumnsSelectorUiComponents, IEditColumnsSelectorUiComponents } from "./components";
 import { getEditColumnsSelectorUiStyles } from "./styles";
 
@@ -25,6 +26,7 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
     const { label, noResultsText, loadingText, getOptionTooltip, components: componentsProp, ...selectProps } = props;
     const components = { ...EditColumnsSelectorUiComponents, ...componentsProp } as IEditColumnsSelectorUiComponents<TOption>;
     const theme = useTheme();
+    const surfaceTheme = useSurfaceTheme();
     const styles = useMemo(() => getEditColumnsSelectorUiStyles(), []);
     const id = useMemo(() => `selector-${crypto.randomUUID()}`, []);
 
@@ -43,13 +45,25 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
         loadingMessage={() => loadingText}
         styles={{
             option: base => ({ ...base, padding: 0, cursor: 'pointer' }),
-            menu: () => ({ width: 300 }),
+            menu: () => ({ width: 300, color: surfaceTheme.semanticColors.bodyText }),
             menuList: base => ({ ...base, scrollbarWidth: 'thin' }),
         }}
         theme={base => ({
             ...base,
             colors: {
                 ...base.colors,
+                neutral0: theme.semanticColors.inputBackground,
+                neutral5: theme.semanticColors.disabledBackground,
+                neutral10: theme.palette.neutralLighter,
+                neutral20: theme.semanticColors.inputBorder,
+                neutral30: theme.semanticColors.inputBorderHovered,
+                neutral40: theme.palette.neutralSecondary,
+                neutral50: theme.semanticColors.inputPlaceholderText,
+                neutral60: theme.palette.neutralSecondary,
+                neutral70: theme.palette.neutralPrimaryAlt,
+                neutral80: theme.semanticColors.inputText,
+                neutral90: theme.palette.neutralPrimary,
+                danger: theme.semanticColors.errorText,
                 primary: theme.palette.themePrimary,
                 primary75: theme.palette.themeLighterAlt,
                 primary50: theme.palette.themeLight,

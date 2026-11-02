@@ -6,7 +6,7 @@ const BRAND_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
-    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#1f1f1f', text: '#ffffff' } },
+    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } },
     { key: 'forest', text: 'Forest', colors: { primary: '#2e7d32', background: '#f3f8f1', text: '#1b2e1c' } },
     { key: 'sand', text: 'Sand', colors: { primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' } },
 ]
@@ -55,7 +55,7 @@ const Total = (props: { label: string; value: string }) => {
 }
 
 const GridExample = () => {
-    const highlightTheme = useThemeGenerator({ primary: '#7f85f5', background: '#1f1f1f', text: '#ffffff' })
+    const highlightTheme = useThemeGenerator({ primary: '#7f85f5', background: '#383838', text: '#ffffff' })
     return <Stack horizontal tokens={{ childrenGap: 12 }}>
         <Total label='Pipeline' value='$1,284,000' />
         <ThemeProvider theme={highlightTheme} style={{ padding: 12 }}>
@@ -91,7 +91,7 @@ const DealDetails = () => {
 
 const GridExample = () => {
     const applicationTheme = useTheme()
-    const bannerTheme = useThemeGenerator({ primary: '#7f85f5', background: '#1f1f1f', text: '#ffffff' })
+    const bannerTheme = useThemeGenerator({ primary: '#7f85f5', background: '#383838', text: '#ffffff' })
     const ownTheme = useThemeGenerator({ primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' })
     const [surfaceThemeKey, setSurfaceThemeKey] = React.useState('application')
     const surfaceTheme = { application: applicationTheme, own: ownTheme, none: undefined }[surfaceThemeKey]
