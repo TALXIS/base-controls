@@ -1,4 +1,4 @@
-import { ITheme, ThemeBuilder } from "@theme";
+import { createThemeBuilder, ITheme } from "@theme";
 import { IGridInternalServiceLocator } from "../../services";
 import { IGridColumnHeader } from "./GridColumnHeader";
 
@@ -30,7 +30,7 @@ export class GridColumnHeaderTheme implements IGridColumnHeaderTheme {
     }
 
     public get(): ITheme {
-        const builder = ThemeBuilder.from({ theme: this._seed ?? this._gridTheme });
+        const builder = createThemeBuilder({ theme: this._seed ?? this._gridTheme });
         this._headers.applyColumnHeaderThemeHooks(builder, this._header);
         return builder.getTheme();
     }

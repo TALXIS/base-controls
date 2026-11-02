@@ -1,7 +1,6 @@
-import { ActionButton, CommandBarButton, DefaultButton, IButtonProps, IconButton, IRenderFunction, MessageBarButton, PrimaryButton, SpinnerSize, ThemeGenerator, useTheme } from '@fluentui/react';
+import { ActionButton, CommandBarButton, DefaultButton, IButtonProps, IconButton, IRenderFunction, MessageBarButton, PrimaryButton, SpinnerSize, ThemeGenerator, useTheme, Spinner } from '@fluentui/react';
 import { useMemo } from 'react';
 import { getButtonWithLoadingStyles } from './styles';
-import { Spinner } from '@legacy/components/Spinner/Spinner';
 
 export type ButtonComponent = typeof ActionButton | typeof CommandBarButton | typeof DefaultButton | typeof IconButton | typeof MessageBarButton | typeof PrimaryButton;
 

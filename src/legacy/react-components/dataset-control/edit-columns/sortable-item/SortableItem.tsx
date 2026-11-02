@@ -7,7 +7,7 @@ import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text } from "@fluentui/react";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeGenerator } from "@theme";
+import { useThemeBuilder } from "@theme";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;
@@ -17,7 +17,7 @@ export const SortableItem = (props: { column: IColumn }) => {
     const styles = useMemo(() => getSortableItemStyles(theme), []);
     const labels = useLabels(LEGACY_DATASET_CONTROL_LABELS);
     const displayName = column.displayName ?? labels.get('legacyDatasetControl.noName');
-    const sortableItemTheme = useThemeGenerator({ primary: theme.palette.themePrimary, background: theme.semanticColors.buttonBackgroundPressed, text: theme.semanticColors.bodyText });
+    const sortableItemTheme = useThemeBuilder({ colors: { primary: theme.palette.themePrimary, background: theme.semanticColors.buttonBackgroundPressed, text: theme.semanticColors.bodyText } });
 
     const style = {
         transform: CSS.Transform.toString(transform),

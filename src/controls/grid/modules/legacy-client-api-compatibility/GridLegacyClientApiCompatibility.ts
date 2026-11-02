@@ -3,7 +3,7 @@ import { EventEmitter, IAddControlNotificationOptions, IControlParameters, ICust
 import { ICommandBarItemProps, Target } from "@fluentui/react";
 import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
 import { merge } from "merge-anything";
-import { getTextColorForBackground, ThemeGenerator } from "@theme";
+import { createThemeBuilder, getTextColorForBackground } from "@theme";
 import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../services/cells";
 import type { GridLockHook } from "../editing/GridLocks";
 import type { IGridSurface } from "../../services/surfaces";
@@ -113,7 +113,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         }
         const colors = { ...theme.colors };
         //the colours the cell came in with
-        const formatting = field.ui.getCustomFormatting(ThemeGenerator.generate(colors)) ?? {};
+        const formatting = field.ui.getCustomFormatting(createThemeBuilder({ colors }).getTheme()) ?? {};
         const background = formatting.backgroundColor || colors.background;
         const isRecoloured = background !== colors.background;
         //a background of its own is taken as emphasis

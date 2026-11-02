@@ -13,7 +13,7 @@ const BRANDS = [
 
 const GridExample = () => {
     const [colors, setColors] = React.useState(BRANDS[1].colors)
-    const theme = useThemeGenerator(colors)
+    const theme = useThemeBuilder({ colors })
 
     const setColor = (name: keyof typeof colors, value: string) => setColors({ ...colors, [name]: value })
 
@@ -55,7 +55,7 @@ const Total = (props: { label: string; value: string }) => {
 }
 
 const GridExample = () => {
-    const highlightTheme = useThemeGenerator({ primary: '#7f85f5', background: '#383838', text: '#ffffff' })
+    const highlightTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
     return <Stack horizontal tokens={{ childrenGap: 12 }}>
         <Total label='Pipeline' value='$1,284,000' />
         <ThemeProvider theme={highlightTheme} style={{ padding: 12 }}>
@@ -66,9 +66,9 @@ const GridExample = () => {
 `
 
 const SURFACE_CODE = `const SURFACE_THEMES = [
-    { key: 'application', text: 'The application theme' },
+    { key: 'none', text: 'Not set: the application theme from the root' },
+    { key: 'banner', text: 'The banner theme' },
     { key: 'own', text: 'A theme of its own' },
-    { key: 'none', text: 'Not set' },
 ]
 
 const ACTIONS = [{ key: 'export', text: 'Export', iconProps: { iconName: 'Download' }, subMenuProps: { items: [{ key: 'csv', text: 'CSV' }, { key: 'excel', text: 'Excel' }, { key: 'pdf', text: 'PDF' }] } }]
@@ -90,11 +90,10 @@ const DealDetails = () => {
 }
 
 const GridExample = () => {
-    const applicationTheme = useTheme()
-    const bannerTheme = useThemeGenerator({ primary: '#7f85f5', background: '#383838', text: '#ffffff' })
-    const ownTheme = useThemeGenerator({ primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' })
-    const [surfaceThemeKey, setSurfaceThemeKey] = React.useState('application')
-    const surfaceTheme = { application: applicationTheme, own: ownTheme, none: undefined }[surfaceThemeKey]
+    const bannerTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
+    const ownTheme = useThemeBuilder({ colors: { primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' } })
+    const [surfaceThemeKey, setSurfaceThemeKey] = React.useState('none')
+    const surfaceTheme = { none: undefined, banner: bannerTheme, own: ownTheme }[surfaceThemeKey]
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <ChoiceGroup label='The banner opens its surfaces in' options={SURFACE_THEMES} selectedKey={surfaceThemeKey} onChange={(_, option) => setSurfaceThemeKey(option!.key)} />

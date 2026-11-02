@@ -14,7 +14,7 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderContextProvider, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useCompact, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, ThemeGenerator, ThemeProvider, Callout, useSurfaceTheme, useThemeGenerator, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
+    CommandBar, DataProviderContextProvider, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useCompact, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, Callout, useSurfaceTheme, useThemeBuilder, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
@@ -127,10 +127,10 @@ export const GRID_SANDBOX_SCOPE = {
     getTextColorForBackground,
     isLightColor,
     ThemeProvider,
-    ThemeGenerator,
+    createThemeBuilder,
     useTheme,
     useSurfaceTheme,
-    useThemeGenerator,
+    useThemeBuilder,
     Callout,
     DEAL_ROWS,
     DEAL_COLUMNS,

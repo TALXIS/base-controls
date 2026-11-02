@@ -360,7 +360,7 @@ const SPREADSHEET = `import type { IFeature } from './features'
 //a little roomier than Excel's 20 pixels
 const COMPACT_ROW_HEIGHT = 28
 
-const EXCEL_BASE_THEME = ThemeGenerator.generate({ primary: '#217346', background: '#ffffff', text: '#000000' })
+const EXCEL_BASE_THEME = createThemeBuilder({ colors: { primary: '#217346', background: '#ffffff', text: '#000000' } }).getTheme()
 
 //the grid draws its lines in the divider colour
 const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME.semanticColors, menuDivider: '#d4d4d4' } }

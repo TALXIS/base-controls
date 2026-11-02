@@ -1,6 +1,6 @@
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyleProps, IToggleStyles } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { ITheme, ThemeBuilder } from "@theme";
+import { createThemeBuilder, ITheme } from "@theme";
 import { getJustifyContent, IAlignment } from "@utils";
 import { IGridInternalServiceLocator } from "../../services";
 import type { IGridCell } from "./GridCell";
@@ -36,7 +36,7 @@ export class GridCellTheme implements IGridCellTheme {
     }
 
     public get(): ITheme {
-        const builder = ThemeBuilder.from({ theme: this._seed ?? this._gridTheme });
+        const builder = createThemeBuilder({ theme: this._seed ?? this._gridTheme });
         //an unseeded cell takes its row's background
         if (!this._seed) {
             builder.colors.background = this._rowBackground;

@@ -95,7 +95,6 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@fluentui/style-utilities": "^8.11.4",
     "@talxis/client-libraries": "file:../INT0014/src/SDK/ClientLibraries",
     "@talxis/client-metadata": "^0.0.7",

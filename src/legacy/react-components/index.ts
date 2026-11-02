@@ -8,7 +8,6 @@ export * from './utilities/components/InputButtons';
 export * from './components/Autocomplete';
 export * from './components/Multistage';
 export * from './components/Login/';
-export * from './components/Spinner';
 export * from './components/KeyboardShortcutHint';
 export * from './utilities/components/AdvancedErrorMessage';
 export * from './utilities/components/ErrorMessage';

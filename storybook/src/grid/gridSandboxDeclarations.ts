@@ -883,6 +883,15 @@ interface IThemeColors {
     text: string;
 }
 
+/** An edit over a built theme; the same key has to mean the same edit. */
+interface IThemeEdit {
+    key: string;
+    edit: (theme: ITheme) => void;
+}
+
+/** A built theme whose colours are the seed, the three colours, or a Fluent v9 theme. */
+type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } | { fluentDesignLanguage: any };
+
 /** Builds a theme from three colours and the edits over the result. */
 interface ThemeBuilder {
     /** Changing one regenerates the whole palette. */
@@ -892,13 +901,10 @@ interface ThemeBuilder {
     getTheme(): ITheme;
 }
 
-declare class ThemeGenerator {
-    static generate(colors: IThemeColors): ITheme;
-}
-
 type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
-    theme: import('@fluentui/react').ITheme;
-    /** What callouts, menus and tooltips opened inside are drawn in. */
+    /** The theme above, or the default theme, where left out. */
+    theme?: import('@fluentui/react').ITheme;
+    /** What callouts, menus and tooltips opened inside are drawn in; the outermost theme where left out. */
     surfaceTheme?: import('@fluentui/react').ITheme;
     /** Whether the element itself is painted in the theme. */
     applyTo?: 'element' | 'none';
@@ -917,8 +923,11 @@ declare const Callout: (props: import('@fluentui/react').ICalloutProps & { child
 /** What a callout, menu or tooltip is drawn in: the surface theme above, or the theme where none is. */
 declare function useSurfaceTheme(): ITheme;
 
-/** The theme these colours generate, kept while they are the colours. */
-declare function useThemeGenerator(colors: IThemeColors): ITheme;
+/** The theme a ThemeBuilder builds, kept while the colours and the edit's key stay the same. */
+declare function useThemeBuilder(source: IThemeBuilderSource, edit?: IThemeEdit): ITheme;
+
+/** A builder starting from a theme, three colours or a Fluent v9 theme; Fluent's defaults where left out. */
+declare function createThemeBuilder(source?: IThemeBuilderSource): ThemeBuilder;
 
 /** A text colour that reads on the background. */
 declare function getTextColorForBackground(backgroundColor: string): string;

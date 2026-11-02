@@ -1,12 +1,13 @@
-import React, { useMemo } from "react";
-import { ITheme } from "@fluentui/react";
+import React, { useContext, useMemo } from "react";
+import { ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
 import { getClassNames } from "@utils/styling";
-import { ThemeContext } from "../theme-context";
+import { ThemeContext } from "./ThemeContext";
+import { createThemeBuilder } from "./theme-builder";
 import { getThemeProviderStyles } from "./styles";
 
 export interface IThemeProviderProps extends React.HTMLAttributes<HTMLDivElement> {
-    /** Whole, rather than the partial Fluent's allows: nothing is merged into it. */
-    theme: ITheme;
+    /** The theme above, or the default theme, where left out; nothing is merged into it. */
+    theme?: ITheme;
     /** What a callout, menu or tooltip opened in here is drawn in, where the theme itself is not it. */
     surfaceTheme?: ITheme;
     /** Whether the element it renders is painted in the theme's surface. */
@@ -22,7 +23,9 @@ export interface IThemeProviderProps extends React.HTMLAttributes<HTMLDivElement
  * what makes it cheap enough for a grid cell. It has no `applyTo='body'`.
  */
 export const ThemeProvider = React.forwardRef<HTMLDivElement, IThemeProviderProps>((props, ref) => {
-    const { theme, surfaceTheme, applyTo = 'element', className, children, ...divProps } = props;
+    const { theme: themeProp, surfaceTheme, applyTo = 'element', className, children, ...divProps } = props;
+    const themeAbove = useContext(FluentThemeContext);
+    const theme = themeProp ?? themeAbove ?? createThemeBuilder().getTheme();
     const styles = useMemo(() => getThemeProviderStyles(theme), [theme]);
 
     return <div

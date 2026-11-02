@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import React from 'react'
 import { initializeIcons, mergeStyleSets, Text } from '@fluentui/react'
-import { createClientSideRowModelModule, createEditingModule, createFilteringModule, createIsolatedComponent, createSortingModule, DatasetControl, Grid, IsolatedFrameScript, PcfContextProvider, StateProvider, ThemeGenerator, ThemeProvider } from '@talxis/base-controls'
+import { createClientSideRowModelModule, createEditingModule, createFilteringModule, createIsolatedComponent, createSortingModule, DatasetControl, Grid, IsolatedFrameScript, PcfContextProvider, StateProvider, createThemeBuilder, ThemeProvider } from '@talxis/base-controls'
 import { createDealsProvider } from '../grid/data'
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
     }
 }
 
-const theme = ThemeGenerator.generate({ primary: '#5B5FC7', background: '#ffffff', text: '#242424' })
+const theme = createThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } }).getTheme()
 
 //rules like an older AG Grid's on the same page
 const OTHER_APP_STYLES = `

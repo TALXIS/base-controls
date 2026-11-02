@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ICommandBarItemProps, MessageBarType, useTheme } from "@fluentui/react";
-import { ThemeContext, useThemeGenerator } from "@theme";
+import { ThemeContext, useThemeBuilder } from "@theme";
 import { useLabels } from "@utils/localization";
 import { usePcfContext } from "@utils/adapters/pcf-context/context";
 import { ErrorMessageBarComponents, IErrorMessageBarComponents } from "./components";
@@ -25,7 +25,7 @@ export const ErrorMessageBar = (props: IErrorMessageBarProps) => {
     const labels = useLabels(ERROR_MESSAGE_BAR_LABELS);
     const theme = useTheme();
     const styles = useMemo(() => getErrorMessageBarStyles(), []);
-    const commandBarTheme = useThemeGenerator({ primary: theme.palette.themePrimary, background: theme.semanticColors.errorBackground, text: theme.semanticColors.messageText });
+    const commandBarTheme = useThemeBuilder({ colors: { primary: theme.palette.themePrimary, background: theme.semanticColors.errorBackground, text: theme.semanticColors.messageText } });
 
     const getItems = (): ICommandBarItemProps[] => {
         const items: ICommandBarItemProps[] = [];

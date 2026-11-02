@@ -1,5 +1,5 @@
-import { DefaultButton, DirectionalHint, PrimaryButton, useTheme } from "@fluentui/react";
-import { ThemeProvider, useLabels } from "@utils";
+import { DefaultButton, DirectionalHint, PrimaryButton } from "@fluentui/react";
+import { useLabels } from "@utils";
 import { useControl, useEventEmitter } from "@hooks"
 import { OptionSet } from "@controls/fields/option-set";
 import { IDatasetColumnFiltering } from "./interfaces";
@@ -19,7 +19,6 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const { onNotifyOutputChanged } = useControl('DatasetFiltering', props);
     const operatorLabels = useLabels(FILTER_OPERATORS_LABELS);
     const labels = useLabels(GRID_FILTERING_LABELS);
-    const theme = useTheme();
     const context = props.context;
     const filtering = props.parameters.Filtering;
     const columnFilter = props.parameters.Filtering.getColumnFilter(props.parameters.ColumnName.raw!);
@@ -88,7 +87,6 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
 
     return componentProps.onRender({
         container: {
-            theme: theme,
             className: styles.datasetColumnFilteringRoot
         },
         valueControlsContainer: {
@@ -99,7 +97,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
         onRenderButtons: (props, defaultRender) => defaultRender(props),
 
     }, (props) => {
-        return <ThemeProvider {...props.container}>
+        return <div {...props.container}>
             {props.onRenderConditionOperatorControl({
                 context: context,
                 //@ts-ignore - typings
@@ -193,6 +191,6 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
                         {...props} />)}
                 </div>
             })}
-        </ThemeProvider>
+        </div>
     })
 }

@@ -5,21 +5,43 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BrandExample, OwnComponentExample, SurfaceExample } from './themingExamples'
 
 const DESCRIPTION = `
-Every control draws in the theme of the nearest \`ThemeProvider\` above it. A theme is a Fluent theme, so the controls, Fluent's own components and yours share the same colours and fonts, and one provider at the top of the application themes all of them.
+Every control draws in the theme of the nearest \`ThemeProvider\` above it. A theme is a Fluent theme, so the controls, Fluent's own components and yours share the same colours and fonts. An application needs one provider at its root; the controls make a theme of their own only where they draw something in other colours, such as a coloured cell.
 
 \`\`\`tsx
-import { ThemeGenerator, ThemeProvider } from '@talxis/base-controls'
+import { ThemeProvider } from '@talxis/base-controls'
 
-const theme = ThemeGenerator.generate({ primary: '#5B5FC7', background: '#ffffff', text: '#242424' })
+<ThemeProvider>
+    <App />
+</ThemeProvider>
+\`\`\`
+
+Without a \`theme\`, a provider takes the theme of the provider above it, or the default theme generated from Fluent's own colours when there is none. Pass \`theme\` to draw in your own:
+
+\`\`\`tsx
+const theme = createThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } }).getTheme()
 
 <ThemeProvider theme={theme}>
     <App />
 </ThemeProvider>
 \`\`\`
 
-## Generate a theme
+## Build a theme
 
-A theme comes from three colours: \`primary\` for accents, links and selection, \`background\` and \`text\`. \`ThemeGenerator.generate\` works out the whole palette from them, light or dark depending on the background, and \`useThemeGenerator\` does the same inside a component. The result is cached on the three colours, so the same colours always give back the same theme.
+A theme comes from three colours: \`primary\` for accents, links and selection, \`background\` and \`text\`. \`createThemeBuilder({ colors })\` works out the whole palette from them, light or dark depending on the background, and \`createThemeBuilder({ theme })\` starts from a theme you already have, with its colours as the seed. Change \`colors\` to regenerate the palette, and \`edit(key, edit)\` to change details on top, such as fonts; \`getTheme()\` returns the result. Themes are cached on their colours and edit keys, so the same key must always mean the same edit.
+
+\`\`\`tsx
+const builder = createThemeBuilder({ theme: appTheme })
+builder.colors.background = '#fdecea'
+builder.edit('bold', theme => { theme.fonts.medium.fontWeight = 600 })
+const warning = builder.getTheme()
+\`\`\`
+
+In a component, \`useThemeBuilder\` keeps the theme while the colours and the edit's key stay the same:
+
+\`\`\`tsx
+const banner = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
+const compact = useThemeBuilder({ theme: useTheme() }, { key: 'compact', edit: theme => { theme.fonts.medium.fontSize = 12 } })
+\`\`\`
 
 Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables.
 
@@ -41,17 +63,9 @@ A surface is drawn in the **surface theme** instead. A \`ThemeProvider\` sets it
 |---|---|
 | A provider with \`surfaceTheme\` | That theme |
 | A provider without one | The surface theme of the nearest provider above that has one |
-| No provider that sets one | The theme around the element that opened it |
+| No provider that sets one | The theme of the outermost provider |
 
-Set it once at the root, to the application theme itself, and every themed area below opens its surfaces in it:
-
-\`\`\`tsx
-<ThemeProvider theme={theme} surfaceTheme={theme}>
-    <App />
-</ThemeProvider>
-\`\`\`
-
-Set it lower down only where an area should open its surfaces in something else.
+So with one provider at the root, every surface opens in the application theme. Set \`surfaceTheme\` lower down only where an area should open its surfaces in something else.
 
 The controls' own surfaces follow it, and so do this package's \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\`, \`CommandBar\`, \`DatePicker\`, \`TimePicker\`, \`ComboBox\` and \`TagPicker\`, which wrap Fluent's components of the same name. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useSurfaceTheme()\` returns.
 
@@ -112,7 +126,7 @@ export const Surfaces: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A dark banner with a menu and a callout, and its \`surfaceTheme\` picked above it. Try: open *Export* and *Details* with each choice; with none set, they open in the banner's own dark theme.`,
+                story: `A dark banner with a menu and a callout, and its \`surfaceTheme\` picked above it. Try: open *Export* and *Details* with each choice; not set, they open in the application theme from the root.`,
             },
         },
     },

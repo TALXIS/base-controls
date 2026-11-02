@@ -3,8 +3,7 @@ import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
 import { FORM_LABELS } from '@controls/form/labels';
 import { translateLabels, type Labels } from '@utils';
-import { getTheme } from '@fluentui/react';
-import type { ITheme } from '@theme';
+import { createThemeBuilder, ITheme } from '@theme';
 
 export interface IPcfXrmFormAdapterInputs {
     Height?: ComponentFramework.PropertyTypes.StringProperty;
@@ -118,7 +117,7 @@ export class PcfXrmFormAdapter<IInputs extends IPcfXrmFormAdapterInputs> {
     }
 
     private _getTheme(): ITheme {
-        return getTheme();
+        return createThemeBuilder().getTheme();
     }
 
     private _getRequiredParameterValue(value: string | null | undefined, parameterName: string): string {

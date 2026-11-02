@@ -1,4 +1,3 @@
-import { IThemeProviderProps } from "@utils";
 import { IControl, IParameters, IStringProperty } from "@interfaces";
 import { IOptionSet } from "@controls/fields/option-set";
 import { INestedControlRenderer } from "@controls/nested-control-renderer/interfaces";
@@ -20,8 +19,7 @@ interface IDatasetColumnFilteringComponentProps {
 }
 
 interface IComponentProps {
-    /** What the control is drawn in, and what it paints its own element with. */
-    container: IThemeProviderProps;
+    container: React.HTMLAttributes<HTMLDivElement>;
     valueControlsContainer: React.HTMLAttributes<HTMLDivElement>;
     onRenderConditionOperatorControl: (props: IOptionSet, defaultRender: (props: IOptionSet) => React.ReactElement) => React.ReactElement;
     onRenderConditionValueControl: (props: INestedControlRenderer, defaultRender: (props: INestedControlRenderer) => React.ReactElement) => React.ReactElement;

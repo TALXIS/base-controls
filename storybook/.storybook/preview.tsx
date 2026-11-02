@@ -2,18 +2,14 @@ import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider, StateProvider, ThemeGenerator, ThemeProvider } from '@talxis/base-controls';
+import { PcfContextProvider, StateProvider, ThemeProvider } from '@talxis/base-controls';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
 ModuleRegistry.registerModules([ValidationModule]);
 
-//the theme every story is drawn in: a control takes what is above it, and this is what is above them.
-//Teams light: its brand purple, its surface and its foreground
-const theme = ThemeGenerator.generate({ primary: '#5B5FC7', background: '#ffffff', text: '#242424' });
-
 const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+  return <ThemeProvider>{children}</ThemeProvider>;
 };
 
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does

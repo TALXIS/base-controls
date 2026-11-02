@@ -1,11 +1,16 @@
 import Color from 'color';
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
-import { isLightColor } from "./isLightColor";
 
+const IsLightColorCache = new MemoryCache<boolean>();
 const ContrastColorCache = new MemoryCache<string>();
 
 //what a generated dark theme resolves its body text to, without generating one to ask
 const DARK_TEXT_COLOR = '#ffffff';
+
+/** Whether text drawn on this colour has to be dark to be read. */
+export const isLightColor = (color: string): boolean => {
+    return IsLightColorCache.get(color, () => new Color(color).isLight())!;
+};
 
 /** A colour that reads on this background, for text drawn over it. */
 export const getTextColorForBackground = (backgroundColor: string): string => {

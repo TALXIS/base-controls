@@ -1,6 +1,6 @@
 import { useLabels } from "@utils";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
-import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, useTheme } from "@fluentui/react";
+import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, useTheme, Spinner } from "@fluentui/react";
 import { Panel } from "@ui";
 import { useModel } from "../useModel";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortable-item/SortableItem";
 import { useEventEmitter } from "@hooks";
-import { useRerender, Spinner } from "@legacy";
+import { useRerender } from "@legacy";
 import { ColumnSelector } from "./column-selector/ColumnSelector";
 import { useShouldRemount } from "@hooks/useShouldRemount";
 import { ScopeSelector } from "./scope-selector/ScopeSelector";

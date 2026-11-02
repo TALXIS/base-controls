@@ -5,7 +5,7 @@ import { useTheme } from "@fluentui/react";
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
-import { getClassNames, useDataProvider, useLabelsService, usePcfContext, ThemeProvider } from "@utils";
+import { getClassNames, useDataProvider, useLabelsService, usePcfContext } from "@utils";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./services/runtime";
 import { useGridEventHandlers } from "./useGridEventHandlers";
@@ -65,16 +65,10 @@ export const GridRoot = (props: IGridProps) => {
     //the locator holds everything a component needs
     return <GridServicesContext.Provider value={runtime.services}>
         <GridComponentsContext.Provider value={components}>
-            <ThemeProvider
-                theme={theme}
-                //what a cell opens is drawn over the grid
-                surfaceTheme={theme}
-                applyTo='none'
-                ref={onGridRootRef}
-                className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot])}>
+            <div ref={onGridRootRef} className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot])}>
                 <AgGridReact<IRecord> theme={runtime.services.get('gridTheme').getAgTheme()} {...runtime.getAgGridProps()} />
                 <Surfaces />
-            </ThemeProvider>
+            </div>
         </GridComponentsContext.Provider>
     </GridServicesContext.Provider>
 }
