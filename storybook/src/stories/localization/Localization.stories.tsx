@@ -17,7 +17,7 @@ const labels = { ...CZECH_LABELS, 'taskGrid.addChild': 'Rozdělit úkol' }
 </LocalizationProvider>
 \`\`\`
 
-Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese from a translation the example brings in \`japanese.ts\`, and your own. Switch language and open the settings, the ribbon or a column menu, point at a bar or a link, then pick *Your own wording*, change a label and press *Apply*.
+Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese from a translation the example brings in \`japanese.ts\`, and your own. Switch language and open the view switcher, Edit columns, the settings, *New* or a column menu, point at a bar or a link, then pick *Your own wording*, change a label and press *Apply*.
 
 {{story: Switch the language}}
 
@@ -34,7 +34,7 @@ Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese
 </LocalizationProvider>
 \`\`\`
 
-Some labels hold placeholders, such as \`Page {{ number }}\`: keep them in a translation and they are filled in. Column names, option labels and formatted values are not labels; they come from the data.
+Some labels hold placeholders, such as \`Page {{ number }}\`: keep them in a translation and they are filled in. View, column and option names are not labels: they come from the data, so the example's views carry them per language, in \`columns.ts\`.
 
 ## Dates and numbers
 
@@ -84,7 +84,7 @@ export const SwitchTheLanguage: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A task grid with its Gantt, views, search, editing, dragging, markers, non-working days, tooltips and links, in English, Czech, Japanese or a wording of your own. Open **Code** and find the Japanese translation in \`japanese.ts\`.`,
+                story: `The full task grid with its Gantt: user views, Edit columns, custom columns, assignees and tags, templates, checklists, dependencies, dragging, markers, non-working days, tooltips and links, in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.`,
             },
         },
     },
