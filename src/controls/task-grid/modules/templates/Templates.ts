@@ -10,8 +10,7 @@ import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
 import { TEMPLATES_LABELS } from "./labels";
 import { TemplateSelector } from "./components/adapters/template-selector";
-import type { ITemplateListComponents } from "./components/ui";
-import type { IRecordSelectorFrameComponents } from "../../components/record-selector";
+import type { IRecordListComponents, IRecordSelectorFrameComponents } from "../../components/record-selector";
 import { runQuietly } from "../../runtime/runQuietly";
 
 /** A template's own task, named after it, with the tasks under it. */
@@ -42,7 +41,7 @@ export interface ITemplatesComponents {
     /** The box the selector is drawn in, in the New and row add menus. */
     selector?: Partial<IRecordSelectorFrameComponents>;
     /** The templates offered in the selector. */
-    list?: Partial<ITemplateListComponents>;
+    list?: Partial<IRecordListComponents>;
 }
 
 export interface ITemplatesParameters {

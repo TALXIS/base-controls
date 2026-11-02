@@ -1,8 +1,7 @@
 import { useLabels } from "@utils";
 import { useDatasetControlModule } from "@controls/dataset-control";
-import { RecordSelector } from "../../../../../components/record-selector";
+import { RecordListComponents, RecordSelector } from "../../../../../components/record-selector";
 import { TEMPLATES_LABELS } from "../../../labels";
-import { TemplateList } from "../../ui";
 
 export interface ITemplateSelectorProps {
     onTemplateSelected: (templateId: string) => void;
@@ -12,12 +11,13 @@ export interface ITemplateSelectorProps {
 export const TemplateSelector = (props: ITemplateSelectorProps) => {
     const templates = useDatasetControlModule('templates');
     const labels = useLabels(TEMPLATES_LABELS);
+    const onRenderRecord = templates.components.list?.onRenderRecord ?? RecordListComponents.onRenderRecord;
     return <RecordSelector
         onCreateProvider={() => templates.createTemplatesProvider()}
         labels={{ searchPlaceholder: labels.get('templates.searchTemplates'), noRecordsFound: labels.get('templates.noTemplates') }}
         onRecordSelected={props.onTemplateSelected}
         components={{
             frame: templates.components.selector,
-            onRenderList: listProps => <TemplateList templates={listProps.records} onTemplateSelected={listProps.onRecordSelected} components={templates.components.list} />,
+            list: { onRenderRecord: buttonProps => onRenderRecord({ ...buttonProps, iconProps: { iconName: 'AddToShoppingList' } }) },
         }} />;
 };

@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { DatasetControl } from "@controls/dataset-control";
 import { Labels, LocalizationProvider, useDataProviderEvents } from "@utils";
-import { RecordSelectorFrame } from "../../ui";
-import { IRecordSelectorComponents, RecordSelectorComponents } from "./components";
+import { RecordList, RecordSelectorFrame } from "../../ui";
+import { IRecordSelectorComponents } from "./components";
 
 export interface IRecordSelectorProps {
     /** The records to offer, searched and paged through the provider itself. */
@@ -11,26 +11,25 @@ export interface IRecordSelectorProps {
     /** Called with the chosen record's id. */
     onRecordSelected: (recordId: string) => void;
     labels?: { searchPlaceholder?: string; noRecordsFound?: string };
-    components?: Partial<IRecordSelectorComponents>;
+    components?: IRecordSelectorComponents;
 }
 
-const RecordSelectorList = (props: Pick<IRecordSelectorProps, 'onRecordSelected'> & { components: IRecordSelectorComponents }) => {
+const RecordSelectorList = (props: Pick<IRecordSelectorProps, 'onRecordSelected' | 'components'>) => {
     const provider = useDataProviderEvents(['onNewDataLoaded']);
     const primaryNameAttribute = provider.getMetadata().PrimaryNameAttribute;
     const records = provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getFormattedValue(primaryNameAttribute) ?? undefined }));
-    return props.components.onRenderList({ records, onRecordSelected: props.onRecordSelected, components: props.components.list });
+    return <RecordList records={records} onRecordSelected={props.onRecordSelected} components={props.components?.list} />;
 };
 
 /** A searchable, paged, virtualized single-record picker over any provider. */
 export const RecordSelector = (props: IRecordSelectorProps) => {
-    const components = { ...RecordSelectorComponents, ...props.components };
     const { searchPlaceholder, noRecordsFound } = props.labels ?? {};
     const labels = useMemo((): Labels => ({
         ...(searchPlaceholder && { 'quickFind.searchPlaceholder': searchPlaceholder }),
         ...(noRecordsFound && { 'emptyRecords.noRecordsFound': noRecordsFound }),
     }), [searchPlaceholder, noRecordsFound]);
 
-    return <RecordSelectorFrame components={components.frame}>
+    return <RecordSelectorFrame components={props.components?.frame}>
         {parts => <LocalizationProvider labels={labels}>
             <DatasetControl height='100%' onLoad={async () => ({ provider: props.onCreateProvider() })}>
                 <DatasetControl.Header components={parts.header}>
@@ -40,7 +39,7 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
                 </DatasetControl.Header>
                 <DatasetControl.Body>
                     <DatasetControl.EmptyRecords>
-                        <RecordSelectorList onRecordSelected={props.onRecordSelected} components={components} />
+                        <RecordSelectorList onRecordSelected={props.onRecordSelected} components={props.components} />
                     </DatasetControl.EmptyRecords>
                 </DatasetControl.Body>
                 <DatasetControl.Footer>
