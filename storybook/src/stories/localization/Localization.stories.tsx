@@ -58,8 +58,6 @@ const Invoice = (props: IInvoiceProps) => {
 }
 \`\`\`
 
-\`get\` is typed: a key the set lacks, or a missing \`{{ count }}\`, does not compile. Outside React, such as in a grid module, read the same set with \`grid.getLabels(INVOICE_LABELS)\`, or \`getLabels\` on the DatasetControl or the task runtime; type a field holding them as \`LabelsOf<typeof INVOICE_LABELS>\`. Two sets may not define the same key with different text. A component inside the library also joins \`BASE_CONTROLS_LABEL_SETS\` in \`src/localization/labelSets.ts\`, and each language file in \`src/localization\`.
-
 `
 
 const meta = {
