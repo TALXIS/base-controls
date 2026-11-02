@@ -27,14 +27,7 @@ Without the editing module the list is read-only: no ticking, renaming, adding, 
 
 ## Change its wording
 
-Its strings are labels, replaced through a \`LocalizationProvider\` around it (see [**LocalizationProvider**](?path=/docs/providers-localizationprovider--overview)), such as \`<LocalizationProvider labels={{ 'checkList.newItemPlaceholder': 'Add a task...' }}>\`. The grid's own keys are on [**Grid › Localization**](?path=/docs/grid-localization--overview).
-
-| Key | Default | Description |
-|---|---|---|
-| \`checkList.newItemPlaceholder\` | Add an item... | The bottom row, while it is empty |
-| \`checkList.markItemFinished\` | Mark as finished | The checkbox's tooltip, and its name for screen readers |
-| \`checkList.deleteItem\` | Delete | The delete button's tooltip |
-| \`checkList.confirmDialog.deleteItem.text\` | Are you sure you want to delete this item? | The dialog that confirms a delete |
+Its strings are labels: see [**Localization**](?path=/docs/localization--overview).
 
 ## Configure the grid
 

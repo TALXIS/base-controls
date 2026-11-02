@@ -86,7 +86,7 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 | Record | \`rowSettings.onGetLock\`, a lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start of the row | \`grid.recordLocked\` |
 | Cell | \`context.cell.onGetLock\` in \`colDefs\`, or a lock hook asked about \`{ record, columnName }\` | A lock icon in the cell | \`grid.valueLocked\` |
 
-The labels are translated like any other: see [**Localization**](?path=/docs/grid-localization--overview).
+To change the tooltips, see [**Localization**](?path=/docs/localization--overview).
 
 \`context.isLocked: true\` is final, and no hook reopens the column; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.onGetLock(result, { record })\` runs after the record-level hooks with \`result.isLocked\` starting as \`!record.isActive()\`, so it can also unlock. \`context.cell.onGetLock(result, { record })\` runs after the cell-level hooks, and only for a cell whose column and record are open. A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/grid-extending-hooks--overview).
 

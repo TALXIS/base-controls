@@ -100,7 +100,7 @@ A user view opens like any other, so \`onLoad\` needs nothing new. What it keeps
 | \`createDataverseUserQueriesModule({ entityName, table })\` | As records of a Dataverse table you map. |
 | \`createUserQueriesModule({ onCreateStore })\` | In a store of yours. |
 
-Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`. Each command is on unless set to \`false\`. Its strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
+Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`. Each command is on unless set to \`false\`. Its strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/localization--overview).
 
 ### Dataverse
 

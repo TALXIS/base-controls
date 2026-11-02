@@ -85,7 +85,7 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 | | \`components\` | Defaults | See *Changing how it looks* below. |
 | \`TaskGantt.ZoomSlider\` | \`components\` | Defaults | See *Changing how it looks* below. |
 
-The Gantt's strings are labels: see [**Localization**](?path=/docs/taskgrid-localization--overview).
+The Gantt's strings are labels: see [**Localization**](?path=/docs/localization--overview).
 
 ## Changing how it looks
 

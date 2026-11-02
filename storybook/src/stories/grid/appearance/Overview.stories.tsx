@@ -23,7 +23,7 @@ The grid draws in your Fluent theme. On top of it you can size it, pick a densit
 | The loading and empty overlays, the loading and error rows | \`components\` on \`<Grid>\` | On every render | [**Overlays and rows**](?path=/docs/grid-appearance-overlays-and-rows--overview) |
 | Sort arrows, filter funnels and callout, group cells, totals | the module's \`components\` option | At mount | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview), [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
 | The save status, the lock column, the checkboxes | the module's column in \`colDefs\` | With the columns | [**Editing**](?path=/docs/grid-modules-editing--overview), [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
-| Every text the grid shows | label keys through \`LocalizationProvider\` | On every render | [**Localization**](?path=/docs/grid-localization--overview) |
+| Every text the grid shows | label keys through \`LocalizationProvider\` | On every render | [**Localization**](?path=/docs/localization--overview) |
 
 ## Changing how it looks
 

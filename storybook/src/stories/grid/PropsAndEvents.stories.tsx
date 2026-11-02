@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TicketPreviewPaneExample, WatchEveryEventExample } from '../../grid/examples/propsAndEventsExamples'
 
 const DESCRIPTION = `
-Every prop of \`<Grid />\`, and every event it fires. How to use each is on the page each row links to. The grid takes no strings as props: its labels are translated through a provider, listed on [**Localization**](?path=/docs/grid-localization--overview).
+Every prop of \`<Grid />\`, and every event it fires. How to use each is on the page each row links to. The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/localization--overview).
 
 The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderContextProvider\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/grid-get-started--overview).
 

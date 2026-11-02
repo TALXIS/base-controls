@@ -252,33 +252,9 @@ const GridExample = () => {
 }
 `
 
-const CZECH_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
-
-const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
-    const labels = React.useMemo(() => ({ ...CZECH_LABELS, 'taskGrid.addChild': 'Přidat podúkol' }), [])
-
-    return <LocalizationProvider labels={labels}>
-        <TaskDatasetControl enableCreation enableEditing enableDeletion onLoadViews={loadTaskViews} onLoad={loadTasks} height='440px'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.End>
-                    <TaskDatasetControl.Ribbon />
-                    <TaskDatasetControl.Settings />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
-            </DatasetControl.Body>
-        </TaskDatasetControl>
-    </LocalizationProvider>
-}
-`
-
 export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
 export const OwnTasksExample = () => <GridExampleRunner seedCode={OWN_TASKS_CODE} />
 export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} />
 export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} />
 export const WorkingWithTasksExample = () => <GridExampleRunner seedCode={withTasks(WORKING_CODE)} />
 export const TalkingToTheTaskGridExample = () => <GridExampleRunner seedCode={withTasks(TALKING_CODE)} />
-export const CzechTaskGridExample = () => <GridExampleRunner seedCode={withTasks(CZECH_CODE)} />

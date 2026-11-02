@@ -50,7 +50,7 @@ const urgentTicketsModule: IGridModule = {
 | \`events\` | \`onDataLoaded\` and \`onDestroyed\`. See *Events* below. |
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
-| \`getLabels(set)\` | A set of labels as the grid resolves them. See *In your own module* on [**Localization**](?path=/docs/grid-localization--overview). |
+| \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/localization--overview). |
 
 ## Services
 

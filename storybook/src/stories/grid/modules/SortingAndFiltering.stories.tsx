@@ -27,7 +27,7 @@ Clicking a column's header opens its menu; it never sorts by itself. Each module
 | Sorting | The two directions, worded by the column's data type: *Sort A to Z*, *Sort older to newer*, *Sort smaller to larger*, or a yes/no column's own labels such as *No to Yes*. Shift+click adds the column as a further sort level. *Clear* while the column is sorted. | An arrow after the name |
 | Filtering | *Filter By*, which opens a callout under the header: pick an operator, enter a value and press *Apply*. *Clear* while the column is filtered. | A funnel after the name |
 
-A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider. The menu texts are label keys under \`gridSorting.*\` and \`gridFiltering.*\`, and the operators' names under \`filterOperators.*\`: see [**Localization**](?path=/docs/grid-localization--overview).
+A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider. To change the menu texts, see [**Localization**](?path=/docs/localization--overview).
 
 ## What a column needs
 

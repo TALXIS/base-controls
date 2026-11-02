@@ -44,7 +44,7 @@ Which columns offer a feature comes from the provider's columns: \`disableSortin
 
 ## Text and looks
 
-No module takes text of its own. Every string a module shows is a label key, such as \`gridSorting.clear\` or \`gridGrouping.expandLevel\`, translated through [**LocalizationProvider**](?path=/docs/providers-localizationprovider--overview); the keys and their defaults are on [**Localization**](?path=/docs/grid-localization--overview).
+Modules take no text of their own: to change it, see [**Localization**](?path=/docs/localization--overview).
 
 Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw. The editing and row selection modules draw columns of their own, which you restyle through \`colDefs\` with the cells they export. Every entry point is mapped on [**Appearance**](?path=/docs/grid-appearance--overview).
 

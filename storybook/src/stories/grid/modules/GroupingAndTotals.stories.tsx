@@ -114,7 +114,7 @@ Both modules' options are read at mount.
 | \`allowUserAggregation\` | \`boolean\` | \`true\` | Whether column menus have a *Totals* section. Preset totals show either way. |
 | \`components\` | \`IGridAggregationComponents\` | \`{}\` | See *Changing how it looks*. |
 
-The menu texts, the tooltips and the totals' names are label keys under \`gridGrouping.*\` and \`gridAggregation.*\`: see [**Localization**](?path=/docs/grid-localization--overview).
+To change the menu texts, tooltips and totals' names, see [**Localization**](?path=/docs/localization--overview).
 
 ## From your code
 

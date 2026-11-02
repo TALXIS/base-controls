@@ -112,7 +112,7 @@ The control a module gets also has \`registerViews(hook, priority?)\`, to add to
 
 | Member | Description |
 |---|---|
-| \`getLabels(set)\` | A label set as the control's \`LocalizationProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/datasetcontrol-localization--overview). |
+| \`getLabels(set)\` | A label set as the control's \`LocalizationProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in. |
 | \`surfaces\` | What modules draw in the control, above. |
 `

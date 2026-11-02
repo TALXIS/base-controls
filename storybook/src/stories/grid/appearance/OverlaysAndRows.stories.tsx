@@ -29,7 +29,7 @@ When the grid has no records to draw, it draws something in their place: an over
 
 ## No records
 
-\`overlays.emptyRecords\` draws the grid's empty state. Its text is the \`grid.noRecordsFound\` label, which you change through \`LocalizationProvider\` (see [**Localization**](?path=/docs/grid-localization--overview)). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
+\`overlays.emptyRecords\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/localization--overview). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
 
 {{story: Show an empty catalogue}}
 

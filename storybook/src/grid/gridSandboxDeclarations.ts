@@ -4010,6 +4010,8 @@ declare const EmptyRecordsUiComponents: IEmptyRecordsUiComponents;
 declare const useTaskRuntime: () => ITaskRuntime;
 /** Provides the strings of every component mounted below it, by label key. */
 declare const LocalizationProvider: (props: { labels: { [key: string]: string }; children: React.ReactNode }) => JSX.Element;
+/** Provides the PCF context below it; userSettings set the language and formatting outside a hosted PCF control. */
+declare const PcfContextProvider: (props: { context?: any; userSettings?: { lcid?: number; formatInfoCultureName?: string }; children?: React.ReactNode }) => JSX.Element;
 /** The Czech translation of every label. */
 declare const CZECH_LABELS: { [key: string]: string };
 

@@ -120,6 +120,7 @@ const preview: Preview = {
             ],
           ],
           'Data providers',
+          'Localization',
           'DatasetControl',
           [
             'Get started',
@@ -132,7 +133,6 @@ const preview: Preview = {
             ['Ribbon', 'Quick find', 'Edit columns', 'Paging', 'Notifications and empty records'],
             'State',
             'Your own UI',
-            'Localization',
             'Dev',
           ],
           'Grid',
@@ -145,7 +145,6 @@ const preview: Preview = {
             'Appearance',
             ['Overview', 'Custom cells', 'Custom headers', 'Overlays and rows'],
             'State',
-            'Localization',
             'Talking to the grid',
             'Extending',
             ['Write a module', 'Hooks', 'AG Grid'],
@@ -161,7 +160,6 @@ const preview: Preview = {
             'Modules',
             ['Overview', 'Project', 'Custom columns', 'Lookup many', 'Templates', 'Checklist', 'Dependencies'],
             'Talking to the task grid',
-            'Localization',
             'Gantt',
             [
               'Get started',

@@ -67,7 +67,7 @@ The control's \`onLoad\` returns a provider for the view the user is on, and eve
 | Show a failure | Throw. The control shows it, with *Try again* where it can. | [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview) |
 | Drive the control from your code | \`useDatasetControl()\` inside it, \`onMounted\` outside | [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview) |
 | Bring the user back where they left off | \`stateKey\` | [**State**](?path=/docs/datasetcontrol-state--overview) |
-| Change what a part draws, or translate it | \`components\`, \`LocalizationProvider\` | [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/datasetcontrol-localization--overview) |
+| Change what a part draws, or translate it | \`components\`, \`LocalizationProvider\` | [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/localization--overview) |
 
 ## Props
 
@@ -86,7 +86,7 @@ The control's \`onLoad\` returns a provider for the view the user is on, and eve
 | \`scope\` | \`ComponentType<{ children: ReactNode }>\` | None | Wraps everything inside the control, such as in a context provider of yours. Pass the same component on every render. |
 | \`onMounted\`, \`onReady\`, \`onDestroyed\` | \`(control: IDatasetControl<TData>) => void\` | None | Pass you the control before each load, once it succeeded, and as it goes. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
 
-The control's strings are translated through \`LocalizationProvider\`: see [**Localization**](?path=/docs/datasetcontrol-localization--overview).
+To change the control's strings, see [**Localization**](?path=/docs/localization--overview).
 
 ## Where next
 
@@ -102,7 +102,7 @@ const EXPLORE: IExploreCard[] = [
     { title: 'Layout that adapts', iconName: 'ResponsiveDesign', href: '?path=/docs/datasetcontrol-layout--overview', text: 'Left and right regions, a height that fills any space, and a header that gives way on a narrow screen.' },
     { title: 'Back where they left off', iconName: 'History', href: '?path=/docs/datasetcontrol-state--overview', text: 'Every view keeps its sorting, search, paging and scroll, and the control reopens on the view the user was on.' },
     { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/datasetcontrol-your-own-ui--overview', text: 'Replace any piece a part draws, add parts of your own, and show the records as a list, cards or a chart.' },
-    { title: 'Your language', iconName: 'Color', href: '?path=/docs/datasetcontrol-localization--overview', text: 'Every key the control and its parts show, for LocalizationProvider to translate.' },
+    { title: 'Your language', iconName: 'Color', href: '?path=/docs/localization--overview', text: 'Translate or reword every string the control and its parts show.' },
 ]
 
 const meta = {
