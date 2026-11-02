@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
 import { getClassNames } from "@utils/styling";
-import { ThemeContext } from "./ThemeContext";
+import { SurfaceThemeContext, ThemeContext } from "./ThemeContext";
 import { createThemeBuilder } from "./theme-builder";
 import { getThemeProviderStyles } from "./styles";
 
@@ -26,13 +26,15 @@ export const ThemeProvider = React.forwardRef<HTMLDivElement, IThemeProviderProp
     const { theme: themeProp, surfaceTheme, applyTo = 'element', className, children, ...divProps } = props;
     const themeAbove = useContext(FluentThemeContext);
     const theme = themeProp ?? themeAbove ?? createThemeBuilder().getTheme();
+    const surfaceThemeAbove = useContext(SurfaceThemeContext);
     const styles = useMemo(() => getThemeProviderStyles(theme), [theme]);
 
     return <div
         ref={ref}
         {...divProps}
         className={getClassNames([className, applyTo === 'element' ? styles.themeProvider : undefined])}>
-        <ThemeContext theme={theme} surfaceTheme={surfaceTheme}>{children}</ThemeContext>
+        {/* the outermost provider's theme is the application's */}
+        <ThemeContext theme={theme} surfaceTheme={surfaceTheme ?? surfaceThemeAbove ?? theme}>{children}</ThemeContext>
     </div>;
 });
 ThemeProvider.displayName = 'ThemeProvider';

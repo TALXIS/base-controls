@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getTaskDrawingUiPreviewStyles = (theme: ITheme) => mergeStyleSets({
+export const getTaskDrawingUiPreviewStyles = (theme: ITheme, surfaceTheme: ITheme) => mergeStyleSets({
     row: {
         position: 'absolute',
         left: 0,
@@ -19,9 +19,9 @@ export const getTaskDrawingUiPreviewStyles = (theme: ITheme) => mergeStyleSets({
     },
     text: {
         padding: '6px 10px',
-        fontSize: theme.fonts.small.fontSize,
+        fontSize: surfaceTheme.fonts.small.fontSize,
         fontWeight: 500,
-        color: theme.semanticColors.bodyText,
+        color: surfaceTheme.semanticColors.bodyText,
         pointerEvents: 'none',
     },
 });

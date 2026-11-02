@@ -1,5 +1,6 @@
 import { Fragment, useMemo } from "react";
-import { DirectionalHint, useTheme } from "@fluentui/react";
+import { DirectionalHint } from "@fluentui/react";
+import { useSurfaceTheme } from "@theme";
 import { INonWorkingDaysUiTooltipComponents, INonWorkingDaysUiTooltipDay, NonWorkingDaysUiTooltipComponents } from "./components";
 import { getNonWorkingDaysUiTooltipStyles } from "./styles";
 
@@ -14,8 +15,8 @@ export interface INonWorkingDaysUiTooltipProps {
 /** The descriptions of the non-working days, one per line. */
 export const NonWorkingDaysUiTooltip = (props: INonWorkingDaysUiTooltipProps) => {
     const components = { ...NonWorkingDaysUiTooltipComponents, ...props.components };
-    const theme = useTheme();
-    const styles = useMemo(() => getNonWorkingDaysUiTooltipStyles(theme), [theme]);
+    const surfaceTheme = useSurfaceTheme();
+    const styles = useMemo(() => getNonWorkingDaysUiTooltipStyles(surfaceTheme), [surfaceTheme]);
 
     return components.onRenderCallout({
         target: props.target,

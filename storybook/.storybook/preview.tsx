@@ -2,15 +2,15 @@ import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider, StateProvider, ThemeProvider } from '@talxis/base-controls';
+import { loadTheme } from '@fluentui/react';
+import { createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
 ModuleRegistry.registerModules([ValidationModule]);
 
-const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
-  return <ThemeProvider>{children}</ThemeProvider>;
-};
+//the default theme without a provider, so an example's own provider is the outermost one
+loadTheme(createThemeBuilder().getTheme());
 
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
 const guardPrototypeFocus = () => {
@@ -34,25 +34,23 @@ const preview: Preview = {
     (Story) => (
       <PcfContextProvider>
         <StateProvider>
-          <StorybookProviders>
-            <>
-              <style>
-                {`
-                  .sbdocs-content p,
-                  .sbdocs-content li {
-                    font-size: 16px;
-                    line-height: 1.65;
-                  }
+          <>
+            <style>
+              {`
+                .sbdocs-content p,
+                .sbdocs-content li {
+                  font-size: 16px;
+                  line-height: 1.65;
+                }
 
-                  .form-strategy-hidden-preview.sbdocs-preview,
-                  .docs-hidden-preview.sbdocs-preview {
-                    display: none;
-                  }
-                `}
-              </style>
-              <Story />
-            </>
-          </StorybookProviders>
+                .form-strategy-hidden-preview.sbdocs-preview,
+                .docs-hidden-preview.sbdocs-preview {
+                  display: none;
+                }
+              `}
+            </style>
+            <Story />
+          </>
         </StateProvider>
       </PcfContextProvider>
     ),

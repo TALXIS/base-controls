@@ -45,69 +45,62 @@ const GridExample = () => {
 }
 `
 
-const OWN_COMPONENT_CODE = `//takes its colours from whatever theme it is drawn in
+const OWN_COMPONENT_CODE = `const STAGES = [
+    { name: 'Lead', color: '#fde68a' },
+    { name: 'Proposal', color: '#60a5fa' },
+    { name: 'Won', color: '#166534' },
+]
+
+//any colour works as a background: the text picks a readable colour for it
+const StageTag = (props: { name: string; color: string }) => <span style={{ padding: '2px 8px', borderRadius: 4, background: props.color, color: getTextColorForBackground(props.color) }}>
+    {props.name}
+</span>
+
+//takes its colours from whatever theme it is drawn in
 const Total = (props: { label: string; value: string }) => {
     const { palette, semanticColors, fonts } = useTheme()
-    return <Stack style={{ padding: 12, borderLeft: \`4px solid \${palette.themePrimary}\`, background: semanticColors.bodyStandoutBackground }}>
+    return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, borderLeft: \`4px solid \${palette.themePrimary}\`, background: semanticColors.bodyStandoutBackground }}>
         <Text style={{ color: semanticColors.bodySubtext }}>{props.label}</Text>
         <Text style={{ ...fonts.xLarge, color: semanticColors.bodyText }}>{props.value}</Text>
+        <Stack horizontal tokens={{ childrenGap: 4 }}>{STAGES.map(stage => <StageTag key={stage.name} {...stage} />)}</Stack>
     </Stack>
 }
 
 const GridExample = () => {
-    const highlightTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
+    const darkTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
     return <Stack horizontal tokens={{ childrenGap: 12 }}>
         <Total label='Pipeline' value='$1,284,000' />
-        <ThemeProvider theme={highlightTheme} style={{ padding: 12 }}>
+        <ThemeProvider theme={darkTheme} style={{ padding: 12 }}>
             <Total label='Won this quarter' value='$412,500' />
         </ThemeProvider>
     </Stack>
 }
 `
 
-const SURFACE_CODE = `const SURFACE_THEMES = [
-    { key: 'none', text: 'Not set: the application theme from the root' },
-    { key: 'banner', text: 'The banner theme' },
-    { key: 'own', text: 'A theme of its own' },
-]
+const SURFACE_CODE = `const ESCALATED = '#a4262c'
 
-const ACTIONS = [{ key: 'export', text: 'Export', iconProps: { iconName: 'Download' }, subMenuProps: { items: [{ key: 'csv', text: 'CSV' }, { key: 'excel', text: 'Excel' }, { key: 'pdf', text: 'PDF' }] } }]
-
-//Callout draws in the surface theme, and so does everything inside it
-const DealDetails = () => {
-    const [isOpen, setIsOpen] = React.useState(false)
-    const targetRef = React.useRef<HTMLDivElement>(null)
-    return <div ref={targetRef}>
-        <DefaultButton text='Details' onClick={() => setIsOpen(!isOpen)} />
-        {isOpen && <Callout target={targetRef} onDismiss={() => setIsOpen(false)}>
-            <Stack tokens={{ childrenGap: 4 }} style={{ padding: 16 }}>
-                <Text variant='mediumPlus'>Contoso renewal</Text>
-                <Text>$412,500, closing on 30 June</Text>
-                <Link>Open the deal</Link>
-            </Stack>
-        </Callout>}
-    </div>
+//every cell of an escalated ticket is drawn red, and so is any field inside it
+const escalatedTicketsModule: IGridModule = {
+    name: 'escalatedTickets',
+    onLoad: grid => {
+        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+            //a two-options value reads as '1' or '0'
+            if (record.getValue('escalated') !== '1') {
+                return
+            }
+            theme.colors.background = ESCALATED
+            theme.colors.text = getTextColorForBackground(ESCALATED)
+        })
+    },
 }
 
-const GridExample = () => {
-    const bannerTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
-    const ownTheme = useThemeBuilder({ colors: { primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' } })
-    const [surfaceThemeKey, setSurfaceThemeKey] = React.useState('none')
-    const surfaceTheme = { none: undefined, banner: bannerTheme, own: ownTheme }[surfaceThemeKey]
-
-    return <Stack tokens={{ childrenGap: 12 }}>
-        <ChoiceGroup label='The banner opens its surfaces in' options={SURFACE_THEMES} selectedKey={surfaceThemeKey} onChange={(_, option) => setSurfaceThemeKey(option!.key)} />
-        <ThemeProvider theme={bannerTheme} surfaceTheme={surfaceTheme} style={{ padding: 12 }}>
-            <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
-                <Text variant='large'>Won this quarter: $412,500</Text>
-                <CommandBar items={ACTIONS} />
-                <DealDetails />
-            </Stack>
-        </ThemeProvider>
-    </Stack>
-}
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <Grid modules={[createClientSideRowModelModule(), createEditingModule(), escalatedTicketsModule]} height='440px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const BrandExample = () => <GridExampleRunner seedCode={withFiles(BRAND_CODE, VIEWS_FILE)} />
 export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} />
-export const SurfaceExample = () => <GridExampleRunner seedCode={SURFACE_CODE} />
+export const SurfaceExample = () => <GridExampleRunner seedCode={SURFACE_CODE} dataset='tickets' />

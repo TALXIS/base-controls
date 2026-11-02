@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { CustomizerContext, ICustomizerContext, ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
+import { CustomizerContext, ICustomizerContext, ITheme, ThemeContext as FluentThemeContext, useTheme } from "@fluentui/react";
 import { createThemeBuilder } from "./theme-builder";
 
 //what a thing opened over the application is drawn in, where that is not what it was opened from
@@ -29,8 +29,8 @@ export const ThemeContext = (props: IThemeContextProps) => {
     const theme = props.theme ?? themeAbove ?? createThemeBuilder().getTheme();
     //inherited where none is given: a theme set in here says nothing about what the application looks like
     const surfaceThemeAbove = useContext(SurfaceThemeContext);
-    //the outermost theme is the application's
-    const surfaceTheme = props.surfaceTheme ?? surfaceThemeAbove ?? theme;
+    const themeAround = useTheme();
+    const surfaceTheme = props.surfaceTheme ?? surfaceThemeAbove ?? themeAround;
 
     //both contexts, because a v8 component reads its theme from whichever it was written against:
     //`useTheme` takes `ThemeContext`, and everything built with `styled()` takes `CustomizerContext`
