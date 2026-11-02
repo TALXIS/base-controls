@@ -13,7 +13,9 @@ Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` wi
 </LabelsProvider>
 \`\`\`
 
-{{story: Switch the language}}
+Below, the full task grid in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.
+
+{{canvas: Overview}}
 
 ## How labels resolve
 
@@ -76,14 +78,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const SwitchTheLanguage: Story = {
-    name: 'Switch the language',
+export const Overview: Story = {
+    name: 'Overview',
     render: () => renderStory(<SwitchLanguageExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `The full task grid in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.`,
-            },
-        },
-    },
 }

@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { IsolationShowcase } from '../../isolated-frame/isolatedFrameExamples'
 
 const DESCRIPTION = `
-An isolated frame runs a component inside its own iframe. Its own copy of React, Fluent, AG Grid and your code renders it there, against the frame's \`window\` and \`document\`. Nothing on the page can style it, and nothing it injects reaches the page.
+\`createIsolatedComponent\` isolates a control by running it inside its own iframe. Its own copy of your code and every library it uses renders it there, against the frame's \`window\` and \`document\`. Nothing on the page can style it, and nothing it injects reaches the page.
 
-Use one when your component shares a page with styles you do not control, such as another app's AG Grid.
+Isolate any control when it shares a page with styles or scripts you do not control, such as another app's global CSS.
 
-Below, the page carries another app's global \`.ag-*\` rules. The grid in the page picks them up; the same grid in a frame does not. The frame's grid adds a global \`.ag-row\` rule of its own that tints its rows, and the grid in the page stays white.
+Below, the page carries another app's global CSS. The control in the page picks it up; the same control in a frame does not. The framed control adds a global rule of its own, and the page stays untouched.
 
 {{canvas: Overview}}
 
@@ -36,7 +36,7 @@ Then render it like the component it wraps:
 - The key, \`'tasks'\`, is any string unique within your bundle.
 - On the page, \`IsolatedTasks\` renders an iframe, loads your script into it, and renders the content there with the props on every render.
 - Inside a frame, \`IsolatedTasks\` renders the content directly.
-- The frame starts empty: wrap the content in the providers it needs, such as \`PcfContextProvider\` and \`ThemeProvider\`, and register the icons it uses, such as with \`initializeIcons()\`.
+- The frame starts empty: wrap the content in the providers it needs, such as \`PcfContextProvider\` and \`ThemeProvider\`, and set up any global state a library needs once per page, such as registered icons or fonts.
 
 ## Options
 
@@ -75,7 +75,7 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 `
 
 const meta = {
-    title: 'Isolated frame',
+    title: 'Control isolation',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
