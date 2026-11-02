@@ -5,61 +5,61 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { SwitchLanguageExample } from '../../localization/localizationExamples'
 
 const DESCRIPTION = `
-Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. \`LabelsProvider\` replaces labels for everything below it, whichever control draws them. No control takes strings through its own props.
+Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap any part of the page in \`LabelsProvider\` to translate or reword the labels below it.
 
 \`\`\`tsx
-import { CZECH_LABELS, LabelsProvider } from '@talxis/base-controls'
-
-const labels = { ...CZECH_LABELS, 'taskGrid.addChild': 'Rozdělit úkol' }
-
-<LabelsProvider labels={labels}>
+<LabelsProvider labels={{ ...CZECH_LABELS, 'taskGrid.new': 'Přidat práci' }}>
     <TaskDatasetControl onLoad={loadTasks}>...</TaskDatasetControl>
 </LabelsProvider>
 \`\`\`
 
-Below, one plan in four wordings: English, Czech from \`CZECH_LABELS\`, Japanese from a translation the example brings in \`japanese.ts\`, and your own. Switch language and open the view switcher, Edit columns, the settings, *New* or a column menu, point at a bar or a link, then pick *Your own wording*, change a label and press *Apply*.
-
 {{story: Switch the language}}
 
-## Labels
+## How labels resolve
 
-\`labels\` maps keys to strings. A key you leave out falls back to the provider above, and then to its English default, so a page can set its language once and one control can still reword a label of its own:
-
-\`\`\`tsx
-<LabelsProvider labels={CZECH_LABELS}>
-    <Header />
-    <LabelsProvider labels={{ 'grid.noRecordsFound': 'Žádné faktury.' }}>
-        <InvoicesControl />
-    </LabelsProvider>
-</LabelsProvider>
-\`\`\`
-
-Some labels hold placeholders, such as \`Page {{ number }}\`: keep them in a translation and they are filled in. View, column and option names are not labels: they come from the data, so the example's views carry them per language, in \`columns.ts\`.
-
-## Dates and numbers
-
-Labels translate the strings; dates, numbers and durations follow the user's formatting culture in the PCF context. In a hosted control it comes from the user's settings. Elsewhere, pass it to \`PcfContextProvider\`, as the example does for each language:
-
-\`\`\`tsx
-<PcfContextProvider userSettings={{ lcid: 1029, formatInfoCultureName: 'cs-CZ' }}>
-    <LabelsProvider labels={CZECH_LABELS}>...</LabelsProvider>
-</PcfContextProvider>
-\`\`\`
-
-## When a change shows
-
-| What | Follows a change of \`labels\` |
+| What | How |
 |---|---|
-| Parts, overlays, tooltips, callouts and dialogs | At once |
-| Ribbon commands, column menus, totals captions and other strings a module builds | When the control mounts again |
+| A key you leave out | Falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label |
+| \`{{ placeholders }}\` | Keep them in a translation |
+| Ribbon commands, column menus and other strings a module builds | Read when the control mounts: give it a new \`key\` when the language changes |
+| View, column and option names | Data, not labels: the demo translates them in \`columns.ts\` |
+| Dates and numbers | Follow the culture in \`PcfContextProvider\`'s \`userSettings\` |
 
-When the language changes, give the control a new \`key\` along with the new labels, as the example does. Otherwise pass the same \`labels\` object on every render, from \`useMemo\` or outside your component.
+## Add a supported language
 
-## Translations and keys
+Each component keeps its English strings in a \`labels.ts\`, and each supported language in a \`labels.<language>.ts\` beside it. \`src/localization\` holds one file per language that gathers them into a single map. To support a new language:
 
-\`CZECH_LABELS\` translates every label in the library. Each control exports its label sets beside their Czech translations, such as \`GRID_LABELS\` and \`GRID_LABELS_CS\`, and a set's \`defaults\` hold its keys with their English text; \`BASE_CONTROLS_LABEL_SETS\` lists every set.
+1. Beside every \`labels.ts\`, add a \`labels.<language>.ts\` that translates its set with \`translateLabels\`, and export it from the folder's \`index.ts\`.
+2. Add \`src/localization/<language>.ts\` that spreads every translated set into one map, and export it from \`src/localization/index.ts\`.
 
-\`translateLabels(GRID_LABELS, { 'grid.noRecordsFound': '…' })\` checks a translation's keys against a set while you type. Inside a component or module of your own, \`useLabels(GRID_LABELS).get('grid.noRecordsFound')\` reads a string as the nearest provider gives it.
+\`translateLabels\` checks every key against its set while you type, and a key you miss falls back to English. To translate inside your app alone, without changing the library, build the same map there and pass it to \`LabelsProvider\`, as the demo's \`japanese.ts\` does.
+
+## Labels in your own components
+
+Give a component of yours labels the way the library's own do, rather than hard-coded strings or text props:
+
+\`\`\`tsx
+//labels.ts: one set per component, every key prefixed with its name
+export const INVOICE_LABELS = defineLabels({
+    'invoice.title': 'Invoice',
+    'invoice.lineCount': '{{ count }} lines',
+})
+
+//labels.<language>.ts: one file per supported language
+export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {
+    'invoice.title': 'Faktura',
+    'invoice.lineCount': '{{ count }} řádků',
+})
+
+//Invoice.tsx
+const Invoice = (props: IInvoiceProps) => {
+    const labels = useLabels(INVOICE_LABELS)
+    return <Text>{labels.get('invoice.title')}: {labels.get('invoice.lineCount', { count: props.lines.length })}</Text>
+}
+\`\`\`
+
+\`get\` is typed: a key the set lacks, or a missing \`{{ count }}\`, does not compile. Outside React, such as in a grid module, read the same set with \`grid.getLabels(INVOICE_LABELS)\`, or \`getLabels\` on the DatasetControl or the task runtime; type a field holding them as \`LabelsOf<typeof INVOICE_LABELS>\`. Two sets may not define the same key with different text. A component inside the library also joins \`BASE_CONTROLS_LABEL_SETS\` in \`src/localization/labelSets.ts\`, and each language file in \`src/localization\`.
+
 `
 
 const meta = {
@@ -84,7 +84,7 @@ export const SwitchTheLanguage: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The full task grid with its Gantt: user views, Edit columns, custom columns, assignees and tags, templates, checklists, dependencies, dragging, markers, non-working days, tooltips and links, in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.`,
+                story: `The full task grid in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.`,
             },
         },
     },
