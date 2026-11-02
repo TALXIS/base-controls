@@ -17,6 +17,9 @@ const SAVING_SWEEP = keyframes({
     to: { backgroundPosition: '-100% 0' },
 });
 
+//Fluent 2's cornflower: apart from the theme's primary, which selection and links draw in
+const TASK_COLOR = '#4F6BED';
+
 const SUMMARY_CAP_WIDTH = 7;
 const SUMMARY_CAP_HEIGHT = 6;
 
@@ -55,8 +58,8 @@ export const getTaskGanttStyles = (theme: ITheme, moduleStyles: IStyle[]) => mer
         '--dhx-gantt-timeline-scale-border-vertical': `1px solid ${theme.semanticColors.bodyDivider}`,
         '--dhx-gantt-scale-border-vertical': `1px solid ${theme.semanticColors.bodyDivider}`,
         '--dhx-gantt-scale-border-horizontal': `1px solid ${theme.semanticColors.bodyDivider}`,
-        '--dhx-gantt-task-background': theme.palette.themePrimary,
-        '--dhx-gantt-milestone-background': theme.palette.themePrimary,
+        '--dhx-gantt-task-background': TASK_COLOR,
+        '--dhx-gantt-milestone-background': TASK_COLOR,
         '--dhx-gantt-task-border': 'none',
         '--dhx-gantt-task-border-radius': theme.effects.roundedCorner4,
         [`.${GANTT_TASK_LINE_CLASS}`]: {
