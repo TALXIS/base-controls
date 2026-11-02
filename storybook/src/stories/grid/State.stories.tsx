@@ -17,7 +17,7 @@ A grid with a \`stateKey\` remembers where the user was: the row at the top of t
 
 {{story: Bring the user back where they left off}}
 
-The grid reads its state as it mounts and writes it as the user scrolls, focuses cells and opens groups. Inside a DatasetControl it is kept per view, in the control's own state: see [**DatasetControl › State**](?path=/docs/datasetcontrol-state--overview). Where the state lives between sessions is up to [**StateProvider**](?path=/docs/providers-stateprovider--overview).
+The grid reads its state as it mounts and writes it as the user scrolls, focuses cells and opens groups. Inside a DatasetControl it is kept per view, in the control's own state: see [**DatasetControl › State**](?path=/docs/datasetcontrol-state--overview). Where the state lives between sessions is up to [**State persistence**](?path=/docs/state-persistence--overview).
 
 The column layout, sorting, filtering and grouping belong to the provider, not to this state. See *Remember the layout* on [**Columns**](?path=/docs/grid-columns--overview).
 

@@ -121,6 +121,9 @@ const preview: Preview = {
           ],
           'Data providers',
           'Localization',
+          'State persistence',
+          'PCF context',
+          'Control isolation',
           'DatasetControl',
           [
             'Get started',
@@ -172,7 +175,6 @@ const preview: Preview = {
           'Map',
           'Checklist',
           ['Get started', 'Customization', 'Saving changes', 'Dev'],
-          'Providers',
         ],
       },
     },

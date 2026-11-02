@@ -46,9 +46,9 @@ export const ProductGrid = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) and load the provider yourself with \`refresh()\`. Without either, the grid throws.
+The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a \`DataProviderContextProvider\` and load the provider yourself with \`refresh()\`. Without either, the grid throws.
 
-\`modules\` switches features on, and only a row model is required. A [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview) must wrap the grid.
+\`modules\` switches features on, and only a row model is required. A [**PCF context**](?path=/docs/pcf-context--overview) must wrap the grid.
 
 ## How it fits together
 

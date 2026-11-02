@@ -18,7 +18,7 @@ A DatasetControl puts every view back the way the user left it: sorted, filtered
 | \`stateKey\` | Where the control keeps it | How long it lasts |
 |---|---|---|
 | Left out | A store of its own | While the control stays mounted, across view switches and reloads. |
-| Given | Under the key in the nearest state store | As long as the store does. See [**StateProvider**](?path=/docs/providers-stateprovider--overview). |
+| Given | Under the key in the nearest state store | As long as the store does. See [**State persistence**](?path=/docs/state-persistence--overview). |
 
 The key is read once, when the control mounts.
 

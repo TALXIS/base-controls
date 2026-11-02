@@ -48,9 +48,9 @@ You should see the two items, the first ticked and struck through, and an empty 
 1. **\`fieldMapping\` names three columns**: the item's name, its position and whether it is finished. See *Field mapping* below.
 2. **The provider is sorted by position before it loads.** The checklist draws items in the order the provider loaded them, and sorting is the provider owner's job: \`sortCheckListProvider(provider, fieldMapping)\` sorts it by the position column and returns it. An unsorted provider still draws, and the checklist logs a warning naming \`sortCheckListProvider\`.
 3. **Every change goes to the provider.** With the default auto-save, each tick, rename, move or new item saves its record at once. See [**Saving changes**](?path=/docs/checklist-saving-changes--overview).
-4. **The checklist finds its provider around it**, like any grid: in a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview), or in a [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview) for a checklist on its own, where you call \`refresh()\` yourself.
+4. **The checklist finds its provider around it**, like any grid: in a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview), or in a \`DataProviderContextProvider\` for a checklist on its own, where you call \`refresh()\` yourself.
 
-\`PcfContextProvider\` must wrap the checklist. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
+\`PcfContextProvider\` must wrap the checklist. See [**PCF context**](?path=/docs/pcf-context--overview).
 
 ## Field mapping
 

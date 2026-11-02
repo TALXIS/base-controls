@@ -280,7 +280,7 @@ provider.removeEventListener('onRecordsSelected', onSelected)
 
 | Hook | Returns |
 |---|---|
-| \`useDataProvider()\` | The provider of the nearest [**DataProviderContextProvider**](?path=/docs/providers-dataprovidercontextprovider--overview). Throws when there is none. |
+| \`useDataProvider()\` | The provider of the nearest \`DataProviderContextProvider\`. Throws when there is none. |
 | \`useDataProviderEvents(events)\` | The same, and draws the component again whenever one of \`events\` fires |
 
 \`\`\`tsx

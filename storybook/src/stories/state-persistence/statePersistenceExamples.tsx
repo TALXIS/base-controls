@@ -1,52 +1,82 @@
 import React from 'react'
-import { mergeStyleSets, Stack, Text, TextField, Toggle } from '@fluentui/react'
-import { IStateDictionary, StateProvider, StateStore, useControlStateStore } from '@talxis/base-controls'
+import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
+
+const COME_BACK_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const styles = mergeStyleSets({
-    side: { flex: '1 1 0', minWidth: 0, padding: 16, border: '1px solid #edebe9', borderRadius: 4 },
-    note: { minHeight: 96 },
-    store: { margin: 0, padding: 12, fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4, whiteSpace: 'pre-wrap' },
+    layout: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 },
+    store: { margin: 0, padding: 12, fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4, overflow: 'auto', maxHeight: 420 },
 })
 
-//keeps what the user typed under its stateKey, so it is still there after the note is hidden and shown
-const DraftNote = () => {
-    const store = useControlStateStore('draft-note')
+const GridExample = () => {
+    const state = React.useMemo(() => ({}), [])
+    const store = React.useMemo(() => new StateStore({ state }), [state])
+    const [isShown, setIsShown] = React.useState(true)
+    const [kept, setKept] = React.useState('{}')
+    const modules = React.useMemo(() => [createClientSideRowModelModule(), createSortingModule()], [])
+
+    //the control writes its state as it unmounts
+    React.useEffect(() => setKept(JSON.stringify(state, null, 2)), [isShown])
+
+    return <StateProvider store={store}>
+        <Stack tokens={{ childrenGap: 12 }}>
+            <DefaultButton text={isShown ? 'Leave the deals' : 'Come back'} onClick={() => setIsShown(!isShown)} styles={{ root: { alignSelf: 'flex-start' } }} />
+            <div className={styles.layout}>
+                {isShown ? <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='420px'>
+                    <DatasetControl.Header>
+                        <DatasetControl.Header.Start>
+                            <DatasetControl.ViewSwitcher />
+                        </DatasetControl.Header.Start>
+                        <DatasetControl.Header.End>
+                            <DatasetControl.QuickFind />
+                        </DatasetControl.Header.End>
+                    </DatasetControl.Header>
+                    <DatasetControl.Body>
+                        <Grid stateKey='grid' modules={modules} />
+                    </DatasetControl.Body>
+                </DatasetControl> : <Text>You left the deals.</Text>}
+                <pre className={styles.store}>{kept}</pre>
+            </div>
+        </Stack>
+    </StateProvider>
+}
+`
+
+const OWN_COMPONENT_CODE = `const styles = mergeStyleSets({
+    store: { margin: 0, padding: 12, fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4 },
+})
+
+interface IDraftNoteProps {
+    onWritten: () => void
+}
+
+const DraftNote = (props: IDraftNoteProps) => {
+    const store = useControlStateStore('draftNote')
     const [text, setText] = React.useState(store.get<string>('text') ?? '')
     const onChange = (value: string) => {
         setText(value)
         store.set('text', value)
+        props.onWritten()
     }
-    return <TextField label='Draft' multiline autoAdjustHeight className={styles.note} value={text} onChange={(_, value) => onChange(value ?? '')} />
+    return <TextField label='Draft' multiline autoAdjustHeight value={text} onChange={(_, value) => onChange(value ?? '')} />
 }
 
-interface ISideProps {
-    title: string
-}
-
-//a StateProvider of its own, over a dictionary shown below it
-const Side = (props: ISideProps) => {
-    const state = React.useMemo<IStateDictionary>(() => ({}), [])
+const GridExample = () => {
+    const state = React.useMemo(() => ({}), [])
     const store = React.useMemo(() => new StateStore({ state }), [state])
     const [isShown, setIsShown] = React.useState(true)
-    const [text, setText] = React.useState('{}')
+    const [, setRevision] = React.useState(0)
 
-    React.useEffect(() => {
-        const interval = setInterval(() => setText(JSON.stringify(state, null, 2)), 300)
-        return () => clearInterval(interval)
-    }, [state])
-
-    return <Stack tokens={{ childrenGap: 12 }} className={styles.side}>
-        <Text variant='mediumPlus'>{props.title}</Text>
-        <Toggle label='Show the note' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
-        <StateProvider store={store}>
-            {isShown && <DraftNote />}
-        </StateProvider>
-        <pre className={styles.store}>{text}</pre>
-    </Stack>
+    return <StateProvider store={store}>
+        <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 520 } }}>
+            <Toggle label='Show the note' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
+            {isShown && <DraftNote onWritten={() => setRevision(revision => revision + 1)} />}
+            <pre className={styles.store}>{JSON.stringify(state, null, 2)}</pre>
+        </Stack>
+    </StateProvider>
 }
+`
 
-/** Two state providers side by side, each with a note under the same stateKey. */
-export const KeepItApartExample = () => <Stack horizontal tokens={{ childrenGap: 16 }}>
-    <Side title='Left' />
-    <Side title='Right' />
-</Stack>
+export const ComeBackExample = () => <GridExampleRunner seedCode={withFiles(COME_BACK_CODE, VIEWS_FILE)} />
+export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} />

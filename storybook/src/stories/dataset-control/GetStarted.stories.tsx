@@ -53,7 +53,7 @@ export const Deals = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-You should see a placeholder while the deals load, then the grid with *All deals* in the view switcher, a search box and the page buttons. \`PcfContextProvider\` must wrap the control (see [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview)).
+You should see a placeholder while the deals load, then the grid with *All deals* in the view switcher, a search box and the page buttons. \`PcfContextProvider\` must wrap the control (see [**PCF context**](?path=/docs/pcf-context--overview)).
 
 ## How it fits together
 

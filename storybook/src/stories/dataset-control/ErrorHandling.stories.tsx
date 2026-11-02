@@ -37,7 +37,7 @@ const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>)
 
 ## Show a failed action
 
-A ribbon command that throws, and a user view that fails to save or delete, open the error dialog: the error's \`message\`, with its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog. See [**PcfContextProvider**](?path=/docs/providers-pcfcontextprovider--overview).
+A ribbon command that throws, and a user view that fails to save or delete, open the error dialog: the error's \`message\`, with its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog. See [**PCF context**](?path=/docs/pcf-context--overview).
 
 \`\`\`tsx
 const syncToCrm = async () => {
