@@ -28,6 +28,39 @@ const getTaskColor = (theme: ITheme) => theme.palette.themeSecondary;
 const SUMMARY_CAP_WIDTH = 7;
 const SUMMARY_CAP_HEIGHT = 6;
 
+//DHTMLX's own definitions, unchanged
+const DERIVED_GANTT_VARIABLES = {
+    '--dhx-gantt-container-background': 'var(--dhx-gantt-base-colors-background)',
+    '--dhx-gantt-container-color': 'var(--dhx-gantt-base-colors-text-base)',
+    '--dhx-gantt-offtime-background': 'var(--dhx-gantt-base-colors-background-alt)',
+    '--dhx-gantt-scale-background': 'var(--dhx-gantt-container-background)',
+    '--dhx-gantt-scale-color': 'var(--dhx-gantt-base-colors-text-light)',
+    '--dhx-gantt-grid-scale-background': 'var(--dhx-gantt-scale-background)',
+    '--dhx-gantt-grid-scale-color': 'var(--dhx-gantt-scale-color)',
+    '--dhx-gantt-grid-scale-border-vertical': 'var(--dhx-gantt-scale-border-vertical)',
+    '--dhx-gantt-timeline-scale-background': 'var(--dhx-gantt-scale-background)',
+    '--dhx-gantt-timeline-scale-color': 'var(--dhx-gantt-scale-color)',
+    '--dhx-gantt-grid-row-border': 'var(--dhx-gantt-scale-border-horizontal)',
+    '--dhx-gantt-default-border': '1px solid var(--dhx-gantt-base-colors-border)',
+    '--dhx-gantt-task-color': 'var(--dhx-gantt-base-colors-text-on-fill)',
+    '--dhx-gantt-task-line-text': 'var(--dhx-gantt-container-color)',
+    '--dhx-gantt-popup-background': 'var(--dhx-gantt-container-background)',
+    '--dhx-gantt-popup-color': 'var(--dhx-gantt-container-color)',
+    '--dhx-gantt-tooltip-background': 'var(--dhx-gantt-base-colors-text-base)',
+    '--dhx-gantt-tooltip-color': 'var(--dhx-gantt-container-background)',
+    '--dhx-gantt-link-background': 'var(--dhx-gantt-base-colors-icons)',
+    '--dhx-gantt-link-background-hover': 'var(--dhx-gantt-base-colors-text-light)',
+    '--dhx-gantt-link-critical-background': 'var(--dhx-gantt-base-colors-error)',
+    '--dhx-gantt-link-handle-border': 'var(--dhx-gantt-base-colors-icons)',
+    '--dhx-gantt-link-handle-border-hover': 'var(--dhx-gantt-base-colors-border)',
+    '--dhx-gantt-link-handle-background': 'var(--dhx-gantt-base-colors-border)',
+    '--dhx-gantt-link-handle-background-hover': 'var(--dhx-gantt-base-colors-text-light)',
+    '--dhx-gantt-progress-handle-border': 'var(--dhx-gantt-base-colors-border)',
+    '--dhx-gantt-progress-handle-background': 'var(--dhx-gantt-base-colors-icons)',
+    '--dhx-gantt-btn-color-disabled': 'var(--dhx-gantt-base-colors-icons)',
+    '--dhx-gantt-btn-background-disabled': 'var(--dhx-gantt-base-colors-disabled)',
+};
+
 //a task's `color` tints the track and fills the done part
 const getTrackColor = (theme: ITheme) => `color-mix(in srgb, var(--dhx-gantt-task-background) 24%, ${theme.semanticColors.bodyBackground})`;
 
@@ -41,6 +74,8 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
     chart: [{
         width: '100%',
         height: '100%',
+        //the browser draws the chart's scrollbars in it
+        colorScheme: theme.isInverted ? 'dark' : 'light',
         '--dhx-gantt-font-family': theme.fonts.medium.fontFamily,
         '--dhx-gantt-font-size': theme.fonts.medium.fontSize,
         '--dhx-gantt-base-colors-background': theme.semanticColors.bodyBackground,
@@ -56,6 +91,12 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
         '--dhx-gantt-base-colors-primary-active': theme.palette.themeDark,
         '--dhx-gantt-base-colors-primary-lighter': theme.palette.themeLighter,
         '--dhx-gantt-base-colors-error': theme.semanticColors.errorText,
+        '--dhx-gantt-base-colors-icons': theme.semanticColors.bodySubtext,
+        '--dhx-gantt-base-colors-disabled': theme.semanticColors.disabledBackground,
+        '--dhx-gantt-base-colors-text-on-fill': getTextColorForBackground(getTaskColor(theme)),
+        '--dhx-gantt-base-colors-white': theme.semanticColors.bodyBackground,
+        //DHTMLX works these out on :root, so they resolve against its own colours unless declared again here
+        ...DERIVED_GANTT_VARIABLES,
         '--dhx-gantt-task-row-background': theme.semanticColors.bodyBackground,
         '--dhx-gantt-task-row-background--odd': theme.semanticColors.bodyBackground,
         //the grid draws its lines in bodyDivider
