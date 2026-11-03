@@ -2,10 +2,10 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { BrandExample, OwnComponentExample, SurfaceExample } from './themingExamples'
+import { BrandExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
-A theme says what everything is drawn in: its colours, fonts and effects. It is a Fluent theme, so the controls, Fluent's own components and yours all look the same, and one theme at the root of the application is all most applications need.
+A theme says what everything is drawn in: its colours, fonts and effects. It is a Fluent UI v8 theme (\`ITheme\`), so the controls, Fluent's own components and yours all look the same, and one theme at the root of the application is all most applications need.
 
 ## The providers
 
@@ -26,7 +26,7 @@ Use a \`ThemeProvider\` for an area of the application that looks different, suc
 - \`ThemeContext\` hands a theme down with no element at all. It is cheap enough to use for every item of a long list.
 - The theme goes through as it is; nothing from the theme above is merged into it.
 
-A control reads the theme when it mounts. To switch themes, mount it again, for example with the theme's \`id\` as its \`key\`.
+A control reads the theme when it mounts. To switch themes, mount it again, for example with the theme's \`id\` as its \`key\`; every theme the builder generates carries one.
 
 ## Build a theme
 
@@ -40,7 +40,7 @@ A theme is generated from three colours: \`primary\` for accents and selection, 
 
 Its options change the theme the source builds:
 
-- **\`tint\`** tints the background and text by a hue, as \`builder.tint\` below does.
+- **\`tint\`** tints the background and text by a hue, as \`ThemeBuilder.tint\` does.
 - **\`edit\`** changes details the colours do not, such as fonts. Themes are cached by the edit's \`key\`, so a key must always mean the same edit.
 
 \`\`\`tsx
@@ -63,22 +63,30 @@ builder.tint('#d13438')
 const warning = builder.getTheme()
 \`\`\`
 
+Tinting or changing a colour generates the theme again from its three colours, so what a \`{ theme }\` source carried beyond them, such as fonts, component styles or earlier edits, is not kept; add it back with \`edit\`. \`tint\` also changes \`colors\` in place, so tinting twice compounds.
+
 Colours, here and in the helpers below, are strings Fluent can parse: hex, \`rgb()\`, \`hsl()\` or a colour name. CSS variables are not colours it can work with.
 
 {{story: Brand colours}}
 
 ## Surfaces
 
-Themes are often local. Take a grid that draws escalated tickets red: every cell of such a ticket is themed red, so the fields inside it fit the row. But the list a field opens should not turn red too. It opens over the whole application, so it should look like the rest of the application.
+Themes are often local: every cell of an escalated ticket is themed red, so the fields inside it fit the row. The list a field opens should not turn red too, because it opens over the whole application.
 
-Menus, callouts, tooltips, pickers, panels and dialogs are such surfaces, and they always draw in the **application theme**, never in a \`ThemeProvider\`'s local one:
+Base Controls' menus, callouts, tooltips, pickers, panels and dialogs are such surfaces, and they draw in the **application theme**, never in a \`ThemeProvider\`'s local one:
 
 | Opened | Draws in |
 |---|---|
 | Below an \`ApplicationThemeProvider\` | The nearest application theme |
 | With none above | The theme around what opened it |
 
-For an area whose surfaces should look different, wrap it in an \`ApplicationThemeProvider\` of its own. The controls and Base Controls' own \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\` follow the application theme. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useApplicationTheme()\` returns.
+These follow the application theme:
+
+- the controls
+- \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\`
+- \`ComboBox\`, \`DatePicker\`, \`TimePicker\` and \`TagPicker\`
+
+Fluent's own components take the theme around them. Draw a surface of your own in the theme \`useApplicationTheme()\` returns, and wrap an area whose surfaces should look different in an \`ApplicationThemeProvider\` of its own.
 
 {{story: Red rows}}
 
@@ -86,15 +94,17 @@ For an area whose surfaces should look different, wrap it in an \`ApplicationThe
 
 Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
 
-A colour of your own, such as a status, is where themes go wrong: a red that looks right on white glares on a dark background. Start from a hue rather than a finished colour, and let \`getTintColors\` work out what to draw:
+A colour of your own, such as a status, is where themes go wrong: a red that looks right on white glares on a dark background. Start from a hue rather than a finished colour: give a themed area the \`tint\` option of \`useThemeBuilder\`, and work out loose colours with \`getTintColors\`:
 
 | Helper | Returns |
 |---|---|
-| \`getTintColors(hue, { background, text }, strength?)\` | \`{ background, border, text }\` for a surface tinted by \`hue\` over those colours. \`'subtle'\`, the default, is a wash behind text in the hue; \`'strong'\` is a fill. The amounts differ for a light and a dark background, and the text always reaches a contrast of 4.5:1 |
+| \`getTintColors(hue, { background, text }, strength?)\` | \`{ background, border, text }\` tinted by \`hue\` over those colours: \`'subtle'\`, the default, is a wash and \`'strong'\` a fill |
 | \`getTextColorForBackground(color)\` | A text colour for that background: the nearest shade of its own hue at a contrast of 7:1, or black or white where none reaches it |
 | \`getColorContrast(color, otherColor)\` | The WCAG contrast ratio, from 1 to 21. Text needs 4.5 to pass AA and 7 to pass AAA |
 | \`isLightColor(color)\` | Whether dark text reads better on it than light text, which also tells a light theme from a dark one |
 | \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\`: a \`weight\` of 0 is \`base\`, 1 is \`color\` |
+
+\`getTintColors\` uses different amounts over a light and a dark background, and its text always reaches a contrast of 4.5:1.
 
 {{story: Readable tags}}
 `
@@ -121,31 +131,31 @@ export const BrandColours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Deals in an application theme built from three colours, with every part and grid module switched on, so their menus, panels and editors open in it too. Try: pick a brand, then edit, sort, filter, group and open the menus.`,
+                story: `Deals in an application theme built from three colours, with most parts and grid modules switched on, so their menus, panels and editors open in it too. Try: pick a brand, then edit, sort, filter, group and open the menus.`,
             },
         },
     },
 }
 
-export const YourOwnComponent: Story = {
-    name: 'Readable tags',
-    render: () => renderStory(<OwnComponentExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A card reading its colours from \`useTheme()\`, in a light and a dark theme, with stage tags each drawn in a theme tinted from one hue by \`useThemeBuilder\`.`,
-            },
-        },
-    },
-}
-
-export const Surfaces: Story = {
+export const RedRows: Story = {
     name: 'Red rows',
-    render: () => renderStory(<SurfaceExample />),
+    render: () => renderStory(<RedRowsExample />),
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets drawn red. Try: double-click the *Status* of a red ticket and open its list; it opens in the application theme, not in red.`,
+                story: `Escalated tickets tinted red by a module's \`registerCellTheme\`; [**Appearance**](?path=/docs/controls-grid-appearance--overview) covers colouring cells. Try: double-click the *Status* of a red ticket and open its list; it opens in the application theme, not in red.`,
+            },
+        },
+    },
+}
+
+export const ReadableTags: Story = {
+    name: 'Readable tags',
+    render: () => renderStory(<ReadableTagsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A card reading its colours from \`useTheme()\`, in a light and a dark theme, with stage tags each tinted from one hue by \`useThemeBuilder\`'s \`tint\`.`,
             },
         },
     },

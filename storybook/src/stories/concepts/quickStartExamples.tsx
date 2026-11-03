@@ -17,15 +17,15 @@ const FIRST_APP_CODE = `const loadProducts = async () => ({
 })
 
 const GridExample = () => <PcfContextProvider>
-    <ApplicationThemeProvider>
-        <StateProvider>
+    <StateProvider>
+        <ApplicationThemeProvider>
             <DatasetControl onLoad={loadProducts} height='240px'>
                 <DatasetControl.Body>
                     <Grid modules={[createClientSideRowModelModule()]} />
                 </DatasetControl.Body>
             </DatasetControl>
-        </StateProvider>
-    </ApplicationThemeProvider>
+        </ApplicationThemeProvider>
+    </StateProvider>
 </PcfContextProvider>
 `
 

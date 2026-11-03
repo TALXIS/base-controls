@@ -5,7 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DialogsExample, FormatExample } from './pcfContextExamples'
 
 const DESCRIPTION = `
-The context ties the controls to the host they run in. Through it, every control below one \`PcfContextProvider\` shares the same user, language and formatting, and calls on the host to open dialogs and records or to reach its data. It takes the shape of a PCF context, so a Power Apps host's own fits it as it is. \`usePcfContext()\` reads it anywhere below the provider. The controls need one, so put it at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview).
+The context ties the controls to the host they run in. It takes the shape of a PCF context, so a Power Apps host's own can be passed straight in, and every control below one \`PcfContextProvider\` shares:
+
+- the user and their language, in \`userSettings\`
+- the formatting of dates, numbers and money, in \`formatting\`
+- the host's dialogs, records and data, in \`navigation\`, \`webAPI\` and \`utils\`
+
+Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`.
 
 \`\`\`tsx
 import { PcfContextProvider } from '@talxis/base-controls'
@@ -15,9 +21,9 @@ import { PcfContextProvider } from '@talxis/base-controls'
 </PcfContextProvider>
 \`\`\`
 
-## Inside a PCF control
+## In a PCF control
 
-Pass the context the host hands you, and the controls use it as it is:
+Pass the context the host hands you:
 
 \`\`\`tsx
 //updateView(context)
@@ -26,18 +32,26 @@ Pass the context the host hands you, and the controls use it as it is:
 </PcfContextProvider>
 \`\`\`
 
-## Outside a host
+- Its \`userSettings\`, \`navigation\`, \`webAPI\`, \`utils\`, \`mode\` and the rest are used as they are.
+- \`formatting\` is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
 
-Without a \`context\`, the provider builds one. On a page that has \`window.Xrm\`, such as a model-driven app, it uses it; otherwise it fills each part in itself, and sets \`window.Xrm\` for the page once:
+## Outside a PCF control
 
-| Part | Without a host |
+Without a \`context\`, the provider builds one:
+
+- On a page that has \`window.Xrm\`, such as a model-driven app, \`navigation\`, \`webAPI\` and \`utils\` come from it.
+- On a page without it, the first provider sets \`window.Xrm\` from its \`userSettings\`.
+- Everything else is filled in as below.
+
+| Part | Filled in as |
 |---|---|
 | \`userSettings\`, \`formatting\` | From the \`userSettings\` prop: \`lcid\` and \`formatInfoCultureName\`, \`1033\` and \`'en-US'\` when left out |
-| \`navigation\` | Alerts, confirmations and errors open as the browser's own dialogs; opening forms and records is not available |
-| \`webAPI\`, \`utils.getEntityMetadata\` | Not available: they throw, so load data through providers of your own |
+| \`navigation\` | \`openAlertDialog\`, \`openConfirmDialog\` and \`openErrorDialog\` open the browser's own dialogs; \`openForm\`, \`navigateTo\`, \`openUrl\`, \`openFile\` and \`openWebResource\` throw |
+| \`webAPI\`, \`utils.getEntityMetadata\` | Throw, so load data through providers of your own |
+| \`device\`, \`resources\`, \`factory.getPopupService\` | Throw |
 | \`mode\` | Enabled and visible, with \`setControlState\` accepted |
 
-The context is built again on every render, so a change of \`userSettings\` applies at once.
+The provider builds the context again on every render, so \`usePcfContext()\` sees a change of \`userSettings\` at once. Controls such as the grid keep the context they mounted with: remount them with a new \`key\`.
 
 {{story: Format for the user}}
 

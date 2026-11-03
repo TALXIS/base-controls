@@ -20,7 +20,8 @@ const getStyles = (theme: StorybookTheme) => mergeStyleSets({
         borderRadius: 8,
         background: theme.background.content,
         color: 'inherit',
-        textDecoration: 'none',
+        //the docs page underlines every link it holds
+        textDecoration: 'none !important',
         transition: 'border-color 120ms, box-shadow 120ms',
         selectors: {
             ':hover': { borderColor: theme.color.secondary, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },

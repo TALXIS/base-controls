@@ -16,7 +16,7 @@ const TINT_WEIGHTS = {
         dark: { background: 0.18, border: 0.34, text: 0.4 },
     },
     strong: {
-        light: { background: 1, border: 1 },
+        light: { background: 0.4, border: 0.6 },
         dark: { background: 0.45, border: 0.6 },
     },
 };

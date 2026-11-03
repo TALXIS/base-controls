@@ -6,7 +6,7 @@ const COME_BACK_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const styles = mergeStyleSets({
     layout: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 },
-    store: { margin: 0, padding: 12, fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4, overflow: 'auto', maxHeight: 420 },
+    store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4, overflow: 'auto', maxHeight: 420 },
 })
 
 const GridExample = () => {
@@ -44,7 +44,7 @@ const GridExample = () => {
 `
 
 const OWN_COMPONENT_CODE = `const styles = mergeStyleSets({
-    store: { margin: 0, padding: 12, fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4 },
+    store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
 })
 
 interface IDraftNoteProps {

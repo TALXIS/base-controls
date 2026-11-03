@@ -53,7 +53,8 @@ interface IChipProps {
 //the label and the value while the row fits, only the value once it would wrap
 const Chip = (props: IChipProps) => {
     const isCompact = useCompact()
-    return <Stack horizontal verticalAlign='center' style={{ padding: '2px 4px 2px 10px', borderRadius: 16, background: '#deecf9' }}>
+    const theme = useTheme()
+    return <Stack horizontal verticalAlign='center' style={{ padding: '2px 4px 2px 10px', borderRadius: 16, background: theme.palette.themeLighter }}>
         <Text>{isCompact ? props.value : \`\${props.label}: \${props.value}\`}</Text>
         <IconButton iconProps={{ iconName: 'Cancel' }} ariaLabel={\`Remove \${props.label}\`} onClick={props.onRemove} styles={{ root: { width: 24, height: 24 } }} />
     </Stack>
@@ -66,6 +67,7 @@ const TrackedChip = (props: IChipProps) => {
 }
 
 const GridExample = () => {
+    const theme = useTheme()
     const [filters, setFilters] = React.useState(FILTERS)
     const [isTracked, setIsTracked] = React.useState(true)
     const ChipComponent = isTracked ? TrackedChip : Chip
@@ -75,7 +77,7 @@ const GridExample = () => {
             <Toggle label='useCompactItem()' inlineLabel checked={isTracked} onChange={(_, checked) => { setIsTracked(!!checked); setFilters(FILTERS) }} />
             <DefaultButton text='Bring the filters back' onClick={() => setFilters(FILTERS)} />
         </Stack>
-        <div style={{ width: 420, padding: 8, border: '1px solid #edebe9', borderRadius: 4 }}>
+        <div style={{ width: 420, padding: 8, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
             <WrapCompactProvider key={String(isTracked)} style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {filters.map(filter => <ChipComponent key={filter.key} label={filter.label} value={filter.value} onRemove={() => setFilters(rest => rest.filter(other => other.key !== filter.key))} />)}
             </WrapCompactProvider>
@@ -95,7 +97,7 @@ const SECTION_TABS_CODE = `const SECTIONS = [
 const Sections = (props: { selectedKey: string; onChange: (key: string) => void }) => {
     const isCompact = useCompact()
     if (isCompact) {
-        return <Dropdown options={SECTIONS} selectedKey={props.selectedKey} onChange={(_, option) => props.onChange(String(option!.key))} />
+        return <Dropdown ariaLabel='Section' options={SECTIONS} selectedKey={props.selectedKey} onChange={(_, option) => props.onChange(String(option!.key))} />
     }
     return <Pivot selectedKey={props.selectedKey} onLinkClick={item => props.onChange(item!.props.itemKey!)}>
         {SECTIONS.map(section => <PivotItem key={section.key} itemKey={section.key} headerText={section.text} />)}
@@ -103,11 +105,12 @@ const Sections = (props: { selectedKey: string; onChange: (key: string) => void 
 }
 
 const GridExample = () => {
+    const theme = useTheme()
     const [width, setWidth] = React.useState(640)
     const [selectedKey, setSelectedKey] = React.useState('summary')
     return <Stack tokens={{ childrenGap: 12 }}>
         <Slider label='Width (px)' min={280} max={800} step={20} value={width} onChange={setWidth} />
-        <div style={{ width, padding: 12, border: '1px solid #edebe9', borderRadius: 4 }}>
+        <div style={{ width, padding: 12, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
             <BreakpointCompactProvider>
                 <Stack tokens={{ childrenGap: 12 }}>
                     <Sections selectedKey={selectedKey} onChange={setSelectedKey} />

@@ -23,8 +23,8 @@ const OWN_WORDING: { [key: string]: string } = {
     'taskTooltip.duration': 'Takes',
 }
 
-const styles = mergeStyleSets({
-    wording: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, padding: 12, border: '1px solid #edebe9', borderRadius: 4 },
+const getStyles = (theme: ITheme) => mergeStyleSets({
+    wording: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, padding: 12, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 },
 })
 
 interface IPlanProps {
@@ -110,6 +110,8 @@ const Plan = React.memo((props: IPlanProps) => {
 })
 
 const GridExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
     const [languageKey, setLanguageKey] = React.useState('cs')
     const [draft, setDraft] = React.useState(OWN_WORDING)
     const [ownWording, setOwnWording] = React.useState(OWN_WORDING)
@@ -124,7 +126,7 @@ const GridExample = () => {
             </div>
             <PrimaryButton text='Apply' onClick={() => setOwnWording(draft)} />
         </Stack>}
-        {/* menus, the ribbon and the formatting are read as the plan mounts */}
+        {/* remounted so what the controls built from labels and the culture is built again */}
         <Plan key={languageKey + JSON.stringify(ownWording)} language={languageKey} lcid={language.lcid} culture={language.culture} labels={labels} />
     </Stack>
 }

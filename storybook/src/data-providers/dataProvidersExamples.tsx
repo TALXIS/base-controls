@@ -18,23 +18,21 @@ export const SHARED_PROVIDER_CODE = `const createOrder = () => new MemoryDataPro
     ],
 })
 
-const toCurrency = (amount: number) => amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
-
 const OrderSummary = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged', 'onAfterSaved'])
+    const { formatting } = usePcfContext()
     const selected = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
     const total = selected.reduce((sum, line) => sum + (line.getValue('quantity') ?? 0) * (line.getValue('unitprice') ?? 0), 0)
     const unsaved = provider.getDirtyRecordIds().length
     return <Stack horizontal wrap verticalAlign='center' tokens={{ childrenGap: 12 }}>
-        <Text>{selected.length} of {provider.getRecords().length} lines selected: {toCurrency(total)}</Text>
-        <PrimaryButton text={unsaved === 0 ? 'Saved' : 'Save ' + unsaved} disabled={unsaved === 0} onClick={() => provider.save()} />
+        <Text>{selected.length} of {provider.getRecords().length} lines selected: {formatting.formatCurrency(total)}</Text>
+        <PrimaryButton text={unsaved === 0 ? 'No changes' : 'Save changes (' + unsaved + ')'} disabled={unsaved === 0} onClick={() => provider.save()} />
         <DefaultButton text='Discard' disabled={unsaved === 0} onClick={() => provider.clearChanges()} />
     </Stack>
 }
 
 const GridExample = () => {
-    const order = React.useMemo(createOrder, [])
-    return <DatasetControl onLoad={async () => ({ provider: order })} height='420px'>
+    return <DatasetControl onLoad={async () => ({ provider: createOrder() })} height='420px'>
         <DatasetControl.Header>
             <DatasetControl.Header.End>
                 <DatasetControl.QuickFind />
@@ -61,7 +59,7 @@ const GridExample = () => {
 export const STEER_FROM_CODE_CODE = `const PRIORITY = [
     { Value: 1, Label: 'High', Color: '#a4262c' },
     { Value: 2, Label: 'Normal', Color: '#0078d4' },
-    { Value: 3, Label: 'Low', Color: '#605e5c' },
+    { Value: 3, Label: 'Low', Color: '#038387' },
 ]
 
 const createTickets = () => new MemoryDataProvider({
@@ -85,11 +83,12 @@ const createTickets = () => new MemoryDataProvider({
 })
 
 const GridExample = () => {
-    const tickets = React.useMemo(createTickets, [])
+    const [tickets] = React.useState(createTickets)
+    React.useEffect(() => () => tickets.destroy(), [tickets])
 
-    const apply = (change: () => void) => {
+    const apply = async (change: () => void) => {
         change()
-        tickets.refresh()
+        await tickets.refresh()
     }
 
     const newestFirst = () => apply(() => tickets.setSorting([{ name: 'createdon', sortDirection: 1 }]))
@@ -108,7 +107,7 @@ const GridExample = () => {
             <DefaultButton text='Search "printer"' onClick={searchPrinter} />
             <DefaultButton text='Reset' onClick={reset} />
         </Stack>
-        <DatasetControl onLoad={async () => ({ provider: tickets })} height='340px'>
+        <DatasetControl onLoad={async () => ({ provider: tickets })} destroyProviderOnUnmount={false} height='340px'>
             <DatasetControl.Body>
                 <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} enableOptionSetColors />
             </DatasetControl.Body>

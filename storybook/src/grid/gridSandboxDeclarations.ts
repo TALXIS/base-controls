@@ -738,6 +738,9 @@ interface IMemoryDataProviderOptions {
     columns?: IColumn[];
     /** Every record on one page unless given. */
     pageSize?: number;
+    sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
+    filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression;
+    searchQuery?: string;
 }
 
 interface IMemoryProvider extends IDataProvider {
@@ -2105,12 +2108,31 @@ declare function useGridColumnHeader(): IGridColumnHeader;
 interface IFormatting {
     formatCurrency(value: number, precision?: number, symbol?: string): string;
     formatDecimal(value: number, precision?: number): string;
+    formatInteger(value: number): string;
     formatDateShort(value: Date, includeTime?: boolean): string;
+    formatDateLong(value: Date): string;
+    /** Minutes, such as 150, as a duration. */
+    formatDuration(value: number, hoursPerDay?: number): string;
 }
 
-/** The PCF context the grid is drawn in. */
+interface IPcfUserSettings {
+    languageId: number;
+    userId: string;
+    userName: string;
+    isRTL: boolean;
+}
+
+interface IPcfNavigation {
+    openAlertDialog(alertStrings: { text: string; confirmButtonLabel?: string; title?: string }): Promise<void>;
+    openConfirmDialog(confirmStrings: { text: string; title?: string; subtitle?: string; confirmButtonLabel?: string; cancelButtonLabel?: string }): Promise<{ confirmed: boolean }>;
+    openErrorDialog(options: { message?: string; details?: string; errorCode?: number }): Promise<void>;
+}
+
+/** The PCF context the controls are drawn in. */
 interface IPcfContext {
     formatting: IFormatting;
+    userSettings: IPcfUserSettings;
+    navigation: IPcfNavigation;
 }
 
 /** Throws outside PcfContextProvider. */
@@ -2134,7 +2156,7 @@ declare class StateStore implements IStateStore {
 declare const StateProvider: (props: { store?: IStateStore; children?: React.ReactNode }) => JSX.Element;
 /** Returns the store from the nearest StateProvider, or the page-wide one without it. */
 declare function useStateStore(): IStateStore;
-/** The store a control keeps its state in, per view inside a DatasetControl; nothing is kept without a stateKey. */
+/** The store a control keeps its state in, per view inside a DatasetControl; stateKey is read once, at mount. */
 declare function useControlStateStore(stateKey: string | undefined): IStateStore;
 
 /** The record form: Form.Root, Form.Section, Form.Field, Form.Cell, Form.Control and the rest. */

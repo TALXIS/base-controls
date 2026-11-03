@@ -5,31 +5,44 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FilterChipsExample, SectionTabsExample, ToolbarExample } from './compactPartsExamples'
 
 const DESCRIPTION = `
-A control should fit wherever it is put: a full page, a side panel or a phone. So it does not ask how wide the window is; it asks the box it sits in. Wrap an area in a *compact provider*, and every part inside it can ask \`useCompact()\` whether to draw full size or compact.
+Wrap an area in a *compact provider*, and every part inside it can ask \`useCompact()\` whether to draw full size or compact. The provider measures its own box, not the window.
 
-## Shrink when it no longer fits
+Some parts already respond on their own: \`CommandBar\` shows only its icons when compact, and the DatasetControl header is a compact provider (see [**DatasetControl › Layout**](?path=/docs/controls-datasetcontrol-layout--overview)).
 
-\`WrapCompactProvider\` keeps its parts full size for as long as they fit on one line. The moment they would wrap, it turns them compact. Each part decides what compact means for itself: here a button drops its label and a search box narrows.
+## Shrink when parts would wrap
+
+\`WrapCompactProvider\` keeps its parts full size while they fit on one line, and turns them compact the moment they would wrap. Each part decides what compact means for itself: here a button drops its label and a search box narrows.
+
+It notices a wrap by its box growing taller, so it needs two things:
+
+- The row is allowed to wrap: give it \`flexWrap: 'wrap'\`.
+- Full and compact parts are the same height.
+
+Adding a part needs nothing: if it does not fit, the box grows and the parts turn compact.
 
 {{story: Toolbar}}
 
-It turns back to full size only once the box is wider than it was when the parts ran out of room. That margin is what stops the toolbar from flickering between the two while you resize right at the edge.
+The parts turn back to full size only once the box is wider than it was when they wrapped. Waiting for the box to grow is what stops the toolbar flickering while you resize right at the edge.
 
-## Parts that come and go
+## Remove a part
 
-That margin has a catch. Remove a part, and the others may fit again, but the box has not grown, so the provider would stay compact. A part that can disappear calls \`useCompactItem()\`, which tells the provider when it goes, and the provider tries full size again. If the parts still do not fit, it turns them compact before anything is drawn.
+Removing a part has a catch: the others may fit again, but the box has not grown, so the provider stays compact. A part that can disappear calls \`useCompactItem()\`, which tells the provider when it goes, and the provider tries full size again. If the parts still do not fit, they turn compact before anything is drawn.
 
 {{story: Filter chips}}
 
 ## Shrink below a width
 
-When a part should change at a fixed size rather than when it overflows, use \`BreakpointCompactProvider\`. Its parts are compact while the box is at most \`maxCompactWidth\` wide, 479px by default, the width of a phone. Reach for it when compact means a different component, not just different styles: CSS can restack a card, but it cannot turn tabs into a dropdown and keep the open section.
+\`BreakpointCompactProvider\` makes its parts compact while its box is at most \`maxCompactWidth\` wide: 479px by default, the width of a phone. The width is the box's outer width (\`offsetWidth\`), padding and border included.
+
+Reach for it when compact means a different component, not just different styles: CSS can restack a card, but it cannot turn tabs into a dropdown and keep the open section.
 
 {{story: Section tabs}}
 
 ## Good to know
 
-Both providers render a \`div\` and pass it any other props, so they are the box itself: give them the flex row or the padding the area needs. Outside a provider, \`useCompact()\` returns \`false\`, so a part that shrinks still works anywhere. And to pin one part at full size inside a compact area, or keep it compact everywhere, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
+- Both providers render a \`div\` and pass it any other props, so they are the box itself: give them the flex row or the padding the area needs.
+- Outside a provider, \`useCompact()\` returns \`false\`, so a part that shrinks still works anywhere.
+- To pin one part at full size inside a compact area, or keep it compact everywhere, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
 `
 
 const meta = {

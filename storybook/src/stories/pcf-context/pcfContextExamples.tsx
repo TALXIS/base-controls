@@ -9,12 +9,12 @@ const FORMAT_CODE = `const CULTURES = [
 ]
 
 const Invoice = () => {
-    const { formatting, userSettings } = usePcfContext()
+    const { formatting } = usePcfContext()
     const issued = new Date(2026, 2, 15, 14, 30)
+    const due = new Date(2026, 3, 14)
     return <Stack tokens={{ childrenGap: 4 }}>
-        <Text>Language: {userSettings.languageId}</Text>
         <Text>Issued: {formatting.formatDateShort(issued, true)}</Text>
-        <Text>Due: {formatting.formatDateLong(issued)}</Text>
+        <Text>Due: {formatting.formatDateLong(due)}</Text>
         <Text>Total: {formatting.formatCurrency(12480.5, 2)}</Text>
         <Text>Hours: {formatting.formatDecimal(1234.75, 2)}</Text>
         <Text>Time spent: {formatting.formatDuration(150)}</Text>

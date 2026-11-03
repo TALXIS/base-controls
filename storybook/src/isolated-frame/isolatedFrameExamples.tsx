@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import React from 'react'
-import { initializeIcons, mergeStyleSets, Text } from '@fluentui/react'
-import { createClientSideRowModelModule, createEditingModule, createFilteringModule, createIsolatedComponent, createSortingModule, DatasetControl, Grid, IsolatedFrameScript, PcfContextProvider, StateProvider, createThemeBuilder, ThemeProvider } from '@talxis/base-controls'
+import { initializeIcons, ITheme, mergeStyleSets, Text, useTheme } from '@fluentui/react'
+import { createClientSideRowModelModule, createEditingModule, createFilteringModule, createIsolatedComponent, createSortingModule, DatasetControl, Grid, IsolatedFrameScript, PcfContextProvider, StateProvider, ThemeProvider } from '@talxis/base-controls'
 import { createDealsProvider } from '../grid/data'
 
 declare global {
@@ -11,17 +11,15 @@ declare global {
     }
 }
 
-const theme = createThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } }).getTheme()
-
 //rules like an older AG Grid's on the same page
 const OTHER_APP_STYLES = `
-.ag-header-cell * { color: #a4262c !important; text-transform: uppercase; }
+.ag-header-cell * { color: #e3008c !important; text-transform: uppercase; }
 .ag-cell * { font-family: 'Courier New', monospace !important; }
-.ag-row { border-bottom: 2px dashed #a4262c !important; }
+.ag-row { border-bottom: 2px dashed #e3008c !important; }
 `
 
 //a global rule only the frame should see
-const FRAME_STYLES = `.ag-row { background: #ebebfa !important; }`
+const FRAME_STYLES = `.ag-root-wrapper { border-top: 3px solid #5B5FC7 !important; }`
 
 const styles = mergeStyleSets({
     showcase: {
@@ -29,18 +27,20 @@ const styles = mergeStyleSets({
         gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
         gap: 16,
     },
-    column: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-    },
     frame: {
         height: 460,
     },
     content: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
         height: '100%',
         padding: 12,
         boxSizing: 'border-box',
+    },
+    grid: {
+        flex: 1,
+        minHeight: 0,
     },
 })
 
@@ -66,22 +66,33 @@ const DealsGrid = (props: IDealsGridProps) => {
 
     return <div className={styles.content}>
         <Text variant='mediumPlus' block>{props.heading}{greeting && ` · ${greeting}`}</Text>
-        <DatasetControl height='calc(100% - 28px)' onLoad={async () => ({ provider: deals })}>
-            <DatasetControl.Body>
-                <Grid modules={modules} />
-            </DatasetControl.Body>
-        </DatasetControl>
+        <div className={styles.grid}>
+            <DatasetControl height='100%' onLoad={async () => ({ provider: deals })}>
+                <DatasetControl.Body>
+                    <Grid modules={modules} />
+                </DatasetControl.Body>
+            </DatasetControl>
+        </div>
     </div>
 }
 
+interface IFramedDealsGridProps extends IDealsGridProps {
+    theme: ITheme
+}
+
+let areFrameIconsRegistered = false
+
 //no provider or icon of the page reaches the frame
-const FramedDealsGrid = (props: IDealsGridProps) => {
-    React.useState(() => initializeIcons(undefined, { disableWarnings: true }))
+const FramedDealsGrid = (props: IFramedDealsGridProps) => {
+    if (!areFrameIconsRegistered) {
+        initializeIcons()
+        areFrameIconsRegistered = true
+    }
 
     return <PcfContextProvider>
         <StateProvider>
-            <ThemeProvider theme={theme} style={{ height: '100%' }}>
-                <DealsGrid {...props} />
+            <ThemeProvider theme={props.theme} style={{ height: '100%' }}>
+                <DealsGrid heading={props.heading} />
             </ThemeProvider>
         </StateProvider>
     </PcfContextProvider>
@@ -100,6 +111,8 @@ const prepareFrameWindow = (frameWindow: Window) => {
 export const IsolatedDealsGrid = createIsolatedComponent('isolatedDealsGrid', FramedDealsGrid, { scripts: FRAME_SCRIPTS, onPrepareWindow: prepareFrameWindow })
 
 export const IsolationShowcase = () => {
+    const theme = useTheme()
+
     React.useEffect(() => {
         const style = document.createElement('style')
         style.textContent = OTHER_APP_STYLES
@@ -108,11 +121,11 @@ export const IsolationShowcase = () => {
     }, [])
 
     return <div className={styles.showcase}>
-        <div className={`${styles.column} ${styles.frame}`}>
+        <div className={styles.frame}>
             <DealsGrid heading='In the page' />
         </div>
-        <div className={`${styles.column} ${styles.frame}`}>
-            <IsolatedDealsGrid heading='In a frame' frame={{ title: 'Deals' }} />
+        <div className={styles.frame}>
+            <IsolatedDealsGrid heading='In a frame' theme={theme} frame={{ title: 'Deals' }} />
         </div>
     </div>
 }

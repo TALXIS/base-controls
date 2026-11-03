@@ -7,6 +7,8 @@ import { ComeBackExample, OwnComponentExample } from './statePersistenceExamples
 const DESCRIPTION = `
 When a component unmounts, its React state is gone, so a user who leaves and comes back starts over. State persistence keeps what a component needs to come back, such as a draft, a sorting or a scroll position, in a store that outlives it.
 
+{{story: Come back where you left off}}
+
 ## The store
 
 \`StateStore\` is a dictionary of plain data: \`get\`, \`set\` and \`delete\` an entry by id. It writes into the dictionary you give it, so you can save that dictionary as it is.
@@ -30,16 +32,18 @@ planner.scope('filters').set('owner', 'Jana')
 
 A scope keeps a part of the tree to itself: code holding \`planner\` cannot touch \`zoom\`, and two scopes with different ids never collide.
 
+Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing to the old entry, which is no longer in the tree.
+
 ## Hand a store down
 
 \`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two hooks:
 
 | Hook | Returns |
 |---|---|
-| \`useStateStore()\` | The nearest store |
-| \`useControlStateStore(stateKey)\` | Its scope for the component: \`useStateStore().scope(stateKey)\`, one level down. Without a \`stateKey\`, a store that keeps nothing |
+| \`useStateStore()\` | The nearest store. |
+| \`useControlStateStore(stateKey)\` | The component's scope: \`useStateStore().scope(stateKey)\`. Inside a DatasetControl, a scope in the entry of the view shown instead. Without a \`stateKey\`, a throwaway store: nothing survives a remount. |
 
-That is all a \`stateKey\` is: the id of a component's scope in the nearest store. Every control in the library that takes a \`stateKey\` keeps its state this way.
+That is all a \`stateKey\` is: the id of a component's scope. It is read once, at mount. Every control in the library that takes a \`stateKey\` keeps its state this way.
 
 ## Nest components
 
@@ -55,9 +59,13 @@ const Planner = () => {
 //state is { planner: { draftNote: { text: '…' } } }
 \`\`\`
 
-The controls nest their own parts the same way. The dictionary next to the example shows the tree they keep.
+Inside a DatasetControl, \`useControlStateStore\` scopes under the view the part is shown in instead, so each view keeps its own. The DatasetControl in the first example keeps this tree:
 
-{{story: Come back where you left off}}
+\`\`\`ts
+//state is { deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }
+\`\`\`
+
+What each control keeps is on [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview) and [**Grid › State**](?path=/docs/controls-grid-state--overview).
 
 ## Keep state in your own component
 
@@ -77,25 +85,33 @@ const DraftNote = () => {
 
 {{story: Keep a draft}}
 
-## Keep state across sessions
+## Keep state beyond the provider
 
-A store lives as long as its \`StateProvider\`, or the page without one. To keep state across sessions, save the dictionary, such as the one a PCF host hands its control (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)):
+A store lives as long as its \`StateProvider\`, or the page without one. To keep state longer, save the dictionary:
+
+- **For the session**, hand it to \`context.mode.setControlState\` in a PCF (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
+- **Across sessions**, save it as JSON, such as in \`localStorage\` or a table: entries are plain data.
+
+In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted:
 
 \`\`\`tsx
-//init(context, notifyOutputChanged, state)
-this._store = new StateStore({ state })
+public init(context, notifyOutputChanged, state, container) {
+    this._container = container
+    this._state = state ?? {}
+    this._store = new StateStore({ state: this._state })
+}
 
-//updateView(context)
-<StateProvider store={this._store}>
-    <App />
-</StateProvider>
+public updateView(context) {
+    this._context = context
+    ReactDOM.render(<StateProvider store={this._store}><App /></StateProvider>, this._container)
+}
 
-//destroy()
-this._context.mode.setControlState(state)
+public destroy() {
+    //the controls write their state as they unmount
+    ReactDOM.unmountComponentAtNode(this._container)
+    this._context.mode.setControlState(this._state)
+}
 \`\`\`
-
-Entries are plain data, so the dictionary can also be saved as JSON, such as in \`localStorage\`.
-
 `
 
 const meta = {
@@ -120,7 +136,7 @@ export const ComeBackWhereYouLeftOff: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Switch the view, search, sort a column and scroll, then leave the deals and come back: everything is where you left it. The dictionary beside it shows the tree the control and its grid kept.`,
+                story: `Try: switch the view, search, sort a column and scroll, then leave the deals and come back: everything is where you left it. The dictionary beside it updates when you leave: the control writes its state as it unmounts.`,
             },
         },
     },
@@ -132,7 +148,7 @@ export const KeepADraft: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Type a draft, hide the note and show it again: the draft comes back from the store, shown below as it fills.`,
+                story: `Try: type a draft, hide the note and show it again: the draft comes back from the store, shown below as it fills.`,
             },
         },
     },

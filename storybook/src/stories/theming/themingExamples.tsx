@@ -20,7 +20,8 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => [
 ]
 
 const GridExample = () => {
-    const [colors, setColors] = React.useState(BRANDS[1].colors)
+    const isLightPage = isLightColor(useTheme().semanticColors.bodyBackground)
+    const [colors, setColors] = React.useState(BRANDS[isLightPage ? 0 : 1].colors)
     const theme = useThemeBuilder({ colors })
     const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'theming.deals.views' })], [])
     const gridModules = React.useMemo(() => [
@@ -74,7 +75,7 @@ const GridExample = () => {
 }
 `
 
-const OWN_COMPONENT_CODE = `const STAGES = [
+const READABLE_TAGS_CODE = `const STAGES = [
     { name: 'Lead', hue: '#c19c00' },
     { name: 'Proposal', hue: '#0078d4' },
     { name: 'Won', hue: '#107c10', strength: 'strong' as const },
@@ -99,9 +100,12 @@ const Total = (props: { label: string; value: string }) => {
 }
 
 const GridExample = () => {
+    const lightTheme = useThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } })
     const darkTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } })
     return <Stack horizontal tokens={{ childrenGap: 12 }}>
-        <Total label='Pipeline' value='$1,284,000' />
+        <ThemeProvider theme={lightTheme} style={{ padding: 12 }}>
+            <Total label='Pipeline' value='$1,284,000' />
+        </ThemeProvider>
         <ThemeProvider theme={darkTheme} style={{ padding: 12 }}>
             <Total label='Won this quarter' value='$412,500' />
         </ThemeProvider>
@@ -109,9 +113,8 @@ const GridExample = () => {
 }
 `
 
-const SURFACE_CODE = `const ESCALATED = '#a4262c'
+const RED_ROWS_CODE = `const ESCALATED = '#a4262c'
 
-//every cell of an escalated ticket is drawn red, and so is any field inside it
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
@@ -120,7 +123,7 @@ const escalatedTicketsModule: IGridModule = {
             if (record.getValue('escalated') === '1') {
                 builder.tint(ESCALATED, 'strong')
             }
-        })
+        }, GRID_MODULE_PRIORITY.grouping + 1)
     },
 }
 
@@ -132,5 +135,5 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 `
 
 export const BrandExample = () => <GridExampleRunner seedCode={withFiles(BRAND_CODE, VIEWS_FILE)} />
-export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} />
-export const SurfaceExample = () => <GridExampleRunner seedCode={SURFACE_CODE} dataset='tickets' />
+export const RedRowsExample = () => <GridExampleRunner seedCode={RED_ROWS_CODE} dataset='tickets' />
+export const ReadableTagsExample = () => <GridExampleRunner seedCode={READABLE_TAGS_CODE} />
