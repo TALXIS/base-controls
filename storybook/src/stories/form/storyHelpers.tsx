@@ -1,7 +1,7 @@
 import React from 'react'
 import Editor from '@monaco-editor/react'
 import { IconButton, ITheme, Text, Toggle, mergeStyleSets, useTheme } from '@fluentui/react'
-import { baseEditorOptions } from '../../form/shared/monacoEditor'
+import { baseEditorOptions, useMonacoTheme } from '../../form/shared/monacoEditor'
 
 export const renderStory = (node: React.ReactNode, padding = 18) => (
     <div style={{ padding, height: '100%' }}>{node}</div>
@@ -55,7 +55,7 @@ interface IStaticCodeBlockProps {
 }
 
 export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
-    const theme = useTheme()
+    const monacoTheme = useMonacoTheme()
     const [collapsed, setCollapsed] = React.useState(true)
 
     return (
@@ -81,7 +81,7 @@ export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
                                 padding: { top: 12, bottom: 12 },
                                 readOnly: true,
                             }}
-                            theme={theme.isInverted ? 'vs-dark' : 'vs-light'}
+                            theme={monacoTheme}
                         />
                     )}
                 </div>

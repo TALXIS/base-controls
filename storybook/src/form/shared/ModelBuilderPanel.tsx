@@ -22,7 +22,7 @@ import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } 
 import type { ICommandBarItemProps } from "@fluentui/react"
 import { IModelOption, TSupportedModelDataType, createModelColumn, getModelTypeDefinition, modelTypeDefinitions } from "./modelDefinition"
 import { parseModelColumns, serializeModelColumns } from "./modelStore"
-import { baseEditorOptions } from "./monacoEditor"
+import { baseEditorOptions, useMonacoTheme } from "./monacoEditor"
 
 interface IModelBuilderPanelProps {
     columns: IColumn[]
@@ -404,6 +404,7 @@ const DuplicateNameWarning = (props: { columns: IColumn[]; selectedIndex: number
 }
 
 export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
+    const monacoTheme = useMonacoTheme()
     const { columns, editorMode, onChange, lockedFieldNames = new Set<string>(), primaryIdAttribute } = props
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [draftColumn, setDraftColumn] = useState<IColumn | null>(null)
@@ -713,7 +714,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                             formatOnType: true,
                             padding: { top: 12, bottom: 12 },
                         }}
-                        theme="vs-light"
+                        theme={monacoTheme}
                     />
                 </div>
                 {jsonError && (

@@ -1,7 +1,7 @@
 import React from 'react'
 import Editor, { Monaco, OnMount } from '@monaco-editor/react'
 import { ITheme, mergeStyleSets, useTheme } from '@fluentui/react'
-import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from '../form/shared/monacoEditor'
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs, useMonacoTheme } from '../form/shared/monacoEditor'
 import { gridSandboxDeclarations } from './gridSandboxDeclarations'
 import type { IGridExampleFile } from './GridLivePreview'
 
@@ -30,6 +30,7 @@ interface IGridCodeEditorProps {
 export const GridCodeEditor = (props: IGridCodeEditorProps) => {
     const theme = useTheme()
     const styles = React.useMemo(() => getStyles(theme), [theme])
+    const monacoTheme = useMonacoTheme()
     //a folder per editor: a docs page shows several examples at once
     const folder = React.useMemo(() => `file:///sandbox/grid-example-${++editorCount}/`, [])
     const monacoRef = React.useRef<Monaco>()
@@ -73,6 +74,6 @@ export const GridCodeEditor = (props: IGridCodeEditorProps) => {
                 padding: { top: 12, bottom: 0 },
                 quickSuggestions: { comments: false, other: true, strings: true },
             }}
-            theme={theme.isInverted ? 'vs-dark' : 'vs-light'} />
+            theme={monacoTheme} />
     </div>
 }

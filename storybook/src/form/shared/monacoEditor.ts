@@ -1,4 +1,5 @@
 import type { Monaco } from "@monaco-editor/react"
+import { useTheme } from "@fluentui/react"
 import type { editor } from "monaco-editor"
 
 export type { Monaco }
@@ -67,3 +68,6 @@ export const registerExtraLibs = (monaco: Monaco, content: string, filePath: str
         typescript.javascriptDefaults.setExtraLibs([{ content, filePath }])
     }
 }
+
+/** Monaco's light or dark theme, matching the Fluent theme the editor is drawn in. */
+export const useMonacoTheme = (): 'vs-dark' | 'vs-light' => useTheme().isInverted ? 'vs-dark' : 'vs-light'

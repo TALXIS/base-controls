@@ -1,6 +1,6 @@
 import Editor, { OnMount } from "@monaco-editor/react"
 import { Stack, mergeStyleSets } from "@fluentui/react"
-import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from "../shared/monacoEditor"
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs, useMonacoTheme } from "../shared/monacoEditor"
 
 interface IXrmOverviewCodeEditorProps {
     value: string
@@ -50,6 +50,7 @@ declare const xrmModelStore: {
 `
 
 export const XrmOverviewCodeEditor = (props: IXrmOverviewCodeEditorProps) => {
+    const monacoTheme = useMonacoTheme()
     const handleMount: OnMount = (_, monaco) => {
         configureTypeScriptCompiler(monaco)
         registerExtraLibs(monaco, sandboxDeclarations, "file:///sandbox/xrm-overview-runtime.d.ts")
@@ -74,7 +75,7 @@ export const XrmOverviewCodeEditor = (props: IXrmOverviewCodeEditorProps) => {
                         strings: true,
                     },
                 }}
-                theme="vs-light"
+                theme={monacoTheme}
             />
         </div>
     </Stack>

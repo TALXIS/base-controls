@@ -13,7 +13,7 @@ import { formTranslationLanguageOptions } from '../../form/xrm-form/constants'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
 import { createModelStore, serializeModelColumns } from '../../form/shared/modelStore'
-import { baseEditorOptions } from '../../form/shared/monacoEditor'
+import { baseEditorOptions, useMonacoTheme } from '../../form/shared/monacoEditor'
 import { useModelColumns } from '../../form/shared/useModelColumns'
 import { ModelBuilderPanel, TEditorMode } from '../../form/shared/ModelBuilderPanel'
 import { builderMetadata, getBuilderRecord } from '../../form/xrm-form/builderData'
@@ -99,6 +99,7 @@ const styles = mergeStyleSets({
 })
 
 export const XrmFormXmlBuilderStory = () => {
+    const monacoTheme = useMonacoTheme()
     const [activeView, setActiveView] = React.useState<TBuilderView>('workspace')
     const [formXmlText, setFormXmlText] = React.useState(defaultFormXml)
     const [previewKey, setPreviewKey] = React.useState(0)
@@ -464,7 +465,7 @@ export const XrmFormXmlBuilderStory = () => {
                                         formatOnType: true,
                                         padding: { top: 12, bottom: 12 },
                                     }}
-                                    theme="vs-light"
+                                    theme={monacoTheme}
                                 />
                             </div>
                         </div>

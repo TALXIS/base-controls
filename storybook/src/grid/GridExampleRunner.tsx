@@ -2,7 +2,7 @@ import React from 'react'
 import Editor from '@monaco-editor/react'
 import { ActionButton, initializeIcons, ITheme, mergeStyleSets, Pivot, PivotItem, Text, useTheme } from '@fluentui/react'
 import type { IDataProvider, IMemoryProvider } from '@talxis/client-libraries'
-import { baseEditorOptions } from '../form/shared/monacoEditor'
+import { baseEditorOptions, useMonacoTheme } from '../form/shared/monacoEditor'
 import { GridCodeEditor } from './GridCodeEditor'
 import { getGridExampleSyntaxError, GridLivePreview, IGridExampleFile } from './GridLivePreview'
 import { createDocsDataset, IGridDocsDataset } from './data'
@@ -87,6 +87,7 @@ export interface IGridExampleRunnerProps {
 
 /** A live Grid with tabs for its preview, its editable code and the data it is handed. */
 export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
+    const monacoTheme = useMonacoTheme()
     const theme = useTheme()
     const styles = React.useMemo(() => getStyles(theme), [theme])
     const [tab, setTab] = React.useState<IRunnerTab>('preview')
@@ -139,7 +140,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
                 </>
             case 'data':
                 return <div className={styles.frame}>
-                    <Editor height='480px' language='json' value={describeProvider(renderedProvider ?? provider)} options={{ ...baseEditorOptions, readOnly: true, domReadOnly: true, padding: { top: 12, bottom: 12 } }} theme='vs-light' />
+                    <Editor height='480px' language='json' value={describeProvider(renderedProvider ?? provider)} options={{ ...baseEditorOptions, readOnly: true, domReadOnly: true, padding: { top: 12, bottom: 12 } }} theme={monacoTheme} />
                 </div>
         }
     }

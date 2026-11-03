@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
-import { baseEditorOptions } from "../shared/monacoEditor"
+import { baseEditorOptions, useMonacoTheme } from "../shared/monacoEditor"
 
 interface IRecordDataEditorProps {
     value: string
@@ -27,6 +27,7 @@ const styles = mergeStyleSets({
 })
 
 export const RecordDataEditor = (props: IRecordDataEditorProps) => {
+    const monacoTheme = useMonacoTheme()
     const { onChange, value } = props
 
     return <Stack className={styles.root}>
@@ -46,7 +47,7 @@ export const RecordDataEditor = (props: IRecordDataEditorProps) => {
                     formatOnType: true,
                     padding: { top: 12, bottom: 12 },
                 }}
-                theme="vs-light"
+                theme={monacoTheme}
             />
         </div>
     </Stack>

@@ -1,7 +1,7 @@
 import Editor, { BeforeMount, OnMount } from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import { useMemo } from "react"
-import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from "../shared/monacoEditor"
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs, useMonacoTheme } from "../shared/monacoEditor"
 
 interface IXrmComponentsCodeEditorProps {
     value: string
@@ -206,6 +206,7 @@ declare const formContext: IXrmFormContext;
 `
 
 export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) => {
+    const monacoTheme = useMonacoTheme()
     const editorInstanceKey = useMemo(
         () => `${props.path ?? "file:///sandbox/xrm-components-snippet.tsx"}::${String(props.resetToken ?? "")}`,
         [props.path, props.resetToken],
@@ -247,7 +248,7 @@ export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) =>
                     readOnly: props.readOnly ?? true,
                 }}
                 onChange={(value) => props.onChange?.(value ?? "")}
-                theme="vs-light"
+                theme={monacoTheme}
             />
         </div>
     </Stack>

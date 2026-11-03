@@ -1,6 +1,6 @@
 import Editor, { OnMount } from "@monaco-editor/react"
 import { Stack, mergeStyleSets } from "@fluentui/react"
-import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from "../shared/monacoEditor"
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs, useMonacoTheme } from "../shared/monacoEditor"
 
 interface IFormCodeEditorProps {
     value: string
@@ -185,6 +185,7 @@ declare const useField: (name?: string | null) => ISandboxField | null;
 `
 
 export const FormCodeEditor = (props: IFormCodeEditorProps) => {
+    const monacoTheme = useMonacoTheme()
     const { onChange, value } = props
 
     const handleMount: OnMount = (_, monaco) => {
@@ -211,7 +212,7 @@ export const FormCodeEditor = (props: IFormCodeEditorProps) => {
                         strings: true,
                     },
                 }}
-                theme="vs-light"
+                theme={monacoTheme}
             />
         </div>
     </Stack>

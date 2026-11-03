@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import { useMemo } from "react"
-import { baseEditorOptions } from "../shared/monacoEditor"
+import { baseEditorOptions, useMonacoTheme } from "../shared/monacoEditor"
 
 interface IFormXmlEditorProps {
     value: string
@@ -29,6 +29,7 @@ const styles = mergeStyleSets({
 })
 
 export const FormXmlEditor = (props: IFormXmlEditorProps) => {
+    const monacoTheme = useMonacoTheme()
     const { hideLabel, onChange, value } = props
     const formattedValue = useMemo(() => formatXml(value), [value])
 
@@ -51,7 +52,7 @@ export const FormXmlEditor = (props: IFormXmlEditorProps) => {
                     formatOnType: true,
                     padding: { top: 12, bottom: 12 },
                 }}
-                theme="vs-light"
+                theme={monacoTheme}
             />
         </div>
     </Stack>
