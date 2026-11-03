@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
-const BRAND_CODE = `import { loadDeals, loadDealViews } from './views'
+const BRAND_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
 
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
@@ -13,9 +13,27 @@ const BRANDS = [
     { key: 'amber', text: 'Amber', colors: { primary: '#f5a623', background: '#1e1e1e', text: '#f2f2f2' } },
 ]
 
+const loadCommands = async (): Promise<IRibbonCommand[]> => [
+    { id: 'new', label: 'New deal', iconName: 'Add', onExecute: () => {} },
+    { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: () => {} },
+    { id: 'share', label: 'Share', iconName: 'Share', onExecute: () => {} },
+]
+
 const GridExample = () => {
     const [colors, setColors] = React.useState(BRANDS[1].colors)
     const theme = useThemeBuilder({ colors })
+    const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'theming.deals.views' })], [])
+    const gridModules = React.useMemo(() => [
+        createClientSideRowModelModule(),
+        createEditingModule(),
+        createRowSelectionModule({ mode: 'multiple' }),
+        createCellSelectionModule(),
+        createClipboardModule(),
+        createSortingModule(),
+        createFilteringModule(),
+        createGroupingModule(),
+        createAggregationModule(),
+    ], [])
 
     const setColor = (name: keyof typeof colors, value: string) => setColors({ ...colors, [name]: value })
 
@@ -28,10 +46,11 @@ const GridExample = () => {
             </Stack>)}
         </Stack>
         <ApplicationThemeProvider theme={theme} style={{ padding: 12 }}>
-            <DatasetControl key={theme.id} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='420px'>
+            <DatasetControl key={theme.id} modules={controlModules} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} onMounted={saveDealViewData} height='480px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         <DatasetControl.ViewSwitcher />
+                        <DatasetControl.Ribbon onLoad={loadCommands} />
                     </DatasetControl.Header.Start>
                     <DatasetControl.Header.End>
                         <DatasetControl.EditColumns />
@@ -39,8 +58,16 @@ const GridExample = () => {
                     </DatasetControl.Header.End>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+                    <Grid stateKey='grid' modules={gridModules} />
                 </DatasetControl.Body>
+                <DatasetControl.Footer>
+                    <DatasetControl.Footer.Start>
+                        <DatasetControl.PageSizeSwitcher />
+                    </DatasetControl.Footer.Start>
+                    <DatasetControl.Footer.End>
+                        <DatasetControl.Pagination />
+                    </DatasetControl.Footer.End>
+                </DatasetControl.Footer>
             </DatasetControl>
         </ApplicationThemeProvider>
     </Stack>

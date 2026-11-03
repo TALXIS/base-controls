@@ -94,7 +94,7 @@ export const BrandColours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Deals in an application theme built from three colours, so their menus and panels open in it too. Try: pick a brand or your own colours.`,
+                story: `Deals in an application theme built from three colours, with every part and grid module switched on, so their menus, panels and editors open in it too. Try: pick a brand, then edit, sort, filter, group and open the menus.`,
             },
         },
     },
