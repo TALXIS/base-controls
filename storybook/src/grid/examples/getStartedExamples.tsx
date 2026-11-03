@@ -366,10 +366,18 @@ const SPREADSHEET = `import type { IFeature } from './features'
 //a little roomier than Excel's 20 pixels
 const COMPACT_ROW_HEIGHT = 28
 
-const EXCEL_BASE_THEME = createThemeBuilder({ colors: { primary: '#217346', background: '#ffffff', text: '#000000' } }).getTheme()
+const EXCEL_GREEN = '#217346'
 
-//the grid draws its lines in the divider colour
-const EXCEL_THEME = { ...EXCEL_BASE_THEME, semanticColors: { ...EXCEL_BASE_THEME.semanticColors, menuDivider: '#d4d4d4' } }
+//Excel's green over the theme around it
+const getExcelTheme = (theme: ITheme) => {
+    const { bodyBackground, bodyText } = theme.semanticColors
+    //lifted toward the text on a dark background, where Excel's own green is too dark to read
+    const primary = theme.isInverted ? mixColors(EXCEL_GREEN, bodyText, 0.5) : EXCEL_GREEN
+    const builder = createThemeBuilder({ colors: { primary, background: bodyBackground, text: bodyText } })
+    //the grid draws its lines in the divider colour, firmer in a sheet
+    builder.edit('excelLines', excelTheme => { excelTheme.semanticColors.menuDivider = mixColors(bodyText, bodyBackground, 0.2) })
+    return builder.getTheme()
+}
 
 export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
@@ -391,7 +399,7 @@ export const SPREADSHEET: { [feature: string]: IFeature } = {
     cellSelection: () => ({ modules: [createCellSelectionModule()] }),
     clipboard: () => ({ modules: [createClipboardModule()] }),
     compactRows: () => ({ rowHeight: COMPACT_ROW_HEIGHT }),
-    excelTheme: () => ({ frame: { theme: EXCEL_THEME } }),
+    excelTheme: ({ theme }) => ({ frame: { theme: getExcelTheme(theme) } }),
 }
 `
 
@@ -541,6 +549,8 @@ export interface IFeatureContext {
     deals: IDataProvider
     switches: IFeatureSwitches
     toasts: IToasts
+    /** The theme around the grid. */
+    theme: ITheme
     /** The deal open in a form, if any. */
     openedDeal?: IRecord
     onOpenDeal: (deal?: IRecord) => void
@@ -569,9 +579,10 @@ const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => (
 
 export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches): IFeatureProps => {
     const toasts = useToastController(TOASTER_ID)
+    const theme = useTheme()
     const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
     useStageGrouping(deals, switches)
-    const context: IFeatureContext = { deals, switches, toasts, openedDeal, onOpenDeal: setOpenedDeal }
+    const context: IFeatureContext = { deals, switches, toasts, theme, openedDeal, onOpenDeal: setOpenedDeal }
     return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(deals))
 }
 

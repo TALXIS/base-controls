@@ -5,6 +5,11 @@
     line-height: 1.65;
   }
 
+  /* Storybook stripes docs tables in a fixed grey, a blue one on dark pages */
+  .sbdocs-content tr:nth-of-type(2n) {
+    background-color: color-mix(in srgb, currentColor 5%, transparent) !important;
+  }
+
   .form-strategy-hidden-preview.sbdocs-preview,
   .docs-hidden-preview.sbdocs-preview {
     display: none;

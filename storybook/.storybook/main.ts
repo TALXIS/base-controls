@@ -49,6 +49,8 @@ const isolatedFrameEntryPlugin = (): Plugin => ({
 const config: StorybookConfig = {
   stories,
   staticDirs: ['../public'],
+  //the theme toggle in the toolbar switches the stories' theme instead
+  features: { backgrounds: false },
   addons: ['@storybook/addon-a11y', '@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-vite',

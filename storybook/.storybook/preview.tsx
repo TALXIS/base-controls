@@ -1,9 +1,11 @@
 import type { Preview } from '@storybook/react-vite';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs/blocks';
+import { GLOBALS_UPDATED } from 'storybook/internal/core-events';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
 import { ApplicationThemeProvider, createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
-import { APPLICATION_THEME_COLORS, BACKGROUNDS, COLOR_SCHEME, fluentTheme } from './fluentTheme';
+import { APPLICATION_THEME_COLORS, FLUENT_THEMES, onSystemColorSchemeChange, resolveColorScheme, THEME_GLOBAL } from './fluentTheme';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
@@ -14,8 +16,43 @@ const APPLICATION_THEMES = {
   dark: createThemeBuilder({ colors: APPLICATION_THEME_COLORS.dark }).getTheme(),
 };
 
-//the background switch in the toolbar, or Storybook's own scheme until it is used
-const getColorScheme = (background: string | undefined): 'light' | 'dark' => background === 'light' || background === 'dark' ? background : COLOR_SCHEME;
+/** The scheme the theme toggle stands for, following the system while it is on System. */
+const useColorScheme = (setting: unknown) => {
+  const [scheme, setScheme] = useState(() => resolveColorScheme(setting));
+  useEffect(() => {
+    setScheme(resolveColorScheme(setting));
+    return onSystemColorSchemeChange(() => setScheme(resolveColorScheme(setting)));
+  }, [setting]);
+  return scheme;
+};
+
+const StoryProviders = (props: { themeSetting: unknown; children: React.ReactNode }) => {
+  const scheme = useColorScheme(props.themeSetting);
+  return <PcfContextProvider>
+    <StateProvider>
+      {/* keyed: the controls read the theme as they mount */}
+      <ApplicationThemeProvider key={scheme} theme={APPLICATION_THEMES[scheme]}>
+        {props.children}
+      </ApplicationThemeProvider>
+    </StateProvider>
+  </PcfContextProvider>;
+};
+
+interface IDocsContextWithStore {
+  store?: { userGlobals?: { globals?: Record<string, unknown> } };
+}
+
+//docs pages take their theme as a parameter, read once, so the toggle reaches them through the channel
+const ThemedDocsContainer = (props: React.PropsWithChildren<DocsContainerProps>) => {
+  const [themeSetting, setThemeSetting] = useState<unknown>((props.context as unknown as IDocsContextWithStore).store?.userGlobals?.globals?.[THEME_GLOBAL]);
+  const scheme = useColorScheme(themeSetting);
+  useEffect(() => {
+    const onGlobals = ({ globals }: { globals: Record<string, unknown> }) => setThemeSetting(globals[THEME_GLOBAL]);
+    props.context.channel.on(GLOBALS_UPDATED, onGlobals);
+    return () => props.context.channel.off(GLOBALS_UPDATED, onGlobals);
+  }, [props.context.channel]);
+  return <DocsContainer {...props} theme={FLUENT_THEMES[scheme]} />;
+};
 
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
 const guardPrototypeFocus = () => {
@@ -36,24 +73,29 @@ const guardPrototypeFocus = () => {
 const preview: Preview = {
   loaders: [guardPrototypeFocus],
   decorators: [
-    (Story, context) => (
-      <PcfContextProvider>
-        <StateProvider>
-          {/* keyed: the controls read the theme as they mount */}
-          <ApplicationThemeProvider key={getColorScheme(context.globals.backgrounds?.value)} theme={APPLICATION_THEMES[getColorScheme(context.globals.backgrounds?.value)]}>
-            <Story />
-          </ApplicationThemeProvider>
-        </StateProvider>
-      </PcfContextProvider>
-    ),
+    (Story, context) => <StoryProviders themeSetting={context.globals[THEME_GLOBAL]}><Story /></StoryProviders>,
   ],
+  globalTypes: {
+    [THEME_GLOBAL]: {
+      description: 'Light or dark, for Storybook and the stories',
+      toolbar: {
+        title: 'Theme',
+        icon: 'mirror',
+        dynamicTitle: true,
+        items: [
+          { value: 'system', title: 'System', icon: 'browser' },
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+      },
+    },
+  },
   initialGlobals: {
-    backgrounds: { value: COLOR_SCHEME },
+    [THEME_GLOBAL]: 'system',
   },
   parameters: {
     layout: 'fullscreen',
-    docs: { theme: fluentTheme },
-    backgrounds: { options: BACKGROUNDS },
+    docs: { container: ThemedDocsContainer },
     viewport: {
       options: {
         ...INITIAL_VIEWPORTS,
