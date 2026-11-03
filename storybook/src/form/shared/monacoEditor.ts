@@ -4,8 +4,11 @@ import type { editor } from "monaco-editor"
 
 export type { Monaco }
 
-export const baseEditorOptions: editor.IStandaloneEditorConstructionOptions = {
+//the CDN Monaco has the option, the installed typings do not
+export const baseEditorOptions: editor.IStandaloneEditorConstructionOptions & { editContext?: boolean } = {
     automaticLayout: true,
+    //Storybook reads keys typed outside a textarea as its shortcuts, such as m for Measure
+    editContext: false,
     bracketPairColorization: { enabled: true },
     fontLigatures: true,
     fontSize: 13,
