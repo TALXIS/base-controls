@@ -1,13 +1,14 @@
 import React from 'react'
 import Editor from '@monaco-editor/react'
-import { IconButton, Text, Toggle, getTheme, mergeStyleSets } from '@fluentui/react'
+import { IconButton, ITheme, Text, Toggle, mergeStyleSets, useTheme } from '@fluentui/react'
 import { baseEditorOptions } from '../../form/shared/monacoEditor'
-
-const theme = getTheme()
 
 export const renderStory = (node: React.ReactNode, padding = 18) => (
     <div style={{ padding, height: '100%' }}>{node}</div>
 )
+
+//in the colours of the text around them, so they follow any theme
+const DIVIDER = '1px solid color-mix(in srgb, currentColor 15%, transparent)'
 
 export const codeBlockStyles = mergeStyleSets({
     root: {
@@ -17,22 +18,21 @@ export const codeBlockStyles = mergeStyleSets({
         height: '100%',
     },
     block: {
-        border: '1px solid #edebe9',
+        border: DIVIDER,
         borderRadius: 8,
-        background: '#fff',
     },
     header: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '8px 12px',
-        background: '#faf9f8',
-        borderBottom: '1px solid #edebe9',
+        background: 'color-mix(in srgb, currentColor 4%, transparent)',
+        borderBottom: DIVIDER,
         fontSize: 14,
         fontWeight: 600,
     },
     previewHeader: {
-        borderBottom: '1px solid #edebe9',
+        borderBottom: DIVIDER,
         display: 'flex',
         justifyContent: 'flex-end',
         paddingBottom: 8,
@@ -41,7 +41,7 @@ export const codeBlockStyles = mergeStyleSets({
         height: 520,
     },
     codeEditor: {
-        border: '1px solid #edebe9',
+        border: DIVIDER,
         borderRadius: 8,
         height: 640,
     },
@@ -55,6 +55,7 @@ interface IStaticCodeBlockProps {
 }
 
 export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
+    const theme = useTheme()
     const [collapsed, setCollapsed] = React.useState(true)
 
     return (
@@ -80,7 +81,7 @@ export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
                                 padding: { top: 12, bottom: 12 },
                                 readOnly: true,
                             }}
-                            theme="vs-light"
+                            theme={theme.isInverted ? 'vs-dark' : 'vs-light'}
                         />
                     )}
                 </div>
@@ -89,7 +90,7 @@ export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
     )
 }
 
-const exampleRunnerStyles = mergeStyleSets({
+const getExampleRunnerStyles = (theme: ITheme) => mergeStyleSets({
     header: {
         borderBottom: `1px solid ${theme.palette.neutralLighter}`,
         display: 'flex',
@@ -132,6 +133,8 @@ interface IExampleRunnerProps {
 
 /** Toggles between a live preview and its source, shared by every "editable example" doc page. */
 export const ExampleRunner = ({ renderPreview, renderCode, error, previewMinHeight }: IExampleRunnerProps) => {
+    const theme = useTheme()
+    const exampleRunnerStyles = React.useMemo(() => getExampleRunnerStyles(theme), [theme])
     const [showCode, setShowCode] = React.useState(false)
 
     return (

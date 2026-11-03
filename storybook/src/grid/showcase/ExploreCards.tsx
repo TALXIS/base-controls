@@ -2,8 +2,10 @@ import React from 'react'
 import { Icon, mergeStyleSets } from '@fluentui/react'
 import { DocsContext } from '@storybook/addon-docs/blocks'
 import { NAVIGATE_URL } from 'storybook/internal/core-events'
+import { StorybookTheme, useTheme } from 'storybook/theming'
 
-const styles = mergeStyleSets({
+//in the docs page's own theme, light or dark
+const getStyles = (theme: StorybookTheme) => mergeStyleSets({
     root: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
@@ -14,15 +16,15 @@ const styles = mergeStyleSets({
         display: 'flex',
         gap: 12,
         padding: 16,
-        border: '1px solid #edebe9',
+        border: `1px solid ${theme.appBorderColor}`,
         borderRadius: 8,
-        background: '#ffffff',
+        background: theme.background.content,
         color: 'inherit',
         textDecoration: 'none',
         transition: 'border-color 120ms, box-shadow 120ms',
         selectors: {
-            ':hover': { borderColor: '#0078d4', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
-            ':focus-visible': { outline: '2px solid #0078d4', outlineOffset: 2 },
+            ':hover': { borderColor: theme.color.secondary, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
+            ':focus-visible': { outline: `2px solid ${theme.color.secondary}`, outlineOffset: 2 },
         },
     },
     icon: {
@@ -33,8 +35,8 @@ const styles = mergeStyleSets({
         width: 36,
         height: 36,
         borderRadius: 8,
-        background: '#deecf9',
-        color: '#0078d4',
+        background: `color-mix(in srgb, ${theme.color.secondary} 15%, transparent)`,
+        color: theme.color.secondary,
         fontSize: 18,
     },
     title: {
@@ -45,7 +47,7 @@ const styles = mergeStyleSets({
     },
     text: {
         display: 'block',
-        color: '#605e5c',
+        color: theme.textMutedColor,
         fontSize: 13,
         lineHeight: '19px',
     },
@@ -70,6 +72,8 @@ interface IExploreCardsProps {
 /** Cards that open other docs pages. */
 export const ExploreCards = (props: IExploreCardsProps) => {
     const context = React.useContext(DocsContext) as IDocsContext
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
 
     //links navigate the manager, not the docs iframe
     const onClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {

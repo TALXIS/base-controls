@@ -1,6 +1,6 @@
 import React from 'react'
 import Editor from '@monaco-editor/react'
-import { ActionButton, initializeIcons, mergeStyleSets, Pivot, PivotItem, Text } from '@fluentui/react'
+import { ActionButton, initializeIcons, ITheme, mergeStyleSets, Pivot, PivotItem, Text, useTheme } from '@fluentui/react'
 import type { IDataProvider, IMemoryProvider } from '@talxis/client-libraries'
 import { baseEditorOptions } from '../form/shared/monacoEditor'
 import { GridCodeEditor } from './GridCodeEditor'
@@ -10,7 +10,7 @@ import { createDocsDataset, IGridDocsDataset } from './data'
 //nothing in the grid's tree registers the Fluent icons it draws
 initializeIcons()
 
-const styles = mergeStyleSets({
+const getStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         display: 'flex',
         flexDirection: 'column',
@@ -22,7 +22,7 @@ const styles = mergeStyleSets({
         justifyContent: 'space-between',
         gap: 8,
         flexWrap: 'wrap',
-        borderBottom: '1px solid #edebe9',
+        borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
         marginBottom: 12,
     },
     actions: {
@@ -35,18 +35,18 @@ const styles = mergeStyleSets({
         minHeight: 0,
     },
     edited: {
-        color: '#605e5c',
+        color: theme.semanticColors.bodySubtext,
         marginRight: 4,
     },
     frame: {
-        border: '1px solid #edebe9',
+        border: `1px solid ${theme.semanticColors.bodyDivider}`,
         borderRadius: 4,
         overflow: 'hidden',
     },
     error: {
         display: 'block',
         marginTop: 8,
-        color: '#a4262c',
+        color: theme.semanticColors.errorText,
     },
 })
 
@@ -87,6 +87,8 @@ export interface IGridExampleRunnerProps {
 
 /** A live Grid with tabs for its preview, its editable code and the data it is handed. */
 export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
     const [tab, setTab] = React.useState<IRunnerTab>('preview')
     const seedFiles = React.useMemo(() => toFiles(props.seedCode), [props.seedCode])
     const [files, setFiles] = React.useState(seedFiles)

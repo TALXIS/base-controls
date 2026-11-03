@@ -2,12 +2,20 @@ import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { ApplicationThemeProvider, PcfContextProvider, StateProvider } from '@talxis/base-controls';
-import { fluentTheme } from './fluentTheme';
+import { ApplicationThemeProvider, createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
+import { APPLICATION_THEME_COLORS, BACKGROUNDS, COLOR_SCHEME, fluentTheme } from './fluentTheme';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
 ModuleRegistry.registerModules([ValidationModule]);
+
+const APPLICATION_THEMES = {
+  light: createThemeBuilder({ colors: APPLICATION_THEME_COLORS.light }).getTheme(),
+  dark: createThemeBuilder({ colors: APPLICATION_THEME_COLORS.dark }).getTheme(),
+};
+
+//the background switch in the toolbar, or Storybook's own scheme until it is used
+const getColorScheme = (background: string | undefined): 'light' | 'dark' => background === 'light' || background === 'dark' ? background : COLOR_SCHEME;
 
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
 const guardPrototypeFocus = () => {
@@ -28,19 +36,24 @@ const guardPrototypeFocus = () => {
 const preview: Preview = {
   loaders: [guardPrototypeFocus],
   decorators: [
-    (Story) => (
+    (Story, context) => (
       <PcfContextProvider>
         <StateProvider>
-          <ApplicationThemeProvider>
+          {/* keyed: the controls read the theme as they mount */}
+          <ApplicationThemeProvider key={getColorScheme(context.globals.backgrounds?.value)} theme={APPLICATION_THEMES[getColorScheme(context.globals.backgrounds?.value)]}>
             <Story />
           </ApplicationThemeProvider>
         </StateProvider>
       </PcfContextProvider>
     ),
   ],
+  initialGlobals: {
+    backgrounds: { value: COLOR_SCHEME },
+  },
   parameters: {
     layout: 'fullscreen',
     docs: { theme: fluentTheme },
+    backgrounds: { options: BACKGROUNDS },
     viewport: {
       options: {
         ...INITIAL_VIEWPORTS,

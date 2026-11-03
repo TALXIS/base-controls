@@ -1,13 +1,13 @@
 import React from 'react'
 import Editor, { Monaco, OnMount } from '@monaco-editor/react'
-import { mergeStyleSets } from '@fluentui/react'
+import { ITheme, mergeStyleSets, useTheme } from '@fluentui/react'
 import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from '../form/shared/monacoEditor'
 import { gridSandboxDeclarations } from './gridSandboxDeclarations'
 import type { IGridExampleFile } from './GridLivePreview'
 
-const styles = mergeStyleSets({
+const getStyles = (theme: ITheme) => mergeStyleSets({
     frame: {
-        border: '1px solid #edebe9',
+        border: `1px solid ${theme.semanticColors.bodyDivider}`,
         borderRadius: 4,
         overflow: 'hidden',
     },
@@ -28,6 +28,8 @@ interface IGridCodeEditorProps {
 
 /** The editable Monaco window behind the Code toggle of the live Grid examples. */
 export const GridCodeEditor = (props: IGridCodeEditorProps) => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
     //a folder per editor: a docs page shows several examples at once
     const folder = React.useMemo(() => `file:///sandbox/grid-example-${++editorCount}/`, [])
     const monacoRef = React.useRef<Monaco>()
@@ -71,6 +73,6 @@ export const GridCodeEditor = (props: IGridCodeEditorProps) => {
                 padding: { top: 12, bottom: 0 },
                 quickSuggestions: { comments: false, other: true, strings: true },
             }}
-            theme="vs-light" />
+            theme={theme.isInverted ? 'vs-dark' : 'vs-light'} />
     </div>
 }

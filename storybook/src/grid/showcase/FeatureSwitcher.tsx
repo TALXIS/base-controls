@@ -1,19 +1,19 @@
 import React from 'react'
-import { DefaultButton, mergeStyleSets, PanelType, Text } from '@fluentui/react'
+import { DefaultButton, ITheme, mergeStyleSets, PanelType, Text, useTheme } from '@fluentui/react'
 import { CommandBar, Form, MemoryStrategy, Panel } from '@talxis/base-controls'
 import { DataTypes, IColumn } from '@talxis/client-libraries'
 import { RequiredLevelEnum } from '@talxis/client-metadata'
 import { metadataFor } from '../data/metadata'
 
-const styles = mergeStyleSets({
+const getStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         marginBottom: 12,
-        borderBottom: '1px solid #edebe9',
+        borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
     },
     hint: {
         display: 'block',
         marginTop: 4,
-        color: '#605e5c',
+        color: theme.semanticColors.bodySubtext,
     },
 })
 
@@ -99,6 +99,8 @@ export const getPresetValues = (groups: IShowcaseFeatureGroup[], presets: IShowc
 }
 
 export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
     const [isPanelOpen, setIsPanelOpen] = React.useState(false)
     const [activeTab, setActiveTab] = React.useState('core')
     const features = props.groups.flatMap(group => group.features)

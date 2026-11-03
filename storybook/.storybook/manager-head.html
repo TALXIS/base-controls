@@ -25,26 +25,38 @@
     font-display: swap;
   }
 
+  :root {
+    --selected-background: #edebe9;
+    --selected-text: #0078d4;
+    --heading-text: #605e5c;
+  }
+
+  :root[data-color-scheme="dark"] {
+    --selected-background: #3d3d3d;
+    --selected-text: #479ef5;
+    --heading-text: #adadad;
+  }
+
   /* the selected page reads like Fluent's navigation: a subtle fill, not a solid block */
   .sidebar-item[data-selected="true"] {
-    background: #edebe9 !important;
-    color: #0078d4 !important;
+    background: var(--selected-background) !important;
+    color: var(--selected-text) !important;
     font-weight: 600;
   }
 
   /* the item's menu button carries the selection colour to mask the text under it */
   .sidebar-item[data-selected="true"] > button {
-    background: #edebe9 !important;
-    box-shadow: 0 0 5px 5px #edebe9 !important;
-    color: #0078d4 !important;
+    background: var(--selected-background) !important;
+    box-shadow: 0 0 5px 5px var(--selected-background) !important;
+    color: var(--selected-text) !important;
   }
 
   .sidebar-item[data-selected="true"] svg {
-    color: #0078d4 !important;
+    color: var(--selected-text) !important;
   }
 
   .sidebar-subheading {
-    color: #605e5c;
+    color: var(--heading-text);
     font-weight: 600;
     letter-spacing: 0.02em;
   }
