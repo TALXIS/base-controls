@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { IContextualMenuItem, IContextualMenuProps } from "@fluentui/react";
-import { useSurfaceTheme } from "@theme";
+import { useApplicationTheme } from "@theme";
 import { ColumnHeaderUiMenuComponents, IColumnHeaderUiMenuComponents } from "./components";
 import { getColumnHeaderUiMenuStyles } from "./styles";
 
@@ -13,7 +13,7 @@ export interface IColumnHeaderUiMenuProps extends Omit<IContextualMenuProps, 'it
 /** The menu a column header opens, and what keeps it open while the grid scrolls under it. */
 export const ColumnHeaderUiMenu = (props: IColumnHeaderUiMenuProps) => {
     //the menu is drawn on the surface, not in the header
-    const theme = useSurfaceTheme();
+    const theme = useApplicationTheme();
     const { components: _, ...menuProps } = props;
     const components = { ...ColumnHeaderUiMenuComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiMenuStyles(theme), [theme]);

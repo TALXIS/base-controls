@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ContextualMenuItemType } from "@fluentui/react";
-import { useSurfaceTheme } from "@theme";
+import { useApplicationTheme } from "@theme";
 import { useSurfaceMenuProps } from "@ui";
 import { IPageSizeSwitcherUiComponents, PageSizeSwitcherUiComponents } from "./components";
 import { getPageSizeSwitcherUiStyles } from "./styles";
@@ -26,8 +26,8 @@ export interface IPageSizeSwitcherUiProps {
 /** The record range of the page, opening a menu of page sizes. */
 export const PageSizeSwitcher = (props: IPageSizeSwitcherUiProps) => {
     const components = { ...PageSizeSwitcherUiComponents, ...props.components };
-    const surfaceTheme = useSurfaceTheme();
-    const styles = useMemo(() => getPageSizeSwitcherUiStyles(surfaceTheme), [surfaceTheme]);
+    const applicationTheme = useApplicationTheme();
+    const styles = useMemo(() => getPageSizeSwitcherUiStyles(applicationTheme), [applicationTheme]);
     const menuProps = useSurfaceMenuProps({
         items: [
             { key: 'header', itemType: ContextualMenuItemType.Header, text: props.title },

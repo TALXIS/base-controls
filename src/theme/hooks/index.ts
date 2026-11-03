@@ -1,2 +1,2 @@
 export * from './useThemeBuilder';
-export * from './useSurfaceTheme';
+export * from './useApplicationTheme';

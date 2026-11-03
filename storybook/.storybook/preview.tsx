@@ -2,15 +2,12 @@ import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { loadTheme } from '@fluentui/react';
-import { createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
+import { ApplicationThemeProvider, PcfContextProvider, StateProvider } from '@talxis/base-controls';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
 ModuleRegistry.registerModules([ValidationModule]);
 
-//the default theme without a provider, so an example's own provider is the outermost one
-loadTheme(createThemeBuilder().getTheme());
 
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
 const guardPrototypeFocus = () => {
@@ -34,7 +31,7 @@ const preview: Preview = {
     (Story) => (
       <PcfContextProvider>
         <StateProvider>
-          <>
+          <ApplicationThemeProvider>
             <style>
               {`
                 .sbdocs-content p,
@@ -50,7 +47,7 @@ const preview: Preview = {
               `}
             </style>
             <Story />
-          </>
+          </ApplicationThemeProvider>
         </StateProvider>
       </PcfContextProvider>
     ),

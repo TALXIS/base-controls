@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { IContextualMenuProps } from "@fluentui/react";
-import { useSurfaceTheme } from "@theme";
+import { useApplicationTheme } from "@theme";
 import { getThemedContextualItems } from "../themed-contextual-items";
 
 /**
@@ -9,7 +9,7 @@ import { getThemedContextualItems } from "../themed-contextual-items";
  * What {@link ContextualMenu} does, for the places where a menu is a prop rather than something rendered.
  */
 export const useSurfaceMenuProps = <TMenu extends IContextualMenuProps | undefined>(menuProps: TMenu): TMenu => {
-    const theme = useSurfaceTheme();
+    const theme = useApplicationTheme();
 
     return useMemo(() => {
         if (!menuProps) {

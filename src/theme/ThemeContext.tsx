@@ -1,15 +1,13 @@
 import React, { useContext } from "react";
-import { CustomizerContext, ICustomizerContext, ITheme, ThemeContext as FluentThemeContext, useTheme } from "@fluentui/react";
+import { CustomizerContext, ICustomizerContext, ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
 import { createThemeBuilder } from "./theme-builder";
 
-//what a thing opened over the application is drawn in, where that is not what it was opened from
-export const SurfaceThemeContext = React.createContext<ITheme | undefined>(undefined);
+/** The application's theme, which dialogs, menus and other surfaces are drawn in. */
+export const ApplicationThemeContext = React.createContext<ITheme | undefined>(undefined);
 
 export interface IThemeContextProps {
     /** The theme above, or the default theme, where left out; nothing is merged into it. */
     theme?: ITheme;
-    /** What a callout, menu or tooltip opened in here is drawn in, where the theme itself is not it. */
-    surfaceTheme?: ITheme;
     children?: React.ReactNode;
 }
 
@@ -27,17 +25,11 @@ export const ThemeContext = (props: IThemeContextProps) => {
     const { children } = props;
     const themeAbove = useContext(FluentThemeContext);
     const theme = props.theme ?? themeAbove ?? createThemeBuilder().getTheme();
-    //inherited where none is given: a theme set in here says nothing about what the application looks like
-    const surfaceThemeAbove = useContext(SurfaceThemeContext);
-    const themeAround = useTheme();
-    const surfaceTheme = props.surfaceTheme ?? surfaceThemeAbove ?? themeAround;
 
     //both contexts, because a v8 component reads its theme from whichever it was written against:
     //`useTheme` takes `ThemeContext`, and everything built with `styled()` takes `CustomizerContext`
     return <FluentThemeContext.Provider value={theme}>
-        <CustomizerContext.Provider value={getThemeCustomizations(theme)}>
-            <SurfaceThemeContext.Provider value={surfaceTheme}>{children}</SurfaceThemeContext.Provider>
-        </CustomizerContext.Provider>
+        <CustomizerContext.Provider value={getThemeCustomizations(theme)}>{children}</CustomizerContext.Provider>
     </FluentThemeContext.Provider>;
 };
 

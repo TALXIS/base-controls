@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { ITagPickerProps, TagPicker as TagPickerBase } from "@fluentui/react/lib/Pickers";
-import { useSurfaceTheme } from "@theme";
+import { useApplicationTheme } from "@theme";
 
 /** A tag picker whose suggestions are drawn in the application's theme rather than in the input's. */
 export const TagPicker = React.forwardRef<any, ITagPickerProps>((props, ref) => {
     const { pickerCalloutProps, pickerSuggestionsProps, ...pickerProps } = props;
-    const theme = useSurfaceTheme();
+    const theme = useApplicationTheme();
 
     return <TagPickerBase
         ref={ref}

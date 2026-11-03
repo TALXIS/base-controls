@@ -7,20 +7,20 @@ import { BrandExample, OwnComponentExample, SurfaceExample } from './themingExam
 const DESCRIPTION = `
 A theme says what everything is drawn in: its colours, fonts and effects. It is a Fluent theme, so the controls, Fluent's own components and yours all look the same, and one theme at the root of the application is all most applications need.
 
-## The provider
+## The providers
 
-Controls draw in the theme of the nearest \`ThemeProvider\` above them. Put one at the root of the application:
+Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application:
 
 \`\`\`tsx
 const Root = () => {
     const theme = useThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } })
-    return <ThemeProvider theme={theme}>
+    return <ApplicationThemeProvider theme={theme}>
         <App />
-    </ThemeProvider>
+    </ApplicationThemeProvider>
 }
 \`\`\`
 
-Without a \`theme\`, a provider takes the theme of the provider above it, or Fluent's default colours when there is none. Providers nest, so a provider further down themes only what is inside it, such as a dark banner. It also paints its own element in the theme's background and font; \`applyTo='none'\` hands the theme down without painting anything.
+Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none. Both paint their element in the theme's background and font; \`applyTo='none'\` hands the theme down without painting anything.
 
 A control reads the theme when it mounts. To switch themes, mount it again, for example with the theme's \`id\` as its \`key\`.
 
@@ -48,9 +48,14 @@ Outside React, \`createThemeBuilder(source)\` returns the builder itself. Change
 
 Themes are often local. Take a grid that draws escalated tickets red: every cell of such a ticket is themed red, so the fields inside it fit the row. But the list a field opens should not turn red too. It opens over the whole application, so it should look like the rest of the application.
 
-Menus, callouts, tooltips, pickers, panels and dialogs are such surfaces, and they draw in the **surface theme** rather than in the theme of what opened them. Unless you set it, the surface theme is the theme of the root provider, so every surface looks like the application however the area around it is themed. To give one area's surfaces another theme, pass \`surfaceTheme\` to its provider; it applies to everything opened below it.
+Menus, callouts, tooltips, pickers, panels and dialogs are such surfaces, and they always draw in the **application theme**, never in a \`ThemeProvider\`'s local one:
 
-The controls follow the surface theme, and so do this package's \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\`. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useSurfaceTheme()\` returns.
+| Opened | Draws in |
+|---|---|
+| Below an \`ApplicationThemeProvider\` | The nearest application theme |
+| With none above | The theme around what opened it |
+
+For an area whose surfaces should look different, wrap it in an \`ApplicationThemeProvider\` of its own. The controls and this package's \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\` follow the application theme. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useApplicationTheme()\` returns.
 
 {{story: Red rows}}
 
@@ -88,7 +93,7 @@ export const BrandColours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Deals in a theme built from three colours; its menus and panels open in it too. Try: pick a brand or your own colours.`,
+                story: `Deals in an application theme built from three colours, so their menus and panels open in it too. Try: pick a brand or your own colours.`,
             },
         },
     },

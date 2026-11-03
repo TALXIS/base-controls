@@ -904,8 +904,6 @@ interface ThemeBuilder {
 type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
     /** The theme above, or the default theme, where left out. */
     theme?: import('@fluentui/react').ITheme;
-    /** What callouts, menus and tooltips opened inside are drawn in; the outermost theme where left out. */
-    surfaceTheme?: import('@fluentui/react').ITheme;
     /** Whether the element itself is painted in the theme. */
     applyTo?: 'element' | 'none';
     children?: React.ReactNode;
@@ -914,14 +912,17 @@ type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
 /** An element that draws everything inside it in a theme. */
 declare const ThemeProvider: (props: IThemeProviderProps & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
 
+/** The application's theme, which dialogs, menus and other surfaces are drawn in. */
+declare const ApplicationThemeProvider: (props: IThemeProviderProps & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
+
 /** The theme of the nearest provider above. */
 declare const useTheme: () => ITheme;
 
-/** Fluent's callout, drawn in the surface theme. */
+/** Fluent's callout, drawn in the application theme. */
 declare const Callout: (props: import('@fluentui/react').ICalloutProps & { children?: React.ReactNode }) => JSX.Element;
 
-/** What a callout, menu or tooltip is drawn in: the surface theme above, or the theme where none is. */
-declare function useSurfaceTheme(): ITheme;
+/** The theme dialogs, menus and other surfaces are drawn in: the application's, or the one around. */
+declare function useApplicationTheme(): ITheme;
 
 /** The theme a ThemeBuilder builds, kept while the colours and the edit's key stay the same. */
 declare function useThemeBuilder(source: IThemeBuilderSource, edit?: IThemeEdit): ITheme;

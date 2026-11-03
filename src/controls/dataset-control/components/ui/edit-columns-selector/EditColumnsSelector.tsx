@@ -4,7 +4,7 @@ import { components as selectComponents, GroupBase, SelectInstance } from "react
 import AsyncSelect from "react-select/async";
 import { AsyncProps } from "react-select/dist/declarations/src/useAsync";
 import { Callout, TooltipHost } from "@ui";
-import { useSurfaceTheme } from "@theme";
+import { useApplicationTheme } from "@theme";
 import { EditColumnsSelectorUiComponents, IEditColumnsSelectorUiComponents } from "./components";
 import { getEditColumnsSelectorUiStyles } from "./styles";
 
@@ -26,7 +26,7 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
     const { label, noResultsText, loadingText, getOptionTooltip, components: componentsProp, ...selectProps } = props;
     const components = { ...EditColumnsSelectorUiComponents, ...componentsProp } as IEditColumnsSelectorUiComponents<TOption>;
     const theme = useTheme();
-    const surfaceTheme = useSurfaceTheme();
+    const applicationTheme = useApplicationTheme();
     const styles = useMemo(() => getEditColumnsSelectorUiStyles(), []);
     const id = useMemo(() => `selector-${crypto.randomUUID()}`, []);
 
@@ -45,7 +45,7 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
         loadingMessage={() => loadingText}
         styles={{
             option: base => ({ ...base, padding: 0, cursor: 'pointer' }),
-            menu: () => ({ width: 300, color: surfaceTheme.semanticColors.bodyText }),
+            menu: () => ({ width: 300, color: applicationTheme.semanticColors.bodyText }),
             menuList: base => ({ ...base, scrollbarWidth: 'thin' }),
         }}
         theme={base => ({

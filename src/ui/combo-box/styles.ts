@@ -6,8 +6,8 @@ import { IComboBoxOptionStyles, IsFocusVisibleClassName, ITheme } from "@fluentu
  * A combo box works its option styles out from its own theme before the callout exists, so a context around
  * the list never reaches them - what the surface answers for goes back in through the props Fluent takes.
  */
-export const getSurfaceOptionStyles = (surfaceTheme: ITheme): Partial<IComboBoxOptionStyles> => {
-    const { semanticColors, palette } = surfaceTheme;
+export const getApplicationOptionStyles = (applicationTheme: ITheme): Partial<IComboBoxOptionStyles> => {
+    const { semanticColors, palette } = applicationTheme;
     return {
         root: {
             selectors: {

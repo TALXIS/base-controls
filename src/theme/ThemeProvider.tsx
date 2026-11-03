@@ -1,15 +1,13 @@
 import React, { useContext, useMemo } from "react";
 import { ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
 import { getClassNames } from "@utils/styling";
-import { SurfaceThemeContext, ThemeContext } from "./ThemeContext";
+import { ThemeContext } from "./ThemeContext";
 import { createThemeBuilder } from "./theme-builder";
 import { getThemeProviderStyles } from "./styles";
 
 export interface IThemeProviderProps extends React.HTMLAttributes<HTMLDivElement> {
     /** The theme above, or the default theme, where left out; nothing is merged into it. */
     theme?: ITheme;
-    /** What a callout, menu or tooltip opened in here is drawn in, where the theme itself is not it. */
-    surfaceTheme?: ITheme;
     /** Whether the element it renders is painted in the theme's surface. */
     applyTo?: 'element' | 'none';
     children?: React.ReactNode;
@@ -23,18 +21,16 @@ export interface IThemeProviderProps extends React.HTMLAttributes<HTMLDivElement
  * what makes it cheap enough for a grid cell. It has no `applyTo='body'`.
  */
 export const ThemeProvider = React.forwardRef<HTMLDivElement, IThemeProviderProps>((props, ref) => {
-    const { theme: themeProp, surfaceTheme, applyTo = 'element', className, children, ...divProps } = props;
+    const { theme: themeProp, applyTo = 'element', className, children, ...divProps } = props;
     const themeAbove = useContext(FluentThemeContext);
     const theme = themeProp ?? themeAbove ?? createThemeBuilder().getTheme();
-    const surfaceThemeAbove = useContext(SurfaceThemeContext);
     const styles = useMemo(() => getThemeProviderStyles(theme), [theme]);
 
     return <div
         ref={ref}
         {...divProps}
         className={getClassNames([className, applyTo === 'element' ? styles.themeProvider : undefined])}>
-        {/* the outermost provider's theme is the application's */}
-        <ThemeContext theme={theme} surfaceTheme={surfaceTheme ?? surfaceThemeAbove ?? theme}>{children}</ThemeContext>
+        <ThemeContext theme={theme}>{children}</ThemeContext>
     </div>;
 });
 ThemeProvider.displayName = 'ThemeProvider';

@@ -7,8 +7,10 @@ const BRAND_CODE = `import { loadDeals, loadDealViews } from './views'
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
     { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } },
-    { key: 'forest', text: 'Forest', colors: { primary: '#2e7d32', background: '#f3f8f1', text: '#1b2e1c' } },
-    { key: 'sand', text: 'Sand', colors: { primary: '#b35c00', background: '#fbf6ee', text: '#3b2a17' } },
+    { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
+    { key: 'rose', text: 'Rose', colors: { primary: '#c2185b', background: '#fff7fa', text: '#3a1424' } },
+    { key: 'midnight', text: 'Midnight', colors: { primary: '#4cc2ff', background: '#0f1b2d', text: '#e6edf7' } },
+    { key: 'amber', text: 'Amber', colors: { primary: '#f5a623', background: '#1e1e1e', text: '#f2f2f2' } },
 ]
 
 const GridExample = () => {
@@ -25,7 +27,7 @@ const GridExample = () => {
                 <input type='color' value={colors[name]} onChange={event => setColor(name, event.target.value)} />
             </Stack>)}
         </Stack>
-        <ThemeProvider theme={theme} style={{ padding: 12 }}>
+        <ApplicationThemeProvider theme={theme} style={{ padding: 12 }}>
             <DatasetControl key={theme.id} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
@@ -40,7 +42,7 @@ const GridExample = () => {
                     <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
                 </DatasetControl.Body>
             </DatasetControl>
-        </ThemeProvider>
+        </ApplicationThemeProvider>
     </Stack>
 }
 `

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ComboBox as ComboBoxBase, IComboBoxProps } from "@fluentui/react";
-import { ThemeContext, useSurfaceTheme } from "@theme";
-import { getSurfaceOptionStyles } from "./styles";
+import { ThemeContext, useApplicationTheme } from "@theme";
+import { getApplicationOptionStyles } from "./styles";
 
 /**
  * A combo box whose list is drawn in the application's theme rather than in the input's.
@@ -11,8 +11,8 @@ import { getSurfaceOptionStyles } from "./styles";
  */
 export const ComboBox = React.forwardRef<HTMLDivElement, IComboBoxProps>((props, ref) => {
     const { calloutProps, comboBoxOptionStyles, onRenderContainer, ...comboBoxProps } = props;
-    const theme = useSurfaceTheme();
-    const optionStyles = React.useMemo(() => getSurfaceOptionStyles(theme), [theme]);
+    const theme = useApplicationTheme();
+    const optionStyles = React.useMemo(() => getApplicationOptionStyles(theme), [theme]);
 
     //the list is drawn on the surface, so what a consumer renders in it takes the surface's theme too
     const onRenderSurfaceContainer: IComboBoxProps['onRenderContainer'] = (containerProps, defaultRender) => {
