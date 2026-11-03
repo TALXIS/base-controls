@@ -123,7 +123,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. The value renderer reads the value from the record, so changing \`value\` here shows nothing. To change how a value reads, use \`record.expressions.setFormattedValueExpression\`: see *Record expressions* on [**Data providers**](?path=/docs/data-providers--overview).
+An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. The value renderer reads the value from the record, so changing \`value\` here shows nothing.
 `
 
 const meta = {

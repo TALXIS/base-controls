@@ -69,7 +69,7 @@ Links need \`enableNavigation\`, which is on by default. An empty value is shown
 
 ## Read values
 
-\`record.getValue()\` returns some types in another shape than the record holds. Reading records is under *Read records* on [**Data providers**](?path=/docs/data-providers--overview).
+\`record.getValue()\` returns some types in another shape than the record holds. Reading records is under *Load and read* on [**Data providers**](?path=/docs/data-providers--overview).
 
 | Data type | Record holds | \`getValue()\` returns |
 |---|---|---|

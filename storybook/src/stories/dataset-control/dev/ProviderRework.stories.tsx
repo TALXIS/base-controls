@@ -223,7 +223,7 @@ A provider can make a new record: \`newRecord()\` marks it new, and saving it cr
 `
 
 const meta = {
-    title: 'Data providers/Dev/Provider rework',
+    title: 'DatasetControl/Dev/Provider rework',
     tags: ['autodocs', 'dev-only'],
     parameters: {
         controls: { disable: true },

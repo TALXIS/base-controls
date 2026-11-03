@@ -71,7 +71,7 @@ A part of your own is any component you put inside the control: a total in the f
 | Hook | Description |
 |---|---|
 | \`useDataProviderEvents(events)\` | The provider, drawing the component again on each of the provider's \`events\`. |
-| \`useDataProvider()\` | The provider, without drawing again. More under *Read records* and *Events* on [**Data providers**](?path=/docs/data-providers--overview). |
+| \`useDataProvider()\` | The provider, without drawing again. More under *Load and read* and *Events* on [**Data providers**](?path=/docs/data-providers--overview). |
 | \`useDatasetControl()\` | The control, to switch views or reach the built-in parts. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
 | \`useDatasetControlModule(name)\` | A module the control loaded, such as \`'userQueries'\`; throws when it is not loaded. |
 | \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See *Keep your own part's state* on [**State**](?path=/docs/datasetcontrol-state--overview). |
