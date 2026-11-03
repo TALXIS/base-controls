@@ -55,7 +55,7 @@ const Planner = () => {
 //state is { planner: { draftNote: { text: '…' } } }
 \`\`\`
 
-The controls do the same: a DatasetControl hands each view its own scope, so a grid inside it keeps a scroll position per view (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)). The dictionary next to the example shows the tree.
+The controls nest their own parts the same way. The dictionary next to the example shows the tree they keep.
 
 {{story: Come back where you left off}}
 

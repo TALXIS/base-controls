@@ -73,21 +73,7 @@ The header stays compact until the control is wider than it was when the parts r
 
 ### Your own part in a compact header
 
-\`useCompact()\` tells your part whether the header is compact, so it can shrink the way the built-in parts do:
-
-\`\`\`tsx
-const ExportButton = () => {
-    const isCompact = useCompact()
-    if (isCompact) {
-        return <TooltipHost content='Export to Excel'>
-            <IconButton iconProps={{ iconName: 'ExcelDocument' }} ariaLabel='Export to Excel' />
-        </TooltipHost>
-    }
-    return <DefaultButton text='Export to Excel' iconProps={{ iconName: 'ExcelDocument' }} />
-}
-\`\`\`
-
-To keep one part at full size, or always compact, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
+The header is a \`WrapCompactProvider\`, so a part of your own reads whether it is compact with \`useCompact()\` and shrinks the way the built-in parts do. How it works, and the same providers for layouts of your own, are on [**Concepts › Layout**](?path=/docs/concepts-layout--overview).
 
 {{story: Pick your parts}}
 `

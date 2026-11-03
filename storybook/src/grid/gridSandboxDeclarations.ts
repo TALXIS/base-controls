@@ -34,6 +34,8 @@ declare const DocumentCardDetails: typeof import('@fluentui/react').DocumentCard
 declare const DocumentCardImage: typeof import('@fluentui/react').DocumentCardImage;
 declare const DocumentCardTitle: typeof import('@fluentui/react').DocumentCardTitle;
 declare const Dropdown: typeof import('@fluentui/react').Dropdown;
+declare const Pivot: typeof import('@fluentui/react').Pivot;
+declare const PivotItem: typeof import('@fluentui/react').PivotItem;
 declare const FontWeights: typeof import('@fluentui/react').FontWeights;
 declare const Icon: typeof import('@fluentui/react').Icon;
 declare const IconButton: typeof import('@fluentui/react').IconButton;
@@ -3800,6 +3802,14 @@ interface IDatasetControlNamespace {
 declare const DatasetControl: IDatasetControlNamespace;
 /** Whether the nearest compact provider, such as the DatasetControl header, asks for compact parts; false outside one. */
 declare const useCompact: () => boolean;
+/** Marks the component as an item of the nearest WrapCompactProvider; removing one lets the rest try full size again. */
+declare const useCompactItem: () => void;
+/** Forces compact or full size on everything below it. */
+declare const CompactContext: React.Context<boolean>;
+/** A box that draws everything inside it compact once its content wraps past one line. */
+declare const WrapCompactProvider: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+/** A box that draws everything inside it compact while it is at most maxCompactWidth pixels wide (479 by default). */
+declare const BreakpointCompactProvider: (props: React.HTMLAttributes<HTMLDivElement> & { maxCompactWidth?: number }) => JSX.Element;
 /** The header the component is inside of, or undefined outside one. */
 declare const useDatasetControlHeader: () => {
     /** Hides everything in the header except the part calling it. */
