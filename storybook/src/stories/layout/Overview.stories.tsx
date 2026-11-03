@@ -4,9 +4,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Tools for sizing a component to the box it is given, not to the window, so it fits a full page, a side panel or a phone.
-
-The controls already use them, such as the header on [**DatasetControl › Layout**](?path=/docs/controls-datasetcontrol-layout--overview), and they work the same in components of your own.
+A component rarely knows where it will be shown: the same grid may fill a page, sit in a narrow side panel or open on a phone. The window's width does not tell these apart, since a side panel on a wide screen still sits in a wide window, so the layout tools here size a component to the box it is given instead. The controls already use them, such as the header on [**DatasetControl › Layout**](?path=/docs/controls-datasetcontrol-layout--overview), and they work the same in components of your own.
 
 ## Topics
 

@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { GanttOwnModuleExample } from '../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
+When the built-in modules don't cover what you need, such as drawing critical tasks red or labelling the scale by your fiscal year, you write a module of your own. A module is a small object the Gantt loads on every mount, before the chart is drawn. It hooks into the chart's config, styles and drawing, reaches the task grid's runtime, and can hand an object of its own to the rest of your code.
+
+{{story: Colour bars and relabel the scale}}
+
 A Gantt module is an object with a \`name\` and an \`onLoad\`. The Gantt calls \`onLoad\` on every mount, in the order of \`modules\`, before the chart is drawn, and registers what it returns under the name.
 
 \`onLoad\` may be async, and \`onDestroy(instance)\` gets what \`onLoad\` returned as the Gantt unmounts. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
-
-{{story: Colour bars and relabel the scale}}
 
 ## What onLoad gets
 

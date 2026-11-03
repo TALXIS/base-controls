@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { WorkingWithTasksExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Three props turn on what the user may do with tasks, and two modules add editing in place and moving by dragging. Each change goes through the store: see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+A plan changes as the work goes: tasks get added, renamed, moved under other tasks and deleted. A task grid lets the user do all of that where the tasks are, from the ribbon, the **+** at the start of a row, the cells and by dragging rows, and saves every change through the store (see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview)). Each of these is off until you turn it on.
 
 {{story: Plan the tasks}}
 
 ## What the user can do
+
+Three props turn on what the user may do with tasks, and two modules add editing in place and moving by dragging.
 
 | To | Turn on | The user |
 |---|---|---|

@@ -5,7 +5,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ItemPanelExample, ReadOnlyExample, ReleaseBoardExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
-The checklist is a grid with a few columns of its own, so it is customized like one: make it read-only, change its wording, add grid features to it, or open an item in a form of your own.
+A checklist is a grid with a few columns of its own: an item's name, its hidden position and whether it is finished. Everything else is the grid's, so you customize a checklist the way you customize a grid, through its modules, labels, columns and events. Try it below: a release board built from grid features; hover an item without an owner, then tick an overdue one.
+
+{{canvas: Run a release board}}
 
 ## Make it read-only
 
@@ -21,9 +23,7 @@ Its strings are labels: see [**Localization**](?path=/docs/concepts-localization
 
 Everything \`Grid\` offers works on the checklist's other columns: column definitions, cell colours, locks, cell commands, events. Of the grid's modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and modules of your own. Sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
 
-The board below colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview)).
-
-{{story: Run a release board}}
+The release board above colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview)).
 
 ## Open an item
 

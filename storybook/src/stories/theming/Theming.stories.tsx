@@ -5,13 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BrandExample, DerivedThemesExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
-A theme says what everything is drawn in: its colours, fonts and effects. It is a Fluent UI v8 theme (\`ITheme\`), so the controls, Fluent's own components and yours all look the same, and one theme at the root of the application is all most applications need.
+A theme is the set of colours, fonts and effects everything is drawn in. You build one from three colours, your brand's accent, a background and a text colour, and the rest of the palette follows from them. Set it once at the root of the application and every control below draws in it, down to the menus, panels and editors they open. Try it below: pick a brand, then edit, sort, filter, group and open the menus.
+
+{{canvas: Brand colours}}
 
 ## The providers
 
-Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
-
-{{story: Brand colours}}
+Themes are Fluent UI v8 themes (\`ITheme\`), so the controls, Fluent's own components and yours all look the same. Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
 
 Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none.
 

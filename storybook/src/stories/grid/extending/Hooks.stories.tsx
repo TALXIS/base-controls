@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { AssignToMeExample, ColumnsByRoleExample, CopyColumnExample, CurrencyInHeaderExample, DayUnderTenHoursExample, LockClosedDealsExample, PlaceholdersExample, RefreshPricesExample, UrgentRowsExample } from '../../../grid/examples/hooksExamples'
 
 const DESCRIPTION = `
-A grid hook changes one decision the grid makes: a cell's colour, a lock, a validation rule, a column's menu. Register it on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
+As it draws, the grid keeps making small decisions: what colour a cell is, whether it can be edited, whether a value is valid, what a column's menu offers. A hook lets your code step into one of those decisions and change its outcome. That way a rule of your business, such as locking the numbers of a closed deal, becomes part of the grid itself.
 
 {{story: Lock the cells of closed deals}}
 
 ## How hooks run
+
+Register a hook on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
 The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
 

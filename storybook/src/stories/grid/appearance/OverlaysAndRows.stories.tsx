@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseLoadingExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-When the grid has no records to draw, it draws something in their place: an overlay over the rows while the provider loads or holds nothing, and a row in place of records that are still loading or failed to load. These are the only parts \`<Grid>\` itself takes \`components\` for.
+A grid does not always have records to draw: the provider may still be loading them or hold none at all, and a group's records may still be on their way or fail to load. In those moments the grid draws something in their place, an overlay over the rows or a row standing in for the missing records, so the user knows what is going on. You can redraw each of them to fit your page, from a different icon to a whole card of your own.
 
 ## Changing how it looks
 
-\`<Grid>\` takes \`components\`, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+These are the only parts \`<Grid>\` itself takes \`components\` for, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

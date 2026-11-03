@@ -5,15 +5,15 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RichTextExample, WinChanceExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
+A cell draws its value with the control for its column's data type, and swaps in that type's editor when the user edits it. When a column needs something else, such as formatted text, a gauge or a picture, you can replace parts of its cells or draw the whole cell yourself. Either way, your cell keeps what the grid gives every cell: themes, validation errors, loading, commands, locks and row resizing.
 
-Either way, your cell keeps what the grid gives every cell: themes, validation errors, loading, commands, locks and row resizing.
+{{story: Edit descriptions as rich text}}
 
 ## Changing how it looks
 
-\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`, as the example above does; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
-{{story: Edit descriptions as rich text}}
+\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

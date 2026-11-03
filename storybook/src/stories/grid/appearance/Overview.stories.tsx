@@ -5,9 +5,11 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ColumnLinesExample, DensityExample, EscalatedTicketsExample, FillContainerExample, HeaderColoursExample, InvoiceLinesExample, SpotBreachesExample, ThemeEditExample } from '../../../grid/examples/appearanceExamples'
 
 const DESCRIPTION = `
-The grid draws in your Fluent theme. On top of it you can size it, pick a density, colour cells and headers by what they hold, and replace what it draws, from a single icon to a whole column's cells. This page maps every way in and covers the ones that are props and theme hooks; the pages under it cover cells, headers, overlays and rows.
+The grid takes its colours and fonts from your Fluent theme, so it matches the rest of your page with no setup. From there you change only as much as the page needs: how tall the grid is and how dense its rows, colours that tell the user what a cell or a header holds, or your own drawing in place of anything the grid draws, from a single icon to a whole column's cells.
 
 ## What you can change
+
+Each change has its own way in. This page covers the props and theme hooks; the pages under it cover cells, headers, overlays and rows.
 
 | To change | Use | Read | Where |
 |---|---|---|---|

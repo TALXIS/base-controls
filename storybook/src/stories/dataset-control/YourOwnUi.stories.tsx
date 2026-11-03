@@ -8,7 +8,7 @@ import { SelectedValueExample } from '../../dataset-control/examples/yourOwnPart
 import { CustomUiViewsExample } from '../../dataset-control/examples/viewsExamples'
 
 const DESCRIPTION = `
-There are two ways to change what the control draws: replace pieces a built-in part draws, through its \`components\`, or add a part of your own, up to a whole UI in place of the grid.
+The built-in parts are drawn in Fluent UI, and they won't always look or behave the way your app needs. You can change that at two levels: replace pieces a built-in part draws, such as its button or its search field, through its \`components\`, or add a part of your own, up to a whole UI in place of the grid. Either way the control underneath stays the same, so loading, views and state keep working.
 
 {{story: Replace pieces of the parts}}
 

@@ -824,6 +824,10 @@ declare class TotalRow {
 
 /** A new, unloaded provider over the 30 deals of a sales pipeline. */
 declare function createDealsProvider(): MemoryDataProvider;
+/** The deals in a DatasetControl, under a heading. */
+declare const DealsGrid: (props: { heading: string }) => JSX.Element;
+/** DealsGrid in an iframe of its own, declared with createIsolatedComponent in the docs' bundle. */
+declare const IsolatedDealsGrid: (props: { heading: string; theme: import('@fluentui/react').ITheme; frame?: { className?: string; title?: string } }) => JSX.Element | null;
 /** The 30 deals of the sales pipeline, as raw records. */
 declare const DEAL_ROWS: IRawRecord[];
 /** The columns of the deals. */

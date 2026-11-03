@@ -2,32 +2,22 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { IsolationShowcase } from '../../isolated-frame/isolatedFrameExamples'
+import { IsolationExample } from '../../isolated-frame/isolatedFrameExamples'
 
 const DESCRIPTION = `
-\`createIsolatedComponent\` runs a control inside its own iframe. The frame loads its own copy of your bundle, React and every other library included, and renders the control against the frame's \`window\` and \`document\`. Nothing on the page can style it, and nothing it injects reaches the page.
-
-Reach for it when a control shares a page with styles or scripts you do not control. Below, the page carries another app's global CSS: the control in the page picks it up, and the same control in a frame does not. The framed control adds a global rule of its own, which stays inside, and gets the page's theme as a prop.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code** and change that CSS to see it reach only the page.
 
 {{canvas: Overview}}
 
 ## Declare a frame
 
-A frame cannot be handed children: they belong to the page's copy of your code. Declare what runs in it once, at module level, so the frame finds it in its own copy, then render it like the component it wraps:
+\`createIsolatedComponent\` declares a control that runs in a frame. The frame loads its own copy of your bundle, React and every other library included, and renders the control against the frame's \`window\` and \`document\`.
 
-\`\`\`tsx
-export const IsolatedTasks = createIsolatedComponent('tasks', (props: ITasksProps) => <Tasks {...props} />, {
-    onPrepareWindow: frameWindow => {
-        frameWindow.Xrm = window.Xrm
-    },
-})
+A frame cannot be handed children: they belong to the page's copy of your code. So declare what runs in it once, at module level, and render it like the component it wraps, as \`IsolatedDealsGrid\` in the example above is declared in the docs' bundle:
 
-<IsolatedTasks frame={{ className: styles.tasks, title: 'Tasks' }} {...tasksProps} />
-\`\`\`
-
-- The key, \`'tasks'\`, is any string unique within your bundle.
-- On the page, \`IsolatedTasks\` renders an iframe, loads your script into it, and renders the content there with the props on every render.
-- Inside a frame, \`IsolatedTasks\` renders the content directly.
+- The key, \`'isolatedDealsGrid'\`, is any string unique within your bundle.
+- On the page, \`IsolatedDealsGrid\` renders an iframe, loads your script into it, and renders the content there with the props on every render.
+- Inside a frame, it renders the content directly.
 - The frame starts empty: wrap the content in the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and set up any global state a library needs once per frame, such as registered icons or fonts.
 - If the frame fails to load, it shows the error in its place, with a Retry button.
 
@@ -87,5 +77,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<IsolationShowcase />),
+    render: () => renderStory(<IsolationExample />),
 }

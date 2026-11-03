@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { OwnLabelsExample, SwitchLanguageExample } from '../../localization/localizationExamples'
 
 const DESCRIPTION = `
-Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap the application in \`LabelsProvider\` to translate or reword the labels below it, or wrap a single part of it to reword just that part. Below, the full task grid in English, Czech, Japanese or a wording of your own; **Code** has the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.
+Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. A \`LabelsProvider\` replaces labels for everything below it, so one provider at the root translates the whole application, and another around a single control rewords just that control. Any label a provider leaves out falls back to the one above, and finally to English. Try it below: switch the task grid between English, Czech, Japanese and a wording of your own.
 
 {{canvas: Overview}}
 

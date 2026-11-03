@@ -5,13 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FilterChipsExample, SectionTabsExample, ToolbarExample } from './compactPartsExamples'
 
 const DESCRIPTION = `
-Wrap an area in a *compact provider*, and every part inside it can ask \`useCompact()\` whether to draw full size or compact. The provider measures its own box, not the window.
+When a row of parts runs out of room, it reads better if the parts shrink than if the row wraps or overflows: a button drops its label, a search box narrows, tabs become a dropdown. A *compact provider* decides when that happens by measuring its own box, not the window, and every part inside it asks \`useCompact()\` whether to draw full size or compact. Each part decides for itself what compact means. Try it below: drag the slider until the buttons turn into icons, then widen it again and see where they come back.
 
-Some parts already respond on their own: \`CommandBar\` shows only its icons when compact, and the DatasetControl header is a compact provider (see [**DatasetControl › Layout**](?path=/docs/controls-datasetcontrol-layout--overview)).
+{{canvas: Toolbar}}
 
 ## Shrink when parts would wrap
 
-\`WrapCompactProvider\` keeps its parts full size while they fit on one line, and turns them compact the moment they would wrap. Each part decides what compact means for itself: here a button drops its label and a search box narrows.
+\`WrapCompactProvider\` keeps its parts full size while they fit on one line, and turns them compact the moment they would wrap. In the toolbar above, a button drops its label and a search box narrows.
 
 It notices a wrap by its box growing taller, so it needs two things:
 
@@ -19,8 +19,6 @@ It notices a wrap by its box growing taller, so it needs two things:
 - Full and compact parts are the same height.
 
 Adding a part needs nothing: if it does not fit, the box grows and the parts turn compact.
-
-{{story: Toolbar}}
 
 The parts turn back to full size only once the box is wider than it was when they wrapped. Waiting for the box to grow is what stops the toolbar flickering while you resize right at the edge.
 
@@ -41,6 +39,7 @@ Reach for it when compact means a different component, not just different styles
 ## Good to know
 
 - Both providers render a \`div\` and pass it any other props, so they are the box itself: give them the flex row or the padding the area needs.
+- Some parts already respond on their own: \`CommandBar\` shows only its icons when compact, and the DatasetControl header is a compact provider (see [**DatasetControl › Layout**](?path=/docs/controls-datasetcontrol-layout--overview)).
 - Outside a provider, \`useCompact()\` returns \`false\`, so a part that shrinks still works anywhere.
 - To pin one part at full size inside a compact area, or keep it compact everywhere, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
 `

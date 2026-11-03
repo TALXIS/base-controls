@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.Ribbon\` is a command bar of the commands its \`onLoad\` returns. It loads them again whenever the selected records change, so read the selection there and return only the commands that apply, as *DealsRibbon.tsx* in the example does.
+The ribbon is the bar of commands above the records, such as *Mark as won* or *Reopen*, that act on the view or on the records the user selected. Which commands make sense depends on the selection, so the ribbon asks for them again whenever it changes, and you return only those that apply. You add it with \`DatasetControl.Ribbon\` and return the commands from its \`onLoad\`.
 
 {{story: Act on the selected deals}}
 
@@ -86,7 +86,7 @@ export const CommandsForTheSelectedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `*Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won, which disables the button while it runs and loads the commands again, then pick *Sort* › *By value*.`,
+                story: `*DealsRibbon.tsx* reads the selection in \`onLoad\`: *Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won, which disables the button while it runs and loads the commands again, then pick *Sort* › *By value*.`,
             },
         },
     },

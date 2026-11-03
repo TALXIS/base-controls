@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { PreviewStateExample, ReopenQueueExample } from '../../grid/examples/stateExamples'
 
 const DESCRIPTION = `
-A grid with a \`stateKey\` remembers where the user was: the row at the top of the viewport, the focused cell and the open groups. The next grid mounted with the same \`stateKey\` puts the user back. Without a \`stateKey\`, the grid keeps nothing.
+A user who opens a record from a long list and comes back expects to find the list as they left it, not scrolled to the top with every group closed. The grid can remember where the user was, the row at the top, the focused cell and the open groups, and put them back the next time it mounts. You switch this on by giving the grid a \`stateKey\`: the next grid mounted with the same key puts the user back, and without one the grid keeps nothing.
 
 {{story: Bring the user back where they left off}}
 

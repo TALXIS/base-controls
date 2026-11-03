@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { PagingExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-Two parts page through the records. \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and opens a menu of page sizes, and \`DatasetControl.Pagination\` moves to the first, previous and next page.
+A view can hold far more records than fit on the screen, so the control shows them a page at a time. Two parts let the user move through them: \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and lets the user pick how many a page shows, and \`DatasetControl.Pagination\` moves to the first, previous and next page.
 
 {{story: Page through the deals}}
 

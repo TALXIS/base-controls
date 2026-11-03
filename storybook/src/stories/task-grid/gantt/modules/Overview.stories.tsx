@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { GanttModulesExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The Gantt's features are modules, passed to \`TaskGantt\`'s \`modules\` and loaded in that order on every mount.
+The Gantt itself lines the tasks up on a timeline; everything beyond the bars, from dragging them to drawing links and marking today, is a module you add. That keeps the chart to what your app needs, and lets you add features of your own the same way. You pass the modules to \`TaskGantt\`'s \`modules\`, and it loads them in that order on every mount.
 
 {{story: Pick the features}}
 

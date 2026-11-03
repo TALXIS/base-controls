@@ -5,9 +5,9 @@ import { SaveLogExample } from '../../check-list/checkListExamples'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 
 const DESCRIPTION = `
-The checklist changes the records of its provider and asks the provider to save them. This page lists what it changes and when; to store the list in your own backend, give it a provider that saves there.
+A checklist stores nothing itself: every tick, rename, drag, new item and delete changes a record of its provider, and the provider saves it. Where the list ends up is therefore the provider's choice, in memory, in Dataverse or in your own API. Try it below: tick an item, drag one, add one and delete one, and watch the log beside the list fill with what the provider was asked to save.
 
-{{story: Watch what the checklist saves}}
+{{canvas: Watch what the checklist saves}}
 
 ## What the checklist changes
 

@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample } from '../../grid/examples/columnsExamples'
 
 const DESCRIPTION = `
-Every provider column becomes a grid column. \`colDefs\` changes those columns and adds your own: pin them, link them to their record, calculate their values, give their cells commands and their headers menus. What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview).
+The grid builds its columns from the provider: each column the provider holds becomes a grid column, with its header text, width and data type. A page usually wants more than that, such as key columns that stay in view, a link that opens the record, a value worked out from others, or a button on every row. You add these per column with \`colDefs\`, on top of what the provider gives and without changing the provider.
 
 ## Change a column
 
-\`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads about the column, listed under *The column context* below.
+What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview). \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads about the column, listed under *The column context* below.
 
 An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set; any other key adds a column at the end. A function entry receives the column as built, \`null\` for an added one, and returns what to change. \`colDefs\` runs after every module, so it overrides what they set.
 

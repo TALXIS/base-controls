@@ -5,9 +5,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TicketPreviewPaneExample, WatchEveryEventExample } from '../../grid/examples/propsAndEventsExamples'
 
 const DESCRIPTION = `
-Every prop of \`<Grid />\`, and every event it fires. How to use each is on the page each row links to. The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/concepts-localization--overview).
+A grid is set up through a small set of props: which modules it has, how it looks, and what it does when the user opens a record. Some are read only once, as the grid mounts, and the events tell your page what the user did and what the grid loaded. The tables below are the reference for all of them, and each row links to the page that shows it in use.
 
-The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderScope\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/controls-grid-get-started--overview).
+The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/concepts-localization--overview). The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderScope\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/controls-grid-get-started--overview).
 
 ## Props
 

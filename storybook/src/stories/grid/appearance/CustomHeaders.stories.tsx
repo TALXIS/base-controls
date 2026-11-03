@@ -5,15 +5,15 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { HeaderCaptionExample, PipelineHeaderExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-Every column draws its header with \`Grid.ColumnHeader.Renderer\`: the column's name, its required marker, the icons modules add, and a menu that opens on click. To change a column's header, hand it new slots through \`headerComponentParams\` in \`colDefs\`; to lay it out yourself, give the column a \`headerComponent\` of your own.
+A column's header shows the column's name, icons such as a sort arrow, and a menu that opens on click. When a header needs to say more, such as a unit under the name or a total of the column, you can replace parts of it or lay it out yourself. Either way, your header keeps what the grid gives every header: its theme, the icons modules add, and the column's menu.
 
-Either way, your header keeps what the grid gives every header: its theme, the icons modules add, and the column's menu.
+{{story: Add a caption under the name}}
 
 ## Changing how it looks
 
-\`headerComponentParams\` take \`components\`, a map of the header's parts and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+Every column draws its header with \`Grid.ColumnHeader.Renderer\`. To change a column's header, hand it new slots through \`headerComponentParams\` in \`colDefs\`, as the example above does; to lay it out yourself, give the column a \`headerComponent\` of your own.
 
-{{story: Add a caption under the name}}
+\`headerComponentParams\` take \`components\`, a map of the header's parts and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ProjectExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-The project module loads the project the tasks belong to, before the tasks load on every mount. It draws nothing itself: other parts read it.
+Tasks usually belong to a project, and several parts of a task grid need to know which one: to fill it in on new tasks, narrow lookups to it, or mark its start and end on the Gantt. The project module loads that project before the tasks, on every mount. It draws nothing itself: other parts read it.
 
 {{story: Read the project}}
 

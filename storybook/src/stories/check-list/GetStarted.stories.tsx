@@ -5,9 +5,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BasicUsageExample, LaunchPlanExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
-\`CheckList\` shows the records of a provider as a to-do list: users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. It is a [**Grid**](?path=/docs/controls-grid-get-started--overview) underneath, so it takes every \`Grid\` prop, and its columns, cells and events work as in any grid.
+A checklist is a to-do list: users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. Every item is a record in a data provider and every change goes back to it, so the list is stored wherever the provider stores it. Underneath it is a [**Grid**](?path=/docs/controls-grid-get-started--overview), so its columns, cells and events work as in any grid. Try it below: tick an item off, drag one to a new place, and type a new item in the bottom row.
 
-{{story: Plan a launch}}
+{{canvas: Plan a launch}}
 
 ## Basic usage
 

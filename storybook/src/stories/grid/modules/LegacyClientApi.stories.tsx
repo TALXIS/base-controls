@@ -7,9 +7,9 @@ import { EmptyValuePlaceholdersExample, StockScriptExample, TicketRecommendation
 const DESCRIPTION = `
 Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column. The legacy client API compatibility module makes the grid draw what they set, so those scripts keep working.
 
-The module takes no options and needs no AG Grid Enterprise licence.
-
 {{story: Recommend next steps on tickets}}
+
+The module takes no options and needs no AG Grid Enterprise licence.
 
 ## Register expressions
 

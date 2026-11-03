@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-The control's \`onLoad\` returns the tasks of the view the user is on: a task provider, and the field mapping that tells it which columns make the tree. It works as on a DatasetControl (see [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)), and loads every task of the view at once.
+A task grid draws its tasks as a tree, so every task it loads has to say which task is its parent and where it sits among its siblings. The grid loads every task of the view at once, through a task provider that reads them from a store, such as one in memory or a Dataverse table. In \`onLoad\` you return that provider, with a field mapping that tells it which columns make the tree.
 
 {{story: Show your own tasks}}
 
 ## Load the tasks
+
+\`onLoad\` gets the view the user is on and works as on a DatasetControl: see [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
 | Parameter | Description |
 |---|---|

@@ -5,13 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { EveryDataTypeExample, OwnRecordsExample, RequiredAndReadOnlyExample } from '../../grid/examples/dataExamples'
 
 const DESCRIPTION = `
-The grid draws what its provider holds: the provider's columns become the grid's columns, and the records of the current page become its rows. This page lists what the grid reads from each column, and how it draws and edits each data type. Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The grid holds no data of its own: it draws whatever its data provider holds. The provider's columns become the grid's columns, the records of its current page become the rows, and each column's data type decides how its values are formatted, drawn and edited. Whether the records come from Dataverse, your API or an array in memory, the grid treats them the same.
 
 {{story: Show your own records}}
 
 ## Provider columns
 
-Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how to change a column's definition on top of them is on [**Columns**](?path=/docs/controls-grid-columns--overview).
+Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview). Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how to change a column's definition on top of them is on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 | Key | Default | Description |
 |---|---|---|

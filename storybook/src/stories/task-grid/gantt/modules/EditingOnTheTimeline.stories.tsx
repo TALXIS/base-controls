@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { GanttEditingExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-Three modules let the user change tasks on the timeline: move and resize bars, draw new tasks, and select tasks. Every change is saved through the store, as an edit in the grid is: see *Dates* on [**Get started**](?path=/docs/controls-taskgrid-gantt-get-started--overview).
+On the timeline, a task's dates are the ends of its bar, so the quickest way to reschedule a task is to drag it. Three modules let the user change tasks right there: move and resize bars, draw new tasks, and select tasks. Every change is saved through the store, as an edit in the grid is: see *Dates* on [**Get started**](?path=/docs/controls-taskgrid-gantt-get-started--overview).
 
 {{story: Plan on the timeline}}
 

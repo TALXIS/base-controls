@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TalkingToTheTaskGridExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Every mounted \`TaskDatasetControl\` has an \`ITaskRuntime\`: one object your code talks to, to create, open, delete and move tasks, run its own work behind the loading overlay, and reach the provider and the control.
-
-## Get the task runtime
+The user creates, opens, moves and deletes tasks through the grid's commands, but your code can do the same, from a button outside the grid, a part of your own or a module. It does so through one object, the \`ITaskRuntime\`, which every mounted \`TaskDatasetControl\` creates. It acts on tasks as the user's commands do, runs your own work behind the loading overlay, and reaches the provider and the control.
 
 {{story: Drive the task grid from your code}}
+
+## Get the task runtime
 
 Outside the control, keep the one \`onReady\` passes you; \`onMounted\` passes it before each load, and \`onDestroyed\` as the control unmounts. Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 

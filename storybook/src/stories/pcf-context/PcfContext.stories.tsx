@@ -5,15 +5,17 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DialogsExample, FormatExample } from './pcfContextExamples'
 
 const DESCRIPTION = `
-The context ties the controls to the host they run in. It takes the shape of a PCF context, so a Power Apps host's own can be passed straight in, and every control below one \`PcfContextProvider\` shares:
+Controls need things only the host they run in knows: who the user is, how their dates, numbers and money are formatted, and how to open a dialog or reach data. Power Apps hands every PCF control this as its *context*, and the controls read the same shape, so in Power Apps the host's context is passed straight in, and elsewhere the library builds one. One \`PcfContextProvider\` at the root of the application shares it with every control below. Try it below: pick another culture and watch the invoice format for it.
+
+{{canvas: Format for the user}}
+
+## What it holds
+
+Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`. Every control below it shares:
 
 - the user and their language, in \`userSettings\`
 - the formatting of dates, numbers and money, in \`formatting\`
 - the host's dialogs, records and data, in \`navigation\`, \`webAPI\` and \`utils\`
-
-Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`.
-
-{{story: Format for the user}}
 
 ## In a PCF control
 

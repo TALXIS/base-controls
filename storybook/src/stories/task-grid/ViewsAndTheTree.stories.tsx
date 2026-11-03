@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TaskViewsExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Views work as on a DatasetControl: \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`.
+A task view looks at the tasks a particular way, such as sorted by start date or searched for *design*, while the tasks keep their tree. Sorting orders the subtasks under each parent, and a filter or a search keeps each match's ancestors, so a match still shows where it belongs. A view can also drop the tree and show the matching tasks as a flat list.
 
 {{story: Switch between task views}}
 
 ## Task view data
+
+\`onLoadViews\` lists the views, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens, as on a DatasetControl (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`:
 
 | Key | Description |
 |---|---|

@@ -5,14 +5,16 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../dataset-control/examples/stateExamples'
 
 const DESCRIPTION = `
-A DatasetControl puts every view back the way the user left it when they switch back to it. Give it a \`stateKey\` to also reopen on the last view, as the user left it, the next time the control mounts.
+Users shape a view as they work in it: they sort it, search it, page through it and scroll. A DatasetControl remembers that for each view, so switching away and back puts the view back the way the user left it. Give it a \`stateKey\` and it also reopens on the last view, as the user left it, the next time the control mounts.
+
+{{story: Back where you left off}}
+
+Where the control keeps it depends on \`stateKey\`:
 
 | \`stateKey\` | Where the control keeps it | How long it lasts |
 |---|---|---|
 | Left out | A store of its own | While the control stays mounted, across view switches and reloads. |
 | Given | Under the key in the nearest state store | As long as the store does. See [**State persistence**](?path=/docs/concepts-state-persistence--overview). |
-
-{{story: Back where you left off}}
 
 ## What the control keeps
 

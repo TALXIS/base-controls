@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FullPageExample, PickPartsExample } from '../../dataset-control/examples/layoutExamples'
 
 const DESCRIPTION = `
-The control is laid out in *regions*: a header above the records, a body that holds them and a footer below them. The header and the footer each have a start and an end.
+Around the records sit the parts the user works with, such as the view switcher, the ribbon, quick find and paging. The control lays them out in *regions*: a header above the records, a body that holds them and a footer below them, the header and the footer each with a start and an end. You put each part in a region and it sizes itself, and when the control gets narrow, the header turns compact.
 
 {{story: Pick your parts}}
 

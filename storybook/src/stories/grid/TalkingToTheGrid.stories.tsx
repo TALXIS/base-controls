@@ -5,15 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DriveTheGridExample, GridLifeExample } from '../../grid/examples/talkingExamples'
 
 const DESCRIPTION = `
-Every mounted grid is an \`IGrid\`: one object your code talks to, to read the data, drive a module, change what the grid decides, or listen to what happens in it. Code outside the grid and a module inside it get the same one.
-
-## Get the grid
-
-Outside the grid, such as in a ribbon command, keep the grid \`onReady\` passes you once AG Grid is ready:
+Props set a grid up, but a page often needs to act on it while it runs: expand every group from a ribbon button, sort by a column, or refresh a summary when new data arrives. For that, every mounted grid hands out one object, an \`IGrid\`, through which your code reads the data, drives the modules, changes what the grid decides and listens to what happens in it. Code outside the grid and a module inside it get the same object.
 
 {{story: Drive the grid from the ribbon}}
 
-Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG Grid exists:
+## Get the grid
+
+Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you once AG Grid is ready. Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG Grid exists:
 
 {{story: Follow a grid from mount to unmount}}
 

@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FailedActionsExample, FailedLoadExample } from '../../dataset-control/examples/errorHandlingExamples'
 
 const DESCRIPTION = `
-The control shows every failure to the user, so your code only has to throw. A failed load shows the error in place of the parts; a failed action, such as a ribbon command, opens the error dialog.
+Loading records, running a command or saving a view all go through code that can fail, and the user needs to see what went wrong and try again. The control takes care of that: it shows every failure to the user, so your code only has to throw. A failed load shows the error in place of the parts, with *Try again*; a failed action, such as a ribbon command, opens the error dialog.
 
 {{story: Recover from a failed load}}
 

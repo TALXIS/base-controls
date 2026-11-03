@@ -14,11 +14,6 @@ const OverviewForm = () => {
             <Form.Notifications
                 messages={[
                     {
-                        id: 'overview-info',
-                        type: MessageBarType.info,
-                        text: 'This example shows the runtime with notifications, ribbon save state, tabs, sections, and multi-column layout enabled together.',
-                    },
-                    {
                         id: 'overview-warning',
                         type: MessageBarType.warning,
                         text: 'Approval is still required because the approved budget is lower than the estimated value.',
@@ -88,9 +83,7 @@ const OverviewForm = () => {
 }
 
 const DESCRIPTION = `
-Form is a record-driven form runtime. It gives you the pieces that usually have to be wired by hand: layout, field binding, validation, notifications, tab and section structure, dirty tracking, and save orchestration working as one system.
-
-The same runtime can be authored directly in React or driven from an Xrm/FormXml model. Both paths share the same core runtime, but they differ in how the layout is authored and how the runtime surface is exposed.
+A form shows one record laid out in tabs, sections and columns, and keeps every field in step with it. Values typed into fields land on the record, validation and notifications show where they apply, and the ribbon knows when there are unsaved changes and saves them. Form is the runtime that wires this together, so you describe the layout and supply the record instead of connecting each control by hand. Try it below: switch tabs, change a value and watch the ribbon report unsaved changes.
 
 ## What you get from the runtime
 
@@ -101,7 +94,7 @@ The same runtime can be authored directly in React or driven from an Xrm/FormXml
 
 ## Choose an authoring path
 
-Form supports two authoring models over the same runtime. Choose the one that matches where your form definition lives and how you want to work.
+Form supports two authoring models over the same runtime: directly in React, or driven from an Xrm/FormXml model. They differ in how the layout is authored and how the runtime surface is exposed, so choose the one that matches where your form definition lives and how you want to work.
 
 Before choosing the layout authoring path, see [**Form strategy**](?path=/story/controls-form-get-started-form-strategy--overview) for the shared \`IFormStrategy\` contract and the \`columns\` / \`metadata\` / \`data\` shape both paths expect.
 

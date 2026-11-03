@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ProviderViewsExample } from '../../dataset-control/examples/viewsExamples'
 
 const DESCRIPTION = `
-A view is a way of looking at the records, such as *All deals* or *Won deals*. \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and the one the user picks is loaded through \`onLoad\`.
+A view is a named way of looking at the same records, such as *All deals* or *Won deals*: it decides which columns show, and can carry its own filter or sorting. The user picks one from the view switcher, and the control loads the records anew for it. You list the views in \`onLoadViews\`, show them with \`DatasetControl.ViewSwitcher\`, and set up the one the user picks in \`onLoad\`.
 
 {{story: Views that set up the provider}}
 

@@ -5,13 +5,13 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyRecordsExample, NotificationsExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-Two parts tell the user about the records. \`DatasetControl.Notifications\` shows messages above them, such as the provider's load error, and \`DatasetControl.EmptyRecords\` says when there are none.
+Besides the records themselves, a list has things to tell the user: that the records failed to load, a note of your own, or that there is nothing to show. Two parts say them: \`DatasetControl.Notifications\` shows messages in a bar above the records, the provider's load error among them, and \`DatasetControl.EmptyRecords\` takes the place of the records when there are none.
+
+{{story: Show the provider's error}}
 
 ## Show messages
 
 Put \`DatasetControl.Notifications\` between the header and the body. It draws the provider's load error next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/controls-form-get-started--overview).
-
-{{story: Show the provider's error}}
 
 ## Say when there is nothing to show
 

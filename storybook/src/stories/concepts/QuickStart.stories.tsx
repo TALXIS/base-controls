@@ -5,7 +5,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FirstAppExample } from './quickStartExamples'
 
 const DESCRIPTION = `
-Install Base Controls, set up your application once, and add your first control.
+An application built with Base Controls has the same shape everywhere: a few providers at its root say who the user is, how things look and where state is kept, and every control placed below them picks that up. The controls themselves draw records held in a data provider. Below is the smallest such application: a data provider holds three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) draws it. Try it: open **Code** and change it.
+
+{{canvas: Overview}}
 
 ## Install
 
@@ -15,13 +17,9 @@ npm install @talxis/base-controls @talxis/client-libraries @fluentui/react@8.121
 
 Base Controls runs on React 16.8 or 17 and Fluent UI 8.121.5 or earlier.
 
-## Your first control
+## Set up the application
 
-Wrap the application in the shared providers once, then add controls anywhere below them. Here a data provider holds three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) draws it. Open **Code** to change it.
-
-{{canvas: Overview}}
-
-The example uses these imports:
+Wrap the application in the shared providers once, then add controls anywhere below them. The example above uses these imports:
 
 \`\`\`tsx
 import {

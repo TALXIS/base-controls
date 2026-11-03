@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { QuickFindExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.QuickFind\` is a search field over the records. It searches the provider's quick find columns for what the user types.
+Quick find lets the user narrow the records down by typing, without building a filter: they type the start of a name and see only the records that match. It searches the columns the provider names as its quick find columns, for values that begin with what was typed. You add the field with \`DatasetControl.QuickFind\`.
 
 {{story: Find a deal}}
 

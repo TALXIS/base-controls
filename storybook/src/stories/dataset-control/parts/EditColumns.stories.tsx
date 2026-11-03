@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EditColumnsExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.EditColumns\` is a button that opens the column editor. The user adds, reorders and removes columns, and saving remounts the control with them.
+A view comes with the columns you gave it, but users often want to see something else, such as a deal's probability. Edit columns lets them change that themselves: a button opens a panel where they add, reorder and remove the view's columns, and saving reloads the control with them, each view keeping its own. You add it with \`DatasetControl.EditColumns\`.
 
 {{story: Choose the columns of a view}}
 

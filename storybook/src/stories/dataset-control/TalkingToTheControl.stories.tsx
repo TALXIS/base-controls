@@ -5,11 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DriveTheControlExample, ModuleExample, WatchTheControlExample } from '../../dataset-control/examples/talkingExamples'
 
 const DESCRIPTION = `
-Every mount of a DatasetControl has an \`IDatasetControl\`: one object your code talks to, to switch the view, reload, follow loads, and reach the parts and modules on the page.
+The user works the control through its parts, but your code can do the same: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through one object, the \`IDatasetControl\`, which every mount of the control creates and hands to you. Try the toolbar in the footer below: it is your own, and it switches and reloads views, searches and opens the column editor through the control.
+
+{{canvas: Drive the control from a toolbar}}
 
 ## Get the control
 
-Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar in *Drive the control from a toolbar* does.
+Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar in the first example does.
 
 Outside it, the control's props hand it to you:
 
@@ -70,8 +72,6 @@ Every part on the page registers itself on the control under its own key, for as
 | \`loadingOverlay\` | Always there | Cover the whole control: \`show(message?)\` returns the function that hides it again, and it stays until every caller has hidden it. |
 
 The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's page lists its members under *From your code*.
-
-{{story: Drive the control from a toolbar}}
 
 ## Modules
 

@@ -6,7 +6,11 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Grid shows the records of a data provider, on top of <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. Every column draws its values with the control for its data type, and everything beyond that is a module you switch on:
+Grid shows the records of a data provider as rows and columns, on top of <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. Each value is drawn with the control for its data type, so money, dates, option sets and lookups each get their proper formatting. On its own the grid only shows the records; editing, selecting, sorting, filtering and grouping are modules you switch on. Try it below: pick a preset or open **Features & Modules** to switch modules one by one, and open **Code** to read and edit the source.
+
+{{canvas: Overview}}
+
+*Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid draws a watermark. The modules you will reach for first:
 
 | Module | Adds |
 |---|---|
@@ -14,10 +18,6 @@ Grid shows the records of a data provider, on top of <a href="https://www.ag-gri
 | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) | Select rows, highlight blocks of cells and copy them into a spreadsheet. |
 | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) | Straight from each column's menu. |
 | [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) | Group the rows by a column, and total its values. |
-
-Below is a sales pipeline. Pick a preset or open **Features & Modules** to switch modules one by one, and open **Code** to read and edit the source. *Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid draws a watermark.
-
-{{canvas: Overview}}
 
 ## Basic usage
 

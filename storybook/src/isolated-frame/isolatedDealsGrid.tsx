@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import React from 'react'
-import { initializeIcons, ITheme, mergeStyleSets, Text, useTheme } from '@fluentui/react'
+import { initializeIcons, ITheme, mergeStyleSets, Text } from '@fluentui/react'
 import { createClientSideRowModelModule, createEditingModule, createFilteringModule, createIsolatedComponent, createSortingModule, DatasetControl, Grid, IsolatedFrameScript, PcfContextProvider, StateProvider, ThemeProvider } from '@talxis/base-controls'
 import { createDealsProvider } from '../grid/data'
 
@@ -11,25 +11,10 @@ declare global {
     }
 }
 
-//rules like an older AG Grid's on the same page
-const OTHER_APP_STYLES = `
-.ag-header-cell * { color: #e3008c !important; text-transform: uppercase; }
-.ag-cell * { font-family: 'Courier New', monospace !important; }
-.ag-row { border-bottom: 2px dashed #e3008c !important; }
-`
-
 //a global rule only the frame should see
 const FRAME_STYLES = `.ag-root-wrapper { border-top: 3px solid #5B5FC7 !important; }`
 
 const styles = mergeStyleSets({
-    showcase: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-        gap: 16,
-    },
-    frame: {
-        height: 460,
-    },
     content: {
         display: 'flex',
         flexDirection: 'column',
@@ -50,7 +35,8 @@ interface IDealsGridProps {
     heading: string
 }
 
-const DealsGrid = (props: IDealsGridProps) => {
+/** The deals in a DatasetControl, under a heading. */
+export const DealsGrid = (props: IDealsGridProps) => {
     const deals = React.useMemo(createDealsProvider, [])
     const greeting = window.isolatedFrameDemo?.greeting
 
@@ -108,24 +94,5 @@ const prepareFrameWindow = (frameWindow: Window) => {
     frameWindow.isolatedFrameDemo = { greeting: 'handed over by onPrepareWindow' }
 }
 
+/** DealsGrid in a frame of its own, declared once at module level so the frame finds it in its copy of the bundle. */
 export const IsolatedDealsGrid = createIsolatedComponent('isolatedDealsGrid', FramedDealsGrid, { scripts: FRAME_SCRIPTS, onPrepareWindow: prepareFrameWindow })
-
-export const IsolationShowcase = () => {
-    const theme = useTheme()
-
-    React.useEffect(() => {
-        const style = document.createElement('style')
-        style.textContent = OTHER_APP_STYLES
-        document.head.appendChild(style)
-        return () => style.remove()
-    }, [])
-
-    return <div className={styles.showcase}>
-        <div className={styles.frame}>
-            <DealsGrid heading='In the page' />
-        </div>
-        <div className={styles.frame}>
-            <IsolatedDealsGrid heading='In a frame' theme={theme} frame={{ title: 'Deals' }} />
-        </div>
-    </div>
-}

@@ -5,11 +5,11 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { OwnStoreExample, UserViewsExample } from '../../dataset-control/examples/userViewsExamples'
 
 const DESCRIPTION = `
-Let users save what the control shows as views of their own, listed under *My views*. Add a user queries module and put \`DatasetControl.UserQueries\` in the view switcher.
+The views you list are the same for every user, yet each user sorts, filters and arranges the columns their own way. User views let them keep that: they save what the control shows as a view of their own, listed under *My views* in the view switcher, and open it later like any other view.
 
 {{story: Save your own views}}
 
-The switcher gets *Save changes* (while a user view is open), *Save as new view* and *Manage views*. A user view opens like any other, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+To offer them, add a user queries module from *Where views are kept* below and put \`DatasetControl.UserQueries\` in the view switcher. The switcher then gets *Save changes* (while a user view is open), *Save as new view* and *Manage views*. A user view opens like any other, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## What a view keeps
 

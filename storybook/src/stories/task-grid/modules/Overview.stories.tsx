@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ModulesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Everything beyond the tree is a module. A task grid takes modules in two places: \`TaskDatasetControl\`'s \`modules\` and \`TaskGrid\`'s.
+A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. A task grid takes modules in two places: \`TaskDatasetControl\`'s \`modules\` and \`TaskGrid\`'s.
 
 {{story: Modules in both places}}
 

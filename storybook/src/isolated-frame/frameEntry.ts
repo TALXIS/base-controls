@@ -1,1 +1,1 @@
-import './isolatedFrameExamples'
+import './isolatedDealsGrid'
