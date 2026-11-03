@@ -3,8 +3,9 @@ import { GridExampleRunner } from '../GridExampleRunner'
 
 export const BREACH_DEADLINES_CODE = `const RESOLVED = 4
 const AT_RISK_HOURS = 24
-const OVERDUE = { background: '#fde7e9', text: '#a4262c' }
-const AT_RISK = { background: '#fff4ce', text: '#8a5300' }
+//hues mixed into the cell's own colours, so they read in a light theme and a dark one
+const OVERDUE = '#d13438'
+const AT_RISK = '#c19c00'
 
 const getUrgency = (ticket: IRecord) => {
     const respondBy = ticket.getValue('duedate')
@@ -32,8 +33,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                             onGetTheme: (theme, { record }) => {
                                 const urgency = getUrgency(record)
                                 if (urgency) {
-                                    theme.colors.background = urgency.background
-                                    theme.colors.text = urgency.text
+                                    theme.colors.background = mixColors(urgency, theme.colors.background, 0.2)
+                                    theme.colors.text = mixColors(urgency, theme.colors.text, 0.6)
                                 }
                             },
                         },
@@ -46,7 +47,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#fde7e9'
+export const ESCALATED_TICKETS_CODE = `//mixed into the row's own background, so it reads in a light theme and a dark one
+const ESCALATED = '#d13438'
 
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
@@ -56,9 +58,9 @@ const escalatedTicketsModule: IGridModule = {
             if (record.getValue('escalated') !== '1') {
                 return
             }
-            theme.colors.background = ESCALATED
-            //exported by @talxis/base-controls
-            theme.colors.text = getTextColorForBackground(ESCALATED)
+            //both exported by @talxis/base-controls
+            theme.colors.background = mixColors(ESCALATED, theme.colors.background, 0.15)
+            theme.colors.text = getTextColorForBackground(theme.colors.background)
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
 }
@@ -163,8 +165,9 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const HEADER_COLOURS_CODE = `const CHANGED = '#fff4ce'
-const INVALID = '#fde7e9'
+export const HEADER_COLOURS_CODE = `//hues mixed into the header's own background, so they read in a light theme and a dark one
+const CHANGED = '#c19c00'
+const INVALID = '#d13438'
 
 const getHeaderColour = (columnName: string) => {
     const entries = provider.getRecords()
@@ -191,13 +194,13 @@ const reviewModule: IGridModule = {
         const headers = grid.services.get('columns').headers
         headers.registerColumnHeaderTheme((theme, header) => {
             const column = header.getColumn()
-            const background = column && getHeaderColour(column.name)
-            if (!background) {
+            const hue = column && getHeaderColour(column.name)
+            if (!hue) {
                 return
             }
-            theme.colors.background = background
-            //exported by @talxis/base-controls
-            theme.colors.text = getTextColorForBackground(background)
+            //both exported by @talxis/base-controls
+            theme.colors.background = mixColors(hue, theme.colors.background, 0.2)
+            theme.colors.text = getTextColorForBackground(theme.colors.background)
         })
         //a header draws again after a load, not when a value changes
         const redraw = () => headers.render()

@@ -67,6 +67,7 @@ Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\
 |---|---|
 | \`getTextColorForBackground(color)\` | A text colour that reads on that background |
 | \`isLightColor(color)\` | Whether text on that colour has to be dark |
+| \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\`, such as a tint of a hue over the theme's background that works in light and dark themes |
 
 {{story: Readable tags}}
 `

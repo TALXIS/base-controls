@@ -9,7 +9,6 @@ import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 //names any AG Grid module a grid uses but the library does not register
 ModuleRegistry.registerModules([ValidationModule]);
 
-
 //Storybook's focus getter throws when read off HTMLElement.prototype, which Fluent v9's keyborg does
 const guardPrototypeFocus = () => {
   const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'focus');

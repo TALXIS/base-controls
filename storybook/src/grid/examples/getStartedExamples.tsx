@@ -162,10 +162,16 @@ const getShownValue = (grid: IGrid, record: IRecord, columnName: string) => {
 }
 
 const CLOSE_DATE_ICONS = { overdue: 'Warning', dueThisWeek: 'Clock' }
-const CLOSE_DATE_TINTS = { overdue: '#fde7e9', dueThisWeek: '#fff4ce' }
+//mixed into the cell's own background, so they read in a light theme and a dark one
+const CLOSE_DATE_HUES = { overdue: '#d13438', dueThisWeek: '#c19c00' }
+const VALUE_HUE = '#107c10'
+//faint to strong green, by how big the deal is
+const VALUE_WEIGHTS = [0.1, 0.2, 0.35]
 
-//light to deep green, by how big the deal is
-const VALUE_TINTS = ['#f3faf3', '#dff6dd', '#bfe8bc']
+const tint = (theme: ThemeBuilder, hue: string, weight: number) => {
+    theme.colors.background = mixColors(hue, theme.colors.background, weight)
+    theme.colors.text = getTextColorForBackground(theme.colors.background)
+}
 
 /** An icon before overdue and due close dates. */
 const statusIcons: IGridModule = {
@@ -193,10 +199,10 @@ const colourRules: IGridModule = {
             }
             const state = columnName === 'closedate' ? getCloseDateState(value) : undefined
             if (state) {
-                theme.colors.background = CLOSE_DATE_TINTS[state]
+                tint(theme, CLOSE_DATE_HUES[state], 0.2)
             }
             if (columnName === 'value') {
-                theme.colors.background = VALUE_TINTS[Math.min(Math.floor(getValueShare(Number(value)) * VALUE_TINTS.length), VALUE_TINTS.length - 1)]
+                tint(theme, VALUE_HUE, VALUE_WEIGHTS[Math.min(Math.floor(getValueShare(Number(value)) * VALUE_WEIGHTS.length), VALUE_WEIGHTS.length - 1)])
             }
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
@@ -480,9 +486,10 @@ const closedDealColours: IGridModule = {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }
-            const isWon = Number(record.getValue('stage')) === WON
-            theme.colors.background = isWon ? '#dff6dd' : '#fde7e9'
-            theme.colors.text = isWon ? '#0b6a0b' : '#a4262c'
+            //mixed into the row's own colours, so they read in a light theme and a dark one
+            const hue = Number(record.getValue('stage')) === WON ? '#107c10' : '#d13438'
+            theme.colors.background = mixColors(hue, theme.colors.background, 0.15)
+            theme.colors.text = mixColors(hue, theme.colors.text, 0.6)
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
 }

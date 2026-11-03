@@ -933,6 +933,9 @@ declare function createThemeBuilder(source?: IThemeBuilderSource): ThemeBuilder;
 /** A text colour that reads on the background. */
 declare function getTextColorForBackground(backgroundColor: string): string;
 
+/** color mixed into base, holding weight (0 to 1) of color. */
+declare function mixColors(color: string, base: string, weight: number): string;
+
 /** Whether text drawn on the colour has to be dark to be read. */
 declare function isLightColor(color: string): boolean;
 

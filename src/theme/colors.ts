@@ -3,6 +3,7 @@ import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryC
 
 const IsLightColorCache = new MemoryCache<boolean>();
 const ContrastColorCache = new MemoryCache<string>();
+const MixedColorCache = new MemoryCache<string>();
 
 //what a generated dark theme resolves its body text to, without generating one to ask
 const DARK_TEXT_COLOR = '#ffffff';
@@ -18,4 +19,15 @@ export const getTextColorForBackground = (backgroundColor: string): string => {
         return DARK_TEXT_COLOR;
     }
     return ContrastColorCache.get(backgroundColor, () => new Color(backgroundColor).darken(0.75).hex())!;
+};
+
+/**
+ * A colour mixed into another, such as a tint of a hue over the background it sits on.
+ *
+ * @param color The colour mixed in.
+ * @param base The colour it is mixed into.
+ * @param weight How much of `color` the result holds, from 0 to 1.
+ */
+export const mixColors = (color: string, base: string, weight: number): string => {
+    return MixedColorCache.get(`${color}|${base}|${weight}`, () => new Color(base).mix(new Color(color), weight).hex())!;
 };
