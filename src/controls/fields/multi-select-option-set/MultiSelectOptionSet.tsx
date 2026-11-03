@@ -9,6 +9,7 @@ import React from 'react';
 import { ColorfulOptions } from './colorful-options/ColorfulOptions';
 import { getIsColorFeatureEnabled, onRenderColorfulOption } from '@controls/fields/option-set/shared';
 import { getComboBoxStyles } from './styles';
+import { ThemeContext } from '@theme';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged } = useControl('MultiSelectOptionSet', props);
@@ -64,10 +65,10 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         container.setAttribute('class', `${className} ${styles.colorfulOptionsWrapper}`);
         container.onclick = () => componentRef.current?.focus(true);
 
-        ReactDOM.render(React.createElement(ColorfulOptions, {
-            value: boundValue,
-            context: props.context
-        }), container);
+        //a root of its own, which the theme does not reach unless handed over
+        ReactDOM.render(<ThemeContext theme={theme}>
+            <ColorfulOptions value={boundValue} context={props.context} />
+        </ThemeContext>, container);
 
         const existingContainer = parent.querySelector(`:scope>.${className}`);
         if (existingContainer && isEmptyValue()) {

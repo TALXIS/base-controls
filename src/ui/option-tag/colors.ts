@@ -1,4 +1,4 @@
-import { mixColors } from '@theme';
+import { isLightColor, mixColors } from '@theme';
 
 const colorsCache = new Map<string, IOptionTagColors>();
 
@@ -19,10 +19,12 @@ export const getOptionTagColors = (color: string, surface: string, text: string)
     const key = `${color}_${surface}_${text}`;
     let colors = colorsCache.get(key);
     if (!colors) {
+        //on a dark surface the label leans toward the text, or a saturated colour glows
+        const isDark = !isLightColor(surface);
         colors = {
-            background: mixColors(color, surface, 0.12),
-            border: mixColors(color, surface, 0.28),
-            text: mixColors(color, text, 0.7),
+            background: mixColors(color, surface, isDark ? 0.18 : 0.12),
+            border: mixColors(color, surface, isDark ? 0.34 : 0.28),
+            text: mixColors(color, text, isDark ? 0.4 : 0.7),
         };
         colorsCache.set(key, colors);
     }
