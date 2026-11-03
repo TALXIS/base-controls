@@ -78,10 +78,14 @@ export const getGridExampleSyntaxError = (code: string): string | null => {
     }
 }
 
-const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, provider: IDataProvider, frameScripts: IsolatedFrameScript[]): ICompiledGridExample => {
+const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, provider: IDataProvider, frameScripts: IsolatedFrameScript[], isEveryFileRun = false): ICompiledGridExample => {
     const modules = new Map<string, ISnippetModule>()
 
     const load = (path: string): ISnippetModule => {
+        //an example imports from the packages as an app does, and gets the sandbox's own copies
+        if (path === '@talxis/base-controls' || path === '@talxis/client-libraries') {
+            return { exports: scope }
+        }
         const sandboxPackage = GRID_SANDBOX_PACKAGES[path]
         if (sandboxPackage) {
             return { exports: sandboxPackage }
@@ -108,6 +112,10 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
 
     try {
         const entry = load(files[0].name)
+        //a frame runs the files the page never imports too, as a frame's own bundle would
+        if (isEveryFileRun) {
+            files.forEach(file => load(file.name))
+        }
         const Component = entry.component ?? entry.exports.GridExample ?? null
         return { Component, error: Component ? null : 'The code must define a GridExample component.' }
     } catch (error) {
@@ -118,9 +126,9 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
 //only an example that isolates a component makes the blob its frame runs
 const getSandboxFrameScripts = (files: IGridExampleFile[]): IsolatedFrameScript[] => files.some(file => file.code.includes('SANDBOX_FRAME_SCRIPTS')) ? createSandboxFrameScripts(files) : []
 
-/** Runs a live example's files inside an isolated frame, so what they declare with createIsolatedComponent is found there. */
+/** Runs every file of a live example inside an isolated frame, so the content they register is found there. */
 export const runGridExampleInFrame = (files: IGridExampleFile[]): void => {
-    const { error } = compileGridExample(files, createScope(() => {}), createDealsProvider(), [])
+    const { error } = compileGridExample(files, createScope(() => {}), createDealsProvider(), [], true)
     if (error) {
         throw new Error(error)
     }

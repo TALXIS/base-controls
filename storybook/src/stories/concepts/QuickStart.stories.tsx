@@ -19,16 +19,7 @@ Base Controls runs on React 16.8 or 17 and Fluent UI 8.121.5 or earlier.
 
 ## Set up the application
 
-Wrap the application in the shared providers once, then add controls anywhere below them. The example above uses these imports:
-
-\`\`\`tsx
-import {
-    ApplicationThemeProvider, createClientSideRowModelModule, DatasetControl, Grid, PcfContextProvider, StateProvider,
-} from '@talxis/base-controls'
-import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
-\`\`\`
-
-Only \`PcfContextProvider\` is required. Add the others when you need what they provide:
+Wrap the application in the shared providers once, then add controls anywhere below them, as the example does. Only \`PcfContextProvider\` is required. Add the others when you need what they provide:
 
 | Provider | Provides | Without it |
 |---|---|---|

@@ -1,7 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const FIRST_APP_CODE = `const loadProducts = async () => ({
+const FIRST_APP_CODE = `import { ApplicationThemeProvider, createClientSideRowModelModule, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+
+const loadProducts = async () => ({
     provider: new MemoryDataProvider({
         dataSource: [
             { productid: 'desk', name: 'Standing desk', price: 640 },

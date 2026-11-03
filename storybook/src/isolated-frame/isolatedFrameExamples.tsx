@@ -5,14 +5,20 @@ import type { IGridExampleFile } from '../grid/GridLivePreview'
 const ISOLATION_FILES: IGridExampleFile[] = [
     {
         name: 'GridExample.tsx',
-        code: `import { IsolatedDeals } from './IsolatedDeals'
-
-//another app's global CSS on the same page: it restyles every AG Grid it reaches
+        code: `//another app's global CSS on the same page: it restyles every AG Grid it reaches
 const OTHER_APP_STYLES = \`
 .ag-header-cell * { color: #e3008c !important; text-transform: uppercase; }
 .ag-cell * { font-family: 'Courier New', monospace !important; }
 .ag-row { border-bottom: 2px dashed #e3008c !important; }
 \`
+
+//the page knows only the key, the props and where the frame's code is: it never imports FramedDeals
+const IsolatedDeals = createIsolatedHost<{ theme: ITheme }>('deals', {
+    //in your app, the frame's own entry; here, the docs' bundle and FramedDeals.tsx
+    scripts: SANDBOX_FRAME_SCRIPTS,
+    //runs on the frame's window before its scripts load
+    onPrepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by onPrepareWindow' }),
+})
 
 const GridExample = () => {
     const theme = useTheme()
@@ -29,7 +35,7 @@ const GridExample = () => {
             <DealsGrid heading='In the page' />
         </Stack.Item>
         <Stack.Item grow styles={{ root: { flexBasis: 0, minWidth: 0 } }}>
-            {/* props cross into the frame on every render, the page's theme included */}
+            {/* frame goes to the iframe; every other prop crosses into the frame on every render */}
             <IsolatedDeals theme={theme} frame={{ title: 'Deals' }} />
         </Stack.Item>
     </Stack>
@@ -37,26 +43,14 @@ const GridExample = () => {
 `,
     },
     {
-        name: 'IsolatedDeals.tsx',
-        code: `//a global rule of the framed grid's own: it stays inside its frame
-const FRAME_STYLES = \`.ag-root-wrapper { border-top: 3px solid #5B5FC7 !important; }\`
+        name: 'FramedDeals.tsx',
+        code: `//the frame's own entry: only the frame runs this file, so the page's bundle never holds it
 
-let areIconsRegistered = false
+//the frame starts empty: it registers its own icons, and the content brings its providers and theme
+initializeIcons()
 
-//what runs in the frame, which starts empty: it brings its own icons, providers and theme
+//a props type shared with the page can be a type-only import, which leaves no code in either bundle
 const FramedDeals = (props: { theme: ITheme }) => {
-    if (!areIconsRegistered) {
-        initializeIcons()
-        areIconsRegistered = true
-    }
-
-    React.useEffect(() => {
-        const style = document.createElement('style')
-        style.textContent = FRAME_STYLES
-        document.head.appendChild(style)
-        return () => style.remove()
-    }, [])
-
     const { greeting } = window as Window & { greeting?: string }
     return <PcfContextProvider>
         <StateProvider>
@@ -67,13 +61,8 @@ const FramedDeals = (props: { theme: ITheme }) => {
     </PcfContextProvider>
 }
 
-//declared once at module level, so the frame finds it by its key in its own copy of the code
-export const IsolatedDeals = createIsolatedComponent('deals', FramedDeals, {
-    //in your app, the script of your bundle; here, the docs' bundle and this example
-    scripts: SANDBOX_FRAME_SCRIPTS,
-    //runs on the frame's window before its scripts load
-    onPrepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by onPrepareWindow' }),
-})
+//under the key the page's host names
+registerIsolatedContent('deals', FramedDeals)
 `,
     },
 ]

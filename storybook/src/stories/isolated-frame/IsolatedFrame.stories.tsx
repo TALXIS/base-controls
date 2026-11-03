@@ -6,15 +6,21 @@ import { IsolationExample } from '../../isolated-frame/isolatedFrameExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code**: change that CSS to see it reach only the page, or edit *IsolatedDeals.tsx* to change what runs in the frame.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code**: *GridExample.tsx* is the page, where changing that CSS reaches only the page's grid, and *FramedDeals.tsx* is what runs in the frame.
 
 {{canvas: Overview}}
 
-## Declare a frame
+## The two sides
 
-A frame can't be handed children: they belong to the page's copy of your code, and the frame runs a copy of its own. So you declare what runs in it once, at module level, with \`createIsolatedComponent(key, Content, options)\`, and render the result like any component, as *IsolatedDeals.tsx* in the example does. The key is any string unique within your bundle.
+A frame can't be handed children: they belong to the page's copy of your code, and the frame runs code of its own. So an isolated component has two sides, tied together by a key:
 
-The frame starts empty: the content brings the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and sets up anything a library needs once per window, such as icons.
+| Function | Called | Holds |
+|---|---|---|
+| \`createIsolatedHost<TProps>(key, options)\` | In the page's code | The key, the props type and the frame's \`scripts\` |
+| \`registerIsolatedContent(key, Content)\` | In the frame's script | The component the frame renders |
+| \`createIsolatedComponent(key, Content, options)\` | Once, when the page and the frame share one bundle | Both |
+
+The key is any string unique within your app. With the two sides in separate bundles, as in the example, pass \`scripts\`: the page then never loads the content. The frame starts empty, so the content brings the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and sets up anything a library needs once per window, such as icons.
 
 ## Lifecycle
 
@@ -24,7 +30,7 @@ If the frame fails to load, the error shows in its place, with a Retry that star
 
 ## Options
 
-The third argument of \`createIsolatedComponent\` sets up every frame of this kind. Both are read as the frame loads.
+These belong to the host, passed to \`createIsolatedHost\` or as the third argument of \`createIsolatedComponent\`. Both are read as the frame loads.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
@@ -42,7 +48,10 @@ One frame's own settings go in its \`frame\` prop, so every other prop goes to t
 
 ## How the frame gets its code
 
-By default, the frame loads the script \`@talxis/base-controls\` was loaded from: your bundle when everything is one file, as in a PCF. When your code is split into chunks, or served as ES modules in development, pass \`scripts\`, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`. One module entry that imports the module declaring the frame is enough, since its imports load the rest.
+By default, the frame loads the script \`@talxis/base-controls\` was loaded from: your bundle when everything is one file, as in a PCF. Pass \`scripts\` when that isn't so:
+
+- **Your code is split into chunks, or served as ES modules in development:** one module entry that imports the module declaring the frame is enough, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`.
+- **The content is a bundle of its own:** point \`scripts\` at its entry, which calls \`registerIsolatedContent\`.
 
 ## What crosses the frame's edge
 
@@ -63,7 +72,7 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The page renders the host', hook: 'frame', text: 'On the page, the component draws an empty iframe in its place; `frame` sets its class and title.' },
     { title: 'The frame window is prepared', hook: 'onPrepareWindow', text: 'The window is marked as a frame and takes the page\'s `lang` and `dir`; hand it anything else here.' },
-    { title: 'The scripts load', hook: 'scripts', text: 'The frame loads them in order, so your code runs again inside it and registers the content under its key.' },
+    { title: 'The scripts load', hook: 'registerIsolatedContent', text: 'The frame loads `scripts` in order, and the code in them registers the content under the key.' },
     { title: 'The content renders', hook: 'content props', text: 'The frame renders the content with every prop but `frame`, and again on every render of the host.' },
     { title: 'The host unmounts', text: 'The content unmounts inside the frame, and the iframe goes with the host.' },
 ]

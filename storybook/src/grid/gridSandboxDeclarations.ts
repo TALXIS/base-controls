@@ -830,8 +830,20 @@ declare function createDealsProvider(): MemoryDataProvider;
 declare const DealsGrid: (props: { heading: string }) => JSX.Element;
 /** A script an isolated frame loads, in order: a URL, or a module. */
 type IsolatedFrameScript = string | { src: string; type: 'module' };
-/** Declares a component that runs inside its own iframe; the key is unique within the bundle. */
-declare function createIsolatedComponent<TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: { scripts?: IsolatedFrameScript[]; onPrepareWindow?: (frameWindow: Window) => void }): React.ComponentType<TProps & { frame?: { className?: string; title?: string } }>;
+interface IIsolatedComponentOptions {
+    /** What the frame loads, in order; pass it when the content is in a script of its own. */
+    scripts?: IsolatedFrameScript[];
+    /** Called with the frame's window before its scripts load. */
+    onPrepareWindow?: (frameWindow: Window) => void;
+}
+/** The frame's own settings; every other prop goes to the content. */
+type IIsolatedComponentProps = { frame?: { className?: string; title?: string } };
+/** The component the page renders: an iframe that loads options.scripts and renders what they registered under key. */
+declare function createIsolatedHost<TProps extends object>(key: string, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps>;
+/** Registers what frames render under key; outside a frame it does nothing. */
+declare function registerIsolatedContent<TProps extends object>(key: string, Content: React.ComponentType<TProps>): void;
+/** Both sides from one bundle: the host on the page, the registered content in a frame. */
+declare function createIsolatedComponent<TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps>;
 /** What an isolated frame loads to run this example: the docs' bundle, then the example's own code. */
 declare const SANDBOX_FRAME_SCRIPTS: IsolatedFrameScript[];
 /** The 30 deals of the sales pipeline, as raw records. */

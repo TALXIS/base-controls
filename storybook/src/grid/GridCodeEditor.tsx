@@ -15,6 +15,11 @@ const getStyles = (theme: ITheme) => mergeStyleSets({
 
 let editorCount = 0
 
+//the packages an example imports from hold the same names as the globals
+const SANDBOX_PACKAGES = ['@talxis/base-controls', '@talxis/client-libraries']
+const asPackage = (name: string) => `declare module '${name}' {\n${gridSandboxDeclarations.replace(/^declare module .*$/gm, '').replace(/^declare /gm, '')}\n}`
+const SANDBOX_TYPINGS = [gridSandboxDeclarations, ...SANDBOX_PACKAGES.map(asPackage)].join('\n')
+
 //Monaco's typings do not name ModuleDetectionKind.Force
 const MODULE_DETECTION_FORCE = 3
 
@@ -56,7 +61,7 @@ export const GridCodeEditor = (props: IGridCodeEditorProps) => {
         const { typescriptDefaults } = monaco.languages.typescript
         //as modules, two open editors do not both declare `GridExample`
         typescriptDefaults.setCompilerOptions({ ...typescriptDefaults.getCompilerOptions(), moduleDetection: MODULE_DETECTION_FORCE })
-        registerExtraLibs(monaco, gridSandboxDeclarations, 'file:///sandbox/grid-runtime.d.ts')
+        registerExtraLibs(monaco, SANDBOX_TYPINGS, 'file:///sandbox/grid-runtime.d.ts')
         syncModels()
     }
 
