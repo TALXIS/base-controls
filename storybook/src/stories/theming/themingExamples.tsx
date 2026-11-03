@@ -75,15 +75,18 @@ const GridExample = () => {
 `
 
 const OWN_COMPONENT_CODE = `const STAGES = [
-    { name: 'Lead', color: '#fde68a' },
-    { name: 'Proposal', color: '#60a5fa' },
-    { name: 'Won', color: '#166534' },
+    { name: 'Lead', hue: '#c19c00' },
+    { name: 'Proposal', hue: '#0078d4' },
+    { name: 'Won', hue: '#107c10', strength: 'strong' as const },
 ]
 
-//any colour works as a background: the text picks a readable colour for it
-const StageTag = (props: { name: string; color: string }) => <span style={{ padding: '2px 8px', borderRadius: 4, background: props.color, color: getTextColorForBackground(props.color) }}>
-    {props.name}
-</span>
+//one hue per stage, tinted for the theme the tag is drawn in
+const StageTag = (props: { name: string; hue: string; strength?: ITintStrength }) => {
+    const theme = useThemeBuilder({ theme: useTheme() }, { tint: { hue: props.hue, strength: props.strength } })
+    return <ThemeProvider theme={theme} style={{ padding: '2px 8px', borderRadius: 4 }}>
+        {props.name}
+    </ThemeProvider>
+}
 
 //takes its colours from whatever theme it is drawn in
 const Total = (props: { label: string; value: string }) => {

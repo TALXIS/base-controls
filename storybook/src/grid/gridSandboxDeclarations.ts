@@ -941,21 +941,28 @@ declare const Callout: (props: import('@fluentui/react').ICalloutProps & { child
 declare function useApplicationTheme(): ITheme;
 
 /** The theme a ThemeBuilder builds, kept while the colours and the edit's key stay the same. */
-declare function useThemeBuilder(source: IThemeBuilderSource, edit?: IThemeEdit): ITheme;
+declare function useThemeBuilder(source: IThemeBuilderSource, options?: IUseThemeBuilderOptions): ITheme;
+
+interface IUseThemeBuilderOptions {
+    /** A hue the background and text are tinted by, as ThemeBuilder.tint does. */
+    tint?: { hue: string; strength?: ITintStrength };
+    /** One edit over the result; the same key has to mean the same edit. */
+    edit?: IThemeEdit;
+}
 
 /** A builder starting from a theme, three colours or a Fluent v9 theme; Fluent's defaults where left out. */
 declare function createThemeBuilder(source?: IThemeBuilderSource): ThemeBuilder;
 
-/** A text colour that reads on the background. */
+/** The nearest shade of the background's hue at 7:1 contrast, or black or white. */
 declare function getTextColorForBackground(backgroundColor: string): string;
 
 /** The WCAG contrast ratio between two colours, from 1 to 21. */
 declare function getColorContrast(color: string, otherColor: string): number;
 
-/** color mixed into base, holding weight (0 to 1) of color. */
+/** color mixed into base: a weight of 0 is base, 1 is color. */
 declare function mixColors(color: string, base: string, weight: number): string;
 
-/** Whether text drawn on the colour has to be dark to be read. */
+/** Whether dark text reads better on the colour than light text. */
 declare function isLightColor(color: string): boolean;
 
 type IAlignment = 'left' | 'center' | 'right';

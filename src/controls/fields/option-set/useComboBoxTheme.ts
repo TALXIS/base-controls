@@ -21,12 +21,14 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
 
     //a tag edits the surrounding theme
     const currentTheme = useThemeBuilder({ theme }, tag ? {
-        key: `optionSet|${tag.background}|${tag.text}|${tag.border}`,
-        edit: result => {
-            result.semanticColors.inputBackground = tag.background;
-            result.semanticColors.inputText = tag.text;
-            result.semanticColors.inputTextHovered = tag.text;
-            result.fonts.medium.fontWeight = FontWeights.semibold;
+        edit: {
+            key: `optionSet|${tag.background}|${tag.text}|${tag.border}`,
+            edit: result => {
+                result.semanticColors.inputBackground = tag.background;
+                result.semanticColors.inputText = tag.text;
+                result.semanticColors.inputTextHovered = tag.text;
+                result.fonts.medium.fontWeight = FontWeights.semibold;
+            },
         },
     } : undefined);
     return [isColorFeatureEnabled, currentTheme];

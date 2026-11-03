@@ -20,13 +20,17 @@ const Root = () => {
 }
 \`\`\`
 
-Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none. Both paint their element in the theme's background and font; \`applyTo='none'\` hands the theme down without painting anything.
+Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none.
+
+- Both providers render an element painted in the theme's background and font. \`applyTo='none'\` keeps the element but paints nothing.
+- \`ThemeContext\` hands a theme down with no element at all. It is cheap enough to use for every item of a long list.
+- The theme goes through as it is; nothing from the theme above is merged into it.
 
 A control reads the theme when it mounts. To switch themes, mount it again, for example with the theme's \`id\` as its \`key\`.
 
 ## Build a theme
 
-A theme is generated from three colours: \`primary\` for accents and selection, \`background\` and \`text\`. The rest of the palette follows from them, light or dark depending on the background. \`useThemeBuilder(source, edit?)\` builds one in a component and keeps it between renders:
+A theme is generated from three colours: \`primary\` for accents and selection, \`background\` and \`text\`. The rest of the palette follows from them, light or dark depending on the background. \`useThemeBuilder(source, options?)\` builds one in a component and keeps it between renders:
 
 | Source | The colours come from |
 |---|---|
@@ -34,13 +38,32 @@ A theme is generated from three colours: \`primary\` for accents and selection, 
 | \`{ theme }\` | An existing theme, which comes back as it is when nothing changes |
 | \`{ fluentDesignLanguage }\` | The Fluent v9 theme a PCF host hands its controls |
 
-An edit changes details the colours do not, such as fonts. Themes are cached by their edit's \`key\`, so a key must always mean the same edit:
+Its options change the theme the source builds:
+
+- **\`tint\`** tints the background and text by a hue, as \`builder.tint\` below does.
+- **\`edit\`** changes details the colours do not, such as fonts. Themes are cached by the edit's \`key\`, so a key must always mean the same edit.
 
 \`\`\`tsx
-const compact = useThemeBuilder({ theme: useTheme() }, { key: 'compact', edit: theme => { theme.fonts.medium.fontSize = 12 } })
+const warning = useThemeBuilder({ theme: useTheme() }, { tint: { hue: '#d13438' } })
+const compact = useThemeBuilder({ theme: useTheme() }, { edit: { key: 'compact', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
 \`\`\`
 
-Outside React, \`createThemeBuilder(source)\` returns the builder itself. Change its \`colors\`, add edits with \`edit(key, edit)\`, then call \`getTheme()\`. Without a source, it builds Fluent's defaults.
+Outside React, \`createThemeBuilder(source?)\` returns the builder itself, starting from Fluent's defaults without a source:
+
+| Member | Does |
+|---|---|
+| \`colors\` | The three colours. Change one and the whole palette follows it |
+| \`tint(hue, strength?)\` | Tints \`background\` and \`text\` by a hue, the way \`getTintColors\` below does |
+| \`edit(key, edit)\` | Adds an edit over the built theme; edits run in the order they were added |
+| \`getTheme()\` | The theme, generated from the colours with every edit applied |
+
+\`\`\`ts
+const builder = createThemeBuilder({ theme })
+builder.tint('#d13438')
+const warning = builder.getTheme()
+\`\`\`
+
+Colours, here and in the helpers below, are strings Fluent can parse: hex, \`rgb()\`, \`hsl()\` or a colour name. CSS variables are not colours it can work with.
 
 {{story: Brand colours}}
 
@@ -61,14 +84,17 @@ For an area whose surfaces should look different, wrap it in an \`ApplicationThe
 
 ## Your own components
 
-Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme. For a colour of your own, these helpers keep it readable in light and dark themes:
+Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
+
+A colour of your own, such as a status, is where themes go wrong: a red that looks right on white glares on a dark background. Start from a hue rather than a finished colour, and let \`getTintColors\` work out what to draw:
 
 | Helper | Returns |
 |---|---|
-| \`getTintColors(hue, { background, text }, strength?)\` | The background, border and text of a surface tinted by \`hue\`, \`'subtle'\` or \`'strong'\`, weighted for a light or dark theme |
-| \`getTextColorForBackground(color)\` | A text colour that reads on that background |
-| \`isLightColor(color)\` | Whether text on that colour has to be dark |
-| \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\` at a weight you choose |
+| \`getTintColors(hue, { background, text }, strength?)\` | \`{ background, border, text }\` for a surface tinted by \`hue\` over those colours. \`'subtle'\`, the default, is a wash behind text in the hue; \`'strong'\` is a fill. The amounts differ for a light and a dark background, and the text always reaches a contrast of 4.5:1 |
+| \`getTextColorForBackground(color)\` | A text colour for that background: the nearest shade of its own hue at a contrast of 7:1, or black or white where none reaches it |
+| \`getColorContrast(color, otherColor)\` | The WCAG contrast ratio, from 1 to 21. Text needs 4.5 to pass AA and 7 to pass AAA |
+| \`isLightColor(color)\` | Whether dark text reads better on it than light text, which also tells a light theme from a dark one |
+| \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\`: a \`weight\` of 0 is \`base\`, 1 is \`color\` |
 
 {{story: Readable tags}}
 `
@@ -107,7 +133,7 @@ export const YourOwnComponent: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A card reading its colours from \`useTheme()\`, in two themes, with tags whose text comes from \`getTextColorForBackground\`.`,
+                story: `A card reading its colours from \`useTheme()\`, in a light and a dark theme, with stage tags each drawn in a theme tinted from one hue by \`useThemeBuilder\`.`,
             },
         },
     },
