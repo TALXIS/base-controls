@@ -137,9 +137,10 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 
 const DERIVED_CODE = `const HUE = '#d13438'
 
-//each builder call changes the builder in place
+//outside React, the builder holds three colours; tint and edit change it, getTheme generates the theme
 const createAlertTheme = (theme: ITheme) => {
     const builder = createThemeBuilder({ theme })
+    //'strong' fills with the hue; 'subtle', the default, is a wash
     builder.tint(HUE, 'strong')
     builder.edit('bold', theme => { theme.fonts.medium.fontWeight = 600 })
     return builder.getTheme()
@@ -156,13 +157,17 @@ const Card = (props: { title: string }) => {
 
 const GridExample = () => {
     const pageTheme = useTheme()
+    //a source of three colours; { fluentDesignLanguage } takes the Fluent v9 theme a PCF host hands you
+    const ocean = useThemeBuilder({ colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } })
+    //or an existing theme, here tinted by a hue
     const tinted = useThemeBuilder({ theme: pageTheme }, { tint: { hue: HUE } })
-    //a new edit needs a new key
+    //edit changes what the colours do not; the theme is cached by its key, so a new edit needs a new key
     const compact = useThemeBuilder({ theme: pageTheme }, { edit: { key: 'compact-12', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
     const alert = React.useMemo(() => createAlertTheme(pageTheme), [pageTheme])
+    const cards = [{ title: 'colors', theme: ocean }, { title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }]
     return <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
-        {[{ title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }].map(item => <ThemeProvider key={item.title} theme={item.theme} style={{ padding: 12 }}>
-            <Card title={item.title} />
+        {cards.map(card => <ThemeProvider key={card.title} theme={card.theme} style={{ padding: 12 }}>
+            <Card title={card.title} />
         </ThemeProvider>)}
     </Stack>
 }

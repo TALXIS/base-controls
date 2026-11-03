@@ -12,3 +12,4 @@ export const TooltipHost = (props: ITooltipHostProps) => {
         tooltipProps={{ theme: theme, ...tooltipProps }}
         calloutProps={{ theme: theme, ...calloutProps }} />;
 };
+
