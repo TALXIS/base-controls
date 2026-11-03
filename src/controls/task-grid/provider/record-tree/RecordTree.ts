@@ -358,7 +358,7 @@ export class RecordTree implements IRecordTree {
         const handled = columns.filter(column => this._getColumnMatcher(column.name));
         const native = columns.filter(column => !handled.includes(column));
         const nativeMatchingIds = native.length > 0 ? this._filterNatively(records, provider => {
-            provider.onGetQuickFindColumns = () => native;
+            provider.setMetadata({ ...provider.getMetadata(), QuickFindColumns: native.map(column => column.name) });
             provider.setSearchQuery(searchQuery);
         }) : new Set<string>();
         return new Set(records.filter(record => nativeMatchingIds.has(record.getRecordId())

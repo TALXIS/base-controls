@@ -7,16 +7,6 @@ import { RichTextExample, WinChanceExample } from '../../../grid/examples/custom
 const DESCRIPTION = `
 Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
-\`\`\`tsx
-const HTML_RENDERER: ICellRendererComponents = {
-    columnControl: { onRenderControl: () => <HtmlValue /> },
-}
-
-<Grid
-    modules={[createClientSideRowModelModule(), createEditingModule()]}
-    colDefs={{ description: { cellRendererParams: { components: HTML_RENDERER } } }} />
-\`\`\`
-
 Either way, your cell keeps what the grid gives every cell: themes, validation errors, loading, commands, locks and row resizing.
 
 ## Changing how it looks
@@ -40,13 +30,7 @@ The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and 
 
 ## Write a cell of your own
 
-A \`cellRenderer\` of your own is any component that gets AG Grid's cell params, \`IGridCellParams\`. Render \`Grid.Cell.Renderer\` inside it, with \`components\` of its own, and wrap it in \`Grid.Cell.Field\` to bind it to its column's value, formatting and validation:
-
-\`\`\`tsx
-const HtmlCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
-    <Grid.Cell.Renderer {...props} components={HTML_RENDERER} />
-</Grid.Cell.Field>
-\`\`\`
+A \`cellRenderer\` of your own is any component that gets AG Grid's cell params, \`IGridCellParams\`. Wrap it in \`Grid.Cell.Field\` to bind it to its column's value, formatting and validation. Inside, render \`Grid.Cell.Renderer\` with \`components\` of its own, or compose the parts as below.
 
 A column you add in \`colDefs\` holds no value of the provider's: draw it with \`Grid.Cell.Renderer\` and no \`Field\`, or with \`Grid.Cell.EmptyRenderer\` for an empty cell. An editor of your own renders \`EditingCell.Editor\` the same way.
 

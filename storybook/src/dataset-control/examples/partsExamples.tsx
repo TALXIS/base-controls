@@ -4,7 +4,23 @@ import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
 const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
-const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const sortBy = async (control: IDatasetControl, name: string) => {
+    const provider = control.getProvider()!
+    provider.setSorting([{ name, sortDirection: 1 }])
+    await provider.refresh()
+}
+
+//adds a menu to whatever ribbon the control draws
+const addSortMenu = (control: IDatasetControl) => {
+    control.parts.observe('ribbon', ribbon => ribbon.registerCommands(commands => {
+        commands.push({ id: 'sort', label: 'Sort', iconName: 'Sort', commands: [
+            { id: 'byValue', label: 'By value', onExecute: () => sortBy(control, 'value') },
+            { id: 'byCloseDate', label: 'By close date', onExecute: () => sortBy(control, 'closedate') },
+        ] })
+    }))
+}
+
+const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onMounted={addSortMenu} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DealsRibbon />
@@ -22,21 +38,47 @@ const QUICK_FIND_CODE = `const loadSearchableDeals = async () => {
     return { provider }
 }
 
-const GridExample = () => <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} height='440px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.End>
-            <DatasetControl.QuickFind />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const [draft, setDraft] = React.useState('')
+
+    //follows the query as it is typed, before it is searched
+    const onMounted = (control: IDatasetControl) => {
+        control.parts.observe('quickFind', quickFind => quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery())))
+    }
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} onMounted={onMounted} height='440px'>
+            <DatasetControl.Header>
+                <DatasetControl.Header.End>
+                    <DatasetControl.QuickFind />
+                </DatasetControl.Header.End>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+            </DatasetControl.Body>
+        </DatasetControl>
+        <Text>Typed: {draft}</Text>
+    </Stack>
+}
 `
 
 const EDIT_COLUMNS_CODE = `import { loadDeals, loadDealViews } from './views'
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='editColumnsDeals' onLoad={loadDeals} height='440px'>
+//adds a command above the column pickers
+const addCommands = (control: IDatasetControl) => {
+    control.parts.observe('editColumns', editColumns => editColumns.registerCommands((commands, session) => {
+        const keepOnlyTheDeal = () => session.getColumns().filter(column => column.name !== 'name').forEach(column => session.removeColumn(column.name))
+        commands.push({ key: 'keepOnlyTheDeal', text: 'Keep only the deal', iconProps: { iconName: 'ClearFilter' }, onClick: keepOnlyTheDeal })
+    }))
+}
+
+//opens the column editor from a button of your own
+const ColumnsButton = () => {
+    const control = useDatasetControl()
+    return <DefaultButton text='Columns' iconProps={{ iconName: 'ColumnOptions' }} onClick={() => control.parts.get('editColumns').open()} />
+}
+
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='editColumnsDeals' onLoad={loadDeals} onMounted={addCommands} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -48,6 +90,11 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
     <DatasetControl.Body>
         <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
     </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.Start>
+            <ColumnsButton />
+        </DatasetControl.Footer.Start>
+    </DatasetControl.Footer>
 </DatasetControl>
 `
 
@@ -111,7 +158,21 @@ const GridExample = () => <DatasetControl stateKey='emptyRecordsDeals' onLoad={l
 </DatasetControl>
 `
 
-const PAGING_CODE = `const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const PAGING_CODE = `//pages the records through the parts
+const PagingShortcuts = () => {
+    const control = useDatasetControl()
+    return <Stack horizontal tokens={{ childrenGap: 8 }}>
+        <DefaultButton text='Pages of 10' onClick={() => control.parts.get('pageSizeSwitcher').setPageSize(10)} />
+        <DefaultButton text='First page' onClick={() => control.parts.get('pagination').moveFirst()} />
+    </Stack>
+}
+
+const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <PagingShortcuts />
+        </DatasetControl.Header.Start>
+    </DatasetControl.Header>
     <DatasetControl.Body>
         <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
     </DatasetControl.Body>

@@ -7,12 +7,6 @@ import { QuickFindExample } from '../../../dataset-control/examples/partsExample
 const DESCRIPTION = `
 \`DatasetControl.QuickFind\` is a search field over the records. It searches the provider's quick find columns for what the user types.
 
-\`\`\`tsx
-<DatasetControl.Header.End>
-    <DatasetControl.QuickFind />
-</DatasetControl.Header.End>
-\`\`\`
-
 {{story: Find a deal}}
 
 ## How it behaves
@@ -45,13 +39,7 @@ See *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-provider
 
 ## From your code
 
-\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Follow what the user types:
-
-\`\`\`tsx
-control.parts.observe('quickFind', quickFind => {
-    quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery()))
-})
-\`\`\`
+\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Follow what the user types with \`onQueryChanged\`, as the example does below the control.
 
 | Member | Does |
 |---|---|
@@ -88,7 +76,7 @@ export const FindADeal: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The deals are searched by name and account manager. Try: search for *Contoso*, then *Anna*, then *\\*rollout*, which matches anywhere, and click the field to see the columns it searches.`,
+                story: `The deals are searched by name and account manager, and *Typed* follows the query as it is edited. Try: search for *Contoso*, then *Anna*, then *\\*rollout*, which matches anywhere, and click the field to see the columns it searches.`,
             },
         },
     },

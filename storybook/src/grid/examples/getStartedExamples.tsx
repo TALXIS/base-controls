@@ -285,18 +285,25 @@ const FORM_SECTIONS = [
 ]
 
 //the form saves into the record the grid shows
-const createDealStrategy = (deal: IRecord) => {
-    const strategy = new MemoryStrategy({
-        onGetColumns: () => deal.getDataProvider().getColumns(),
-        onGetData: () => ({ ...deal.getRawData() }),
-        onGetMetadata: () => ({ PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name' }),
-    })
-    strategy.onSave = async ({ updatedData }) => {
-        Object.entries(updatedData).forEach(([columnName, value]) => deal.setValue(columnName, value))
-        return deal.save()
+class DealStrategy extends MemoryStrategy {
+    private _deal: IRecord
+
+    constructor(deal: IRecord) {
+        super({
+            onGetColumns: () => deal.getDataProvider().getColumns(),
+            onGetData: () => ({ ...deal.getRawData() }),
+            onGetMetadata: () => ({ PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name' }),
+        })
+        this._deal = deal
     }
-    return strategy
+
+    public async onSave({ updatedData }: { updatedData: { [columnName: string]: unknown } }) {
+        Object.entries(updatedData).forEach(([columnName, value]) => this._deal.setValue(columnName, value))
+        return this._deal.save()
+    }
 }
+
+const createDealStrategy = (deal: IRecord) => new DealStrategy(deal)
 
 /** The deal in a form, saved from its ribbon. */
 const DealForm = (props: { deal: IRecord }) => {
@@ -656,3 +663,27 @@ export const ShowcaseExample = () => {
         previewProps={{ features }}
         renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={ALL_PRESETS} values={features} onChange={setFeatures} />} />
 }
+
+const BASIC_USAGE_CODE = `//your own records, usually fetched from your API
+const createProducts = () => new MemoryDataProvider({
+    dataSource: [
+        { productid: 'desk', name: 'Standing desk', price: 640 },
+        { productid: 'chair', name: 'Ergonomic chair', price: 410 },
+    ],
+    metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
+    //each provider column becomes a grid column
+    columns: [
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency },
+    ],
+})
+
+//the grid shows the provider of the DatasetControl around it
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createProducts() })}>
+    <DatasetControl.Body>
+        <Grid modules={[createClientSideRowModelModule()]} />
+    </DatasetControl.Body>
+</DatasetControl>
+`
+
+export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} />

@@ -20,7 +20,7 @@ import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { CZECH_LABELS, PcfContextProvider, EmptyRecordsUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, useLabels, useTaskRuntime } from '@talxis/base-controls'
+import { CZECH_LABELS, PcfContextProvider, EmptyRecordsUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
 import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
 import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
@@ -164,6 +164,9 @@ export const GRID_SANDBOX_SCOPE = {
     PcfContextProvider,
     CZECH_LABELS,
     useLabels,
+    //the library's version throws when a reader edits a default
+    defineLabels: <T extends { [key: string]: string }>(defaults: T) => ({ defaults }),
+    translateLabels,
     LocalStorageUserQueriesStore,
     QuickFindUiComponents,
     PaginationUiComponents,

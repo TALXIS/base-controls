@@ -7,17 +7,6 @@ import { LookupManyExample } from '../../../task-grid/examples/modulesExamples'
 const DESCRIPTION = `
 A lookup-many column holds many related records per task, such as the people assigned to it or its tags. The records are drawn as pills, picked in a searchable pop-out editor, and filtered and searched like any other column.
 
-\`\`\`tsx
-const COLUMNS: { [columnName: string]: ILookupManyColumn } = {
-    assignedto: { displayName: 'Assigned to', entityName: 'person', appearance: { type: 'people' } },
-    tags: { displayName: 'Tags', entityName: 'tag', appearance: { type: 'colorful' } },
-}
-
-const controlModules = React.useMemo(() => [createMemoryLookupManyModule({ sources: SOURCES, columns: COLUMNS, values: VALUES })], [])
-\`\`\`
-
-A view shows a column by listing it by name, as a \`Lookup.Simple\` column: \`{ name: 'assignedto', displayName: 'Assigned to', dataType: 'Lookup.Simple' }\`.
-
 {{story: Assign people and tags}}
 
 ## Columns

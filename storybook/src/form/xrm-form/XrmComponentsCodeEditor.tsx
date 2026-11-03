@@ -153,6 +153,7 @@ interface IXrmTabsComponents {
 }
 interface IXrmFormProps {
   strategy: IXrmFormStrategy;
+  onFormReady?: (params: IXrmFormReadyParams) => void;
   components?: {
     control?: IXrmControlComponents;
     tabs?: IXrmTabsComponents;

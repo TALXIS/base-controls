@@ -2,21 +2,14 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { DriveTheControlExample, WatchTheControlExample } from '../../dataset-control/examples/talkingExamples'
+import { DriveTheControlExample, ModuleExample, WatchTheControlExample } from '../../dataset-control/examples/talkingExamples'
 
 const DESCRIPTION = `
 Every mount of a DatasetControl has an \`IDatasetControl\`: one object your code talks to, to switch the view, reload, follow loads, and reach the parts and modules on the page.
 
 ## Get the control
 
-Inside the control, any component gets it from \`useDatasetControl()\`:
-
-\`\`\`tsx
-const WonDealsButton = () => {
-    const control = useDatasetControl()
-    return <DefaultButton text='Won deals' onClick={() => control.loadView('won')} />
-}
-\`\`\`
+Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar in *Drive the control from a toolbar* does.
 
 Outside it, the control's props hand it to you:
 
@@ -25,15 +18,6 @@ Outside it, the control's props hand it to you:
 | \`onMounted\` | Before each load. Add your listeners here: every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)). |
 | \`onReady\` | Once that load succeeded. |
 | \`onDestroyed\` | As the mount goes. |
-
-\`\`\`tsx
-const onMounted = (control: IDatasetControl) => {
-    controlRef.current = control
-    control.events.addEventListener('onLoaded', () => setViewInUrl(control.getViewId()))
-}
-
-<DatasetControl onLoad={loadDeals} onMounted={onMounted}>...</DatasetControl>
-\`\`\`
 
 {{story: Watch the control load}}
 
@@ -74,12 +58,6 @@ Every part on the page registers itself on the control under its own key, for as
 | \`find(key)\` | The part, or \`undefined\` when it isn't rendered. |
 | \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call. |
 
-\`\`\`tsx
-const quickFind = control.parts.get('quickFind')
-quickFind.setQuery('Contoso')
-quickFind.search()
-\`\`\`
-
 | Key | Part | What you do with it |
 |---|---|---|
 | \`viewSwitcher\` | [**Views**](?path=/docs/controls-datasetcontrol-views--overview) | List the views, pick one, add to the menu. |
@@ -99,23 +77,21 @@ The parts are drawn once the load succeeds, so outside a part's own render use \
 
 A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, in order, before \`onLoadViews\`. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
 
-\`\`\`tsx
+{{story: Add a view from a module}}
+
+Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed:
+
+\`\`\`ts
 declare module '@talxis/base-controls' {
     interface IDatasetControlModuleMap {
         dealAlerts: DealAlerts
     }
 }
-
-const dealAlertsModule: IDatasetControlModule<'dealAlerts'> = {
-    name: 'dealAlerts',
-    onLoad: async control => new DealAlerts(control, await fetchAlertRules()),
-    onDestroy: alerts => alerts.dispose(),
-}
 \`\`\`
 
 | Member | Description |
 |---|---|
-| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it; declare its type in \`IDatasetControlModuleMap\`. |
+| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it. |
 | \`onLoad(control)\` | Can be async. A throw fails the load. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
 
@@ -174,6 +150,18 @@ export const WatchTheControl: Story = {
         docs: {
             description: {
                 story: `The control's events and its \`onMounted\`, \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view and watch the old mount go and a new one start, press *Show won deals*, which calls \`loadView('won')\`, then *Remount*.`,
+            },
+        },
+    },
+}
+
+export const AddAViewFromAModule: Story = {
+    name: 'Add a view from a module',
+    render: () => renderStory(<ModuleExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A module of your own adds *Closing soon* to the views \`onLoadViews\` lists, through \`registerViews\`. Try: pick *Closing soon* under *Reports* in the view switcher, then rename it in the module's code.`,
             },
         },
     },

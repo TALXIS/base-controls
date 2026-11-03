@@ -2,23 +2,16 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { BrandExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
+import { BrandExample, DerivedThemesExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
 A theme says what everything is drawn in: its colours, fonts and effects. It is a Fluent UI v8 theme (\`ITheme\`), so the controls, Fluent's own components and yours all look the same, and one theme at the root of the application is all most applications need.
 
 ## The providers
 
-Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application:
+Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
 
-\`\`\`tsx
-const Root = () => {
-    const theme = useThemeBuilder({ colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } })
-    return <ApplicationThemeProvider theme={theme}>
-        <App />
-    </ApplicationThemeProvider>
-}
-\`\`\`
+{{story: Brand colours}}
 
 Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none.
 
@@ -43,11 +36,6 @@ Its options change the theme the source builds:
 - **\`tint\`** tints the background and text by a hue, as \`ThemeBuilder.tint\` does.
 - **\`edit\`** changes details the colours do not, such as fonts. Themes are cached by the edit's \`key\`, so a key must always mean the same edit.
 
-\`\`\`tsx
-const warning = useThemeBuilder({ theme: useTheme() }, { tint: { hue: '#d13438' } })
-const compact = useThemeBuilder({ theme: useTheme() }, { edit: { key: 'compact', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
-\`\`\`
-
 Outside React, \`createThemeBuilder(source?)\` returns the builder itself, starting from Fluent's defaults without a source:
 
 | Member | Does |
@@ -57,17 +45,11 @@ Outside React, \`createThemeBuilder(source?)\` returns the builder itself, start
 | \`edit(key, edit)\` | Adds an edit over the built theme; edits run in the order they were added |
 | \`getTheme()\` | The theme, generated from the colours with every edit applied |
 
-\`\`\`ts
-const builder = createThemeBuilder({ theme })
-builder.tint('#d13438')
-const warning = builder.getTheme()
-\`\`\`
+{{story: Tint and edit}}
 
 Tinting or changing a colour generates the theme again from its three colours, so what a \`{ theme }\` source carried beyond them, such as fonts, component styles or earlier edits, is not kept; add it back with \`edit\`. \`tint\` also changes \`colors\` in place, so tinting twice compounds.
 
 Colours, here and in the helpers below, are strings Fluent can parse: hex, \`rgb()\`, \`hsl()\` or a colour name. CSS variables are not colours it can work with.
-
-{{story: Brand colours}}
 
 ## Surfaces
 
@@ -132,6 +114,18 @@ export const BrandColours: Story = {
         docs: {
             description: {
                 story: `Deals in an application theme built from three colours, with most parts and grid modules switched on, so their menus, panels and editors open in it too. Try: pick a brand, then edit, sort, filter, group and open the menus.`,
+            },
+        },
+    },
+}
+
+export const TintAndEdit: Story = {
+    name: 'Tint and edit',
+    render: () => renderStory(<DerivedThemesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `One card in three themes derived from the page's: tinted and edited by \`useThemeBuilder\`, and built outside React by \`createThemeBuilder\`. Try: change the hue or the font size.`,
             },
         },
     },

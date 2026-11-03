@@ -7,16 +7,6 @@ import { HeaderCaptionExample, PipelineHeaderExample } from '../../../grid/examp
 const DESCRIPTION = `
 Every column draws its header with \`Grid.ColumnHeader.Renderer\`: the column's name, its required marker, the icons modules add, and a menu that opens on click. To change a column's header, hand it new slots through \`headerComponentParams\` in \`colDefs\`; to lay it out yourself, give the column a \`headerComponent\` of your own.
 
-\`\`\`tsx
-const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
-    label: { onRenderText: props => <CaptionedLabel {...props} /> },
-}
-
-<Grid
-    modules={[createClientSideRowModelModule()]}
-    colDefs={{ price: { headerComponentParams: { components: CAPTIONED_HEADER } } }} />
-\`\`\`
-
 Either way, your header keeps what the grid gives every header: its theme, the icons modules add, and the column's menu.
 
 ## Changing how it looks

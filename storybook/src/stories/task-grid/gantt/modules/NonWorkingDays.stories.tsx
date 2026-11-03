@@ -7,15 +7,6 @@ import { GanttNonWorkingDaysExample } from '../../../../task-grid/examples/gantt
 const DESCRIPTION = `
 The non-working days module shades weekends and the days you list, such as holidays, on the timeline, and leaves them out of every task's duration.
 
-\`\`\`tsx
-const HOLIDAYS: INonWorkingDay[] = [
-    { id: 'christmas', date: dayjs('2020-12-24'), endDate: dayjs('2020-12-26'), description: 'Christmas', recurrence: 'FREQ=YEARLY' },
-    { id: 'offsite', date: dayjs('2025-11-12'), endDate: dayjs('2025-11-14'), description: 'Company offsite' },
-]
-
-const ganttModules = React.useMemo(() => [createLibraryModule(), createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS })], [])
-\`\`\`
-
 {{story: Shade the holidays}}
 
 ## What it does
@@ -80,7 +71,7 @@ export const ShadeTheHolidays: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Weekends, common holidays, a company offsite and a hackathon. Try: zoom in to days and point at a shaded day on the scale, drag a bar onto a weekend, or turn on *Hide non-working days* in the settings.`,
+                story: `Weekends, common holidays, a company offsite, a monthly team day and a hackathon. Try: zoom in to days and point at a shaded day on the scale, drag a bar onto a weekend, or turn on *Hide non-working days* in the settings.`,
             },
         },
     },

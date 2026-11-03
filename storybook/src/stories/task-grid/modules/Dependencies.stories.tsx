@@ -7,12 +7,6 @@ import { DependenciesExample } from '../../../task-grid/examples/modulesExamples
 const DESCRIPTION = `
 A dependency says that one task waits on another. The dependencies module holds the tasks' dependencies, and shows how many each task has in a *Predecessors* and a *Successors* column. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) draws them as links between the bars, and lets the user draw and delete them.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [createMemoryDependenciesModule({ dependencies: DEPENDENCIES })], [])
-\`\`\`
-
-A view shows the columns by listing \`predecessors__virtual\` and \`successors__virtual\`, as \`Lookup.Simple\` columns. They are offered in Edit columns too.
-
 {{story: Count the dependencies}}
 
 ## A dependency

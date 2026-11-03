@@ -16,16 +16,28 @@ const loadDealsOnRetry = async (params: IDatasetControlLoadParameters<IDealViewD
     return loadDeals(params)
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals-error-handling' onLoad={loadDealsOnRetry} height='420px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher />
-        </DatasetControl.Header.Start>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const [logged, setLogged] = React.useState<string[]>([])
+
+    //logs each failed load beside what the control shows
+    const onMounted = (control: IDatasetControl<IDealViewData>) => {
+        control.events.addEventListener('onLoadFailed', error => setLogged(logged => [...logged, (error as Error).message]))
+    }
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='deals-error-handling' onLoad={loadDealsOnRetry} onMounted={onMounted} height='420px'>
+            <DatasetControl.Header>
+                <DatasetControl.Header.Start>
+                    <DatasetControl.ViewSwitcher />
+                </DatasetControl.Header.Start>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+            </DatasetControl.Body>
+        </DatasetControl>
+        <Text>Failed loads logged: {logged.length}</Text>
+    </Stack>
+}
 `
 
 const FAILED_ACTIONS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
@@ -55,8 +67,16 @@ class DealViewsStore extends LocalStorageUserQueriesStore<IDealViewData> {
     }
 }
 
+const getLogStyles = (theme: ITheme) => mergeStyleSets({
+    log: { padding: '8px 12px', minHeight: 66, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontFamily: 'Consolas, monospace', color: theme.semanticColors.bodySubtext },
+})
+
 const GridExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getLogStyles(theme), [theme])
     const [isDown, setIsDown] = React.useState(false)
+    const [log, setLog] = React.useState<string[]>([])
+    const write = (line: string) => setLog(log => [line, ...log].slice(0, 3))
     const modules = React.useMemo(() => [createUserQueriesModule<IDealViewData>({ onCreateStore: () => new DealViewsStore({ storageKey: 'docs.failingDealViews' }) })], [])
 
     const toggleServer = (checked: boolean) => {
@@ -64,9 +84,16 @@ const GridExample = () => {
         setIsDown(checked)
     }
 
+    //logs each failure beside the error dialog
+    const onMounted = (control: IDatasetControl<IDealViewData>) => {
+        saveDealViewData(control)
+        control.parts.observe('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => write(\`\${command.id}: \${(error as Error).message}\`)))
+        control.modules.observe('userQueries', userQueries => userQueries.events.addEventListener('onOperationFailed', (error: Error) => write(\`views: \${error.message}\`)))
+    }
+
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel checked={isDown} onChange={(_, checked) => toggleServer(!!checked)} />
-        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='deals-failed-actions' height='420px'>
+        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={onMounted} stateKey='deals-failed-actions' height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>
@@ -81,6 +108,9 @@ const GridExample = () => {
                 <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
+        <div className={styles.log}>
+            {log.map((line, index) => <div key={index}>{line}</div>)}
+        </div>
     </Stack>
 }
 `

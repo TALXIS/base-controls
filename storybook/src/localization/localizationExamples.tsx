@@ -385,4 +385,52 @@ export const JAPANESE_LABELS: { [key: string]: string } = {
 `,
 }
 
+const OWN_LABELS_CODE = `import { INVOICE_LABELS } from './labels'
+import { INVOICE_LABELS_CS } from './labels.cs'
+
+const LINES = ['Standing desk', 'Ergonomic chair', 'Desk lamp']
+
+const Invoice = (props: { lines: string[] }) => {
+    const labels = useLabels(INVOICE_LABELS)
+    return <Stack tokens={{ childrenGap: 4 }}>
+        <Text variant='large'>{labels.get('invoice.title')}</Text>
+        <Text>{labels.get('invoice.lineCount', { count: props.lines.length })}</Text>
+    </Stack>
+}
+
+const GridExample = () => {
+    const [isCzech, setIsCzech] = React.useState(true)
+    return <Stack tokens={{ childrenGap: 12 }}>
+        <Toggle label='Czech' inlineLabel checked={isCzech} onChange={(_, checked) => setIsCzech(!!checked)} />
+        <LabelsProvider labels={isCzech ? INVOICE_LABELS_CS : {}}>
+            <Invoice lines={LINES} />
+        </LabelsProvider>
+    </Stack>
+}
+`
+
+const LABELS_FILE = {
+    name: 'labels.ts',
+    code: `//every key prefixed with the component's name
+export const INVOICE_LABELS = defineLabels({
+    'invoice.title': 'Invoice',
+    'invoice.lineCount': 'Lines: {{ count }}',
+})
+`,
+}
+
+const CZECH_FILE = {
+    name: 'labels.cs.ts',
+    code: `import { INVOICE_LABELS } from './labels'
+
+//keys checked against the set
+export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {
+    'invoice.title': 'Faktura',
+    'invoice.lineCount': 'Řádky: {{ count }}',
+})
+`,
+}
+
 export const SwitchLanguageExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: SWITCH_LANGUAGE_CODE }, JAPANESE_FILE, COLUMNS_FILE, TASKS_FILE]} />
+
+export const OwnLabelsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_LABELS_CODE }, LABELS_FILE, CZECH_FILE]} />

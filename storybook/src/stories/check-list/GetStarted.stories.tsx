@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { LaunchPlanExample } from '../../check-list/checkListExamples'
+import { BasicUsageExample, LaunchPlanExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
 \`CheckList\` shows the records of a provider as a to-do list: users tick items off, rename them, drag them into a new order, add items in the row at the bottom and delete the ones they no longer need. It is a [**Grid**](?path=/docs/controls-grid-get-started--overview) underneath, so it takes every \`Grid\` prop, and its columns, cells and events work as in any grid.
@@ -13,35 +13,7 @@ const DESCRIPTION = `
 
 A *provider* holds the records and everything about them; the checklist only draws it. Creating one is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-\`\`\`tsx
-import { CheckList, DatasetControl, ICheckListFieldMapping, PcfContextProvider, sortCheckListProvider } from '@talxis/base-controls'
-import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
-
-const FIELD_MAPPING: ICheckListFieldMapping = { name: 'name', stackRank: 'stackrank', completed: 'completed' }
-
-const createLaunchPlan = () => new MemoryDataProvider({
-    dataSource: [
-        { itemid: '1', name: 'Sketch the layout', completed: true, stackrank: '0|100000:' },
-        { itemid: '2', name: 'Ship the first version', completed: false, stackrank: '0|200000:' },
-    ],
-    metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'launchitem' },
-    columns: [
-        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText },
-        { name: 'completed', displayName: 'Done', dataType: DataTypes.TwoOptions },
-        { name: 'stackrank', displayName: 'Rank', dataType: DataTypes.SingleLineText },
-    ],
-})
-
-export const LaunchPlan = () => <PcfContextProvider>
-    <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(createLaunchPlan(), FIELD_MAPPING) })}>
-        <DatasetControl.Body>
-            <CheckList fieldMapping={FIELD_MAPPING} />
-        </DatasetControl.Body>
-    </DatasetControl>
-</PcfContextProvider>
-\`\`\`
-
-You should see the two items, the first ticked and struck through, and an empty row at the bottom to add the next one.
+{{story: Two items}}
 
 ## How it fits together
 
@@ -105,6 +77,18 @@ export const PlanALaunch: Story = {
         docs: {
             description: {
                 story: `A product launch's checklist. Try: tick an item off, drag one to a new place, and type a new item in the bottom row.`,
+            },
+        },
+    },
+}
+
+export const TwoItems: Story = {
+    name: 'Two items',
+    render: () => renderStory(<BasicUsageExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Two items, the first ticked and struck through, and an empty row at the bottom to add the next one. Try: type a new item in the bottom row and drag it above the others.`,
             },
         },
     },

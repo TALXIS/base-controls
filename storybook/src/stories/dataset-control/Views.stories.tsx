@@ -28,23 +28,7 @@ The switcher needs only a view's name. What the view shows is resolved when it o
 
 ## Load the view
 
-\`onLoad\` gets the view as listed:
-
-1. Create the provider.
-2. \`await view.resolve(provider)\`.
-3. Set the provider up from the view's \`data\`.
-4. Return it. Don't set the columns or linking: the control does.
-
-\`\`\`tsx
-const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
-    const provider = createDealsProvider()
-    const { data = {} } = view ? await view.resolve(provider) : {}
-    if (data.stage) {
-        provider.setFiltering({ filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: \`\${data.stage}\` }] })
-    }
-    return { provider }
-}
-\`\`\`
+\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's *views.ts* shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return it. Don't set the columns or linking: the control does.
 
 The full sequence is under *Load order* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 

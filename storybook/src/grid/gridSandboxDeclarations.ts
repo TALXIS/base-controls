@@ -573,6 +573,8 @@ interface IDataProviderEventListeners {
     onRecordCommandsRetrieved: (commands: ICommand[], options?: IRetrieveRecordCommandOptions) => void;
     /** Fired once save() has saved every record. */
     onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
+    /** Fired once deleteRecords() has deleted the records. */
+    onAfterRecordsDeleted: (results: IRecordDeleteOperationResult[]) => void;
     onNestedProviderPagingLimitReached: () => void;
 }
 
@@ -4160,6 +4162,14 @@ interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
 
 /** A label set's strings, as the nearest LabelsProvider gives them. */
 declare const useLabels: (set: ILabelSet) => ILabels;
+/** A label set whose keys translateLabels checks. */
+interface ILabelSetOf<T extends { [key: string]: string }> extends ILabelSet {
+    readonly defaults: T;
+}
+/** Declares a component's English strings, each under a key prefixed with the component's name. */
+declare function defineLabels<T extends { [key: string]: string }>(defaults: T): ILabelSetOf<T>;
+/** Translations of one set, with their keys checked against it. */
+declare function translateLabels<T extends { [key: string]: string }>(set: ILabelSetOf<T>, strings: Partial<Record<keyof T & string, string>>): { [key: string]: string };
 /** User views kept in localStorage; extend it to change how a view is written. */
 declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQueriesStore<TData> {
     constructor(parameters: { storageKey: string });

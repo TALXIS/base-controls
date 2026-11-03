@@ -1,7 +1,8 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const PIPELINE_BY_MANAGER_CODE = `const createPipelineProvider = () => {
+export const PIPELINE_BY_MANAGER_CODE = `//set before the first load, so the grid opens grouped and totalled
+const createPipelineProvider = () => {
     const deals = createDealsProvider()
     deals.grouping.addGroupBy({ columnName: 'owner', alias: 'owner_group' })
     deals.aggregation.addAggregation({ columnName: 'value', alias: 'value_sum', aggregationFunction: 'sum' })
@@ -148,6 +149,65 @@ const GridExample = () => {
 }
 `
 
+export const SUBMITTED_ENTRIES_CODE = `const DRAFT = 1
+const REJECTED = 4
+
+const createStatusProvider = () => {
+    const timesheets = createTimesheetsProvider()
+    timesheets.grouping.addGroupBy({ columnName: 'status', alias: 'status_group' })
+    timesheets.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
+    return timesheets
+}
+
+//group rows and the totals row read null for 'status'
+const isSummaryRow = (record: IRecord) => record.getDataProvider().getSummarizationType() !== 'none'
+
+const GridExample = () => {
+    const timesheets = React.useMemo(createStatusProvider, [])
+    const [skipSummaryRows, setSkipSummaryRows] = React.useState(true)
+    const skipSummaryRowsRef = React.useRef(skipSummaryRows)
+    const gridRef = React.useRef<IGrid>()
+
+    const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }) => {
+        if (skipSummaryRowsRef.current && isSummaryRow(record)) {
+            return
+        }
+        if (![DRAFT, REJECTED].includes(Number(record.getValue('status')))) {
+            result.isLocked = true
+        }
+    }
+
+    const toggleSkip = (checked: boolean) => {
+        skipSummaryRowsRef.current = checked
+        setSkipSummaryRows(checked)
+        const grid = gridRef.current
+        grid?.services.get('cells').render()
+        grid?.services.get('rows').refreshRowClasses(timesheets.getRecords())
+    }
+
+    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <Toggle inlineLabel label='Skip summary rows' checked={skipSummaryRows} onChange={(_, checked) => toggleSkip(!!checked)} />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={[
+                    createClientSideRowModelModule(),
+                    createEditingModule({ autoSave: true }),
+                    createGroupingModule({ defaultExpandedLevel: 0 }),
+                    createAggregationModule(),
+                ]}
+                rowSettings={{ onGetLock: lockSubmittedEntries }}
+                enableOptionSetColors
+                onReady={grid => { gridRef.current = grid }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
+`
+
 export const PipelineByManagerExample = () => <GridExampleRunner seedCode={PIPELINE_BY_MANAGER_CODE} dataset='deals' />
 
 export const HoursByEmployeeExample = () => <GridExampleRunner seedCode={HOURS_BY_EMPLOYEE_CODE} dataset='timesheets' />
@@ -155,3 +215,5 @@ export const HoursByEmployeeExample = () => <GridExampleRunner seedCode={HOURS_B
 export const FilteredTotalsExample = () => <GridExampleRunner seedCode={FILTERED_TOTALS_CODE} dataset='deals' />
 
 export const ExpandFromRibbonExample = () => <GridExampleRunner seedCode={EXPAND_FROM_RIBBON_CODE} dataset='timesheets' />
+
+export const SubmittedEntriesExample = () => <GridExampleRunner seedCode={SUBMITTED_ENTRIES_CODE} dataset='timesheets' />

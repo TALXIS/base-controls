@@ -2,18 +2,10 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { ReopenQueueExample } from '../../grid/examples/stateExamples'
+import { PreviewStateExample, ReopenQueueExample } from '../../grid/examples/stateExamples'
 
 const DESCRIPTION = `
 A grid with a \`stateKey\` remembers where the user was: the row at the top of the viewport, the focused cell and the open groups. The next grid mounted with the same \`stateKey\` puts the user back. Without a \`stateKey\`, the grid keeps nothing.
-
-\`\`\`tsx
-<DatasetControl onLoad={loadTickets}>
-    <DatasetControl.Body>
-        <Grid stateKey='tickets' modules={[createClientSideRowModelModule(), createGroupingModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
 
 {{story: Bring the user back where they left off}}
 
@@ -32,27 +24,9 @@ On mount, the grid waits for the top row to appear, which inside a group means o
 
 ## Keep your own module's state
 
-The state is a keyed store at \`grid.services.get('state')\`, with \`get\`, \`set\` and \`delete\`. Pick a key of your own, read it as the module loads, and write it when it changes:
+The state is a keyed store at \`grid.services.get('state')\`, with \`get\`, \`set\` and \`delete\`. Pick a key of your own, read it once AG Grid is ready, and write it when it changes.
 
-\`\`\`ts
-interface IPreviewState {
-    recordId?: string
-}
-
-const createPreviewModule = (onOpen: (recordId: string) => void): IGridModule => ({
-    name: 'preview',
-    onLoad: grid => {
-        const state = grid.services.get('state')
-        const recordId = state.get<IPreviewState>('preview')?.recordId
-        if (recordId) {
-            onOpen(recordId)
-        }
-        grid.services.observe('gridApi', gridApi => {
-            gridApi.addEventListener('rowClicked', event => state.set<IPreviewState>('preview', { recordId: event.data?.getRecordId() }))
-        })
-    },
-})
-\`\`\`
+{{story: Reopen the last previewed ticket}}
 `
 
 const meta = {
@@ -78,6 +52,18 @@ export const BackWhereYouLeftOff: Story = {
         docs: {
             description: {
                 story: `Tickets grouped by status and assignee, remounted from scratch with the same \`stateKey\`. Try: open or close a few groups, scroll down, click a cell, then press *Close and reopen*.`,
+            },
+        },
+    },
+}
+
+export const ReopenTheLastPreviewedTicket: Story = {
+    name: 'Reopen the last previewed ticket',
+    render: () => renderStory(<PreviewStateExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A preview module that writes the clicked ticket to the grid's state under a key of its own, and reads it back on the next mount. Try: click a ticket, then press *Close and reopen*.`,
             },
         },
     },

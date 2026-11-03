@@ -23,6 +23,8 @@ const GridExample = () => {
                     name: { pinned: 'left' },
                     category: { pinned: 'right' },
                     photo: { maxWidth: 80 },
+                    //a function entry receives the column as built
+                    price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
                 }}
                 height='420px' />
         </DatasetControl.Body>
@@ -48,18 +50,25 @@ interface IProductPhotoProps {
 const ProductPhoto = (props: IProductPhotoProps) => <img className={styles.photo} src={props.product.getValue('photo')?.thumbnailUrl} alt={props.product.getFormattedValue('name') ?? ''} />
 
 //the ribbon's save writes the changes into the record the grid shows
-const createProductStrategy = (product: IRecord) => {
-    const strategy = new MemoryStrategy({
-        onGetColumns: () => provider.getColumns(),
-        onGetData: () => ({ ...product.getRawData() }),
-        onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
-    })
-    strategy.onSave = async ({ updatedData }) => {
-        Object.entries(updatedData).forEach(([columnName, value]) => product.setValue(columnName, value))
-        return product.save()
+class ProductStrategy extends MemoryStrategy {
+    private _product: IRecord
+
+    constructor(product: IRecord) {
+        super({
+            onGetColumns: () => provider.getColumns(),
+            onGetData: () => ({ ...product.getRawData() }),
+            onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
+        })
+        this._product = product
     }
-    return strategy
+
+    public async onSave({ updatedData }: { updatedData: { [columnName: string]: unknown } }) {
+        Object.entries(updatedData).forEach(([columnName, value]) => this._product.setValue(columnName, value))
+        return this._product.save()
+    }
 }
+
+const createProductStrategy = (product: IRecord) => new ProductStrategy(product)
 
 interface IProductFormProps {
     product: IRecord

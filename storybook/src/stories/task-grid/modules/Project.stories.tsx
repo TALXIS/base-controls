@@ -1,17 +1,13 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
+import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ProjectExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
 The project module loads the project the tasks belong to, before the tasks load on every mount. It draws nothing itself: other parts read it.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [
-    createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
-], [])
-
-<TaskDatasetControl modules={controlModules} onLoad={loadTasks}>...</TaskDatasetControl>
-\`\`\`
+{{story: Read the project}}
 
 ## What reads it
 
@@ -54,6 +50,8 @@ const meta = {
         controls: { disable: true },
         docs: {
             page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
 } satisfies Meta
@@ -63,4 +61,16 @@ export default meta
 export const Overview: StoryObj<typeof meta> = {
     name: 'Overview',
     render: () => <></>,
+}
+
+export const ReadTheProject: StoryObj<typeof meta> = {
+    name: 'Read the project',
+    render: () => renderStory(<ProjectExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A project in memory, read from the module once the tasks are ready. Try: change the project's \`name\` or \`endDate\` in **Code**.`,
+            },
+        },
+    },
 }

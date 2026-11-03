@@ -2,18 +2,10 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { SwitchLanguageExample } from '../../localization/localizationExamples'
+import { OwnLabelsExample, SwitchLanguageExample } from '../../localization/localizationExamples'
 
 const DESCRIPTION = `
-Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap the application in \`LabelsProvider\` to translate or reword the labels below it, or wrap a single part of it to reword just that part.
-
-\`\`\`tsx
-<LabelsProvider labels={{ ...CZECH_LABELS, 'taskGrid.new': 'Přidat práci' }}>
-    <TaskDatasetControl onLoad={loadTasks}>...</TaskDatasetControl>
-</LabelsProvider>
-\`\`\`
-
-Below, the full task grid in English, Czech, Japanese or a wording of your own. Open **Code** for the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.
+Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap the application in \`LabelsProvider\` to translate or reword the labels below it, or wrap a single part of it to reword just that part. Below, the full task grid in English, Czech, Japanese or a wording of your own; **Code** has the Japanese translation in \`japanese.ts\` and the translated view and column names in \`columns.ts\`.
 
 {{canvas: Overview}}
 
@@ -40,28 +32,7 @@ To add a supported language to the library itself, where each component keeps it
 
 Give a component of yours labels the way the library's own do, rather than hard-coded strings or text props. Prefix every key with the component's name: \`defineLabels\` throws on a key another set already defines with a different string.
 
-\`\`\`tsx
-//labels.ts: one set per component
-export const INVOICE_LABELS = defineLabels({
-    'invoice.title': 'Invoice',
-    'invoice.lineCount': 'Lines: {{ count }}',
-})
-
-//labels.<language>.ts: one file per supported language
-export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {
-    'invoice.title': 'Faktura',
-    'invoice.lineCount': 'Řádky: {{ count }}',
-})
-
-//Invoice.tsx
-const Invoice = (props: IInvoiceProps) => {
-    const labels = useLabels(INVOICE_LABELS)
-    return <Stack>
-        <Text>{labels.get('invoice.title')}</Text>
-        <Text>{labels.get('invoice.lineCount', { count: props.lines.length })}</Text>
-    </Stack>
-}
-\`\`\`
+{{story: Your own labels}}
 `
 
 const meta = {
@@ -83,4 +54,16 @@ type Story = StoryObj<typeof meta>
 export const Overview: Story = {
     name: 'Overview',
     render: () => renderStory(<SwitchLanguageExample />),
+}
+
+export const YourOwnLabels: Story = {
+    name: 'Your own labels',
+    render: () => renderStory(<OwnLabelsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `An invoice header with a label set of its own and a Czech translation in separate files. Try: switch Czech off, then add a key to \`labels.ts\` and translate it.`,
+            },
+        },
+    },
 }

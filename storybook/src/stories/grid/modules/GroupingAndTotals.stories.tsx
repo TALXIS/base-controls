@@ -2,19 +2,11 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { ExpandFromRibbonExample, FilteredTotalsExample, HoursByEmployeeExample, PipelineByManagerExample } from '../../../grid/examples/groupingTotalsExamples'
+import { ExpandFromRibbonExample, FilteredTotalsExample, HoursByEmployeeExample, PipelineByManagerExample, SubmittedEntriesExample } from '../../../grid/examples/groupingTotalsExamples'
 import { GroupBadgesExample, StockTotalsExample } from '../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
 Grouping gathers the rows under a group row for each value of a column, level by level. The aggregation module adds totals, to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not (see [**Modules**](?path=/docs/controls-grid-modules--overview)).
-
-\`\`\`tsx
-<DatasetControl onLoad={loadDeals}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createGroupingModule(), createAggregationModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
 
 {{story: Group the pipeline by account manager}}
 
@@ -64,33 +56,13 @@ Group rows and the totals row are summary rows: records (\`IRecord\`) like any o
 | \`'grouping'\` | A group row |
 | \`'aggregation'\` | The totals row |
 
-\`\`\`tsx
-const DRAFT = 1
-const REJECTED = 4
+{{story: Lock submitted entries only}}
 
-const isSummaryRow = (record: IRecord) => record.getDataProvider().getSummarizationType() !== 'none'
-
-const lockSubmittedEntries = (result: IGridLock, { record }: { record: IRecord }) => {
-    if (!isSummaryRow(record) && ![DRAFT, REJECTED].includes(Number(record.getValue('status')))) {
-        result.isLocked = true
-    }
-}
-
-<Grid modules={[...modules, createEditingModule()]} rowSettings={{ onGetLock: lockSubmittedEntries }} />
-\`\`\`
-
-Summary rows hold their values under aliases of their own, such as \`status_group\` and \`hours_sum\`, so \`record.getValue('status')\` reads \`null\` on them. A rule that acts on an empty or unmatched value acts on them too: without the guard, this lock would also lock every group row and the totals row. \`grouping.getGroupedValueColumnName\` and \`aggregation.getAggregateValueColumnName\` return the alias to read.
+Summary rows hold their values under aliases of their own, such as \`status_group\` and \`hours_sum\`, so \`record.getValue('status')\` reads \`null\` on them. A rule that acts on an empty or unmatched value acts on them too, as the lock above does without its guard. \`grouping.getGroupedValueColumnName\` and \`aggregation.getAggregateValueColumnName\` return the alias to read.
 
 ## Preset grouping and totals
 
-Grouping and totals live on the provider, like the sort and the filter: set them before \`refresh()\` and the grid opens grouped and totalled. The calls are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
-
-\`\`\`ts
-deals.setColumns(columns)
-deals.grouping.addGroupBy({ columnName: 'owner', alias: 'owner_group' })
-deals.aggregation.addAggregation({ columnName: 'value', alias: 'value_sum', aggregationFunction: 'sum' })
-deals.refresh()
-\`\`\`
+Grouping and totals live on the provider, like the sort and the filter: set them before \`refresh()\` and the grid opens grouped and totalled. The calls are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview), and the pipeline at the top of this page opens that way.
 
 Call \`setColumns\` first: \`addGroupBy\` and \`addAggregation\` write onto the current columns. Name a group alias \`<columnName>_group\` and a total's \`<columnName>_<function>\`, as the column menu does. Levels are ranked by the columns' \`order\`, which \`addGroupBy\`'s second argument sets. \`grouping.clear()\` leaves the columns it ungroups read-only, so remove each level with \`removeGroupBy\` instead.
 
@@ -151,11 +123,6 @@ The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggre
 
 Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
-\`\`\`tsx
-createGroupingModule({ components: { groupCell: { count: { onRenderCount: props => <Badge {...props} /> } } } })
-createAggregationModule({ components: { totalCell: { totalValue: { onRenderValue: props => <strong {...props} /> } } } })
-\`\`\`
-
 | Module | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
@@ -169,18 +136,6 @@ createAggregationModule({ components: { totalCell: { totalValue: { onRenderValue
 {{story: Show group sizes as badges}}
 
 The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and their own \`components\` prop is laid over the module's key by key: a key you pass replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`; yours replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty, as the module does.
-
-\`\`\`tsx
-const CategoryGroupCell = (props: IGridCellParams) => <GroupCell {...props} components={GROUP_CELL} />
-const StockTotalCell = (props: IGridCellParams) => <TotalCell {...props} components={TOTAL} />
-
-const isGroupRow = (params: ICellRendererParams<IRecord>) => params.data?.getDataProvider().getSummarizationType() === 'grouping'
-
-colDefs={{
-    category: { cellRendererSelector: params => ({ component: isGroupRow(params) ? CategoryGroupCell : Grid.Cell.EmptyRenderer }) },
-    instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined },
-}}
-\`\`\`
 
 The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.onGetAdornments\`. The alert for a refused selection is the host's own dialog and has no slots.
 
@@ -269,7 +224,19 @@ export const TotalsThatReadAtAGlance: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`totalCell.totalValue\` draws the label small and uppercase and the value bold and blue, with In stock summed and Price averaged. Try: pick another total from a column's menu.`,
+                story: `\`totalCell.totalValue\` draws the label small and uppercase and the value bold in the theme's colour, and a \`cellRendererSelector\` gives *In stock* a \`TotalCell\` of its own. Try: pick another total from a column's menu.`,
+            },
+        },
+    },
+}
+
+export const LockSubmittedEntriesOnly: Story = {
+    name: 'Lock submitted entries only',
+    render: () => renderStory(<SubmittedEntriesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Timesheets grouped by status, where \`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected* and skips summary rows by their summarization type. Try: turn *Skip summary rows* off and watch the group rows dim with a lock.`,
             },
         },
     },

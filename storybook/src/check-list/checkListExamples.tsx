@@ -17,6 +17,30 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortC
 </DatasetControl>
 `
 
+export const BASIC_USAGE_CODE = `//names the columns for the item's name, its position and whether it is finished
+${FIELD_MAPPING}
+
+const createLaunchPlan = () => new MemoryDataProvider({
+    dataSource: [
+        { itemid: '1', name: 'Sketch the layout', completed: true, stackrank: '0|100000:' },
+        { itemid: '2', name: 'Ship the first version', completed: false, stackrank: '0|200000:' },
+    ],
+    metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'launchitem' },
+    columns: [
+        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText },
+        { name: 'completed', displayName: 'Done', dataType: DataTypes.TwoOptions },
+        { name: 'stackrank', displayName: 'Rank', dataType: DataTypes.SingleLineText },
+    ],
+})
+
+//the checklist draws items in the order the provider loaded them
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(createLaunchPlan(), FIELD_MAPPING) })}>
+    <DatasetControl.Body>
+        <CheckList fieldMapping={FIELD_MAPPING} />
+    </DatasetControl.Body>
+</DatasetControl>
+`
+
 export const READ_ONLY_CODE = `${FIELD_MAPPING}
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
@@ -181,6 +205,9 @@ const GridExample = () => {
 
 /** A product launch's checklist. */
 export const LaunchPlanExample = () => <GridExampleRunner seedCode={LAUNCH_PLAN_CODE} onCreateProvider={createLaunchPlanProvider} />
+
+/** The least a checklist needs: two items and a field mapping. */
+export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} />
 
 /** The same list without the editing module. */
 export const ReadOnlyExample = () => <GridExampleRunner seedCode={READ_ONLY_CODE} onCreateProvider={createLaunchPlanProvider} />

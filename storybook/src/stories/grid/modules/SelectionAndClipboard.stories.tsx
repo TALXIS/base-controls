@@ -8,14 +8,6 @@ import { ApproveInBulkExample, CopyPriceListExample, PickOneProductExample } fro
 const DESCRIPTION = `
 Three modules let users pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and the clipboard need AG Grid Enterprise (see [**Modules**](?path=/docs/controls-grid-modules--overview)).
 
-\`\`\`tsx
-<DatasetControl onLoad={loadTimesheets}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds })]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 {{story: Approve timesheets in bulk}}
 
 ## Row selection
@@ -53,20 +45,6 @@ With the editing module, a row's save status is drawn in its checkbox cell: see 
 ## Refuse or change a selection
 
 \`registerSelectRecords(hook, priority?)\` runs before the grid writes a selection to the provider: a click, a checkbox, the header checkbox or \`selectRecords\`. The hook gets \`(selection, { provider })\`: change \`selection.recordIds\` to select something else, or set \`selection.isCancelled\` to refuse it, and the rows go back to what the provider holds. Hooks run in priority order and may be \`async\`; each is awaited before the next. The grouping module registers one at \`GRID_MODULE_PRIORITY.grouping\` that loads the groups a selection adds. Unticking the header checkbox and your own provider calls do not go through the hooks.
-
-\`\`\`tsx
-const APPROVED = 3
-
-const keepApprovedUnselected: IGridModule = {
-    name: 'keepApprovedUnselected',
-    onLoad: grid => {
-        grid.modules.observe('rowSelection', selection => selection.registerSelectRecords((selection, { provider }) => {
-            const records = provider.getRecordsMap()
-            selection.recordIds = selection.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
-        }))
-    },
-}
-\`\`\`
 
 \`registerSelectionState(hook, priority?)\` changes how a row's checkbox reads: the hook gets \`(result, { node, record })\` with \`result.state\` as \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\`. The grouping module uses it to show a partly selected group.
 
@@ -117,12 +95,6 @@ The cell selection and clipboard modules have no members of their own.
 ## Changing how it looks
 
 The row selection module takes no \`components\` option. Its checkbox column draws its cells with \`SelectionCell\` and its header with \`SelectionHeader\`; restyle them in \`colDefs\` through \`cellRendererParams\` and \`headerComponentParams\`, or set \`cellRenderer\` and \`headerComponent\` to a component that renders them. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
-
-\`\`\`tsx
-<Grid
-    modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]}
-    colDefs={{ [SELECTION_COLUMN_KEY]: { cellRendererParams: { components: STAR } } }} />
-\`\`\`
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|

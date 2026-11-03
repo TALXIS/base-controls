@@ -55,18 +55,46 @@ const GridExample = () => {
 }
 `
 
-const OWN_TASKS_CODE = `const parent = (id: string, name: string) => [{ id: { guid: id }, etn: 'officetask', name }]
+const BASIC_CODE = `const fieldMapping: IFieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
+
+const GridExample = () => {
+    const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
+
+    //onLoad returns a field mapping beside the provider
+    const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
+        provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+        fieldMapping,
+    })
+
+    return <TaskDatasetControl onLoad={loadTasks} enableCreation enableEditing enableDeletion height='420px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.End>
+                <TaskDatasetControl.Ribbon />
+                <TaskDatasetControl.Settings />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            {/* throws outside a TaskDatasetControl */}
+            <TaskGrid />
+        </DatasetControl.Body>
+    </TaskDatasetControl>
+}
+`
+
+const OWN_TASKS_CODE = `//a parent lookup holds { id: { guid }, etn, name }
+const parentOf = (id: string, name: string) => [{ id: { guid: id }, etn: 'officetask', name }]
 
 const OFFICE_MOVE = [
     { taskid: 'move', subject: 'Move to the new office', parentid: null, stackrank: '0|100000:', statecode: 0, owner: 'Jana', due: '2026-03-31' },
-    { taskid: 'lease', subject: 'Sign the lease', parentid: parent('move', 'Move to the new office'), stackrank: '0|100000:', statecode: 1, owner: 'Jana', due: '2026-01-15' },
-    { taskid: 'fitout', subject: 'Fit out the space', parentid: parent('move', 'Move to the new office'), stackrank: '0|200000:', statecode: 0, owner: 'Tomáš', due: '2026-02-28' },
-    { taskid: 'desks', subject: 'Order desks and chairs', parentid: parent('fitout', 'Fit out the space'), stackrank: '0|100000:', statecode: 0, owner: 'Petra', due: '2026-02-01' },
-    { taskid: 'network', subject: 'Install the network', parentid: parent('fitout', 'Fit out the space'), stackrank: '0|200000:', statecode: 0, owner: 'Martin', due: '2026-02-20' },
-    { taskid: 'movers', subject: 'Book the movers', parentid: parent('move', 'Move to the new office'), stackrank: '0|300000:', statecode: 0, owner: 'Tomáš', due: '2026-03-10' },
+    { taskid: 'lease', subject: 'Sign the lease', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|100000:', statecode: 1, owner: 'Jana', due: '2026-01-15' },
+    { taskid: 'fitout', subject: 'Fit out the space', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|200000:', statecode: 0, owner: 'Tomáš', due: '2026-02-28' },
+    { taskid: 'desks', subject: 'Order desks and chairs', parentid: parentOf('fitout', 'Fit out the space'), stackrank: '0|100000:', statecode: 0, owner: 'Petra', due: '2026-02-01' },
+    { taskid: 'network', subject: 'Install the network', parentid: parentOf('fitout', 'Fit out the space'), stackrank: '0|200000:', statecode: 0, owner: 'Martin', due: '2026-02-20' },
+    { taskid: 'movers', subject: 'Book the movers', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|300000:', statecode: 0, owner: 'Tomáš', due: '2026-03-10' },
     { taskid: 'party', subject: 'Plan the opening party', parentid: null, stackrank: '0|200000:', statecode: 0, owner: 'Lucie', due: '2026-04-10' },
 ]
 
+//what views and Edit columns pick from
 const COLUMNS: IColumn[] = [
     { name: 'subject', displayName: 'Task', dataType: 'SingleLine.Text', isPrimary: true, visualSizeFactor: 300 },
     { name: 'owner', displayName: 'Owner', dataType: 'SingleLine.Text', visualSizeFactor: 140 },
@@ -77,11 +105,14 @@ const COLUMNS: IColumn[] = [
     { name: 'statecode', displayName: 'State', dataType: 'Whole.None', isHidden: true },
 ]
 
+//the columns that make the tree
 const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
 
 const GridExample = () => {
+    //one database for every view
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: OFFICE_MOVE, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'officetask' } }), [])
 
+    //called at mount, on every view switch and on every reload
     const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
         provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: COLUMNS }) }),
         fieldMapping,
@@ -135,14 +166,26 @@ const GridExample = () => {
 }
 `
 
-const VIEWS_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const VIEWS_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
+
+const COLUMNS = getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend')
+
+//the control applies each view's data for you
+const loadViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: COLUMNS }) },
+    //sorts each task's subtasks
+    { id: 'planning', name: 'Planning', resolve: () => ({ columns: COLUMNS, data: { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } }) },
+    //matches keep their ancestors
+    { id: 'design', name: 'Design work', resolve: () => ({ columns: COLUMNS, data: { searchQuery: 'design' } }) },
+    { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: COLUMNS, data: { isFlatList: true } }) },
+]
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
     const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
     const gridModules = React.useMemo(() => [createSortingModule(), createFilteringModule()], [])
 
-    return <TaskDatasetControl onLoadViews={loadTaskViews} onLoad={loadTasks} stateKey='taskGridDocs.views' height='480px'>
+    return <TaskDatasetControl onLoadViews={loadViews} onLoad={loadTasks} stateKey='taskGridDocs.views' height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />
@@ -172,8 +215,10 @@ const GridExample = () => {
     const [message, setMessage] = React.useState('')
     const database = React.useMemo(createTaskDatabase, [])
     const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    //Edit and Delete act on the selected rows
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
     const controlModules = React.useMemo(() => [
+        //moves tasks by dragging their rows
         createTaskDraggingModule({ onTaskMoved: ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')) }),
     ], [])
 
@@ -209,9 +254,24 @@ const TALKING_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskView
 
 const GridExample = () => {
     const runtimeRef = React.useRef<ITaskRuntime>()
+    const [showButtons, setShowButtons] = React.useState(true)
+    const showButtonsRef = React.useRef(showButtons)
+    showButtonsRef.current = showButtons
     const database = React.useMemo(createTaskDatabase, [])
     const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' })], [])
+
+    //called on every mount once the tasks have loaded
+    const onReady = (runtime: ITaskRuntime) => {
+        runtimeRef.current = runtime
+        //the part exists once TaskDatasetControl.Settings mounts
+        runtime.services.get('datasetControl').parts.observe('taskSettings', (settings: any) => settings.registerSettings((items: any[]) => items.push({
+            key: 'showButtons',
+            label: 'Show the buttons',
+            isChecked: showButtonsRef.current,
+            onChange: (isChecked: boolean) => setShowButtons(isChecked),
+        })))
+    }
 
     const addTask = async () => {
         await runtimeRef.current?.tasks.create(undefined, { data: { subject: 'Review the budget', priority: 2 } })
@@ -224,6 +284,7 @@ const GridExample = () => {
         }
         const provider = runtime.getProvider()
         const records = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
+        //runs behind the loading overlay
         await runtime.execute(async () => {
             for (const record of records) {
                 record.setValue('percentcomplete', 100)
@@ -238,12 +299,17 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal tokens={{ childrenGap: 8 }}>
+        {showButtons && <Stack horizontal tokens={{ childrenGap: 8 }}>
             <DefaultButton text='Add a task' onClick={() => { addTask() }} />
             <DefaultButton text='Complete the selected' onClick={() => { completeSelected() }} />
             <DefaultButton text='Toggle the hierarchy' onClick={toggleHierarchy} />
-        </Stack>
-        <TaskDatasetControl enableCreation enableEditing onLoadViews={loadTaskViews} onLoad={loadTasks} onReady={runtime => runtimeRef.current = runtime} height='440px'>
+        </Stack>}
+        <TaskDatasetControl enableCreation enableEditing onLoadViews={loadTaskViews} onLoad={loadTasks} onReady={onReady} height='440px'>
+            <DatasetControl.Header>
+                <DatasetControl.Header.End>
+                    <TaskDatasetControl.Settings />
+                </DatasetControl.Header.End>
+            </DatasetControl.Header>
             <DatasetControl.Body>
                 <TaskGrid modules={gridModules} />
             </DatasetControl.Body>
@@ -253,6 +319,7 @@ const GridExample = () => {
 `
 
 export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
+export const BasicTaskGridExample = () => <GridExampleRunner seedCode={BASIC_CODE} />
 export const OwnTasksExample = () => <GridExampleRunner seedCode={OWN_TASKS_CODE} />
 export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} />
 export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} />

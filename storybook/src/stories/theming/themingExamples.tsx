@@ -47,6 +47,7 @@ const GridExample = () => {
             </Stack>)}
         </Stack>
         <ApplicationThemeProvider theme={theme} style={{ padding: 12 }}>
+            {/* a control reads the theme only as it mounts */}
             <DatasetControl key={theme.id} modules={controlModules} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} onMounted={saveDealViewData} height='480px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
@@ -134,6 +135,40 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
+const DERIVED_CODE = `const HUE = '#d13438'
+
+//each builder call changes the builder in place
+const createAlertTheme = (theme: ITheme) => {
+    const builder = createThemeBuilder({ theme })
+    builder.tint(HUE, 'strong')
+    builder.edit('bold', theme => { theme.fonts.medium.fontWeight = 600 })
+    return builder.getTheme()
+}
+
+const Card = (props: { title: string }) => {
+    const { semanticColors } = useTheme()
+    return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, border: \`1px solid \${semanticColors.bodyDivider}\`, borderRadius: 4 }}>
+        <Text variant='mediumPlus'>{props.title}</Text>
+        <Text style={{ color: semanticColors.bodySubtext }}>The licence renews in 3 days.</Text>
+        <PrimaryButton text='Renew' styles={{ root: { alignSelf: 'flex-start' } }} />
+    </Stack>
+}
+
+const GridExample = () => {
+    const pageTheme = useTheme()
+    const tinted = useThemeBuilder({ theme: pageTheme }, { tint: { hue: HUE } })
+    //a new edit needs a new key
+    const compact = useThemeBuilder({ theme: pageTheme }, { edit: { key: 'compact-12', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
+    const alert = React.useMemo(() => createAlertTheme(pageTheme), [pageTheme])
+    return <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
+        {[{ title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }].map(item => <ThemeProvider key={item.title} theme={item.theme} style={{ padding: 12 }}>
+            <Card title={item.title} />
+        </ThemeProvider>)}
+    </Stack>
+}
+`
+
 export const BrandExample = () => <GridExampleRunner seedCode={withFiles(BRAND_CODE, VIEWS_FILE)} />
 export const RedRowsExample = () => <GridExampleRunner seedCode={RED_ROWS_CODE} dataset='tickets' />
 export const ReadableTagsExample = () => <GridExampleRunner seedCode={READABLE_TAGS_CODE} />
+export const DerivedThemesExample = () => <GridExampleRunner seedCode={DERIVED_CODE} />

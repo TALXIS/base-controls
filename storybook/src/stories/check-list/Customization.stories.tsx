@@ -7,21 +7,9 @@ import { ItemPanelExample, ReadOnlyExample, ReleaseBoardExample } from '../../ch
 const DESCRIPTION = `
 The checklist is a grid with a few columns of its own, so it is customized like one: make it read-only, change its wording, add grid features to it, or open an item in a form of your own.
 
-\`\`\`tsx
-<CheckList
-    fieldMapping={FIELD_MAPPING}
-    modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
-    colDefs={{ name: { context: { isPrimary: true } } }}
-    onOpenRecord={({ record }) => openItem(record)} />
-\`\`\`
-
 ## Make it read-only
 
-Without the editing module the list is read-only: no ticking, renaming, adding, deleting or dragging.
-
-\`\`\`tsx
-<CheckList fieldMapping={FIELD_MAPPING} modules={[]} />
-\`\`\`
+Without the editing module, \`modules={[]}\`, the list is read-only: no ticking, renaming, adding, deleting or dragging.
 
 {{story: Keep a finished plan for reference}}
 

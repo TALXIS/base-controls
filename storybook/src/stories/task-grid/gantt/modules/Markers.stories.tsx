@@ -7,13 +7,6 @@ import { GanttMarkersExample } from '../../../../task-grid/examples/ganttExample
 const DESCRIPTION = `
 A marker is a date marked on the timeline with a line, and a chip on the scale that names it. The markers module marks today, the project's start and end, and dates of your own, such as releases.
 
-\`\`\`tsx
-const ganttModules = React.useMemo(() => [
-    createLibraryModule(),
-    createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
-], [])
-\`\`\`
-
 {{story: Mark the releases}}
 
 ## A marker
@@ -51,19 +44,8 @@ const ganttModules = React.useMemo(() => [
 | \`line\` | \`onRenderContainer\` | \`MarkerUiLineComponents\` | A marker's line over the chart |
 | \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRenderContainer\` | \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The boxes the chips and lines sit in |
 
-Inside a slot, \`useMarker()\` returns the marker it draws, to change only some of them:
+Inside a slot, \`useMarker()\` returns the marker it draws, to change only some of them, as \`LaunchChip\` in *Mark the releases* does.
 
-\`\`\`tsx
-const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    const { marker } = useMarker()
-    if (marker.id !== 'launch') {
-        return <div {...props} />
-    }
-    return <div {...props}><strong>{marker.text}</strong></div>
-}
-
-createMemoryMarkersModule({ markers, components: { chip: { onRenderChip: props => <LaunchChip {...props} /> } } })
-\`\`\`
 `
 
 const meta = {

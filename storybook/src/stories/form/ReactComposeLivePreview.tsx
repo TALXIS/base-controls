@@ -9,7 +9,7 @@ import { getDemoRecord, getFormColumns } from "../../form/shared/formModel"
 
 interface IReactComposeLivePreviewProps {
     code: string
-    formProps: React.ComponentProps<typeof Form.Root>
+    formProps?: React.ComponentProps<typeof Form.Root>
     codePreview?: string
     onError?: (error: string | null) => void
 }
@@ -120,7 +120,7 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 MemoryStrategy,
                 recordData,
                 modelColumns,
-                () => formPropsRef.current,
+                () => formPropsRef.current ?? {},
             ) as React.ComponentType | null
 
             return { Component, error: null as string | null }

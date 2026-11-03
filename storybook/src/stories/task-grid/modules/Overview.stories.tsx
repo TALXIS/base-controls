@@ -1,26 +1,15 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
+import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ModulesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Everything beyond the tree is a module. A task grid takes modules in two places:
+Everything beyond the tree is a module. A task grid takes modules in two places: \`TaskDatasetControl\`'s \`modules\` and \`TaskGrid\`'s.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [
-    createTaskDraggingModule(),
-    createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
-    createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'tasks.views' }),
-], [])
-const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule()], [])
+{{story: Modules in both places}}
 
-<TaskDatasetControl modules={controlModules} onLoad={loadTasks}>
-    <DatasetControl.Body>
-        <TaskGrid modules={gridModules} />
-    </DatasetControl.Body>
-</TaskDatasetControl>
-\`\`\`
-
-The task modules below go in \`TaskDatasetControl\`'s \`modules\`, next to DatasetControl modules such as user views, and are read on every mount. \`TaskGrid\`'s \`modules\` take Grid modules (selection, sorting, filtering, cell selection, clipboard, the licence, the legacy client API; see [**Grid › Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-modules--overview) has modules of its own.
+\`TaskGrid\` takes Grid modules (see [**Grid › Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-modules--overview) has modules of its own.
 
 ## The modules
 
@@ -34,7 +23,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 | [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) | Tasks created from a template, and saved as one. | \`createMemoryTemplatesModule\` | | | \`createTemplatesModule\` |
 | [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | Each task's checklist progress. | \`createMemoryChecklistModule\` | | \`createTalxisChecklistModule\` | \`createChecklistModule\` |
 | [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | Which tasks wait on which. | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
-| Dragging | Moving tasks by dragging their rows. See *Move* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
+| Dragging | Moving tasks by dragging their rows. See *Dragging* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
 
 User views come in the same variants: see *Where views are kept* on [**DatasetControl › User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
 
@@ -42,13 +31,7 @@ User views come in the same variants: see *Where views are kept* on [**DatasetCo
 
 ## Your own store
 
-The base factory takes \`onCreateStore\`, which the module calls with the task runtime on every mount:
-
-\`\`\`tsx
-createChecklistModule({ onCreateStore: taskRuntime => new MyChecklistStore(taskRuntime) })
-\`\`\`
-
-A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
+The base factory takes \`onCreateStore\`, which the module calls with the task runtime on every mount; the checklist above uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
 
 ## Columns from modules
 
@@ -64,6 +47,8 @@ const meta = {
         controls: { disable: true },
         docs: {
             page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
 } satisfies Meta
@@ -73,4 +58,16 @@ export default meta
 export const Overview: StoryObj<typeof meta> = {
     name: 'Overview',
     render: () => <></>,
+}
+
+export const ModulesInBothPlaces: StoryObj<typeof meta> = {
+    name: 'Modules in both places',
+    render: () => renderStory(<ModulesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Dragging, a checklist from a store of its own and user views in the control, with selection, editing and sorting in the grid. Try: drag a task, sort by *Checklist*, or save the view as your own.`,
+            },
+        },
+    },
 }

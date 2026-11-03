@@ -9,6 +9,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Show the deals' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
+        {/* the stateKey reopens the last view after a remount */}
         {isShown && <DatasetControl onLoadViews={loadDealViews} stateKey='deals-state' onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>

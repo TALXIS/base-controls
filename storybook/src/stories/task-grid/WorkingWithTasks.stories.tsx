@@ -7,22 +7,6 @@ import { WorkingWithTasksExample } from '../../task-grid/examples/taskGridExampl
 const DESCRIPTION = `
 Three props turn on what the user may do with tasks, and two modules add editing in place and moving by dragging. Each change goes through the store: see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
-\`\`\`tsx
-const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
-const controlModules = React.useMemo(() => [createTaskDraggingModule()], [])
-
-<TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoad={loadTasks}>
-    <DatasetControl.Header>
-        <DatasetControl.Header.End>
-            <TaskDatasetControl.Ribbon />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <TaskGrid modules={gridModules} />
-    </DatasetControl.Body>
-</TaskDatasetControl>
-\`\`\`
-
 {{story: Plan the tasks}}
 
 ## What the user can do

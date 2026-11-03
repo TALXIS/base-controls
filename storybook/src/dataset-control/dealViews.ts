@@ -45,16 +45,21 @@ const ACCOUNT_COLUMNS: IColumn[] = [
     { name: 'city', displayName: 'City', dataType: DataTypes.SingleLineText },
 ]
 
-const createDealsProvider = () => {
-    const provider = new MemoryDataProvider({
-        dataSource: DEAL_ROWS.map(row => ({ ...row })),
-        metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
-    })
-    //what Edit columns offers, the columns of a deal's account included
-    provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => options?.entityName === ACCOUNT_SCOPE.relatedEntityName ? ACCOUNT_COLUMNS : DEALS
-    provider.onGetAvailableRelatedColumns = async () => [ACCOUNT_SCOPE]
-    return provider
+//what Edit columns offers, the columns of a deal's account included
+class DealsProvider extends MemoryDataProvider {
+    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+        return options?.entityName === ACCOUNT_SCOPE.relatedEntityName ? ACCOUNT_COLUMNS : DEALS
+    }
+
+    public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
+        return [ACCOUNT_SCOPE]
+    }
 }
+
+const createDealsProvider = () => new DealsProvider({
+    dataSource: DEAL_ROWS.map(row => ({ ...row })),
+    metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
+})
 
 /** A deals provider for the view; loads like a server would. */
 export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {

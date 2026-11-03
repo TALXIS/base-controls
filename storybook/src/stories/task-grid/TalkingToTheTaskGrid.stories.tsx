@@ -9,21 +9,9 @@ Every mounted \`TaskDatasetControl\` has an \`ITaskRuntime\`: one object your co
 
 ## Get the task runtime
 
-Outside the control, keep the one \`onReady\` passes you once the tasks have loaded. \`onMounted\` passes it before each load, and \`onDestroyed\` as the control unmounts.
-
-\`\`\`tsx
-const runtimeRef = React.useRef<ITaskRuntime>()
-
-const addTask = async () => {
-    await runtimeRef.current?.tasks.create(undefined, { data: { subject: 'Review the budget' } })
-}
-
-<TaskDatasetControl onLoad={loadTasks} onReady={runtime => runtimeRef.current = runtime}>...</TaskDatasetControl>
-\`\`\`
-
-Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
-
 {{story: Drive the task grid from your code}}
+
+Outside the control, keep the one \`onReady\` passes you; \`onMounted\` passes it before each load, and \`onDestroyed\` as the control unmounts. Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 
 ## Tasks
 
@@ -37,15 +25,11 @@ Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns 
 | \`move(taskId, targetTaskId, position)\` | Moves a task \`'above'\`, \`'below'\` or as a \`'child'\` of another, and saves it. Returns \`true\`, or \`null\` when it cannot go there. |
 | \`openRecord(reference, columnName?)\` | Opens the task, or the record a lookup points to, as a link in the grid does. |
 
-To change a value, set it on the record and save it: \`record.setValue('percentcomplete', 100)\`, then \`await record.save()\`.
+To change a value, set it on the record and save it, as *Complete the selected* does.
 
 ## Run your own work
 
-\`execute(operation, options?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog.
-
-\`\`\`tsx
-await taskRuntime.execute(saveAll, { loading: { message: 'Completing tasks...' }, error: { title: 'The tasks could not be completed.' } })
-\`\`\`
+\`execute(operation, options?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* above uses it.
 
 | Option | Default | Description |
 |---|---|---|
@@ -72,17 +56,7 @@ await taskRuntime.execute(saveAll, { loading: { message: 'Completing tasks...' }
 
 ## Settings of your own
 
-\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part:
-
-\`\`\`tsx
-const datasetControl = taskRuntime.services.get('datasetControl')
-datasetControl.parts.get('taskSettings').registerSettings(settings => settings.push({
-    key: 'highlightLate',
-    label: 'Highlight late tasks',
-    isChecked: isHighlightingLate,
-    onChange: isChecked => setHighlightingLate(isChecked),
-}))
-\`\`\`
+\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part with \`registerSettings(hook, priority?)\`, as *Show the buttons* above does. Each toggle is \`{ key, label, isChecked, onChange }\`.
 
 ## The grid
 
@@ -111,7 +85,7 @@ export const DriveTheTaskGridFromYourCode: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Three buttons outside the control, each calling the task runtime. Try: select a few tasks and complete them, or add a task and find it at the top.`,
+                story: `Three buttons outside the control call the task runtime, and a setting of its own hides them. Try: select a few tasks and complete them, or turn off *Show the buttons* in the settings.`,
             },
         },
     },

@@ -7,17 +7,6 @@ import { GanttEditingExample } from '../../../../task-grid/examples/ganttExample
 const DESCRIPTION = `
 Three modules let the user change tasks on the timeline: move and resize bars, draw new tasks, and select tasks. Every change is saved through the store, as an edit in the grid is: see *Dates* on [**Get started**](?path=/docs/controls-taskgrid-gantt-get-started--overview).
 
-\`\`\`tsx
-const ganttModules = React.useMemo(() => [
-    createLibraryModule(),
-    createBarDraggingModule(),
-    createTaskDrawingModule(),
-    createTaskSelectionModule(),
-], [])
-
-<TaskDatasetControl enableCreation enableEditing onLoad={loadTasks}>...</TaskDatasetControl>
-\`\`\`
-
 {{story: Plan on the timeline}}
 
 ## Move and resize bars

@@ -7,14 +7,6 @@ import { CheckHoursExample, FreezeApprovedExample, LogHoursExample, ReviewChange
 const DESCRIPTION = `
 Without the editing module the grid is read-only. With it, each column is edited with its data type's own control, values are checked as they are entered, every save reports back on its row, and you decide what stays locked.
 
-\`\`\`tsx
-<DatasetControl onLoad={loadTimesheet}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 {{story: Log hours with auto-save}}
 
 ## Turn editing on
@@ -96,19 +88,7 @@ Locks gate only the grid's own editing: whether an editor opens and whether an i
 
 ### Inactive records
 
-A record the provider reports inactive (\`record.isActive()\` is \`false\`) starts out locked. The memory, FetchXml and Power Apps dataset providers report every record active, so lock inactive records yourself, for example from Dataverse's \`statecode\`:
-
-\`\`\`tsx
-const INACTIVE = 1
-
-const rowSettings: IGridRowSettings = {
-    onGetLock: (result, { record }) => {
-        if (Number(record.getValue('statecode')) === INACTIVE) {
-            result.isLocked = true
-        }
-    },
-}
-\`\`\`
+A record the provider reports inactive (\`record.isActive()\` is \`false\`) starts out locked. The memory, FetchXml and Power Apps dataset providers report every record active, so lock inactive records yourself in \`rowSettings.onGetLock\`, for example from Dataverse's \`statecode\`, as the approved entries above are locked from their status.
 
 ## When the server refuses
 
@@ -148,12 +128,6 @@ To change a value as a cell would, saving it with \`autoSave\`, go through its f
 ## Changing how it looks
 
 The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
-
-\`\`\`tsx
-<Grid
-    modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
-    colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { cellRendererParams: { components: SAVE_STATUS } } }} />
-\`\`\`
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|

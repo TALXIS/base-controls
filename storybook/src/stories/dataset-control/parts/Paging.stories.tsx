@@ -7,17 +7,6 @@ import { PagingExample } from '../../../dataset-control/examples/partsExamples'
 const DESCRIPTION = `
 Two parts page through the records. \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and opens a menu of page sizes, and \`DatasetControl.Pagination\` moves to the first, previous and next page.
 
-\`\`\`tsx
-<DatasetControl.Footer>
-    <DatasetControl.Footer.Start>
-        <DatasetControl.PageSizeSwitcher />
-    </DatasetControl.Footer.Start>
-    <DatasetControl.Footer.End>
-        <DatasetControl.Pagination />
-    </DatasetControl.Footer.End>
-</DatasetControl.Footer>
-\`\`\`
-
 {{story: Page through the deals}}
 
 ## How it behaves
@@ -46,12 +35,7 @@ Two parts page through the records. \`DatasetControl.PageSizeSwitcher\` shows wh
 
 ## From your code
 
-\`control.parts.get('pageSizeSwitcher')\` and \`control.parts.get('pagination')\` return the parts once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). To page the provider directly, see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
-
-\`\`\`tsx
-control.parts.get('pageSizeSwitcher').setPageSize(100)
-control.parts.get('pagination').moveFirst()
-\`\`\`
+\`control.parts.get('pageSizeSwitcher')\` and \`control.parts.get('pagination')\` return the parts once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). The example's *Pages of 10* and *First page* go through them. To page the provider directly, see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ### PageSizeSwitcher
 
@@ -97,7 +81,7 @@ export const PageThroughTheDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Thirty deals, all on one page until you pick a size. Try: set the page size to 25, then move to the next page and back.`,
+                story: `Thirty deals, all on one page until you pick a size. Try: press *Pages of 10*, move to the next page, then press *First page*.`,
             },
         },
     },

@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { UserViewsExample } from '../../dataset-control/examples/userViewsExamples'
+import { OwnStoreExample, UserViewsExample } from '../../dataset-control/examples/userViewsExamples'
 
 const DESCRIPTION = `
 Let users save what the control shows as views of their own, listed under *My views*. Add a user queries module and put \`DatasetControl.UserQueries\` in the view switcher.
@@ -20,15 +20,7 @@ The switcher gets *Save changes* (while a user view is open), *Save as new view*
 
 ## Save more with a view
 
-\`saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew:
-
-\`\`\`tsx
-const saveViewData = (control: IDatasetControl<IDealViewData>) => control.modules.observe('userQueries', userQueries => {
-    userQueries.saveWithView('sorting', () => control.getProvider()!.getSorting())
-})
-
-<DatasetControl modules={modules} onMounted={saveViewData} ...>
-\`\`\`
+\`saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's *views.ts* does.
 
 Some keys are declared already, such as \`sorting\`, \`filtering\` and \`searchQuery\`. Declare a key of your own on \`IUserQuerySavedValueMap\`:
 
@@ -79,17 +71,7 @@ createDataverseUserQueriesModule<IDealViewData>({
 
 ## Your own store
 
-\`\`\`tsx
-const store: IUserQueriesStore<IDealViewData> = {
-    getViews: async () => await api.get('/views'),
-    getView: async viewId => await api.get(\`/views/\${viewId}/layout\`),
-    createView: async (name, view) => (await api.post('/views', { name, layout: view })).id,
-    updateView: async (viewId, view) => { await api.put(\`/views/\${viewId}/layout\`, view) },
-    createManageProvider: () => new SavedViewsProvider(api),
-}
-
-createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })
-\`\`\`
+{{story: Keep views in your own store}}
 
 | Store member | Description |
 |---|---|
@@ -103,7 +85,7 @@ What \`createManageProvider()\` returns:
 
 - One record per view, its id the view's id as the primary id.
 - A \`name\` column, and optionally a description; *Manage views* shows its columns in an editable grid.
-- Renames are written through \`provider.save()\` and deletions through \`provider.deleteRecords(ids)\`, so the provider sends both to your store.
+- Renames reach the provider's \`onRecordSave\` and deletions its \`onRecordsDelete\`, so pass both on to your store.
 - A \`MemoryDataProvider\` is the usual base, as \`LocalStorageUserQueriesProvider\` is.
 
 \`onCreateStore\` gets the control, so a store can read \`control.getDependencies()\`. \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend.
@@ -151,6 +133,18 @@ export const SaveYourOwnViews: Story = {
         docs: {
             description: {
                 story: `Views kept in this browser, with their sorting, filter and search saved through \`saveWithView\` in *views.ts*. Try: sort or search, change the columns, *Save as new view*, reload the page, then *Save changes* and *Manage views*.`,
+            },
+        },
+    },
+}
+
+export const KeepViewsInYourOwnStore: Story = {
+    name: 'Keep views in your own store',
+    render: () => renderStory(<OwnStoreExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A store of your own, logging each call the control makes to it. Try: sort a column and pick *Save as new view*, switch views and come back, then rename or delete it in *Manage views*.`,
             },
         },
     },

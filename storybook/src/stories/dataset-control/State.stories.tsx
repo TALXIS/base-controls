@@ -7,14 +7,6 @@ import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../dataset
 const DESCRIPTION = `
 A DatasetControl puts every view back the way the user left it when they switch back to it. Give it a \`stateKey\` to also reopen on the last view, as the user left it, the next time the control mounts.
 
-\`\`\`tsx
-<DatasetControl stateKey='deals' onLoadViews={loadViews} onLoad={loadDeals} height='600px'>
-    <DatasetControl.Body>
-        <Grid stateKey='grid' modules={modules} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 | \`stateKey\` | Where the control keeps it | How long it lasts |
 |---|---|---|
 | Left out | A store of its own | While the control stays mounted, across view switches and reloads. |

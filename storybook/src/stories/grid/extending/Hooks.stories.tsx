@@ -7,25 +7,6 @@ import { AssignToMeExample, ColumnsByRoleExample, CopyColumnExample, CurrencyInH
 const DESCRIPTION = `
 A grid hook changes one decision the grid makes: a cell's colour, a lock, a validation rule, a column's menu. Register it on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
-\`\`\`tsx
-const closedDealsModule: IGridModule = {
-    name: 'closedDeals',
-    onLoad: grid => {
-        grid.modules.find('editing')?.locks.registerLock((result, { record, columnName }) => {
-            if (record && columnName && isClosed(record)) {
-                result.isLocked = true
-            }
-        })
-    },
-}
-
-<DatasetControl onLoad={loadDeals}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createEditingModule(), closedDealsModule]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 {{story: Lock the cells of closed deals}}
 
 ## How hooks run

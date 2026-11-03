@@ -64,10 +64,53 @@ const SHOWCASE_CODE = createGanttCode({
         createLinksModule(),`,
 })
 
+const BASIC_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+
+const GridExample = () => {
+    const database = React.useMemo(createTaskDatabase, [])
+    //the Gantt needs the startDate and endDate tasks.ts maps
+    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    //the library module is required
+    const ganttModules = React.useMemo(() => [createLibraryModule()], [])
+
+    return <TaskDatasetControl onLoadViews={loadTaskViews} onLoad={loadTasks} height='480px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <TaskGantt.ZoomSlider />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <TaskDatasetControl.Ribbon />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            {/* the grid, then the Gantt */}
+            <TaskGantt.Split>
+                <TaskGrid />
+                <TaskGantt modules={ganttModules} />
+            </TaskGantt.Split>
+        </DatasetControl.Body>
+    </TaskDatasetControl>
+}
+`
+
+const MODULES_CODE = createGanttCode({
+    controlProps: ' enableEditing',
+    controlModules: `
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+    `,
+    ganttModules: `
+        //a feature left out is not there at all
+        createBarDraggingModule(),
+        createTaskTooltipModule({ statusColumnName: 'statuscode' }),
+        createLinksModule(),`,
+})
+
 const EDITING_CODE = createGanttCode({
     controlProps: ' enableCreation enableEditing',
     ganttModules: `
+        //needs enableEditing
         createBarDraggingModule({ enableMove: true, enableResize: true }),
+        //needs enableCreation
         createTaskDrawingModule(),
         createTaskSelectionModule({ enableSelectionBox: true }),`,
 })
@@ -79,7 +122,7 @@ const RELEASES: IMarker[] = [
     { id: 'launch', text: 'Launch', date: dayjs('2026-01-20'), color: '#107c10' },
 ]
 
-//the launch marker's chip shows how far away it is
+//useMarker() returns the marker this chip draws
 const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
     const { marker } = useMarker()
     if (marker.id !== 'launch') {
@@ -104,6 +147,9 @@ const NON_WORKING_DAYS_CODE = createGanttCode({
     setup: `
 const COMPANY_DAYS: INonWorkingDay[] = [
     ...NON_WORKING_DAYS,
+    //every month's first Friday
+    { id: 'teamDay', date: dayjs('2025-10-03'), description: 'Team day', recurrence: 'FREQ=MONTHLY;BYDAY=1FR' },
+    //endDate is the last day, included
     { id: 'hackathon', date: dayjs('2025-11-24'), endDate: dayjs('2025-11-26'), description: 'Hackathon' },
 ]
 `,
@@ -118,6 +164,7 @@ const TOOLTIP_CODE = createGanttCode({
         createBarDraggingModule(),
         createTaskTooltipModule({
             statusColumnName: 'statuscode',
+            //leave onRender out for the default tooltip
             onRender: () => <TaskTooltip>
                 <TaskTooltip.Callout>
                     <TaskTooltip.Header />
@@ -135,6 +182,7 @@ const TOOLTIP_CODE = createGanttCode({
 const LINKS_CODE = createGanttCode({
     controlProps: ' enableEditing',
     controlModules: `
+        //the links module draws what this module holds
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     `,
     ganttModules: `
@@ -162,8 +210,11 @@ const fiscalScaleModule = {
 
 //critical tasks are drawn red
 const criticalTasksModule = {
+    //unique among the Gantt's modules
     name: 'criticalTasks',
+    //runs on every mount, before the chart is drawn
     onLoad: (gantt: any) => {
+        //the tasks service comes with the chart, so observe it
         gantt.services.observe('tasks', (tasks: any) => tasks.registerTask((task: any, { record }: { record: IRecord }) => {
             if (record.getValue('priority') === '3') {
                 task.color = '#d13438'
@@ -179,6 +230,8 @@ const criticalTasksModule = {
 })
 
 export const GanttShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
+export const GanttBasicExample = () => <GridExampleRunner seedCode={withTasks(BASIC_CODE)} />
+export const GanttModulesExample = () => <GridExampleRunner seedCode={withTasks(MODULES_CODE)} />
 export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} />
 export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(MARKERS_CODE)} />
 export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} />

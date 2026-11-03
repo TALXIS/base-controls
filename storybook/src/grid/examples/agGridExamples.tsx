@@ -5,6 +5,10 @@ import { createTicketsProvider } from '../data'
 export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
     name: 'columnOrderLock',
     onLoad: grid => {
+        //screen readers read the rows in the order the page holds them
+        grid.registerAgGridInitialOptions(result => {
+            result.options.ensureDomOrder = true
+        })
         grid.registerAgGridOptions(result => {
             result.options.suppressMovableColumns = !isUnlocked()
         })

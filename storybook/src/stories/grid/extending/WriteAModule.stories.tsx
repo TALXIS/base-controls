@@ -7,29 +7,6 @@ import { UnsavedChangesBarExample } from '../../../grid/examples/writeModuleExam
 const DESCRIPTION = `
 A module packages a feature of your own: it registers hooks, follows events, shares an instance other parts of the grid can use, and draws its own UI inside the grid. The built-in modules are written the same way, against the same \`IGrid\`.
 
-\`\`\`tsx
-import { createClientSideRowModelModule, DatasetControl, Grid, IGridModule } from '@talxis/base-controls'
-
-const HIGH = 1
-
-export const urgentTicketsModule: IGridModule = {
-    name: 'urgentTickets',
-    onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((builder, { record }) => {
-            if (Number(record.getValue('priority')) === HIGH) {
-                builder.colors.text = '#a4262c'
-            }
-        })
-    },
-}
-
-<DatasetControl onLoad={loadTickets}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), urgentTicketsModule]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 {{story: Show an unsaved changes bar}}
 
 ## What a module is
@@ -57,30 +34,7 @@ What you register on the grid goes with it. Anything that outlives the grid keep
 | The provider, \`window\`, a timer or anything else outside the grid | Subscribe inside \`grid.services.observe('gridApi', ...)\` and return the unsubscribe. It runs as AG Grid is destroyed. |
 | Something outside the grid that must be followed from \`onLoad\` on, before AG Grid is ready | Keep the unsubscribe in the instance and call it in \`onDestroy\`. |
 
-\`addEventListener\` returns its own unsubscribe, so the usual case is a few lines:
-
-\`\`\`tsx
-import { IGridModule } from '@talxis/base-controls'
-import { IRecordSaveOperationResult } from '@talxis/client-libraries'
-import { telemetry } from './telemetry'
-
-export const refusedSavesModule: IGridModule = {
-    name: 'refusedSaves',
-    onLoad: grid => {
-        const provider = grid.services.get('provider')
-        const onRecordSaved = (result: IRecordSaveOperationResult) => {
-            if (!result.success) {
-                telemetry.track('saveRefused', { recordId: result.recordId })
-            }
-        }
-        grid.services.observe('gridApi', () => {
-            return provider.addEventListener('onAfterRecordSaved', onRecordSaved)
-        })
-    },
-}
-\`\`\`
-
-What the \`observe\` callback returns is taken as its cleanup: see *Services* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+\`addEventListener\` returns its own unsubscribe, which the bar above returns from its \`observe\` callback as the cleanup. See *Services* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Share what your module builds
 

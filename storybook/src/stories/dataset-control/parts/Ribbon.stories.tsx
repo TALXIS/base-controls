@@ -5,18 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.Ribbon\` is a command bar of the commands its \`onLoad\` returns. It loads them again whenever the selected records change, so read the selection there and return only the commands that apply.
-
-\`\`\`tsx
-const DealsRibbon = () => {
-    const provider = useDataProvider()
-    const onLoad = async (): Promise<IRibbonCommand[]> => {
-        const selectedIds = provider.getSelectedRecordIds()
-        return selectedIds.length === 0 ? [] : [{ id: 'delete', label: 'Delete', iconName: 'Delete', onExecute: () => deleteDeals(selectedIds) }]
-    }
-    return <DatasetControl.Ribbon onLoad={onLoad} />
-}
-\`\`\`
+\`DatasetControl.Ribbon\` is a command bar of the commands its \`onLoad\` returns. It loads them again whenever the selected records change, so read the selection there and return only the commands that apply, as *DealsRibbon.tsx* in the example does.
 
 {{story: Act on the selected deals}}
 
@@ -30,7 +19,7 @@ const DealsRibbon = () => {
 
 ## Commands
 
-A command either runs or opens a menu of further commands.
+A command either runs or opens a menu of further commands, as *Sort* does in the example.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
@@ -41,13 +30,6 @@ A command either runs or opens a menu of further commands.
 | \`tooltip\` | \`string\` | None | Shown on hover; in a compact header the label replaces it as the tooltip. |
 | \`iconName\` | \`string\` | None | A Fluent icon name; give every command one, so it still shows in a compact header. |
 | \`isDisabled\` | \`boolean\` | \`false\` | Shows the button disabled. |
-
-\`\`\`tsx
-{ id: 'export', label: 'Export', iconName: 'Download', commands: [
-    { id: 'excel', label: 'To Excel', onExecute: exportToExcel },
-    { id: 'csv', label: 'To CSV', onExecute: exportToCsv },
-] }
-\`\`\`
 
 ## Props
 
@@ -62,14 +44,7 @@ The same command bar is exported as \`Ribbon\`, for use outside DatasetControl. 
 
 ## From your code
 
-\`control.parts.get('ribbon')\` returns the ribbon once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). When a command changes what applies without changing the selection, call \`reload()\`, as *Mark as won* does in the example:
-
-\`\`\`tsx
-const markWon = async (ids: string[]) => {
-    await setStage(ids, WON)
-    control.parts.get('ribbon').reload()
-}
-\`\`\`
+\`control.parts.get('ribbon')\` returns the ribbon once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). When a command changes what applies without changing the selection, call \`reload()\`, as *Mark as won* does in the example.
 
 | Member | Does |
 |---|---|
@@ -84,11 +59,7 @@ const markWon = async (ids: string[]) => {
 
 \`registerCommands\` lets a module add its commands to whatever ribbon the page draws. \`hook(commands)\` changes them in place after \`onLoad\`, a higher \`priority\` runs later, and it returns its unregistration; call \`reload()\` to apply it now.
 
-\`\`\`tsx
-control.parts.observe('ribbon', ribbon => ribbon.registerCommands(commands => {
-    commands.push({ id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await control.getProvider()!.refresh() } })
-}))
-\`\`\`
+The example's *Sort* menu is added this way, in \`addSortMenu\`.
 
 **Strings:** the commands carry your own labels; a failed load's *Try again* and *Details* come from \`ERROR_MESSAGE_BAR_LABELS\`, keys \`errorMessageBar.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
 `
@@ -115,7 +86,7 @@ export const CommandsForTheSelectedDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `*Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won; the button is disabled while it runs, then the commands load again.`,
+                story: `*Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won, which disables the button while it runs and loads the commands again, then pick *Sort* › *By value*.`,
             },
         },
     },

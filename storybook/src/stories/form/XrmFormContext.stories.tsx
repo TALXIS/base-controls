@@ -2,9 +2,44 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { overviewFormContextExample } from './formContextExamples'
 import { XrmFormContextOverviewPreview } from './XrmFormContextOverviewPreview'
-import { renderStory } from './storyHelpers'
+import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
+import { XrmCustomComponentsLivePreview } from './XrmCustomComponentsLivePreview'
+import { ExampleRunner, renderStory } from './storyHelpers'
 
 interface IXrmFormContextArgs {
+}
+
+const onFormReadyCode = `const strategy = new XrmMemoryStrategy({
+  onGetData: () => getCustomComponentsRecord(),
+  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
+  onGetMetadata: () => formMetadata,
+  onGetFormXml: () => getCustomComponentsFormXml(),
+});
+
+const XrmCustomComponentsExample = () => (
+  <XrmForm
+    strategy={strategy}
+    onFormReady={({ formContext }) => {
+      //the record is already loaded when this fires
+      const name = formContext.data.entity.getPrimaryAttributeValue();
+      formContext.ui.setFormNotification(\`Loaded \${name}\`, "INFO", "loaded");
+    }}
+  />
+);`
+
+const OnFormReadyExample = () => {
+    const [code, setCode] = React.useState(onFormReadyCode)
+    const [compileError, setCompileError] = React.useState<string | null>(null)
+
+    return (
+        <ExampleRunner
+            error={compileError}
+            renderPreview={() => <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />}
+            renderCode={() => (
+                <XrmComponentsCodeEditor value={code} onChange={setCode} readOnly={false} label="" kind="components" height="640px" />
+            )}
+        />
+    )
 }
 
 const meta = {
@@ -22,47 +57,9 @@ const meta = {
             },
             description: {
                 component: `
-\`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, which builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes an API shaped to be compatible with the Microsoft model-driven-app \`formContext\` programming model.
+\`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, shaped after the Microsoft model-driven-app \`formContext\`. It reads values, toggles visibility, enables controls, handles events, focuses tabs and coordinates saves.
 
-This overview page focuses on the interactive runtime surface: the form preview is shown first, and the **Code** toggle switches to a Monaco editor where you can edit the method executed by the **Run code** action.
-
-## Retrieving formContext
-
-Use the \`onFormReady\` callback on \`XrmForm\` to get access to \`formContext\`.
-
-\`\`\`tsx
-import { XrmForm, XrmMemoryStrategy } from "@talxis/base-controls";
-
-const strategy = new XrmMemoryStrategy({
-  onGetData: () => record,
-  onGetColumns: () => columns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "accountid",
-    PrimaryNameAttribute: "name",
-  }),
-  onGetFormXml: () => formXml,
-});
-
-export const AccountXrmForm = () => {
-  return (
-    <XrmForm
-      strategy={strategy}
-      onFormReady={({ formContext, api }) => {
-        console.log(formContext.data.entity.getId());
-        console.log(api.getData());
-      }}
-    />
-  );
-};
-\`\`\`
-
-## Relation to Microsoft formContext
-
-This API is intended for the same style of runtime interaction as Microsoft Client API \`formContext\`: reading values, changing visibility, enabling or disabling controls, responding to events, focusing tabs, and coordinating save-related logic.
-
-It is **compatible in shape and intent**, but it is not a claim of full one-to-one parity with every Microsoft Client API feature. Treat it as a Base Controls Xrm runtime surface modeled after the Microsoft \`formContext\` approach.
-
-Microsoft Learn references:
+It is compatible in shape and intent, not a one-to-one port of every Microsoft Client API feature. Microsoft Learn references:
 
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context" target="_blank" rel="noreferrer">formContext</a>
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data" target="_blank" rel="noreferrer">formContext.data</a>
@@ -70,7 +67,7 @@ Microsoft Learn references:
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes" target="_blank" rel="noreferrer">attribute methods</a>
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls" target="_blank" rel="noreferrer">control methods</a>
 
-For ready-made patterns built on the same runtime, go to [**Samples**](?path=/story/controls-form-xrm-form-context-samples--qualification-review).
+Switch on **Code** below, write the body of \`onExecuteScenario\`, then press **Run code** to run it against the form. For ready-made patterns, go to [**Samples**](?path=/story/controls-form-xrm-form-context-samples--qualification-review).
                 `.trim(),
             },
         },
@@ -86,4 +83,16 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
+}
+
+export const GetFormContext: Story = {
+    name: 'Get formContext from onFormReady',
+    parameters: {
+        docs: {
+            description: {
+                story: 'Your own `XrmForm` hands you `formContext` through `onFormReady`. Try: change the notification level to `"WARNING"`, or add `formContext.getControl("customLeadName").setDisabled(true)`.',
+            },
+        },
+    },
+    render: () => renderStory(<OnFormReadyExample />),
 }

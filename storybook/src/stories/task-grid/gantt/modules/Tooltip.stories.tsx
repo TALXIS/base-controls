@@ -7,9 +7,9 @@ import { GanttTooltipExample } from '../../../../task-grid/examples/ganttExample
 const DESCRIPTION = `
 The tooltip module shows what a bar is about when the pointer rests on it: by default the task's name and status, its progress, and when it runs. While a bar is dragged, the tooltip follows it with the dates it would get.
 
-\`\`\`tsx
-const ganttModules = React.useMemo(() => [createLibraryModule(), createTaskTooltipModule({ statusColumnName: 'statuscode' })], [])
-\`\`\`
+{{story: Compose the tooltip}}
+
+## Options
 
 | Option | Description |
 |---|---|
@@ -17,26 +17,9 @@ const ganttModules = React.useMemo(() => [createLibraryModule(), createTaskToolt
 | \`onRender\` | The whole tooltip, composed from \`TaskTooltip\`'s parts. See below. |
 | \`components\` | Pieces of the default tooltip; not read with \`onRender\`. See *Changing how it looks* below. |
 
-## Compose your own
+## Parts
 
-\`onRender\` returns a \`TaskTooltip\` with the parts you want, in your order:
-
-\`\`\`tsx
-createTaskTooltipModule({
-    statusColumnName: 'statuscode',
-    onRender: () => <TaskTooltip>
-        <TaskTooltip.Callout>
-            <TaskTooltip.Header />
-            <TaskTooltip.FieldRows>
-                <TaskTooltip.FieldRow columnName='priority' iconName='Flag' />
-            </TaskTooltip.FieldRows>
-            <TaskTooltip.DateRangeRow />
-        </TaskTooltip.Callout>
-    </TaskTooltip>,
-})
-\`\`\`
-
-{{story: Compose the tooltip}}
+\`onRender\` returns a \`TaskTooltip\` with the parts you want, in your order.
 
 | Part | Description |
 |---|---|

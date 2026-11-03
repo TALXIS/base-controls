@@ -7,12 +7,6 @@ import { EditColumnsExample } from '../../../dataset-control/examples/partsExamp
 const DESCRIPTION = `
 \`DatasetControl.EditColumns\` is a button that opens the column editor. The user adds, reorders and removes columns, and saving remounts the control with them.
 
-\`\`\`tsx
-<DatasetControl.Header.End>
-    <DatasetControl.EditColumns />
-</DatasetControl.Header.End>
-\`\`\`
-
 {{story: Choose the columns of a view}}
 
 ## How it behaves
@@ -28,17 +22,12 @@ const DESCRIPTION = `
 
 ## Columns it offers
 
-The provider supplies what the pickers list, fetched anew each time the editor opens:
+The provider supplies what the pickers list, fetched anew each time the editor opens; the example's *views.ts* sets \`onGetAvailableColumns\`.
 
 | Provider hook | What it feeds |
 |---|---|
 | \`onGetAvailableColumns(options?)\` | The column picker: the records' own columns, or a related entity's when \`options.entityName\` is given. |
 | \`onGetAvailableRelatedColumns()\` | The *Column source* picker: when it returns any entities, the user can add columns of related records too. |
-
-\`\`\`tsx
-provider.onGetAvailableColumns = async (options?: IAvailableColumnOptions) => fetchColumns(options?.entityName ?? 'deal')
-provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
-\`\`\`
 
 ## Props
 
@@ -48,11 +37,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 
 ## From your code
 
-\`control.parts.get('editColumns')\` returns the part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Open the editor from a button of your own:
-
-\`\`\`tsx
-<DefaultButton text='Columns' onClick={() => control.parts.get('editColumns').open()} />
-\`\`\`
+\`control.parts.get('editColumns')\` returns the part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Open the editor from a button of your own, as *Columns* in the example's footer does.
 
 | Member | Does |
 |---|---|
@@ -82,11 +67,7 @@ The session holds the edit until it is saved:
 
 \`hook(commands, session)\` changes the commands above the pickers in place, and \`hook(commands, column, session)\` those of each chosen column, with Remove first. Both return their unregistration, and a higher \`priority\` runs later.
 
-\`\`\`ts
-control.parts.observe('editColumns', editColumns => editColumns.registerCommands((commands, session) => {
-    commands.push({ key: 'addColumn', text: 'Add column', iconProps: { iconName: 'Add' }, onClick: () => { addColumn(session) } })
-}))
-\`\`\`
+The example adds *Keep only the deal* above the pickers.
 
 Dragging swallows clicks: give column commands \`onMouseUp\`, not \`onClick\`.
 
@@ -115,7 +96,7 @@ export const ChooseTheColumns: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Each view keeps the columns the user chose. Try: switch to *Won deals*, open *Edit columns*, add *Probability (%)*, which goes first, and save, then switch to *All deals* and back.`,
+                story: `Each view keeps the columns the user chose. Try: switch to *Won deals*, add *Probability (%)* through *Columns* and save, switch to *All deals* and back, then reopen the editor and press *Keep only the deal*.`,
             },
         },
     },

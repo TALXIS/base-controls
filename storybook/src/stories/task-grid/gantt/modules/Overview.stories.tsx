@@ -1,22 +1,13 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
+import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
+import { GanttModulesExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The Gantt's features are modules, passed to \`TaskGantt\`'s \`modules\` and loaded in that order on every mount. A feature you leave out is not there at all.
+The Gantt's features are modules, passed to \`TaskGantt\`'s \`modules\` and loaded in that order on every mount.
 
-\`\`\`tsx
-import { createBarDraggingModule, createLibraryModule, createLinksModule, createTaskTooltipModule, TaskGantt } from '@talxis/base-controls/gantt'
-
-const ganttModules = React.useMemo(() => [
-    createLibraryModule(),
-    createBarDraggingModule(),
-    createTaskTooltipModule({ statusColumnName: 'statuscode' }),
-    createLinksModule(),
-], [])
-
-<TaskGantt modules={ganttModules} />
-\`\`\`
+{{story: Pick the features}}
 
 ## The modules
 
@@ -41,11 +32,10 @@ const ganttModules = React.useMemo(() => [
 To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself:
 
 \`\`\`tsx
-//the Gantt export and the stylesheet of your PRO build
 import { Gantt } from 'dhtmlx-gantt-pro'
 import 'dhtmlx-gantt-pro/codebase/dhtmlxgantt.css'
 
-const ganttModules = [createProLibraryModule({ Gantt }), createBarDraggingModule()]
+const ganttModules = [createProLibraryModule({ Gantt })]
 \`\`\`
 
 A module of yours reaches the build with \`gantt.getLibrary()\`.
@@ -58,6 +48,8 @@ const meta = {
         controls: { disable: true },
         docs: {
             page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
 } satisfies Meta
@@ -67,4 +59,16 @@ export default meta
 export const Overview: StoryObj<typeof meta> = {
     name: 'Overview',
     render: () => <></>,
+}
+
+export const PickTheFeatures: StoryObj<typeof meta> = {
+    name: 'Pick the features',
+    render: () => renderStory(<GanttModulesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The library with bar dragging, the tooltip and links. Try: drag a bar and point at it, then delete \`createLinksModule()\` in **Code** and watch the links go.`,
+            },
+        },
+    },
 }

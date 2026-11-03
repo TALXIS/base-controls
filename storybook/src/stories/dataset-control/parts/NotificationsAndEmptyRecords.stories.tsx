@@ -11,23 +11,11 @@ Two parts tell the user about the records. \`DatasetControl.Notifications\` show
 
 Put \`DatasetControl.Notifications\` between the header and the body. It draws the provider's load error next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/controls-form-get-started--overview).
 
-\`\`\`tsx
-<DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
-\`\`\`
-
 {{story: Show the provider's error}}
 
 ## Say when there is nothing to show
 
 \`DatasetControl.EmptyRecords\` wraps what shows the records, and shows *No records found.* in its place while the provider has loaded no records. A grid has the same empty state built in, so it needs no wrapping.
-
-\`\`\`tsx
-<DatasetControl.Body>
-    <DatasetControl.EmptyRecords>
-        <DealList />
-    </DatasetControl.EmptyRecords>
-</DatasetControl.Body>
-\`\`\`
 
 {{story: Say when nothing matches}}
 

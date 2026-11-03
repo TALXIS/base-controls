@@ -182,6 +182,19 @@ declare const Form: {
 };
 
 declare const useField: (name?: string | null) => ISandboxField | null;
+
+interface IFormStrategy {
+  onLoad(): Promise<{
+    columns: { name: string; dataType: string; alias?: string; displayName?: string }[];
+    data: { [key: string]: any };
+    metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
+  }>;
+  onSave(params: { updatedData: { [key: string]: any }; recordId: string }): Promise<{
+    recordId: string;
+    success: boolean;
+    fields: string[];
+  }>;
+}
 `
 
 export const FormCodeEditor = (props: IFormCodeEditorProps) => {

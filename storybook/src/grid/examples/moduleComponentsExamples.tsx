@@ -102,24 +102,45 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const STOCK_TOTALS_CODE = `const styles = mergeStyleSets({
-    label: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.7 },
-    value: { fontWeight: 700, color: '#0078d4' },
+export const STOCK_TOTALS_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
+    label: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: theme.semanticColors.bodySubtext },
+    value: { fontWeight: 700, color: theme.palette.themePrimary },
+    stock: { fontWeight: 700, color: theme.semanticColors.successIcon },
 })
+
+const useStyles = () => {
+    const theme = useTheme()
+    return React.useMemo(() => getStyles(theme), [theme])
+}
+
+const TotalLabel: IAggregationUiTotalValueComponents['onRenderLabel'] = props => <span {...props} className={useStyles().label} />
+const TotalValue: IAggregationUiTotalValueComponents['onRenderValue'] = props => <span {...props} className={useStyles().value} />
+const StockValue: IAggregationUiTotalValueComponents['onRenderValue'] = props => <span {...props} className={useStyles().stock} />
 
 const COMPONENTS: IGridAggregationComponents = {
     totalCell: {
         totalValue: {
-            onRenderLabel: props => <span {...props} className={styles.label} />,
-            onRenderValue: props => <span {...props} className={styles.value} />,
+            onRenderLabel: props => <TotalLabel {...props} />,
+            onRenderValue: props => <TotalValue {...props} />,
         },
     },
 }
+
+//laid over the module's totalCell key by key, so the label stays
+const STOCK_TOTAL: ITotalCellComponents = {
+    totalValue: { onRenderValue: props => <StockValue {...props} /> },
+}
+
+const StockTotalCell = (props: IGridCellParams) => <TotalCell {...props} components={STOCK_TOTAL} />
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
+            colDefs={{
+                //undefined leaves the other rows to the column's cellRenderer
+                instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined },
+            }}
             height='460px' />
     </DatasetControl.Body>
 </DatasetControl>

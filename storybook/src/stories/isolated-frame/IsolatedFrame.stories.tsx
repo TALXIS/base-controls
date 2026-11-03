@@ -13,21 +13,15 @@ Reach for it when a control shares a page with styles or scripts you do not cont
 
 ## Declare a frame
 
-A frame cannot be handed children: they belong to the page's copy of your code. Declare what runs in it once, at module level, so the frame finds it in its own copy:
+A frame cannot be handed children: they belong to the page's copy of your code. Declare what runs in it once, at module level, so the frame finds it in its own copy, then render it like the component it wraps:
 
 \`\`\`tsx
-import { createIsolatedComponent } from '@talxis/base-controls'
-
 export const IsolatedTasks = createIsolatedComponent('tasks', (props: ITasksProps) => <Tasks {...props} />, {
     onPrepareWindow: frameWindow => {
         frameWindow.Xrm = window.Xrm
     },
 })
-\`\`\`
 
-Then render it like the component it wraps:
-
-\`\`\`tsx
 <IsolatedTasks frame={{ className: styles.tasks, title: 'Tasks' }} {...tasksProps} />
 \`\`\`
 
@@ -57,13 +51,7 @@ One frame's own settings go in its \`frame\` prop, so every other prop goes to t
 
 ## How the frame gets its code
 
-By default, the frame loads the script \`@talxis/base-controls\` was loaded from: your bundle when everything is one file, as in a PCF. When your code is split into chunks, or served as ES modules in development, pass \`scripts\`. One module entry that imports the module declaring the frame is enough, since its imports load the rest:
-
-\`\`\`ts
-export const IsolatedTasks = createIsolatedComponent('tasks', Tasks, {
-    scripts: [{ src: '/src/tasks-entry.ts', type: 'module' }],
-})
-\`\`\`
+By default, the frame loads the script \`@talxis/base-controls\` was loaded from: your bundle when everything is one file, as in a PCF. When your code is split into chunks, or served as ES modules in development, pass \`scripts\`, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`. One module entry that imports the module declaring the frame is enough, since its imports load the rest.
 
 ## What crosses the frame's edge
 

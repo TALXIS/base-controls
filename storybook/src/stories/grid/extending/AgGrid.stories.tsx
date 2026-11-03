@@ -17,20 +17,6 @@ The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="norefer
 
 Each hook receives \`{ options }\` and sets what it needs on it. Both register calls return a function that takes the hook off again, and their priorities work as every hook's do: see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
-\`\`\`tsx
-import { IGridModule } from '@talxis/base-controls'
-
-//screen readers read the rows in the order the page holds them
-export const screenReaderModule: IGridModule = {
-    name: 'screenReader',
-    onLoad: grid => {
-        grid.registerAgGridInitialOptions(result => {
-            result.options.ensureDomOrder = true
-        })
-    },
-}
-\`\`\`
-
 \`refreshAgGridOptions()\` compares each option with what AG Grid was last passed, by reference. A hook that builds a new object or function each time passes it again on every refresh, so create them once, outside the hook. It does not build the column definitions again: those follow the provider's loads, so call \`provider.refresh()\` for them.
 
 {{story: Rearrange columns on request}}
@@ -64,13 +50,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid: widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. Set an option through a hook rather than \`gridApi.setGridOption\` when a hook also sets it, or the hook's value replaces yours.
 
-To read AG Grid as it goes, return a cleanup from the observer. It runs while AG Grid still works, before the \`onDestroyed\` prop, when the service is already gone:
-
-\`\`\`ts
-grid.services.observe('gridApi', gridApi => {
-    return () => saveFocusedColumn(gridApi.getFocusedCell()?.column.getColId())
-})
-\`\`\`
+To read AG Grid as it goes, return a cleanup from the observer. It runs while AG Grid still works, before the \`onDestroyed\` prop, when the service is already gone; the log under *Get the grid* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) shows it.
 
 {{story: Jump to the newest ticket}}
 
@@ -99,20 +79,7 @@ An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/c
 
 ## AG Grid modules
 
-Every grid registers the AG Grid modules it needs itself, and those its modules list. \`agGridModules\` lists the ones a module of yours needs, such as CSV export:
-
-\`\`\`tsx
-import { CsvExportModule } from 'ag-grid-community'
-import { IGrid, IGridModule } from '@talxis/base-controls'
-
-export const csvExportModule: IGridModule = {
-    name: 'csvExport',
-    agGridModules: [CsvExportModule],
-    onLoad: () => { },
-}
-
-export const exportQueue = (grid: IGrid) => grid.services.find('gridApi')?.exportDataAsCsv({ fileName: 'ticket-queue.csv' })
-\`\`\`
+Every grid registers the AG Grid modules it needs itself, and those its modules list. \`agGridModules\` lists the ones a module of yours needs, as \`HighlightChangesModule\` in *Jump to the newest ticket* above.
 
 Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
 `
@@ -139,7 +106,7 @@ export const RearrangeColumnsOnRequest: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A shop that keeps its columns in place until someone asks to rearrange them: an option hook sets \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` passes AG Grid the new value. Try: turn on *Rearrange columns* and drag a header; \`onColumnsChanged\` lists the order the provider now holds.`,
+                story: `A shop that keeps its columns in place until someone asks to rearrange them: an initial option hook sets \`ensureDomOrder\`, an option hook sets \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` passes AG Grid the new value. Try: turn on *Rearrange columns* and drag a header; \`onColumnsChanged\` lists the order the provider now holds.`,
             },
         },
     },

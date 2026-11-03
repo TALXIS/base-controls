@@ -7,23 +7,7 @@ import { GanttOwnModuleExample } from '../../../task-grid/examples/ganttExamples
 const DESCRIPTION = `
 A Gantt module is an object with a \`name\` and an \`onLoad\`. The Gantt calls \`onLoad\` on every mount, in the order of \`modules\`, before the chart is drawn, and registers what it returns under the name.
 
-\`\`\`tsx
-const criticalTasksModule = {
-    name: 'criticalTasks',
-    onLoad: gantt => {
-        gantt.services.observe('tasks', tasks => tasks.registerTask((task, { record }) => {
-            if (record.getValue('priority') === CRITICAL) {
-                task.color = '#d13438'
-            }
-        }))
-        return {}
-    },
-}
-
-const ganttModules = [createLibraryModule(), criticalTasksModule]
-\`\`\`
-
-\`name\` must be unique, \`onLoad\` may be async, and \`onDestroy(instance)\` gets what \`onLoad\` returned as the Gantt unmounts. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
+\`onLoad\` may be async, and \`onDestroy(instance)\` gets what \`onLoad\` returned as the Gantt unmounts. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
 
 {{story: Colour bars and relabel the scale}}
 

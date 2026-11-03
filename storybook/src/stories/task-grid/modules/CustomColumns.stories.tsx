@@ -7,26 +7,6 @@ import { CustomColumnsExample } from '../../../task-grid/examples/modulesExample
 const DESCRIPTION = `
 Custom columns are columns users add to the tasks themselves, from Edit columns. Each one is drawn and edited like any column of its data type, and saved apart from the tasks.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [
-    createIndexedDbCustomColumnsModule({
-        databaseName: 'tasks.customColumns',
-        columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
-        enableCreation: true,
-        enableDeletion: true,
-    }),
-], [])
-
-<TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks}>
-    <DatasetControl.Header>
-        <DatasetControl.Header.End>
-            <DatasetControl.EditColumns />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    ...
-</TaskDatasetControl>
-\`\`\`
-
 {{story: Add your own columns}}
 
 ## What the user can do

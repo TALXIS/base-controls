@@ -10,10 +10,6 @@ import { CustomUiViewsExample } from '../../dataset-control/examples/viewsExampl
 const DESCRIPTION = `
 There are two ways to change what the control draws: replace pieces a built-in part draws, through its \`components\`, or add a part of your own, up to a whole UI in place of the grid.
 
-\`\`\`tsx
-<DatasetControl.ViewSwitcher components={{ onRenderButton: props => <MyViewButton {...props} /> }} />
-\`\`\`
-
 {{story: Replace pieces of the parts}}
 
 ## Change how it looks
@@ -68,16 +64,11 @@ A part of your own is any component you put inside the control: a total in the f
 
 A part of your own needs its key declared before \`useDatasetControlPart\` takes it:
 
-\`\`\`tsx
+\`\`\`ts
 declare module '@talxis/base-controls' {
     interface IDatasetControlPartMap {
         dealChart: DealChart
     }
-}
-
-const DealChartPart = () => {
-    const chart = useDatasetControlPart('dealChart', () => new DealChart())
-    ...
 }
 \`\`\`
 
@@ -85,32 +76,11 @@ const DealChartPart = () => {
 
 ### A part in a region
 
-\`\`\`tsx
-const SelectedValue = () => {
-    const provider = useDataProviderEvents(['onRecordsSelected'])
-    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
-    return <Text>Selected: {total}</Text>
-}
-
-<DatasetControl.Footer.Start>
-    <SelectedValue />
-</DatasetControl.Footer.Start>
-\`\`\`
-
 {{story: Total the selected deals}}
 
 ## Your own collection view
 
-The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. To draw views differently, let each view say which UI it uses in its \`data\` (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)), and pick it in your body component:
-
-\`\`\`tsx
-const ProductsBody = () => {
-    const control = useDatasetControl<IProductViewData>()
-    return <DatasetControl.EmptyRecords>
-        {control.getView()?.data?.ui === 'gallery' ? <ProductGallery /> : <Grid stateKey='grid' modules={modules} />}
-    </DatasetControl.EmptyRecords>
-}
-\`\`\`
+The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. To draw views differently, let each view say which UI it uses in its \`data\` (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)), and pick it in your body component, as *ProductsBody.tsx* in the example does.
 
 Read the records, columns and selection from the provider, and draw again on \`onNewDataLoaded\`, \`onRecordsSelected\` and \`onRecordColumnValueChanged\`: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 

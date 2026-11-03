@@ -66,15 +66,20 @@ export const createDealViewDataModule = (): IDatasetControlModule => ({
     },
 })
 
+//offers every deal column to Edit columns and user views, not only the ones a view shows
+class DealsProvider extends MemoryDataProvider {
+    public async onGetAvailableColumns() {
+        return DEALS
+    }
+}
+
 /** The deals as a view shows them; the control sets the view's columns on the provider. */
 export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
     await new Promise(resolve => setTimeout(resolve, 600))
-    const provider = new MemoryDataProvider({
+    const provider = new DealsProvider({
         dataSource: DEAL_ROWS.map(row => ({ ...row })),
         metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
     })
-    //what Edit columns offers, and what a user view's columns come back from
-    provider.onGetAvailableColumns = async () => DEALS
     const { data = {} } = view ? await view.resolve(provider) : {}
     provider.setSorting(data.sorting ?? [])
     provider.setFiltering(data.filtering ?? null)

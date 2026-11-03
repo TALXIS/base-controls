@@ -89,5 +89,35 @@ const GridExample = () => {
 }
 `
 
+const MODULE_CODE = `import { loadDeals, loadDealViews } from './views'
+
+const CLOSING_SOON: IDatasetControlView = {
+    id: 'closingSoon',
+    name: 'Closing soon',
+    group: { id: 'reports', name: 'Reports' },
+    resolve: () => ({ columns: DEAL_COLUMNS, data: { sorting: [{ name: 'closedate', sortDirection: 0 }] } }),
+}
+
+//loaded anew on every mount, before onLoadViews
+const closingSoonModule: IDatasetControlModule = {
+    name: 'closingSoon',
+    onLoad: control => {
+        control.registerViews((views: IDatasetControlView[]) => views.push(CLOSING_SOON))
+    },
+}
+
+const GridExample = () => <DatasetControl modules={[closingSoonModule]} onLoadViews={loadDealViews} stateKey='talkingModule' onLoad={loadDeals} height='420px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher />
+        </DatasetControl.Header.Start>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+    </DatasetControl.Body>
+</DatasetControl>
+`
+
 export const DriveTheControlExample = () => <GridExampleRunner seedCode={withFiles(DRIVE_CODE, VIEWS_FILE)} />
 export const WatchTheControlExample = () => <GridExampleRunner seedCode={withFiles(WATCH_CONTROL_CODE, VIEWS_FILE)} />
+export const ModuleExample = () => <GridExampleRunner seedCode={withFiles(MODULE_CODE, VIEWS_FILE)} />

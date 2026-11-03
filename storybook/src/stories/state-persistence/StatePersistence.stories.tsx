@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { ComeBackExample, OwnComponentExample } from './statePersistenceExamples'
+import { ComeBackExample, OwnComponentExample, ScopesExample } from './statePersistenceExamples'
 
 const DESCRIPTION = `
 When a component unmounts, its React state is gone, so a user who leaves and comes back starts over. State persistence keeps what a component needs to come back, such as a draft, a sorting or a scroll position, in a store that outlives it.
@@ -13,24 +13,9 @@ When a component unmounts, its React state is gone, so a user who leaves and com
 
 \`StateStore\` is a dictionary of plain data: \`get\`, \`set\` and \`delete\` an entry by id. It writes into the dictionary you give it, so you can save that dictionary as it is.
 
-\`\`\`ts
-const state = {}
-const store = new StateStore({ state })
-store.set('zoom', 2)    //state is { zoom: 2 }
-\`\`\`
+\`scope(id)\` returns a store over the entry under \`id\`, created on first use. What you set in a scope lands one level down, and scopes chain, so a store is a tree. Code holding a scope cannot touch what is outside it, and two scopes with different ids never collide.
 
-## Scopes
-
-\`scope(id)\` returns a store over the entry under \`id\`. What you set in a scope lands one level down, and scopes chain, so a store is a tree:
-
-\`\`\`ts
-const planner = store.scope('planner')
-planner.set('view', 'week')
-planner.scope('filters').set('owner', 'Jana')
-//state is { zoom: 2, planner: { view: 'week', filters: { owner: 'Jana' } } }
-\`\`\`
-
-A scope keeps a part of the tree to itself: code holding \`planner\` cannot touch \`zoom\`, and two scopes with different ids never collide.
+{{story: Scopes}}
 
 Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing to the old entry, which is no longer in the tree.
 
@@ -45,45 +30,17 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 That is all a \`stateKey\` is: the id of a component's scope. It is read once, at mount. Every control in the library that takes a \`stateKey\` keeps its state this way.
 
-## Nest components
-
-A child's \`stateKey\` scopes from the nearest store, not from its parent's scope. For children to land inside a component's own entry, the component hands its scope down:
-
-\`\`\`tsx
-const Planner = () => {
-    const store = useControlStateStore('planner')
-    return <StateProvider store={store}>
-        <DraftNote />
-    </StateProvider>
-}
-//state is { planner: { draftNote: { text: '…' } } }
-\`\`\`
-
-Inside a DatasetControl, \`useControlStateStore\` scopes under the view the part is shown in instead, so each view keeps its own. The DatasetControl in the first example keeps this tree:
-
-\`\`\`ts
-//state is { deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }
-\`\`\`
-
-What each control keeps is on [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview) and [**Grid › State**](?path=/docs/controls-grid-state--overview).
-
 ## Keep state in your own component
 
-Take your scope with \`useControlStateStore\`, read what was kept once, when the component mounts, and write as the user works:
-
-\`\`\`tsx
-const DraftNote = () => {
-    const store = useControlStateStore('draftNote')
-    const [text, setText] = React.useState(store.get<string>('text') ?? '')
-    const onChange = (value: string) => {
-        setText(value)
-        store.set('text', value)
-    }
-    return <TextField multiline value={text} onChange={(_, value) => onChange(value ?? '')} />
-}
-\`\`\`
+Take your scope with \`useControlStateStore\`, read what was kept when the component mounts, and write as the user works.
 
 {{story: Keep a draft}}
+
+## Nest components
+
+A child's \`stateKey\` scopes from the nearest store, not from its parent's scope. For children to land inside a component's own entry, the component hands its scope down in a \`StateProvider\`, as the planner in *Keep a draft* does.
+
+Inside a DatasetControl, \`useControlStateStore\` scopes under the view the part is shown in, so each view keeps its own. The DatasetControl in the first example keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. What each control keeps is on [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview) and [**Grid › State**](?path=/docs/controls-grid-state--overview).
 
 ## Keep state beyond the provider
 
@@ -136,7 +93,19 @@ export const ComeBackWhereYouLeftOff: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Try: switch the view, search, sort a column and scroll, then leave the deals and come back: everything is where you left it. The dictionary beside it updates when you leave: the control writes its state as it unmounts.`,
+                story: `Deals in a DatasetControl that writes its state to the dictionary beside it as it unmounts. Try: switch the view, search, sort and scroll, then leave the deals and come back.`,
+            },
+        },
+    },
+}
+
+export const Scopes: Story = {
+    name: 'Scopes',
+    render: () => renderStory(<ScopesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A store over a dictionary, shown as each button writes to it. Try: click the buttons in turn and watch the tree grow.`,
             },
         },
     },
@@ -148,7 +117,7 @@ export const KeepADraft: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Try: type a draft, hide the note and show it again: the draft comes back from the store, shown below as it fills.`,
+                story: `A draft note inside a planner that hands its scope down, with the dictionary below it. Try: type a draft, hide the note and show it again.`,
             },
         },
     },

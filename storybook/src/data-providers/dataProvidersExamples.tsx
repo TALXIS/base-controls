@@ -1,22 +1,30 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-export const SHARED_PROVIDER_CODE = `const createOrder = () => new MemoryDataProvider({
-    dataSource: [
-        { lineid: 'desk', product: 'Standing desk', quantity: 4, unitprice: 640 },
-        { lineid: 'chair', product: 'Ergonomic chair', quantity: 4, unitprice: 410 },
-        { lineid: 'lamp', product: 'Desk lamp', quantity: 6, unitprice: 85 },
-        { lineid: 'monitor', product: 'Monitor arm', quantity: 8, unitprice: 120 },
-        { lineid: 'cabinet', product: 'Filing cabinet', quantity: 2, unitprice: 230 },
-        { lineid: 'whiteboard', product: 'Whiteboard 180 x 90 cm', quantity: 1, unitprice: 310 },
-    ],
-    metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'product', LogicalName: 'orderline', QuickFindColumns: ['product'] },
-    columns: [
-        { name: 'product', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 260 },
-        { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 110 },
-        { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
-    ],
-})
+export const SHARED_PROVIDER_CODE = `const createOrder = () => {
+    const order = new MemoryDataProvider({
+        dataSource: [
+            { lineid: 'desk', product: 'Standing desk', quantity: 4, unitprice: 640 },
+            { lineid: 'chair', product: 'Ergonomic chair', quantity: 4, unitprice: 410 },
+            { lineid: 'lamp', product: 'Desk lamp', quantity: 6, unitprice: 85 },
+            { lineid: 'monitor', product: 'Monitor arm', quantity: 8, unitprice: 120 },
+            { lineid: 'cabinet', product: 'Filing cabinet', quantity: 2, unitprice: 230 },
+            { lineid: 'whiteboard', product: 'Whiteboard 180 x 90 cm', quantity: 1, unitprice: 310 },
+        ],
+        metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'product', LogicalName: 'orderline', QuickFindColumns: ['product'] },
+        columns: [
+            { name: 'product', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 260 },
+            { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 110 },
+            { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+        ],
+    })
+    //validation and required levels are set on each record as it loads
+    order.addEventListener('onRecordLoaded', record => {
+        record.expressions.setValidationExpression('quantity', () => ({ error: record.getValue('quantity') < 1, errorMessage: 'Order at least one.' }))
+        record.expressions.setRequiredLevelExpression('product', () => 'required')
+    })
+    return order
+}
 
 const OrderSummary = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged', 'onAfterSaved'])
@@ -84,13 +92,16 @@ const createTickets = () => new MemoryDataProvider({
 
 const GridExample = () => {
     const [tickets] = React.useState(createTickets)
+    //the page destroys the provider, not the control
     React.useEffect(() => () => tickets.destroy(), [tickets])
 
+    //setters only store the state refresh() loads with
     const apply = async (change: () => void) => {
         change()
         await tickets.refresh()
     }
 
+    //sortDirection 1 is descending
     const newestFirst = () => apply(() => tickets.setSorting([{ name: 'createdon', sortDirection: 1 }]))
     const highPriorityOnly = () => apply(() => tickets.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'priority', conditionOperator: Operators.Equal.Value, value: '1' }] }))
     const searchPrinter = () => apply(() => tickets.setSearchQuery('printer'))
@@ -99,12 +110,15 @@ const GridExample = () => {
         tickets.setFiltering(null)
         tickets.setSearchQuery('')
     })
+    //paging loads straight away
+    const nextPage = async () => await tickets.getPaging().loadNextPage()
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
             <DefaultButton text='Newest first' onClick={newestFirst} />
             <DefaultButton text='High priority only' onClick={highPriorityOnly} />
             <DefaultButton text='Search "printer"' onClick={searchPrinter} />
+            <DefaultButton text='Next page' onClick={nextPage} />
             <DefaultButton text='Reset' onClick={reset} />
         </Stack>
         <DatasetControl onLoad={async () => ({ provider: tickets })} destroyProviderOnUnmount={false} height='340px'>
@@ -121,6 +135,223 @@ const GridExample = () => {
 }
 `
 
+const HAND_DOWN_CODE = `//reads its events once, at mount
+const LoadStatus = () => {
+    const provider = useDataProviderEvents(['onLoading', 'onError'])
+    if (provider.isError()) {
+        return <MessageBar messageBarType={MessageBarType.error}>{provider.getErrorMessage()}</MessageBar>
+    }
+    return provider.isLoading() ? <Spinner label='Loading' labelPosition='right' /> : null
+}
+
+const SelectedCount = () => {
+    const provider = useDataProviderEvents(['onRecordsSelected'])
+    return <Text>{provider.getSelectedRecordIds().length} selected</Text>
+}
+
+const GridExample = () => {
+    const [deals] = React.useState(createDealsProvider)
+    const [search, setSearch] = React.useState('')
+    React.useEffect(() => () => deals.destroy(), [deals])
+
+    //nothing inside DataProviderScope loads the provider for you
+    React.useEffect(() => {
+        const load = async () => {
+            deals.setSearchQuery(search)
+            await deals.refresh()
+        }
+        load()
+    }, [search])
+
+    return <DataProviderScope provider={deals}>
+        <Stack tokens={{ childrenGap: 12 }}>
+            <Stack horizontal wrap verticalAlign='center' tokens={{ childrenGap: 16 }}>
+                <SearchBox placeholder='Search deals' onSearch={setSearch} onClear={() => setSearch('')} styles={{ root: { width: 240 } }} />
+                <SelectedCount />
+                <LoadStatus />
+            </Stack>
+            <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} height='360px' />
+        </Stack>
+    </DataProviderScope>
+}
+`
+
+const READ_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
+    output: { margin: 0, padding: 12, minHeight: 160, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, whiteSpace: 'pre-wrap' },
+})
+
+const describe = (value: any) => value instanceof Date ? 'Date ' + dayjs(value).format('YYYY-MM-DD') : JSON.stringify(value)
+
+const sumOfValue = (column: IColumn): IColumn => column.name === 'value' ? { ...column, aggregation: { aggregationFunction: 'sum' } } : column
+
+const GridExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
+    const [lines, setLines] = React.useState(['Pick what to read.'])
+
+    const readDeal = async () => {
+        const deals = createDealsProvider()
+        const records = await deals.refresh()
+        const deal = deals.getRecordsMap()['deal-2']
+        setLines([
+            records.length + ' records loaded',
+            ...['name', 'stage', 'products', 'recurring', 'value', 'closedate'].map(column => \`getValue('\${column}'): \${describe(deal.getValue(column))}\`),
+        ])
+        deals.destroy()
+    }
+
+    const groupByOwner = async () => {
+        const deals = createDealsProvider()
+        deals.setColumns(deals.getColumns().map(column => column.name === 'owner' ? { ...column, grouping: { isGrouped: true } } : sumOfValue(column)))
+        //one record per group now
+        const groups = await deals.refresh()
+        const results = []
+        for (const group of groups) {
+            const groupDeals = deals.createGroupedRecordDataProvider(group)
+            const records = await groupDeals.refresh()
+            results.push(\`\${group.getValue('owner_group')}: owner_count \${group.getValue('owner_count')}, value_sum \${group.getValue('value_sum')}, \${records.length} records in its provider\`)
+        }
+        setLines(results)
+        deals.destroy()
+    }
+
+    const totalValue = async () => {
+        const deals = createDealsProvider()
+        deals.setColumns(deals.getColumns().map(sumOfValue))
+        await deals.refresh()
+        //works the totals out again whenever the provider loads
+        const totals = new TotalRow(deals)
+        await totals.refresh()
+        setLines(['value_sum over every deal: ' + totals.getTotalRowRecord()?.getValue('value_sum')])
+        totals.destroy()
+        deals.destroy()
+    }
+
+    return <Stack tokens={{ childrenGap: 12 }}>
+        <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
+            <DefaultButton text='Read a deal' onClick={readDeal} />
+            <DefaultButton text='Group by account manager' onClick={groupByOwner} />
+            <DefaultButton text='Total value' onClick={totalValue} />
+        </Stack>
+        <pre className={styles.output}>{lines.join('\\n')}</pre>
+    </Stack>
+}
+`
+
+const EVENTS_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
+    log: { padding: '8px 12px', minHeight: 132, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, lineHeight: '22px' },
+    line: { color: theme.semanticColors.bodySubtext },
+    latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
+})
+
+const GridExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getStyles(theme), [theme])
+    const [deals] = React.useState(createDealsProvider)
+    const [log, setLog] = React.useState<string[]>([])
+    const write = (line: string) => setLog(log => [line, ...log].slice(0, 6))
+    React.useEffect(() => () => deals.destroy(), [deals])
+
+    //returning the remover stops listening on unmount
+    React.useEffect(() => deals.addEventListener('onRecordsSelected', ids => write('onRecordsSelected: ' + (ids.join(', ') || 'none'))), [deals])
+    React.useEffect(() => deals.addEventListener('onAfterRecordSaved', result => write(\`onAfterRecordSaved: \${result.recordId}, success \${result.success}\`)), [deals])
+    //saves each change as it is made
+    React.useEffect(() => deals.addEventListener('onRecordColumnValueChanged', async (record, column) => {
+        write(\`onRecordColumnValueChanged: \${column} of \${record.getRecordId()}\`)
+        await record.save()
+    }), [deals])
+
+    return <Stack tokens={{ childrenGap: 12 }}>
+        <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
+            <DefaultButton text='Select deals 1 and 2' onClick={() => deals.setSelectedRecordIds(['deal-1', 'deal-2'])} />
+            <DefaultButton text='Toggle deal 3' onClick={() => deals.toggleSelectedRecordId('deal-3')} />
+            <DefaultButton text='Clear the selection' onClick={() => deals.clearSelectedRecordIds()} />
+        </Stack>
+        <DatasetControl onLoad={async () => ({ provider: deals })} destroyProviderOnUnmount={false} height='300px'>
+            <DatasetControl.Body>
+                <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
+            </DatasetControl.Body>
+        </DatasetControl>
+        <div className={styles.log}>
+            {log.map((line, index) => <div key={index} className={index === 0 ? styles.latest : styles.line}>{line}</div>)}
+        </div>
+    </Stack>
+}
+`
+
+const OWN_PROVIDER_CODE = `import { saveProduct } from './api'
+
+//its copies are made with the inherited constructor
+class ProductsProvider extends MemoryDataProvider {
+    public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
+        try {
+            await saveProduct(record.toRawData())
+        } catch (error) {
+            return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ message: (error as Error).message }] }
+        }
+        return super.onRecordSave(record)
+    }
+}
+
+const createProducts = () => new ProductsProvider({
+    dataSource: [
+        { productid: 'desk', name: 'Standing desk', price: 640 },
+        { productid: 'chair', name: 'Ergonomic chair', price: 410 },
+        { productid: 'lamp', name: 'Desk lamp', price: 85 },
+    ],
+    metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
+    columns: [
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 240 },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+    ],
+})
+
+const SaveButton = () => {
+    const provider = useDataProviderEvents(['onRecordColumnValueChanged', 'onAfterSaved'])
+    const [message, setMessage] = React.useState('')
+    const save = async () => {
+        const results = await provider.save()
+        const failed = results.filter(result => !result.success)
+        setMessage(failed.length === 0 ? 'Saved.' : failed.map(result => result.errors?.[0]?.message).join(' '))
+    }
+    return <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
+        <PrimaryButton text='Save' disabled={!provider.isDirty()} onClick={save} />
+        <Text>{message}</Text>
+    </Stack>
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createProducts() })} height='280px'>
+    <DatasetControl.Body>
+        <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} />
+    </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.Start>
+            <SaveButton />
+        </DatasetControl.Footer.Start>
+    </DatasetControl.Footer>
+</DatasetControl>
+`
+
+const API_FILE = {
+    name: 'api.ts',
+    code: `//stands in for your server
+export const saveProduct = async (product: IRawRecord) => {
+    await new Promise(resolve => setTimeout(resolve, 600))
+    if (product.price < 0) {
+        throw new Error(product.name + ': the server refuses a negative price.')
+    }
+}
+`,
+}
+
 export const SharedProviderExample = () => <GridExampleRunner seedCode={SHARED_PROVIDER_CODE} />
 
 export const SteerFromCodeExample = () => <GridExampleRunner seedCode={STEER_FROM_CODE_CODE} />
+
+export const HandDownExample = () => <GridExampleRunner seedCode={HAND_DOWN_CODE} />
+
+export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} />
+
+export const EventsExample = () => <GridExampleRunner seedCode={EVENTS_CODE} />
+
+export const OwnProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_PROVIDER_CODE }, API_FILE]} />

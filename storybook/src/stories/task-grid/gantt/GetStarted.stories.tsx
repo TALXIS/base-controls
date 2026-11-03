@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
-import { GanttShowcaseExample } from '../../../task-grid/examples/ganttExamples'
+import { GanttBasicExample, GanttShowcaseExample } from '../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
 The Gantt draws the task grid's tasks on a timeline, row for row with the grid beside it: same order, same tree, same scroll. It is drawn with <a href="https://dhtmlx.com/docs/products/dhtmlxGantt/" target="_blank" rel="noreferrer">DHTMLX Gantt</a>, and everything beyond the bars is a module: dragging bars, drawing tasks, links, markers, non-working days and tooltips.
@@ -14,38 +14,9 @@ Below are the sample projects. Try: zoom with the slider or Ctrl+wheel, drag a b
 
 ## Basic usage
 
-\`\`\`tsx
-import { createLibraryModule, TaskGantt } from '@talxis/base-controls/gantt'
+{{story: Bars beside the grid}}
 
-const fieldMapping: IFieldMapping = {
-    parentId: 'parentid',
-    subject: 'subject',
-    stackRank: 'stackrank',
-    startDate: 'scheduledstart',
-    endDate: 'scheduledend',
-}
-
-const ganttModules = [createLibraryModule()]
-
-<TaskDatasetControl onLoad={loadTasks} height='600px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.Start>
-            <TaskGantt.ZoomSlider />
-        </DatasetControl.Header.Start>
-        <DatasetControl.Header.End>
-            <TaskDatasetControl.Ribbon />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <TaskGantt.Split>
-            <TaskGrid />
-            <TaskGantt modules={ganttModules} />
-        </TaskGantt.Split>
-    </DatasetControl.Body>
-</TaskDatasetControl>
-\`\`\`
-
-The Gantt has its own entry, \`@talxis/base-controls/gantt\`, so a task grid without one never loads DHTMLX. It needs \`startDate\` and \`endDate\` in the task grid's field mapping (see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview)) and a library module (see [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview)). \`TaskGantt.Split\` puts it beside the grid, with a handle between them.
+The Gantt has its own entry, \`@talxis/base-controls/gantt\`, so a task grid without one never loads DHTMLX. Its field mapping is on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview), and its modules on [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview).
 
 ## What it draws
 
@@ -133,4 +104,16 @@ type Story = StoryObj<typeof meta>
 export const Overview: Story = {
     name: 'Overview',
     render: () => renderStory(<GanttShowcaseExample />),
+}
+
+export const BarsBesideTheGrid: Story = {
+    name: 'Bars beside the grid',
+    render: () => renderStory(<GanttBasicExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The sample tasks with nothing but the library module. Try: zoom with the slider, or drag the handle between the grid and the timeline.`,
+            },
+        },
+    },
 }

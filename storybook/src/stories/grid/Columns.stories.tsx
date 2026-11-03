@@ -7,20 +7,6 @@ import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, 
 const DESCRIPTION = `
 Every provider column becomes a grid column. \`colDefs\` changes those columns and adds your own: pin them, link them to their record, calculate their values, give their cells commands and their headers menus. What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview).
 
-\`\`\`tsx
-<DatasetControl onLoad={loadProducts}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
-            colDefs={{
-                name: { pinned: 'left', context: { isPrimary: true } },
-                price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
-                stockvalue: { headerName: 'Stock value', initialWidth: 130, cellRenderer: StockValueCell },
-            }} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 ## Change a column
 
 \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads about the column, listed under *The column context* below.
@@ -148,7 +134,7 @@ export const KeepKeyColumnsInView: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`pinned\` keeps *Product* left and *Category* right, and \`maxWidth\` keeps *Photo* narrow. Try: turn *Show every column* off to see the rest stretch.`,
+                story: `\`pinned\` keeps *Product* left and *Category* right, \`maxWidth\` keeps *Photo* narrow, and a function entry renames *Price* from the header it was built with. Try: turn *Show every column* off to see the rest stretch.`,
             },
         },
     },

@@ -7,20 +7,6 @@ import { GanttLinksExample } from '../../../../task-grid/examples/ganttExamples'
 const DESCRIPTION = `
 The links module draws the task grid's dependencies as arrows between the bars, and lets the user draw and delete them. The dependencies come from the [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module, which keeps them in memory, in Dataverse or in TALXIS: without it, the links module draws nothing.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [createMemoryDependenciesModule({ dependencies: DEPENDENCIES })], [])
-const ganttModules = React.useMemo(() => [createLibraryModule(), createLinksModule()], [])
-
-<TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks}>
-    <DatasetControl.Body>
-        <TaskGantt.Split>
-            <TaskGrid />
-            <TaskGantt modules={ganttModules} />
-        </TaskGantt.Split>
-    </DatasetControl.Body>
-</TaskDatasetControl>
-\`\`\`
-
 {{story: Link the tasks}}
 
 ## What the user can do

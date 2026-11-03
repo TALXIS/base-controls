@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
-import { ShowcaseExample } from '../../grid/examples/getStartedExamples'
+import { BasicUsageExample, ShowcaseExample } from '../../grid/examples/getStartedExamples'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
@@ -21,30 +21,7 @@ Below is a sales pipeline. Pick a preset or open **Features & Modules** to switc
 
 ## Basic usage
 
-\`\`\`tsx
-import { DatasetControl, Grid, PcfContextProvider, createClientSideRowModelModule } from '@talxis/base-controls'
-import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
-
-const createProducts = () => new MemoryDataProvider({
-    dataSource: [
-        { productid: 'desk', name: 'Standing desk', price: 640 },
-        { productid: 'chair', name: 'Ergonomic chair', price: 410 },
-    ],
-    metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
-    columns: [
-        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText },
-        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency },
-    ],
-})
-
-export const ProductGrid = () => <PcfContextProvider>
-    <DatasetControl onLoad={async () => ({ provider: createProducts() })}>
-        <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule()]} />
-        </DatasetControl.Body>
-    </DatasetControl>
-</PcfContextProvider>
-\`\`\`
+{{story: Two products}}
 
 The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a \`DataProviderScope\` and load the provider yourself with \`refresh()\`. Without either, the grid throws.
 
@@ -96,4 +73,16 @@ type Story = StoryObj<typeof meta>
 export const Overview: Story = {
     name: 'Overview',
     render: () => renderStory(<ShowcaseExample />),
+}
+
+export const TwoProducts: Story = {
+    name: 'Two products',
+    render: () => renderStory(<BasicUsageExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The least a grid needs: a provider loaded by a DatasetControl and a row model. Try: add a column to \`columns\` and a value for it to each record.`,
+            },
+        },
+    },
 }

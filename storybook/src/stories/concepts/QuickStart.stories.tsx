@@ -41,14 +41,7 @@ Only \`PcfContextProvider\` is required. Add the others when you need what they 
 
 ## In a PCF control
 
-Pass the context the host hands \`updateView\`. The controls use its user, dialogs and data access, and format values their own way, from the user's language:
-
-\`\`\`tsx
-//updateView(context)
-<PcfContextProvider context={context}>
-    <App />
-</PcfContextProvider>
-\`\`\`
+Pass \`PcfContextProvider\` the context the host hands \`updateView\`: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
 ## Next steps
 

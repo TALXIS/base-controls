@@ -2,24 +2,12 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
-import { OpenTicketGroupsExample } from '../../../grid/examples/modulesExamples'
+import { OpenTicketGroupsExample, PickModulesExample } from '../../../grid/examples/modulesExamples'
 
 const DESCRIPTION = `
 Editing, selecting, sorting, filtering, grouping, totals and copying are modules. You pass the ones you want in \`modules\`, and a feature you leave out is not there at all. Every grid also needs exactly one row model, which is a module too.
 
-\`\`\`tsx
-<DatasetControl onLoad={loadOrders}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[
-                createClientSideRowModelModule(),
-                createRowSelectionModule({ mode: 'multiple' }),
-                createSortingModule(),
-                createFilteringModule(),
-            ]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
+{{story: Pick the features of a ticket queue}}
 
 \`modules\` and every option you pass to a factory are read once, at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
 
@@ -50,24 +38,7 @@ Sorting, filtering, grouping and aggregation take a \`components\` option for wh
 
 ## Switch a module on or off
 
-To switch a module on or off, or to change its options, give the grid a new \`key\`:
-
-\`\`\`tsx
-interface IOrdersGridProps {
-    allowGrouping: boolean
-}
-
-const OrdersGrid = (props: IOrdersGridProps) => <DatasetControl onLoad={loadOrders}>
-    <DatasetControl.Body>
-        <Grid
-            key={props.allowGrouping ? 'grouped' : 'flat'}
-            modules={[
-                createClientSideRowModelModule(),
-                ...(props.allowGrouping ? [createGroupingModule()] : []),
-            ]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
+To switch a module on or off, or to change its options, give the grid a new \`key\`, as the queue above does.
 
 What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too. When grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\` and call \`provider.refresh()\`; see *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
@@ -78,17 +49,7 @@ The grid runs on AG Grid Community. Server-side rows, cell selection, the clipbo
 \`\`\`tsx
 //a LicenseKey input parameter declared in your control's manifest
 const licenseKey = context.parameters.LicenseKey.raw
-
-<DatasetControl onLoad={loadTickets}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[
-                ...(licenseKey ? [createLicenseModule({ key: licenseKey })] : []),
-                createServerSideRowModelModule(),
-                createGroupingModule(),
-            ]} />
-    </DatasetControl.Body>
-</DatasetControl>
+const modules = [...(licenseKey ? [createLicenseModule({ key: licenseKey })] : []), createServerSideRowModelModule()]
 \`\`\`
 
 \`key\` is required, so leave the module out while there is no key. The key holds for the whole page: once one grid registers it, every grid on the page is licensed. Without one, AG Grid logs a licence message to the console and, on any host but \`localhost\` and \`127.0.0.1\`, draws a watermark over every grid on the page.
@@ -130,6 +91,18 @@ export const OpenTicketGroupsOnDemand: Story = {
         docs: {
             description: {
                 story: `A support queue grouped by customer, against a slow service: the client-side row model fetches every customer's tickets as the list loads, the server-side one when you open a customer. Try: pick a row model, open a few customers and watch the count of fetches (AG Grid Enterprise).`,
+            },
+        },
+    },
+}
+
+export const PickTheFeaturesOfATicketQueue: Story = {
+    name: 'Pick the features of a ticket queue',
+    render: () => renderStory(<PickModulesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A ticket queue whose modules are switched by toggles, each switch remounting the grid with a new \`key\`. Try: sort by a column, turn *Sorting* off and open the column's menu again.`,
             },
         },
     },

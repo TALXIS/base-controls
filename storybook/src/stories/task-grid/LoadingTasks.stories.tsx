@@ -5,16 +5,9 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-The control's \`onLoad\` returns the tasks of the view the user is on: a task provider, and the field mapping that tells it which columns make the tree. It is called at mount, on every view switch and on every reload, as on a DatasetControl (see [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)). A task grid loads every task of the view at once.
+The control's \`onLoad\` returns the tasks of the view the user is on: a task provider, and the field mapping that tells it which columns make the tree. It works as on a DatasetControl (see [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)), and loads every task of the view at once.
 
-\`\`\`tsx
-const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
-    provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns }) }),
-    fieldMapping: { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank' },
-})
-
-<TaskDatasetControl onLoad={loadTasks}>...</TaskDatasetControl>
-\`\`\`
+{{story: Show your own tasks}}
 
 ## Load the tasks
 
@@ -45,8 +38,6 @@ Throw from \`onLoad\` and the control shows the error, with *Try again*. See [**
 
 Every other column is an ordinary column of the view.
 
-{{story: Show your own tasks}}
-
 ## Data sources and stores
 
 A task provider reads and writes its tasks through a *store*, and a data source puts the two together. You pass the data source an \`onCreateStore(taskRuntime)\` that creates the store on every load:
@@ -61,17 +52,7 @@ Every data source also takes \`provider\`, a class extending \`TaskDataProvider\
 
 ### Memory
 
-\`\`\`tsx
-//created once, so the tasks survive a view switch
-const database = new MemoryTaskDatabase({ records: TASKS, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'task' } })
-
-const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
-    provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
-    fieldMapping,
-})
-\`\`\`
-
-\`MemoryTaskDatabase\` copies \`records\` and keeps every change; a parent lookup holds \`[{ id: { guid }, etn, name }]\`. \`columns\` are what views take their columns from and what Edit columns offers. Creating and deleting pause briefly, as a server would, and opening a task shows an alert. Memory modules that create tasks, such as templates, take the same \`database\`.
+\`MemoryTaskDatabase\` copies \`records\` and keeps every change; *Show your own tasks* above uses one. Creating and deleting pause briefly, as a server would, and opening a task shows an alert. Memory modules that create tasks, such as templates, take the same \`database\`.
 
 ### Dataverse
 
@@ -150,7 +131,7 @@ export const ShowYourOwnTasks: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An office move in a \`MemoryTaskDatabase\`, mapped by four columns. *Sign the lease* is done, so its \`statecode\` is \`1\`. Try: turn on *Hide inactive tasks* in the settings, or add a task to \`OFFICE_MOVE\` in **Code**.`,
+                story: `An office move in a \`MemoryTaskDatabase\`, where *Sign the lease* is done (\`statecode\` \`1\`). Try: turn on *Hide inactive tasks* in the settings, or add a task to \`OFFICE_MOVE\` in **Code**.`,
             },
         },
     },

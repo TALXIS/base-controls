@@ -7,14 +7,6 @@ import { EmptyValuePlaceholdersExample, StockScriptExample, TicketRecommendation
 const DESCRIPTION = `
 Client scripts written against the dataset client API flag the records that need attention, colour cells, lock fields and show a cell as loading. They do it with *record expressions*, set per record and column. The legacy client API compatibility module makes the grid draw what they set, so those scripts keep working.
 
-\`\`\`tsx
-<DatasetControl onLoad={loadTickets}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createLegacyClientApiCompatibilityModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 The module takes no options and needs no AG Grid Enterprise licence.
 
 {{story: Recommend next steps on tickets}}

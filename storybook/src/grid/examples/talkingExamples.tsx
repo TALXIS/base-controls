@@ -64,4 +64,57 @@ const GridExample = () => {
 }
 `
 
+export const GRID_LIFE_CODE = `const HIGH = 1
+
+const createLifeLogModule = (log: (message: string) => void): IGridModule => ({
+    name: 'lifeLog',
+    onLoad: grid => {
+        log('onLoad: the grid mounts, AG Grid is not there yet')
+        grid.services.get('cells').registerCellTheme((builder, { record }) => {
+            if (Number(record.getValue('priority')) === HIGH) {
+                builder.tint(grid.services.get('theme').semanticColors.errorText)
+            }
+        })
+        grid.services.observe('gridApi', gridApi => {
+            log(\`gridApi: \${gridApi.getDisplayedRowCount()} rows on screen\`)
+            const onResize = () => gridApi.sizeColumnsToFit()
+            window.addEventListener('resize', onResize)
+            //the cleanup runs while AG Grid still works
+            return () => {
+                window.removeEventListener('resize', onResize)
+                log(\`gridApi cleanup: the focused column was \${gridApi.getFocusedCell()?.column.getColId() ?? 'none'}\`)
+            }
+        })
+        grid.events.addEventListener('onDestroyed', () => log('onDestroyed: AG Grid is gone'))
+    },
+})
+
+const GridExample = () => {
+    const theme = useTheme()
+    const [lines, setLines] = React.useState<string[]>([])
+    const [mountCount, setMountCount] = React.useState(0)
+    //deferred: onLoad runs while the grid renders
+    const log = (message: string) => window.setTimeout(() => setLines(current => [...current, message]))
+    const lifeLog = React.useMemo(() => createLifeLogModule(log), [])
+
+    return <Stack tokens={{ childrenGap: 12 }}>
+        <DatasetControl onLoad={async () => ({ provider: provider })}>
+            <DatasetControl.Header>
+                <DatasetControl.Header.Start>
+                    <DefaultButton iconProps={{ iconName: 'Refresh' }} text='Close and reopen' onClick={() => setMountCount(count => count + 1)} />
+                </DatasetControl.Header.Start>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid key={mountCount} modules={[createClientSideRowModelModule(), lifeLog]} height='320px' />
+            </DatasetControl.Body>
+        </DatasetControl>
+        <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 4, background: theme.semanticColors.bodyStandoutBackground } }}>
+            {lines.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}
+        </Stack>
+    </Stack>
+}
+`
+
 export const DriveTheGridExample = () => <GridExampleRunner seedCode={DRIVE_THE_GRID_CODE} dataset='timesheets' />
+
+export const GridLifeExample = () => <GridExampleRunner seedCode={GRID_LIFE_CODE} dataset='tickets' />

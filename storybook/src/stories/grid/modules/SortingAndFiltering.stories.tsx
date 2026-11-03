@@ -8,14 +8,6 @@ import { OpenOnWhatMattersExample, SavedViewsExample, TailoredFiltersExample, Tr
 const DESCRIPTION = `
 Sorting and filtering let users order a long list and narrow it down from each column's menu. Neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
 
-\`\`\`tsx
-<DatasetControl onLoad={loadTickets}>
-    <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createSortingModule(), createFilteringModule()]} />
-    </DatasetControl.Body>
-</DatasetControl>
-\`\`\`
-
 {{story: Triage the support queue}}
 
 ## The column menu
@@ -109,11 +101,6 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 ## Changing how it looks
 
 Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
-
-\`\`\`tsx
-createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} className={styles.arrow} /> } } })
-createFilteringModule({ components: { filterIcon: { onRenderIcon: props => <Icon {...props} iconName='FilterSolid' /> } } })
-\`\`\`
 
 | Module | Key | Slots | Default | Draws |
 |---|---|---|---|---|

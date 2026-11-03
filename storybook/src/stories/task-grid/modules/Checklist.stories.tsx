@@ -7,12 +7,6 @@ import { ChecklistExample } from '../../../task-grid/examples/modulesExamples'
 const DESCRIPTION = `
 The checklist module shows how far each task's checklist is done, as *done/total* in a *Checklist* column. The column is read-only: checklists are edited where they are kept, such as in the task's form.
 
-\`\`\`tsx
-const controlModules = React.useMemo(() => [createMemoryChecklistModule({ items: CHECKLIST_ITEMS })], [])
-\`\`\`
-
-A view shows the column by listing \`checklist__virtual\`, as a \`Lookup.Simple\` column. It is offered in Edit columns too.
-
 {{story: Show checklist progress}}
 
 ## Where checklists are kept

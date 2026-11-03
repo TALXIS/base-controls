@@ -13,13 +13,7 @@ The context ties the controls to the host they run in. It takes the shape of a P
 
 Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`.
 
-\`\`\`tsx
-import { PcfContextProvider } from '@talxis/base-controls'
-
-<PcfContextProvider>
-    <App />
-</PcfContextProvider>
-\`\`\`
+{{story: Format for the user}}
 
 ## In a PCF control
 
@@ -53,8 +47,6 @@ Without a \`context\`, the provider builds one:
 
 The provider builds the context again on every render, so \`usePcfContext()\` sees a change of \`userSettings\` at once. Controls such as the grid keep the context they mounted with: remount them with a new \`key\`.
 
-{{story: Format for the user}}
-
 {{story: Ask the user}}
 
 `
@@ -81,7 +73,7 @@ export const FormatForTheUser: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An invoice formatted from \`usePcfContext().formatting\`, with the culture passed in \`userSettings\`. Pick another culture to see dates, money and durations follow it.`,
+                story: `An invoice formatted from \`usePcfContext().formatting\`, with the culture passed in \`userSettings\`. Try: pick another culture.`,
             },
         },
     },
@@ -93,7 +85,7 @@ export const AskTheUser: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A confirmation and an alert through \`usePcfContext().navigation\`, with no host: the browser's own dialogs stand in.`,
+                story: `A confirmation and an alert through \`usePcfContext().navigation\`, with the browser's own dialogs standing in for a host. Try: click *Archive* and cancel, then confirm.`,
             },
         },
     },

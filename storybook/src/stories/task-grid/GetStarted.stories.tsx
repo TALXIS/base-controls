@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { TaskGridShowcaseExample } from '../../task-grid/examples/taskGridExamples'
+import { BasicTaskGridExample, TaskGridShowcaseExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
 TaskGrid shows tasks as a tree: every task sits under its parent, in its place among its siblings. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) with a [**Grid**](?path=/docs/controls-grid-get-started--overview) in its body, so views, quick find, Edit columns, the ribbon and the Grid modules work as they do there. On top, it adds the tree, commands to create, edit, delete and move tasks, and modules for what tasks carry: assignees, checklists, dependencies, templates and more. A [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) can draw the same tasks on a timeline beside the grid.
@@ -14,34 +14,9 @@ Below are seven projects of a software company. Try: open a task's subtasks, dra
 
 ## Basic usage
 
-\`\`\`tsx
-import { createMemoryTaskDataSource, DatasetControl, IFieldMapping, ITaskGridLoadParameters, ITaskGridLoadResult, MemoryTaskDatabase, MemoryTaskStore, PcfContextProvider, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+{{story: The smallest task grid}}
 
-const database = new MemoryTaskDatabase({ records: TASKS, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'task' } })
-
-const fieldMapping: IFieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
-
-const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
-    provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
-    fieldMapping,
-})
-
-export const Tasks = () => <PcfContextProvider>
-    <TaskDatasetControl onLoad={loadTasks} enableCreation enableEditing enableDeletion height='600px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.End>
-                <TaskDatasetControl.Ribbon />
-                <TaskDatasetControl.Settings />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <TaskGrid />
-        </DatasetControl.Body>
-    </TaskDatasetControl>
-</PcfContextProvider>
-\`\`\`
-
-\`TaskDatasetControl\` takes the DatasetControl's parts and most of its props; its \`onLoad\` gets a \`taskRuntime\` and returns a field mapping beside the provider, as [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview) shows. \`TaskGrid\` takes the Grid's props, always has the tree, and throws outside a \`TaskDatasetControl\`. \`PcfContextProvider\` wraps it all (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
+\`TaskDatasetControl\` takes the DatasetControl's parts and most of its props, and \`TaskGrid\` takes the Grid's props. \`onLoad\` is covered on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview), and \`PcfContextProvider\` wraps it all in your app (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
 
 ## TaskDatasetControl props
 
@@ -128,4 +103,16 @@ type Story = StoryObj<typeof meta>
 export const Overview: Story = {
     name: 'Overview',
     render: () => renderStory(<TaskGridShowcaseExample />),
+}
+
+export const TheSmallestTaskGrid: Story = {
+    name: 'The smallest task grid',
+    render: () => renderStory(<BasicTaskGridExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The sample tasks in memory, with a ribbon and the settings. Try: add a subtask from a row's **+**, or delete \`enableDeletion\` in **Code** and watch *Delete* go.`,
+            },
+        },
+    },
 }

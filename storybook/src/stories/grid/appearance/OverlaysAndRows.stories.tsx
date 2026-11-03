@@ -7,15 +7,6 @@ import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseL
 const DESCRIPTION = `
 When the grid has no records to draw, it draws something in their place: an overlay over the rows while the provider loads or holds nothing, and a row in place of records that are still loading or failed to load. These are the only parts \`<Grid>\` itself takes \`components\` for.
 
-\`\`\`tsx
-<Grid
-    modules={[createClientSideRowModelModule()]}
-    components={{
-        overlays: { emptyRecords: { onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' /> } },
-        rows: { error: { onRenderMessageBar: props => <MessageBar {...props} messageBarType={MessageBarType.warning} /> } },
-    }} />
-\`\`\`
-
 ## Changing how it looks
 
 \`<Grid>\` takes \`components\`, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).

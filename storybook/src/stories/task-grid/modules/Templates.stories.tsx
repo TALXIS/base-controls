@@ -7,21 +7,6 @@ import { TemplatesExample } from '../../../task-grid/examples/modulesExamples'
 const DESCRIPTION = `
 A template is a task with subtasks, created again in one go. The templates module adds *From template* beside *New*, and *Save as template* for a selected task.
 
-\`\`\`tsx
-const ONBOARDING: IMemoryTemplate = {
-    id: 'onboarding',
-    name: 'Onboard a new colleague',
-    children: [
-        { data: { subject: 'Prepare the laptop' } },
-        { data: { subject: 'First week' }, children: [{ data: { subject: 'Meet the team' } }] },
-    ],
-}
-
-const controlModules = React.useMemo(() => [createMemoryTemplatesModule({ database, templates: [ONBOARDING] })], [database])
-
-<TaskDatasetControl modules={controlModules} enableCreation onLoad={loadTasks}>...</TaskDatasetControl>
-\`\`\`
-
 {{story: Create tasks from a template}}
 
 ## What the user can do

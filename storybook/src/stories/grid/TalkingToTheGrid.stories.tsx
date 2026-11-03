@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { DriveTheGridExample } from '../../grid/examples/talkingExamples'
+import { DriveTheGridExample, GridLifeExample } from '../../grid/examples/talkingExamples'
 
 const DESCRIPTION = `
 Every mounted grid is an \`IGrid\`: one object your code talks to, to read the data, drive a module, change what the grid decides, or listen to what happens in it. Code outside the grid and a module inside it get the same one.
@@ -11,35 +11,11 @@ Every mounted grid is an \`IGrid\`: one object your code talks to, to read the d
 
 Outside the grid, such as in a ribbon command, keep the grid \`onReady\` passes you once AG Grid is ready:
 
-\`\`\`tsx
-const gridRef = React.useRef<IGrid>()
-
-const expandAll = () => {
-    const grouping = gridRef.current?.modules.find('grouping')
-    grouping?.setExpandedLevel(grouping.getDeepestLevel())
-}
-
-<Grid modules={modules} onReady={grid => gridRef.current = grid} />
-\`\`\`
-
 {{story: Drive the grid from the ribbon}}
 
 Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG Grid exists:
 
-\`\`\`tsx
-const urgentTicketsModule: IGridModule = {
-    name: 'urgentTickets',
-    onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((builder, { record }) => {
-            if (record.getValue('priority') === HIGH) {
-                builder.colors.text = '#a4262c'
-            }
-        })
-    },
-}
-
-<Grid modules={[createClientSideRowModelModule(), urgentTicketsModule]} />
-\`\`\`
+{{story: Follow a grid from mount to unmount}}
 
 \`onDestroyed\` passes it once more as AG Grid is about to be destroyed. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
@@ -64,15 +40,7 @@ The grid is made of services, and \`grid.services\` finds them by key:
 | \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
 | \`unregister(key)\` | Removes the service, until something registers it again. |
 
-A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered, such as \`gridApi\` as AG Grid is destroyed, when you stop observing, and when the grid unmounts. Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup:
-
-\`\`\`ts
-grid.services.observe('gridApi', gridApi => {
-    const onResize = () => gridApi.sizeColumnsToFit()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-})
-\`\`\`
+A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered, such as \`gridApi\` as AG Grid is destroyed, when you stop observing, and when the grid unmounts. Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup, as the module above does.
 
 Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
 
@@ -187,6 +155,18 @@ export const DriveTheGridFromTheRibbon: Story = {
         docs: {
             description: {
                 story: `Timesheets grouped by status, with a ribbon that calls the grouping and sorting services through the grid from \`onReady\`, and a summary refreshed on \`grid.events\`' \`onDataLoaded\`. Try: expand all, then press *Most hours first* and watch the summary.`,
+            },
+        },
+    },
+}
+
+export const FollowAGridFromMountToUnmount: Story = {
+    name: 'Follow a grid from mount to unmount',
+    render: () => renderStory(<GridLifeExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A module that tints urgent tickets through the \`cells\` service and logs what the grid hands it: \`onLoad\`, the \`gridApi\` service with its cleanup, and \`onDestroyed\`. Try: click a cell, then press *Close and reopen* and read the log.`,
             },
         },
     },

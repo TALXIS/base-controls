@@ -23,6 +23,58 @@ const GridExample = (props: IGridExampleProps) => <DatasetControl onLoad={async 
 </DatasetControl>
 `
 
+export const PICK_MODULES_CODE = `interface IModuleSwitches {
+    selection: boolean
+    sorting: boolean
+    filtering: boolean
+    grouping: boolean
+}
+
+const LABELS: { [name in keyof IModuleSwitches]: string } = {
+    selection: 'Row selection',
+    sorting: 'Sorting',
+    filtering: 'Filtering',
+    grouping: 'Grouping (Enterprise)',
+}
+
+const GridExample = () => {
+    const [switches, setSwitches] = React.useState<IModuleSwitches>({ selection: true, sorting: true, filtering: true, grouping: false })
+
+    const toggle = (name: keyof IModuleSwitches, isOn: boolean) => {
+        //a module switched off leaves its state on the provider
+        if (name === 'grouping' && !isOn) {
+            provider.grouping.getGroupBys().forEach(groupBy => provider.grouping.removeGroupBy(groupBy.alias))
+            provider.refresh()
+        }
+        setSwitches(current => ({ ...current, [name]: isOn }))
+    }
+
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <Stack horizontal wrap tokens={{ childrenGap: 16 }}>
+                    {(Object.keys(LABELS) as (keyof IModuleSwitches)[]).map(name => <Toggle key={name} inlineLabel label={LABELS[name]} checked={switches[name]} onChange={(_, checked) => toggle(name, !!checked)} />)}
+                </Stack>
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                //modules are read at mount
+                key={JSON.stringify(switches)}
+                modules={[
+                    createClientSideRowModelModule(),
+                    ...(switches.selection ? [createRowSelectionModule({ mode: 'multiple' })] : []),
+                    ...(switches.sorting ? [createSortingModule()] : []),
+                    ...(switches.filtering ? [createFilteringModule()] : []),
+                    ...(switches.grouping ? [createGroupingModule()] : []),
+                ]}
+                enableOptionSetColors
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
+`
+
 const FETCH_DELAY = 800
 
 //stands in for a remote service whose every fetch takes a moment
@@ -85,6 +137,8 @@ const RowModelBar = (props: IRowModelBarProps) => <Stack horizontal wrap vertica
         <Text>{props.groupFetches === 1 ? '1 customer fetched' : props.groupFetches + ' customers fetched'}</Text>
     </Stack>
 </Stack>
+
+export const PickModulesExample = () => <GridExampleRunner seedCode={PICK_MODULES_CODE} dataset='tickets' />
 
 export const OpenTicketGroupsExample = () => {
     const [rowModel, setRowModel] = React.useState<IGridRowModelType>('clientSide')

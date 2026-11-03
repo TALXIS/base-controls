@@ -23,18 +23,7 @@ The control shows every failure to the user, so your code only has to throw. A f
 
 ## Failed loads
 
-The error's \`message\` is the title, and *Details* opens the error dialog with its \`cause\`, or its stack when it has none:
-
-\`\`\`tsx
-const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
-    const response = await fetch(\`/api/deals?view=\${view?.id}\`)
-    if (!response.ok) {
-        throw Object.assign(new Error('The deals could not be loaded.'), { cause: await response.text() })
-    }
-    //createDealsProvider is yours, see Data providers
-    return { provider: createDealsProvider(await response.json()) }
-}
-\`\`\`
+The error's \`message\` is the title, and *Details* opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the first example throws.
 
 - A failed load leaves no provider behind: the parts are not drawn until a load succeeds.
 - *Try again* calls \`control.retry()\`: the control mounts anew and loads the view that failed, from the first step.
@@ -43,17 +32,6 @@ const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>)
 ## Failed actions
 
 A ribbon command that throws, and a user view that fails to save or delete, open the error dialog with the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
-
-\`\`\`tsx
-const syncToCrm = async () => {
-    const response = await fetch('/api/crm/sync', { method: 'POST' })
-    if (!response.ok) {
-        throw new Error('The CRM did not respond.')
-    }
-}
-
-<DatasetControl.Ribbon onLoad={async () => [{ id: 'sync', label: 'Sync to CRM', onExecute: syncToCrm }]} />
-\`\`\`
 
 A user view fails when:
 
@@ -67,16 +45,7 @@ Without a message of its own, the dialog shows the \`userQueries.saveFailed\` or
 
 ## React to a failure yourself
 
-The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onMounted\`, which runs for every mount:
-
-\`\`\`tsx
-//logError is yours
-const onMounted = (control: IDatasetControl) => {
-    control.events.addEventListener('onLoadFailed', error => logError('load', error))
-    control.parts.observe('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => logError(command.id, error)))
-    control.modules.observe('userQueries', userQueries => userQueries.events.addEventListener('onOperationFailed', error => logError('views', error)))
-}
-\`\`\`
+The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onMounted\`, which runs for every mount; both examples log below the control.
 
 | Event | On | Arguments |
 |---|---|---|
@@ -109,7 +78,7 @@ export const RecoverFromAFailedLoad: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The first load fails, and the control shows the error in place of its parts. Try: open *Details* to read the \`cause\`, then press *Try again*, which mounts the control anew and succeeds.`,
+                story: `The first load fails, and the control shows the error in place of its parts. Try: open *Details* to read the \`cause\`, then press *Try again*, which mounts the control anew and succeeds, and watch the logged count.`,
             },
         },
     },
@@ -121,7 +90,7 @@ export const TakeTheServerDown: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A ribbon command and the user's own views, both going through a server you can take down. Try: turn on *Server is down*, then press *Sync to CRM*, or pick *Save as new view* in the view switcher: each opens the error dialog.`,
+                story: `A ribbon command and the user's own views, both going through a server you can take down. Try: turn on *Server is down*, then press *Sync to CRM*, or pick *Save as new view* in the view switcher: each opens the error dialog and is logged below.`,
             },
         },
     },

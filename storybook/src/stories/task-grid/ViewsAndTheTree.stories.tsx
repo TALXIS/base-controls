@@ -5,17 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TaskViewsExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Views work as on a DatasetControl: \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`, and the control applies it for you: \`onLoad\` does not need to read the view.
-
-\`\`\`tsx
-const loadTaskViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
-    { id: 'all', name: 'All tasks', resolve: () => ({ columns: ALL_COLUMNS }) },
-    { id: 'planning', name: 'Planning', resolve: () => ({ columns: PLANNING_COLUMNS, data: { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } }) },
-    { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: ALL_COLUMNS, data: { isFlatList: true } }) },
-]
-
-<TaskDatasetControl onLoadViews={loadTaskViews} onLoad={loadTasks}>...</TaskDatasetControl>
-\`\`\`
+Views work as on a DatasetControl: \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`.
 
 {{story: Switch between task views}}
 
@@ -68,7 +58,7 @@ export const SwitchBetweenTaskViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Three views of the sample projects: the whole tree, the tree sorted by start date, and a flat list. Try: search for *test* to see the ancestors kept, then switch to *Every task on its own*, or turn off *Show hierarchy* in the settings.`,
+                story: `Four views of the sample projects: the tree, the tree sorted by start date, a search for *design*, and a flat list. Try: open *Design work* to see the ancestors kept, then switch to *Every task on its own*, or turn off *Show hierarchy* in the settings.`,
             },
         },
     },
