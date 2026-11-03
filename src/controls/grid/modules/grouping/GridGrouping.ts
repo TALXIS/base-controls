@@ -363,18 +363,18 @@ export class GridGrouping implements IGridGrouping {
     };
 
     /** Styles a group row as the heading of what it holds. */
-    private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
+    private _onCellTheme = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
         //unstyled until something is grouped
         if (this._provider.grouping.getGroupBys().length === 0) {
             return;
         }
         if (isGroupRecord(params.record)) {
-            theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
-            theme.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+            builder.colors.background = this._gridTheme.palette.neutralLighterAlt;
+            builder.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
             return;
         }
         //a record sits on the grid's own surface
-        theme.colors.background = this._gridTheme.semanticColors.bodyBackground;
+        builder.colors.background = this._gridTheme.semanticColors.bodyBackground;
     };
 
     /** A group row holds no record's value to edit. */

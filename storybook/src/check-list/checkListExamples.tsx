@@ -28,7 +28,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortC
 
 export const RELEASE_BOARD_CODE = `${FIELD_MAPPING}
 
-const OVERDUE = '#fde7e9'
+const OVERDUE = '#d13438'
 
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
@@ -69,10 +69,9 @@ const GridExample = () => {
                         context: {
                             cell: {
                                 onGetLock: lockWhenDone,
-                                onGetTheme: (theme, { record }) => {
+                                onGetTheme: (builder, { record }) => {
                                     if (isOverdue(record)) {
-                                        theme.colors.background = OVERDUE
-                                        theme.colors.text = getTextColorForBackground(OVERDUE)
+                                        builder.tint(OVERDUE)
                                     }
                                 },
                             },

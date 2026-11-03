@@ -1,5 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { getOptionTagColors } from "@ui";
+import { getTintColors } from "@theme";
 
 export const getLookupManyPillStyles = (theme: ITheme, color: string) => mergeStyleSets({
     pill: {
@@ -28,7 +28,7 @@ export const getLookupManyPillStyles = (theme: ITheme, color: string) => mergeSt
         cursor: 'pointer',
         color: 'inherit',
         ':hover': {
-            backgroundColor: getOptionTagColors(color, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText).border,
+            backgroundColor: getTintColors(color, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText }).border,
         },
     },
     removeIcon: {

@@ -119,7 +119,7 @@ Every header hook receives an \`IGridColumnHeader\`. \`getColumn()\` is the prov
 
 | Service | Hook | Decides | Receives | Runs last |
 |---|---|---|---|---|
-| \`cells\` | \`registerCellTheme\` | A cell's colours: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
+| \`cells\` | \`registerCellTheme\` | A cell's colours: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`builder: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
 | \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`context.cell.onGetLoading\` |
 | \`cells\` | \`registerCellCommands\` | A cell's commands: \`result.items\`, \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`context.cell.onGetCommands\` |
 | \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | None |
@@ -132,7 +132,7 @@ Every header hook receives an \`IGridColumnHeader\`. \`getColumn()\` is the prov
 | \`columns.headers\` | \`registerColumnMenuSection\` | The sections of a column's menu | \`sections: IColumnMenuSection[]\`, \`header: IGridColumnHeader\` | \`context.header.onGetMenuSections\` |
 | \`columns.headers\` | \`registerColumnMenuItems\` | The menu's final items, headings included | \`items: IContextualMenuItem[]\`, \`header\` | \`context.header.onGetMenuItems\` |
 | \`columns.headers\` | \`registerColumnHeaderAdornments\` | What a header draws beside the column's name | \`adornments: IColumnHeaderAdornment[]\`, \`header\` | \`context.header.onGetAdornments\` |
-| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`theme: ThemeBuilder\`, \`header\` | \`context.header.onGetTheme\` |
+| \`columns.headers\` | \`registerColumnHeaderTheme\` | A header's colours | \`builder: ThemeBuilder\`, \`header\` | \`context.header.onGetTheme\` |
 | \`surfaces\` | \`registerSurface\` | What modules draw inside the grid, after the rows: push \`{ key, onRender }\` | \`surfaces: IGridSurface[]\` | None |
 | \`filtering\` | \`registerFilterControlParameters\` | The parameters of the filter callout's controls | \`result: IParameters\`, \`{ column, control, index }\` | None |
 | \`rowSelection\` | \`registerSelectRecords\` | The records about to be selected: change \`selection.recordIds\`, or set \`selection.isCancelled\`. May be async; each is awaited in turn | \`selection\`, \`{ provider }\` | None |

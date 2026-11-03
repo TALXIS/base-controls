@@ -15,9 +15,9 @@ const HIGH = 1
 export const urgentTicketsModule: IGridModule = {
     name: 'urgentTickets',
     onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+        grid.services.get('cells').registerCellTheme((builder, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
-                theme.colors.text = '#a4262c'
+                builder.colors.text = '#a4262c'
             }
         })
     },

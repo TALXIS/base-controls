@@ -30,9 +30,9 @@ Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG
 const urgentTicketsModule: IGridModule = {
     name: 'urgentTickets',
     onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+        grid.services.get('cells').registerCellTheme((builder, { record }) => {
             if (record.getValue('priority') === HIGH) {
-                theme.colors.text = '#a4262c'
+                builder.colors.text = '#a4262c'
             }
         })
     },

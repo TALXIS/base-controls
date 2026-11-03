@@ -64,7 +64,7 @@ Clicking a header opens its menu. \`context.header\` adds to the header and its 
 | \`onGetAdornments(adornments)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
 | \`onGetMenuSections(sections)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
 | \`onGetMenuItems(items)\` | Change the final menu items. |
-| \`onGetTheme(theme)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`onGetTheme(builder)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 
 The menu is built each time it opens, and adornments each time the header draws. After a change the header should show, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
@@ -102,7 +102,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |
 | \`cell.oneClickEdit\` | \`boolean\` | With the editing module: draws the editing control in the cell itself. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`cell.onGetCommands\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands* above. |
-| \`cell.onGetTheme\` | \`(theme, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`cell.onGetTheme\` | \`(builder, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`cell.onGetLoading\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
 | \`cell.onGetLock\` | \`(result, { record }) => void\` | With the editing module: locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`cell.onGetValidation\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |

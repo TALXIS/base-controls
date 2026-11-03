@@ -32,7 +32,7 @@ export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], header
 export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], header: IGridColumnHeader) => void;
 
 /** A hook over the theme a column header is drawn in. */
-export type GridColumnHeaderThemeHook = (theme: ThemeBuilder, header: IGridColumnHeader) => void;
+export type GridColumnHeaderThemeHook = (builder: ThemeBuilder, header: IGridColumnHeader) => void;
 
 /** A hook over what a column header draws. */
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void;
@@ -87,7 +87,7 @@ export interface IGridColumnHeadersInternal extends IGridColumnHeaders {
     /** Everything the modules offer for a column, in order. */
     getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     /** Run by the header in question. */
-    applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void;
+    applyColumnHeaderThemeHooks(builder: ThemeBuilder, header: IGridColumnHeader): void;
     /** Everything the modules draw for a column, in order. */
     getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[];
 }
@@ -146,9 +146,9 @@ export class GridColumnHeaders implements IGridColumnHeadersInternal {
         return this._themeHooks.register(hook, priority);
     }
 
-    public applyColumnHeaderThemeHooks(theme: ThemeBuilder, header: IGridColumnHeader): void {
-        this._themeHooks.apply(theme, header);
-        header.getContext().header?.onGetTheme?.(theme);
+    public applyColumnHeaderThemeHooks(builder: ThemeBuilder, header: IGridColumnHeader): void {
+        this._themeHooks.apply(builder, header);
+        header.getContext().header?.onGetTheme?.(builder);
     }
 
     public getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[] {

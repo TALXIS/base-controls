@@ -22,7 +22,7 @@ export type GridControlHook = (result: { control: Required<ICustomColumnControl>
 export type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
 
 /** A hook over the theme a cell is drawn in. */
-export type GridCellThemeHook = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
+export type GridCellThemeHook = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
 
 /** What a cell is waiting on, as the hooks leave it. */
 export interface IGridCellLoading {
@@ -113,7 +113,7 @@ export interface IGridCellsInternal extends IGridCells {
     }, params: IGridCellHookParameters): void;
     applyControlParametersHooks(result: IParameters, params: IGridCellHookParameters): void;
     /** Run by the `GridCellTheme` of the cell in question. */
-    applyCellThemeHooks(theme: ThemeBuilder, params: {
+    applyCellThemeHooks(builder: ThemeBuilder, params: {
         record: IRecord;
         columnName: string;
     }): void;
@@ -203,8 +203,8 @@ export class GridCells implements IGridCellsInternal {
         this._controlParametersHooks.apply(result, params);
     }
 
-    public applyCellThemeHooks(theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
-        this._cellThemeHooks.apply(theme, params);
+    public applyCellThemeHooks(builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void {
+        this._cellThemeHooks.apply(builder, params);
     }
 
     public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {

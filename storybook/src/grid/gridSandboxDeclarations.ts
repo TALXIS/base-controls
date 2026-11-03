@@ -898,10 +898,24 @@ type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } | { flue
 interface ThemeBuilder {
     /** Changing one regenerates the whole palette. */
     readonly colors: IThemeColors;
+    /** Tints the background and text by a hue, so they read in a light theme and a dark one. */
+    tint(hue: string, strength?: ITintStrength): void;
     /** The same key has to mean the same edit. */
     edit(key: string, edit: (theme: ITheme) => void): void;
     getTheme(): ITheme;
 }
+
+/** A wash behind the theme's text, or a fill with text of its own. */
+type ITintStrength = 'subtle' | 'strong';
+
+interface ITintColors {
+    background: string;
+    border: string;
+    text: string;
+}
+
+/** A hue as a surface that sits right in the theme it lands in, light or dark. */
+declare function getTintColors(hue: string, surface: { background: string; text: string }, strength?: ITintStrength): ITintColors;
 
 type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
     /** The theme above, or the default theme, where left out. */
@@ -1466,7 +1480,7 @@ interface IGridColumnCellContext {
     /** Runs after registerCellCommands. */
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
     /** Runs after every registerCellTheme. */
-    onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
+    onGetTheme?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
     /** Runs after the cell-level registerLock hooks. */
     onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
     /** Runs after registerCellLoading. */
@@ -1480,7 +1494,7 @@ interface IGridColumnCellContext {
 /** What a column decides for its header, after the header hooks. */
 interface IGridColumnHeaderContext {
     /** Runs after registerColumnHeaderTheme. */
-    onGetTheme?: (theme: ThemeBuilder) => void;
+    onGetTheme?: (builder: ThemeBuilder) => void;
     /** Runs after registerColumnHeaderAdornments. */
     onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
     /** Runs after registerColumnMenuSection. */
@@ -1558,7 +1572,7 @@ interface IGridColumnHeader {
 
 type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], header: IGridColumnHeader) => void;
 type GridColumnMenuItemsHook = (items: IContextualMenuItem[], header: IGridColumnHeader) => void;
-type GridColumnHeaderThemeHook = (theme: ThemeBuilder, header: IGridColumnHeader) => void;
+type GridColumnHeaderThemeHook = (builder: ThemeBuilder, header: IGridColumnHeader) => void;
 type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void;
 
 interface IGridColumnHeadersEvents {
@@ -1601,7 +1615,7 @@ interface IGridCellHookParameters {
 
 type GridControlHook = (result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters) => void;
 type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
-type GridCellThemeHook = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
+type GridCellThemeHook = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
 type GridCellCommandsHook = (result: IGridCellCommands, params: { record: IRecord; columnName: string }) => void;
 type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
 

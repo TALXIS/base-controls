@@ -61,13 +61,14 @@ For an area whose surfaces should look different, wrap it in an \`ApplicationThe
 
 ## Your own components
 
-Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme. For a colour of your own, two helpers keep text readable on it:
+Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme. For a colour of your own, these helpers keep it readable in light and dark themes:
 
 | Helper | Returns |
 |---|---|
+| \`getTintColors(hue, { background, text }, strength?)\` | The background, border and text of a surface tinted by \`hue\`, \`'subtle'\` or \`'strong'\`, weighted for a light or dark theme |
 | \`getTextColorForBackground(color)\` | A text colour that reads on that background |
 | \`isLightColor(color)\` | Whether text on that colour has to be dark |
-| \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\`, such as a tint of a hue over the theme's background that works in light and dark themes |
+| \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\` at a weight you choose |
 
 {{story: Readable tags}}
 `

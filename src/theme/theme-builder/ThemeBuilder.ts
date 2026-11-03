@@ -1,6 +1,6 @@
 import { BaseSlots, createTheme, getColorFromString, IChoiceGroupOptionStyles, isDark, IThemeRules, ThemeGenerator as FluentThemeGenerator, themeRulesStandardCreator } from "@fluentui/react";
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
-import { isLightColor, mixColors } from "../colors";
+import { getTintColors, isLightColor, ITintStrength, mixColors } from "../colors";
 import { ITheme, IThemeColors } from "../interfaces";
 
 //cloning disabled on purpose: MemoryCache deep-clones on every *hit*, and a generated v8 theme is a large
@@ -67,6 +67,13 @@ export class ThemeBuilder {
     /** The colours the theme is generated from: change one and the palette follows it. */
     public get colors(): IThemeColors {
         return this._colors;
+    }
+
+    /** Tints the background and text by a hue, so they read in a light theme and a dark one. */
+    public tint(hue: string, strength: ITintStrength = 'subtle'): void {
+        const { background, text } = getTintColors(hue, this._colors, strength);
+        this._colors.background = background;
+        this._colors.text = text;
     }
 
     /**

@@ -162,16 +162,10 @@ const getShownValue = (grid: IGrid, record: IRecord, columnName: string) => {
 }
 
 const CLOSE_DATE_ICONS = { overdue: 'Warning', dueThisWeek: 'Clock' }
-//mixed into the cell's own background, so they read in a light theme and a dark one
 const CLOSE_DATE_HUES = { overdue: '#d13438', dueThisWeek: '#c19c00' }
 const VALUE_HUE = '#107c10'
-//faint to strong green, by how big the deal is
-const VALUE_WEIGHTS = [0.1, 0.2, 0.35]
-
-const tint = (theme: ThemeBuilder, hue: string, weight: number) => {
-    theme.colors.background = mixColors(hue, theme.colors.background, weight)
-    theme.colors.text = getTextColorForBackground(theme.colors.background)
-}
+//untinted to strong green, by how big the deal is
+const VALUE_STRENGTHS: (ITintStrength | undefined)[] = [undefined, 'subtle', 'strong']
 
 /** An icon before overdue and due close dates. */
 const statusIcons: IGridModule = {
@@ -192,17 +186,18 @@ const colourRules: IGridModule = {
     name: 'colourRules',
     onLoad: grid => {
         //after grouping, which repaints every row while the deals are grouped
-        grid.services.get('cells').registerCellTheme((theme, { record, columnName }) => {
+        grid.services.get('cells').registerCellTheme((builder, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             if (value == null || isClosed(record)) {
                 return
             }
             const state = columnName === 'closedate' ? getCloseDateState(value) : undefined
             if (state) {
-                tint(theme, CLOSE_DATE_HUES[state], 0.2)
+                builder.tint(CLOSE_DATE_HUES[state])
             }
-            if (columnName === 'value') {
-                tint(theme, VALUE_HUE, VALUE_WEIGHTS[Math.min(Math.floor(getValueShare(Number(value)) * VALUE_WEIGHTS.length), VALUE_WEIGHTS.length - 1)])
+            const strength = columnName === 'value' ? VALUE_STRENGTHS[Math.min(Math.floor(getValueShare(Number(value)) * VALUE_STRENGTHS.length), VALUE_STRENGTHS.length - 1)] : undefined
+            if (strength) {
+                builder.tint(VALUE_HUE, strength)
             }
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
@@ -490,14 +485,11 @@ const closedDealColours: IGridModule = {
     name: 'closedDealColours',
     onLoad: grid => {
         //after grouping, which repaints every row while the deals are grouped
-        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+        grid.services.get('cells').registerCellTheme((builder, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }
-            //mixed into the row's own colours, so they read in a light theme and a dark one
-            const hue = Number(record.getValue('stage')) === WON ? '#107c10' : '#d13438'
-            theme.colors.background = mixColors(hue, theme.colors.background, 0.15)
-            theme.colors.text = mixColors(hue, theme.colors.text, 0.6)
+            builder.tint(Number(record.getValue('stage')) === WON ? '#107c10' : '#d13438')
         }, GRID_MODULE_PRIORITY.grouping + 1)
     },
 }

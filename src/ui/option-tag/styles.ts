@@ -1,6 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { ITheme } from "@theme";
-import { getOptionTagColors } from "./colors";
+import { getTintColors, ITheme } from "@theme";
 
 /** How tall a tag grows, however much room it is given. */
 const MAX_HEIGHT = 22;
@@ -8,7 +7,7 @@ const MAX_HEIGHT = 22;
 const VERTICAL_PADDING = 2;
 
 export const getOptionTagStyles = (theme: ITheme, color: string) => {
-    const tag = getOptionTagColors(color, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
+    const tag = getTintColors(color, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText });
     return mergeStyleSets({
         optionTag: {
             display: 'flex',

@@ -82,14 +82,14 @@ const heatmapModule: IGridModule = {
         })
 
         //after the grouping and totals hooks, which reset backgrounds
-        cells.registerCellTheme((theme, { record, columnName }) => {
+        cells.registerCellTheme((builder, { record, columnName }) => {
             const dataType = provider.getColumnsMap()[columnName]?.dataType
             if (record.getSummarizationType() !== 'none') {
                 return
             }
             const color = getColor(record, columnName, dataType)
-            theme.colors.background = color
-            theme.colors.text = getTextColorForBackground(color)
+            builder.colors.background = color
+            builder.colors.text = getTextColorForBackground(color)
         }, GRID_MODULE_PRIORITY.aggregation + 1)
     },
 }

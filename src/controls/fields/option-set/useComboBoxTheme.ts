@@ -1,7 +1,6 @@
 import { IOptionSet } from "./interfaces";
 import { FontWeights, ITheme } from "@fluentui/react";
-import { useThemeBuilder } from "@theme";
-import { getOptionTagColors } from "@ui";
+import { getTintColors, useThemeBuilder } from "@theme";
 
 export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, ITheme] => {
     const boundValue = props.parameters.value;
@@ -17,7 +16,7 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
 
     const isColorFeatureEnabled = getIsColorFeatureEnabled();
     const tag = isColorFeatureEnabled && selectedOptionColor
-        ? getOptionTagColors(selectedOptionColor, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText)
+        ? getTintColors(selectedOptionColor, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText })
         : undefined;
 
     //a tag edits the surrounding theme

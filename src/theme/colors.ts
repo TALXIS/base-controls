@@ -1,10 +1,25 @@
 import { getColorFromRGBA, getColorFromString, getContrastRatio, hsl2rgb, IColor } from '@fluentui/react';
+import { IThemeColors } from './interfaces';
 
 const BLACK = '#000000';
 const WHITE = '#ffffff';
 //WCAG AAA: AA's 4.5:1 reads washed out, such as mid grey on white
 const TEXT_CONTRAST = 7;
 const LIGHTNESS_STEP = 2;
+//WCAG AA, the least a tint's own text may reach
+const TINT_TEXT_CONTRAST = 4.5;
+
+//how much of the hue each part of a tint holds; a dark surface needs more of it to show
+const TINT_WEIGHTS = {
+    subtle: {
+        light: { background: 0.12, border: 0.28, text: 0.7 },
+        dark: { background: 0.18, border: 0.34, text: 0.4 },
+    },
+    strong: {
+        light: { background: 1, border: 1 },
+        dark: { background: 0.45, border: 0.6 },
+    },
+};
 
 //finding a text colour takes dozens of contrast checks, and a grid asks once per cell
 const textColors = new Map<string, string>();
@@ -93,4 +108,37 @@ const findTextColor = (backgroundColor: string): string => {
         }
     }
     return isLight ? BLACK : WHITE;
+};
+
+/** How much a tint stands out: a wash behind the theme's text, or a fill with text of its own. */
+export type ITintStrength = 'subtle' | 'strong';
+
+/** What a surface tinted by a hue is drawn in. */
+export interface ITintColors {
+    background: string;
+    border: string;
+    text: string;
+}
+
+/**
+ * A hue as a surface that sits right in the theme it lands in, light or dark.
+ *
+ * @param hue The colour meant, such as a status red; its weights are worked out from the surface.
+ * @param surface The theme's colours the tint is drawn over.
+ */
+export const getTintColors = (hue: string, surface: Pick<IThemeColors, 'background' | 'text'>, strength: ITintStrength = 'subtle'): ITintColors => {
+    const scheme = isLightColor(surface.background) ? 'light' : 'dark';
+    if (strength === 'strong') {
+        const weights = TINT_WEIGHTS.strong[scheme];
+        const background = mixColors(hue, surface.background, weights.background);
+        return { background, border: mixColors(hue, surface.background, weights.border), text: getTextColorForBackground(background) };
+    }
+    const weights = TINT_WEIGHTS.subtle[scheme];
+    const background = mixColors(hue, surface.background, weights.background);
+    const text = mixColors(hue, surface.text, weights.text);
+    return {
+        background,
+        border: mixColors(hue, surface.background, weights.border),
+        text: getColorContrast(text, background) >= TINT_TEXT_CONTRAST ? text : getTextColorForBackground(background),
+    };
 };

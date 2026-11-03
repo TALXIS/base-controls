@@ -62,9 +62,9 @@ All three are read at mount: see *Change a prop that is read at mount* on [**Pro
 
 ## Colour cells by their data
 
-A column colours its cells with \`context.cell.onGetTheme(theme, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
+A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
 
-\`theme.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow. A new background does not change the text colour, so set \`text\` too; \`getTextColorForBackground(background)\` returns a readable one. To keep a colour right in a light theme and a dark one, mix a hue into the colours you are given rather than setting a fixed one: \`mixColors(hue, theme.colors.background, 0.2)\`. Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables. The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+To colour a cell by a hue, call \`builder.tint(hue)\`, or \`builder.tint(hue, 'strong')\` for a fill. It works out the background and text from the colours the cell already has, so the same hue reads in a light theme and a dark one. For full control, \`builder.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow. A new background does not change the text colour, so set \`text\` too; \`getTextColorForBackground(background)\` returns a readable one. Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables. The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 {{story: Flag tickets about to breach}}
 
@@ -72,13 +72,13 @@ Zebra rows, grouping and totals colour rows too. A row hook at the default prior
 
 {{story: Tint escalated tickets}}
 
-\`theme.edit(key, edit)\` changes the generated theme itself, such as its fonts. The result is cached under \`key\`, so the same key must always mean the same edit.
+\`builder.edit(key, edit)\` changes the generated theme itself, such as its fonts. The result is cached under \`key\`, so the same key must always mean the same edit.
 
 {{story: Show ticket numbers in a fixed-width font}}
 
 ## Colour column headers
 
-A column colours its header with \`context.header.onGetTheme(theme)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours: the name, the required marker and the module icons, while its menu keeps the grid's theme. Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`.
+A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours: the name, the required marker and the module icons, while its menu keeps the grid's theme. Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`.
 
 {{story: Show which columns need a review}}
 
@@ -123,7 +123,7 @@ export const TintEscalatedTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets tinted across their whole row by a module's \`registerCellTheme\` at \`GRID_MODULE_PRIORITY.grouping + 1\`, with the text colour from \`getTextColorForBackground\`. Try: turn on *Escalated* for another ticket, then group by *Status* from its column menu (AG Grid Enterprise).`,
+                story: `Escalated tickets tinted across their whole row by a module's \`registerCellTheme\` at \`GRID_MODULE_PRIORITY.grouping + 1\` with \`builder.tint\`. Try: turn on *Escalated* for another ticket, then group by *Status* from its column menu (AG Grid Enterprise).`,
             },
         },
     },

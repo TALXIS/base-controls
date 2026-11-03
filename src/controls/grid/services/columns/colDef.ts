@@ -14,7 +14,7 @@ export interface IGridColumnCellContext {
     /** Changes the commands a cell offers, after `registerCellCommands`. */
     onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
     /** Changes a cell's theme, after `registerCellTheme`. */
-    onGetTheme?: (theme: ThemeBuilder, params: { record: IRecord }) => void;
+    onGetTheme?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
     /** Decides whether a cell shows it is loading, after `registerCellLoading`. */
     onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
     /** Decides whether a record's value is valid, after `registerValidation`. */
@@ -26,7 +26,7 @@ export interface IGridColumnCellContext {
 /** What a column decides for its header, after the header hooks. */
 export interface IGridColumnHeaderContext {
     /** Changes the header's theme, after `registerColumnHeaderTheme`. */
-    onGetTheme?: (theme: ThemeBuilder) => void;
+    onGetTheme?: (builder: ThemeBuilder) => void;
     /** Adds what the header draws beside its name, after `registerColumnHeaderAdornments`. */
     onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
     /** Adds sections to the column's menu, after `registerColumnMenuSection`. */

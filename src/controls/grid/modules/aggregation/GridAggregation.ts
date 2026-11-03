@@ -131,13 +131,13 @@ export class GridAggregation implements IGridAggregation {
     };
 
     /** Styles the total row like a group row. */
-    private _onCellTheme = (theme: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
+    private _onCellTheme = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
         if (!this._isTotalRecord(params.record)) {
             return;
         }
         //the faintest step off the surface Fluent has
-        theme.colors.background = this._gridTheme.palette.neutralLighterAlt;
-        theme.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
+        builder.colors.background = this._gridTheme.palette.neutralLighterAlt;
+        builder.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
     };
 
     private _onRowHeight = (result: IGridRowHeight, params: { record: IRecord }): void => {

@@ -112,13 +112,11 @@ const SURFACE_CODE = `const ESCALATED = '#a4262c'
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((theme, { record }) => {
+        grid.services.get('cells').registerCellTheme((builder, { record }) => {
             //a two-options value reads as '1' or '0'
-            if (record.getValue('escalated') !== '1') {
-                return
+            if (record.getValue('escalated') === '1') {
+                builder.tint(ESCALATED, 'strong')
             }
-            theme.colors.background = ESCALATED
-            theme.colors.text = getTextColorForBackground(ESCALATED)
         })
     },
 }

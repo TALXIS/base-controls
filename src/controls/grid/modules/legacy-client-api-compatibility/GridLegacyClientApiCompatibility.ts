@@ -106,21 +106,21 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         result.isLoading = field.ui.isLoading();
     };
 
-    private _onCellTheme: GridCellThemeHook = (theme, params) => {
+    private _onCellTheme: GridCellThemeHook = (builder, params) => {
         const field = this._getField(params);
         if (!field) {
             return;
         }
-        const colors = { ...theme.colors };
+        const colors = { ...builder.colors };
         //the colours the cell came in with
         const formatting = field.ui.getCustomFormatting(createThemeBuilder({ colors }).getTheme()) ?? {};
         const background = formatting.backgroundColor || colors.background;
         const isRecoloured = background !== colors.background;
         //a background of its own is taken as emphasis
         const contrast = getTextColorForBackground(background);
-        theme.colors.primary = formatting.primaryColor || (isRecoloured ? contrast : colors.primary);
-        theme.colors.background = background;
-        theme.colors.text = formatting.textColor || (isRecoloured ? contrast : colors.text);
+        builder.colors.primary = formatting.primaryColor || (isRecoloured ? contrast : colors.primary);
+        builder.colors.background = background;
+        builder.colors.text = formatting.textColor || (isRecoloured ? contrast : colors.text);
     };
 
     private _onCellCommands: GridCellCommandsHook = (result, params) => {
