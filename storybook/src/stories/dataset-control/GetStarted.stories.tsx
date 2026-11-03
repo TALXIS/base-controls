@@ -20,38 +20,17 @@ The least a control needs: views to switch between, an \`onLoad\` that returns a
 
 ## How it fits together
 
-Each piece has its own page:
+Each piece, and each of the control's props, has its own page:
 
 | To | Use | See |
 |---|---|---|
-| Load the records of a view | \`onLoad\`, and \`onLoadDependencies\` for what every load needs first | [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) |
+| Load the records of a view | \`onLoad\`, \`onLoadDependencies\` for what every load needs first, \`destroyProviderOnUnmount\` | [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) |
 | List views to switch between | \`onLoadViews\` and \`DatasetControl.ViewSwitcher\` | [**Views**](?path=/docs/controls-datasetcontrol-views--overview) |
-| Place the parts | \`Header\`, \`Body\` and \`Footer\`, each with a start and an end | [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview) |
+| Place the parts and size the control | \`Header\`, \`Body\` and \`Footer\`, each with a start and an end; \`height\` | [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview) |
 | Show a failure | Throw. The control shows it, with *Try again* where it can. | [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview) |
-| Drive the control from your code | \`useDatasetControl()\` inside it, \`onMounted\` outside | [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) |
+| Drive the control from your code | \`useDatasetControl()\` inside it; \`onMounted\`, \`onReady\` and \`onDestroyed\` outside; \`modules\` | [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) |
 | Bring the user back where they left off | \`stateKey\` | [**State**](?path=/docs/controls-datasetcontrol-state--overview) |
-| Change what a part draws, or translate it | \`components\`, \`LabelsProvider\` | [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/concepts-localization--overview) |
-
-## Props
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`onLoad\` | \`(params) => Promise<IDatasetControlLoadResult>\` | Required | Returns the provider for a view. See [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). |
-| \`onLoadViews\` | \`() => Promise<IDatasetControlView<TData>[]>\` | None | Returns the views to switch between, on every load. \`TData\` is the type of every view's \`data\`. See [**Views**](?path=/docs/controls-datasetcontrol-views--overview). |
-| \`onLoadDependencies\` | \`() => Promise<unknown>\` | None | Loads what the modules and \`onLoad\` need, first on every load. They read it with \`getDependencies()\`; \`onLoad\` reaches it through the control from \`onMounted\`. See [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). |
-| \`modules\` | \`IDatasetControlModule[]\` | None | Features added to the control, such as the user's own views. Read on every load. See *Modules* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). |
-| \`children\` | \`ReactNode\` | Required | The regions and the parts. See [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`height\` | \`string\` | None | See *Size the control* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`className\` | \`string\` | None | Added to the control's box. |
-| \`stateKey\` | \`string\` | None | Keeps where the user left off in the state store, for the next mount. Read once. See [**State**](?path=/docs/controls-datasetcontrol-state--overview). |
-| \`destroyProviderOnUnmount\` | \`boolean\` | \`true\` | Whether the control destroys the providers it lets go of. See *Keep a shared provider* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). |
-| \`components\` | \`IDatasetControlComponents\` | Defaults | The control's box, placeholder, error and loading overlay. See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
-| \`scope\` | \`ComponentType<{ children: ReactNode }>\` | None | Wraps everything inside the control, such as in a context provider of yours. Pass the same component on every render. |
-| \`onMounted\` | \`(control: IDatasetControl<TData>) => void\` | None | Called on every mount, before its load. Subscribe to the control here. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). |
-| \`onReady\` | \`(control: IDatasetControl<TData>) => void\` | None | Called once a mount's load succeeded. |
-| \`onDestroyed\` | \`(control: IDatasetControl<TData>) => void\` | None | Called as the mount goes, while its provider still holds its records. |
-
-To change the control's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
+| Change what a part draws, or translate it | \`components\`, \`className\`, \`scope\`, \`LabelsProvider\` | [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview), [**Localization**](?path=/docs/concepts-localization--overview) |
 
 ## Where next
 

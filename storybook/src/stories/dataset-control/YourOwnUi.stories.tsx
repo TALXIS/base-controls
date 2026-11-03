@@ -33,6 +33,13 @@ The control and each part take a \`components\` map. Its keys name the pieces, a
 - To add menu items or commands, use the part's \`registerItems\`, \`registerCommands\` or \`registerColumnCommands\`, not a slot: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 - Every key and slot is listed under *Every slot* below.
 
+The control's own box takes two more props:
+
+| Prop | Does |
+|---|---|
+| \`className\` | Adds a class to the control's box. |
+| \`scope\` | Wraps everything inside each mount, such as in a context provider of yours. It renders inside the control, so it can call \`useDatasetControl()\`. Pass the same component on every render. |
+
 ### A whole design system
 
 Every slot gets the props its default would, so a design system can stand in for the defaults. The example draws the control with Fluent UI v9:
