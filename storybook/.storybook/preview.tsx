@@ -32,20 +32,6 @@ const preview: Preview = {
       <PcfContextProvider>
         <StateProvider>
           <ApplicationThemeProvider>
-            <style>
-              {`
-                .sbdocs-content p,
-                .sbdocs-content li {
-                  font-size: 16px;
-                  line-height: 1.65;
-                }
-
-                .form-strategy-hidden-preview.sbdocs-preview,
-                .docs-hidden-preview.sbdocs-preview {
-                  display: none;
-                }
-              `}
-            </style>
             <Story />
           </ApplicationThemeProvider>
         </StateProvider>
@@ -98,7 +84,7 @@ const preview: Preview = {
       storySort: {
         order: [
           'Concepts',
-          ['Introduction', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Layout', 'State persistence', 'PCF context', 'Control isolation'],
+          ['Introduction', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Layout', ['Overview', 'Compact parts'], 'State persistence', 'PCF context', 'Control isolation'],
           'Controls',
           [
             'DatasetControl',

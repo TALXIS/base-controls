@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { FilterChipsExample, SectionTabsExample, ToolbarExample } from './layoutExamples'
+import { FilterChipsExample, SectionTabsExample, ToolbarExample } from './compactPartsExamples'
 
 const DESCRIPTION = `
 A control should fit wherever it is put: a full page, a side panel or a phone. So it does not ask how wide the window is; it asks the box it sits in. Wrap an area in a *compact provider*, and every part inside it can ask \`useCompact()\` whether to draw full size or compact.
@@ -33,7 +33,7 @@ Both providers render a \`div\` and pass it any other props, so they are the box
 `
 
 const meta = {
-    title: 'Concepts/Layout',
+    title: 'Concepts/Layout/Compact parts',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

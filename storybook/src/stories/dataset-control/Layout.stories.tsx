@@ -73,7 +73,7 @@ The header stays compact until the control is wider than it was when the parts r
 
 ### Your own part in a compact header
 
-The header is a \`WrapCompactProvider\`, so a part of your own reads whether it is compact with \`useCompact()\` and shrinks the way the built-in parts do. How it works, and the same providers for layouts of your own, are on [**Concepts › Layout**](?path=/docs/concepts-layout--overview).
+The header is a \`WrapCompactProvider\`, so a part of your own reads whether it is compact with \`useCompact()\` and shrinks the way the built-in parts do. How it works, and the same providers for layouts of your own, are on [**Concepts › Layout › Compact parts**](?path=/docs/concepts-layout-compact-parts--overview).
 
 {{story: Pick your parts}}
 `
