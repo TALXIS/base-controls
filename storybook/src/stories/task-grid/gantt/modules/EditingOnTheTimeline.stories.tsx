@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { GanttEditingExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-Three modules let the user change tasks on the timeline: move and resize bars, draw new tasks, and select tasks. Every change is saved through the store, as an edit in the grid is: see *Dates* on [**Get started**](?path=/docs/taskgrid-gantt-get-started--overview).
+Three modules let the user change tasks on the timeline: move and resize bars, draw new tasks, and select tasks. Every change is saved through the store, as an edit in the grid is: see *Dates* on [**Get started**](?path=/docs/controls-taskgrid-gantt-get-started--overview).
 
 \`\`\`tsx
 const ganttModules = React.useMemo(() => [
@@ -22,7 +22,7 @@ const ganttModules = React.useMemo(() => [
 
 ## Move and resize bars
 
-\`createBarDraggingModule()\` lets the user drag a bar to move the task, or drag either end to change its start or end. The bar snaps as described under *Dates* on [**Get started**](?path=/docs/taskgrid-gantt-get-started--overview), and the dates are saved once it is dropped. It needs \`enableEditing\`, and a task that is locked or saving cannot be dragged.
+\`createBarDraggingModule()\` lets the user drag a bar to move the task, or drag either end to change its start or end. The bar snaps as described under *Dates* on [**Get started**](?path=/docs/controls-taskgrid-gantt-get-started--overview), and the dates are saved once it is dropped. It needs \`enableEditing\`, and a task that is locked or saving cannot be dragged.
 
 | Option | Default | Description |
 |---|---|---|
@@ -55,7 +55,7 @@ const ganttModules = React.useMemo(() => [
 
 ## Changing how it looks
 
-\`createTaskDrawingModule\` takes \`components\`, read at mount; bar dragging and selection draw nothing of their own. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createTaskDrawingModule\` takes \`components\`, read at mount; bar dragging and selection draw nothing of their own. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -63,7 +63,7 @@ const ganttModules = React.useMemo(() => [
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules/Editing on the timeline',
+    title: 'Controls/TaskGrid/Gantt/Modules/Editing on the timeline',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

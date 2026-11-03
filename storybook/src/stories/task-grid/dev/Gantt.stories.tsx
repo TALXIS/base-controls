@@ -4,7 +4,7 @@ import { GanttDateTimeTaskGrid, GanttTaskGrid } from '../../../task-grid/dev/Gan
 import { GanttStressTaskGrid } from '../../../task-grid/dev/GanttStressTaskGrid'
 
 const meta = {
-    title: 'TaskGrid/Dev/Gantt',
+    title: 'Dev/TaskGrid/Gantt',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

@@ -18,7 +18,7 @@ A DatasetControl puts every view back the way the user left it: sorted, filtered
 | \`stateKey\` | Where the control keeps it | How long it lasts |
 |---|---|---|
 | Left out | A store of its own | While the control stays mounted, across view switches and reloads. |
-| Given | Under the key in the nearest state store | As long as the store does. See [**State persistence**](?path=/docs/state-persistence--overview). |
+| Given | Under the key in the nearest state store | As long as the store does. See [**State persistence**](?path=/docs/concepts-state-persistence--overview). |
 
 The key is read once, when the control mounts.
 
@@ -32,7 +32,7 @@ The key is read once, when the control mounts.
 | Per view: the columns and the related entities they come from, sorting, filtering, page, page size, search and selection | As the view's mount goes: on a view switch, a reload, or when the control unmounts | The next time the view loads, over the columns the view sets and what \`onLoad\` set up, before its first page loads. |
 | Per view: what the parts keep, such as where a grid is scrolled | As the user works | The next time the view is shown. |
 
-A view the user hasn't been on yet starts from what the view and \`onLoad\` set up. A view they have been on starts from what was kept, so a change to the view's definition on your server, such as its sorting, shows only for users who haven't changed it. A grid keeps its own state only with a \`stateKey\` of its own, unique within the control: see [**Grid › State**](?path=/docs/grid-state--overview).
+A view the user hasn't been on yet starts from what the view and \`onLoad\` set up. A view they have been on starts from what was kept, so a change to the view's definition on your server, such as its sorting, shows only for users who haven't changed it. A grid keeps its own state only with a \`stateKey\` of its own, unique within the control: see [**Grid › State**](?path=/docs/controls-grid-state--overview).
 
 ## Look inside the store
 
@@ -56,11 +56,11 @@ const OnlyMineToggle = () => {
 }
 \`\`\`
 
-A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
+A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 `
 
 const meta = {
-    title: 'DatasetControl/State',
+    title: 'Controls/DatasetControl/State',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

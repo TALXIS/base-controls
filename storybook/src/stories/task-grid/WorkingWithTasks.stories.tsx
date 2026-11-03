@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { WorkingWithTasksExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Three props turn on what the user may do with tasks, and two modules add editing in place and moving by dragging. Each change goes through the store: see [**Loading tasks**](?path=/docs/taskgrid-loading-tasks--overview).
+Three props turn on what the user may do with tasks, and two modules add editing in place and moving by dragging. Each change goes through the store: see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 \`\`\`tsx
 const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
@@ -35,9 +35,9 @@ const controlModules = React.useMemo(() => [createTaskDraggingModule()], [])
 | Delete tasks | \`enableDeletion\` | selects tasks and clicks *Delete*, then confirms |
 | Move a task | \`enableEditing\` and \`createTaskDraggingModule()\` in \`TaskDatasetControl\` | drags its row |
 
-*Edit* and *Delete* act on the selection, so add \`createRowSelectionModule()\` to \`TaskGrid\` (see [**Grid › Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview)). Inactive tasks stay read-only throughout, and without \`enableEditing\` every task is locked.
+*Edit* and *Delete* act on the selection, so add \`createRowSelectionModule()\` to \`TaskGrid\` (see [**Grid › Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview)). Inactive tasks stay read-only throughout, and without \`enableEditing\` every task is locked.
 
-A new task shows straight away, its cells loading until the store has created it. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/taskgrid-modules-templates--overview) module adds *From template* next to both.
+A new task shows straight away, its cells loading until the store has created it. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* next to both.
 
 Deleting takes every subtask along. Tasks that could not be deleted are listed in a dialog and keep their ancestors; a store keeps a task from being deleted with \`onCanDeleteTask\`.
 
@@ -51,11 +51,11 @@ A row dropped between two rows lands at the level its distance from the left sug
 
 ## Events
 
-\`onTasksCreated\`, \`onTasksDeleted\` and \`onTasksUpdated\` on \`TaskDatasetControl\` follow every change, whichever way it was made. See *TaskDatasetControl props* on [**Get started**](?path=/docs/taskgrid-get-started--overview). To make the same changes from your code, see [**Talking to the task grid**](?path=/docs/taskgrid-talking-to-the-task-grid--overview).
+\`onTasksCreated\`, \`onTasksDeleted\` and \`onTasksUpdated\` on \`TaskDatasetControl\` follow every change, whichever way it was made. See *TaskDatasetControl props* on [**Get started**](?path=/docs/controls-taskgrid-get-started--overview). To make the same changes from your code, see [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview).
 `
 
 const meta = {
-    title: 'TaskGrid/Working with tasks',
+    title: 'Controls/TaskGrid/Working with tasks',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

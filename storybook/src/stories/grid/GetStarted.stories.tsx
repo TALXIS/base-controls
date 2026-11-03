@@ -10,10 +10,10 @@ Grid shows the records of a data provider, on top of <a href="https://www.ag-gri
 
 | Module | Adds |
 |---|---|
-| [**Editing**](?path=/docs/grid-modules-editing--overview) | Change values in place, check them as they are typed, save them, and lock what must not change. |
-| [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) | Select rows, highlight blocks of cells and copy them into a spreadsheet. |
-| [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview) | Straight from each column's menu. |
-| [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) | Group the rows by a column, and total its values. |
+| [**Editing**](?path=/docs/controls-grid-modules-editing--overview) | Change values in place, check them as they are typed, save them, and lock what must not change. |
+| [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) | Select rows, highlight blocks of cells and copy them into a spreadsheet. |
+| [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) | Straight from each column's menu. |
+| [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) | Group the rows by a column, and total its values. |
 
 Below is a sales pipeline. Pick a preset or open **Features & Modules** to switch modules one by one, and open **Code** to read and edit the source. *Enterprise* features need an AG Grid Enterprise licence; without one, AG Grid draws a watermark.
 
@@ -46,22 +46,22 @@ export const ProductGrid = () => <PcfContextProvider>
 </PcfContextProvider>
 \`\`\`
 
-The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a \`DataProviderContextProvider\` and load the provider yourself with \`refresh()\`. Without either, the grid throws.
+The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a \`DataProviderScope\` and load the provider yourself with \`refresh()\`. Without either, the grid throws.
 
-\`modules\` switches features on, and only a row model is required. A [**PCF context**](?path=/docs/pcf-context--overview) must wrap the grid.
+\`modules\` switches features on, and only a row model is required. A [**PCF context**](?path=/docs/concepts-pcf-context--overview) must wrap the grid.
 
 ## How it fits together
 
 | Part | What it does | Page |
 |---|---|---|
-| The provider | Holds the data: its columns become the grid's columns, and the records of its current page the rows. | [**Data**](?path=/docs/grid-data--overview) |
-| \`colDefs\` | Shapes the columns: pin them, link them, add calculated ones, give them commands. | [**Columns**](?path=/docs/grid-columns--overview) |
-| \`modules\` | Add the features, each with its own options, look and instance. | [**Modules**](?path=/docs/grid-modules--overview) |
-| \`IGrid\` | What your code talks to, passed by \`onReady\`: \`grid.modules.find('sorting')?.sortColumn('price')\`. | [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview) |
-| Appearance | Restyle or replace what the grid draws, from a cell's colour to the whole cell. | [**Appearance**](?path=/docs/grid-appearance--overview) |
-| Labels | Translate every string through a \`LabelsProvider\`. | [**Localization**](?path=/docs/localization--overview) |
+| The provider | Holds the data: its columns become the grid's columns, and the records of its current page the rows. | [**Data**](?path=/docs/controls-grid-data--overview) |
+| \`colDefs\` | Shapes the columns: pin them, link them, add calculated ones, give them commands. | [**Columns**](?path=/docs/controls-grid-columns--overview) |
+| \`modules\` | Add the features, each with its own options, look and instance. | [**Modules**](?path=/docs/controls-grid-modules--overview) |
+| \`IGrid\` | What your code talks to, passed by \`onReady\`: \`grid.modules.find('sorting')?.sortColumn('price')\`. | [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) |
+| Appearance | Restyle or replace what the grid draws, from a cell's colour to the whole cell. | [**Appearance**](?path=/docs/controls-grid-appearance--overview) |
+| Labels | Translate every string through a \`LabelsProvider\`. | [**Localization**](?path=/docs/concepts-localization--overview) |
 
-Every prop and event of \`<Grid />\` is on [**Props and events**](?path=/docs/grid-props-and-events--overview).
+Every prop and event of \`<Grid />\` is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 ## Where next
 
@@ -69,16 +69,16 @@ Every prop and event of \`<Grid />\` is on [**Props and events**](?path=/docs/gr
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Every data type', iconName: 'Database', href: '?path=/docs/grid-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
-    { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/grid-modules-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
-    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
-    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/grid-columns--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
-    { title: 'Your look', iconName: 'Color', href: '?path=/docs/grid-appearance--overview', text: 'Conditional formatting, option set colours, density, and your own cells, headers and overlays.' },
-    { title: 'Built to extend', iconName: 'Plug', href: '?path=/docs/grid-extending-write-a-module--overview', text: 'Talk to the grid from your code, hook into what it draws and decides, write modules of your own, and reach AG Grid underneath.' },
+    { title: 'Every data type', iconName: 'Database', href: '?path=/docs/controls-grid-data--overview', text: 'Text, numbers, money, dates, durations, option sets and lookups, each drawn and edited by its own control, plus files and images.' },
+    { title: 'Inline Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Edit in place, validate every value, lock what must not change, and show why a save was refused.' },
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'Selection, sorting, filtering, grouping, totals, cell ranges and copying. Take only the ones you need.' },
+    { title: 'Columns your way', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Pin, align and compute columns, add cell commands, and extend the header menus.' },
+    { title: 'Your look', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Conditional formatting, option set colours, density, and your own cells, headers and overlays.' },
+    { title: 'Built to extend', iconName: 'Plug', href: '?path=/docs/controls-grid-extending-write-a-module--overview', text: 'Talk to the grid from your code, hook into what it draws and decides, write modules of your own, and reach AG Grid underneath.' },
 ]
 
 const meta = {
-    title: 'Grid/Get started',
+    title: 'Controls/Grid/Get started',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

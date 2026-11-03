@@ -27,7 +27,7 @@ Clicking a column's header opens its menu; it never sorts by itself. Each module
 | Sorting | The two directions, worded by the column's data type: *Sort A to Z*, *Sort older to newer*, *Sort smaller to larger*, or a yes/no column's own labels such as *No to Yes*. Shift+click adds the column as a further sort level. *Clear* while the column is sorted. | An arrow after the name |
 | Filtering | *Filter By*, which opens a callout under the header: pick an operator, enter a value and press *Apply*. *Clear* while the column is filtered. | A funnel after the name |
 
-A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider. To change the menu texts, see [**Localization**](?path=/docs/localization--overview).
+A column's callout sets one condition, and the conditions of all filtered columns apply together. Every change reloads the provider. To change the menu texts, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## What a column needs
 
@@ -36,11 +36,11 @@ A column's callout sets one condition, and the conditions of all filtered column
 | Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
-The provider's defaults are on [**Data**](?path=/docs/grid-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/grid-columns--overview).
+The provider's defaults are on [**Data**](?path=/docs/controls-grid-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 ## Open the grid sorted and filtered
 
-Call \`provider.setSorting()\` and \`provider.setFiltering()\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
+Call \`provider.setSorting()\` and \`provider.setFiltering()\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 {{story: Open on the tickets that matter}}
 
@@ -55,7 +55,7 @@ Write condition values the way the filter callout does, or it opens with nothing
 
 Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required: an OR becomes an AND, and nested filters or conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
-Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/datasetcontrol-views--overview).
+Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 {{story: Switch between saved views}}
 
@@ -108,7 +108,7 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 
 ## Changing how it looks
 
-Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 \`\`\`tsx
 createSortingModule({ components: { sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} className={styles.arrow} /> } } })
@@ -129,7 +129,7 @@ What the callout holds, the operator and value controls and the *Apply* and *Cle
 `
 
 const meta = {
-    title: 'Grid/Modules/Sorting and filtering',
+    title: 'Controls/Grid/Modules/Sorting and filtering',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

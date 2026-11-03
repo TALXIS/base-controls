@@ -39,7 +39,7 @@ The control is laid out in *regions*: a header above the records, a body that ho
 | \`Footer\` | The row below the records, with a line above it. |
 | \`Footer.Start\`, \`Footer.End\` | The footer's left and right side. |
 
-Each region takes \`className\`, and \`components\` for its box (see [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview)). A region takes your own content too, such as the page title placed directly in \`Header\` in the full-page example below. Anything else inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
+Each region takes \`className\`, and \`components\` for its box (see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview)). A region takes your own content too, such as the page title placed directly in \`Header\` in the full-page example below. Anything else inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
 
 ## Size the control
 
@@ -93,7 +93,7 @@ To keep one part at full size, or always compact, wrap it in \`<CompactContext.P
 `
 
 const meta = {
-    title: 'DatasetControl/Layout',
+    title: 'Controls/DatasetControl/Layout',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -21,7 +21,7 @@ The module takes no options and needs no AG Grid Enterprise licence.
 
 ## Register expressions
 
-A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that. Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview)). An expression for a column the provider does not have is ignored with a console warning.
+A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that. Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)). An expression for a column the provider does not have is ignored with a console warning.
 
 {{story: Colour, lock and load cells from a script}}
 
@@ -71,20 +71,20 @@ Each notification an expression returns is an \`IAddControlNotificationOptions\`
 | Several actions, or none, and a \`text\` or a message | Opens a callout with the title, the first message and the actions. An action closes the callout, then runs its callbacks. |
 | No actions and no content | Runs only \`buttonProps.onClick\` |
 
-The grid shows one callout at a time, and it cannot be restyled. Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading; buttons that do not fit move into the **…** menu. The expression runs each time a highlighted cell draws, so keep it cheap. A \`cellRenderer\` of your own shows them only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview)).
+The grid shows one callout at a time, and it cannot be restyled. Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading; buttons that do not fit move into the **…** menu. The expression runs each time a highlighted cell draws, so keep it cheap. A \`cellRenderer\` of your own shows them only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
 
 ## With the rest of the grid
 
-The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority, so those run in the order they were registered. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/grid-extending-hooks--overview)).
+The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority, so those run in the order they were registered. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
-The grid's validation replaces a script's \`setValidationExpression\`: a column with \`context.cell.onGetValidation\`, or every column once a \`registerValidation\` hook exists, gets the grid's own validation expression and the script's never runs, so move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview)).
+The grid's validation replaces a script's \`setValidationExpression\`: a column with \`context.cell.onGetValidation\`, or every column once a \`registerValidation\` hook exists, gets the grid's own validation expression and the script's never runs, so move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
 | When | What happens |
 |---|---|
 | There is no editing module, the column is locked, or the record is locked as a whole | A disabled expression cannot open the cell |
 | A column has \`context: { isLocked: false }\` and metadata \`IsValidForUpdate: false\` | Its cells stay locked: return \`false\` from a \`setDisabledExpression\` on it too, or unlock them in \`context.cell.onGetLock\` |
 | Rows are grouped | A script's background is repainted with the grid's; its text colour stays |
-| A group row or the totals row has expressions | They apply too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
+| A group row or the totals row has expressions | They apply too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
 
 ## From your code
 
@@ -99,7 +99,7 @@ The module is \`grid.modules.find('legacyClientApiCompatibility')\`, or \`useGri
 `
 
 const meta = {
-    title: 'Grid/Modules/Legacy client API',
+    title: 'Controls/Grid/Modules/Legacy client API',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

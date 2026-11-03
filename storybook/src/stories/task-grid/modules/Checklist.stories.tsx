@@ -32,7 +32,7 @@ A task without items shows an empty cell.
 
 ## Changing how it looks
 
-Every checklist factory takes \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+Every checklist factory takes \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -40,7 +40,7 @@ Every checklist factory takes \`components\`, read at mount. How slots work is u
 `
 
 const meta = {
-    title: 'TaskGrid/Modules/Checklist',
+    title: 'Controls/TaskGrid/Modules/Checklist',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

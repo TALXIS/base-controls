@@ -24,7 +24,7 @@ Without the editing module the grid is read-only. With it, each column is edited
 | \`autoSave\` | \`boolean\` | \`false\` | Saves a record each time one of its values is committed. |
 | \`onEditedCellChanged\` | \`(previous?, next?) => void\` | None | An editor opens or closes, or the user steps into or out of an in-place cell. Each argument is \`{ recordId, columnName }\`. |
 
-Every column can be edited unless its metadata sets \`IsValidForUpdate: false\` (see [**Data**](?path=/docs/grid-data--overview)); file, image and ribbon columns never open an editor. While the module is on, a double-click opens the cell's editor rather than the record.
+Every column can be edited unless its metadata sets \`IsValidForUpdate: false\` (see [**Data**](?path=/docs/controls-grid-data--overview)); file, image and ribbon columns never open an editor. While the module is on, a double-click opens the cell's editor rather than the record.
 
 ## How a value commits
 
@@ -40,7 +40,7 @@ Esc closes the editor and keeps what was typed; \`record.clearChanges()\` is the
 
 ## Save
 
-With \`autoSave\`, each commit calls \`record.save()\` straight away. Without it, edits stay on the records until you call \`provider.save()\` or \`provider.clearChanges()\`, and the grid marks nothing as changed, so build your save bar from the provider. The calls and the save result are under *Edit and save* on [**Data providers**](?path=/docs/data-providers--overview).
+With \`autoSave\`, each commit calls \`record.save()\` straight away. Without it, edits stay on the records until you call \`provider.save()\` or \`provider.clearChanges()\`, and the grid marks nothing as changed, so build your save bar from the provider. The calls and the save result are under *Edit and save* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 {{story: Review changes, then save them all}}
 
@@ -61,7 +61,7 @@ A value that fails validation draws a red outline and an error icon in its cell,
 | Required | \`metadata.RequiredLevel\` \`1\` (SystemRequired) or \`2\` (ApplicationRequired) on the provider column | The value is not empty. The header shows an asterisk while the editing module is on. |
 | Built-in | The column's data type and metadata | Single-line text against \`MaxLength\`, numbers against \`MinValue\` and \`MaxValue\`, numbers, money and durations hold numbers, email, URL and date formats |
 | One column | \`context.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column; it may read any column of the record |
-| Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service | Your rule for every column. See *Validation* on [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
+| Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service | Your rule for every column. See *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 
 Your rules run first, then the required and built-in checks; a rule can add an error but not clear a built-in one. Validation does not depend on editing, so a read-only grid outlines invalid values too. The rules are set on the provider's records, so they gate every save, a \`provider.save()\` from outside the grid included, and they replace a \`record.expressions.setValidationExpression\` of your own on the same column. \`context.isRequired\` only draws the asterisk.
 
@@ -86,11 +86,11 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 | Record | \`rowSettings.onGetLock\`, a lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start of the row | \`grid.recordLocked\` |
 | Cell | \`context.cell.onGetLock\` in \`colDefs\`, or a lock hook asked about \`{ record, columnName }\` | A lock icon in the cell | \`grid.valueLocked\` |
 
-To change the tooltips, see [**Localization**](?path=/docs/localization--overview).
+To change the tooltips, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-\`context.isLocked: true\` is final, and no hook reopens the column; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.onGetLock(result, { record })\` runs after the record-level hooks with \`result.isLocked\` starting as \`!record.isActive()\`, so it can also unlock. \`context.cell.onGetLock(result, { record })\` runs after the cell-level hooks, and only for a cell whose column and record are open. A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/grid-extending-hooks--overview).
+\`context.isLocked: true\` is final, and no hook reopens the column; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.onGetLock(result, { record })\` runs after the record-level hooks with \`result.isLocked\` starting as \`!record.isActive()\`, so it can also unlock. \`context.cell.onGetLock(result, { record })\` runs after the cell-level hooks, and only for a cell whose column and record are open. A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
-A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
+A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
 
 Locks gate only the grid's own editing: whether an editor opens and whether an in-place control is enabled. \`record.setValue()\` from your code ignores them, and a locked cell still shows and enforces validation.
 
@@ -112,7 +112,7 @@ const rowSettings: IGridRowSettings = {
 
 ## When the server refuses
 
-A server can refuse a save the browser allowed. A provider reports that as \`{ success: false, errors: [{ fieldName, message }] }\`, and the row's save status turns red with the errors in its callout. How a provider saves to your server is under *Your own provider* on [**Data providers**](?path=/docs/data-providers--overview).
+A server can refuse a save the browser allowed. A provider reports that as \`{ success: false, errors: [{ fieldName, message }] }\`, and the row's save status turns red with the errors in its callout. How a provider saves to your server is under *Your own provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 {{story: Refuse a save on the server}}
 
@@ -140,14 +140,14 @@ The module is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` 
 | \`start(cell)\`, \`finish(cell)\` | Steps into an in-place cell; ends the edit and brings the focus back to the cell. |
 | \`isAutoSaveEnabled()\` | Whether each commit saves its record. |
 | \`locks.get({ record?, columnName? })\` | Whether a column, a row or a cell is locked: \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`. |
-| \`locks.registerLock(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/grid-extending-hooks--overview). |
+| \`locks.registerLock(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 | \`events\` | \`onEditedCellChanged(previous, next)\`, as the module option. |
 
 To change a value as a cell would, saving it with \`autoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.
 
 ## Changing how it looks
 
-The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 \`\`\`tsx
 <Grid
@@ -168,14 +168,14 @@ The editing module takes no \`components\` option. It draws two columns of its o
 |---|---|
 | The save status and its error callout | Through their slots; the defaults \`RecordSaveUiIndicatorComponents\` and \`RecordSaveUiErrorCalloutComponents\` are exported |
 | The checkbox column, with row selection on | It is drawn by \`RecordSaveSelectionCell\`: use \`cellRendererParams\` to keep the save status, or render \`RecordSaveSelectionCell\` in a \`cellRenderer\` of your own |
-| The lock in a locked column's header | An adornment keyed \`'lock'\` without slots: replace or remove it in \`context.header.onGetAdornments\` (see *Extend the header* on [**Columns**](?path=/docs/grid-columns--overview)) |
-| The lock in a locked cell | The cell's own \`lockIcon\`: see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) |
+| The lock in a locked column's header | An adornment keyed \`'lock'\` without slots: replace or remove it in \`context.header.onGetAdornments\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)) |
+| The lock in a locked cell | The cell's own \`lockIcon\`: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview) |
 
 {{story: Draw the save status your way}}
 `
 
 const meta = {
-    title: 'Grid/Modules/Editing',
+    title: 'Controls/Grid/Modules/Editing',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

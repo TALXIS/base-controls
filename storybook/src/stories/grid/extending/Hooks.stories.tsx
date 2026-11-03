@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { AssignToMeExample, ColumnsByRoleExample, CopyColumnExample, CurrencyInHeaderExample, DayUnderTenHoursExample, LockClosedDealsExample, PlaceholdersExample, RefreshPricesExample, UrgentRowsExample } from '../../../grid/examples/hooksExamples'
 
 const DESCRIPTION = `
-A grid hook changes one decision the grid makes: a cell's colour, a lock, a validation rule, a column's menu. Register it on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/grid-extending-write-a-module--overview).
+A grid hook changes one decision the grid makes: a cell's colour, a lock, a validation rule, a column's menu. Register it on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
 \`\`\`tsx
 const closedDealsModule: IGridModule = {
@@ -30,7 +30,7 @@ const closedDealsModule: IGridModule = {
 
 ## How hooks run
 
-The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
+The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
 
 Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`, which runs before every built-in module except the legacy client API's, so a module that sets the same thing later overwrites yours. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
 
@@ -45,7 +45,7 @@ Hooks of one kind run in ascending priority. Within one priority they run in the
 | \`grouping\`, \`aggregation\` | \`60\`, \`70\` |
 | \`clipboard\` | \`80\` |
 
-The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Locks
 
@@ -57,11 +57,11 @@ One lock hook decides three levels. The context it receives says which one the g
 | A record's row | \`{ record }\` |
 | A cell | \`{ record, columnName }\` |
 
-Check the context before you read it. A hook that reads \`record\` without checking fails for a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+Check the context before you read it. A hook that reads \`record\` without checking fails for a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 ## Validation
 
-\`registerValidation\` sets \`result.error\` and \`result.errorMessage\` for a value. An error outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+\`registerValidation\` sets \`result.error\` and \`result.errorMessage\` for a value. An error outlines the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 {{story: Keep a day under ten hours}}
 
@@ -73,11 +73,11 @@ The hook runs for every column of every record, so check \`columnName\` first. A
 
 {{story: Refresh prices from a supplier}}
 
-\`registerCellCommands\` adds commands to a cell: push to \`result.items\` for buttons and to \`result.overflowItems\` for the **…** menu. How they are drawn is under *Add cell commands* on [**Columns**](?path=/docs/grid-columns--overview).
+\`registerCellCommands\` adds commands to a cell: push to \`result.items\` for buttons and to \`result.overflowItems\` for the **…** menu. How they are drawn is under *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 {{story: Assign new tickets to yourself}}
 
-\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters the value renderer reads are under *Control parameters* on [**Columns**](?path=/docs/grid-columns--overview). \`takesInput\` is \`true\` for an editor and for a one-click cell.
+\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters the value renderer reads are under *Control parameters* on [**Columns**](?path=/docs/controls-grid-columns--overview). \`takesInput\` is \`true\` for an editor and for a one-click cell.
 
 {{story: Show placeholders for missing values}}
 
@@ -119,7 +119,7 @@ Every header hook receives an \`IGridColumnHeader\`. \`getColumn()\` is the prov
 
 | Service | Hook | Decides | Receives | Runs last |
 |---|---|---|---|---|
-| \`cells\` | \`registerCellTheme\` | A cell's colours: see *Colour cells by their data* on [**Appearance**](?path=/docs/grid-appearance--overview) | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
+| \`cells\` | \`registerCellTheme\` | A cell's colours: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`theme: ThemeBuilder\`, \`{ record, columnName }\` | \`context.cell.onGetTheme\` |
 | \`cells\` | \`registerCellLoading\` | Whether a cell draws a shimmer: \`result.isLoading\` | \`result: IGridCellLoading\`, \`{ record, columnName }\` | \`context.cell.onGetLoading\` |
 | \`cells\` | \`registerCellCommands\` | A cell's commands: \`result.items\`, \`result.overflowItems\` | \`result: IGridCellCommands\`, \`{ record, columnName }\` | \`context.cell.onGetCommands\` |
 | \`cells\` | \`registerControl\` | Which control draws a cell: \`result.control.name\` and its \`bindings\` | \`result: { control }\`, \`{ record, columnName, takesInput }\` | None |
@@ -138,12 +138,12 @@ Every header hook receives an \`IGridColumnHeader\`. \`getColumn()\` is the prov
 | \`rowSelection\` | \`registerSelectRecords\` | The records about to be selected: change \`selection.recordIds\`, or set \`selection.isCancelled\`. May be async; each is awaited in turn | \`selection\`, \`{ provider }\` | None |
 | \`rowSelection\` | \`registerSelectionState\` | How a row's checkbox reads: \`result.state\` is \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\` | \`result\`, \`{ record, node }\` | None |
 | \`keyboard\` | \`onKeyDown(handler)\` | Runs for every key pressed inside the grid, before what it lands in. Takes no priority | \`event: KeyboardEvent\` | None |
-| The grid | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\` | AG Grid's options: see [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result: { options }\` | None |
-| \`gridTheme\` | \`registerTheme\`, \`registerStyles\` | The AG Grid theme and the root element's styles: see *The AG Grid theme* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview) | \`result\`, \`fluentTheme\` | None |
+| The grid | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\` | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | \`result: { options }\` | None |
+| \`gridTheme\` | \`registerTheme\`, \`registerStyles\` | The AG Grid theme and the root element's styles: see *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | \`result\`, \`fluentTheme\` | None |
 `
 
 const meta = {
-    title: 'Grid/Extending/Hooks',
+    title: 'Controls/Grid/Extending/Hooks',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

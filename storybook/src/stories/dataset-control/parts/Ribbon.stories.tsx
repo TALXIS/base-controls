@@ -20,7 +20,7 @@ const DealsRibbon = () => {
 
 {{story: Act on the selected deals}}
 
-Commands show in the order they are returned, and those that do not fit move into the overflow menu. A command's button is disabled while its \`onExecute\` runs, and every button while the provider loads. A shimmer stands in for the commands while they load. When \`onLoad\` throws, the error shows in their place with *Try again*; when \`onExecute\` throws, the error dialog opens (see [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview)). In \`Header.End\` the commands sit against the right.
+Commands show in the order they are returned, and those that do not fit move into the overflow menu. A command's button is disabled while its \`onExecute\` runs, and every button while the provider loads. A shimmer stands in for the commands while they load. When \`onLoad\` throws, the error shows in their place with *Try again*; when \`onExecute\` throws, the error dialog opens (see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview)). In \`Header.End\` the commands sit against the right.
 
 The same ribbon, without the reload on selection, is exported as \`Ribbon\`, for a command bar outside DatasetControl.
 
@@ -31,7 +31,7 @@ The same ribbon, without the reload on selection, is exported as \`Ribbon\`, for
 | \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | None | Returns the commands. Called at mount, whenever the selection changes, and on \`reload()\`. The commands registered through \`registerCommands\` follow. |
 | \`disabled\` | \`boolean\` | \`false\` | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Added to the ribbon's box. |
-| \`components\` | \`IRibbonComponents\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`IRibbonComponents\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## Commands
 
@@ -56,7 +56,7 @@ A command either runs or opens a menu of further commands.
 
 ## From your code
 
-\`control.parts.get('ribbon')\` returns the ribbon once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). When a command changes what applies without changing the selection, call \`reload()\`, as *Mark as won* does in the example:
+\`control.parts.get('ribbon')\` returns the ribbon once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). When a command changes what applies without changing the selection, call \`reload()\`, as *Mark as won* does in the example:
 
 \`\`\`tsx
 const markWon = async (ids: string[]) => {
@@ -84,7 +84,7 @@ control.parts.observe('ribbon', ribbon => ribbon.registerCommands(commands => {
 `
 
 const meta = {
-    title: 'DatasetControl/Parts/Ribbon',
+    title: 'Controls/DatasetControl/Parts/Ribbon',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

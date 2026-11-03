@@ -6,7 +6,7 @@ import { renderStory } from './storyHelpers'
 const samplesById = Object.fromEntries(formContextSampleDefinitions.map((sample) => [sample.id, sample])) as Record<string, typeof formContextSampleDefinitions[number]>
 
 const meta = {
-    title: 'Form/Xrm/Form Context/Samples',
+    title: 'Controls/Form/Xrm/Form Context/Samples',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -29,7 +29,7 @@ Ready-made business flows built on the Xrm \`formContext\` runtime, each runnabl
 - **Financial approval checkpoint** — focuses the Metrics tab, requires Budget, locks review-only fields.
 - **Scheduling handoff** — focuses the Scheduling tab, hides secondary details, requires final scheduling fields.
 
-Each sample keeps its own isolated form instance, so **Run code** and **Clear** act on that example only. Start from a blank snippet instead on [**Overview**](?path=/story/form-xrm-form-context-overview--overview).
+Each sample keeps its own isolated form instance, so **Run code** and **Clear** act on that example only. Start from a blank snippet instead on [**Overview**](?path=/story/controls-form-xrm-form-context-overview--overview).
                 `.trim(),
             },
         },

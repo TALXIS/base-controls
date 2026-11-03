@@ -27,19 +27,19 @@ Without the editing module the list is read-only: no ticking, renaming, adding, 
 
 ## Change its wording
 
-Its strings are labels: see [**Localization**](?path=/docs/localization--overview).
+Its strings are labels: see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Configure the grid
 
 Everything \`Grid\` offers works on the checklist's other columns: column definitions, cell colours, locks, cell commands, events. Of the grid's modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and modules of your own. Sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
 
-The board below colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview)).
+The board below colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview)).
 
 {{story: Run a release board}}
 
 ## Open an item
 
-A primary column draws the item's name as a link, and \`onOpenRecord\` decides what opening it does. Here it opens the item in a form in a panel. How links and opening work is under *Link to the record* on [**Columns**](?path=/docs/grid-columns--overview); while editing is on, as it is by default, only the link opens an item, not a double-click.
+A primary column draws the item's name as a link, and \`onOpenRecord\` decides what opening it does. Here it opens the item in a form in a panel. How links and opening work is under *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview); while editing is on, as it is by default, only the link opens an item, not a double-click.
 
 {{story: Open an item in a panel}}
 
@@ -53,11 +53,11 @@ The checklist adds its own module to the grid: \`grid.modules.find('checkList')\
 | \`isCompleted(record)\` | Whether the item is finished. |
 | \`getFieldMapping()\` | The columns the checklist works with. |
 
-Everything else is the grid's: see [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
+Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 `
 
 const meta = {
-    title: 'Checklist/Customization',
+    title: 'Controls/Checklist/Customization',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

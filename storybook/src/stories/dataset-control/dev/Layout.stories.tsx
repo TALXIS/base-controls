@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { ILayoutDatasetControlProps, LayoutDatasetControl } from '../../../dataset-control/dev/LayoutDatasetControl'
 
 const meta = {
-    title: 'DatasetControl/Dev/Layout',
+    title: 'Dev/DatasetControl/Layout',
     tags: ['dev-only'],
     component: LayoutDatasetControl,
     parameters: {

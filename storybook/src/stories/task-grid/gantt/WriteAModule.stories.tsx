@@ -37,7 +37,7 @@ const ganttModules = [createLibraryModule(), criticalTasksModule]
 | \`surfaces.registerSurface(hook)\` | Draws React content over the chart: \`surfaces => surfaces.push({ key, onRender })\`. |
 | \`theme.registerStyles(hook)\` | Adds Fluent styles to the chart: \`(result, theme) => result.styles.push(...)\`. |
 | \`registerChartConfig(hook)\` | Sets DHTMLX's config, templates and plugins before the chart is drawn: \`chart => chart.config.min_column_width = 80\`. |
-| \`getTaskRuntime()\` | The task grid's runtime. See [**Talking to the task grid**](?path=/docs/taskgrid-talking-to-the-task-grid--overview). |
+| \`getTaskRuntime()\` | The task grid's runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
 | \`getLibrary()\` | \`{ Gantt, isPro }\`, the DHTMLX build. |
 | \`getProps()\`, \`getLabels(set)\`, \`render()\` | The \`TaskGantt\`'s props, a label set's strings, and a redraw after a hook's answer changed. |
 
@@ -68,7 +68,7 @@ A surface, a marker slot or a tooltip part reads the Gantt with \`useGantt()\`, 
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Write a module',
+    title: 'Controls/TaskGrid/Gantt/Write a module',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

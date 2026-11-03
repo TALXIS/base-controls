@@ -21,7 +21,7 @@ Either way, your header keeps what the grid gives every header: its theme, the i
 
 ## Changing how it looks
 
-\`headerComponentParams\` take \`components\`, a map of the header's parts and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+\`headerComponentParams\` take \`components\`, a map of the header's parts and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 {{story: Add a caption under the name}}
 
@@ -34,7 +34,7 @@ Either way, your header keeps what the grid gives every header: its theme, the i
 | \`requiredMarker\` | \`onRenderText\` | | The \`*\` of a required column |
 | \`menu\` | \`onRenderContextualMenu\` | | The column's menu |
 
-The icons in \`prefix\` and \`suffix\` are adornments that modules and \`context.header.onGetAdornments\` add, and the menu's items come from \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The icons in \`prefix\` and \`suffix\` are adornments that modules and \`context.header.onGetAdornments\` add, and the menu's items come from \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Compose it from the parts
 
@@ -58,7 +58,7 @@ Put your own content inside \`Content\`, beside or in place of \`Label\`, so the
 `
 
 const meta = {
-    title: 'Grid/Appearance/Custom headers',
+    title: 'Controls/Grid/Appearance/Custom headers',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

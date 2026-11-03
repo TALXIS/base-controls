@@ -15,7 +15,7 @@ The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="norefer
 | \`grid.registerAgGridOptions(hook, priority?)\` | When AG Grid is ready, after every load of the provider, and on every \`refreshAgGridOptions()\` | The options AG Grid takes at any time, such as \`headerHeight\`, \`suppressMovableColumns\` or \`tooltipShowDelay\` |
 | \`grid.refreshAgGridOptions()\` | When you call it | Runs the option hooks again and passes AG Grid the options whose value changed |
 
-Each hook receives \`{ options }\` and sets what it needs on it. Both register calls return a function that takes the hook off again, and their priorities work as every hook's do: see *How hooks run* on [**Hooks**](?path=/docs/grid-extending-hooks--overview).
+Each hook receives \`{ options }\` and sets what it needs on it. Both register calls return a function that takes the hook off again, and their priorities work as every hook's do: see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 \`\`\`tsx
 import { IGridModule } from '@talxis/base-controls'
@@ -46,7 +46,7 @@ The grid starts from these, and its modules add their own. Change the others, an
 | \`onGridReady\`, \`onGridPreDestroyed\` | The grid, at creation | No: use \`onReady\` and \`onDestroyed\` |
 | \`rowModelType\`, \`getRowId\`, \`rowData\`, \`serverSideDatasource\`, \`treeData\`, \`getDataPath\` | The grid and the row model | No |
 | \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`, \`rowClassRules\` | The grid | No: use the column definitions hooks, \`colDefs\`, the row height and row class hooks, and \`height\` |
-| \`loadingOverlayComponent\`, \`noRowsOverlayComponent\`, \`suppressOverlays\`, \`activeOverlay\`, \`loadingCellRenderer\` | The grid | No: use \`components\`, see [**Overlays and rows**](?path=/docs/grid-appearance-overlays-and-rows--overview) |
+| \`loadingOverlayComponent\`, \`noRowsOverlayComponent\`, \`suppressOverlays\`, \`activeOverlay\`, \`loadingCellRenderer\` | The grid | No: use \`components\`, see [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
 | \`readOnlyEdit\` | Editing | No |
 | \`rowSelection\`, \`cellSelection\` | Row selection, cell selection | No |
 | \`groupDisplayType\`, \`isGroupOpenByDefault\`, \`isServerSideGroupOpenByDefault\`, \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`pinnedBottomRowData\` | Grouping, totals | No |
@@ -95,7 +95,7 @@ The \`gridTheme\` service changes it, once, as the grid mounts:
 | \`registerTheme(hook, priority?)\` | \`{ theme }\`, the Fluent theme | Replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a> |
 | \`registerStyles(hook, priority?)\` | \`{ styles }\`, the Fluent theme | Push Fluent \`IStyle\` rules for the grid's root element, for what no parameter covers |
 
-An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/grid-appearance--overview).
+An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 ## AG Grid modules
 
@@ -114,11 +114,11 @@ export const csvExportModule: IGridModule = {
 export const exportQueue = (grid: IGrid) => grid.services.find('gridApi')?.exportDataAsCsv({ fileName: 'ticket-queue.csv' })
 \`\`\`
 
-Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/grid-modules--overview).
+Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
 `
 
 const meta = {
-    title: 'Grid/Extending/AG Grid',
+    title: 'Controls/Grid/Extending/AG Grid',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

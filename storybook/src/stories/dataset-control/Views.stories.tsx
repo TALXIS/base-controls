@@ -43,7 +43,7 @@ The switcher needs only a view's name. What the view shows is resolved when it o
 
 ## Load the view
 
-\`onLoad\` gets the view as listed. Create the provider, call \`view.resolve(provider)\` and set the provider up from the view's \`data\`. Leave the columns and linking alone: the control sets them after \`onLoad\`, then puts back what the user changed in the view. The full sequence is under *What runs, in order* on [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview).
+\`onLoad\` gets the view as listed. Create the provider, call \`view.resolve(provider)\` and set the provider up from the view's \`data\`. Leave the columns and linking alone: the control sets them after \`onLoad\`, then puts back what the user changed in the view. The full sequence is under *What runs, in order* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
 \`\`\`tsx
 const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
@@ -58,7 +58,7 @@ const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>)
 
 {{story: Views that set up the provider}}
 
-Switching the view asks first when the records have unsaved changes. Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards instead of a grid: see *Your own collection view* on [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview).
+Switching the view asks first when the records have unsaved changes. Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards instead of a grid: see *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 ## Let users save their own views
 
@@ -87,7 +87,7 @@ A user view opens like any other, so \`onLoad\` needs nothing new. What it keeps
 | Columns | Every column, hidden ones too: its name, order, width, visibility, grouping and aggregation, and the links its related columns come through. | Completed from the provider's available columns, as above. |
 | Data | What each \`saveWithView(key, getter)\` returns, under its key. A getter that returns \`undefined\` saves nothing; one that throws stops the save. | Comes back as \`data\` from \`view.resolve(provider)\`. |
 
-\`saveWithView\` belongs to the module of one mount, so register it in \`onMounted\` through \`control.modules.observe\`, or from a module of your own. It returns its unregistration. See *Modules* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+\`saveWithView\` belongs to the module of one mount, so register it in \`onMounted\` through \`control.modules.observe\`, or from a module of your own. It returns its unregistration. See *Modules* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 {{story: Save your own views}}
 
@@ -100,7 +100,7 @@ A user view opens like any other, so \`onLoad\` needs nothing new. What it keeps
 | \`createDataverseUserQueriesModule({ entityName, table })\` | As records of a Dataverse table you map. |
 | \`createUserQueriesModule({ onCreateStore })\` | In a store of yours. |
 
-Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`. Each command is on unless set to \`false\`. Its strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/localization--overview).
+Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`. Each command is on unless set to \`false\`. Its strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ### Dataverse
 
@@ -150,7 +150,7 @@ createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 | \`children\` | \`ReactNode\` | None | What adds to the switcher, such as \`DatasetControl.UserQueries\`. |
 
 ## From your code
@@ -176,11 +176,11 @@ createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })
 | \`save()\` | Saves what the control shows into the open user view. |
 | \`events\` | \`onManageRequested\`, \`onOperationFailed(error)\`. |
 
-See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 `
 
 const meta = {
-    title: 'DatasetControl/Views',
+    title: 'Controls/DatasetControl/Views',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

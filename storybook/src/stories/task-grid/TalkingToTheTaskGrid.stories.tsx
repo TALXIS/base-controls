@@ -61,14 +61,14 @@ await taskRuntime.execute(saveAll, { loading: { message: 'Completing tasks...' }
 | \`getProvider()\` | The task provider: the tasks, the selection and the record tree. |
 | \`getView()\` | The open view, with its \`data\`. |
 | \`getFieldMapping()\` | The field mapping \`onLoad\` returned. |
-| \`isFlatList()\`, \`setFlatList(isFlatList)\` | The flat list. See [**Views and the tree**](?path=/docs/taskgrid-views-and-the-tree--overview). |
+| \`isFlatList()\`, \`setFlatList(isFlatList)\` | The flat list. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). |
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |
 | \`getHoursPerDay()\` | The control's \`hoursPerDay\`. |
 | \`registerRibbonCommandUi(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`. |
 | \`events\` | \`onDestroyed\`. |
 
-\`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**DatasetControl › Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+\`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**DatasetControl › Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## Settings of your own
 
@@ -86,11 +86,11 @@ datasetControl.parts.get('taskSettings').registerSettings(settings => settings.p
 
 ## The grid
 
-\`TaskGrid\` is a Grid, so \`onReady\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Grid › Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
+\`TaskGrid\` is a Grid, so \`onReady\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Grid › Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
 `
 
 const meta = {
-    title: 'TaskGrid/Talking to the task grid',
+    title: 'Controls/TaskGrid/Talking to the task grid',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

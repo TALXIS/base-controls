@@ -33,7 +33,7 @@ const MapDemo = ({ apiKey, showPins }: IMapDemoProps) => {
 }
 
 const meta = {
-    title: 'Map/Overview',
+    title: 'Controls/Map/Overview',
     component: MapDemo,
     tags: ['autodocs'],
     argTypes: {

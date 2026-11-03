@@ -18,7 +18,7 @@ const WonDealsButton = () => {
 }
 \`\`\`
 
-Outside it, \`onMounted\` passes it before each load, \`onReady\` once that load succeeded, and \`onDestroyed\` as the mount goes. Every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/datasetcontrol-loading-data--overview)), so add your listeners in \`onMounted\`: each one runs for its mount only.
+Outside it, \`onMounted\` passes it before each load, \`onReady\` once that load succeeded, and \`onDestroyed\` as the mount goes. Every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)), so add your listeners in \`onMounted\`: each one runs for its mount only.
 
 \`\`\`tsx
 const onMounted = (control: IDatasetControl) => {
@@ -38,7 +38,7 @@ const onMounted = (control: IDatasetControl) => {
 | \`loadView(viewId)\` | Mounts the control anew on the view, as picking it in the view switcher does. |
 | \`reload()\` | Mounts the control anew on the view shown. |
 | \`retry()\` | Mounts the control anew on the view that failed to load. |
-| \`getViews()\` | The views of this mount. See [**Views**](?path=/docs/datasetcontrol-views--overview). |
+| \`getViews()\` | The views of this mount. See [**Views**](?path=/docs/controls-datasetcontrol-views--overview). |
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
 | \`getDependencies<T>()\` | What \`onLoadDependencies\` loaded for this mount. |
@@ -53,7 +53,7 @@ const onMounted = (control: IDatasetControl) => {
 |---|---|---|
 | \`onLoadStarted\` | None | The mount's load starts. |
 | \`onLoaded\` | \`provider\` | The load succeeded, and the parts are drawn on \`provider\`. |
-| \`onLoadFailed\` | \`error\` | The load failed. See [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview). |
+| \`onLoadFailed\` | \`error\` | The load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
 | \`onDestroyed\` | None | The mount goes. |
 
 Each fires at most once per \`IDatasetControl\`. \`addEventListener\` returns its own unsubscribe.
@@ -70,12 +70,12 @@ quickFind.search()
 
 | Key | Part | What you do with it |
 |---|---|---|
-| \`viewSwitcher\` | [**Views**](?path=/docs/datasetcontrol-views--overview) | List the views, pick one, add to the menu. |
-| \`ribbon\` | [**Ribbon**](?path=/docs/datasetcontrol-parts-ribbon--overview) | Load the commands again, add commands. |
-| \`quickFind\` | [**Quick find**](?path=/docs/datasetcontrol-parts-quick-find--overview) | Set the query and search. |
-| \`editColumns\` | [**Edit columns**](?path=/docs/datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor, add commands. |
-| \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/datasetcontrol-parts-paging--overview) | Move between pages, change the page size. |
-| \`notifications\` | [**Notifications and empty records**](?path=/docs/datasetcontrol-parts-notifications-and-empty-records--overview) | Read the provider's load error. |
+| \`viewSwitcher\` | [**Views**](?path=/docs/controls-datasetcontrol-views--overview) | List the views, pick one, add to the menu. |
+| \`ribbon\` | [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview) | Load the commands again, add commands. |
+| \`quickFind\` | [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview) | Set the query and search. |
+| \`editColumns\` | [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor, add commands. |
+| \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) | Move between pages, change the page size. |
+| \`notifications\` | [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview) | Read the provider's load error. |
 | \`loadingOverlay\` | Always there | Cover the whole control: \`show(message?)\` returns the function that hides it again, and it stays until every caller has hidden it. |
 
 The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's page lists its members under *From your code*.
@@ -112,13 +112,13 @@ The control a module gets also has \`registerViews(hook, priority?)\`, to add to
 
 | Member | Description |
 |---|---|
-| \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/localization--overview). |
+| \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in. |
 | \`surfaces\` | What modules draw in the control, above. |
 `
 
 const meta = {
-    title: 'DatasetControl/Talking to the control',
+    title: 'Controls/DatasetControl/Talking to the control',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

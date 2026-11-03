@@ -24,7 +24,7 @@ provider.onGetAvailableRelatedColumns = async () => fetchRelatedEntities()
 
 The user can add the columns \`getAvailableColumns\` returns. When \`getAvailableRelatedColumns\` returns any entities, a scope selector lets them add columns of related records too. The pickers say *Loading...* while the columns load; when loading throws, the error shows in place of the pickers with *Try again*. Hidden columns are kept as they are.
 
-*Cancel*, or closing the panel, drops the changes. Saving clears the selection and mounts the control anew with the new columns, after asking about unsaved changes. The columns the user chose are kept per view: see [**State**](?path=/docs/datasetcontrol-state--overview).
+*Cancel*, or closing the panel, drops the changes. Saving clears the selection and mounts the control anew with the new columns, after asking about unsaved changes. The columns the user chose are kept per view: see [**State**](?path=/docs/controls-datasetcontrol-state--overview).
 
 {{story: Choose the columns of a view}}
 
@@ -32,11 +32,11 @@ The user can add the columns \`getAvailableColumns\` returns. When \`getAvailabl
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('editColumns')\` returns the part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). Open the editor from a button of your own:
+\`control.parts.get('editColumns')\` returns the part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Open the editor from a button of your own:
 
 \`\`\`tsx
 <DefaultButton text='Columns' onClick={() => control.parts.get('editColumns').open()} />
@@ -67,7 +67,7 @@ The session holds the edit until it is saved, changed through \`addColumn\` and 
 `
 
 const meta = {
-    title: 'DatasetControl/Parts/Edit columns',
+    title: 'Controls/DatasetControl/Parts/Edit columns',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

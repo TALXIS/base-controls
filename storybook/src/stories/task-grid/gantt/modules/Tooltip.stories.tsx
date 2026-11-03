@@ -53,7 +53,7 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 
 ## Changing how it looks
 
-\`createTaskTooltipModule\` takes \`components\` for the default tooltip, read at mount, and \`TaskTooltip.Renderer\` takes the same keys. In a tooltip of your own, each part takes its own slots as \`components\`. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createTaskTooltipModule\` takes \`components\` for the default tooltip, read at mount, and \`TaskTooltip.Renderer\` takes the same keys. In a tooltip of your own, each part takes its own slots as \`components\`. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Part | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -66,7 +66,7 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules/Tooltip',
+    title: 'Controls/TaskGrid/Gantt/Modules/Tooltip',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

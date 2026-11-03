@@ -5,13 +5,13 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { EveryDataTypeExample, OwnRecordsExample, RequiredAndReadOnlyExample } from '../../grid/examples/dataExamples'
 
 const DESCRIPTION = `
-The grid draws what its provider holds: the provider's columns become the grid's columns, and the records of the current page become its rows. This page lists what the grid reads from each column, and how it draws and edits each data type. Creating and loading the provider is on [**Data providers**](?path=/docs/data-providers--overview).
+The grid draws what its provider holds: the provider's columns become the grid's columns, and the records of the current page become its rows. This page lists what the grid reads from each column, and how it draws and edits each data type. Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 {{story: Show your own records}}
 
 ## Provider columns
 
-Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how to change a column's definition on top of them is on [**Columns**](?path=/docs/grid-columns--overview).
+Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how to change a column's definition on top of them is on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 | Key | Default | Description |
 |---|---|---|
@@ -23,12 +23,12 @@ Each of the provider's columns is an \`IColumn\`. The grid reads these keys; how
 | \`isHidden\` | \`false\` | Leaves the column out of the grid. |
 | \`isPrimary\` | \`false\` | Draws the value as a link that opens the record. |
 | \`disableSorting\` | \`false\`; \`true\` for multi-select option sets | Keeps the column out of sorting. |
-| \`grouping\`, \`aggregation\` | None | Groups by the column, or totals it. See [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview). |
+| \`grouping\`, \`aggregation\` | None | Groups by the column, or totals it. See [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview). |
 | \`metadata\` | Filled in by the provider | What can be done with the column. See *Metadata* below. |
 
 ### Metadata
 
-A column's \`metadata\` says what can be done with it. The provider fills in the keys you leave out, as the *Default* column says. Without the [**Editing**](?path=/docs/grid-modules-editing--overview) module every cell is read-only, and \`IsValidForUpdate\` and \`RequiredLevel\` draw nothing.
+A column's \`metadata\` says what can be done with it. The provider fills in the keys you leave out, as the *Default* column says. Without the [**Editing**](?path=/docs/controls-grid-modules-editing--overview) module every cell is read-only, and \`IsValidForUpdate\` and \`RequiredLevel\` draw nothing.
 
 | Key | Default | Description |
 |---|---|---|
@@ -69,7 +69,7 @@ Links need \`enableNavigation\`, which is on by default. An empty value is shown
 
 ## Read values
 
-\`record.getValue()\` returns some types in another shape than the record holds. Reading records is under *Load and read* on [**Data providers**](?path=/docs/data-providers--overview).
+\`record.getValue()\` returns some types in another shape than the record holds. Reading records is under *Load and read* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 | Data type | Record holds | \`getValue()\` returns |
 |---|---|---|
@@ -83,11 +83,11 @@ Links need \`enableNavigation\`, which is on by default. An empty value is shown
 
 ## Paging
 
-The grid shows the records of the provider's current page, and its page size decides how many rows that is. Moving between pages is the provider's: in a DatasetControl, its *Paging* parts drive it (see [**DatasetControl › Paging**](?path=/docs/datasetcontrol-parts-paging--overview)), and from your code, \`provider.getPaging()\` does (see *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview)). Grouping changes what a page holds: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The grid shows the records of the provider's current page, and its page size decides how many rows that is. Moving between pages is the provider's: in a DatasetControl, its *Paging* parts drive it (see [**DatasetControl › Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview)), and from your code, \`provider.getPaging()\` does (see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). Grouping changes what a page holds: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 `
 
 const meta = {
-    title: 'Grid/Data',
+    title: 'Controls/Grid/Data',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

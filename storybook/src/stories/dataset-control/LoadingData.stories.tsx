@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { WaitingExample } from '../../dataset-control/examples/loadingDataExamples'
 
 const DESCRIPTION = `
-The control's \`onLoad\` returns the provider for the view the user is on. Load whatever the view needs, create the provider and return it. Creating a provider is on [**Data providers**](?path=/docs/data-providers--overview); what a view carries for \`onLoad\` is on [**Views**](?path=/docs/datasetcontrol-views--overview).
+The control's \`onLoad\` returns the provider for the view the user is on. Load whatever the view needs, create the provider and return it. Creating a provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries for \`onLoad\` is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 \`\`\`tsx
 const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
@@ -24,7 +24,7 @@ const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>)
 
 The control loads when it mounts, when the user switches the view, saves Edit columns, closes *Manage views* or saves a new view of their own, and when your code calls \`loadView()\`, \`reload()\` or \`retry()\`. Each of those mounts everything inside the control anew: a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. A placeholder stands in for the parts until the provider's first page is in. Put anything that should show straight away, such as a page title, outside the control.
 
-What the user changed in a view, such as its sorting or columns, comes back on its next load: see [**State**](?path=/docs/datasetcontrol-state--overview). Code that listens to the control or its parts subscribes again on each mount: see *Get the control* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview).
+What the user changed in a view, such as its sorting or columns, comes back on its next load: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Code that listens to the control or its parts subscribes again on each mount: see *Get the control* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## What runs, in order
 
@@ -38,7 +38,7 @@ What the user changed in a view, such as its sorting or columns, comes back on i
 | 6 | The control sets the view's linking and columns on the provider, then puts back what the user changed in the view. |
 | 7 | The provider's first page loads, unless \`onLoad\` already started it. Then the parts show. |
 
-\`onLoad\` gets one parameter, \`view\`: the view as listed, or \`undefined\` when there are no views. It returns \`{ provider }\`. When any step throws, the error shows in place of the parts, with *Try again*: see [**Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
+\`onLoad\` gets one parameter, \`view\`: the view as listed, or \`undefined\` when there are no views. It returns \`{ provider }\`. When any step throws, the error shows in place of the parts, with *Try again*: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 
 ## Load what every view needs once
 
@@ -61,11 +61,11 @@ A module reads it the same way, from the control its \`onLoad\` gets.
 
 ## Keep a shared provider
 
-The control destroys every provider it lets go of: the one it showed when the mount goes, and the one whose load failed. When \`onLoad\` returns a provider that lives on after the control, such as one the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself. See *Lifetime* on [**Data providers**](?path=/docs/data-providers--overview).
+The control destroys every provider it lets go of: the one it showed when the mount goes, and the one whose load failed. When \`onLoad\` returns a provider that lives on after the control, such as one the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself. See *Lifetime* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 `
 
 const meta = {
-    title: 'DatasetControl/Loading data',
+    title: 'Controls/DatasetControl/Loading data',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

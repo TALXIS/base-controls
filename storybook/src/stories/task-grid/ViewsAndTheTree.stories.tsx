@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TaskViewsExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Views work as on a DatasetControl: \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens (see [**DatasetControl › Views**](?path=/docs/datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`, and the control applies it for you: \`onLoad\` does not need to read the view.
+Views work as on a DatasetControl: \`onLoadViews\` lists them, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`, and the control applies it for you: \`onLoad\` does not need to read the view.
 
 \`\`\`tsx
 const loadTaskViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
@@ -43,11 +43,11 @@ A flat list shows the matching tasks on their own, without their ancestors. A *P
 
 ## User views and state
 
-With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see *Let users save their own views* on [**DatasetControl › Views**](?path=/docs/datasetcontrol-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see [**DatasetControl › State**](?path=/docs/datasetcontrol-state--overview)).
+With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see *Let users save their own views* on [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)).
 `
 
 const meta = {
-    title: 'TaskGrid/Views and the tree',
+    title: 'Controls/TaskGrid/Views and the tree',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

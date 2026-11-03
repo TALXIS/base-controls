@@ -81,7 +81,7 @@ createDataverseLookupManyModule({
 
 ## Changing how it looks
 
-\`createLookupManyModule\` and its variants take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createLookupManyModule\` and its variants take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -94,7 +94,7 @@ An \`appearance\` draws its pills and options first, and \`cell\`, \`editor\` an
 `
 
 const meta = {
-    title: 'TaskGrid/Modules/Lookup many',
+    title: 'Controls/TaskGrid/Modules/Lookup many',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -6,7 +6,7 @@ import { ExpandFromRibbonExample, FilteredTotalsExample, HoursByEmployeeExample,
 import { GroupBadgesExample, StockTotalsExample } from '../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-Grouping gathers the rows under a group row for each value of a column, level by level. The aggregation module adds totals, to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not (see [**Modules**](?path=/docs/grid-modules--overview)).
+Grouping gathers the rows under a group row for each value of a column, level by level. The aggregation module adds totals, to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not (see [**Modules**](?path=/docs/controls-grid-modules--overview)).
 
 \`\`\`tsx
 <DatasetControl onLoad={loadDeals}>
@@ -24,7 +24,7 @@ A column offers *Group* and *Ungroup* in its menu when its metadata sets \`CanBe
 
 While anything is grouped, a narrow column at the far left, \`GROUP_EXPANSION_COLUMN_KEY\`, has a + and a − in its header that open or close one level of groups at a time. A group row shows its value, a chevron and how many records it holds in the column of its level, its totals in the columns that have one, and nothing elsewhere; every cell of a group row is locked.
 
-Record rows take the grid's plain background while anything is grouped, so zebra stripes disappear, and so does a background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets (see *How hooks run* on [**Hooks**](?path=/docs/grid-extending-hooks--overview)). A \`colDefs\` entry can undo what grouping and totals set on a column: see *Change a column* on [**Columns**](?path=/docs/grid-columns--overview).
+Record rows take the grid's plain background while anything is grouped, so zebra stripes disappear, and so does a background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)). A \`colDefs\` entry can undo what grouping and totals set on a column: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 ## Nested or flat
 
@@ -36,11 +36,11 @@ The grid passes \`type\` to the provider when it mounts, and the provider regrou
 
 ## Opening groups
 
-\`defaultExpandedLevel\` sets how deep the groups open. Levels count from \`0\`, the top one; the default \`-1\` keeps every group closed, and a number past the deepest level opens everything. A group the user opens or closes keeps that state while every other group follows the level, until \`setExpandedLevel\` or the expansion column's buttons apply a level again and clear what the user toggled. The level and the toggled groups are kept in the grid's state: see [**State**](?path=/docs/grid-state--overview).
+\`defaultExpandedLevel\` sets how deep the groups open. Levels count from \`0\`, the top one; the default \`-1\` keeps every group closed, and a number past the deepest level opens everything. A group the user opens or closes keeps that state while every other group follows the level, until \`setExpandedLevel\` or the expansion column's buttons apply a level again and clear what the user toggled. The level and the toggled groups are kept in the grid's state: see [**State**](?path=/docs/controls-grid-state--overview).
 
 {{story: Expand and collapse from the ribbon}}
 
-Whether the groups' records load with the list or as each group opens depends on the row model: see *Row models* on [**Modules**](?path=/docs/grid-modules--overview).
+Whether the groups' records load with the list or as each group opens depends on the row model: see *Row models* on [**Modules**](?path=/docs/controls-grid-modules--overview).
 
 ## Grouping and selection
 
@@ -83,7 +83,7 @@ Summary rows hold their values under aliases of their own, such as \`status_grou
 
 ## Preset grouping and totals
 
-Grouping and totals live on the provider, like the sort and the filter: set them before \`refresh()\` and the grid opens grouped and totalled. The calls are under *Groups and totals* on [**Data providers**](?path=/docs/data-providers--overview).
+Grouping and totals live on the provider, like the sort and the filter: set them before \`refresh()\` and the grid opens grouped and totalled. The calls are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 \`\`\`ts
 deals.setColumns(columns)
@@ -114,7 +114,7 @@ Both modules' options are read at mount.
 | \`allowUserAggregation\` | \`boolean\` | \`true\` | Whether column menus have a *Totals* section. Preset totals show either way. |
 | \`components\` | \`IGridAggregationComponents\` | \`{}\` | See *Changing how it looks*. |
 
-To change the menu texts, tooltips and totals' names, see [**Localization**](?path=/docs/localization--overview).
+To change the menu texts, tooltips and totals' names, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## From your code
 
@@ -149,7 +149,7 @@ The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggre
 
 ## Changing how it looks
 
-Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 \`\`\`tsx
 createGroupingModule({ components: { groupCell: { count: { onRenderCount: props => <Badge {...props} /> } } } })
@@ -161,7 +161,7 @@ createAggregationModule({ components: { totalCell: { totalValue: { onRenderValue
 | Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
 | | \`groupCell.toggle\` | \`onRenderContainer\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
 | | \`groupCell.count\` | \`onRenderCount\` | \`GroupingUiCountComponents\` | How many records the group holds |
-| | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell (see [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview)) | | The rest of a group's cell |
+| | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)) | | The rest of a group's cell |
 | Aggregation | \`totalCell.totalValue\` | \`onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
 | | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
 | | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
@@ -188,7 +188,7 @@ The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponen
 `
 
 const meta = {
-    title: 'Grid/Modules/Grouping and totals',
+    title: 'Controls/Grid/Modules/Grouping and totals',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

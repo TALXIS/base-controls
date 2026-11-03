@@ -18,7 +18,7 @@ When the grid has no records to draw, it draws something in their place: an over
 
 ## Changing how it looks
 
-\`<Grid>\` takes \`components\`, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+\`<Grid>\` takes \`components\`, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -29,7 +29,7 @@ When the grid has no records to draw, it draws something in their place: an over
 
 ## No records
 
-\`overlays.emptyRecords\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/localization--overview). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
+\`overlays.emptyRecords\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
 
 {{story: Show an empty catalogue}}
 
@@ -51,7 +51,7 @@ When the grid has no records to draw, it draws something in their place: an over
 `
 
 const meta = {
-    title: 'Grid/Appearance/Overlays and rows',
+    title: 'Controls/Grid/Appearance/Overlays and rows',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

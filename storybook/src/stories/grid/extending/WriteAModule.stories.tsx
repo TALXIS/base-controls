@@ -39,9 +39,9 @@ export const urgentTicketsModule: IGridModule = {
 | \`name\` | Unique within the grid. What \`onLoad\` returns is registered under it. |
 | \`onLoad(grid)\` | Called once as the grid mounts, before AG Grid exists. Register your hooks and listeners here. |
 | \`onDestroy(instance)\` | Called as the grid unmounts, with what \`onLoad\` returned. |
-| \`agGridModules\` | AG Grid modules the feature needs. See *AG Grid modules* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
+| \`agGridModules\` | AG Grid modules the feature needs. See *AG Grid modules* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
-Build a module once, as a constant or in \`useMemo\`: \`modules\` is read at mount, see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview). A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\`, and reads state that changes through a getter or a ref. The examples on [**Hooks**](?path=/docs/grid-extending-hooks--overview) do both.
+Build a module once, as a constant or in \`useMemo\`: \`modules\` is read at mount, see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\`, and reads state that changes through a getter or a ref. The examples on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) do both.
 
 Modules load in the order of the array, so in your \`onLoad\` the ones before yours are there for \`grid.modules.find\`; reach later ones with \`grid.modules.observe\`. AG Grid's api arrives later too: reach it with \`grid.services.observe('gridApi', ...)\`. \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
 
@@ -80,7 +80,7 @@ export const refusedSavesModule: IGridModule = {
 }
 \`\`\`
 
-What the \`observe\` callback returns is taken as its cleanup: see *Services* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
+What the \`observe\` callback returns is taken as its cleanup: see *Services* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Share what your module builds
 
@@ -117,7 +117,7 @@ The list is read each time \`<Grid />\` renders, so a surface follows its own st
 `
 
 const meta = {
-    title: 'Grid/Extending/Write a module',
+    title: 'Controls/Grid/Extending/Write a module',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -6,7 +6,7 @@ import { StarredProductsExample } from '../../../grid/examples/moduleComponentsE
 import { ApproveInBulkExample, CopyPriceListExample, PickOneProductExample } from '../../../grid/examples/selectionExamples'
 
 const DESCRIPTION = `
-Three modules let users pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and the clipboard need AG Grid Enterprise (see [**Modules**](?path=/docs/grid-modules--overview)).
+Three modules let users pick the rows they want to act on, highlight blocks of cells, and copy what they highlighted into a spreadsheet. Row selection works with AG Grid Community; cell selection and the clipboard need AG Grid Enterprise (see [**Modules**](?path=/docs/controls-grid-modules--overview)).
 
 \`\`\`tsx
 <DatasetControl onLoad={loadTimesheets}>
@@ -38,17 +38,17 @@ The options are read at mount, so the \`onSelectionChanged\` the grid mounted wi
 | A row's checkbox | Adds the row, or takes it out, and leaves the others as they are |
 | The header checkbox | Selects every row on the current page, or every group while the rows are grouped; unticking it clears the selection |
 
-In \`'single'\` mode every click and every checkbox replaces the selection, and there is no header checkbox. A click on a cell's commands does not select the row, and in the checkbox column only the checkbox does. In a grouped grid, a plain click on a group row does not select it; Ctrl+click or the group's checkbox selects every record in the group, and in \`'single'\` mode a group's checkbox is disabled. How many groups one selection may load is on [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+In \`'single'\` mode every click and every checkbox replaces the selection, and there is no header checkbox. A click on a cell's commands does not select the row, and in the checkbox column only the checkbox does. In a grouped grid, a plain click on a group row does not select it; Ctrl+click or the group's checkbox selects every record in the group, and in \`'single'\` mode a group's checkbox is disabled. How many groups one selection may load is on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 {{story: Pick one product}}
 
 ## Read and change the selection
 
-The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/data-providers--overview)). \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
+The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
 
 A reload clears the selection: sorting, filtering, grouping, \`refresh()\` and moving to another page all start with nothing selected. The selection outlives the grid, though: a grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. \`onSelectionChanged\` is called for every change, your own provider calls and a reload included, with the ids of records only: a selected group's records are in, the group row is not.
 
-With the editing module, a row's save status is drawn in its checkbox cell: see *The save status* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+With the editing module, a row's save status is drawn in its checkbox cell: see *The save status* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 ## Refuse or change a selection
 
@@ -116,7 +116,7 @@ The cell selection and clipboard modules have no members of their own.
 
 ## Changing how it looks
 
-The row selection module takes no \`components\` option. Its checkbox column draws its cells with \`SelectionCell\` and its header with \`SelectionHeader\`; restyle them in \`colDefs\` through \`cellRendererParams\` and \`headerComponentParams\`, or set \`cellRenderer\` and \`headerComponent\` to a component that renders them. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+The row selection module takes no \`components\` option. Its checkbox column draws its cells with \`SelectionCell\` and its header with \`SelectionHeader\`; restyle them in \`colDefs\` through \`cellRendererParams\` and \`headerComponentParams\`, or set \`cellRenderer\` and \`headerComponent\` to a component that renders them. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 \`\`\`tsx
 <Grid
@@ -130,13 +130,13 @@ The row selection module takes no \`components\` option. Its checkbox column dra
 | | \`checkbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | A row's checkbox. The container takes the click, so keep its \`onClick\`; the checkbox gets \`checked\`, \`indeterminate\`, \`disabled\` and \`styles\` |
 | \`SelectionHeader\` | \`headerCheckbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiHeaderCheckboxComponents\` | The checkbox that selects every row, with \`checked\`, \`indeterminate\` and \`onChange\` |
 
-The defaults are \`RowSelectionUiCheckboxComponents\` and \`RowSelectionUiHeaderCheckboxComponents\`. With the editing module on, the column draws its cells with \`RecordSaveSelectionCell\`, which takes the same \`checkbox\` key: \`cellRendererParams\` reach it too, while a \`cellRenderer\` of your own replaces the save status (see *Changing how it looks* on [**Editing**](?path=/docs/grid-modules-editing--overview)).
+The defaults are \`RowSelectionUiCheckboxComponents\` and \`RowSelectionUiHeaderCheckboxComponents\`. With the editing module on, the column draws its cells with \`RecordSaveSelectionCell\`, which takes the same \`checkbox\` key: \`cellRendererParams\` reach it too, while a \`cellRenderer\` of your own replaces the save status (see *Changing how it looks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
 {{story: Star products to order}}
 `
 
 const meta = {
-    title: 'Grid/Modules/Selection and clipboard',
+    title: 'Controls/Grid/Modules/Selection and clipboard',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -5,7 +5,7 @@ import { renderStory } from './storyHelpers'
 const DocsPlaceholder = () => <div style={{ display: 'none' }} />
 
 const meta = {
-    title: 'Form/Get started/Form strategy',
+    title: 'Controls/Form/Get started/Form strategy',
     tags: ['autodocs'],
     parameters: {
         docs: {
@@ -126,7 +126,7 @@ If the form does not bind correctly, the first thing to verify is usually the st
 
 Once those three inputs are correct, the same record model can drive either authoring path.
 
-Go to [**Get started**](?path=/story/form-get-started--overview), [**React compose Overview**](?path=/story/form-react-compose--overview), or [**Xrm Builder**](?path=/story/form-xrm--overview).
+Go to [**Get started**](?path=/story/controls-form-get-started--overview), [**React compose Overview**](?path=/story/controls-form-react-compose--overview), or [**Xrm Builder**](?path=/story/controls-form-xrm--overview).
                 `.trim(),
             },
         },

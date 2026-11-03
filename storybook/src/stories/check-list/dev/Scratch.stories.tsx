@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { ScratchCheckList } from '../../../check-list/dev/ScratchCheckList'
 
 const meta = {
-    title: 'Checklist/Dev/Scratch',
+    title: 'Dev/Checklist/Scratch',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

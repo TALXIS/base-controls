@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../../grid/gridDocsPage'
 import { GanttLinksExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The links module draws the task grid's dependencies as arrows between the bars, and lets the user draw and delete them. The dependencies come from the [**Dependencies**](?path=/docs/taskgrid-modules-dependencies--overview) module, which keeps them in memory, in Dataverse or in TALXIS: without it, the links module draws nothing.
+The links module draws the task grid's dependencies as arrows between the bars, and lets the user draw and delete them. The dependencies come from the [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module, which keeps them in memory, in Dataverse or in TALXIS: without it, the links module draws nothing.
 
 \`\`\`tsx
 const controlModules = React.useMemo(() => [createMemoryDependenciesModule({ dependencies: DEPENDENCIES })], [])
@@ -44,7 +44,7 @@ While a link saves, its tasks show as saving, and afterwards the store reads the
 
 ## Changing how it looks
 
-\`createLinksModule\` takes \`components\` for the default link tooltip, read at mount, under \`tooltip\`; the parts of \`LinkTooltip\` take the same slots as \`components\`. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createLinksModule\` takes \`components\` for the default link tooltip, read at mount, under \`tooltip\`; the parts of \`LinkTooltip\` take the same slots as \`components\`. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Part | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -56,7 +56,7 @@ While a link saves, its tasks show as saving, and afterwards the store reads the
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules/Links',
+    title: 'Controls/TaskGrid/Gantt/Modules/Links',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

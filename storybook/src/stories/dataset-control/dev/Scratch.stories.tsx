@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { ScratchDatasetControl } from '../../../dataset-control/dev/ScratchDatasetControl'
 
 const meta = {
-    title: 'DatasetControl/Dev/Scratch',
+    title: 'Dev/DatasetControl/Scratch',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

@@ -8,7 +8,7 @@ interface IXrmFormContextArgs {
 }
 
 const meta = {
-    title: 'Form/Xrm/Form Context/Overview',
+    title: 'Controls/Form/Xrm/Form Context/Overview',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -70,7 +70,7 @@ Microsoft Learn references:
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes" target="_blank" rel="noreferrer">attribute methods</a>
 - <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls" target="_blank" rel="noreferrer">control methods</a>
 
-For ready-made patterns built on the same runtime, go to [**Samples**](?path=/story/form-xrm-form-context-samples--qualification-review).
+For ready-made patterns built on the same runtime, go to [**Samples**](?path=/story/controls-form-xrm-form-context-samples--qualification-review).
                 `.trim(),
             },
         },

@@ -31,7 +31,7 @@ const ganttModules = React.useMemo(() => [
 | Option | Default | Description |
 |---|---|---|
 | \`today\` | \`{ enableMarker: true }\`, in red | \`{ enableMarker?, color?, lineStyle? }\`, the marker of today. |
-| \`project\` | \`{ enableMarkers: true }\` | \`{ enableMarkers?, color?, lineStyle? }\`, the markers of the project's start and end, from the [**Project**](?path=/docs/taskgrid-modules-project--overview) module. |
+| \`project\` | \`{ enableMarkers: true }\` | \`{ enableMarkers?, color?, lineStyle? }\`, the markers of the project's start and end, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module. |
 | \`components\` | Defaults | See *Changing how it looks* below. |
 
 ## Where markers come from
@@ -43,7 +43,7 @@ const ganttModules = React.useMemo(() => [
 
 ## Changing how it looks
 
-\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -67,7 +67,7 @@ createMemoryMarkersModule({ markers, components: { chip: { onRenderChip: props =
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules/Markers',
+    title: 'Controls/TaskGrid/Gantt/Modules/Markers',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

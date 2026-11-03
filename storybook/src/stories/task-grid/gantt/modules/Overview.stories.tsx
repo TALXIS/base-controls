@@ -23,16 +23,16 @@ const ganttModules = React.useMemo(() => [
 | Module | Factory | Needs | Description |
 |---|---|---|---|
 | Library | \`createLibraryModule()\`, \`createProLibraryModule({ Gantt })\` | | DHTMLX Gantt itself. Required. See *The library* below. |
-| [**Editing on the timeline**](?path=/docs/taskgrid-gantt-modules-editing-on-the-timeline--overview) | \`createBarDraggingModule()\` | \`enableEditing\` | Moving and resizing bars. |
+| [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) | \`createBarDraggingModule()\` | \`enableEditing\` | Moving and resizing bars. |
 | | \`createTaskDrawingModule()\` | \`enableCreation\` | Drawing a new task with Ctrl+drag. |
 | | \`createTaskSelectionModule()\` | | Selecting tasks from the chart. |
-| [**Markers**](?path=/docs/taskgrid-gantt-modules-markers--overview) | \`createMarkersModule()\`, \`createMemoryMarkersModule()\` | The [**Project**](?path=/docs/taskgrid-modules-project--overview) module, for the project's markers | Today, the project's start and end, and dates of your own. |
-| [**Non-working days**](?path=/docs/taskgrid-gantt-modules-non-working-days--overview) | \`createNonWorkingDaysModule()\`, \`createMemoryNonWorkingDaysModule()\` | \`TaskDatasetControl.Settings\`, to hide them | Weekends and holidays, shaded and left out of durations. |
-| [**Tooltip**](?path=/docs/taskgrid-gantt-modules-tooltip--overview) | \`createTaskTooltipModule()\` | | What a bar says when the pointer is on it. |
-| [**Links**](?path=/docs/taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
-| Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/taskgrid-gantt-write-a-module--overview). |
+| [**Markers**](?path=/docs/controls-taskgrid-gantt-modules-markers--overview) | \`createMarkersModule()\`, \`createMemoryMarkersModule()\` | The [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, for the project's markers | Today, the project's start and end, and dates of your own. |
+| [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) | \`createNonWorkingDaysModule()\`, \`createMemoryNonWorkingDaysModule()\` | \`TaskDatasetControl.Settings\`, to hide them | Weekends and holidays, shaded and left out of durations. |
+| [**Tooltip**](?path=/docs/controls-taskgrid-gantt-modules-tooltip--overview) | \`createTaskTooltipModule()\` | | What a bar says when the pointer is on it. |
+| [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
+| Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). |
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on [**Task grid › Modules**](?path=/docs/taskgrid-modules--overview). Their memory variants take the data itself.
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on [**Task grid › Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
 
 ## The library
 
@@ -52,7 +52,7 @@ A module of yours reaches the build with \`gantt.getLibrary()\`.
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules',
+    title: 'Controls/TaskGrid/Gantt/Modules',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

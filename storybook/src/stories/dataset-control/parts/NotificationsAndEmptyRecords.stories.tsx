@@ -9,7 +9,7 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 
 ## Show messages
 
-\`DatasetControl.Notifications\` shows the provider's load error, next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/form-get-started--overview). Put it between the header and the body.
+\`DatasetControl.Notifications\` shows the provider's load error, next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/controls-form-get-started--overview). Put it between the header and the body.
 
 \`\`\`tsx
 <DatasetControl.Notifications messages={[{ text: 'Deals are synced every night.', level: 'INFO' }]} />
@@ -38,18 +38,18 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`messages\` | \`INotificationMessage[]\` | None | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
-| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 \`EmptyRecords\`:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`children\` | \`ReactNode\` | None | What shows the records, drawn while there are some. |
-| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IEmptyRecordsUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('notifications')\` returns the notifications part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)).
+\`control.parts.get('notifications')\` returns the notifications part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)).
 
 | Member | Description |
 |---|---|
@@ -60,7 +60,7 @@ Two parts tell the user about the records: \`DatasetControl.Notifications\` show
 `
 
 const meta = {
-    title: 'DatasetControl/Parts/Notifications and empty records',
+    title: 'Controls/DatasetControl/Parts/Notifications and empty records',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -34,6 +34,16 @@ const accounts = new FetchXmlDataProvider({ fetchXml: '<fetch><entity name="acco
 
 \`MemoryDataProvider\` also takes a starting \`pageSize\`, \`sorting\`, \`filtering\` and \`searchQuery\`. Its search matches values that start with the query, or contain it when the query starts with \`*\`. \`FetchXmlDataProvider\` needs a page that can reach Dataverse, such as a model-driven app; \`setViewId(id)\` before the first load takes the columns of a saved view.
 
+## Hand it to controls
+
+Controls take their provider from around them, not from a prop. A [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads one and hands it to everything inside it. To hand down a provider you created yourself, wrap the controls in \`DataProviderScope\`:
+
+\`\`\`tsx
+<DataProviderScope provider={products}>
+    <Grid modules={[createClientSideRowModelModule()]} />
+</DataProviderScope>
+\`\`\`
+
 ## Load and read
 
 \`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so unsaved changes on them are lost.
@@ -160,7 +170,7 @@ stop()
 
 ### Draw a component from the provider
 
-\`useDataProviderEvents(events)\` returns the nearest provider and draws the component again whenever one of \`events\` fires:
+\`useDataProviderEvents(events)\` returns the provider around the component and draws the component again whenever one of \`events\` fires:
 
 \`\`\`tsx
 const SelectedCount = () => {
@@ -245,7 +255,7 @@ Extending \`MemoryDataProvider\` or \`FetchXmlDataProvider\`, override only the 
 `
 
 const meta = {
-    title: 'Data providers',
+    title: 'Concepts/Data providers',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -51,7 +51,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 
 ## Changing how it looks
 
-\`createNonWorkingDaysModule\` and \`createMemoryNonWorkingDaysModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createNonWorkingDaysModule\` and \`createMemoryNonWorkingDaysModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -59,7 +59,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 `
 
 const meta = {
-    title: 'TaskGrid/Gantt/Modules/Non-working days',
+    title: 'Controls/TaskGrid/Gantt/Modules/Non-working days',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

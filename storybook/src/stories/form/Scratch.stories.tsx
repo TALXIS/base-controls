@@ -32,7 +32,7 @@ const ScratchForm = () => {
 }
 
 const meta = {
-    title: 'Form/Dev/Scratch',
+    title: 'Dev/Form/Scratch',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

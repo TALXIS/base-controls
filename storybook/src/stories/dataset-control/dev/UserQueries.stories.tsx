@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { UserQueriesDatasetControl } from '../../../dataset-control/dev/UserQueriesDatasetControl'
 
 const meta = {
-    title: 'DatasetControl/Dev/User queries',
+    title: 'Dev/DatasetControl/User queries',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { XrmFormXmlBuilderStory } from './XrmFormXmlBuilderStory'
 
 const meta = {
-    title: 'Form/Xrm',
+    title: 'Controls/Form/Xrm',
     parameters: {
         layout: 'fullscreen',
         controls: { disable: true },

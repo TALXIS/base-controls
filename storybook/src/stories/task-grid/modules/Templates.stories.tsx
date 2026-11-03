@@ -49,7 +49,7 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 
 ## Changing how it looks
 
-\`createTemplatesModule\` and \`createMemoryTemplatesModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/grid-appearance--overview).
+\`createTemplatesModule\` and \`createMemoryTemplatesModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -58,7 +58,7 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 `
 
 const meta = {
-    title: 'TaskGrid/Modules/Templates',
+    title: 'Controls/TaskGrid/Modules/Templates',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

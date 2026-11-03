@@ -55,7 +55,7 @@ Menus, callouts, tooltips, pickers, panels and dialogs are such surfaces, and th
 | Below an \`ApplicationThemeProvider\` | The nearest application theme |
 | With none above | The theme around what opened it |
 
-For an area whose surfaces should look different, wrap it in an \`ApplicationThemeProvider\` of its own. The controls and this package's \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\` follow the application theme. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useApplicationTheme()\` returns.
+For an area whose surfaces should look different, wrap it in an \`ApplicationThemeProvider\` of its own. The controls and Base Controls' own \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\` follow the application theme. Fluent's own components take the theme around them, so for a surface of your own, use one of these or draw it in the theme \`useApplicationTheme()\` returns.
 
 {{story: Red rows}}
 
@@ -72,7 +72,7 @@ Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\
 `
 
 const meta = {
-    title: 'Theming',
+    title: 'Concepts/Theming',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

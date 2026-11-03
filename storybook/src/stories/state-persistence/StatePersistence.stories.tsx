@@ -55,7 +55,7 @@ const Planner = () => {
 //state is { planner: { draftNote: { text: '…' } } }
 \`\`\`
 
-The controls do the same: a DatasetControl hands each view its own scope, so a grid inside it keeps a scroll position per view. The dictionary next to the example shows the tree.
+The controls do the same: a DatasetControl hands each view its own scope, so a grid inside it keeps a scroll position per view (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)). The dictionary next to the example shows the tree.
 
 {{story: Come back where you left off}}
 
@@ -79,7 +79,7 @@ const DraftNote = () => {
 
 ## Keep state across sessions
 
-A store lives as long as its \`StateProvider\`, or the page without one. To keep state across sessions, save the dictionary, such as the one a PCF host hands its control:
+A store lives as long as its \`StateProvider\`, or the page without one. To keep state across sessions, save the dictionary, such as the one a PCF host hands its control (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)):
 
 \`\`\`tsx
 //init(context, notifyOutputChanged, state)
@@ -99,7 +99,7 @@ Entries are plain data, so the dictionary can also be saved as JSON, such as in 
 `
 
 const meta = {
-    title: 'State persistence',
+    title: 'Concepts/State persistence',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

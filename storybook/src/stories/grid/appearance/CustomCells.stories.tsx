@@ -21,7 +21,7 @@ Either way, your cell keeps what the grid gives every cell: themes, validation e
 
 ## Changing how it looks
 
-\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview).
+\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 {{story: Edit descriptions as rich text}}
 
@@ -36,7 +36,7 @@ Either way, your cell keeps what the grid gives every cell: themes, validation e
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
 | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
 
-The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`; in an editor, \`columnControl\` draws the input. Group rows and totals draw their own cells, restyled through the grouping and aggregation modules: see [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview).
+The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`; in an editor, \`columnControl\` draws the input. Group rows and totals draw their own cells, restyled through the grouping and aggregation modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Write a cell of your own
 
@@ -83,7 +83,7 @@ Call these React hooks in a component inside the cell, so it redraws when a valu
 `
 
 const meta = {
-    title: 'Grid/Appearance/Custom cells',
+    title: 'Controls/Grid/Appearance/Custom cells',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

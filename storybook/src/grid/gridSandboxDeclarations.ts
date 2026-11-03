@@ -2088,8 +2088,8 @@ interface IPcfContext {
 declare function usePcfContext(): IPcfContext;
 
 /** Hands the provider to every grid below it. */
-declare const DataProviderContextProvider: (props: { provider: IDataProvider; children?: React.ReactNode }) => JSX.Element;
-/** Throws outside DataProviderContextProvider. */
+declare const DataProviderScope: (props: { provider: IDataProvider; children?: React.ReactNode }) => JSX.Element;
+/** Throws outside DataProviderScope. */
 declare function useDataProvider(): IDataProvider;
 /** Returns the provider and draws the component again on each of the events, read once at mount. */
 declare function useDataProviderEvents(events: (keyof IDataProviderEventListeners)[]): IDataProvider;

@@ -28,7 +28,7 @@ const ReactComposeOverviewStory = () => {
 }
 
 const meta = {
-    title: 'Form/React compose',
+    title: 'Controls/Form/React compose',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

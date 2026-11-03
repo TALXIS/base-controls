@@ -5,7 +5,7 @@ import { RootTaskGrid } from '../../../task-grid/dev/RootTaskGrid'
 import { StressTaskGrid } from '../../../task-grid/dev/StressTaskGrid'
 
 const meta = {
-    title: 'TaskGrid/Dev/Core',
+    title: 'Dev/TaskGrid/Core',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

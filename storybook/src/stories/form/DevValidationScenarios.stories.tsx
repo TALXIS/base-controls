@@ -83,7 +83,7 @@ const HiddenTabValidationRegistrationScenario = () => {
 }
 
 const meta = {
-    title: 'Form/Dev/Validation scenarios',
+    title: 'Dev/Form/Validation scenarios',
     tags: ['dev-only'],
     parameters: {
         controls: { disable: true },

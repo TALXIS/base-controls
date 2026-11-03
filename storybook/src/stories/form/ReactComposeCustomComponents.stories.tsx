@@ -991,7 +991,7 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
 }
 
 const meta = {
-    title: 'Form/React compose/Custom Components',
+    title: 'Controls/Form/React compose/Custom Components',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

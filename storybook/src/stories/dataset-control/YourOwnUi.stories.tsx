@@ -71,14 +71,14 @@ A part of your own is any component you put inside the control: a total in the f
 | Hook | Description |
 |---|---|
 | \`useDataProviderEvents(events)\` | The provider, drawing the component again on each of the provider's \`events\`. |
-| \`useDataProvider()\` | The provider, without drawing again. More under *Load and read* and *Events* on [**Data providers**](?path=/docs/data-providers--overview). |
-| \`useDatasetControl()\` | The control, to switch views or reach the built-in parts. See [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview). |
+| \`useDataProvider()\` | The provider, without drawing again. More under *Load and read* and *Events* on [**Data providers**](?path=/docs/concepts-data-providers--overview). |
+| \`useDatasetControl()\` | The control, to switch views or reach the built-in parts. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). |
 | \`useDatasetControlModule(name)\` | A module the control loaded, such as \`'userQueries'\`; throws when it is not loaded. |
-| \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See *Keep your own part's state* on [**State**](?path=/docs/datasetcontrol-state--overview). |
+| \`useControlStateStore(stateKey)\` | Where the component keeps what it should remember, per view. See *Keep your own part's state* on [**State**](?path=/docs/controls-datasetcontrol-state--overview). |
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it except the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
-| \`useCompact()\` | Whether the header is compact. See *Your own part in a compact header* on [**Layout**](?path=/docs/datasetcontrol-layout--overview). |
-| \`useDatasetControlPart(key, onCreate)\` | Creates an object once and registers it under one of the part keys on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview), while the component is mounted. |
+| \`useCompact()\` | Whether the header is compact. See *Your own part in a compact header* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
+| \`useDatasetControlPart(key, onCreate)\` | Creates an object once and registers it under one of the part keys on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview), while the component is mounted. |
 
 ### A part in a region
 
@@ -98,7 +98,7 @@ const SelectedValue = () => {
 
 ## Your own collection view
 
-The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. Different views can be drawn differently: let each view say which UI it uses in its \`data\`, and pick it in your body component. See [**Views**](?path=/docs/datasetcontrol-views--overview).
+The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. Different views can be drawn differently: let each view say which UI it uses in its \`data\`, and pick it in your body component. See [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 \`\`\`tsx
 const ProductsBody = () => {
@@ -118,13 +118,13 @@ const ProductsBody = () => {
 | \`onRecordsSelected\` | Raised when the selection changes. |
 | \`onRecordColumnValueChanged\` | Raised when a record's value changes. |
 
-Pass the events your view shows to \`useDataProviderEvents\`, keep what it should remember, such as its scroll, with \`useControlStateStore\`, and wrap it in \`DatasetControl.EmptyRecords\` for an empty state (see [**Notifications and empty records**](?path=/docs/datasetcontrol-parts-notifications-and-empty-records--overview)). Edit columns changes the provider's columns, so offer it only when your view shows them. Every view switch mounts the body anew, so it reads the view once.
+Pass the events your view shows to \`useDataProviderEvents\`, keep what it should remember, such as its scroll, with \`useControlStateStore\`, and wrap it in \`DatasetControl.EmptyRecords\` for an empty state (see [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview)). Edit columns changes the provider's columns, so offer it only when your view shows them. Every view switch mounts the body anew, so it reads the view once.
 
 {{story: A different UI per view}}
 `
 
 const meta = {
-    title: 'DatasetControl/Your own UI',
+    title: 'Controls/DatasetControl/Your own UI',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

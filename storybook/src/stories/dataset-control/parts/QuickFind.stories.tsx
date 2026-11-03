@@ -17,17 +17,17 @@ const DESCRIPTION = `
 
 Type and press Enter, or the search icon, to search; the cross clears the search. Clicking the field opens a callout listing the columns it searches. A leading \`*\` matches anywhere in the value, more slowly, and the callout warns about it. The placeholder names the records from the provider's metadata, or says *records*. The field is disabled while the provider loads, and when there is no column to search. Searching asks first when the records have unsaved changes.
 
-In a compact header the field collapses to a search button, with a dot while it holds a query; clicking it opens the field across the whole header. See *Fit a narrow screen* on [**Layout**](?path=/docs/datasetcontrol-layout--overview).
+In a compact header the field collapses to a search button, with a dot while it holds a query; clicking it opens the field across the whole header. See *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Props
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). Put a query in it and search, as if the user typed it:
+\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Put a query in it and search, as if the user typed it:
 
 \`\`\`tsx
 const quickFind = control.parts.get('quickFind')
@@ -47,7 +47,7 @@ quickFind.search()
 `
 
 const meta = {
-    title: 'DatasetControl/Parts/Quick find',
+    title: 'Controls/DatasetControl/Parts/Quick find',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

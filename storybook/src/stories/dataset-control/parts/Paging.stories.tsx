@@ -29,13 +29,13 @@ Without a total from the provider, the range ends with a \`+\` while there are m
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. Read at mount. |
-| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 \`Pagination\` takes \`components\` the same way.
 
 ## From your code
 
-\`control.parts.get('pagination')\` returns the page buttons, and \`control.parts.get('pageSizeSwitcher')\` the page size switcher, once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/datasetcontrol-talking-to-the-control--overview)). Paging the provider directly is under *Sort, filter, search and page* on [**Data providers**](?path=/docs/data-providers--overview).
+\`control.parts.get('pagination')\` returns the page buttons, and \`control.parts.get('pageSizeSwitcher')\` the page size switcher, once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Paging the provider directly is under *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 \`\`\`tsx
 control.parts.get('pageSizeSwitcher').setPageSize(100)
@@ -63,7 +63,7 @@ control.parts.get('pagination').moveFirst()
 `
 
 const meta = {
-    title: 'DatasetControl/Parts/Paging',
+    title: 'Controls/DatasetControl/Parts/Paging',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -76,7 +76,7 @@ const XrmOverviewStory = () => {
 }
 
 const meta = {
-    title: 'Form/Xrm/Overview',
+    title: 'Controls/Form/Xrm/Overview',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

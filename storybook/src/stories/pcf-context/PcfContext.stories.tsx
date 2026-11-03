@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DialogsExample, FormatExample } from './pcfContextExamples'
 
 const DESCRIPTION = `
-The context ties the controls to the host they run in. Through it, every control below one \`PcfContextProvider\` shares the same user, language and formatting, and calls on the host to open dialogs and records or to reach its data. It takes the shape of a PCF context, so a Power Apps host's own fits it as it is. \`usePcfContext()\` reads it anywhere below the provider, and a control without one throws.
+The context ties the controls to the host they run in. Through it, every control below one \`PcfContextProvider\` shares the same user, language and formatting, and calls on the host to open dialogs and records or to reach its data. It takes the shape of a PCF context, so a Power Apps host's own fits it as it is. \`usePcfContext()\` reads it anywhere below the provider. The controls need one, so put it at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview).
 
 \`\`\`tsx
 import { PcfContextProvider } from '@talxis/base-controls'
@@ -46,7 +46,7 @@ The context is built again on every render, so a change of \`userSettings\` appl
 `
 
 const meta = {
-    title: 'PCF context',
+    title: 'Concepts/PCF context',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

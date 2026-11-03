@@ -17,9 +17,9 @@ const controlModules = React.useMemo(() => [
 
 | Reader | What it reads |
 |---|---|
-| \`DataverseTaskStore\` | \`project\` in its FetchXML, and the task's lookup to the project, filled in on every new task. See [**Loading tasks**](?path=/docs/taskgrid-loading-tasks--overview). |
-| \`createDataverseLookupManyModule\` | \`project\` in each column's FetchXML. See [**Lookup many**](?path=/docs/taskgrid-modules-lookup-many--overview). |
-| The Gantt's markers | The project's start and end, as two markers. See [**Gantt › Markers**](?path=/docs/taskgrid-gantt-modules-markers--overview). |
+| \`DataverseTaskStore\` | \`project\` in its FetchXML, and the task's lookup to the project, filled in on every new task. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
+| \`createDataverseLookupManyModule\` | \`project\` in each column's FetchXML. See [**Lookup many**](?path=/docs/controls-taskgrid-modules-lookup-many--overview). |
+| The Gantt's markers | The project's start and end, as two markers. See [**Gantt › Markers**](?path=/docs/controls-taskgrid-gantt-modules-markers--overview). |
 | The Gantt's *Zoom to fit* | The project's dates, when no task has any. |
 | Your code | \`taskRuntime.services.get('datasetControl').modules.find('project')\`, with \`getId()\`, \`getName()\`, \`getEntityName()\`, \`getStartDate()\`, \`getEndDate()\` and \`getData()\`. |
 
@@ -48,7 +48,7 @@ createDataverseProjectModule({ entityName: 'msdyn_project', id: projectId, start
 `
 
 const meta = {
-    title: 'TaskGrid/Modules/Project',
+    title: 'Controls/TaskGrid/Modules/Project',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

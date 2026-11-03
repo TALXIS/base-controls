@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { SwitchLanguageExample } from '../../localization/localizationExamples'
 
 const DESCRIPTION = `
-Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap any part of the page in \`LabelsProvider\` to translate or reword the labels below it.
+Every string the controls draw is a *label*: a key such as \`'taskGrid.new'\` with an English default. Wrap the application in \`LabelsProvider\` to translate or reword the labels below it, or wrap a single part of it to reword just that part.
 
 \`\`\`tsx
 <LabelsProvider labels={{ ...CZECH_LABELS, 'taskGrid.new': 'Přidat práci' }}>
@@ -25,7 +25,7 @@ Below, the full task grid in English, Czech, Japanese or a wording of your own. 
 | \`{{ placeholders }}\` | Keep them in a translation |
 | Changing labels after mount | Because of memoization, a change may not show until the affected component draws again. Trigger that on the component directly: components have an API for it, such as the grid's \`cells.render()\` and \`columns.headers.render()\` |
 | View, column and option names | Data, not labels: the demo translates them in \`columns.ts\` |
-| Dates and numbers | Follow the culture in \`PcfContextProvider\`'s \`userSettings\` |
+| Dates and numbers | Follow the user's culture from the [**PCF context**](?path=/docs/concepts-pcf-context--overview) |
 
 ## Add a supported language
 
@@ -63,7 +63,7 @@ const Invoice = (props: IInvoiceProps) => {
 `
 
 const meta = {
-    title: 'Localization',
+    title: 'Concepts/Localization',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

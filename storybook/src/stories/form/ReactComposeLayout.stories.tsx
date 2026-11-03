@@ -311,7 +311,7 @@ const renderLayoutExample = (example: ILayoutExample) => {
 }
 
 const meta = {
-    title: 'Form/React compose/Layout',
+    title: 'Controls/Form/React compose/Layout',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

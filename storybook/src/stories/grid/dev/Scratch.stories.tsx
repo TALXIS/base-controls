@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { IScratchGridProps, ScratchGrid } from '../../../grid/dev/ScratchGrid'
 
 const meta = {
-    title: 'Grid/Dev/Scratch',
+    title: 'Dev/Grid/Scratch',
     tags: ['dev-only'],
     component: ScratchGrid,
     parameters: {

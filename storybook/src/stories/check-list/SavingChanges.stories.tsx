@@ -19,12 +19,12 @@ The checklist changes the records of its provider and asks the provider to save 
 | Names an item in the bottom row | Adds a record with \`provider.newRecord()\` after the last item, and sets its \`stackRank\`. |
 | Deletes an item | Asks for confirmation, then calls \`provider.deleteRecords([recordId])\`. |
 
-- With the default auto-save, every change but a delete saves its record at once. Without auto-save, changes stay on the records until you save them: see *Save* on [**Editing**](?path=/docs/grid-modules-editing--overview).
+- With the default auto-save, every change but a delete saves its record at once. Without auto-save, changes stay on the records until you save them: see *Save* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 - A delete goes to the provider straight away, with or without auto-save. The delete button is there only while the editing module is on.
 
 ## Save to your backend
 
-The provider decides where a save goes. To send the checklist's changes to your API, extend the provider and override \`onRecordSave\` and \`onRecordsDelete\`: see *Your own provider* on [**Data providers**](?path=/docs/data-providers--overview). \`record.isNew()\` tells an item added in the bottom row from one that existed.
+The provider decides where a save goes. To send the checklist's changes to your API, extend the provider and override \`onRecordSave\` and \`onRecordsDelete\`: see *Your own provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview). \`record.isNew()\` tells an item added in the bottom row from one that existed.
 
 ## React to changes
 
@@ -36,11 +36,11 @@ Listen on the provider, or through the grid's event props, which \`CheckList\` t
 | \`onAfterRecordSaved(result)\` | Once the provider has saved a record, or refused it. |
 | \`onAfterRecordsDeleted(results)\` | After a delete, on the provider. |
 
-Every provider event is under *Events* on [**Data providers**](?path=/docs/data-providers--overview), and every grid event on [**Props and events**](?path=/docs/grid-props-and-events--overview).
+Every provider event is under *Events* on [**Data providers**](?path=/docs/concepts-data-providers--overview), and every grid event on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 `
 
 const meta = {
-    title: 'Checklist/Saving changes',
+    title: 'Controls/Checklist/Saving changes',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { IParsingScratchGridProps, ParsingScratchGrid } from '../../../grid/dev/ParsingScratchGrid'
 
 const meta = {
-    title: 'Grid/Dev/Parsing',
+    title: 'Dev/Grid/Parsing',
     tags: ['dev-only'],
     component: ParsingScratchGrid,
     parameters: {

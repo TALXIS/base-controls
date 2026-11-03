@@ -430,7 +430,7 @@ const renderCustomComponentsExample = (example: IXrmCustomComponentsExample) => 
 }
 
 const meta = {
-    title: 'Form/Xrm/Custom Components',
+    title: 'Controls/Form/Xrm/Custom Components',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

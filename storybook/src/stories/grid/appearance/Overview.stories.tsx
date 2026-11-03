@@ -16,14 +16,14 @@ The grid draws in your Fluent theme. On top of it you can size it, pick a densit
 | A cell's colours and fonts | \`context.cell.onGetTheme\` in \`colDefs\`, or \`cells.registerCellTheme\` in a module | Each time the cell draws | *Colour cells by their data* below |
 | A header's colours | \`context.header.onGetTheme\`, or \`columns.headers.registerColumnHeaderTheme\` | Each time the header draws | *Colour column headers* below |
 | Lines, borders and AG Grid's own colours | \`gridTheme.registerTheme\` in a module | At mount | *Change the AG Grid theme* below |
-| One row's height, or a class on rows | \`rowSettings.onGetHeight\`, \`rows.registerRowClass\` | Each time the row draws | [**Hooks**](?path=/docs/grid-extending-hooks--overview) |
-| What a header shows beside its name, its menu, a cell's commands | \`context.header.onGetAdornments\`, \`onGetMenuSections\`, \`context.cell.onGetCommands\` | Each time it draws | [**Columns**](?path=/docs/grid-columns--overview) |
-| A column's cells and editor | \`cellRendererParams\` or \`cellRenderer\`, \`cellEditor\` in \`colDefs\` | With the columns | [**Custom cells**](?path=/docs/grid-appearance-custom-cells--overview) |
-| A column's header | \`headerComponentParams\` or \`headerComponent\` in \`colDefs\` | With the columns | [**Custom headers**](?path=/docs/grid-appearance-custom-headers--overview) |
-| The loading and empty overlays, the loading and error rows | \`components\` on \`<Grid>\` | On every render | [**Overlays and rows**](?path=/docs/grid-appearance-overlays-and-rows--overview) |
-| Sort arrows, filter funnels and callout, group cells, totals | the module's \`components\` option | At mount | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview), [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
-| The save status, the lock column, the checkboxes | the module's column in \`colDefs\` | With the columns | [**Editing**](?path=/docs/grid-modules-editing--overview), [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
-| Every text the grid shows | label keys through \`LabelsProvider\` | On every render | [**Localization**](?path=/docs/localization--overview) |
+| One row's height, or a class on rows | \`rowSettings.onGetHeight\`, \`rows.registerRowClass\` | Each time the row draws | [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
+| What a header shows beside its name, its menu, a cell's commands | \`context.header.onGetAdornments\`, \`onGetMenuSections\`, \`context.cell.onGetCommands\` | Each time it draws | [**Columns**](?path=/docs/controls-grid-columns--overview) |
+| A column's cells and editor | \`cellRendererParams\` or \`cellRenderer\`, \`cellEditor\` in \`colDefs\` | With the columns | [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview) |
+| A column's header | \`headerComponentParams\` or \`headerComponent\` in \`colDefs\` | With the columns | [**Custom headers**](?path=/docs/controls-grid-appearance-custom-headers--overview) |
+| The loading and empty overlays, the loading and error rows | \`components\` on \`<Grid>\` | On every render | [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
+| Sort arrows, filter funnels and callout, group cells, totals | the module's \`components\` option | At mount | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview), [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
+| The save status, the lock column, the checkboxes | the module's column in \`colDefs\` | With the columns | [**Editing**](?path=/docs/controls-grid-modules-editing--overview), [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
+| Every text the grid shows | label keys through \`LabelsProvider\` | On every render | [**Localization**](?path=/docs/concepts-localization--overview) |
 
 ## Changing how it looks
 
@@ -56,7 +56,7 @@ With a \`height\`, the grid is exactly that tall and its rows scroll inside it, 
 | \`enableZebra\` | \`true\` | Shades every other row. |
 | \`enableOptionSetColors\` | \`false\` | Draws option set and two-options values as tags in their option's colour. |
 
-All three are read at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview).
+All three are read at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 {{story: Switch the density}}
 
@@ -64,11 +64,11 @@ All three are read at mount: see *Change a prop that is read at mount* on [**Pro
 
 A column colours its cells with \`context.cell.onGetTheme(theme, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
 
-\`theme.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow. A new background does not change the text colour, so set \`text\` too; \`getTextColorForBackground(background)\` returns a readable one. Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables. The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview).
+\`theme.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow. A new background does not change the text colour, so set \`text\` too; \`getTextColorForBackground(background)\` returns a readable one. Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables. The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 {{story: Flag tickets about to breach}}
 
-Zebra rows, grouping and totals colour rows too. A row hook at the default priority loses to grouping while the rows are grouped, so register it at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/grid-extending-hooks--overview)).
+Zebra rows, grouping and totals colour rows too. A row hook at the default priority loses to grouping while the rows are grouped, so register it at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
 {{story: Tint escalated tickets}}
 
@@ -84,13 +84,13 @@ A column colours its header with \`context.header.onGetTheme(theme)\`. To colour
 
 ## Change the AG Grid theme
 
-Under the cells, AG Grid draws the grid itself: the row lines, hover and selection, the focus and range borders, and its popups. The grid builds that theme from your Fluent theme as it mounts, with no lines between columns and no frame. To change it, register \`registerTheme(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above rather than AG Grid's parameters. The mapping and the parameters are under *The AG Grid theme* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview).
+Under the cells, AG Grid draws the grid itself: the row lines, hover and selection, the focus and range borders, and its popups. The grid builds that theme from your Fluent theme as it mounts, with no lines between columns and no frame. To change it, register \`registerTheme(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above rather than AG Grid's parameters. The mapping and the parameters are under *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview).
 
 {{story: Draw lines between columns}}
 `
 
 const meta = {
-    title: 'Grid/Appearance',
+    title: 'Controls/Grid/Appearance',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

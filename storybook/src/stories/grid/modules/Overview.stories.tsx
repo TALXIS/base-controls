@@ -21,32 +21,32 @@ Editing, selecting, sorting, filtering, grouping, totals and copying are modules
 </DatasetControl>
 \`\`\`
 
-\`modules\` and every option you pass to a factory are read once, at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/grid-props-and-events--overview). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
+\`modules\` and every option you pass to a factory are read once, at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
 
 ## The modules
 
 | Name | Factory | What it adds | Page |
 |---|---|---|---|
 | \`rowModel\` | \`createClientSideRowModelModule()\`, \`createServerSideRowModelModule()\` | How the grid gets its rows. Required; the server side needs AG Grid Enterprise. | *Row models* below |
-| \`editing\` | \`createEditingModule()\` | Editing in place, a save status per row, locks and saving | [**Editing**](?path=/docs/grid-modules-editing--overview) |
-| \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
-| \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
-| \`clipboard\` | \`createClipboardModule()\` | Copying and pasting cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/grid-modules-selection-and-clipboard--overview) |
-| \`sorting\` | \`createSortingModule()\` | Sorting from a column's menu | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview) |
-| \`filtering\` | \`createFilteringModule()\` | Filtering from a column's menu | [**Sorting and filtering**](?path=/docs/grid-modules-sorting-and-filtering--overview) |
-| \`grouping\` | \`createGroupingModule()\` | Grouping the rows by a column's values. AG Grid Enterprise. | [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
-| \`aggregation\` | \`createAggregationModule()\` | A totals row, and totals in group rows | [**Grouping and totals**](?path=/docs/grid-modules-grouping-and-totals--overview) |
-| \`legacyClientApiCompatibility\` | \`createLegacyClientApiCompatibilityModule()\` | What client scripts set on records: locks, colours, notifications, loading and controls | [**Legacy client API**](?path=/docs/grid-modules-legacy-client-api--overview) |
+| \`editing\` | \`createEditingModule()\` | Editing in place, a save status per row, locks and saving | [**Editing**](?path=/docs/controls-grid-modules-editing--overview) |
+| \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
+| \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
+| \`clipboard\` | \`createClipboardModule()\` | Copying and pasting cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
+| \`sorting\` | \`createSortingModule()\` | Sorting from a column's menu | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) |
+| \`filtering\` | \`createFilteringModule()\` | Filtering from a column's menu | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) |
+| \`grouping\` | \`createGroupingModule()\` | Grouping the rows by a column's values. AG Grid Enterprise. | [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
+| \`aggregation\` | \`createAggregationModule()\` | A totals row, and totals in group rows | [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
+| \`legacyClientApiCompatibility\` | \`createLegacyClientApiCompatibilityModule()\` | What client scripts set on records: locks, colours, notifications, loading and controls | [**Legacy client API**](?path=/docs/controls-grid-modules-legacy-client-api--overview) |
 | \`license\` | \`createLicenseModule({ key })\` | Your AG Grid Enterprise licence | *AG Grid Enterprise and the licence* below |
-| Your own | an \`IGridModule\` | Anything else | [**Write a module**](?path=/docs/grid-extending-write-a-module--overview) |
+| Your own | an \`IGridModule\` | Anything else | [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) |
 
-Which columns offer a feature comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\` (see [**Data**](?path=/docs/grid-data--overview)). Once loaded, a module is reached as \`grid.modules.find(name)\`, or with \`useGridModule(name)\` inside what the grid draws; each module's page lists its members under *From your code*.
+Which columns offer a feature comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\` (see [**Data**](?path=/docs/controls-grid-data--overview)). Once loaded, a module is reached as \`grid.modules.find(name)\`, or with \`useGridModule(name)\` inside what the grid draws; each module's page lists its members under *From your code*.
 
 ## Text and looks
 
-Modules take no text of their own: to change it, see [**Localization**](?path=/docs/localization--overview).
+Modules take no text of their own: to change it, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw. The editing and row selection modules draw columns of their own, which you restyle through \`colDefs\` with the cells they export. Every entry point is mapped on [**Appearance**](?path=/docs/grid-appearance--overview).
+Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw. The editing and row selection modules draw columns of their own, which you restyle through \`colDefs\` with the cells they export. Every entry point is mapped on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
 ## Switch a module on or off
 
@@ -69,7 +69,7 @@ const OrdersGrid = (props: IOrdersGridProps) => <DatasetControl onLoad={loadOrde
 </DatasetControl>
 \`\`\`
 
-What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too. When grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\` and call \`provider.refresh()\`; see *Groups and totals* on [**Data providers**](?path=/docs/data-providers--overview).
+What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too. When grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\` and call \`provider.refresh()\`; see *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## AG Grid Enterprise and the licence
 
@@ -95,7 +95,7 @@ const licenseKey = context.parameters.LicenseKey.raw
 
 ## Row models
 
-The row model decides how the grid gets its rows. Both show the provider's current page (see *Paging* on [**Data**](?path=/docs/grid-data--overview)), and without grouping they show the same rows. They differ once the rows are grouped:
+The row model decides how the grid gets its rows. Both show the provider's current page (see *Paging* on [**Data**](?path=/docs/controls-grid-data--overview)), and without grouping they show the same rows. They differ once the rows are grouped:
 
 | Row model | A group's records | Opening a group | Requests to your data source |
 |---|---|---|---|
@@ -108,7 +108,7 @@ Use the client side by default, and the server side when users group by a column
 `
 
 const meta = {
-    title: 'Grid/Modules',
+    title: 'Controls/Grid/Modules',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

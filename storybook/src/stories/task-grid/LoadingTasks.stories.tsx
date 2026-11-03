@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-The control's \`onLoad\` returns the tasks of the view the user is on: a task provider, and the field mapping that tells it which columns make the tree. It is called at mount, on every view switch and on every reload, as on a DatasetControl (see [**DatasetControl › Loading data**](?path=/docs/datasetcontrol-loading-data--overview)). A task grid loads every task of the view at once.
+The control's \`onLoad\` returns the tasks of the view the user is on: a task provider, and the field mapping that tells it which columns make the tree. It is called at mount, on every view switch and on every reload, as on a DatasetControl (see [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)). A task grid loads every task of the view at once.
 
 \`\`\`tsx
 const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
@@ -20,7 +20,7 @@ const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITas
 
 | Parameter | Description |
 |---|---|
-| \`view\` | The view to load. The control applies its \`data\` for you. See [**Views and the tree**](?path=/docs/taskgrid-views-and-the-tree--overview). |
+| \`view\` | The view to load. The control applies its \`data\` for you. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). |
 | \`taskRuntime\` | The control's task runtime. Pass it to the data source. |
 
 | Result | Default | Description |
@@ -29,7 +29,7 @@ const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITas
 | \`fieldMapping\` | Required | Which columns make the tree. See *Field mapping* below. |
 | \`rootTaskId\` | None | Shows only the tasks under this one. See *Start from a task* below. |
 
-Throw from \`onLoad\` and the control shows the error, with *Try again*. See [**DatasetControl › Error handling**](?path=/docs/datasetcontrol-error-handling--overview).
+Throw from \`onLoad\` and the control shows the error, with *Try again*. See [**DatasetControl › Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 
 ## Field mapping
 
@@ -40,7 +40,7 @@ Throw from \`onLoad\` and the control shows the error, with *Try again*. See [**
 | \`stackRank\` | Yes | The task's place among its siblings: a LexoRank string, such as \`0\\|hzzzzz:\`. The grid writes it when a task is created or moved. \`StackRank.between(previous, next)\` makes one. |
 | \`stateCode\` | No, \`'statecode'\` | \`0\` is active. Inactive tasks are read-only, get no **+**, and *Hide inactive tasks* hides them. |
 | \`percentComplete\` | No | Drawn as a progress bar. |
-| \`startDate\`, \`endDate\` | No | The task's dates. The [**Gantt**](?path=/docs/taskgrid-gantt-get-started--overview) needs both. |
+| \`startDate\`, \`endDate\` | No | The task's dates. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) needs both. |
 | \`duration\` | No | Minutes, as a duration column holds them. A day holds \`hoursPerDay\` hours. |
 
 Every other column is an ordinary column of the view.
@@ -96,7 +96,7 @@ const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITas
 
 | Parameter | Description |
 |---|---|
-| \`fetchXml\` | Required. Selects the tasks. It is a Liquid template over \`project\`, from the [**Project**](?path=/docs/taskgrid-modules-project--overview) module, and \`hostRecord\`. |
+| \`fetchXml\` | Required. Selects the tasks. It is a Liquid template over \`project\`, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, and \`hostRecord\`. |
 | \`hostRecord\` | \`{ entityName, id?, data? }\`, the record the grid sits on, such as the one the form shows. |
 | \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`onGetParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
 | \`onGetNewTaskDefaults\` | \`(params) => IRawRecord\`, values every new task starts with. |
@@ -129,7 +129,7 @@ Throw "Not implemented." from a method your backend does not support.
 `
 
 const meta = {
-    title: 'TaskGrid/Loading tasks',
+    title: 'Controls/TaskGrid/Loading tasks',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

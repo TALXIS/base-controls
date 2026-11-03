@@ -36,7 +36,7 @@ Then render it like the component it wraps:
 - The key, \`'tasks'\`, is any string unique within your bundle.
 - On the page, \`IsolatedTasks\` renders an iframe, loads your script into it, and renders the content there with the props on every render.
 - Inside a frame, \`IsolatedTasks\` renders the content directly.
-- The frame starts empty: wrap the content in the providers it needs, such as \`PcfContextProvider\` and \`ThemeProvider\`, and set up any global state a library needs once per page, such as registered icons or fonts.
+- The frame starts empty: wrap the content in the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and set up any global state a library needs once per page, such as registered icons or fonts.
 
 ## Options
 
@@ -75,7 +75,7 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 `
 
 const meta = {
-    title: 'Control isolation',
+    title: 'Concepts/Control isolation',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

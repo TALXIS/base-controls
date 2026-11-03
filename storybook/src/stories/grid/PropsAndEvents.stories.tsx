@@ -5,26 +5,26 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { TicketPreviewPaneExample, WatchEveryEventExample } from '../../grid/examples/propsAndEventsExamples'
 
 const DESCRIPTION = `
-Every prop of \`<Grid />\`, and every event it fires. How to use each is on the page each row links to. The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/localization--overview).
+Every prop of \`<Grid />\`, and every event it fires. How to use each is on the page each row links to. The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderContextProvider\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/grid-get-started--overview).
+The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderScope\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/controls-grid-get-started--overview).
 
 ## Props
 
 | Prop | Type | Default | Read | Description |
 |---|---|---|---|---|
-| \`modules\` | \`IGridModule[]\` | Required | At mount | The features the grid has, in load order. A row model is the one every grid needs. See [**Modules**](?path=/docs/grid-modules--overview). |
-| \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. See *Data types* on [**Data**](?path=/docs/grid-data--overview). |
-| \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. See [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. See [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`rowHeight\` | \`number\` | \`42\` | At mount | How tall a row is, in pixels. See [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows the grid grows to before it scrolls, while \`height\` is not set. See *Size the grid* on [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. Ignored inside a DatasetControl that has a height. See *Size the grid* on [**Appearance**](?path=/docs/grid-appearance--overview). |
+| \`modules\` | \`IGridModule[]\` | Required | At mount | The features the grid has, in load order. A row model is the one every grid needs. See [**Modules**](?path=/docs/controls-grid-modules--overview). |
+| \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. See *Data types* on [**Data**](?path=/docs/controls-grid-data--overview). |
+| \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. See [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. See [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`rowHeight\` | \`number\` | \`42\` | At mount | How tall a row is, in pixels. See [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows the grid grows to before it scrolls, while \`height\` is not set. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. Ignored inside a DatasetControl that has a height. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`className\` | \`string\` | None | Live | Added to the grid's root element, beside its own classes. |
-| \`components\` | \`IGridComponents\` | \`{}\` | Live | Replaces parts of what the grid draws: \`overlays.loading\`, \`overlays.emptyRecords\`, \`rows.loading\` and \`rows.error\`. See [**Overlays and rows**](?path=/docs/grid-appearance-overlays-and-rows--overview). How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/grid-appearance--overview). |
-| \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/grid-columns--overview). |
-| \`stateKey\` | \`string\` | None | At mount | The key the grid keeps the user's place under: the scroll position, the open groups and the focused cell. Per view inside a DatasetControl. See [**State**](?path=/docs/grid-state--overview). |
-| \`rowSettings\` | \`IGridRowSettings\` | None | Each time a row is drawn | \`onGetHeight\` sets \`result.height\`, in pixels, for one row. With the editing module, \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/grid-modules-editing--overview). |
+| \`components\` | \`IGridComponents\` | \`{}\` | Live | Replaces parts of what the grid draws: \`overlays.loading\`, \`overlays.emptyRecords\`, \`rows.loading\` and \`rows.error\`. See [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/controls-grid-columns--overview). |
+| \`stateKey\` | \`string\` | None | At mount | The key the grid keeps the user's place under: the scroll position, the open groups and the focused cell. Per view inside a DatasetControl. See [**State**](?path=/docs/controls-grid-state--overview). |
+| \`rowSettings\` | \`IGridRowSettings\` | None | Each time a row is drawn | \`onGetHeight\` sets \`result.height\`, in pixels, for one row. With the editing module, \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | The provider's \`openDatasetItem\` | Live | Replaces opening a record from a link or a double-click. Receives \`{ record, reference, columnName }\`. |
 | \`onReady\`, \`onDataLoaded\` and the other events | Functions | None | Live | See *Events* below. |
 
@@ -49,8 +49,8 @@ Every event of the grid itself is a prop, and a module's events come in through 
 | \`onRowClicked\` | \`record: IRecord\` | When the user clicks a row. Group rows and the totals row fire it too. With the row selection module, a click on the checkbox, on a cell's commands, or a plain click on a group row does not. |
 | \`onFocusedCellChanged\` | \`record?: IRecord\`, \`columnName?: string\` | Each time a cell takes focus, even one that already had it. Both are \`undefined\` when the focus lands outside the rows. |
 | \`onColumnsChanged\` | \`columns: IColumn[]\` | After the user resizes or moves a column, with the provider's columns, which hold the new \`visualSizeFactor\` or \`order\`. |
-| \`onReady\` | \`grid: IGrid\` | Once, when AG Grid is ready. The grid is what your code talks to: see [**Talking to the grid**](?path=/docs/grid-talking-to-the-grid--overview). |
-| \`onDestroyed\` | \`grid: IGrid\` | Once, as AG Grid is about to be destroyed. The \`gridApi\` service is already gone: to read AG Grid before it goes, see *AG Grid's api* on [**AG Grid**](?path=/docs/grid-extending-ag-grid--overview). |
+| \`onReady\` | \`grid: IGrid\` | Once, when AG Grid is ready. The grid is what your code talks to: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| \`onDestroyed\` | \`grid: IGrid\` | Once, as AG Grid is about to be destroyed. The \`gridApi\` service is already gone: to read AG Grid before it goes, see *AG Grid's api* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
 {{story: Watch every event}}
 
@@ -60,7 +60,7 @@ The events can drive a whole page around the grid, such as a preview of the focu
 `
 
 const meta = {
-    title: 'Grid/Props and events',
+    title: 'Controls/Grid/Props and events',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

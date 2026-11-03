@@ -70,7 +70,7 @@ createTalxisCustomColumnsModule({ entityName: 'task', recordId: projectId, enabl
 `
 
 const meta = {
-    title: 'TaskGrid/Modules/Custom columns',
+    title: 'Controls/TaskGrid/Modules/Custom columns',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
