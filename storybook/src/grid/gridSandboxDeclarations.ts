@@ -935,6 +935,9 @@ declare function createThemeBuilder(source?: IThemeBuilderSource): ThemeBuilder;
 /** A text colour that reads on the background. */
 declare function getTextColorForBackground(backgroundColor: string): string;
 
+/** The WCAG contrast ratio between two colours, from 1 to 21. */
+declare function getColorContrast(color: string, otherColor: string): number;
+
 /** color mixed into base, holding weight (0 to 1) of color. */
 declare function mixColors(color: string, base: string, weight: number): string;
 
