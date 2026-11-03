@@ -27,6 +27,8 @@ declare const Checkbox: typeof import('@fluentui/react').Checkbox;
 declare const ChoiceGroup: typeof import('@fluentui/react').ChoiceGroup;
 /** Fluent's command bar, with its menus drawn in the application's theme. */
 declare const CommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element;
+/** Fluent's own command bar, which the docs compare with Base Controls'. */
+declare const FluentCommandBar: typeof import('@fluentui/react').CommandBar;
 declare const DefaultButton: typeof import('@fluentui/react').DefaultButton;
 declare const DocumentCard: typeof import('@fluentui/react').DocumentCard;
 declare const DocumentCardActivity: typeof import('@fluentui/react').DocumentCardActivity;
@@ -961,6 +963,8 @@ declare const AppThemeProvider: (props: IThemeProviderProps & React.RefAttribute
 
 /** The theme of the nearest provider above; throws outside an AppThemeProvider. */
 declare const useTheme: () => ITheme;
+/** A Fluent button's menu as a Base Controls surface, drawn in the app theme. */
+declare function useSurfaceMenuProps<TMenu extends IContextualMenuProps | undefined>(menuProps: TMenu): TMenu;
 
 /** Fluent's callout, drawn in the application theme. */
 declare const Callout: (props: import('@fluentui/react').ICalloutProps & { children?: React.ReactNode }) => JSX.Element;

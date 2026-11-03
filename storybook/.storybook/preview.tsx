@@ -143,7 +143,7 @@ const preview: Preview = {
       storySort: {
         order: [
           'Concepts',
-          ['Introduction', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Layout', ['Overview', 'Compact parts'], 'State persistence', 'PCF context', 'Control isolation'],
+          ['Introduction', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Fluent UI', 'Layout', ['Overview', 'Compact parts'], 'State persistence', 'PCF context', 'Control isolation'],
           'Controls',
           [
             'DatasetControl',
