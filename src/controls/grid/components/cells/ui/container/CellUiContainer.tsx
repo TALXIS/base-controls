@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { getClassNames } from "@utils";
 import { CellUiContainerComponents, ICellUiContainerComponents } from "./components";
 import { CELL_CONTAINER_CLASS_NAME, getCellUiContainerStyles } from "./styles";

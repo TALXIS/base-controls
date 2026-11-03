@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { Icon, Link, useTheme } from "@fluentui/react";
+import { Icon, Link } from "@fluentui/react";
 import { IOptionTagComponents, OptionTag, OptionTagComponents } from "@ui";
 import { getClassNames } from "@utils";
 import { getLookupManyPillStyles } from "./styles";

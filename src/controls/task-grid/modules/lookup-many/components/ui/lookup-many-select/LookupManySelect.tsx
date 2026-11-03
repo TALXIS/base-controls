@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Layer, useTheme } from "@fluentui/react";
+import { Layer } from "@fluentui/react";
 import { MultiValueProps, OptionProps } from "react-select";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { ILookupManySelectComponents, LookupManySelectComponents } from "./components";

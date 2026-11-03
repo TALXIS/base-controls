@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { OptionTag } from "@ui";
 import { ITooltipUiHeaderComponents, TooltipUiHeaderComponents } from "./components";
 import { getTooltipUiHeaderStyles } from "./styles";

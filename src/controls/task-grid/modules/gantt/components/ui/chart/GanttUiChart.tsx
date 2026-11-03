@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { ReactNode, Ref, useMemo } from "react";
-import { IStyle, useTheme } from "@fluentui/react";
+import { IStyle } from "@fluentui/react";
 import { GanttUiChartComponents, IGanttUiChartComponents } from "./components";
 import { getGanttUiChartStyles } from "./styles";
 

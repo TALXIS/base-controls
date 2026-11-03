@@ -1,4 +1,5 @@
-import { useTheme, Text } from "@fluentui/react";
+import { useTheme } from "@theme";
+import { Text } from "@fluentui/react";
 import { useMemo } from "react";
 import { getErrorMessageStyles } from "./styles";
 

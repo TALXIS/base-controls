@@ -1,14 +1,13 @@
-
+import { useTheme } from '@theme';
 import { IOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption, useTheme } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
 import { onRenderColorfulOption } from './shared';
-
 
 export const OptionSet = (props: IOptionSet) => {
     const componentRef = useRef<IComboBox>(null);

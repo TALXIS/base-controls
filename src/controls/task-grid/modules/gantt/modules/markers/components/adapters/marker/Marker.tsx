@@ -1,4 +1,4 @@
-import { useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
 import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule } from "../../../../../context";
 import type { IMarker } from "../../../Markers";

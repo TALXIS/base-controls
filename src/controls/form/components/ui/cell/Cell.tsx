@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import * as React from "react";
-import { Icon, Label, TextField, useTheme } from "@fluentui/react";
+import { Icon, Label, TextField } from "@fluentui/react";
 import { TooltipHost } from "@ui";
 import { getCellStyles } from "./styles";
 import { RequiredLevelEnum } from "@talxis/client-metadata";

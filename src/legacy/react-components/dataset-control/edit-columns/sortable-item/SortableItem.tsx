@@ -5,9 +5,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
-import { useTheme, Text } from "@fluentui/react";
+import { Text } from "@fluentui/react";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeBuilder } from "@theme";
+import { useThemeBuilder, useTheme } from "@theme";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;

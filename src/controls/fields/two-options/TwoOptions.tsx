@@ -1,4 +1,5 @@
-import { Toggle, useTheme } from '@fluentui/react';
+import { useTheme } from '@theme';
+import { Toggle } from '@fluentui/react';
 import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';

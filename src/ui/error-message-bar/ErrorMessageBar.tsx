@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { ICommandBarItemProps, MessageBarType, useTheme } from "@fluentui/react";
-import { ThemeContext, useThemeBuilder } from "@theme";
+import { ICommandBarItemProps, MessageBarType } from "@fluentui/react";
+import { ThemeContext, useThemeBuilder, useTheme } from "@theme";
 import { useLabels } from "@utils/localization";
 import { usePcfContext } from "@utils/adapters/pcf-context/context";
 import { ErrorMessageBarComponents, IErrorMessageBarComponents } from "./components";

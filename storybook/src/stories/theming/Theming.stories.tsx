@@ -11,9 +11,9 @@ A theme is the set of colours, fonts and effects everything is drawn in. You bui
 
 ## The providers
 
-Themes are Fluent UI v8 themes (\`ITheme\`), so the controls, Fluent's own components and yours all look the same. Put an \`ApplicationThemeProvider\` at the root of the application. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
+Themes are Fluent UI v8 themes (\`ITheme\`), so the controls, Fluent's own components and yours all look the same. Put an \`ApplicationThemeProvider\` at the root of the application; the controls require one and throw without it. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
 
-Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or Fluent's default colours when there is none.
+Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or a theme generated from Fluent's default colours when there is none.
 
 - Both providers render an element painted in the theme's background and font. \`applyTo='none'\` keeps the element but paints nothing.
 - \`ThemeContext\` hands a theme down with no element at all. It is cheap enough to use for every item of a long list.
@@ -74,7 +74,7 @@ Fluent's own components take the theme around them. Draw a surface of your own i
 
 ## Your own components
 
-Read the theme with Fluent's \`useTheme()\`. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
+Read the theme with \`useTheme()\` from \`@talxis/base-controls\`: it returns the nearest theme, like Fluent's, and throws when no \`ApplicationThemeProvider\` is above. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
 
 A colour of your own, such as a status, is where themes go wrong: a red that looks right on white glares on a dark background. Start from a hue rather than a finished colour: give a themed area the \`tint\` option of \`useThemeBuilder\`, and work out loose colours with \`getTintColors\`:
 

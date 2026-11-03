@@ -1,5 +1,6 @@
+import { useTheme } from '@theme';
 import React, { useMemo } from 'react';
-import { ShimmerElementType, useTheme } from '@fluentui/react';
+import { ShimmerElementType } from '@fluentui/react';
 import { Shimmer } from '@ui';
 import { getSkeletonStyles } from './styles';
 

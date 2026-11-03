@@ -959,13 +959,13 @@ declare const ThemeProvider: (props: IThemeProviderProps & React.RefAttributes<H
 /** The application's theme, which dialogs, menus and other surfaces are drawn in. */
 declare const ApplicationThemeProvider: (props: IThemeProviderProps & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
 
-/** The theme of the nearest provider above. */
+/** The theme of the nearest provider above; throws outside an ApplicationThemeProvider. */
 declare const useTheme: () => ITheme;
 
 /** Fluent's callout, drawn in the application theme. */
 declare const Callout: (props: import('@fluentui/react').ICalloutProps & { children?: React.ReactNode }) => JSX.Element;
 
-/** The theme dialogs, menus and other surfaces are drawn in: the application's, or the one around. */
+/** The theme dialogs, menus and other surfaces are drawn in; throws outside an ApplicationThemeProvider. */
 declare function useApplicationTheme(): ITheme;
 
 /** The theme a ThemeBuilder builds, kept while the colours and the edit's key stay the same. */

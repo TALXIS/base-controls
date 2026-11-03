@@ -1,10 +1,11 @@
+import { useTheme } from "@theme";
 import { CommandBar, ICommandBarItemProps, useRerender } from "@legacy";
 import { getClassNames } from "@utils";
 import { useControl } from "@hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
-import { getIcon, useTheme } from "@fluentui/react";
+import { getIcon } from "@fluentui/react";
 import { Shimmer } from "@ui";
 import { ThemeProvider } from "@utils";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";

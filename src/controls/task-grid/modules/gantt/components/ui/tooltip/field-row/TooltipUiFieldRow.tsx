@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { ReactNode, useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { ITooltipUiFieldRowComponents, TooltipUiFieldRowComponents } from "./components";
 import { getTooltipUiFieldRowStyles } from "./styles";
 

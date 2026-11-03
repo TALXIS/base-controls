@@ -1,4 +1,4 @@
-import { useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
 import { useEffect, useMemo, useRef } from "react";
 import { GanttUiZoomSliderComponents, IGanttUiZoomSliderComponents } from "./components";
 import { getGanttUiZoomSliderStyles } from "./styles";

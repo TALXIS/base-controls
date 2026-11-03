@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { mergeStyles, useTheme } from "@fluentui/react";
+import { mergeStyles } from "@fluentui/react";
 import { IOptionTagComponents, OptionTagComponents } from "./components";
 import { getOptionTagStyles } from "./styles";
 

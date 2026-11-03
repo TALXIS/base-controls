@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { getGanttUiSkeletonShimmerStyles } from "./styles";
 
 /** What the placeholder is shaped like. */

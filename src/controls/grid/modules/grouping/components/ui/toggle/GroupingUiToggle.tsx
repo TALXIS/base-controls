@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { GroupingUiToggleComponents, IGroupingUiToggleComponents } from "./components";
 import { getClassNames } from "@utils";
 import { getGroupingUiToggleStyles, GROUPING_TOGGLE_CLASS_NAME } from "./styles";

@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "@fluentui/react";
+
 import type { Dayjs } from "dayjs";
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";

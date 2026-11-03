@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { SpinnerSize, useTheme } from "@fluentui/react";
+import { SpinnerSize } from "@fluentui/react";
 import { ILoadingOverlayComponents, LoadingOverlayComponents } from "./components";
 import { getLoadingOverlayStyles } from "./styles";
 

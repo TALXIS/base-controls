@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { ReactNode, useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { GridGanttUiSplitComponents, IGridGanttUiSplitComponents } from "./components";
 import { getGridGanttUiSplitStyles } from "./styles";
 

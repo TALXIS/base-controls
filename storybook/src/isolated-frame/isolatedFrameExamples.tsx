@@ -46,7 +46,7 @@ const GridExample = () => {
         name: 'FramedDeals.tsx',
         code: `//the frame's own entry: only the frame runs this file, so the page's bundle never holds it
 
-//the frame starts empty: it registers its own icons, and the content brings its providers and theme
+//the frame starts empty: it registers its own icons, and the content brings its providers and application theme
 initializeIcons()
 
 //a props type shared with the page can be a type-only import, which leaves no code in either bundle
@@ -54,9 +54,9 @@ const FramedDeals = (props: { theme: ITheme }) => {
     const { greeting } = window as Window & { greeting?: string }
     return <PcfContextProvider>
         <StateProvider>
-            <ThemeProvider theme={props.theme} style={{ height: '100%' }}>
+            <ApplicationThemeProvider theme={props.theme} style={{ height: '100%' }}>
                 <DealsGrid heading={\`In a frame · \${greeting}\`} />
-            </ThemeProvider>
+            </ApplicationThemeProvider>
         </StateProvider>
     </PcfContextProvider>
 }

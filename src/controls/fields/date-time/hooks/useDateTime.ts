@@ -1,10 +1,9 @@
-import { useTheme } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { ITheme } from "@theme";
+import { ITheme, useTheme } from "@theme";
 
 dayjs.extend(customParseFormat);
 
@@ -112,7 +111,6 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         valueExtractor: parseDateString
     });
     const theme = useTheme();
-
 
     useEffect(() => {
         const onBlur = () => {

@@ -1,3 +1,4 @@
+import { useTheme } from "@theme";
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import React from 'react';
 import { getMultistageStyles } from "./styles";
@@ -10,7 +11,7 @@ import { TooltipHost } from "@ui/surfaces";
 import { Icon } from "@fluentui/react";
 import { IndicatorService } from "./IndicatorService";
 import { IMessageBarProps } from "@fluentui/react";
-import { useTheme } from "@fluentui/react";
+
 import { MessageBar } from "@fluentui/react";
 import { PrimaryButton } from "@fluentui/react";
 

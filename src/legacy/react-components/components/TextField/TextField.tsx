@@ -1,4 +1,5 @@
-import { ITextField, TextField as TextFieldBase, useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
+import { ITextField, TextField as TextFieldBase } from "@fluentui/react";
 import { ITextFieldProps as ITextFieldPropsBase } from "@fluentui/react";
 import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IFillAvailableSpace, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';

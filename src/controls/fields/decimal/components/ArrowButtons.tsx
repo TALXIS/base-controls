@@ -1,4 +1,5 @@
-import { IconButton, useTheme } from "@fluentui/react"
+import { useTheme } from "@theme";
+import { IconButton } from "@fluentui/react";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
 import { getArrowButtonStyles } from "./styles";
 import React from 'react';

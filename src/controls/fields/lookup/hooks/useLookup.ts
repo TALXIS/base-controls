@@ -1,11 +1,10 @@
-import { useTheme } from "@fluentui/react";
 import { useState } from "react";
 import { useControl } from "@hooks";
 import { useLabels } from "@utils";
 import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
 import { LOOKUP_LABELS } from "../labels";
 import { useFetchXml } from "./useFetchXml";
-import { ITheme } from "@theme";
+import { ITheme, useTheme } from "@theme";
 import dayjs from "dayjs";
 
 export const useLookup = (props: ILookup): [

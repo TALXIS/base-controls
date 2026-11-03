@@ -1,6 +1,7 @@
+import { useTheme } from "@theme";
 import { useLabels } from "@utils";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
-import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, useTheme, Spinner } from "@fluentui/react";
+import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, Spinner } from "@fluentui/react";
 import { Panel } from "@ui";
 import { useModel } from "../useModel";
 import { useEffect, useMemo, useRef, useState } from "react";

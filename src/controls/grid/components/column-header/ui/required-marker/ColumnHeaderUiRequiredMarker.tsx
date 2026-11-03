@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { ITextProps, useTheme } from "@fluentui/react";
+import { ITextProps } from "@fluentui/react";
 import { getClassNames } from "@utils";
 import { ColumnHeaderUiRequiredMarkerComponents, IColumnHeaderUiRequiredMarkerComponents } from "./components";
 import { getColumnHeaderUiRequiredMarkerStyles } from "./styles";

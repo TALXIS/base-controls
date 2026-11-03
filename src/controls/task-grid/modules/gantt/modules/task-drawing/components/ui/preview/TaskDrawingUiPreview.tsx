@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { DirectionalHint, IPoint, useTheme } from "@fluentui/react";
-import { useApplicationTheme } from "@theme";
+import { DirectionalHint, IPoint } from "@fluentui/react";
+import { useApplicationTheme, useTheme } from "@theme";
 import { TaskDrawingUiPreviewComponents, ITaskDrawingUiPreviewComponents } from "./components";
 import { getTaskDrawingUiPreviewStyles } from "./styles";
 

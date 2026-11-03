@@ -1,5 +1,6 @@
+import { useTheme } from '@theme';
 import * as React from 'react';
-import { IComboBox, ITimePickerProps as ITimePickerPropsBase, useTheme } from "@fluentui/react";
+import { IComboBox, ITimePickerProps as ITimePickerPropsBase } from "@fluentui/react";
 import { TimePicker as TimePickerBase } from "@ui/time-picker";
 import { IReadOnly, IDisabled } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';

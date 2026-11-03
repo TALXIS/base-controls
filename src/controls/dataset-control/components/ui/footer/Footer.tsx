@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { getClassNames } from "@utils";
 import { FooterUiComponents, IFooterUiComponents } from "./components";
 import { getFooterUiStyles } from "./styles";

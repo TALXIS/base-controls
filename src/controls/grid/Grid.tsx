@@ -1,7 +1,8 @@
+import { useTheme } from "@theme";
 import { useCallback, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
-import { useTheme } from "@fluentui/react";
+
 import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
 import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";

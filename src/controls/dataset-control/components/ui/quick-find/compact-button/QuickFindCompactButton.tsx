@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { IQuickFindCompactButtonComponents, QuickFindCompactButtonComponents } from "./components";
 import { getQuickFindCompactButtonStyles } from "./styles";
 

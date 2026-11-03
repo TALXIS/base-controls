@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { CommandBarButton, type ICommandBarItemProps, useTheme } from "@fluentui/react";
+import { CommandBarButton, type ICommandBarItemProps } from "@fluentui/react";
 import { IRibbonComponents, RibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useForm } from "../root/context";

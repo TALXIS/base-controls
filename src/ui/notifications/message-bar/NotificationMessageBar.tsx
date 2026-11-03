@@ -1,5 +1,6 @@
+import { useTheme } from '@theme';
 import React, { useMemo } from 'react';
-import { IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } from '@fluentui/react';
+import { IconButton, IMessageBarStyles, MessageBar, MessageBarType } from '@fluentui/react';
 import { ContextualMenu } from '@ui/surfaces';
 import { INotificationMessageBarComponents } from './components';
 import { getNotificationMessageBarStyles } from './styles';

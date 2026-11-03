@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { getClassNames, IAlignment } from "@utils";
 import { CellUiFieldErrorComponents, ICellUiFieldErrorComponents } from "./components";
 import { FIELD_ERROR_OUTLINE_CLASS_NAME, getCellUiFieldErrorStyles } from "./styles";

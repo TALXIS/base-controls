@@ -1,10 +1,10 @@
 import React, { forwardRef, useMemo } from "react";
-import { DirectionalHint, Label, useTheme } from "@fluentui/react";
+import { DirectionalHint, Label } from "@fluentui/react";
 import { components as selectComponents, GroupBase, SelectInstance } from "react-select";
 import AsyncSelect from "react-select/async";
 import { AsyncProps } from "react-select/dist/declarations/src/useAsync";
 import { Callout, TooltipHost } from "@ui";
-import { useApplicationTheme } from "@theme";
+import { useApplicationTheme, useTheme } from "@theme";
 import { EditColumnsSelectorUiComponents, IEditColumnsSelectorUiComponents } from "./components";
 import { getEditColumnsSelectorUiStyles } from "./styles";
 

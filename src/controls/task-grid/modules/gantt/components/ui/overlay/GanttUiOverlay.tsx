@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { GanttUiOverlayComponents, IGanttUiOverlayComponents } from "./components";
 import { getGanttUiOverlayStyles } from "./styles";
 

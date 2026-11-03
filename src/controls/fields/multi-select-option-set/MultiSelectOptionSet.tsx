@@ -1,19 +1,19 @@
-
 import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
-import { IComboBox, IComboBoxOption, useTheme } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import React from 'react';
 import { ColorfulOptions } from './colorful-options/ColorfulOptions';
 import { getIsColorFeatureEnabled, onRenderColorfulOption } from '@controls/fields/option-set/shared';
 import { getComboBoxStyles } from './styles';
-import { ThemeContext } from '@theme';
+import { ApplicationThemeContext, ThemeContext, useApplicationTheme, useTheme } from '@theme';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged } = useControl('MultiSelectOptionSet', props);
     const theme = useTheme();
+    const applicationTheme = useApplicationTheme();
     const ref = useRef<HTMLDivElement>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -65,10 +65,12 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         container.setAttribute('class', `${className} ${styles.colorfulOptionsWrapper}`);
         container.onclick = () => componentRef.current?.focus(true);
 
-        //a root of its own, which the theme does not reach unless handed over
-        ReactDOM.render(<ThemeContext theme={theme}>
-            <ColorfulOptions value={boundValue} context={props.context} />
-        </ThemeContext>, container);
+        //a root of its own, which the themes do not reach unless handed over
+        ReactDOM.render(<ApplicationThemeContext.Provider value={applicationTheme}>
+            <ThemeContext theme={theme}>
+                <ColorfulOptions value={boundValue} context={props.context} />
+            </ThemeContext>
+        </ApplicationThemeContext.Provider>, container);
 
         const existingContainer = parent.querySelector(`:scope>.${className}`);
         if (existingContainer && isEmptyValue()) {
@@ -82,7 +84,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             existingContainer.replaceWith(container);
         }
     }
-
 
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {

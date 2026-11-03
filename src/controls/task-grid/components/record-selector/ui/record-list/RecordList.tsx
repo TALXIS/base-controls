@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { FixedSizeList } from "react-window";
 import { IRecordListComponents, RecordListComponents } from "./components";
 import { getRecordListStyles } from "./styles";

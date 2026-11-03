@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { DependencyCountComponents, IDependencyCountComponents } from "./components";
 import { getDependencyCountStyles } from "./styles";
 

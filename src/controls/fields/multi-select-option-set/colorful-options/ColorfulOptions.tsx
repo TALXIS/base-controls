@@ -1,7 +1,8 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
 import { IPcfContext, IMultiSelectOptionSetProperty } from "@interfaces";
-import { useTheme } from "@fluentui/react";
+
 import { OptionTag } from "@ui";
 
 interface IColorfulOptionsProps {

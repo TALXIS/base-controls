@@ -1,5 +1,4 @@
-import { useTheme } from "@fluentui/react";
-import { ThemeProvider } from "@theme";
+import { ThemeProvider, useTheme } from "@theme";
 import { getSuffixStyles } from "./styles";
 import { useInputButtons } from "./useInputButtons";
 import { useMemo } from "react";

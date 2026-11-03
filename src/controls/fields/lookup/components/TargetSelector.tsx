@@ -1,7 +1,8 @@
+import { useTheme } from '@theme';
 import React from 'react';
 import { IEntity } from '../interfaces';
 import { Text } from '@fluentui/react/lib/Text';
-import { Link, useTheme } from '@fluentui/react';
+import { Link } from '@fluentui/react';
 import { getTargetSelectorStyles } from '../styles';
 import { useLoadedEntities } from '../hooks/useLoadedEntities';
 import { useLabels } from '@utils';

@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { getClassNames, IAlignment } from "@utils";
 import { CellUiLockIconComponents, ICellUiLockIconComponents } from "./components";
 import { getCellUiLockIconStyles } from "./styles";

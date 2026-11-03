@@ -1,3 +1,4 @@
+import { useTheme } from '@theme';
 import * as React from 'react';
 import { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import { IPickerItemProps } from "@fluentui/react";
@@ -14,7 +15,7 @@ import { useState } from 'react';
 import { Text } from '@fluentui/react'
 import { IDisabled, IErrorMessage, IFillAvailableSpace, IReadOnly } from '@legacy/interfaces/components';
 import { getSuggestionsStyles, getTagPickerStyles } from './styles';
-import { useTheme } from '@fluentui/react';
+
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputErrorMessage } from '@legacy/utilities/components/InputErrorMessage/InputErrorMessage';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';

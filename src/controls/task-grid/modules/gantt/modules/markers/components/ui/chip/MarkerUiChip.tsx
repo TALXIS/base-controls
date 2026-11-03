@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { MarkerUiChipComponents, IMarkerUiChipComponents } from "./components";
 import { getMarkerUiChipStyles } from "./styles";
 

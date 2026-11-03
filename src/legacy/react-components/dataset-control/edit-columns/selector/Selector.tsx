@@ -1,8 +1,9 @@
+import { useTheme } from "@theme";
 import { useLabels } from "@utils";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { DatasetConstants, IColumn } from "@talxis/client-libraries";
 import { GroupBase } from 'react-select';
-import { DirectionalHint, useTheme, Text } from "@fluentui/react";
+import { DirectionalHint, Text } from "@fluentui/react";
 import { Callout, TooltipHost } from "@ui";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';

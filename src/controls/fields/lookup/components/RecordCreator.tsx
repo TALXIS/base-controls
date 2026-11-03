@@ -1,6 +1,6 @@
-
 //@ts-nocheck - typescript
-import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
+import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { useSurfaceMenuProps } from "@ui";
 import { CommandBarButton } from "@fluentui/react";
 import { IEntity } from "../interfaces";

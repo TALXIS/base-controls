@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { Fragment, useEffect, useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { useEventEmitter, useLatest } from "@hooks";
 import { useRerender } from "@legacy";
 import { DataProviderContext, ErrorBoundary, useLabelsService } from "@utils";

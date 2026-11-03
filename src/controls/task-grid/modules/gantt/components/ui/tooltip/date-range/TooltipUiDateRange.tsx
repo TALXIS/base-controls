@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { ITooltipUiDateRangeComponents, TooltipUiDateRangeComponents } from "./components";
 import { getTooltipUiDateRangeStyles } from "./styles";
 

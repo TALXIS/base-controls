@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { IComboBoxProps as IComboBoxPropsBase, IComboBox, getCommandBarStyles, useTheme, ISelectableOption, ICommandBarItemProps, PrimaryButton, TextField, Icon } from "@fluentui/react";
+import { IComboBoxProps as IComboBoxPropsBase, IComboBox, getCommandBarStyles, ISelectableOption, ICommandBarItemProps, PrimaryButton, TextField, Icon } from "@fluentui/react";
 import { ComboBox as ComboBoxBase } from '@ui/combo-box';
-import { ThemeProvider } from '@theme';
+import { ApplicationThemeContext, ThemeProvider, useApplicationTheme, useTheme } from '@theme';
 import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IFillAvailableSpace, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
@@ -16,6 +16,7 @@ export interface IComboBoxProps extends Omit<IComboBoxPropsBase, 'errorMessage' 
 export const ComboBox = React.forwardRef<HTMLDivElement, IComboBoxProps>((props, ref) => {
     const componentRef = React.useRef<IComboBox>(null);
     const theme = useTheme();
+    const applicationTheme = useApplicationTheme();
     const comboBoxStyles = React.useMemo(() => getComboBoxStyles(theme), [theme]);
     const classNames = useClassNames('Combobox', props, undefined, [comboBoxStyles.root]);
     const calloutClassNames = useClassNames('Combobox__callout', { className: props.className }, undefined, [comboBoxStyles.callout]).replace('---underlined', '')
@@ -47,13 +48,16 @@ export const ComboBox = React.forwardRef<HTMLDivElement, IComboBoxProps>((props,
         const parent: HTMLDivElement = componentRef.current._comboBoxWrapper.current;
         const container = document.createElement('div');
         container.setAttribute('class', 'talxis-combobox__prefix-buttons');
-        ReactDOM.render(React.createElement(ThemeProvider, {
-            theme: theme,
-            applyTo: 'none'
-        },
-            React.createElement(InputButtons, {
-                buttons: props.prefixItems,
-            })
+        //a root of its own, which the themes do not reach unless handed over
+        ReactDOM.render(React.createElement(ApplicationThemeContext.Provider, { value: applicationTheme },
+            React.createElement(ThemeProvider, {
+                theme: theme,
+                applyTo: 'none'
+            },
+                React.createElement(InputButtons, {
+                    buttons: props.prefixItems,
+                })
+            )
         ), container)
         const existingContainer = parent.querySelector(':scope>.talxis-combobox__prefix-buttons');
         if (!existingContainer) {

@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { components, OptionProps } from "react-select";
 import { getReferenceDataValue } from "../lookup-many-pill/getReferenceDataValue";
 import { getColorfulLookupManyOptionStyles } from "./styles";

@@ -1,6 +1,7 @@
+import { useTheme } from "@theme";
 import { useContext, useLayoutEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
-import { useTheme } from "@fluentui/react";
+
 import { ThemeContext, ApplicationThemeContext } from "@utils";
 import { PcfContext } from "@utils/adapters/pcf-context/context";
 import { GridServicesContext } from "../../../context";

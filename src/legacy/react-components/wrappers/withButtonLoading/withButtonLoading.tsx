@@ -1,4 +1,5 @@
-import { ActionButton, CommandBarButton, DefaultButton, IButtonProps, IconButton, IRenderFunction, MessageBarButton, PrimaryButton, SpinnerSize, ThemeGenerator, useTheme, Spinner } from '@fluentui/react';
+import { useTheme } from '@theme';
+import { ActionButton, CommandBarButton, DefaultButton, IButtonProps, IconButton, IRenderFunction, MessageBarButton, PrimaryButton, SpinnerSize, ThemeGenerator, Spinner } from '@fluentui/react';
 import { useMemo } from 'react';
 import { getButtonWithLoadingStyles } from './styles';
 

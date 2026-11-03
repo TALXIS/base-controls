@@ -1,4 +1,5 @@
-import { Text, useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
+import { Text } from "@fluentui/react";
 import { SectionContext } from "./context";
 import { getSectionStyles } from "./styles";
 import React from "react";

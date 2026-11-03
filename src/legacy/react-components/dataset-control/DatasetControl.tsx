@@ -1,4 +1,4 @@
-import { useTheme } from "@fluentui/react";
+import { useTheme } from "@theme";
 import { useEffect, useMemo, useRef } from "react";
 import { ThemeProvider, useLabels } from "@utils";
 import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
@@ -32,7 +32,6 @@ export const DatasetControl = (props: IDatasetControlProps) => {
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onBeforeNewDataLoaded', rerender);
-
 
   const componentProps = onOverrideComponentProps({
     onRender: (props, defaultRender) => defaultRender(props),

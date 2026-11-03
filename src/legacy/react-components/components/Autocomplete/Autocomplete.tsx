@@ -1,3 +1,4 @@
+import { useTheme } from "@theme";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { Callout, TooltipHost } from "@ui/surfaces";
 import * as React from 'react';
@@ -11,7 +12,7 @@ import { ITooltipHostProps } from "@fluentui/react";
 import { CommandBarButton as CommandBarButtonBase, IButtonProps } from "@fluentui/react";
 import { getAutocompleteStyles, getCalloutStyles, getItemContainerStyles, getSuggestionsContainerStyles } from './styles';
 import { Text } from "@fluentui/react";
-import { useTheme } from "@fluentui/react";
+
 import { ContextualMenuItemType } from "@fluentui/react";
 
 interface IAutoComplete extends HTMLDivElement {

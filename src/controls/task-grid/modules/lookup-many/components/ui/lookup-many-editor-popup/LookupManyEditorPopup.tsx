@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo, useRef } from "react";
-import { useTheme } from "@fluentui/react";
+
 import { useResizeEffect } from "@utils";
 import { ILookupManyEditorPopupComponents, LookupManyEditorPopupComponents } from "./components";
 import { getLookupManyEditorPopupStyles, LOOKUP_MANY_EDITOR_POPUP_MIN_WIDTH } from "./styles";

@@ -1,5 +1,6 @@
+import { useTheme } from '@theme';
 import * as React from 'react';
-import { useTheme } from '@fluentui/react';
+
 import { getSkeletonStyles } from './styles';
 
 /** What the placeholder is shaped like. */

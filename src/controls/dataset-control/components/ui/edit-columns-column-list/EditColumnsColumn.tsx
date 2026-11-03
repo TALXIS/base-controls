@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { Text, useTheme } from "@fluentui/react";
+import { Text } from "@fluentui/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { CommandBar } from "@legacy";
-import { useThemeBuilder } from "@theme";
+import { useThemeBuilder, useTheme } from "@theme";
 import { ThemeProvider } from "@utils";
 import { IEditColumnsListColumn } from "./components";
 import { getEditColumnsColumnListUiStyles } from "./styles";

@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo, useState } from "react";
-import { Check, useTheme } from "@fluentui/react";
+import { Check } from "@fluentui/react";
 import { getClassNames, useLabels } from "@utils";
 import { CHECK_LIST_LABELS } from "../../labels";
 import { useGridCell } from "../../../grid/components/cells/root/context";

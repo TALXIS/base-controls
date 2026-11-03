@@ -1,5 +1,6 @@
+import { useTheme } from "@theme";
 import { useMemo, useRef, useState } from "react";
-import { SpinnerSize, useTheme } from "@fluentui/react";
+import { SpinnerSize } from "@fluentui/react";
 import { IRecordSaveUiErrorCalloutProps } from "../error-callout";
 import { IRecordSaveUiIndicatorComponents, RecordSaveUiIndicatorComponents } from "./components";
 import { getRecordSaveUiIndicatorStyles } from "./styles";

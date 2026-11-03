@@ -1,7 +1,7 @@
 import { IDisabled, IErrorMessage, IFillAvailableSpace, IReadOnly } from "../interfaces/components";
-import { mergeStyles, useTheme } from "@fluentui/react";
+import { mergeStyles } from "@fluentui/react";
 import { useMemo } from "react";
-import { ITheme } from "@theme";
+import { ITheme, useTheme } from "@theme";
 
 
 interface IComponentProps extends IReadOnly, IErrorMessage, IDisabled, IFillAvailableSpace {

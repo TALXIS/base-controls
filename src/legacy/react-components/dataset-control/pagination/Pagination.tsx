@@ -1,6 +1,7 @@
+import { useTheme } from "@theme";
 import { useLabels } from "@utils";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
-import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { IFooterProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { getPaginationStyles } from "./styles";
