@@ -8,6 +8,8 @@ const TEXT_CONTRAST = 7;
 const LIGHTNESS_STEP = 2;
 //WCAG AA, the least a tint's own text may reach
 const TINT_TEXT_CONTRAST = 4.5;
+//the least of the hue a solid fill keeps under white text; a lighter hue takes black text
+const SOLID_MIN_WEIGHT = 0.75;
 
 //how much of the hue each part of a tint holds; a dark surface needs more of it to show
 const TINT_WEIGHTS = {
@@ -18,6 +20,10 @@ const TINT_WEIGHTS = {
     strong: {
         light: { background: 0.4, border: 0.6 },
         dark: { background: 0.45, border: 0.6 },
+    },
+    solid: {
+        light: { background: 1 },
+        dark: { background: 0.75 },
     },
 };
 
@@ -110,8 +116,8 @@ const findTextColor = (backgroundColor: string): string => {
     return isLight ? BLACK : WHITE;
 };
 
-/** How much a tint stands out: a wash behind the theme's text, or a fill with text of its own. */
-export type ITintStrength = 'subtle' | 'strong';
+/** How much a tint stands out: a wash behind the theme's text, a fill with text of its own, or the hue under black or white text. */
+export type ITintStrength = 'subtle' | 'strong' | 'solid';
 
 /** What a surface tinted by a hue is drawn in. */
 export interface ITintColors {
@@ -128,6 +134,18 @@ export interface ITintColors {
  */
 export const getTintColors = (hue: string, surface: Pick<IThemeColors, 'background' | 'text'>, strength: ITintStrength = 'subtle'): ITintColors => {
     const scheme = isLightColor(surface.background) ? 'light' : 'dark';
+    if (strength === 'solid') {
+        const weights = TINT_WEIGHTS.solid[scheme];
+        const fill = mixColors(hue, surface.background, weights.background);
+        let background = fill;
+        //white reads better than black on a mid colour, so the fill darkens a little for it
+        for (let weight = 1; getColorContrast(WHITE, background) < TINT_TEXT_CONTRAST && weight >= SOLID_MIN_WEIGHT; weight -= 0.02) {
+            background = mixColors(fill, BLACK, weight);
+        }
+        return getColorContrast(WHITE, background) >= TINT_TEXT_CONTRAST
+            ? { background, border: background, text: WHITE }
+            : { background: fill, border: fill, text: BLACK };
+    }
     if (strength === 'strong') {
         const weights = TINT_WEIGHTS.strong[scheme];
         const background = mixColors(hue, surface.background, weights.background);

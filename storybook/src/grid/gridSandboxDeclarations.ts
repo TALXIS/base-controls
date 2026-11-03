@@ -928,15 +928,15 @@ type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } | { flue
 interface ThemeBuilder {
     /** Changing one regenerates the whole palette. */
     readonly colors: IThemeColors;
-    /** Tints the background and text by a hue, so they read in a light theme and a dark one. */
+    /** Tints the background and text by a hue, so they read in a light theme and a dark one; a solid tint's primary is its text. */
     tint(hue: string, strength?: ITintStrength): void;
     /** The same key has to mean the same edit. */
     edit(key: string, edit: (theme: ITheme) => void): void;
     getTheme(): ITheme;
 }
 
-/** A wash behind the theme's text, or a fill with text of its own. */
-type ITintStrength = 'subtle' | 'strong';
+/** A wash behind the theme's text, a fill with text of its own, or the hue under black or white text. */
+type ITintStrength = 'subtle' | 'strong' | 'solid';
 
 interface ITintColors {
     background: string;

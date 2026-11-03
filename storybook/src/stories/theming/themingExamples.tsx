@@ -140,7 +140,7 @@ const DERIVED_CODE = `const HUE = '#d13438'
 //outside React, the builder holds three colours; tint and edit change it, getTheme generates the theme
 const createAlertTheme = (theme: ITheme) => {
     const builder = createThemeBuilder({ theme })
-    //'strong' fills with the hue; 'subtle', the default, is a wash
+    //'strong' fills with the hue, 'solid' is the hue under black or white text; 'subtle', the default, is a wash
     builder.tint(HUE, 'strong')
     builder.edit('bold', theme => { theme.fonts.medium.fontWeight = 600 })
     return builder.getTheme()

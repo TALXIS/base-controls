@@ -25,10 +25,10 @@ const FAR_ITEMS: ICommandBarItemProps[] = [
 //each bar sits on a strip in TALXIS green, which is a theme of its own
 const Bar = (props: { title: string, children: JSX.Element }) => {
     const pageTheme = useTheme()
-    const strip = useThemeBuilder({ theme: pageTheme }, { tint: { hue: '#2f9b70', strength: 'strong' } })
+    const strip = useThemeBuilder({ theme: pageTheme }, { tint: { hue: '#2f9b70', strength: 'solid' } })
     return <Stack>
         <Label>{props.title}</Label>
-        <ThemeProvider theme={strip} style={{ borderRadius: 6, overflow: 'hidden' }}>{props.children}</ThemeProvider>
+        <ThemeProvider theme={strip} style={{ borderRadius: 6, overflow: 'hidden', padding: '0 8px' }}>{props.children}</ThemeProvider>
     </Stack>
 }
 

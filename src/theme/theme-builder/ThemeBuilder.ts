@@ -80,11 +80,14 @@ export class ThemeBuilder {
         return this._colors;
     }
 
-    /** Tints the background and text by a hue, so they read in a light theme and a dark one. */
+    /** Tints the background and text by a hue, so they read in a light theme and a dark one; a solid tint's primary is its text. */
     public tint(hue: string, strength: ITintStrength = 'subtle'): void {
         const { background, text } = getTintColors(hue, this._colors, strength);
         this._colors.background = background;
         this._colors.text = text;
+        if (strength === 'solid') {
+            this._colors.primary = text;
+        }
     }
 
     /**

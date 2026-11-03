@@ -41,7 +41,7 @@ Read the theme with \`useTheme()\` from \`@talxis/base-controls\` and take colou
 
 | Helper | Returns |
 |---|---|
-| \`getTintColors(hue, { background, text }, strength?)\` | \`{ background, border, text }\` tinted by the hue, \`'subtle'\` or \`'strong'\`; its text always reaches 4.5:1 |
+| \`getTintColors(hue, { background, text }, strength?)\` | \`{ background, border, text }\` tinted by the hue, \`'subtle'\`, \`'strong'\` or \`'solid'\`; its text always reaches 4.5:1 |
 | \`getTextColorForBackground(color)\` | A readable text colour for that background |
 | \`getColorContrast(color, otherColor)\` | The WCAG contrast ratio, from 1 to 21 |
 | \`isLightColor(color)\` | Whether dark text reads better on it |
