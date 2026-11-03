@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { withTasks } from './shared'
 
 interface IModuleExample {
@@ -176,10 +177,56 @@ const GridExample = () => {
 }
 `
 
+const LOOKUP_MANY_DATAVERSE_FILE: IGridExampleFile = {
+    name: 'dataverse.ts',
+    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+export const createAssigneesModule = (projectId: string) => createDataverseLookupManyModule({
+    hostRecord: { entityName: 'msdyn_project', id: projectId },
+    columns: {
+        assignedto: {
+            displayName: 'Assigned to',
+            entityName: 'systemuser',
+            navigationPropertyName: 'task_assignees',
+            appearance: { type: 'people', imageUrlPropertyName: 'entityimage_url' },
+            select: 'fullname,entityimage_url',
+            fetchXml: \`<fetch><entity name="systemuser"><attribute name="fullname" /></entity></fetch>\`,
+        },
+    },
+})
+`,
+}
+
+const CUSTOM_COLUMNS_TALXIS_FILE: IGridExampleFile = {
+    name: 'talxis.ts',
+    code: `//with TALXIS, use this module instead of the IndexedDB one in GridExample.tsx
+export const createProjectColumnsModule = (projectId: string) => createTalxisCustomColumnsModule({ entityName: 'task', recordId: projectId, enableCreation: true, enableEditing: true, enableDeletion: true })
+`,
+}
+
+const PROJECT_DATAVERSE_FILE: IGridExampleFile = {
+    name: 'dataverse.ts',
+    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+export const createDataverseProject = (projectId: string) => createDataverseProjectModule({ entityName: 'msdyn_project', id: projectId, startDateColumn: 'msdyn_scheduledstart', endDateColumn: 'msdyn_finish', columns: ['msdyn_customer'] })
+`,
+}
+
+const DEPENDENCIES_DATAVERSE_FILE: IGridExampleFile = {
+    name: 'dataverse.ts',
+    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+export const dependenciesModule = createDataverseDependenciesModule({
+    entityName: 'new_taskdependency',
+    predecessorAttribute: 'new_predecessorid',
+    successorAttribute: 'new_successorid',
+    typeAttribute: 'new_type',
+    dependencyTypeCodes: { 1: 'finishToStart', 2: 'startToStart', 3: 'finishToFinish', 4: 'startToFinish' },
+})
+`,
+}
+
 export const ModulesExample = () => <GridExampleRunner seedCode={withTasks(MODULES_CODE)} />
-export const ProjectExample = () => <GridExampleRunner seedCode={withTasks(PROJECT_CODE)} />
-export const CustomColumnsExample = () => <GridExampleRunner seedCode={withTasks(CUSTOM_COLUMNS_CODE)} />
-export const LookupManyExample = () => <GridExampleRunner seedCode={withTasks(LOOKUP_MANY_CODE)} />
+export const ProjectExample = () => <GridExampleRunner seedCode={[...withTasks(PROJECT_CODE), PROJECT_DATAVERSE_FILE]} />
+export const CustomColumnsExample = () => <GridExampleRunner seedCode={[...withTasks(CUSTOM_COLUMNS_CODE), CUSTOM_COLUMNS_TALXIS_FILE]} />
+export const LookupManyExample = () => <GridExampleRunner seedCode={[...withTasks(LOOKUP_MANY_CODE), LOOKUP_MANY_DATAVERSE_FILE]} />
 export const TemplatesExample = () => <GridExampleRunner seedCode={withTasks(TEMPLATES_CODE)} />
 export const ChecklistExample = () => <GridExampleRunner seedCode={withTasks(CHECKLIST_CODE)} />
-export const DependenciesExample = () => <GridExampleRunner seedCode={withTasks(DEPENDENCIES_CODE)} />
+export const DependenciesExample = () => <GridExampleRunner seedCode={[...withTasks(DEPENDENCIES_CODE), DEPENDENCIES_DATAVERSE_FILE]} />

@@ -1,17 +1,8 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
+import type { IGridExampleFile } from '../GridLivePreview'
 
-export const UNSAVED_CHANGES_BAR_CODE = `interface IUnsavedChanges {
-    getCount(): number
-    subscribe(listener: (count: number) => void): () => void
-}
-
-//in your project: declare module '@talxis/base-controls'
-declare global {
-    interface IGridModuleMap {
-        unsavedChanges: IUnsavedChanges
-    }
-}
+export const UNSAVED_CHANGES_BAR_CODE = `import type { IUnsavedChanges } from './types'
 
 const describeChanges = (count: number) => count === 1 ? '1 product has unsaved changes.' : \`\${count} products have unsaved changes.\`
 
@@ -77,4 +68,20 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const UnsavedChangesBarExample = () => <GridExampleRunner seedCode={UNSAVED_CHANGES_BAR_CODE} dataset='products' />
+const UNSAVED_CHANGES_TYPES_FILE: IGridExampleFile = {
+    name: 'types.ts',
+    code: `//next to the module in your project, so the unsavedChanges instance is typed wherever it is reached
+export interface IUnsavedChanges {
+    getCount(): number
+    subscribe(listener: (count: number) => void): () => void
+}
+
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        unsavedChanges: IUnsavedChanges
+    }
+}
+`,
+}
+
+export const UnsavedChangesBarExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: UNSAVED_CHANGES_BAR_CODE }, UNSAVED_CHANGES_TYPES_FILE]} dataset='products' />

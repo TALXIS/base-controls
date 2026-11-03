@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { EventsExample, HandDownExample, OwnProviderExample, ReadExample, SharedProviderExample, SteerFromCodeExample } from '../../data-providers/dataProvidersExamples'
+import { EventsExample, HandDownExample, OwnProviderExample, ReadExample, ServerProviderExample, SharedProviderExample, SteerFromCodeExample } from '../../data-providers/dataProvidersExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
@@ -137,21 +137,7 @@ Extend \`MemoryDataProvider\` to keep sorting and paging in the browser:
 
 When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the metadata and columns in the constructor, and implement every member in the table below:
 
-\`\`\`ts
-class ProductsProvider extends DataProvider {
-    constructor(options: IDataProviderOptions) {
-        super(options)
-        this.setMetadata({ PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' })
-        this.setColumns([{ name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText }])
-    }
-
-    public async getDataAsync(pageNumber: number, pageSize: number): Promise<IRetrievedData> {
-        const query = new URLSearchParams({ page: String(pageNumber), size: String(pageSize), search: this.getSearchQuery() ?? '', sort: JSON.stringify(this.getSorting()) })
-        const { items, total } = await (await fetch('/api/products?' + query)).json()
-        return { data: items, totalRecordCount: total, hasNextPage: pageNumber * pageSize < total }
-    }
-}
-\`\`\`
+{{story: Page on your server}}
 
 | Member | Does |
 |---|---|
@@ -263,6 +249,18 @@ export const SaveToYourApi: Story = {
         docs: {
             description: {
                 story: `A \`MemoryDataProvider\` whose \`onRecordSave\` sends each record to a stand-in server first. Try: set a price below zero and save.`,
+            },
+        },
+    },
+}
+
+export const PageOnYourServer: Story = {
+    name: 'Page on your server',
+    render: () => renderStory(<ServerProviderExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A read-only \`DataProvider\` over a stand-in server in *api.ts*, which sorts, searches and pages the products. Try: sort by price, search for *desk*, and move to the next page.`,
             },
         },
     },

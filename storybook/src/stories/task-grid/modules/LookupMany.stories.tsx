@@ -37,21 +37,7 @@ Clicking a pill opens its record through the store. Editing needs \`enableEditin
 
 ### Dataverse
 
-\`\`\`tsx
-createDataverseLookupManyModule({
-    hostRecord: { entityName: 'msdyn_project', id: projectId },
-    columns: {
-        assignedto: {
-            displayName: 'Assigned to',
-            entityName: 'systemuser',
-            navigationPropertyName: 'task_assignees',
-            appearance: { type: 'people', imageUrlPropertyName: 'entityimage_url' },
-            select: 'fullname,entityimage_url',
-            fetchXml: \`<fetch><entity name="systemuser"><attribute name="fullname" /></entity></fetch>\`,
-        },
-    },
-})
-\`\`\`
+*dataverse.ts* in the example keeps the people assigned in Dataverse.
 
 | Column key | Description |
 |---|---|

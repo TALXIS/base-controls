@@ -19,14 +19,7 @@ Put the provider at the root of the application, as in [**Quick start**](?path=/
 
 ## In a PCF control
 
-Pass the context the host hands you:
-
-\`\`\`tsx
-//updateView(context)
-<PcfContextProvider context={context}>
-    <App />
-</PcfContextProvider>
-\`\`\`
+Pass the context the host hands \`updateView\` to the provider, as *index.tsx* in the example above does.
 
 - Its \`userSettings\`, \`navigation\`, \`webAPI\`, \`utils\`, \`mode\` and the rest are used as they are.
 - \`formatting\` is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.

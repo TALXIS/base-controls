@@ -344,6 +344,133 @@ export const saveProduct = async (product: IRawRecord) => {
 `,
 }
 
+const SERVER_PROVIDER_CODE = `import { fetchProducts } from './api'
+
+//sorts, searches and pages on the server
+class ProductsProvider extends DataProvider {
+    //its copies, such as one per group, are made with the same options
+    constructor(options: object) {
+        super(options)
+        this.setMetadata({ PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' })
+        this.setColumns([
+            { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 240 },
+            { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+        ])
+        this.getPaging().setPageSize(5)
+    }
+
+    public async getDataAsync(pageNumber: number, pageSize: number): Promise<IRetrievedData> {
+        const { items, total } = await fetchProducts({ page: pageNumber, size: pageSize, search: this.getSearchQuery() ?? '', sorting: this.getSorting() })
+        return { data: items, totalRecordCount: total, hasNextPage: pageNumber * pageSize < total }
+    }
+
+    public getDataSync(): IRetrievedData {
+        throw new Error('Not implemented.')
+    }
+
+    public async onPreload() { }
+
+    public onGetQuickFindColumns(): IColumn[] {
+        return this.getColumns().filter(column => column.isPrimary)
+    }
+
+    public async onRetrieveRecordCommand(defaultAction: (options?: IRetrieveRecordCommandOptions) => Promise<ICommand[]>, options?: IRetrieveRecordCommandOptions) {
+        return defaultAction(options)
+    }
+
+    public onIsRecordActive() {
+        return true
+    }
+
+    public onOpenDatasetItem(entityReference: ComponentFramework.EntityReference) {
+        alert(\`Open \${entityReference.name}\`)
+    }
+
+    public async onGetAvailableColumns(): Promise<IColumn[]> {
+        return this.getColumns()
+    }
+
+    public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
+        return []
+    }
+
+    //the products are read-only
+    public async onRecordSave(): Promise<IRecordSaveOperationResult> {
+        throw new Error('Not implemented.')
+    }
+
+    public async onRecordsDelete(): Promise<{ success: boolean, results: IRecordDeleteOperationResult[] }> {
+        throw new Error('Not implemented.')
+    }
+
+    public onRecordCreate() {
+        throw new Error('Not implemented.')
+    }
+
+    public onRecordRawDataUpdate() {
+        throw new Error('Not implemented.')
+    }
+
+    public async onBulkEdit(): Promise<boolean> {
+        throw new Error('Not implemented.')
+    }
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: new ProductsProvider({}) })} height='320px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            <DatasetControl.QuickFind />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
+    </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.End>
+            <DatasetControl.Pagination />
+        </DatasetControl.Footer.End>
+    </DatasetControl.Footer>
+</DatasetControl>
+`
+
+const SERVER_API_FILE = {
+    name: 'api.ts',
+    code: `//stands in for your server, which sorts, searches and pages the products
+const PRODUCTS: IRawRecord[] = [
+    { productid: 'desk', name: 'Standing desk', price: 640 },
+    { productid: 'chair', name: 'Ergonomic chair', price: 410 },
+    { productid: 'lamp', name: 'Desk lamp', price: 85 },
+    { productid: 'monitor', name: 'Monitor arm', price: 120 },
+    { productid: 'mat', name: 'Anti-fatigue mat', price: 60 },
+    { productid: 'shelf', name: 'Wall shelf', price: 95 },
+    { productid: 'cabinet', name: 'Filing cabinet', price: 230 },
+    { productid: 'whiteboard', name: 'Whiteboard', price: 150 },
+    { productid: 'footrest', name: 'Footrest', price: 45 },
+    { productid: 'sofa', name: 'Lounge sofa', price: 980 },
+    { productid: 'plant', name: 'Office plant', price: 35 },
+    { productid: 'locker', name: 'Locker', price: 310 },
+]
+
+interface IProductQuery {
+    page: number
+    size: number
+    search: string
+    sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
+}
+
+export const fetchProducts = async (query: IProductQuery) => {
+    await new Promise(resolve => setTimeout(resolve, 400))
+    const found = PRODUCTS.filter(product => product.name.toLowerCase().includes(query.search.toLowerCase()))
+    const [sort] = query.sorting
+    if (sort) {
+        const direction = sort.sortDirection === 1 ? -1 : 1
+        found.sort((a, b) => (a[sort.name] > b[sort.name] ? 1 : -1) * direction)
+    }
+    return { items: found.slice((query.page - 1) * query.size, query.page * query.size), total: found.length }
+}
+`,
+}
+
 export const SharedProviderExample = () => <GridExampleRunner seedCode={SHARED_PROVIDER_CODE} />
 
 export const SteerFromCodeExample = () => <GridExampleRunner seedCode={STEER_FROM_CODE_CODE} />
@@ -355,3 +482,5 @@ export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} />
 export const EventsExample = () => <GridExampleRunner seedCode={EVENTS_CODE} />
 
 export const OwnProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_PROVIDER_CODE }, API_FILE]} />
+
+export const ServerProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: SERVER_PROVIDER_CODE }, SERVER_API_FILE]} />

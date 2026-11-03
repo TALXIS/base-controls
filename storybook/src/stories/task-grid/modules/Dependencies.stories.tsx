@@ -33,15 +33,7 @@ Every factory also takes \`reloadOnEditorClosed\`, to read a task's dependencies
 
 ### Dataverse
 
-\`\`\`tsx
-createDataverseDependenciesModule({
-    entityName: 'new_taskdependency',
-    predecessorAttribute: 'new_predecessorid',
-    successorAttribute: 'new_successorid',
-    typeAttribute: 'new_type',
-    dependencyTypeCodes: { 1: 'finishToStart', 2: 'startToStart', 3: 'finishToFinish', 4: 'startToFinish' },
-})
-\`\`\`
+*dataverse.ts* in the example keeps the dependencies in a Dataverse table.
 
 | Parameter | Description |
 |---|---|

@@ -22,15 +22,7 @@ To offer them, add a user queries module from *Where views are kept* below and p
 
 \`saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's *views.ts* does.
 
-Some keys are declared already, such as \`sorting\`, \`filtering\` and \`searchQuery\`. Declare a key of your own on \`IUserQuerySavedValueMap\`:
-
-\`\`\`ts
-declare module '@talxis/base-controls' {
-    interface IUserQuerySavedValueMap {
-        layout: string
-    }
-}
-\`\`\`
+Some keys are declared already, such as \`sorting\`, \`filtering\` and \`searchQuery\`. Declare a key of your own on \`IUserQuerySavedValueMap\`, as *types.ts* in the example does.
 
 - \`saveWithView\` returns its unregistration.
 - Registering the same key twice throws.
@@ -49,15 +41,7 @@ Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`en
 
 ## Dataverse
 
-\`\`\`tsx
-createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal', ownerId: context.userSettings.userId })
-
-createDataverseUserQueriesModule<IDealViewData>({
-    entityName: 'deal',
-    ownerId: context.userSettings.userId,
-    table: { name: 'new_savedview', fieldMapping: { name: 'new_name', layout: 'new_layout', returnedTypeCode: 'new_entity' } },
-})
-\`\`\`
+*dataverse.ts* in *Save your own views* creates both modules.
 
 | Parameter | Description |
 |---|---|

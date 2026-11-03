@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
 const USER_VIEWS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
@@ -130,5 +131,36 @@ const GridExample = () => {
 }
 `
 
-export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE)} />
+const USER_VIEWS_TYPES_FILE: IGridExampleFile = {
+    name: 'types.ts',
+    code: `//declares a key of your own for saveWithView, beside sorting, filtering and searchQuery
+declare module '@talxis/base-controls' {
+    interface IUserQuerySavedValueMap {
+        layout: string
+    }
+}
+
+export {}
+`,
+}
+
+const USER_VIEWS_DATAVERSE_FILE: IGridExampleFile = {
+    name: 'dataverse.ts',
+    code: `//in a model-driven app, use one of these modules instead of the localStorage one in GridExample.tsx
+import { createDataverseUserQueriesModule, createTalxisUserQueriesModule } from '@talxis/base-controls'
+import type { IDealViewData } from './views'
+
+//as talxis_userquery records
+export const createTalxisViewsModule = (context: ComponentFramework.Context) => createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal', ownerId: context.userSettings.userId })
+
+//as records of a table of your own
+export const createDataverseViewsModule = (context: ComponentFramework.Context) => createDataverseUserQueriesModule<IDealViewData>({
+    entityName: 'deal',
+    ownerId: context.userSettings.userId,
+    table: { name: 'new_savedview', fieldMapping: { name: 'new_name', layout: 'new_layout', returnedTypeCode: 'new_entity' } },
+})
+`,
+}
+
+export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_TYPES_FILE, USER_VIEWS_DATAVERSE_FILE)} />
 export const OwnStoreExample = () => <GridExampleRunner seedCode={withFiles(OWN_STORE_CODE, VIEWS_FILE)} />

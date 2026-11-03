@@ -40,22 +40,9 @@ What you register on the grid goes with it. Anything that outlives the grid keep
 
 What \`onLoad\` returns is registered under the module's \`name\`. Other modules reach it with \`grid.modules.find(name)\`, and anything the grid draws with \`useGridModule(name)\`. An instance does not redraw anything by itself: when its state changes, tell whoever draws it, as the bar's \`subscribe\` does.
 
-Add the name to \`IGridModuleMap\` once in your project, next to the module, and the instance is typed wherever you reach it:
+Add the name to \`IGridModuleMap\` once in your project, next to the module, and the instance is typed wherever you reach it, as *types.ts* in the example does.
 
-\`\`\`tsx
-export interface IUnsavedChanges {
-    getCount(): number
-    subscribe(listener: (count: number) => void): () => void
-}
-
-declare module '@talxis/base-controls' {
-    interface IGridModuleMap {
-        unsavedChanges: IUnsavedChanges
-    }
-}
-\`\`\`
-
-The file has to import or export something, as this one exports \`IUnsavedChanges\`; otherwise \`declare module\` replaces the package's types instead of adding to them. A module whose \`onLoad\` returns nothing still needs an entry, typed \`void\`. A grid may not have your module, so \`find\` returns \`IUnsavedChanges | undefined\`, and \`get\` and \`useGridModule\` throw without it.
+The file has to import or export something, as *types.ts* exports \`IUnsavedChanges\`; otherwise \`declare module\` replaces the package's types instead of adding to them. A module whose \`onLoad\` returns nothing still needs an entry, typed \`void\`. A grid may not have your module, so \`find\` returns \`IUnsavedChanges | undefined\`, and \`get\` and \`useGridModule\` throw without it.
 
 ## Draw inside the grid
 

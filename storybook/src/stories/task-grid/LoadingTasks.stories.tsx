@@ -58,24 +58,7 @@ Every data source also takes \`provider\`, a class extending \`TaskDataProvider\
 
 ### Dataverse
 
-\`\`\`tsx
-const TASKS_FETCH_XML = \`<fetch>
-    <entity name="task">
-        <attribute name="subject" />
-        <attribute name="parentid" />
-        <attribute name="stackrank" />
-        <attribute name="statecode" />
-        <filter>
-            <condition attribute="projectid" operator="eq" value="{{ project.id }}" />
-        </filter>
-    </entity>
-</fetch>\`
-
-const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
-    provider: createDataverseTaskDataSource({ taskRuntime, onCreateStore: () => new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }) }),
-    fieldMapping,
-})
-\`\`\`
+*dataverse.ts* in *Show your own tasks* loads the tasks from Dataverse.
 
 | Parameter | Description |
 |---|---|

@@ -1,13 +1,19 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const SELECTED_VALUE_CODE = `import { loadDeals, loadDealViews } from './views'
+const SELECTED_VALUE_CODE = `import { useDatasetControlPart } from '@talxis/base-controls'
+import { loadDeals, loadDealViews } from './views'
+
+const getTotal = (provider: IDataProvider): number => provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
 
 //a part of your own: the total value of the selected deals
 const SelectedValue = () => {
     const provider = useDataProviderEvents(['onRecordsSelected'])
-    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
+    //for control.parts.get('selectedValue'), under the key types.ts declares
+    useDatasetControlPart('selectedValue', () => ({ getTotal: () => getTotal(provider) }))
+    const total = getTotal(provider)
     return <Text styles={{ root: { alignSelf: 'center' } }}>Selected: {total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</Text>
 }
 
@@ -32,4 +38,19 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-export const SelectedValueExample = () => <GridExampleRunner seedCode={withFiles(SELECTED_VALUE_CODE, VIEWS_FILE)} />
+const SELECTED_VALUE_TYPES_FILE: IGridExampleFile = {
+    name: 'types.ts',
+    code: `//declares the key SelectedValue registers its part under, next to the part in your project
+export interface ISelectedValue {
+    getTotal(): number
+}
+
+declare module '@talxis/base-controls' {
+    interface IDatasetControlPartMap {
+        selectedValue: ISelectedValue
+    }
+}
+`,
+}
+
+export const SelectedValueExample = () => <GridExampleRunner seedCode={withFiles(SELECTED_VALUE_CODE, VIEWS_FILE, SELECTED_VALUE_TYPES_FILE)} />

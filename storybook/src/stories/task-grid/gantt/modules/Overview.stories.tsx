@@ -29,14 +29,7 @@ The Gantt itself lines the tasks up on a timeline; everything beyond the bars, f
 
 \`createLibraryModule()\` brings the free build of DHTMLX Gantt, with its stylesheet. Everything on these pages works with it.
 
-To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself:
-
-\`\`\`tsx
-import { Gantt } from 'dhtmlx-gantt-pro'
-import 'dhtmlx-gantt-pro/codebase/dhtmlxgantt.css'
-
-const ganttModules = [createProLibraryModule({ Gantt })]
-\`\`\`
+To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as *pro.ts* in the example does.
 
 A module of yours reaches the build with \`gantt.getLibrary()\`.
 `

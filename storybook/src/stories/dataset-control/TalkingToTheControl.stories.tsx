@@ -73,15 +73,7 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 
 {{story: Add a view from a module}}
 
-Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed:
-
-\`\`\`ts
-declare module '@talxis/base-controls' {
-    interface IDatasetControlModuleMap {
-        dealAlerts: DealAlerts
-    }
-}
-\`\`\`
+Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as *types.ts* in the example does.
 
 | Member | Description |
 |---|---|

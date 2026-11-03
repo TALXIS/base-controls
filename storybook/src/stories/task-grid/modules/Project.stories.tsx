@@ -37,9 +37,7 @@ Tasks usually belong to a project, and several parts of a task grid need to know
 | \`createDataverseProjectModule\` | \`entityName\` and \`id\` of the project's record, \`startDateColumn\` and \`endDateColumn\` for its dates, and \`columns\`, more columns to read into \`data\`. |
 | \`createProjectModule\` | \`onCreateStore\`: a store with \`onLoadProject()\`, which returns the project. |
 
-\`\`\`tsx
-createDataverseProjectModule({ entityName: 'msdyn_project', id: projectId, startDateColumn: 'msdyn_scheduledstart', endDateColumn: 'msdyn_finish', columns: ['msdyn_customer'] })
-\`\`\`
+*dataverse.ts* in the example reads the project from Dataverse.
 
 `
 

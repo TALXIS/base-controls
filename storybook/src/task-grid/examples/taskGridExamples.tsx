@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { withTasks } from './shared'
 
 const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
@@ -318,9 +319,33 @@ const GridExample = () => {
 }
 `
 
+const DATAVERSE_TASKS_FILE: IGridExampleFile = {
+    name: 'dataverse.ts',
+    code: `//in a model-driven app, load the tasks this way instead of from the memory database in GridExample.tsx
+const TASKS_FETCH_XML = \`<fetch>
+    <entity name="task">
+        <attribute name="subject" />
+        <attribute name="parentid" />
+        <attribute name="stackrank" />
+        <attribute name="statecode" />
+        <filter>
+            <condition attribute="projectid" operator="eq" value="{{ project.id }}" />
+        </filter>
+    </entity>
+</fetch>\`
+
+const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
+
+export const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
+    provider: createDataverseTaskDataSource({ taskRuntime, onCreateStore: () => new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }) }),
+    fieldMapping,
+})
+`,
+}
+
 export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
 export const BasicTaskGridExample = () => <GridExampleRunner seedCode={BASIC_CODE} />
-export const OwnTasksExample = () => <GridExampleRunner seedCode={OWN_TASKS_CODE} />
+export const OwnTasksExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_TASKS_CODE }, DATAVERSE_TASKS_FILE]} />
 export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} />
 export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} />
 export const WorkingWithTasksExample = () => <GridExampleRunner seedCode={withTasks(WORKING_CODE)} />

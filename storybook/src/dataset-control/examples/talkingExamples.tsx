@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
 const DRIVE_CODE = `import { loadDeals, loadDealViews } from './views'
@@ -103,6 +104,8 @@ const closingSoonModule: IDatasetControlModule = {
     name: 'closingSoon',
     onLoad: control => {
         control.registerViews((views: IDatasetControlView[]) => views.push(CLOSING_SOON))
+        //what control.modules.get('closingSoon') returns, typed by types.ts
+        return CLOSING_SOON
     },
 }
 
@@ -118,6 +121,19 @@ const GridExample = () => <DatasetControl modules={[closingSoonModule]} onLoadVi
 </DatasetControl>
 `
 
+const MODULE_TYPES_FILE: IGridExampleFile = {
+    name: 'types.ts',
+    code: `//declares what closingSoonModule's onLoad returns, next to the module in your project
+declare module '@talxis/base-controls' {
+    interface IDatasetControlModuleMap {
+        closingSoon: IDatasetControlView
+    }
+}
+
+export {}
+`,
+}
+
 export const DriveTheControlExample = () => <GridExampleRunner seedCode={withFiles(DRIVE_CODE, VIEWS_FILE)} />
 export const WatchTheControlExample = () => <GridExampleRunner seedCode={withFiles(WATCH_CONTROL_CODE, VIEWS_FILE)} />
-export const ModuleExample = () => <GridExampleRunner seedCode={withFiles(MODULE_CODE, VIEWS_FILE)} />
+export const ModuleExample = () => <GridExampleRunner seedCode={withFiles(MODULE_CODE, VIEWS_FILE, MODULE_TYPES_FILE)} />

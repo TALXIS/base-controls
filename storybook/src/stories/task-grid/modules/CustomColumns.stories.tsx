@@ -29,9 +29,7 @@ The values are edited in the grid, with \`createTaskEditingModule()\`, and saved
 
 ### TALXIS
 
-\`\`\`tsx
-createTalxisCustomColumnsModule({ entityName: 'task', recordId: projectId, enableCreation: true, enableEditing: true, enableDeletion: true })
-\`\`\`
+*talxis.ts* in the example keeps the project's columns in TALXIS.
 
 | Parameter | Description |
 |---|---|

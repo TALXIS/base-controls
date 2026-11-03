@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { withTasks } from './shared'
 
 interface IGanttExample {
@@ -229,9 +230,19 @@ const criticalTasksModule = {
         criticalTasksModule,`,
 })
 
+const PRO_LIBRARY_FILE: IGridExampleFile = {
+    name: 'pro.ts',
+    code: `//with a DHTMLX Gantt PRO licence, use this library module instead of createLibraryModule() in GridExample.tsx
+import { Gantt } from 'dhtmlx-gantt-pro'
+import 'dhtmlx-gantt-pro/codebase/dhtmlxgantt.css'
+
+export const libraryModule = createProLibraryModule({ Gantt })
+`,
+}
+
 export const GanttShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
 export const GanttBasicExample = () => <GridExampleRunner seedCode={withTasks(BASIC_CODE)} />
-export const GanttModulesExample = () => <GridExampleRunner seedCode={withTasks(MODULES_CODE)} />
+export const GanttModulesExample = () => <GridExampleRunner seedCode={[...withTasks(MODULES_CODE), PRO_LIBRARY_FILE]} />
 export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} />
 export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(MARKERS_CODE)} />
 export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} />

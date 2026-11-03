@@ -4477,7 +4477,6 @@ interface ITaskDependenciesStore {
 /** A Dataverse table of dependencies: two task lookups and an option set of the type. */
 interface IDataverseDependenciesSchema {
     entityName: string;
-    primaryIdAttribute: string;
     predecessorAttribute: string;
     successorAttribute: string;
     typeAttribute: string;
@@ -4689,5 +4688,54 @@ declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Eleme
 declare const createTaskTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string }) => IGanttModule;
 /** Draws the dependencies module's dependencies between the bars. */
 declare const createLinksModule: (parameters?: {}) => IGanttModule;
+
+declare namespace ComponentFramework {
+    /** The lifecycle the host calls on a PCF control. */
+    interface StandardControl<TInputs, TOutputs> {
+        init(context: Context<TInputs, TOutputs>, notifyOutputChanged: () => void, state: Dictionary, container: HTMLDivElement): void;
+        updateView(context: Context<TInputs, TOutputs>): void;
+        getOutputs?(): TOutputs;
+        destroy(): void;
+    }
+    type Dictionary = { [key: string]: any };
+    namespace PropertyTypes {
+        /** A text input parameter of the control's manifest. */
+        interface StringProperty {
+            raw: string | null;
+        }
+    }
+}
+declare module 'react-dom';
+declare module 'dhtmlx-gantt-pro';
+
+/** The instances grid modules register, by name; extend it for a module of your own. */
+interface IGridModuleMap {}
+/** The instances DatasetControl modules register, by name; extend it for a module of your own. */
+interface IDatasetControlModuleMap {}
+
+/** The record a Dataverse task grid sits on, such as the one the form shows. */
+interface IDataverseHostRecord {
+    entityName: string;
+    id?: string;
+    data?: IRawRecord;
+}
+/** Tasks in a Dataverse table, read through FetchXML and opened in their forms. */
+declare class DataverseTaskStore implements ITaskStore {
+    constructor(parameters: {
+        taskRuntime: ITaskRuntime;
+        /** Liquid over project and hostRecord. */
+        fetchXml: string;
+        hostRecord?: IDataverseHostRecord;
+        form?: { editId?: string; bulkEditId?: string; onGetParameters?: (operation: 'edit' | 'bulkEdit' | 'open', defaults: any) => any };
+        onGetNewTaskDefaults?: (params: ITaskCreateParams) => IRawRecord | Promise<IRawRecord>;
+    });
+    [operation: string]: any;
+}
+/** Puts a DataverseTaskStore together with a task provider. */
+declare const createDataverseTaskDataSource: typeof createMemoryTaskDataSource;
+/** The user's own task columns as TALXIS attribute definitions and values. */
+declare const createTalxisCustomColumnsModule: (parameters: { entityName: string; recordId?: string; navigationPropertyName?: string; enableCreation?: boolean; enableEditing?: boolean; enableDeletion?: boolean }) => IDatasetControlModule;
+/** The project module for a project record in Dataverse. */
+declare const createDataverseProjectModule: (parameters: { entityName: string; id: string; startDateColumn?: string; endDateColumn?: string; columns?: string[] }) => IProjectModule;
 
 `

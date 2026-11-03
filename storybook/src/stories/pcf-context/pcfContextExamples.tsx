@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
 const FORMAT_CODE = `const CULTURES = [
     { key: 'en-US', text: 'English (United States)', lcid: 1033 },
@@ -8,7 +9,7 @@ const FORMAT_CODE = `const CULTURES = [
     { key: 'ja-JP', text: '日本語', lcid: 1041 },
 ]
 
-const Invoice = () => {
+export const Invoice = () => {
     const { formatting } = usePcfContext()
     const issued = new Date(2026, 2, 15, 14, 30)
     const due = new Date(2026, 3, 14)
@@ -58,5 +59,32 @@ const GridExample = () => <PcfContextProvider>
 </PcfContextProvider>
 `
 
-export const FormatExample = () => <GridExampleRunner seedCode={FORMAT_CODE} />
+const PCF_CONTROL_FILE: IGridExampleFile = {
+    name: 'index.tsx',
+    code: `//in a PCF control, hand the provider the host's context instead of the userSettings GridExample.tsx passes
+import ReactDOM from 'react-dom'
+import { PcfContextProvider } from '@talxis/base-controls'
+import { Invoice } from './GridExample'
+
+export class InvoiceControl implements ComponentFramework.StandardControl<{}, {}> {
+    private _container!: HTMLDivElement
+
+    public init(context: ComponentFramework.Context, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
+        this._container = container
+    }
+
+    public updateView(context: ComponentFramework.Context) {
+        ReactDOM.render(<PcfContextProvider context={context}>
+            <Invoice />
+        </PcfContextProvider>, this._container)
+    }
+
+    public destroy() {
+        ReactDOM.unmountComponentAtNode(this._container)
+    }
+}
+`,
+}
+
+export const FormatExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: FORMAT_CODE }, PCF_CONTROL_FILE]} />
 export const DialogsExample = () => <GridExampleRunner seedCode={DIALOGS_CODE} />

@@ -1,5 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
 const COME_BACK_CODE = `import { loadDeals, loadDealViews } from './views'
@@ -9,12 +10,27 @@ const styles = mergeStyleSets({
     store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4, overflow: 'auto', maxHeight: 420 },
 })
 
+const modules = [createClientSideRowModelModule(), createSortingModule()]
+
+export const Deals = () => <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='420px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher />
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            <DatasetControl.QuickFind />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid stateKey='grid' modules={modules} />
+    </DatasetControl.Body>
+</DatasetControl>
+
 const GridExample = () => {
     const state = React.useMemo(() => ({}), [])
     const store = React.useMemo(() => new StateStore({ state }), [state])
     const [isShown, setIsShown] = React.useState(true)
     const [kept, setKept] = React.useState('{}')
-    const modules = React.useMemo(() => [createClientSideRowModelModule(), createSortingModule()], [])
 
     //the control writes its state as it unmounts
     React.useEffect(() => setKept(JSON.stringify(state, null, 2)), [isShown])
@@ -23,19 +39,7 @@ const GridExample = () => {
         <Stack tokens={{ childrenGap: 12 }}>
             <DefaultButton text={isShown ? 'Leave the deals' : 'Come back'} onClick={() => setIsShown(!isShown)} styles={{ root: { alignSelf: 'flex-start' } }} />
             <div className={styles.layout}>
-                {isShown ? <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='420px'>
-                    <DatasetControl.Header>
-                        <DatasetControl.Header.Start>
-                            <DatasetControl.ViewSwitcher />
-                        </DatasetControl.Header.Start>
-                        <DatasetControl.Header.End>
-                            <DatasetControl.QuickFind />
-                        </DatasetControl.Header.End>
-                    </DatasetControl.Header>
-                    <DatasetControl.Body>
-                        <Grid stateKey='grid' modules={modules} />
-                    </DatasetControl.Body>
-                </DatasetControl> : <Text>You left the deals.</Text>}
+                {isShown ? <Deals /> : <Text>You left the deals.</Text>}
                 <pre className={styles.store}>{kept}</pre>
             </div>
         </Stack>
@@ -114,6 +118,44 @@ const GridExample = () => {
 }
 `
 
-export const ComeBackExample = () => <GridExampleRunner seedCode={withFiles(COME_BACK_CODE, VIEWS_FILE)} />
+const PCF_CONTROL_FILE: IGridExampleFile = {
+    name: 'index.tsx',
+    code: `//in a PCF control, keep the state for the session with the host instead of in GridExample.tsx's memory
+import ReactDOM from 'react-dom'
+import { PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
+import { Deals } from './GridExample'
+
+export class DealsControl implements ComponentFramework.StandardControl<{}, {}> {
+    private _container!: HTMLDivElement
+    private _context!: ComponentFramework.Context
+    private _state!: IStateDictionary
+    private _store!: StateStore
+
+    //the host hands init the state setControlState kept
+    public init(context: ComponentFramework.Context, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
+        this._container = container
+        this._state = state ?? {}
+        this._store = new StateStore({ state: this._state })
+    }
+
+    public updateView(context: ComponentFramework.Context) {
+        this._context = context
+        ReactDOM.render(<PcfContextProvider context={context}>
+            <StateProvider store={this._store}>
+                <Deals />
+            </StateProvider>
+        </PcfContextProvider>, this._container)
+    }
+
+    public destroy() {
+        //the controls write their state as they unmount
+        ReactDOM.unmountComponentAtNode(this._container)
+        this._context.mode.setControlState(this._state)
+    }
+}
+`,
+}
+
+export const ComeBackExample = () => <GridExampleRunner seedCode={withFiles(COME_BACK_CODE, VIEWS_FILE, PCF_CONTROL_FILE)} />
 export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} />
 export const ScopesExample = () => <GridExampleRunner seedCode={SCOPES_CODE} />

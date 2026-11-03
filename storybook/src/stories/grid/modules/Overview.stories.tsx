@@ -44,13 +44,7 @@ What the provider holds survives the remount: its records, sorting, filters, gro
 
 ## AG Grid Enterprise and the licence
 
-The grid runs on AG Grid Community. Server-side rows, cell selection, the clipboard and grouping use AG Grid Enterprise, which needs a licence from AG Grid. The packages come with \`@talxis/base-controls\`; to license them, pass your key to the \`license\` module:
-
-\`\`\`tsx
-//a LicenseKey input parameter declared in your control's manifest
-const licenseKey = context.parameters.LicenseKey.raw
-const modules = [...(licenseKey ? [createLicenseModule({ key: licenseKey })] : []), createServerSideRowModelModule()]
-\`\`\`
+The grid runs on AG Grid Community. Server-side rows, cell selection, the clipboard and grouping use AG Grid Enterprise, which needs a licence from AG Grid. The packages come with \`@talxis/base-controls\`; to license them, pass your key to the \`license\` module, as *license.ts* in *Open ticket groups on demand* does.
 
 \`key\` is required, so leave the module out while there is no key. The key holds for the whole page: once one grid registers it, every grid on the page is licensed. Without one, AG Grid logs a licence message to the console and, on any host but \`localhost\` and \`127.0.0.1\`, draws a watermark over every grid on the page.
 

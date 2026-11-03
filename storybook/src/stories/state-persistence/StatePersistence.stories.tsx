@@ -49,26 +49,7 @@ A store lives as long as its \`StateProvider\`, or the page without one. To keep
 - **For the session**, hand it to \`context.mode.setControlState\` in a PCF (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
 - **Across sessions**, save it as JSON, such as in \`localStorage\` or a table: entries are plain data.
 
-In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted:
-
-\`\`\`tsx
-public init(context, notifyOutputChanged, state, container) {
-    this._container = container
-    this._state = state ?? {}
-    this._store = new StateStore({ state: this._state })
-}
-
-public updateView(context) {
-    this._context = context
-    ReactDOM.render(<StateProvider store={this._store}><App /></StateProvider>, this._container)
-}
-
-public destroy() {
-    //the controls write their state as they unmount
-    ReactDOM.unmountComponentAtNode(this._container)
-    this._context.mode.setControlState(this._state)
-}
-\`\`\`
+In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted, as *index.tsx* in *Come back where you left off* does.
 `
 
 const meta = {
