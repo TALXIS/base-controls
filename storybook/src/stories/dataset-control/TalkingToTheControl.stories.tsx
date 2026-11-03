@@ -98,7 +98,7 @@ Each \`register…\` returns its unregistration.
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in. See [**Theming**](?path=/docs/concepts-theming--overview). |
 
-A dialog a module draws is a surface over the application, so draw it in the theme \`useApplicationTheme()\` returns.
+A dialog a module draws is a surface over the application, so draw it in the theme \`useAppTheme()\` returns.
 `
 
 const meta = {

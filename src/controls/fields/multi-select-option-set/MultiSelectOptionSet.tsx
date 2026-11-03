@@ -8,12 +8,12 @@ import React from 'react';
 import { ColorfulOptions } from './colorful-options/ColorfulOptions';
 import { getIsColorFeatureEnabled, onRenderColorfulOption } from '@controls/fields/option-set/shared';
 import { getComboBoxStyles } from './styles';
-import { ApplicationThemeContext, ThemeContext, useApplicationTheme, useTheme } from '@theme';
+import { AppThemeContext, ThemeContext, useAppTheme, useTheme } from '@theme';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged } = useControl('MultiSelectOptionSet', props);
     const theme = useTheme();
-    const applicationTheme = useApplicationTheme();
+    const appTheme = useAppTheme();
     const ref = useRef<HTMLDivElement>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -66,11 +66,11 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         container.onclick = () => componentRef.current?.focus(true);
 
         //a root of its own, which the themes do not reach unless handed over
-        ReactDOM.render(<ApplicationThemeContext.Provider value={applicationTheme}>
+        ReactDOM.render(<AppThemeContext.Provider value={appTheme}>
             <ThemeContext theme={theme}>
                 <ColorfulOptions value={boundValue} context={props.context} />
             </ThemeContext>
-        </ApplicationThemeContext.Provider>, container);
+        </AppThemeContext.Provider>, container);
 
         const existingContainer = parent.querySelector(`:scope>.${className}`);
         if (existingContainer && isEmptyValue()) {

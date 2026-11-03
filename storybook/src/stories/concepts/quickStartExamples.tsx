@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const FIRST_APP_CODE = `import { ApplicationThemeProvider, createClientSideRowModelModule, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
+const FIRST_APP_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 const loadProducts = async () => ({
@@ -21,13 +21,13 @@ const loadProducts = async () => ({
 
 const GridExample = () => <PcfContextProvider>
     <StateProvider>
-        <ApplicationThemeProvider>
+        <AppThemeProvider>
             <DatasetControl onLoad={loadProducts} height='240px'>
                 <DatasetControl.Body>
                     <Grid modules={[createClientSideRowModelModule()]} />
                 </DatasetControl.Body>
             </DatasetControl>
-        </ApplicationThemeProvider>
+        </AppThemeProvider>
     </StateProvider>
 </PcfContextProvider>
 `

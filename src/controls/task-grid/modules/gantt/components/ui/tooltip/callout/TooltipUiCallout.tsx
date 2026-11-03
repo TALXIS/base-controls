@@ -1,6 +1,6 @@
 import { ReactNode, useMemo } from "react";
 import { DirectionalHint, IPoint } from "@fluentui/react";
-import { useApplicationTheme } from "@theme";
+import { useAppTheme } from "@theme";
 import { ITooltipUiCalloutComponents, TooltipUiCalloutComponents } from "./components";
 import { getTooltipUiCalloutStyles } from "./styles";
 
@@ -13,8 +13,8 @@ export interface ITooltipUiCalloutProps {
 /** The callout a tooltip is drawn in, next to a point. */
 export const TooltipUiCallout = (props: ITooltipUiCalloutProps) => {
     const components = { ...TooltipUiCalloutComponents, ...props.components };
-    const applicationTheme = useApplicationTheme();
-    const styles = useMemo(() => getTooltipUiCalloutStyles(applicationTheme), [applicationTheme]);
+    const appTheme = useAppTheme();
+    const styles = useMemo(() => getTooltipUiCalloutStyles(appTheme), [appTheme]);
 
     return components.onRenderCallout({
         target: props.target,

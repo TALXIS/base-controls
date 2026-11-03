@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { useApplicationTheme } from "@theme";
+import { useAppTheme } from "@theme";
 import { useSurfaceMenuProps } from "@ui";
 import { getClassNames } from "@utils";
 import { IViewSwitcherUiComponents, ViewSwitcherUiComponents } from "./components";
@@ -24,8 +24,8 @@ export interface IViewSwitcherUiProps {
 /** A button named after the current view, opening the list of views. */
 export const ViewSwitcher = (props: IViewSwitcherUiProps) => {
     const components = { ...ViewSwitcherUiComponents, ...props.components };
-    const applicationTheme = useApplicationTheme();
-    const styles = useMemo(() => getViewSwitcherUiStyles(applicationTheme), [applicationTheme]);
+    const appTheme = useAppTheme();
+    const styles = useMemo(() => getViewSwitcherUiStyles(appTheme), [appTheme]);
     const items = props.items.map(item => item.key === props.selectedKey ? { ...item, className: getClassNames([item.className, styles.selectedItem]) } : item);
     const menuProps = useSurfaceMenuProps({ items: getGroupSections(items), className: styles.menu });
 

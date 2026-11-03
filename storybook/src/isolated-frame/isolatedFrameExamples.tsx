@@ -54,9 +54,9 @@ const FramedDeals = (props: { theme: ITheme }) => {
     const { greeting } = window as Window & { greeting?: string }
     return <PcfContextProvider>
         <StateProvider>
-            <ApplicationThemeProvider theme={props.theme} style={{ height: '100%' }}>
+            <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
                 <DealsGrid heading={\`In a frame · \${greeting}\`} />
-            </ApplicationThemeProvider>
+            </AppThemeProvider>
         </StateProvider>
     </PcfContextProvider>
 }

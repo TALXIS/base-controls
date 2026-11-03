@@ -1,3 +1,3 @@
 export * from './useThemeBuilder';
-export * from './useApplicationTheme';
+export * from './useAppTheme';
 export * from './useTheme';

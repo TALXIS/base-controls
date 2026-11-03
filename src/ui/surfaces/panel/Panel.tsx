@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useMemo } from 'react';
 import { concatStyleSetsWithProps, IPanelProps, IPanelStyleProps, IPanelStyles, Panel as PanelBase } from "@fluentui/react";
-import { ThemeContext, ThemeProvider, useApplicationTheme } from "@theme";
+import { ThemeContext, ThemeProvider, useAppTheme } from "@theme";
 import { getPanelStyles } from './styles';
 
 /** A panel drawn in the application's theme rather than in the one it was opened from. */
 export const Panel = (props: IPanelProps & { children?: React.ReactNode }) => {
     const { children, styles: userStyles, ...panelProps } = props;
-    const theme = useApplicationTheme();
+    const theme = useAppTheme();
     const styles = useMemo(() => getPanelStyles(theme), [theme]);
     const panelStyles = { commands: styles.commands, footer: styles.footer, footerInner: styles.footerInner, scrollableContent: styles.scrollableContent, content: styles.content, header: styles.header, headerText: styles.headerText, subComponentStyles: { closeButton: { root: styles.closeButton } } };
 

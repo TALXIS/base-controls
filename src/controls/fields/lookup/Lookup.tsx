@@ -2,7 +2,7 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLabels, useApplicationTheme } from "@utils";
+import { useLabels, useAppTheme } from "@utils";
 import { LOOKUP_LABELS } from "./labels";
 import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
@@ -24,7 +24,7 @@ export const Lookup = (props: ILookup) => {
     const [value, entities, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const labels = useLabels(LOOKUP_LABELS);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
-    const suggestionsCalloutTheme = useApplicationTheme();
+    const suggestionsCalloutTheme = useAppTheme();
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref, 100);

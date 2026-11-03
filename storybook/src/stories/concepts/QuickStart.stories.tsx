@@ -19,12 +19,12 @@ Base Controls runs on React 16.8 or 17 and Fluent UI 8.121.5 or earlier.
 
 ## Set up the application
 
-Wrap the application in the shared providers once, then add controls anywhere below them, as the example does. \`PcfContextProvider\` and \`ApplicationThemeProvider\` are required; add the others when you need what they provide:
+Wrap the application in the shared providers once, then add controls anywhere below them, as the example does. \`PcfContextProvider\` and \`AppThemeProvider\` are required; add the others when you need what they provide:
 
 | Provider | Provides | Without it |
 |---|---|---|
 | \`PcfContextProvider\` | The user, formatting, dialogs and data access: [**PCF context**](?path=/docs/concepts-pcf-context--overview) | The controls throw |
-| \`ApplicationThemeProvider\` | The theme: [**Theming**](?path=/docs/concepts-theming--overview) | The controls throw |
+| \`AppThemeProvider\` | The theme: [**Theming**](?path=/docs/concepts-theming--overview) | The controls throw |
 | \`StateProvider\` | Saved state: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | One in-memory store for the page |
 | \`LabelsProvider\` | Your wording: [**Localization**](?path=/docs/concepts-localization--overview) | English |
 

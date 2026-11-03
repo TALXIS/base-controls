@@ -4,7 +4,7 @@ import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs/blocks'
 import { GLOBALS_UPDATED } from 'storybook/internal/core-events';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { ApplicationThemeProvider, createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
+import { AppThemeProvider, createThemeBuilder, PcfContextProvider, StateProvider } from '@talxis/base-controls';
 import { APPLICATION_THEME_COLORS, FLUENT_THEMES, onSystemColorSchemeChange, resolveColorScheme, THEME_GLOBAL } from './fluentTheme';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
@@ -35,9 +35,9 @@ const StoryProviders = (props: { themeSetting: unknown; children: React.ReactNod
   return <PcfContextProvider>
     <StateProvider>
       {/* keyed: the controls read the theme as they mount */}
-      <ApplicationThemeProvider key={scheme} theme={APPLICATION_THEMES[scheme]}>
+      <AppThemeProvider key={scheme} theme={APPLICATION_THEMES[scheme]}>
         {props.children}
-      </ApplicationThemeProvider>
+      </AppThemeProvider>
     </StateProvider>
   </PcfContextProvider>;
 };

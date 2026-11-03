@@ -46,7 +46,7 @@ const GridExample = () => {
                 <input type='color' value={colors[name]} onChange={event => setColor(name, event.target.value)} />
             </Stack>)}
         </Stack>
-        <ApplicationThemeProvider theme={theme} style={{ padding: 12 }}>
+        <AppThemeProvider theme={theme} style={{ padding: 12 }}>
             {/* a control reads the theme only as it mounts */}
             <DatasetControl key={theme.id} modules={controlModules} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} onMounted={saveDealViewData} height='480px'>
                 <DatasetControl.Header>
@@ -71,7 +71,7 @@ const GridExample = () => {
                     </DatasetControl.Footer.End>
                 </DatasetControl.Footer>
             </DatasetControl>
-        </ApplicationThemeProvider>
+        </AppThemeProvider>
     </Stack>
 }
 `

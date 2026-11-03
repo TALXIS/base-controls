@@ -11,7 +11,7 @@ A theme is the set of colours, fonts and effects everything is drawn in. You bui
 
 ## The providers
 
-Themes are Fluent UI v8 themes (\`ITheme\`), so the controls, Fluent's own components and yours all look the same. Put an \`ApplicationThemeProvider\` at the root of the application; the controls require one and throw without it. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
+Themes are Fluent UI v8 themes (\`ITheme\`), so the controls, Fluent's own components and yours all look the same. Put an \`AppThemeProvider\` at the root of the application; the controls require one and throw without it. Everything below it draws in its theme, including the dialogs, menus and other surfaces that open over the application.
 
 Use a \`ThemeProvider\` for an area of the application that looks different, such as a dark banner. It themes only what is inside it. Without a \`theme\`, either provider takes the theme above it, or a theme generated from Fluent's default colours when there is none.
 
@@ -59,7 +59,7 @@ Base Controls' menus, callouts, tooltips, pickers, panels and dialogs are such s
 
 | Opened | Draws in |
 |---|---|
-| Below an \`ApplicationThemeProvider\` | The nearest application theme |
+| Below an \`AppThemeProvider\` | The nearest application theme |
 | With none above | The theme around what opened it |
 
 These follow the application theme:
@@ -68,13 +68,13 @@ These follow the application theme:
 - \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` and \`CommandBar\`
 - \`ComboBox\`, \`DatePicker\`, \`TimePicker\` and \`TagPicker\`
 
-Fluent's own components take the theme around them. Draw a surface of your own in the theme \`useApplicationTheme()\` returns, and wrap an area whose surfaces should look different in an \`ApplicationThemeProvider\` of its own.
+Fluent's own components take the theme around them. Draw a surface of your own in the theme \`useAppTheme()\` returns, and wrap an area whose surfaces should look different in an \`AppThemeProvider\` of its own.
 
 {{story: Red rows}}
 
 ## Your own components
 
-Read the theme with \`useTheme()\` from \`@talxis/base-controls\`: it returns the nearest theme, like Fluent's, and throws when no \`ApplicationThemeProvider\` is above. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
+Read the theme with \`useTheme()\` from \`@talxis/base-controls\`: it returns the nearest theme, like Fluent's, and throws when no \`AppThemeProvider\` is above. Take colours from \`semanticColors\` where one fits, such as \`bodyText\`, \`bodySubtext\` or \`bodyDivider\`, so the component looks right in any theme.
 
 A colour of your own, such as a status, is where themes go wrong: a red that looks right on white glares on a dark background. Start from a hue rather than a finished colour: give a themed area the \`tint\` option of \`useThemeBuilder\`, and work out loose colours with \`getTintColors\`:
 

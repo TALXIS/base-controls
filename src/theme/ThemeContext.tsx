@@ -3,7 +3,7 @@ import { CustomizerContext, ICustomizerContext, ITheme, ThemeContext as FluentTh
 import { createThemeBuilder } from "./theme-builder";
 
 /** The application's theme, which dialogs, menus and other surfaces are drawn in. */
-export const ApplicationThemeContext = React.createContext<ITheme | undefined>(undefined);
+export const AppThemeContext = React.createContext<ITheme | undefined>(undefined);
 
 export interface IThemeContextProps {
     /** The theme above, or the default theme, where left out; nothing is merged into it. */

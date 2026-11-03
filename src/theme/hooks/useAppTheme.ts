@@ -1,12 +1,12 @@
 import { useContext } from "react";
 import { ITheme } from "../interfaces";
-import { ApplicationThemeContext } from "../ThemeContext";
+import { AppThemeContext } from "../ThemeContext";
 
-/** The theme dialogs, menus and other surfaces are drawn in; throws outside an `ApplicationThemeProvider`. */
-export const useApplicationTheme = (): ITheme => {
-    const applicationTheme = useContext(ApplicationThemeContext);
-    if (!applicationTheme) {
-        throw new Error('Base Controls need an ApplicationThemeProvider above them: wrap your application in one.');
+/** The theme dialogs, menus and other surfaces are drawn in; throws outside an `AppThemeProvider`. */
+export const useAppTheme = (): ITheme => {
+    const appTheme = useContext(AppThemeContext);
+    if (!appTheme) {
+        throw new Error('Base Controls need an AppThemeProvider above them: wrap your application in one.');
     }
-    return applicationTheme;
+    return appTheme;
 };

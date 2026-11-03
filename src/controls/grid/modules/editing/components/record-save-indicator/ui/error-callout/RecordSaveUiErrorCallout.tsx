@@ -1,5 +1,5 @@
 import { Fragment, RefObject, useMemo } from "react";
-import { useApplicationTheme } from "@theme";
+import { useAppTheme } from "@theme";
 import { IRecordSaveUiErrorCalloutComponents, RecordSaveUiErrorCalloutComponents } from "./components";
 import { getRecordSaveUiErrorCalloutStyles } from "./styles";
 
@@ -25,7 +25,7 @@ export interface IRecordSaveUiErrorCalloutProps {
 /** What a row says when the record behind it refused to save, field by field. */
 export const RecordSaveUiErrorCallout = (props: IRecordSaveUiErrorCalloutProps) => {
     //the callout is drawn in the surface's theme, not the row's
-    const theme = useApplicationTheme();
+    const theme = useAppTheme();
     const styles = useMemo(() => getRecordSaveUiErrorCalloutStyles(theme), [theme]);
     const components = { ...RecordSaveUiErrorCalloutComponents, ...props.components };
 

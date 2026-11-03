@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { DirectionalHint, IPoint } from "@fluentui/react";
-import { useApplicationTheme, useTheme } from "@theme";
+import { useAppTheme, useTheme } from "@theme";
 import { TaskDrawingUiPreviewComponents, ITaskDrawingUiPreviewComponents } from "./components";
 import { getTaskDrawingUiPreviewStyles } from "./styles";
 
@@ -20,8 +20,8 @@ export interface ITaskDrawingUiPreviewProps {
 export const TaskDrawingUiPreview = (props: ITaskDrawingUiPreviewProps) => {
     const components = { ...TaskDrawingUiPreviewComponents, ...props.components };
     const theme = useTheme();
-    const applicationTheme = useApplicationTheme();
-    const styles = useMemo(() => getTaskDrawingUiPreviewStyles(theme, applicationTheme), [theme, applicationTheme]);
+    const appTheme = useAppTheme();
+    const styles = useMemo(() => getTaskDrawingUiPreviewStyles(theme, appTheme), [theme, appTheme]);
 
     return <>
         {props.row && components.onRenderRow({

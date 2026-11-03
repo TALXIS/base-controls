@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { CommandBar as CommandBarBase, composeComponentAs, concatStyleSetsWithProps, ICommandBarItemProps, ICommandBarProps as ICommandBarPropsBase, ICommandBarStyleProps } from "@fluentui/react";
-import { useApplicationTheme } from "@theme";
+import { useAppTheme } from "@theme";
 import { useCompact } from "@utils/layout";
 import { getThemedContextualItems } from "../surfaces";
 import { useSurfaceMenuProps } from "../surfaces";
@@ -25,7 +25,7 @@ export interface ICommandBarProps extends ICommandBarPropsBase {
 /** A command bar whose menus and tooltips are drawn in the application's theme rather than in the bar's, fitted to its own box; inside a compact provider, such as `WrapCompactProvider`, its buttons show only their icons. */
 export const CommandBar = (props: ICommandBarProps) => {
     const { items, farItems, overflowItems, overflowButtonProps, styles, resizeGroupAs, align = 'start', ...commandBarProps } = props;
-    const theme = useApplicationTheme();
+    const theme = useAppTheme();
     const isCompact = useCompact();
     const compacted = (bar?: ICommandBarItemProps[]) => isCompact ? bar?.map(item => item.iconProps && item.iconOnly === undefined ? toIconOnly(item) : item) : bar;
     const barStyles = React.useMemo(() => getCommandBarStyles(align), [align]);

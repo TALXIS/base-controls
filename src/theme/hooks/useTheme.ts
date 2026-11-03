@@ -1,9 +1,9 @@
 import { useTheme as useFluentTheme } from "@fluentui/react";
 import { ITheme } from "../interfaces";
-import { useApplicationTheme } from "./useApplicationTheme";
+import { useAppTheme } from "./useAppTheme";
 
-/** The theme a component is drawn in, the nearest `ThemeProvider`'s; throws outside an `ApplicationThemeProvider`. */
+/** The theme a component is drawn in, the nearest `ThemeProvider`'s; throws outside an `AppThemeProvider`. */
 export const useTheme = (): ITheme => {
-    useApplicationTheme();
+    useAppTheme();
     return useFluentTheme() as ITheme;
 };

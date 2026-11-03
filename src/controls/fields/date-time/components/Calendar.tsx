@@ -1,5 +1,5 @@
 import { ICalendarDayGridStyles, ICalendarProps, IComboBox, IProcessedStyleSet, ITheme } from "@fluentui/react";
-import { ThemeProvider, useLabels, useApplicationTheme } from "@utils";
+import { ThemeProvider, useLabels, useAppTheme } from "@utils";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
@@ -26,9 +26,9 @@ export interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChan
 export const Calendar = (calendarProps: ICalendarProps) => {
     const { parameters, isDateTime, date, patterns, dateFormattingInfo, lastInputedTimeString } = useDateTimeContext();
     const labels = useLabels(DATE_TIME_LABELS);
-    const applicationTheme = useApplicationTheme();
+    const appTheme = useAppTheme();
     //the calendar is drawn on the surface, so what it is styled by is the surface's theme
-    const styles = getDateTimeStyles(applicationTheme);
+    const styles = getDateTimeStyles(appTheme);
     const timePickerRef = useRef<IComboBox>(null);
     const [error, setError] = useState(false);
 
@@ -90,7 +90,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
                 invalidInputErrorMessage: labels.get('dateTime.invalidTimeInput')
             }
         },
-        theme: applicationTheme,
+        theme: appTheme,
         //a date and time calendar reports the date itself, since its own time picker is part of the value.
         //Left to the picker on a date only one, which closes as it reports
         ...(isDateTime && { onSelectDate: (newDate: Date) => date.set(newDate) })
