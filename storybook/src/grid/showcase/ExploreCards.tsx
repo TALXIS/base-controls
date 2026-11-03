@@ -21,8 +21,8 @@ const styles = mergeStyleSets({
         textDecoration: 'none',
         transition: 'border-color 120ms, box-shadow 120ms',
         selectors: {
-            ':hover': { borderColor: '#5B5FC7', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
-            ':focus-visible': { outline: '2px solid #5B5FC7', outlineOffset: 2 },
+            ':hover': { borderColor: '#0078d4', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
+            ':focus-visible': { outline: '2px solid #0078d4', outlineOffset: 2 },
         },
     },
     icon: {
@@ -33,8 +33,8 @@ const styles = mergeStyleSets({
         width: 36,
         height: 36,
         borderRadius: 8,
-        background: '#e8ebfa',
-        color: '#5B5FC7',
+        background: '#deecf9',
+        color: '#0078d4',
         fontSize: 18,
     },
     title: {

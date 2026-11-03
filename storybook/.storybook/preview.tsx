@@ -3,6 +3,7 @@ import React from 'react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
 import { ApplicationThemeProvider, PcfContextProvider, StateProvider } from '@talxis/base-controls';
+import { fluentTheme } from './fluentTheme';
 import { ModuleRegistry, ValidationModule } from 'ag-grid-community';
 
 //names any AG Grid module a grid uses but the library does not register
@@ -54,6 +55,7 @@ const preview: Preview = {
   ],
   parameters: {
     layout: 'fullscreen',
+    docs: { theme: fluentTheme },
     viewport: {
       options: {
         ...INITIAL_VIEWPORTS,
