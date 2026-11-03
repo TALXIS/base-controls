@@ -3,7 +3,7 @@ import { create } from 'storybook/theming';
 //Fluent's default palette, the one the controls draw in without a theme of their own
 export const fluentTheme = create({
   base: 'light',
-  brandTitle: 'Base Controls',
+  brandTitle: '<span style="display: flex; align-items: center; gap: 10px"><img src="logo.png" alt="" width="24" height="24" />Base Controls</span>',
   brandUrl: 'https://github.com/TALXIS/base-controls',
   colorPrimary: '#0078d4',
   colorSecondary: '#0078d4',

@@ -48,6 +48,7 @@ const isolatedFrameEntryPlugin = (): Plugin => ({
 
 const config: StorybookConfig = {
   stories,
+  staticDirs: ['../public'],
   addons: ['@storybook/addon-a11y', '@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-vite',
