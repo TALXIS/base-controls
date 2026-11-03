@@ -22,7 +22,7 @@ const Shortcuts = () => {
     </Stack>
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='talkingDrive' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -45,7 +45,15 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 
 const WATCH_CONTROL_CODE = `import { loadDeals, loadDealViews } from './views'
 
+const getLogStyles = (theme: ITheme) => mergeStyleSets({
+    log: { padding: '8px 12px', minHeight: 176, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontFamily: 'Consolas, monospace', fontSize: theme.fonts.medium.fontSize, lineHeight: '22px' },
+    line: { color: theme.semanticColors.bodySubtext },
+    latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
+})
+
 const GridExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getLogStyles(theme), [theme])
     const [log, setLog] = React.useState<string[]>([])
     const [mountKey, setMountKey] = React.useState(0)
     const controlRef = React.useRef<IDatasetControl>()
@@ -64,7 +72,7 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => controlRef.current?.loadView('won')} />
             <DefaultButton text='Remount' onClick={() => setMountKey(key => key + 1)} />
         </Stack>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='deals' key={mountKey} onLoad={loadDeals} onMounted={onMounted} onReady={() => write('onReady')} onDestroyed={() => write('onDestroyed')} height='380px'>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' key={mountKey} onLoad={loadDeals} onMounted={onMounted} onReady={() => write('onReady')} onDestroyed={() => write('onDestroyed')} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
@@ -74,7 +82,9 @@ const GridExample = () => {
                 <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
-        <Stack>{log.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}</Stack>
+        <div className={styles.log}>
+            {log.map((line, index) => <div key={index} className={index === 0 ? styles.latest : styles.line}>{line}</div>)}
+        </div>
     </Stack>
 }
 `

@@ -118,24 +118,25 @@ export const ProductsBody = () => {
 
 const PRODUCT_DATA_GRID_FILE: IGridExampleFile = {
     name: 'ProductDataGrid.tsx',
-    code: `import { createTableColumn, DataGrid, DataGridBody, DataGridCell, DataGridHeader, DataGridHeaderCell, DataGridRow, FluentProvider, TableCellLayout, webLightTheme } from '@fluentui/react-components'
+    code: `import { createTableColumn, DataGrid, DataGridBody, DataGridCell, DataGridHeader, DataGridHeaderCell, DataGridRow, FluentProvider, TableCellLayout, webDarkTheme, webLightTheme } from '@fluentui/react-components'
 
 const columns = [
-    createTableColumn<IRecord>({
+    createTableColumn({
         columnId: 'name',
         renderHeaderCell: () => 'Product',
-        renderCell: product => <TableCellLayout media={<img src={product.getValue('photo')?.thumbnailUrl} alt='' width={32} height={32} style={{ borderRadius: 4, objectFit: 'cover' }} />}>{product.getFormattedValue('name')}</TableCellLayout>,
+        renderCell: (product: IRecord) => <TableCellLayout media={<img src={product.getValue('photo')?.thumbnailUrl} alt='' width={32} height={32} style={{ borderRadius: 4, objectFit: 'cover' }} />}>{product.getFormattedValue('name')}</TableCellLayout>,
     }),
-    createTableColumn<IRecord>({ columnId: 'category', renderHeaderCell: () => 'Category', renderCell: product => product.getFormattedValue('category') }),
-    createTableColumn<IRecord>({ columnId: 'price', renderHeaderCell: () => 'Price', renderCell: product => product.getFormattedValue('price') }),
-    createTableColumn<IRecord>({ columnId: 'instock', renderHeaderCell: () => 'In stock', renderCell: product => product.getFormattedValue('instock') }),
+    createTableColumn({ columnId: 'category', renderHeaderCell: () => 'Category', renderCell: (product: IRecord) => product.getFormattedValue('category') }),
+    createTableColumn({ columnId: 'price', renderHeaderCell: () => 'Price', renderCell: (product: IRecord) => product.getFormattedValue('price') }),
+    createTableColumn({ columnId: 'instock', renderHeaderCell: () => 'In stock', renderCell: (product: IRecord) => product.getFormattedValue('instock') }),
 ]
 
 //the products in Fluent UI v9's DataGrid, sharing the provider's records and selection
 export const ProductDataGrid = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
+    const isLight = isLightColor(useTheme().semanticColors.bodyBackground)
 
-    return <FluentProvider theme={webLightTheme} style={{ height: '100%', overflow: 'auto', background: 'transparent' }}>
+    return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ height: '100%', overflow: 'auto', background: 'transparent' }}>
         <DataGrid
             items={provider.getRecords()}
             columns={columns}
@@ -148,8 +149,8 @@ export const ProductDataGrid = () => {
                     {({ renderHeaderCell }) => <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>}
                 </DataGridRow>
             </DataGridHeader>
-            <DataGridBody<IRecord>>
-                {({ item, rowId }) => <DataGridRow<IRecord> key={rowId}>
+            <DataGridBody>
+                {({ item, rowId }) => <DataGridRow key={rowId}>
                     {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
                 </DataGridRow>}
             </DataGridBody>

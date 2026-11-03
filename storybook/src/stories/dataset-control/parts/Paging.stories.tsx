@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { PagingExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.PageSizeSwitcher\` shows which records the page holds, such as *1 - 25 of 120*, and opens a menu of page sizes. \`DatasetControl.Pagination\` moves to the first, previous and next page, and shows the current one.
+Two parts page through the records. \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and opens a menu of page sizes, and \`DatasetControl.Pagination\` moves to the first, previous and next page.
 
 \`\`\`tsx
 <DatasetControl.Footer>
@@ -18,48 +18,61 @@ const DESCRIPTION = `
 </DatasetControl.Footer>
 \`\`\`
 
-Without a total from the provider, the range ends with a \`+\` while there are more pages; past the provider's count limit, the total shows as *5000+*. The paging buttons are disabled while there is no page to move to, and moving to another page or changing the page size asks first when there are unsaved changes.
-
 {{story: Page through the deals}}
+
+## How it behaves
+
+- **Range:** the switcher shows the page's records, such as *1 - 25 of 30*.
+- **No total:** without a total from the provider, the range ends in \`+\` while there are more pages.
+- **Count limit:** past the provider's count limit, the total shows as *5000+*.
+- **Current page:** the pagination shows its number between the buttons.
+- **Disabled:** the buttons while there is no page to move to, and every control while the provider loads.
+- **Unsaved changes:** moving to another page or changing the page size asks first.
 
 ## Props
 
-\`PageSizeSwitcher\`:
+### PageSizeSwitcher
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. Read at mount. |
 | \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
-\`Pagination\` takes \`components\` the same way.
+### Pagination
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| \`components\` | \`Partial<IPaginationUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
-\`control.parts.get('pagination')\` returns the page buttons, and \`control.parts.get('pageSizeSwitcher')\` the page size switcher, once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Paging the provider directly is under *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+\`control.parts.get('pageSizeSwitcher')\` and \`control.parts.get('pagination')\` return the parts once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). To page the provider directly, see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 \`\`\`tsx
 control.parts.get('pageSizeSwitcher').setPageSize(100)
 control.parts.get('pagination').moveFirst()
 \`\`\`
 
-\`pagination\`:
+### PageSizeSwitcher
 
-| Member | Description |
+| Member | Does |
+|---|---|
+| \`getPageSize()\`, \`getPageSizes()\` | The page size, and the sizes the menu offers. |
+| \`setPageSize(size)\` | Loads the records in pages of that size; asks first when there are unsaved changes. |
+| \`getRecordRange()\` | The range as the switcher shows it: \`{ first: number, last: string, total?: string }\`. |
+| \`isLoading()\` | Whether the provider is loading. |
+| \`events\` | \`onPageSizeChanged\`, whenever the page size or the records on the page change. |
+
+### Pagination
+
+| Member | Does |
 |---|---|
 | \`getPageNumber()\` | The current page, counted from 1. |
 | \`canMovePrevious()\`, \`canMoveNext()\` | Whether there is a page to move to, and nothing is loading. |
-| \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` | Loads that page. |
+| \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` | Loads that page; asks first when there are unsaved changes. |
 | \`events\` | \`onPagingChanged\`, whenever the page changes or starts loading. |
 
-\`pageSizeSwitcher\`:
-
-| Member | Description |
-|---|---|
-| \`getPageSize()\`, \`getPageSizes()\` | The page size, and the sizes the menu offers. |
-| \`setPageSize(size)\` | Loads the records in pages of that size. |
-| \`getRecordRange()\` | \`{ first, last, total }\` of the page, as the switcher shows it. |
-| \`isLoading()\` | Whether the provider is loading. |
-| \`events\` | \`onPageSizeChanged\`, whenever the page size or the records on the page change. |
+**Strings:** \`PAGE_SIZE_SWITCHER_LABELS\`, keys \`pageSizeSwitcher.*\`, and \`PAGINATION_LABELS\`, keys \`pagination.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
 `
 
 const meta = {
@@ -84,7 +97,7 @@ export const PageThroughTheDeals: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Try: set the page size to 25, then move to the next page and back.`,
+                story: `Thirty deals, all on one page until you pick a size. Try: set the page size to 25, then move to the next page and back.`,
             },
         },
     },

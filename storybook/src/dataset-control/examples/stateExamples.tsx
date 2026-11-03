@@ -9,7 +9,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Show the deals' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
-        {isShown && <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='400px'>
+        {isShown && <DatasetControl onLoadViews={loadDealViews} stateKey='deals-state' onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
@@ -29,7 +29,7 @@ const GridExample = () => {
 const INSIDE_THE_STORE_CODE = `import { loadDeals, loadDealViews } from './views'
 
 const styles = mergeStyleSets({
-    store: { flex: '0 0 340px', height: 440, margin: 0, padding: 12, overflow: 'auto', boxSizing: 'border-box', fontSize: 12, background: '#faf9f8', border: '1px solid #edebe9', borderRadius: 4 },
+    store: { flex: '0 0 340px', height: 440, margin: 0, padding: 12, overflow: 'auto', boxSizing: 'border-box', fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
 })
 
 //shortened to read: each shown column by its name, and the client-side page size as 'all'
@@ -46,6 +46,7 @@ const GridExample = () => {
     const store = React.useMemo(() => new StateStore({ state }), [state])
     const [text, setText] = React.useState('{}')
 
+    //the store raises no events, so the dictionary is read on a timer
     React.useEffect(() => {
         const interval = setInterval(() => setText(describe(state)), 500)
         return () => clearInterval(interval)

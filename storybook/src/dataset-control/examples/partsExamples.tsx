@@ -4,7 +4,7 @@ import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
 const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DealsRibbon />
@@ -16,14 +16,13 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
 </DatasetControl>
 `
 
-const QUICK_FIND_CODE = `//the deal name is what the quick find searches
-const loadSearchableDeals = async () => {
+const QUICK_FIND_CODE = `const loadSearchableDeals = async () => {
     const provider = createDealsProvider()
-    provider.setColumns(provider.getColumns().map(column => ({ ...column, isPrimary: column.name === 'name' })))
+    provider.setMetadata({ ...provider.getMetadata(), QuickFindColumns: ['name', 'owner'] })
     return { provider }
 }
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadSearchableDeals} height='440px'>
+const GridExample = () => <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <DatasetControl.QuickFind />
@@ -37,7 +36,7 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={loadSearchabl
 
 const EDIT_COLUMNS_CODE = `import { loadDeals, loadDealViews } from './views'
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='440px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='editColumnsDeals' onLoad={loadDeals} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -58,7 +57,7 @@ const BreakTheConnection = () => {
     return <DefaultButton text='Break the connection' onClick={() => provider.setError(true, 'The deals service is not reachable.')} />
 }
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const GridExample = () => <DatasetControl stateKey='notificationsDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <BreakTheConnection />
@@ -71,15 +70,34 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
 </DatasetControl>
 `
 
-const EMPTY_RECORDS_CODE = `//the deals' names, drawn again whenever the provider loads new records
-const DealNames = () => {
+const EMPTY_RECORDS_CODE = `const getDealListStyles = (theme: ITheme) => mergeStyleSets({
+    list: { height: '100%', overflow: 'auto', padding: '0 12px' },
+    row: { padding: '8px 0', borderBottom: \`1px solid \${theme.semanticColors.bodyDivider}\` },
+    owner: { color: theme.semanticColors.bodySubtext },
+})
+
+const DealList = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded'])
-    return <Stack tokens={{ childrenGap: 4, padding: 12 }}>
-        {provider.getRecords().map(record => <Text key={record.getRecordId()}>{record.getFormattedValue('name')}</Text>)}
-    </Stack>
+    const theme = useTheme()
+    const styles = React.useMemo(() => getDealListStyles(theme), [theme])
+    return <div className={styles.list}>
+        {provider.getRecords().map(deal => <Stack key={deal.getRecordId()} horizontal horizontalAlign='space-between' className={styles.row}>
+            <Stack>
+                <Text>{deal.getFormattedValue('name')}</Text>
+                <Text variant='small' className={styles.owner}>{deal.getFormattedValue('owner')}</Text>
+            </Stack>
+            <Text>{deal.getFormattedValue('value')}</Text>
+        </Stack>)}
+    </div>
 }
 
-const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='360px'>
+const loadSearchableDeals = async () => {
+    const provider = createDealsProvider()
+    provider.setMetadata({ ...provider.getMetadata(), QuickFindColumns: ['name'] })
+    return { provider }
+}
+
+const GridExample = () => <DatasetControl stateKey='emptyRecordsDeals' onLoad={loadSearchableDeals} height='360px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <DatasetControl.QuickFind />
@@ -87,13 +105,13 @@ const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => (
     </DatasetControl.Header>
     <DatasetControl.Body>
         <DatasetControl.EmptyRecords>
-            <DealNames />
+            <DealList />
         </DatasetControl.EmptyRecords>
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-const PAGING_CODE = `const GridExample = () => <DatasetControl stateKey='deals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const PAGING_CODE = `const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Body>
         <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
     </DatasetControl.Body>

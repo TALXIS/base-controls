@@ -1,0 +1,157 @@
+import React from 'react'
+import type { Meta, StoryObj } from '@storybook/react'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { UserViewsExample } from '../../dataset-control/examples/userViewsExamples'
+
+const DESCRIPTION = `
+Let users save what the control shows as views of their own, listed under *My views*. Add a user queries module and put \`DatasetControl.UserQueries\` in the view switcher.
+
+{{story: Save your own views}}
+
+The switcher gets *Save changes* (while a user view is open), *Save as new view* and *Manage views*. A user view opens like any other, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+
+## What a view keeps
+
+| | Saved | Opened |
+|---|---|---|
+| Columns | Every column, hidden ones too: name, order, width, visibility, grouping and aggregation, and the links its related columns come through. | Completed from the provider's available columns, as for any view. |
+| Data | What each \`saveWithView\` getter returns, under its key. | Comes back as \`data\` from \`view.resolve(provider)\`. |
+
+## Save more with a view
+
+\`saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew:
+
+\`\`\`tsx
+const saveViewData = (control: IDatasetControl<IDealViewData>) => control.modules.observe('userQueries', userQueries => {
+    userQueries.saveWithView('sorting', () => control.getProvider()!.getSorting())
+})
+
+<DatasetControl modules={modules} onMounted={saveViewData} ...>
+\`\`\`
+
+Some keys are declared already, such as \`sorting\`, \`filtering\` and \`searchQuery\`. Declare a key of your own on \`IUserQuerySavedValueMap\`:
+
+\`\`\`ts
+declare module '@talxis/base-controls' {
+    interface IUserQuerySavedValueMap {
+        layout: string
+    }
+}
+\`\`\`
+
+- \`saveWithView\` returns its unregistration.
+- Registering the same key twice throws.
+- A getter that returns \`undefined\` saves nothing; one that throws stops the save.
+
+## Where views are kept
+
+| Factory | Keeps the views |
+|---|---|
+| \`createLocalStorageUserQueriesModule({ storageKey })\` | In this browser, under \`storageKey\`. |
+| \`createTalxisUserQueriesModule({ entityName })\` | As \`talxis_userquery\` records. |
+| \`createDataverseUserQueriesModule({ entityName, table })\` | As records of a Dataverse table you map. |
+| \`createUserQueriesModule({ onCreateStore })\` | In a store of yours. |
+
+Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`; each command is on unless set to \`false\`.
+
+## Dataverse
+
+\`\`\`tsx
+createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal', ownerId: context.userSettings.userId })
+
+createDataverseUserQueriesModule<IDealViewData>({
+    entityName: 'deal',
+    ownerId: context.userSettings.userId,
+    table: { name: 'new_savedview', fieldMapping: { name: 'new_name', layout: 'new_layout', returnedTypeCode: 'new_entity' } },
+})
+\`\`\`
+
+| Parameter | Description |
+|---|---|
+| \`entityName\` | Required. The entity the views are of. |
+| \`table\` | Required for \`createDataverseUserQueriesModule\`: the table's name, and which of its columns hold the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`). Optionally a \`description\`, shown in *Manage views*, and a \`recordId\`. |
+| \`recordId\` | Only the views of this record; without it, only views of no record. Needs \`recordId\` mapped on the table. |
+| \`ownerId\` | Only the views this user owns. Without it, every view the user can read is listed. |
+
+- Both need a page that can reach Dataverse, such as a model-driven app: the views are read and written through \`Xrm.WebApi\`, and *Manage views* lists them with a \`FetchXmlDataProvider\`.
+- The switcher fetches only the views' names. A view's layout is fetched when it opens.
+
+## Your own store
+
+\`\`\`tsx
+const store: IUserQueriesStore<IDealViewData> = {
+    getViews: async () => await api.get('/views'),
+    getView: async viewId => await api.get(\`/views/\${viewId}/layout\`),
+    createView: async (name, view) => (await api.post('/views', { name, layout: view })).id,
+    updateView: async (viewId, view) => { await api.put(\`/views/\${viewId}/layout\`, view) },
+    createManageProvider: () => new SavedViewsProvider(api),
+}
+
+createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })
+\`\`\`
+
+| Store member | Description |
+|---|---|
+| \`getViews()\` | The views to list, as \`{ id, name }\`. |
+| \`getView(viewId)\` | The saved view: \`{ columns, linking, data }\`. |
+| \`createView(name, view)\` | Saves a new view and returns its id. The control then opens it. |
+| \`updateView(viewId, view)\` | Saves the view again. |
+| \`createManageProvider()\` | The provider *Manage views* edits the views in. |
+
+What \`createManageProvider()\` returns:
+
+- One record per view, its id the view's id as the primary id.
+- A \`name\` column, and optionally a description; *Manage views* shows its columns in an editable grid.
+- Renames are written through \`provider.save()\` and deletions through \`provider.deleteRecords(ids)\`, so the provider sends both to your store.
+- A \`MemoryDataProvider\` is the usual base, as \`LocalStorageUserQueriesProvider\` is.
+
+\`onCreateStore\` gets the control, so a store can read \`control.getDependencies()\`. \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend.
+
+## From your code
+
+| On \`control.modules.get('userQueries')\` | Description |
+|---|---|
+| \`saveWithView(key, getter)\` | Saves what \`getter\` returns with every user view. Returns its unregistration. |
+| \`isUserView(viewId)\` | Whether the view is one of the user's. |
+| \`saveAsNew()\`, \`create(name)\` | Saves what the control shows as a new view, asking for a name or under \`name\`, and opens it. |
+| \`save()\` | Saves what the control shows into the open user view. |
+| \`events\` | \`onManageRequested\`, \`onOperationFailed(error)\`. |
+
+See *Modules* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+
+## Good to know
+
+- \`DatasetControl.UserQueries\` throws without a user queries module.
+- Closing *Manage views* loads the control again, so the switcher lists the views as they are now.
+- A failed save or delete opens the error dialog: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+- The commands' strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/concepts-localization--overview).
+`
+
+const meta = {
+    title: 'Controls/DatasetControl/Views/User views',
+    tags: ['autodocs'],
+    parameters: {
+        controls: { disable: true },
+        docs: {
+            page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
+        },
+    },
+} satisfies Meta
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const SaveYourOwnViews: Story = {
+    name: 'Save your own views',
+    render: () => renderStory(<UserViewsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Views kept in this browser, with their sorting, filter and search saved through \`saveWithView\` in *views.ts*. Try: sort or search, change the columns, *Save as new view*, reload the page, then *Save changes* and *Manage views*.`,
+            },
+        },
+    },
+}

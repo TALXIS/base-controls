@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { QuickFindExample } from '../../../dataset-control/examples/partsExamples'
 
 const DESCRIPTION = `
-\`DatasetControl.QuickFind\` searches the records in the provider's quick find columns, or its primary column when it has none.
+\`DatasetControl.QuickFind\` is a search field over the records. It searches the provider's quick find columns for what the user types.
 
 \`\`\`tsx
 <DatasetControl.Header.End>
@@ -15,9 +15,27 @@ const DESCRIPTION = `
 
 {{story: Find a deal}}
 
-Type and press Enter, or the search icon, to search; the cross clears the search. Clicking the field opens a callout listing the columns it searches. A leading \`*\` matches anywhere in the value, more slowly, and the callout warns about it. The placeholder names the records from the provider's metadata, or says *records*. The field is disabled while the provider loads, and when there is no column to search. Searching asks first when the records have unsaved changes.
+## How it behaves
 
-In a compact header the field collapses to a search button, with a dot while it holds a query; clicking it opens the field across the whole header. See *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
+- **Search:** Enter or the search icon searches; clicking the field opens a callout listing the columns it searches.
+- **Matching:** a value matches when it begins with the query; a leading \`*\` matches anywhere, more slowly, and the callout warns about it.
+- **Clear:** the cross empties the field and searches again.
+- **Placeholder:** names the records from the provider's metadata, or says *records*.
+- **Disabled:** while the provider loads, and when there is no column to search.
+- **Unsaved changes:** searching asks first; if the user cancels, the records stay as they were.
+- **Compact header:** the field collapses to a search button; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
+
+## Columns it searches
+
+The provider decides, and the field is disabled while it names none:
+
+| Provider | Searches |
+|---|---|
+| \`MemoryDataProvider\` | The columns in \`metadata.QuickFindColumns\`, or the columns marked \`isPrimary\` without it |
+| \`FetchXmlDataProvider\` | The columns of the table's quick find view |
+| Your own | What its \`onGetQuickFindColumns()\` returns |
+
+See *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## Props
 
@@ -27,23 +45,25 @@ In a compact header the field collapses to a search button, with a dot while it 
 
 ## From your code
 
-\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Put a query in it and search, as if the user typed it:
+\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Follow what the user types:
 
 \`\`\`tsx
-const quickFind = control.parts.get('quickFind')
-quickFind.setQuery('Contoso')
-quickFind.search()
+control.parts.observe('quickFind', quickFind => {
+    quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery()))
+})
 \`\`\`
 
-| Member | Description |
+| Member | Does |
 |---|---|
 | \`getQuery()\` | The query in the field, searched or not. |
 | \`setQuery(query)\` | Puts the query in the field, without searching. |
-| \`search()\` | Searches for the query. Asks first when there are unsaved changes. |
-| \`clear()\` | Empties the field and searches again. |
+| \`search()\` | Searches for the query; asks first when there are unsaved changes. |
+| \`clear()\` | Empties the field, then searches again; if the user cancels the unsaved-changes prompt, the field stays empty but the search does not. |
 | \`getColumns()\` | The columns a search matches on. |
 | \`isLikeQuery()\` | Whether the query starts with \`*\`. |
 | \`events\` | \`onQueryChanged\`, whenever the query is edited. |
+
+**Strings:** \`QUICK_FIND_LABELS\`, keys \`quickFind.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
 `
 
 const meta = {
@@ -68,7 +88,7 @@ export const FindADeal: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Try: search for *Contoso*, then for *\\*rollout*, which matches anywhere in the name, and click the field to see which columns it searches.`,
+                story: `The deals are searched by name and account manager. Try: search for *Contoso*, then *Anna*, then *\\*rollout*, which matches anywhere, and click the field to see the columns it searches.`,
             },
         },
     },

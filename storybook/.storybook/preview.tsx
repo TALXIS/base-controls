@@ -23,6 +23,10 @@ const useColorScheme = (setting: unknown) => {
     setScheme(resolveColorScheme(setting));
     return onSystemColorSchemeChange(() => setScheme(resolveColorScheme(setting)));
   }, [setting]);
+  //preview-head.html paints the page by the attribute
+  useEffect(() => {
+    document.documentElement.dataset.colorScheme = scheme;
+  }, [scheme]);
   return scheme;
 };
 
@@ -148,6 +152,7 @@ const preview: Preview = {
               'Loading data',
               'Error handling',
               'Views',
+              ['Overview', 'User views'],
               'Layout',
               'Talking to the control',
               'Parts',

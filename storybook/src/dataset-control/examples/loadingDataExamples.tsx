@@ -7,7 +7,7 @@ const WAITING_CODE = `import { loadDeals, loadDealViews } from './views'
 //the title is outside the control, so it shows while the deals load
 const GridExample = () => <Stack tokens={{ childrenGap: 8 }}>
     <Text variant='large'>Sales pipeline</Text>
-    <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='420px'>
+    <DatasetControl onLoadViews={loadDealViews} stateKey='deals-loading-data' onLoad={loadDeals} height='420px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />

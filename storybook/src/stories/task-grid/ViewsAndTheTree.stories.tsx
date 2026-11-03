@@ -43,7 +43,7 @@ A flat list shows the matching tasks on their own, without their ancestors. A *P
 
 ## User views and state
 
-With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see *Let users save their own views* on [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)).
+With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see [**DatasetControl › User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)).
 `
 
 const meta = {

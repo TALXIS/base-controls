@@ -23,6 +23,9 @@ export interface IThemeEdit {
 /** A built theme whose colours are the seed, the three colours, or a Fluent v9 theme. */
 export type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } | { fluentDesignLanguage: ComponentFramework.FluentDesignState };
 
+//Fluent v9 webDarkTheme's colorBackgroundOverlay
+const DARK_OVERLAY = 'rgba(0, 0, 0, 0.5)';
+
 const DEFAULT_COLORS: IThemeColors = { primary: '#0078d4', background: '#ffffff', text: '#323130' };
 
 //how much of the text a dark theme's neutral slots hold over the background, after Fluent v9's webDarkTheme
@@ -209,6 +212,8 @@ export class ThemeBuilder {
             for (const [slot, weight] of Object.entries(DARK_NEUTRAL_RAMP)) {
                 palette[slot] = mixColors(colors.text, colors.background, weight);
             }
+            //Fluent's overlay washes the page in this slot, which stays white whatever the background
+            palette.whiteTranslucent40 = DARK_OVERLAY;
         }
         return createTheme({ palette, isInverted: currentIsDark }) as ITheme;
     }

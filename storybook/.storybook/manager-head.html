@@ -1,4 +1,11 @@
 <link rel="icon" type="image/png" href="logo.png" />
+<script>
+  //paints the saved or system scheme before Storybook's scripts load
+  (() => {
+    const saved = /[?&]globals=[^&]*\btheme:(light|dark)\b/.exec(decodeURIComponent(location.search));
+    document.documentElement.dataset.colorScheme = saved ? saved[1] : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  })();
+</script>
 <style>
   /* the web font Fluent loads for the controls, so the UI around them reads the same */
   @font-face {
@@ -29,12 +36,18 @@
     --selected-background: #edebe9;
     --selected-text: #0078d4;
     --heading-text: #605e5c;
+    --app-background: #faf9f8;
   }
 
   :root[data-color-scheme="dark"] {
     --selected-background: #3d3d3d;
     --selected-text: #479ef5;
     --heading-text: #adadad;
+    --app-background: #1f1f1f;
+  }
+
+  html {
+    background: var(--app-background);
   }
 
   /* the selected page reads like Fluent's navigation: a subtle fill, not a solid block */

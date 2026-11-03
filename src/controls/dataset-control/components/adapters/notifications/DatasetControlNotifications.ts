@@ -35,7 +35,7 @@ export class DatasetControlNotifications implements IDatasetControlNotifications
 
     /** The provider's load error, while there is one. */
     public getMessages(): INotificationMessage[] {
-        return this._provider.isError() ? [{ text: this._provider.getErrorMessage(), level: 'ERROR' }] : [];
+        return this._provider.isError() ? [{ text: this._escape(this._provider.getErrorMessage()), level: 'ERROR' }] : [];
     }
 
     //the provider outlives the notifications
@@ -43,6 +43,10 @@ export class DatasetControlNotifications implements IDatasetControlNotifications
         this._providerUnsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
+    //a message is drawn as HTML, and the error comes from the server
+    private _escape(text: string): string {
+        return text.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`);
+    }
 
     private _onChanged = (): void => {
         this.events.dispatchEvent('onNotificationsChanged');

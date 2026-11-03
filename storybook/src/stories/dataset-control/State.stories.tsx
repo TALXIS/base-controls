@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BackWhereYouLeftOffExample, InsideTheStoreExample } from '../../dataset-control/examples/stateExamples'
 
 const DESCRIPTION = `
-A DatasetControl puts every view back the way the user left it: sorted, filtered, searched and paged as it was, with the columns they chose and the grid scrolled where it was. Switching back to a view does that on its own. To also reopen on the same view, still as the user left it, the next time the control mounts, give it a \`stateKey\`.
+A DatasetControl puts every view back the way the user left it when they switch back to it. Give it a \`stateKey\` to also reopen on the last view, as the user left it, the next time the control mounts.
 
 \`\`\`tsx
 <DatasetControl stateKey='deals' onLoadViews={loadViews} onLoad={loadDeals} height='600px'>
@@ -20,8 +20,6 @@ A DatasetControl puts every view back the way the user left it: sorted, filtered
 | Left out | A store of its own | While the control stays mounted, across view switches and reloads. |
 | Given | Under the key in the nearest state store | As long as the store does. See [**State persistence**](?path=/docs/concepts-state-persistence--overview). |
 
-The key is read once, when the control mounts.
-
 {{story: Back where you left off}}
 
 ## What the control keeps
@@ -32,31 +30,28 @@ The key is read once, when the control mounts.
 | Per view: the columns and the related entities they come from, sorting, filtering, page, page size, search and selection | As the view's mount goes: on a view switch, a reload, or when the control unmounts | The next time the view loads, over the columns the view sets and what \`onLoad\` set up, before its first page loads. |
 | Per view: what the parts keep, such as where a grid is scrolled | As the user works | The next time the view is shown. |
 
-A view the user hasn't been on yet starts from what the view and \`onLoad\` set up. A view they have been on starts from what was kept, so a change to the view's definition on your server, such as its sorting, shows only for users who haven't changed it. A grid keeps its own state only with a \`stateKey\` of its own, unique within the control: see [**Grid › State**](?path=/docs/controls-grid-state--overview).
+- A view the user hasn't opened yet starts from what the view and \`onLoad\` set up; one they have opened starts from what was kept.
+- A grid keeps its scroll only with a \`stateKey\` of its own, unique within the control: see [**Grid › State**](?path=/docs/controls-grid-state--overview).
 
-## Look inside the store
+## Roll out a change, or start over
 
-Everything the control keeps is plain data in the state store, under its \`stateKey\`. The example keeps the store in a dictionary of its own, as a PCF control's state would, and shows it next to the control. The layout of the entries may change; read the kept provider setup through \`IDatasetControlProviderState\`.
+What was kept replaces what the view sets up, so a change to a view's definition, such as its columns or sorting, reaches only users who have never opened that view under this store. To start over:
+
+| To start over | Do |
+|---|---|
+| One view, for everyone | Give the view a new id. |
+| The whole control, for everyone | Change its \`stateKey\`. |
+| The whole control, for one user | Delete its entry from their saved dictionary before the control mounts, such as with \`store.delete('deals')\`. |
+
+## Where it is kept
+
+Everything the control keeps is plain data under its \`stateKey\`, in the tree laid out under *Nest components* on [**State persistence**](?path=/docs/concepts-state-persistence--overview). A view's \`provider\` entry is an \`IDatasetControlProviderState\`.
 
 {{story: Look inside the store}}
 
 ## Keep your own part's state
 
-\`useControlStateStore(stateKey)\` returns the store a component of your own keeps its state in. Inside a DatasetControl it belongs to the view shown, so it comes back with the view; outside one it is the nearest \`StateProvider\`'s. Without a \`stateKey\` it keeps nothing. The key is read once.
-
-\`\`\`tsx
-const OnlyMineToggle = () => {
-    const store = useControlStateStore('only-mine')
-    const [onlyMine, setOnlyMine] = React.useState(store.get<boolean>('checked') ?? false)
-    const toggle = (checked: boolean) => {
-        setOnlyMine(checked)
-        store.set('checked', checked)
-    }
-    return <Toggle label='Only mine' checked={onlyMine} onChange={(_, checked) => toggle(!!checked)} />
-}
-\`\`\`
-
-A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`useControlStateStore(stateKey)\` gives a component of your own a store in the view shown, so its state comes back with the view: see *Keep state in your own component* on [**State persistence**](?path=/docs/concepts-state-persistence--overview). A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 `
 
 const meta = {
@@ -93,7 +88,7 @@ export const InsideTheStore: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The store beside the control, as plain data. Try: scroll the grid and watch \`views.all.parts.grid\` follow, then sort and switch to *Won deals* to see \`views.won\` start its own entry.`,
+                story: `The control's store beside it, as plain data, kept in a dictionary as a PCF control's state would be. Try: scroll the grid and watch \`views.all.parts.grid\` follow, then sort and switch to *Won deals* to see \`views.won\` start its own entry.`,
             },
         },
     },

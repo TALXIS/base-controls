@@ -1,4 +1,24 @@
+<script>
+  //paints the saved or system scheme before Storybook's scripts load
+  (() => {
+    const saved = /[?&]globals=[^&]*\btheme:(light|dark)\b/.exec(decodeURIComponent(location.search));
+    document.documentElement.dataset.colorScheme = saved ? saved[1] : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  })();
+</script>
 <style>
+  :root {
+    --preview-background: #ffffff;
+  }
+
+  :root[data-color-scheme="dark"] {
+    --preview-background: #292929;
+    color-scheme: dark;
+  }
+
+  html {
+    background: var(--preview-background);
+  }
+
   .sbdocs-content p,
   .sbdocs-content li {
     font-size: 16px;

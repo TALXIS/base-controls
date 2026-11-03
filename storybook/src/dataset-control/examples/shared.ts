@@ -40,7 +40,9 @@ const createDealsProvider = () => {
 export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
     //stands in for fetching the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
+    //a new provider on every load: a view switch or reload mounts everything anew
     const provider = createDealsProvider()
+    //the view sets its columns and hands back what else it carries
     const { data = {} } = view ? await view.resolve(provider) : {}
     provider.setSorting(data.sorting ?? [])
     provider.setFiltering(data.filtering ?? null)
@@ -66,18 +68,21 @@ export const loadDealViews = async (): Promise<IDatasetControlView<IDealViewData
 `,
 }
 
-/** The products as photo cards that select on click, scrolled back where they were per view. */
+/** The products as photo cards that select on click or from the keyboard, scrolled back where they were per view. */
 export const PRODUCT_GALLERY_FILE: IGridExampleFile = {
     name: 'ProductGallery.tsx',
-    code: `const styles = mergeStyleSets({
-    gallery: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', alignContent: 'start', gap: 12, paddingBottom: 12, height: '100%', overflow: 'auto', boxSizing: 'border-box' },
+    code: `const getGalleryStyles = (theme: ITheme) => mergeStyleSets({
+    gallery: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', alignContent: 'start', gap: 12, padding: '4px 4px 12px', height: '100%', overflow: 'auto', boxSizing: 'border-box' },
+    item: { cursor: 'pointer', ':focus-visible': { outline: \`2px solid \${theme.semanticColors.focusBorder}\`, outlineOffset: 2 } },
     card: { maxWidth: 'none', minWidth: 0 },
-    selectedCard: { outline: '2px solid #0f6cbd', outlineOffset: -2 },
+    selectedCard: { outline: \`2px solid \${theme.palette.themePrimary}\`, outlineOffset: -2 },
 })
 
-//shows the products DatasetControl loaded as a gallery; clicking a card selects it
+//the products as a gallery; a click, Enter or Space selects a card
 export const ProductGallery = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
+    const theme = useTheme()
+    const styles = React.useMemo(() => getGalleryStyles(theme), [theme])
     //per view inside the DatasetControl, so each view comes back scrolled where it was
     const store = useControlStateStore('gallery')
     const galleryRef = React.useRef<HTMLDivElement>(null)
@@ -89,20 +94,28 @@ export const ProductGallery = () => {
     const selectedIds = provider.getSelectedRecordIds()
     const toggle = (id: string) => provider.setSelectedRecordIds(selectedIds.includes(id) ? selectedIds.filter(selectedId => selectedId !== id) : [...selectedIds, id])
 
-    return <div ref={galleryRef} className={styles.gallery} onScroll={event => store.set('scrollTop', event.currentTarget.scrollTop)}>
+    const onKeyDown = (event: { key: string, preventDefault: () => void }, id: string) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            toggle(id)
+        }
+    }
+
+    return <div ref={galleryRef} role='group' aria-label='Products' className={styles.gallery} onScroll={event => store.set('scrollTop', event.currentTarget.scrollTop)}>
         {provider.getRecords().map(product => {
+            const id = product.getRecordId()
+            const isSelected = selectedIds.includes(id)
             const photo = product.getValue('photo')
             const inStock = product.getValue('instock')
-            return <DocumentCard
-                key={product.getRecordId()}
-                className={selectedIds.includes(product.getRecordId()) ? \`\${styles.card} \${styles.selectedCard}\` : styles.card}
-                onClick={() => toggle(product.getRecordId())}>
-                <DocumentCardImage height={160} imageFit={ImageFit.cover} imageSrc={photo?.fileUrl ?? photo?.thumbnailUrl} />
-                <DocumentCardDetails>
-                    <DocumentCardTitle title={product.getFormattedValue('name')} shouldTruncate />
-                    <DocumentCardTitle title={\`\${product.getFormattedValue('price')} · \${inStock > 0 ? \`\${inStock} in stock\` : 'Out of stock'}\`} showAsSecondaryTitle />
-                </DocumentCardDetails>
-            </DocumentCard>
+            return <div key={id} role='checkbox' aria-checked={isSelected} aria-label={product.getFormattedValue('name')} tabIndex={0} className={styles.item} onClick={() => toggle(id)} onKeyDown={event => onKeyDown(event, id)}>
+                <DocumentCard className={isSelected ? \`\${styles.card} \${styles.selectedCard}\` : styles.card}>
+                    <DocumentCardImage height={160} imageFit={ImageFit.cover} imageSrc={photo?.fileUrl ?? photo?.thumbnailUrl} />
+                    <DocumentCardDetails>
+                        <DocumentCardTitle title={product.getFormattedValue('name')} shouldTruncate />
+                        <DocumentCardTitle title={\`\${product.getFormattedValue('price')} · \${inStock > 0 ? \`\${inStock} in stock\` : 'Out of stock'}\`} showAsSecondaryTitle />
+                    </DocumentCardDetails>
+                </DocumentCard>
+            </div>
         })}
     </div>
 }

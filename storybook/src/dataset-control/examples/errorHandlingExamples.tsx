@@ -16,7 +16,7 @@ const loadDealsOnRetry = async (params: IDatasetControlLoadParameters<IDealViewD
     return loadDeals(params)
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDealsOnRetry} height='420px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals-error-handling' onLoad={loadDealsOnRetry} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -66,7 +66,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel checked={isDown} onChange={(_, checked) => toggleServer(!!checked)} />
-        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='failingDeals' height='420px'>
+        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='deals-failed-actions' height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>

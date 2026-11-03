@@ -71,6 +71,7 @@ type IChoiceGroupOption = import('@fluentui/react').IChoiceGroupOption;
 type ICommandBarItemProps = import('@fluentui/react').ICommandBarItemProps;
 type ICommandBarProps = import('@fluentui/react').ICommandBarProps;
 type IContextualMenuItem = import('@fluentui/react').IContextualMenuItem;
+type IPanelProps = import('@fluentui/react').IPanelProps;
 type IContextualMenuProps = import('@fluentui/react').IContextualMenuProps;
 type IDropdownOption = import('@fluentui/react').IDropdownOption;
 type IIconProps = import('@fluentui/react').IIconProps;
@@ -806,7 +807,6 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
 /** The example's provider, loaded with the dataset the example names. */
 declare const provider: IDataProvider;
 
-/** A new, unloaded provider over the 30 deals of a sales pipeline. */
 /** Works out a provider's totals in a provider of its own, as the grid's total row does. */
 declare class TotalRow {
     constructor(provider: IDataProvider);
@@ -820,6 +820,7 @@ declare class TotalRow {
     destroy(): void;
 }
 
+/** A new, unloaded provider over the 30 deals of a sales pipeline. */
 declare function createDealsProvider(): MemoryDataProvider;
 /** The 30 deals of the sales pipeline, as raw records. */
 declare const DEAL_ROWS: IRawRecord[];
@@ -3444,6 +3445,8 @@ interface IDatasetControlViewSwitcher {
     getCurrentView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
     select(viewId: string): void;
+    /** Registers a hook over the items of the switcher's menu, which it adds to or changes in place. */
+    registerItems(hook: (items: IContextualMenuItem[]) => void, priority?: number): () => void;
 }
 
 interface IViewSwitcherProps {
@@ -3498,10 +3501,47 @@ interface IUserQueriesCommands {
     enableManageViews?: boolean;
 }
 
+/** The values saved with every user view, by key; extend it to save values of your own. */
+interface IUserQuerySavedValueMap {
+    sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
+    filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
+    [key: string]: unknown;
+}
+
 /** The userQueries module, as datasetControl.modules.get('userQueries') returns it. */
 interface IDatasetControlUserQueries {
+    readonly events: IEventSubscriber<{ onOperationFailed: (error: unknown) => void }>;
     /** Saves the value onGetValue returns under key with every user view; undefined saves nothing, a throw stops the save. */
-    saveWithView(key: string, onGetValue: () => unknown): () => void;
+    saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined): () => void;
+}
+
+/** A Dataverse table the user's views are kept in. */
+interface IDataverseUserQueriesTable {
+    name: string;
+    fieldMapping: { name: string; layout: string; returnedTypeCode: string; description?: string; recordId?: string };
+}
+
+interface ITalxisUserQueriesModuleParameters extends IUserQueriesCommands {
+    /** The logical name of the entity the views are of. */
+    entityName: string;
+    /** Only the views of this record; only views of no record when left out. */
+    recordId?: string;
+    /** Only the views this owner owns. */
+    ownerId?: string;
+}
+
+/** The user's views as TALXIS talxis_userquery records. */
+declare const createTalxisUserQueriesModule: <TData>(parameters: ITalxisUserQueriesModuleParameters) => IDatasetControlModule;
+/** The user's views as records of a Dataverse table, with their columns, linking and data as JSON in its layout column. */
+declare const createDataverseUserQueriesModule: <TData>(parameters: ITalxisUserQueriesModuleParameters & { table: IDataverseUserQueriesTable }) => IDatasetControlModule;
+/** User views kept in a Dataverse table; extend it to change how a view is written. */
+declare class DataverseUserQueriesStore<TData = unknown> implements IUserQueriesStore<TData> {
+    constructor(parameters: ITalxisUserQueriesModuleParameters & { table: IDataverseUserQueriesTable });
+    getViews(): Promise<IUserQueryListItem[]>;
+    getView(viewId: string): Promise<IUserQueryView<TData>>;
+    createView(name: string, view: IUserQueryView<TData>): Promise<string>;
+    updateView(viewId: string, view: IUserQueryView<TData>): Promise<void>;
+    createManageProvider(): IDataProvider;
 }
 
 
@@ -3524,7 +3564,7 @@ interface IDatasetControlEvents {
     onLoadStarted: () => void;
     /** A load finished, and its provider is now the one shown. */
     onLoaded: (provider: IDataProvider) => void;
-    /** A load failed; the provider shown before it, if any, stays. */
+    /** A load failed, and the error shows in place of the parts. */
     onLoadFailed: (error: unknown) => void;
     onDestroyed: () => void;
 }
@@ -3634,8 +3674,32 @@ interface IDatasetControlEditColumns {
     open(): void;
     /** Closes the editor and drops whatever was not saved. */
     close(): void;
-    /** Writes the edit to the provider and closes the editor. */
-    save(): void;
+    /** Asks about unsaved changes first, then writes the edit, closes the editor and remounts the control. */
+    save(): Promise<void>;
+    /** The edit in progress; there only while the editor is open. */
+    getSession(): DatasetControlEditColumnsSession | undefined;
+    /** Registers a hook over the commands at the top of the editor. */
+    registerCommands(hook: (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
+    /** Registers a hook over each chosen column's commands, Remove first. */
+    registerColumnCommands(hook: (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
+}
+
+/** The edit the column editor holds while it is open. */
+interface DatasetControlEditColumnsSession {
+    readonly events: IEventSubscriber<{ onColumnsChanged: () => void }>;
+    /** The chosen columns, in order. */
+    getColumns(): IColumn[];
+    /** The columns the picker offers, for the current scope. */
+    getAvailableColumns(query?: string): Promise<IColumn[]>;
+    /** Gives the chosen columns their current definitions, after the provider's columns changed. */
+    refreshColumns(): Promise<void>;
+    /** Adds the column first. */
+    addColumn(column: IColumn): void;
+    removeColumn(name: string): void;
+    /** Moves the column to where targetName is. */
+    moveColumn(name: string, targetName: string): void;
+    /** Offers the columns of a related entity in the picker. */
+    setScope(scope: IAvailableRelatedColumn): void;
 }
 
 /** Moves the provider between its pages. */
@@ -3677,7 +3741,28 @@ interface IDatasetControlPartMap {
     editColumns: IDatasetControlEditColumns;
     /** The overlay over the whole control; always there. */
     loadingOverlay: IDatasetControlLoadingOverlay;
+    /** The grid in the body, while it is rendered. */
+    grid: IGrid;
 }
+
+/** What the control keeps of a view's provider in the state store. */
+interface IDatasetControlProviderState {
+    columns: IColumn[];
+    linking: ILinkEntityExposedExpression[];
+    sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
+    filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;
+    pageSize: number;
+    pageNumber: number;
+    searchQuery: string;
+    selectedRecordIds: string[];
+}
+
+/** The side of the header or footer the part is in; undefined outside both regions. */
+declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
+/** A module the control loaded, by name; throws when it was not given. */
+declare function useDatasetControlModule(name: string): any;
+/** Makes a part once and registers it on the control under name, for control.parts. */
+declare function useDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, onCreate: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
 
 /** The overlay that covers the whole control while something runs. */
 interface IDatasetControlLoadingOverlay {
@@ -3696,7 +3781,6 @@ interface IDatasetControlPartLocator {
     observe<K extends keyof IDatasetControlPartMap>(key: K, callback: (part: IDatasetControlPartMap[K]) => void | (() => void)): () => void;
 }
 
-/** The DatasetControl as its consumer drives it. */
 /** Something a module draws in the DatasetControl. */
 interface IDatasetControlSurface {
     key: string;
@@ -3709,6 +3793,7 @@ interface IDatasetControlSurfaces {
     registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void;
 }
 
+/** The DatasetControl as its consumer drives it. */
 interface IDatasetControl<TData = unknown> {
     readonly events: IEventSubscriber<IDatasetControlEvents>;
     readonly parts: IDatasetControlPartLocator;
@@ -4078,7 +4163,11 @@ declare const useLabels: (set: ILabelSet) => ILabels;
 /** User views kept in localStorage; extend it to change how a view is written. */
 declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQueriesStore<TData> {
     constructor(parameters: { storageKey: string });
-    [member: string]: any;
+    getViews(): Promise<IUserQueryListItem[]>;
+    getView(viewId: string): Promise<IUserQueryView<TData>>;
+    createView(name: string, view: IUserQueryView<TData>): Promise<string>;
+    updateView(viewId: string, view: IUserQueryView<TData>): Promise<void>;
+    createManageProvider(): IDataProvider;
 }
 /** The quick find's default slots. */
 declare const QuickFindUiComponents: IQuickFindUiComponents;

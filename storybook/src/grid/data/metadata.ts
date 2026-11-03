@@ -30,6 +30,7 @@ export const createMemoryProvider = (options: IDocsProviderOptions): MemoryDataP
         metadata: {
             PrimaryIdAttribute: options.primaryIdAttribute,
             PrimaryNameAttribute: options.primaryNameAttribute,
+            QuickFindColumns: [options.primaryNameAttribute],
             LogicalName: options.logicalName,
             EntitySetName: options.logicalName + 's',
         },

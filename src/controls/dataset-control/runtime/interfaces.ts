@@ -52,7 +52,7 @@ export interface IDatasetControlEvents {
     onLoadStarted: () => void;
     /** A load finished, and its provider is now the one shown. */
     onLoaded: (provider: IDataProvider) => void;
-    /** A load failed; the provider shown before it, if any, stays. */
+    /** A load failed, and the error shows in place of the parts. */
     onLoadFailed: (error: unknown) => void;
     /** The control is unmounting. */
     onDestroyed: () => void;

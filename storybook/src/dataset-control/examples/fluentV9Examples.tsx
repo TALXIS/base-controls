@@ -97,10 +97,10 @@ const TEXT_TYPES = [DataTypes.SingleLineText, DataTypes.Multiple]
 export const RecordDataGrid = (props: { editable?: boolean }) => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
     const columns = provider.getColumns().filter(column => !column.isHidden && !column.isVirtual).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    const tableColumns = columns.map(column => createTableColumn<IRecord>({
+    const tableColumns = columns.map(column => createTableColumn({
         columnId: column.name,
         renderHeaderCell: () => column.displayName,
-        renderCell: record => props.editable && TEXT_TYPES.includes(column.dataType as any)
+        renderCell: (record: IRecord) => props.editable && TEXT_TYPES.includes(column.dataType as any)
             //a click in the field edits it, rather than selecting the row
             ? <Input appearance='underline' size='small' style={{ width: '100%' }} value={record.getValue(column.name) ?? ''} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={(_, data) => record.setValue(column.name, data.value)} />
             : record.getFormattedValue(column.name),
@@ -130,8 +130,8 @@ export const RecordDataGrid = (props: { editable?: boolean }) => {
                     {({ renderHeaderCell }) => <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>}
                 </DataGridRow>
             </DataGridHeader>
-            <DataGridBody<IRecord>>
-                {({ item, rowId }) => <DataGridRow<IRecord> key={rowId}>
+            <DataGridBody>
+                {({ item, rowId }) => <DataGridRow key={rowId}>
                     {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
                 </DataGridRow>}
             </DataGridBody>
@@ -146,7 +146,7 @@ const V9_FILE: IGridExampleFile = {
     code: `import {
     Button, Caption1, DrawerBody, DrawerFooter, DrawerHeader, DrawerHeaderTitle, FluentProvider, Input, Menu, MenuButton, MenuDivider, MenuGroup,
     MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, MessageBar, MessageBarActions, MessageBarBody, MessageBarGroup, MessageBarTitle, OverlayDrawer,
-    Overflow, OverflowItem, Popover, PopoverSurface, Subtitle2, Tag, Toolbar, ToolbarButton, Tooltip, useIsOverflowItemVisible, useOverflowMenu, webLightTheme,
+    Overflow, OverflowItem, Popover, PopoverSurface, Subtitle2, Tag, Toolbar, ToolbarButton, Tooltip, useIsOverflowItemVisible, useOverflowMenu, webDarkTheme, webLightTheme,
 } from '@fluentui/react-components'
 import {
     ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular,
@@ -189,7 +189,7 @@ const OverflowMenuItem = (props: { item: ICommandBarItemProps }) => {
 
 //the commands that no longer fit, under a "more" button
 const OverflowMenu = (props: { items: ICommandBarItemProps[] }) => {
-    const { ref, isOverflowing } = useOverflowMenu<HTMLButtonElement>()
+    const { ref, isOverflowing } = useOverflowMenu()
     if (!isOverflowing) {
         return null
     }
@@ -309,13 +309,18 @@ const errorMessage: Partial<IErrorMessageBarComponents> = {
     onRenderCommandBar: props => <CommandToolbar {...props} fixed />,
 }
 
+//v9 copies the provider's class onto its popups, so the box is a div of its own
+const V9Container = (props: JSX.IntrinsicElements['div']) => {
+    const isLight = isLightColor(useTheme().semanticColors.bodyBackground)
+    return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ display: 'contents' }}>
+        <div {...props} />
+    </FluentProvider>
+}
+
 /** The pieces of every part, drawn with Fluent UI v9. */
 export const V9 = {
     control: {
-        //the whole control in v9's theme; v9 copies the provider's class onto its popups, so the box is a div of its own
-        onRenderContainer: props => <FluentProvider theme={webLightTheme} style={{ display: 'contents' }}>
-            <div {...props} />
-        </FluentProvider>,
+        onRenderContainer: props => <V9Container {...props} />,
         errorMessage,
     },
     viewSwitcher: {

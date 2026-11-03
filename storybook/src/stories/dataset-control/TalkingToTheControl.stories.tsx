@@ -18,7 +18,13 @@ const WonDealsButton = () => {
 }
 \`\`\`
 
-Outside it, \`onMounted\` passes it before each load, \`onReady\` once that load succeeded, and \`onDestroyed\` as the mount goes. Every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)), so add your listeners in \`onMounted\`: each one runs for its mount only.
+Outside it, the control's props hand it to you:
+
+| Prop | Called |
+|---|---|
+| \`onMounted\` | Before each load. Add your listeners here: every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)). |
+| \`onReady\` | Once that load succeeded. |
+| \`onDestroyed\` | As the mount goes. |
 
 \`\`\`tsx
 const onMounted = (control: IDatasetControl) => {
@@ -60,7 +66,13 @@ Each fires at most once per \`IDatasetControl\`. \`addEventListener\` returns it
 
 ## Reach the parts
 
-Every part on the page registers itself on the control under its own key, for as long as it is rendered. \`control.parts\` finds it: \`get(key)\` returns it and throws when it isn't rendered, \`find(key)\` returns \`undefined\` instead, and \`observe(key, callback)\` calls back with the part once it is there and returns the function that stops observing.
+Every part on the page registers itself on the control under its own key, for as long as it is rendered. \`control.parts\` finds it:
+
+| Call | Returns |
+|---|---|
+| \`get(key)\` | The part; throws when it isn't rendered. |
+| \`find(key)\` | The part, or \`undefined\` when it isn't rendered. |
+| \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call. |
 
 \`\`\`tsx
 const quickFind = control.parts.get('quickFind')
@@ -76,6 +88,7 @@ quickFind.search()
 | \`editColumns\` | [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor, add commands. |
 | \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) | Move between pages, change the page size. |
 | \`notifications\` | [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview) | Read the provider's load error. |
+| \`grid\` | [**Grid**](?path=/docs/controls-grid-get-started--overview) | Reach the grid in the body and its modules. |
 | \`loadingOverlay\` | Always there | Cover the whole control: \`show(message?)\` returns the function that hides it again, and it stays until every caller has hidden it. |
 
 The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's page lists its members under *From your code*.
@@ -102,19 +115,28 @@ const dealAlertsModule: IDatasetControlModule<'dealAlerts'> = {
 
 | Member | Description |
 |---|---|
-| \`name\` | Unique within the control. What \`onLoad\` returns is registered under it; declare its type in \`IDatasetControlModuleMap\`. |
+| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it; declare its type in \`IDatasetControlModuleMap\`. |
 | \`onLoad(control)\` | Can be async. A throw fails the load. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
 
-The control a module gets also has \`registerViews(hook, priority?)\`, to add to or change the views \`onLoadViews\` returned, and \`getViewStateStore()\`, the open view's entry in the state store. To draw something in the control, such as a dialog, register it on \`control.surfaces.registerSurface(surfaces => surfaces.push({ key, onRender }))\`; \`onRender\` returns \`null\` while there is nothing to show.
+The control a module's \`onLoad\` gets also has:
 
-## Everything else
+| Member | Description |
+|---|---|
+| \`registerViews(hook, priority?)\` | Adds to or changes the views \`onLoadViews\` returned: \`hook(views)\` changes them in place. |
+| \`getViewStateStore()\` | The open view's entry in the state store. |
+| \`surfaces.registerSurface(hook, priority?)\` | Draws something in the control, such as a dialog: \`hook(surfaces)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
+
+Each \`register…\` returns its unregistration.
+
+## Labels and theme
 
 | Member | Description |
 |---|---|
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/concepts-localization--overview). |
-| \`getTheme()\` | The Fluent theme the control is drawn in. |
-| \`surfaces\` | What modules draw in the control, above. |
+| \`getTheme()\` | The Fluent theme the control is drawn in. See [**Theming**](?path=/docs/concepts-theming--overview). |
+
+A dialog a module draws is a surface over the application, so draw it in the theme \`useApplicationTheme()\` returns.
 `
 
 const meta = {

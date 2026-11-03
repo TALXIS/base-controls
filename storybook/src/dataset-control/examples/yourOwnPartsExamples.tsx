@@ -7,11 +7,11 @@ const SELECTED_VALUE_CODE = `import { loadDeals, loadDealViews } from './views'
 //a part of your own: the total value of the selected deals
 const SelectedValue = () => {
     const provider = useDataProviderEvents(['onRecordsSelected'])
-    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id].getValue('value') ?? 0), 0)
+    const total = provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
     return <Text styles={{ root: { alignSelf: 'center' } }}>Selected: {total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</Text>
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='selectedValue' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

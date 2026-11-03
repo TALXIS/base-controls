@@ -14,7 +14,7 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, getColorContrast, getTintColors, mixColors, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, ApplicationThemeProvider, Callout, useApplicationTheme, useThemeBuilder, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
+    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, ApplicationThemeProvider, Callout, useApplicationTheme, useThemeBuilder, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
@@ -52,6 +52,12 @@ export const GRID_SANDBOX_SCOPE = {
     createUserQueriesModule,
     createLocalStorageUserQueriesModule,
     useDatasetControl,
+    useDatasetControlRegion,
+    useDatasetControlModule,
+    useDatasetControlPart,
+    createTalxisUserQueriesModule,
+    createDataverseUserQueriesModule,
+    DataverseUserQueriesStore,
     useCompact,
     useCompactItem,
     CompactContext,

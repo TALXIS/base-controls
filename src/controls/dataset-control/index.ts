@@ -1,7 +1,7 @@
 export * from './namespace';
 export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_LABELS_CS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
 export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModuleParameters, IDataverseUserQueriesTable, ILocalStorageUserQueriesModuleParameters } from './modules/user-queries';
-export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQuerySavedValueMap, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,

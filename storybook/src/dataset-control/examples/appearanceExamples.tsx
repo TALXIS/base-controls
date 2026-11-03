@@ -4,26 +4,35 @@ import { VIEWS_FILE, withFiles } from './shared'
 
 const YOUR_OWN_PIECES_CODE = `import { loadDeals, loadDealViews } from './views'
 
-//the default button, with a command added under the views
-const ViewSwitcherWithLink = (props: IButtonProps) => ViewSwitcherUiComponents.onRenderButton({
-    ...props,
-    menuProps: {
-        ...props.menuProps!,
-        items: [...props.menuProps!.items, { key: 'divider', itemType: ContextualMenuItemType.Divider }, { key: 'copyLink', text: 'Copy a link to this view', iconProps: { iconName: 'Link' } }],
-    },
-})
+const copyLink = async (viewId: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('view', viewId)
+    await navigator.clipboard.writeText(url.toString())
+}
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='480px'>
+//menu items and commands go through the parts, not slots
+const addCommands = (control: IDatasetControl) => {
+    control.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(items => {
+        items.push(
+            { key: 'copyLinkDivider', itemType: ContextualMenuItemType.Divider },
+            { key: 'copyLink', text: 'Copy a link to this view', iconProps: { iconName: 'Link' }, onClick: () => { copyLink(control.getViewId()!) } },
+        )
+    }))
+    control.parts.observe('editColumns', editColumns => editColumns.registerColumnCommands((commands, column, session) => {
+        //the draggable column list runs commands on mouse up
+        commands.push({ key: 'moveToTop', iconProps: { iconName: 'Up' }, title: 'Move to the top', onMouseUp: () => session.moveColumn(column.name, session.getColumns()[0].name) })
+    }))
+}
+
+const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='yourOwnPieces' onLoad={loadDeals} onMounted={addCommands} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.ViewSwitcher components={{ onRenderButton: props => <ViewSwitcherWithLink {...props} /> }} />
+            <DatasetControl.ViewSwitcher components={{
+                onRenderButton: props => <TooltipHost content='Switch between views of the deals'>{ViewSwitcherUiComponents.onRenderButton(props)}</TooltipHost>,
+            }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
-            <DatasetControl.EditColumns components={{
-                columnList: {
-                    onRenderColumn: props => <DatasetControl.Ui.EditColumnsColumn {...props} commands={[{ key: 'info', iconProps: { iconName: 'Info' }, title: props.column.name }, ...props.commands]} />,
-                },
-            }} />
+            <DatasetControl.EditColumns />
             <DatasetControl.QuickFind components={{ callout: { onRenderColumn: ({ column }) => <Text>{column.displayName} ({column.name})</Text> } }} />
         </DatasetControl.Header.End>
     </DatasetControl.Header>

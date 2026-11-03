@@ -1,4 +1,4 @@
-import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import type { IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import { HookRegistry, IEventSubscriber } from "@utils";
@@ -32,8 +32,8 @@ export interface IDatasetControlEditColumns {
     open(): void;
     /** Closes the editor and drops whatever was not saved. */
     close(): void;
-    /** Writes the edit to the provider, closes the editor and mounts the control anew with it. */
-    save(): void;
+    /** Asks about unsaved changes first, then writes the edit, closes the editor and remounts the control. */
+    save(): Promise<void>;
     /** The edit in progress; there only while the editor is open. */
     getSession(): DatasetControlEditColumnsSession | undefined;
     /**
@@ -84,12 +84,14 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         this.events.dispatchEvent('onOpenChanged');
     }
 
-    /** Writes the edit to the provider and closes the editor. */
-    public save(): void {
-        this._session?.save();
-        this.close();
-        //the next mount restores the setup this one keeps as it goes
-        this._services.get('runtime').reload();
+    public async save(): Promise<void> {
+        //resolves without writing anything when the user keeps their unsaved changes
+        await (this._provider as IInternalDataProvider).executeWithUnsavedChangesBlocker(async () => {
+            this._session?.save();
+            this.close();
+            //the next mount restores the setup this one keeps as it goes
+            await this._services.get('runtime').reload();
+        });
     }
 
     public getSession(): DatasetControlEditColumnsSession | undefined {

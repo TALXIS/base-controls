@@ -1,5 +1,5 @@
 import React from 'react'
-import { mergeStyleSets, Text } from '@fluentui/react'
+import { ITheme, mergeStyleSets, Text, useTheme } from '@fluentui/react'
 import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { loadDeals, loadDealViews } from '../dealViews'
@@ -58,7 +58,7 @@ const GridExample = () => {
         </Stack>
         <Slider label='Width (%)' min={30} max={100} value={width} onChange={setWidth} />
         <div style={{ width: \`\${width}%\` }}>
-            <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='420px'>
+            <DatasetControl onLoadViews={loadDealViews} stateKey='layoutParts' onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         {has('View switcher') && <DatasetControl.ViewSwitcher />}
@@ -100,37 +100,42 @@ const FullPageRibbon = () => {
     return <DatasetControl.Ribbon onLoad={onLoad} />
 }
 
-const pageStyles = mergeStyleSets({
-    page: { height: '100vh' },
-    header: { padding: '12px 20px 0' },
+const getFullPageStyles = (theme: ITheme) => mergeStyleSets({
+    //stands in for the window the page fills
+    window: { height: 480, border: `1px solid ${theme.semanticColors.bodyDivider}` },
     //a line of its own, above the regions
     title: { flexBasis: '100%' },
 })
 
 /** A page that is all the control, filling the window with `height='100%'`, its title in the header. */
-export const FullPageExample = () => <div className={pageStyles.page}>
-    <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='100%'>
-        <DatasetControl.Header className={pageStyles.header}>
-            <Text variant='xLarge' className={pageStyles.title}>Sales pipeline</Text>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher />
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <FullPageRibbon />
-                <DatasetControl.EditColumns />
-                <DatasetControl.QuickFind />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createSortingModule()]} />
-        </DatasetControl.Body>
-        <DatasetControl.Footer>
-            <DatasetControl.Footer.Start>
-                <DatasetControl.PageSizeSwitcher />
-            </DatasetControl.Footer.Start>
-            <DatasetControl.Footer.End>
-                <DatasetControl.Pagination />
-            </DatasetControl.Footer.End>
-        </DatasetControl.Footer>
-    </DatasetControl>
-</div>
+export const FullPageExample = () => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getFullPageStyles(theme), [theme])
+
+    return <div className={styles.window}>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
+            <DatasetControl.Header>
+                <Text variant='xLarge' className={styles.title}>Sales pipeline</Text>
+                <DatasetControl.Header.Start>
+                    <DatasetControl.ViewSwitcher />
+                </DatasetControl.Header.Start>
+                <DatasetControl.Header.End>
+                    <FullPageRibbon />
+                    <DatasetControl.EditColumns />
+                    <DatasetControl.QuickFind />
+                </DatasetControl.Header.End>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createSortingModule()]} />
+            </DatasetControl.Body>
+            <DatasetControl.Footer>
+                <DatasetControl.Footer.Start>
+                    <DatasetControl.PageSizeSwitcher />
+                </DatasetControl.Footer.Start>
+                <DatasetControl.Footer.End>
+                    <DatasetControl.Pagination />
+                </DatasetControl.Footer.End>
+            </DatasetControl.Footer>
+        </DatasetControl>
+    </div>
+}
