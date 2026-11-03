@@ -1,4 +1,5 @@
 import { IStyle, ITheme, keyframes, mergeStyleSets } from "@fluentui/react";
+import { getTextColorForBackground } from "@theme";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_LINK_CONTROL_CLASS,
@@ -21,8 +22,8 @@ const SAVING_SWEEP = keyframes({
     to: { backgroundPosition: '-100% 0' },
 });
 
-//Fluent 2's cornflower, distinct from the primary that selection and links use
-const TASK_COLOR = '#4F6BED';
+//a shade off the primary, so a bar stands apart from the selection and links drawn in it
+const getTaskColor = (theme: ITheme) => theme.palette.themeSecondary;
 
 const SUMMARY_CAP_WIDTH = 7;
 const SUMMARY_CAP_HEIGHT = 6;
@@ -62,8 +63,8 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
         '--dhx-gantt-timeline-scale-border-vertical': `1px solid ${theme.semanticColors.bodyDivider}`,
         '--dhx-gantt-scale-border-vertical': `1px solid ${theme.semanticColors.bodyDivider}`,
         '--dhx-gantt-scale-border-horizontal': `1px solid ${theme.semanticColors.bodyDivider}`,
-        '--dhx-gantt-task-background': TASK_COLOR,
-        '--dhx-gantt-milestone-background': TASK_COLOR,
+        '--dhx-gantt-task-background': getTaskColor(theme),
+        '--dhx-gantt-milestone-background': getTaskColor(theme),
         '--dhx-gantt-task-border': 'none',
         '--dhx-gantt-task-border-radius': theme.effects.roundedCorner4,
         [`.${GANTT_TASK_LINE_CLASS}`]: {
@@ -135,7 +136,7 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
                 inset: 0,
                 borderRadius: 'inherit',
                 pointerEvents: 'none',
-                backgroundImage: 'repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px 6px)',
+                backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${getTextColorForBackground(getTaskColor(theme))} 35%, transparent) 0 2px, transparent 2px 6px)`,
             },
         },
         //Fluent's shimmer, swept across the bar while its record saves

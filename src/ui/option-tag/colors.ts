@@ -1,4 +1,4 @@
-import Color from 'color';
+import { mixColors } from '@theme';
 
 const colorsCache = new Map<string, IOptionTagColors>();
 
@@ -20,16 +20,11 @@ export const getOptionTagColors = (color: string, surface: string, text: string)
     let colors = colorsCache.get(key);
     if (!colors) {
         colors = {
-            background: mix(surface, color, 0.12),
-            border: mix(surface, color, 0.28),
-            text: mix(text, color, 0.7),
+            background: mixColors(color, surface, 0.12),
+            border: mixColors(color, surface, 0.28),
+            text: mixColors(color, text, 0.7),
         };
         colorsCache.set(key, colors);
     }
     return colors;
-};
-
-/** @param weight How much of `color` is left in what comes back. */
-const mix = (base: string, color: string, weight: number): string => {
-    return new Color(base).mix(new Color(color), weight).hex();
 };

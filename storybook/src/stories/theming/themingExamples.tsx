@@ -6,7 +6,7 @@ const BRAND_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealVi
 
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
-    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } },
+    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } },
     { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
     { key: 'rose', text: 'Rose', colors: { primary: '#c2185b', background: '#fff7fa', text: '#3a1424' } },
     { key: 'midnight', text: 'Midnight', colors: { primary: '#4cc2ff', background: '#0f1b2d', text: '#e6edf7' } },
@@ -96,7 +96,7 @@ const Total = (props: { label: string; value: string }) => {
 }
 
 const GridExample = () => {
-    const darkTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#383838', text: '#ffffff' } })
+    const darkTheme = useThemeBuilder({ colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } })
     return <Stack horizontal tokens={{ childrenGap: 12 }}>
         <Total label='Pipeline' value='$1,284,000' />
         <ThemeProvider theme={darkTheme} style={{ padding: 12 }}>

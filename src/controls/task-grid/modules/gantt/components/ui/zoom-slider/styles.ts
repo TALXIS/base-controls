@@ -1,7 +1,8 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { getTextColorForBackground } from "@theme";
 
 export const getGanttUiZoomSliderStyles = (theme: ITheme, disabled?: boolean) => {
-    const iconColor = encodeURIComponent(disabled ? theme.palette.neutralSecondary : theme.palette.white);
+    const iconColor = encodeURIComponent(disabled ? theme.palette.neutralSecondary : getTextColorForBackground(theme.palette.themePrimary));
     return mergeStyleSets({
         root: {
             minWidth: 220,

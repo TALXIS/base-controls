@@ -1,6 +1,6 @@
 import { BaseSlots, createTheme, getColorFromString, IChoiceGroupOptionStyles, isDark, IThemeRules, ThemeGenerator as FluentThemeGenerator, themeRulesStandardCreator } from "@fluentui/react";
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
-import { isLightColor } from "../colors";
+import { isLightColor, mixColors } from "../colors";
 import { ITheme, IThemeColors } from "../interfaces";
 
 //cloning disabled on purpose: MemoryCache deep-clones on every *hit*, and a generated v8 theme is a large
@@ -24,6 +24,22 @@ export interface IThemeEdit {
 export type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } | { fluentDesignLanguage: ComponentFramework.FluentDesignState };
 
 const DEFAULT_COLORS: IThemeColors = { primary: '#0078d4', background: '#ffffff', text: '#323130' };
+
+//how much of the text a dark theme's neutral slots hold over the background, after Fluent v9's webDarkTheme
+const DARK_NEUTRAL_RAMP = {
+    neutralLighterAlt: 0.05, //colorSubtleBackgroundSelected
+    neutralLighter: 0.09, //colorNeutralBackground1Hover
+    neutralLight: 0.19, //colorNeutralStroke2
+    neutralQuaternaryAlt: 0.22,
+    neutralQuaternary: 0.24, //colorNeutralForegroundDisabled
+    neutralTertiaryAlt: 0.28, //colorNeutralStroke1
+    neutralTertiary: 0.52, //colorNeutralForeground4
+    neutralSecondaryAlt: 0.57,
+    neutralSecondary: 0.62, //colorNeutralForeground3
+    neutralPrimaryAlt: 0.81, //colorNeutralForeground2
+    neutralPrimary: 1,
+    neutralDark: 1,
+};
 
 /** What a theme is worked out from: the colours it is generated from, and the edits over the result. */
 export class ThemeBuilder {
@@ -180,7 +196,14 @@ export class ThemeBuilder {
             {} as IThemeRules,
         );
 
-        return createTheme({ palette: FluentThemeGenerator.getThemeAsJson(abridgedTheme), isInverted: currentIsDark }) as ITheme;
+        const palette = FluentThemeGenerator.getThemeAsJson(abridgedTheme);
+        //the designer packs a dark theme's neutrals against the background, too close to tell apart
+        if (currentIsDark) {
+            for (const [slot, weight] of Object.entries(DARK_NEUTRAL_RAMP)) {
+                palette[slot] = mixColors(colors.text, colors.background, weight);
+            }
+        }
+        return createTheme({ palette, isInverted: currentIsDark }) as ITheme;
     }
 
     /** Takes out what the theme designer does that this package does not want, in place. */
