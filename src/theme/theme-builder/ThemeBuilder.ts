@@ -26,6 +26,14 @@ export type IThemeBuilderSource = { theme: ITheme } | { colors: IThemeColors } |
 //Fluent v9 webDarkTheme's colorBackgroundOverlay
 const DARK_OVERLAY = 'rgba(0, 0, 0, 0.5)';
 
+//Fluent v9 webDarkTheme's shadow4 to shadow64; v8's are too faint to see on a dark background
+const DARK_EFFECTS = {
+    elevation4: '0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28)',
+    elevation8: '0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28)',
+    elevation16: '0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28)',
+    elevation64: '0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28)',
+};
+
 const DEFAULT_COLORS: IThemeColors = { primary: '#0078d4', background: '#ffffff', text: '#323130' };
 
 //how much of the text a dark theme's neutral slots hold over the background, after Fluent v9's webDarkTheme
@@ -215,7 +223,7 @@ export class ThemeBuilder {
             //Fluent's overlay washes the page in this slot, which stays white whatever the background
             palette.whiteTranslucent40 = DARK_OVERLAY;
         }
-        return createTheme({ palette, isInverted: currentIsDark }) as ITheme;
+        return createTheme({ palette, isInverted: currentIsDark, ...(currentIsDark && { effects: DARK_EFFECTS }) }) as ITheme;
     }
 
     /** Takes out what the theme designer does that this package does not want, in place. */

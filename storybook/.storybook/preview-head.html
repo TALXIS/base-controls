@@ -30,6 +30,11 @@
     background-color: color-mix(in srgb, currentColor 5%, transparent) !important;
   }
 
+  /* Storybook's 20% black shadow is lost on a dark page */
+  :root[data-color-scheme="dark"] .sbdocs-preview {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+
   .form-strategy-hidden-preview.sbdocs-preview,
   .docs-hidden-preview.sbdocs-preview {
     display: none;
