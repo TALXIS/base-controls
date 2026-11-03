@@ -55,6 +55,8 @@ declare const Separator: typeof import('@fluentui/react').Separator;
 declare const Slider: typeof import('@fluentui/react').Slider;
 declare const Spinner: typeof import('@fluentui/react').Spinner;
 declare const Stack: typeof import('@fluentui/react').Stack;
+/** Registers Fluent's icon font; a new window, such as an isolated frame, needs it once. */
+declare const initializeIcons: typeof import('@fluentui/react').initializeIcons;
 /** Fluent's Text component, merged into the DOM's Text type. */
 declare var Text: { new (data?: string): Text; prototype: Text };
 interface Text extends React.Component<ITextProps> {
@@ -826,8 +828,12 @@ declare class TotalRow {
 declare function createDealsProvider(): MemoryDataProvider;
 /** The deals in a DatasetControl, under a heading. */
 declare const DealsGrid: (props: { heading: string }) => JSX.Element;
-/** DealsGrid in an iframe of its own, declared with createIsolatedComponent in the docs' bundle. */
-declare const IsolatedDealsGrid: (props: { heading: string; theme: import('@fluentui/react').ITheme; frame?: { className?: string; title?: string } }) => JSX.Element | null;
+/** A script an isolated frame loads, in order: a URL, or a module. */
+type IsolatedFrameScript = string | { src: string; type: 'module' };
+/** Declares a component that runs inside its own iframe; the key is unique within the bundle. */
+declare function createIsolatedComponent<TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: { scripts?: IsolatedFrameScript[]; onPrepareWindow?: (frameWindow: Window) => void }): React.ComponentType<TProps & { frame?: { className?: string; title?: string } }>;
+/** What an isolated frame loads to run this example: the docs' bundle, then the example's own code. */
+declare const SANDBOX_FRAME_SCRIPTS: IsolatedFrameScript[];
 /** The 30 deals of the sales pipeline, as raw records. */
 declare const DEAL_ROWS: IRawRecord[];
 /** The columns of the deals. */

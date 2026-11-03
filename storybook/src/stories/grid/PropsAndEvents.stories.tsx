@@ -38,7 +38,7 @@ Every event of the grid itself is a prop, and a module's events come in through 
 
 | Event | Arguments | When it fires |
 |---|---|---|
-| \`onDataLoaded\` | None | After every load of the provider, such as \`refresh()\`, a page, a sort or a filter, once the grid has its new columns and rows. When AG Grid is ready and the provider has already loaded, it fires once, just before \`onReady\`. |
+| \`onDataLoaded\` | None | After every load of the provider, such as \`refresh()\`, a page, a sort or a filter, once the grid has its new columns and rows. Its place around \`onReady\` is under *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
 | \`onLoadingChanged\` | \`isLoading: boolean\` | When the provider starts or stops loading. |
 | \`onRecordValueChanged\` | \`record: IRecord\`, \`columnName: string\`, \`newValue: any\` | When a value in a record changes, whether the user edited it or your code called \`record.setValue()\`. |
 | \`onBeforeRecordSaved\` | \`record: IRecord\` | When a record starts to save, before its values are checked. |

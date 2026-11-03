@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DriveTheGridExample, GridLifeExample } from '../../grid/examples/talkingExamples'
+import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
 Props set a grid up, but a page often needs to act on it while it runs: expand every group from a ribbon button, sort by a column, or refresh a summary when new data arrives. For that, every mounted grid hands out one object, an \`IGrid\`, through which your code reads the data, drives the modules, changes what the grid decides and listens to what happens in it. Code outside the grid and a module inside it get the same object.
@@ -11,11 +12,7 @@ Props set a grid up, but a page often needs to act on it while it runs: expand e
 
 ## Get the grid
 
-Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you once AG Grid is ready. Inside the grid, a module's \`onLoad\` receives it as the grid mounts, before AG Grid exists:
-
-{{story: Follow a grid from mount to unmount}}
-
-\`onDestroyed\` passes it once more as AG Grid is about to be destroyed. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
+Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you. Inside the grid, a module's \`onLoad\` receives it, as on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). When each runs is under *Lifecycle* below.
 
 | Member | Description |
 |---|---|
@@ -25,6 +22,12 @@ Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes 
 | \`registerAgGridOptions\`, \`registerAgGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
+
+## Lifecycle
+
+{{block: lifecycle}}
+
+{{story: Follow a grid from mount to unmount}}
 
 ## Services
 
@@ -102,7 +105,7 @@ They return the service, not its state. To redraw when it changes, subscribe to 
 
 | Emitter | Event | Arguments | When it fires |
 |---|---|---|---|
-| \`grid.events\` | \`onDataLoaded\` | None | After every load of the provider, once the grid has its new columns and rows. When AG Grid is ready and the provider has already loaded, it fires once, just before \`onReady\`. |
+| \`grid.events\` | \`onDataLoaded\` | None | After every load of the provider, once the grid has its new columns and rows. See *Lifecycle* above. |
 | \`grid.events\` | \`onDestroyed\` | None | As the grid unmounts, after AG Grid is gone. |
 | \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each \`{ recordId, columnName }\` | An editor opens or closes, or the user steps into or out of an in-place cell. |
 | \`rowSelection.events\` | \`onSelectionChanged\` | \`selectedRecordIds\` | The selection changes. |
@@ -130,13 +133,23 @@ The grid runs the hooks and the column callbacks when it draws, and nothing tell
 \`cells.getCell\` finds only cells on screen; a cell that scrolls into view draws with the current results anyway.
 `
 
+const LIFECYCLE: ILifecycleStep[] = [
+    { title: 'The modules load', hook: 'onLoad', text: 'As the grid first renders, each module\'s `onLoad` gets the `IGrid`, in the order of `modules`, before AG Grid exists.' },
+    { title: 'AG Grid is created', hook: 'registerAgGridInitialOptions', text: 'AG Grid is created with the options the initial option hooks set.' },
+    { title: 'AG Grid is ready', hook: "observe('gridApi')", text: 'The `gridApi` service registers, so its observers run, and the grid draws the provider\'s data if it has loaded, firing `onDataLoaded`.' },
+    { title: 'The grid is ready', hook: 'onReady', text: '`onReady` gets the `IGrid`, for code outside the grid to keep.' },
+    { title: 'The provider loads', hook: 'onDataLoaded', text: 'After every load of the provider, the grid draws its new columns and rows and fires `onDataLoaded`.' },
+    { title: 'AG Grid is destroyed', hook: 'onDestroyed', text: 'The `gridApi` service unregisters, so the cleanups its observers returned run while AG Grid still works, then the `onDestroyed` prop gets the grid.' },
+    { title: 'The grid unmounts', hook: 'onDestroy', text: '`grid.events` fires `onDestroyed`, then each module\'s `onDestroy` gets what its `onLoad` returned.' },
+]
+
 const meta = {
     title: 'Controls/Grid/Talking to the grid',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

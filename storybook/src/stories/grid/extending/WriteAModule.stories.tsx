@@ -20,7 +20,7 @@ A module packages a feature of your own: it registers hooks, follows events, sha
 
 Build a module once, as a constant or in \`useMemo\`: \`modules\` is read at mount, see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\`, and reads state that changes through a getter or a ref. The examples on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) do both.
 
-Modules load in the order of the array, so in your \`onLoad\` the ones before yours are there for \`grid.modules.find\`; reach later ones with \`grid.modules.observe\`. AG Grid's api arrives later too: reach it with \`grid.services.observe('gridApi', ...)\`. \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
+Modules load in the order of the array, so in your \`onLoad\` the ones before yours are there for \`grid.modules.find\`; reach later ones with \`grid.modules.observe\`. AG Grid's api arrives later too: reach it with \`grid.services.observe('gridApi', ...)\`. When each step runs is under *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
 
 Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
 

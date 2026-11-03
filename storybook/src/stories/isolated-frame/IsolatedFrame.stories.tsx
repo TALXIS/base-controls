@@ -3,23 +3,24 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { IsolationExample } from '../../isolated-frame/isolatedFrameExamples'
+import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code** and change that CSS to see it reach only the page.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code**: change that CSS to see it reach only the page, or edit *IsolatedDeals.tsx* to change what runs in the frame.
 
 {{canvas: Overview}}
 
 ## Declare a frame
 
-\`createIsolatedComponent\` declares a control that runs in a frame. The frame loads its own copy of your bundle, React and every other library included, and renders the control against the frame's \`window\` and \`document\`.
+A frame can't be handed children: they belong to the page's copy of your code, and the frame runs a copy of its own. So you declare what runs in it once, at module level, with \`createIsolatedComponent(key, Content, options)\`, and render the result like any component, as *IsolatedDeals.tsx* in the example does. The key is any string unique within your bundle.
 
-A frame cannot be handed children: they belong to the page's copy of your code. So declare what runs in it once, at module level, and render it like the component it wraps, as \`IsolatedDealsGrid\` in the example above is declared in the docs' bundle:
+The frame starts empty: the content brings the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and sets up anything a library needs once per window, such as icons.
 
-- The key, \`'isolatedDealsGrid'\`, is any string unique within your bundle.
-- On the page, \`IsolatedDealsGrid\` renders an iframe, loads your script into it, and renders the content there with the props on every render.
-- Inside a frame, it renders the content directly.
-- The frame starts empty: wrap the content in the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and set up any global state a library needs once per frame, such as registered icons or fonts.
-- If the frame fails to load, it shows the error in its place, with a Retry button.
+## Lifecycle
+
+{{block: lifecycle}}
+
+If the frame fails to load, the error shows in its place, with a Retry that starts over with a fresh iframe.
 
 ## Options
 
@@ -59,13 +60,21 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 - **Security.** The frame shares the page's origin: it keeps out global styles and globals, not hostile code.
 `
 
+const LIFECYCLE: ILifecycleStep[] = [
+    { title: 'The page renders the host', hook: 'frame', text: 'On the page, the component draws an empty iframe in its place; `frame` sets its class and title.' },
+    { title: 'The frame window is prepared', hook: 'onPrepareWindow', text: 'The window is marked as a frame and takes the page\'s `lang` and `dir`; hand it anything else here.' },
+    { title: 'The scripts load', hook: 'scripts', text: 'The frame loads them in order, so your code runs again inside it and registers the content under its key.' },
+    { title: 'The content renders', hook: 'content props', text: 'The frame renders the content with every prop but `frame`, and again on every render of the host.' },
+    { title: 'The host unmounts', text: 'The content unmounts inside the frame, and the iframe goes with the host.' },
+]
+
 const meta = {
     title: 'Concepts/Control isolation',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

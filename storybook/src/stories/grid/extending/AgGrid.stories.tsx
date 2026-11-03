@@ -50,7 +50,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid: widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. Set an option through a hook rather than \`gridApi.setGridOption\` when a hook also sets it, or the hook's value replaces yours.
 
-To read AG Grid as it goes, return a cleanup from the observer. It runs while AG Grid still works, before the \`onDestroyed\` prop, when the service is already gone; the log under *Get the grid* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) shows it.
+To read AG Grid as it goes, return a cleanup from the observer: it runs while AG Grid still works, as *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) shows.
 
 {{story: Jump to the newest ticket}}
 

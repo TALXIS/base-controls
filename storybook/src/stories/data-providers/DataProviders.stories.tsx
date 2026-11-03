@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { EventsExample, HandDownExample, OwnProviderExample, ReadExample, SharedProviderExample, SteerFromCodeExample } from '../../data-providers/dataProvidersExamples'
+import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
 A data provider holds a set of records and everything about them: their columns, sorting, filters, paging, selection and unsaved changes. It has no UI. Whatever shows the records reads them from the provider and writes changes back to it, so every part sharing a provider stays in step.
@@ -33,7 +34,7 @@ Controls take their provider from around them, not from a prop. A [**DatasetCont
 
 \`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost.
 
-- When loading fails, \`refresh()\` rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why.
+- When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why.
 - Loading clears the selection; see *Selection*.
 - Inside a DatasetControl, loading a provider with unsaved changes asks the user first. If they cancel, nothing loads and \`refresh()\` resolves with \`undefined\`.
 - \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest, and \`isLoading()\` says whether a load is running.
@@ -49,6 +50,12 @@ Some types come back from \`getValue()\` in another shape than the raw data hold
 | Lookup | \`[{ entityType, id, name }]\` | \`[{ etn, id: { guid }, name }]\` |
 
 {{story: Read from code}}
+
+## Lifecycle
+
+Every load, from \`refresh()\` or a page change, runs these steps.
+
+{{block: lifecycle}}
 
 ## Sort, filter, search and page
 
@@ -164,13 +171,22 @@ class ProductsProvider extends DataProvider {
 | \`onGetAvailableRelatedColumns()\` | Returns the columns of related tables a user can add |
 `
 
+const LIFECYCLE: ILifecycleStep[] = [
+    { title: 'The first load starts', hook: 'onBeforeFirstDataLoaded', text: 'On the provider\'s first load only, `onBeforeFirstDataLoaded` fires before anything else.' },
+    { title: 'Loading starts', hook: 'onLoading', text: '`onLoading(true)` fires, then `onBeforeNewDataLoaded`, and the provider drops its records and their unsaved changes.' },
+    { title: 'The page is fetched', hook: 'getDataAsync', text: '`getDataAsync` loads the page with the provider\'s sorting, filters and search.' },
+    { title: 'The records are built', hook: 'onRecordLoaded', text: 'The provider makes a record of each row and fires `onRecordLoaded` for it.' },
+    { title: 'Loading ends', hook: 'onFirstDataLoaded', text: '`onLoading(false)` fires, then `onFirstDataLoaded` on the first load only.' },
+    { title: 'The new data is in', hook: 'onNewDataLoaded', text: '`onNewDataLoaded` fires, and the call that loaded resolves with the records.' },
+]
+
 const meta = {
     title: 'Concepts/Data providers',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

@@ -1,10 +1,12 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
-import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IDatasetControlProps, IGridProps, ITaskGridProps, TaskGrid as TaskGridBase, useDataProvider } from '@talxis/base-controls'
+import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IsolatedFrameScript, IDatasetControlProps, IGridProps, ITaskGridProps, TaskGrid as TaskGridBase, useDataProvider } from '@talxis/base-controls'
 import { GRID_SANDBOX_PACKAGES, GRID_SANDBOX_SCOPE } from './gridSandboxScope'
+import { createDealsProvider } from './data'
+import { createSandboxFrameScripts } from '../isolated-frame/sandboxFrame'
 
-const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider']
+const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider', 'SANDBOX_FRAME_SCRIPTS']
 
 type ISandboxScope = typeof GRID_SANDBOX_SCOPE
 
@@ -76,7 +78,7 @@ export const getGridExampleSyntaxError = (code: string): string | null => {
     }
 }
 
-const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, provider: IDataProvider): ICompiledGridExample => {
+const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, provider: IDataProvider, frameScripts: IsolatedFrameScript[]): ICompiledGridExample => {
     const modules = new Map<string, ISnippetModule>()
 
     const load = (path: string): ISnippetModule => {
@@ -100,7 +102,7 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
             ${transpile(file.code)}
             return typeof GridExample !== "undefined" ? GridExample : undefined;
         }`)
-        module.component = factory((path: string) => load(path).exports, module, module.exports, ...Object.values(scope), provider)
+        module.component = factory((path: string) => load(path).exports, module, module.exports, ...Object.values(scope), provider, frameScripts)
         return module
     }
 
@@ -110,6 +112,17 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
         return { Component, error: Component ? null : 'The code must define a GridExample component.' }
     } catch (error) {
         return { Component: null, error: (error as Error).message }
+    }
+}
+
+//only an example that isolates a component makes the blob its frame runs
+const getSandboxFrameScripts = (files: IGridExampleFile[]): IsolatedFrameScript[] => files.some(file => file.code.includes('SANDBOX_FRAME_SCRIPTS')) ? createSandboxFrameScripts(files) : []
+
+/** Runs a live example's files inside an isolated frame, so what they declare with createIsolatedComponent is found there. */
+export const runGridExampleInFrame = (files: IGridExampleFile[]): void => {
+    const { error } = compileGridExample(files, createScope(() => {}), createDealsProvider(), [])
+    if (error) {
+        throw new Error(error)
     }
 }
 
@@ -130,7 +143,7 @@ export const GridLivePreview = (props: IGridLivePreviewProps) => {
     onProviderRenderedRef.current = props.onProviderRendered
     const scope = React.useMemo(() => createScope(provider => onProviderRenderedRef.current?.(provider)), [])
     const code = JSON.stringify(props.files)
-    const compiled = React.useMemo(() => compileGridExample(props.files, scope, props.provider), [code])
+    const compiled = React.useMemo(() => compileGridExample(props.files, scope, props.provider, getSandboxFrameScripts(props.files)), [code])
 
     React.useEffect(() => {
         props.onError?.(compiled.error)

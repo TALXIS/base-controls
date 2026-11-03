@@ -32,7 +32,7 @@ Below are seven projects of a software company. Try: open a task's subtasks, dra
 | \`onTasksCreated\` | \`(records: IRecord[], parentId?: string) => void\` | None | After tasks are created, with the parent they went under. |
 | \`onTasksDeleted\` | \`(taskIds: string[]) => void\` | None | After tasks are deleted. |
 | \`onTasksUpdated\` | \`(records: IRecord[]) => void\` | None | After tasks change, from a form or a move. |
-| \`onMounted\`, \`onReady\`, \`onDestroyed\` | \`(taskRuntime: ITaskRuntime) => void\` | None | Pass you the task runtime before each load, once it succeeded, and as the control unmounts. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
+| \`onMounted\`, \`onReady\`, \`onDestroyed\` | \`(taskRuntime: ITaskRuntime) => void\` | None | Pass you the task runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
 
 \`onLoadViews\`, \`onLoadDependencies\`, \`children\`, \`height\`, \`className\`, \`stateKey\`, \`destroyProviderOnUnmount\` and \`components\` work as on a DatasetControl: *How it fits together* on [**DatasetControl › Get started**](?path=/docs/controls-datasetcontrol-get-started--overview) says which page covers each.
 

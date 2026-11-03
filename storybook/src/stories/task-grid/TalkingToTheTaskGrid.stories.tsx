@@ -11,7 +11,7 @@ The user creates, opens, moves and deletes tasks through the grid's commands, bu
 
 ## Get the task runtime
 
-Outside the control, keep the one \`onReady\` passes you; \`onMounted\` passes it before each load, and \`onDestroyed\` as the control unmounts. Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
+Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`onDestroyed\` pass it too, at the steps under *Lifecycle* on [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 
 ## Tasks
 

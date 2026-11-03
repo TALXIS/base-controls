@@ -3,15 +3,20 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { GanttOwnModuleExample } from '../../../task-grid/examples/ganttExamples'
+import { ILifecycleStep, Lifecycle } from '../../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-When the built-in modules don't cover what you need, such as drawing critical tasks red or labelling the scale by your fiscal year, you write a module of your own. A module is a small object the Gantt loads on every mount, before the chart is drawn. It hooks into the chart's config, styles and drawing, reaches the task grid's runtime, and can hand an object of its own to the rest of your code.
+When the built-in modules don't cover what you need, such as drawing critical tasks red or labelling the scale by your fiscal year, you write a module of your own. A module is a small object the Gantt loads on every mount. It hooks into the chart's config, styles and drawing, reaches the task grid's runtime, and can hand an object of its own to the rest of your code.
 
 {{story: Colour bars and relabel the scale}}
 
-A Gantt module is an object with a \`name\` and an \`onLoad\`. The Gantt calls \`onLoad\` on every mount, in the order of \`modules\`, before the chart is drawn, and registers what it returns under the name.
+A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
 
-\`onLoad\` may be async, and \`onDestroy(instance)\` gets what \`onLoad\` returned as the Gantt unmounts. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
+## Lifecycle
+
+{{block: lifecycle}}
+
+When a module's \`onLoad\` throws, the error shows in place of the control's parts, with *Try again*.
 
 ## What onLoad gets
 
@@ -53,13 +58,22 @@ A surface, a marker slot or a tooltip part reads the Gantt with \`useGantt()\`, 
 \`taskRuntime.services.get('datasetControl').parts.find('gantt')\` returns the Gantt while one is drawn, with the same members as above.
 `
 
+const LIFECYCLE: ILifecycleStep[] = [
+    { title: 'The modules load', hook: 'onLoad', text: 'The library module\'s `onLoad` runs first, then each other module\'s in the order of `modules`, each awaited and registered under its name.' },
+    { title: 'The chart is set up', hook: 'registerChartConfig', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
+    { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` register, so their observers run.' },
+    { title: 'The tasks are drawn', hook: 'onTasksParsed', text: 'The chart draws the grid\'s rows as bars and fires `onTasksParsed(true)`, and `false` each time it redraws them.' },
+    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and the surfaces are drawn over it.' },
+    { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy` gets what its `onLoad` returned, and the chart is destroyed.' },
+]
+
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Write a module',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

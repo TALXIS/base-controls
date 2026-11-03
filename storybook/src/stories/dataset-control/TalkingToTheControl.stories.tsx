@@ -13,13 +13,7 @@ The user works the control through its parts, but your code can do the same: swi
 
 Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar in the first example does.
 
-Outside it, the control's props hand it to you:
-
-| Prop | Called |
-|---|---|
-| \`onMounted\` | Before each load. Add your listeners here: every load is a new mount with a new \`IDatasetControl\` (see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview)). |
-| \`onReady\` | Once that load succeeded. |
-| \`onDestroyed\` | As the mount goes. |
+Outside it, \`onMounted\`, \`onReady\` and \`onDestroyed\` hand it to you, at the steps under *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Add your listeners in \`onMounted\`: every load is a new mount with a new \`IDatasetControl\`.
 
 {{story: Watch the control load}}
 
@@ -75,7 +69,7 @@ The parts are drawn once the load succeeds, so outside a part's own render use \
 
 ## Modules
 
-A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, in order, before \`onLoadViews\`. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
+A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, as *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) shows. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
 
 {{story: Add a view from a module}}
 

@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DependenciesExample, WaitingExample } from '../../dataset-control/examples/loadingDataExamples'
+import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
 A DatasetControl doesn't hold records itself: it loads them every time it shows a view, on its first mount and again whenever the user switches the view or reloads. You decide how through \`onLoad\`, which gets the view the user is on and returns a provider with that view's records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
@@ -11,7 +12,7 @@ A DatasetControl doesn't hold records itself: it loads them every time it shows 
 
 ## When the control loads
 
-Every load mounts the control anew. These start one:
+Every load mounts the control anew, with a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. These start one:
 
 | What starts a load | Asks about unsaved changes |
 |---|---|
@@ -21,23 +22,13 @@ Every load mounts the control anew. These start one:
 | Saving a new user view | Yes |
 | *Try again*, or \`retry()\` | No |
 
-- Everything inside the control mounts anew: a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. Listeners subscribe again: see *Get the control* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
-- A placeholder stands in for the parts until the first page is in, so put what must show at once, such as a page title, outside the control.
-- Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+A placeholder stands in for the parts until the first page is in, so put what must show at once, such as a page title, outside the control. Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
-## Load order
+## Lifecycle
 
-| Step | What happens |
-|---|---|
-| 1 | \`onLoadDependencies\` runs. What it returns is \`control.getDependencies()\` from here on. |
-| 2 | Each module's \`onLoad\` runs, in the order of \`modules\`. |
-| 3 | \`onLoadViews\` lists the views, and the modules add theirs, such as the user's own views. |
-| 4 | The control picks the view: the one asked for or the one the user was on, while it is still listed, else the first. |
-| 5 | \`onLoad\` gets that view and returns the provider. Call \`view.resolve(provider)\` for the view's \`data\`; the control resolves it once either way. |
-| 6 | The control sets the view's linking and columns on the provider, then puts back what the user changed in the view: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). |
-| 7 | The provider's first page loads, unless \`onLoad\` already requested it, such as by awaiting \`provider.refresh()\`. Then the parts show. |
+Each mount runs these steps; what the user changed is on [**State**](?path=/docs/controls-datasetcontrol-state--overview), and failures on [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 
-When any step throws, the error shows in place of the parts, with *Try again*: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+{{block: lifecycle}}
 
 ## Load what every view needs once
 
@@ -52,13 +43,23 @@ A module reads it the same way, from the control its \`onLoad\` gets.
 The control destroys every provider it lets go of; to keep one the rest of your page uses, pass \`destroyProviderOnUnmount={false}\` and see *Lifetime* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 `
 
+const LIFECYCLE: ILifecycleStep[] = [
+    { title: 'The control mounts', hook: 'onMounted', text: '`onMounted` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
+    { title: 'Dependencies and modules load', hook: 'onLoadDependencies', text: '`onLoadDependencies` runs first, then each module\'s `onLoad` in the order of `modules`.' },
+    { title: 'The view is picked', hook: 'onLoadViews', text: '`onLoadViews` lists the views, the modules add theirs, and the control picks the one asked for or the one the user was on while it is listed, else the first.' },
+    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` gets that view and returns the provider, and `view.resolve(provider)` gives the view\'s `data`, resolved once either way.' },
+    { title: 'The view is applied', text: 'The control sets the view\'s linking and columns on the provider and puts back what the user changed in the view.' },
+    { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `onReady` gets the control.' },
+    { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `onDestroyed` gets it before its modules and provider are destroyed.' },
+]
+
 const meta = {
     title: 'Controls/DatasetControl/Loading data',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
