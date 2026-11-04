@@ -1,6 +1,6 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
-import { MessageBar, MessageBarType, Toggle, mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react"
 import { XrmForm } from "@talxis/base-controls"
 import type { IFormApi, IXrmFormContext } from "@talxis/base-controls"
 import { CommandBar, ICommandBarItemProps } from "@legacy";
@@ -8,35 +8,13 @@ import { createFormContextSandboxState } from "../../form/xrm-form/formContextMo
 import { resetXrmBusinessFlows } from "../../form/xrm-form/xrmBusinessFlows"
 import { XrmComponentsCodeEditor } from "../../form/xrm-form/XrmComponentsCodeEditor"
 import type { IFormContextDocsExample } from "./formContextExamples"
+import { ExampleRunner } from "./storyHelpers"
 
 const styles = mergeStyleSets({
-    root: {
+    preview: {
         display: "flex",
         flexDirection: "column",
         gap: 12,
-        minHeight: 520,
-    },
-    toolbar: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 12,
-        flexWrap: "wrap",
-    },
-    commandBar: {
-        flex: 1,
-        minWidth: 0,
-    },
-    previewFrame: {
-        minHeight: 420,
-        width: "100%",
-        overflow: "hidden",
-    },
-    hiddenPane: {
-        display: "none",
-    },
-    viewportWindow: {
-        width: "100%",
     },
 })
 
@@ -58,7 +36,6 @@ export const XrmFormContextSamplePreview = (props: IXrmFormContextSamplePreviewP
     const [api, setApi] = React.useState<IFormApi | null>(null)
     const [previewKey, setPreviewKey] = React.useState(0)
     const [editorResetToken, setEditorResetToken] = React.useState(0)
-    const [showCode, setShowCode] = React.useState(false)
     const [script, setScript] = React.useState(props.docsExample.code)
     const [error, setError] = React.useState<string | null>(null)
 
@@ -99,39 +76,29 @@ export const XrmFormContextSamplePreview = (props: IXrmFormContextSamplePreviewP
         setEditorResetToken((value) => value + 1)
     }, [props.docsExample.code])
 
-    const commandBarItems = React.useMemo<ICommandBarItemProps[]>(
-        () => [
-            {
-                key: "run-code",
-                text: "Run code",
-                iconProps: { iconName: "Play" },
-                onClick: runCode,
-            },
-            {
-                key: "clear",
-                text: "Clear",
-                iconProps: { iconName: "Undo" },
-                onClick: resetPreview,
-            },
-        ],
-        [formContext, resetPreview, runCode, showCode],
-    )
+    const commandBarItems: ICommandBarItemProps[] = [{ key: "run-code", text: "Run code", iconProps: { iconName: "Play" }, onClick: runCode }]
 
     return (
-        <div className={styles.root}>
-            <div className={styles.toolbar}>
-                <div className={styles.commandBar}>
+        <ExampleRunner
+            code={script}
+            seedCode={props.docsExample.code}
+            onCodeChange={setScript}
+            onReset={resetPreview}
+            error={error}
+            renderPreview={() => (
+                <div className={styles.preview}>
                     <CommandBar items={commandBarItems} />
+                    <XrmForm
+                        key={previewKey}
+                        strategy={sandbox.getStrategy()}
+                        onFormReady={(params) => {
+                            setApi(params.api)
+                            setFormContext(params.formContext)
+                        }}
+                    />
                 </div>
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
-                />
-            </div>
-
-            <div className={showCode ? undefined : styles.hiddenPane}>
+            )}
+            renderCode={() => (
                 <XrmComponentsCodeEditor
                     value={script}
                     onChange={setScript}
@@ -142,26 +109,7 @@ export const XrmFormContextSamplePreview = (props: IXrmFormContextSamplePreviewP
                     label=""
                     resetToken={editorResetToken}
                 />
-            </div>
-
-            <div className={`${styles.previewFrame} ${showCode ? styles.hiddenPane : ""}`}>
-                <div className={styles.viewportWindow}>
-                    <XrmForm
-                        key={previewKey}
-                        strategy={sandbox.getStrategy()}
-                        onFormReady={(params) => {
-                            setApi(params.api)
-                            setFormContext(params.formContext)
-                        }}
-                    />
-                </div>
-            </div>
-
-            {error && (
-                <MessageBar messageBarType={MessageBarType.error} isMultiline>
-                    <pre className="toast-details">{error}</pre>
-                </MessageBar>
             )}
-        </div>
+        />
     )
 }

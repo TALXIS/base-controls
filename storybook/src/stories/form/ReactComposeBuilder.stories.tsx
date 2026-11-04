@@ -38,7 +38,7 @@ const meta = {
                 component: `
 Author the form directly in JSX with \`Form.Root\`, tabs, sections, and fields. The form handles binding, validation, notifications, unsaved changes and saving; you decide the layout and composition in React. Use this path when the form definition should live in code rather than in FormXml.
 
-The form below edits an in-memory project record, shaped as on [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview). Try: switch on **Code** and edit the \`Form.Root\` composition.
+The form below edits an in-memory project record, shaped as on [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview). Try: open **Code** and edit the \`Form.Root\` composition.
                 `.trim(),
             },
         },

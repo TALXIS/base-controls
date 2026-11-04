@@ -8,16 +8,10 @@ import { getXrmRecord, xrmModelStore } from "../../form/xrm-form/xrmModel"
 interface IXrmOverviewPreviewProps {
     formXml: string
     code: string
-    showCode?: boolean
-    renderCodeEditor?: (value: string, onChange: (value: string) => void) => React.ReactNode
 }
 
 export const XrmOverviewPreview = (props: IXrmOverviewPreviewProps) => {
-    const [code, setCode] = React.useState(props.code)
-
-    React.useEffect(() => {
-        setCode(props.code)
-    }, [props.code])
+    const code = props.code
 
     const compiled = React.useMemo(() => {
         try {
@@ -57,10 +51,6 @@ export const XrmOverviewPreview = (props: IXrmOverviewPreviewProps) => {
             return { Component: null, error: (error as Error).message }
         }
     }, [code, props.formXml])
-
-    if (props.showCode) {
-        return <>{props.renderCodeEditor?.(code, setCode)}</>
-    }
 
     if (compiled.error) {
         return <pre className="error-box">{compiled.error}</pre>
