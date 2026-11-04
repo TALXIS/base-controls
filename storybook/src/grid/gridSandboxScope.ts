@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify'
 import { HighlightChangesModule } from 'ag-grid-community'
 import { DefaultEditor } from 'react-simple-wysiwyg'
 import {
-    ActionButton, Checkbox, ChoiceGroup, CommandBar as FluentCommandBar, ContextualMenuItemType, DefaultButton, DocumentCard, DocumentCardActivity, DocumentCardDetails, DocumentCardImage, DocumentCardTitle, Dropdown, FontWeights, Icon, IconButton, ImageFit, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
+    ActionButton, Checkbox, ChoiceGroup, ContextualMenuItemType, DefaultButton, DocumentCard, DocumentCardActivity, DocumentCardDetails, DocumentCardImage, DocumentCardTitle, Dropdown, FontWeights, Icon, IconButton, ImageFit, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
     initializeIcons, Pivot, PivotItem, PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle,
 } from '@fluentui/react'
 import {
@@ -16,10 +16,12 @@ import {
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
     CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useRegisterDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUi, Form, FormUi, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
+import { ValueRendererUiComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map } from '@talxis/base-controls'
+import * as FluentV8 from '@fluentui/react'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
-import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
+import { DataProvider, Dataset, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { createIsolatedComponent, createIsolatedHost, registerIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, EmptyStateUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
 import { CheckList, CHECK_LIST_LABELS, CompletionCell, NameCell, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
 import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
@@ -30,12 +32,30 @@ import { CHECKLIST_COLUMN, CHECKLIST_ITEMS, createChecklistItems } from '../task
 import { createDependencies, DEPENDENCIES, DEPENDENCY_COLUMNS } from '../task-grid/memoryDependencyData'
 import { COLUMNS as TASK_COLUMNS, DATE_TIME_COLUMNS as DATE_TIME_TASK_COLUMNS, DATE_TIME_TASKS, ENTITY_METADATA as TASK_METADATA, getDateTimeQueryColumns as getDateTimeTaskColumns, getQueryColumns as getTaskColumns, LOOKUP_MANY_VALUES, takeLookupManyValues, TASKS } from '../task-grid/memoryTaskData'
 import { createStressTasks } from '../task-grid/stressTaskData'
-import { DealsGrid } from '../isolated-frame/sandboxFrame'
 import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
 export const GRID_SANDBOX_SCOPE = {
     React,
+    useForm,
+    useValidationSummary,
+    ControlComponents,
+    Dataset,
+    ValueRendererUiComponents,
+    CellColumnControlComponents,
+    CellUiCommandsComponents,
+    RecordSaveUiIndicatorComponents,
+    RecordSaveUiErrorCalloutComponents,
+    RowSelectionUiCheckboxComponents,
+    RowSelectionUiHeaderCheckboxComponents,
+    GroupingUiToggleComponents,
+    GroupingUiCountComponents,
+    AggregationUiTotalValueComponents,
+    GroupingUiExpandCollapseComponents,
+    FilteringUiCalloutComponents,
+    ThemeContext,
+    Dialog,
+    XrmForm,
     dayjs,
     confetti,
     DOMPurify,
@@ -160,7 +180,6 @@ export const GRID_SANDBOX_SCOPE = {
     DEAL_COLUMNS,
     DEAL_PRIMARY_ID,
     createDealsProvider,
-    DealsGrid,
     createIsolatedComponent,
     createIsolatedHost,
     registerIsolatedContent,
@@ -254,7 +273,6 @@ export const GRID_SANDBOX_SCOPE = {
     Checkbox,
     ChoiceGroup,
     CommandBar,
-    FluentCommandBar,
     DefaultButton,
     DocumentCard,
     DocumentCardActivity,
@@ -292,7 +310,11 @@ export const GRID_SANDBOX_SCOPE = {
 
 /** The packages a snippet may import by name, as real code would. */
 export const GRID_SANDBOX_PACKAGES: { [name: string]: { [name: string]: unknown } } = {
+    '@fluentui/react': FluentV8,
     '@fluentui/react-components': FluentV9,
     //the icons the examples use, so the whole icon set stays out of the bundle
     '@fluentui/react-icons': { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular },
 }
+
+//importable from the package only, since a global `Map` would hide JavaScript's own
+export const GRID_SANDBOX_IMPORT_ONLY: { [name: string]: unknown } = { Map }

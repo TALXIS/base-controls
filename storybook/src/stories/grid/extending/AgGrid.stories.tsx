@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { JumpToNewestTicketExample, RearrangeColumnsExample } from '../../../grid/examples/agGridExamples'
 
 const DESCRIPTION = `
-The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. For what no hook covers, a module can set AG Grid's options, and your code can call AG Grid's api once the grid is ready. Reach for them last: the grid sets many options itself, and what you change through AG Grid is not written back to the provider.
+The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. For what no hook covers, a module can set AG Grid's options, and your code can call AG Grid's api once the grid is ready; reach for them last, since the grid sets many options itself and what you change through AG Grid is not written back to the provider. Try it below: turn on *Rearrange columns* and drag a header.
 
-{{story: Rearrange columns on request}}
+{{canvas: Rearrange columns on request}}
 
 ## AG Grid's options
 
@@ -83,10 +84,20 @@ An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/c
 
 ## AG Grid modules
 
-Every grid registers the AG Grid modules it needs itself, and those its modules list. \`agGridModules\` lists the ones a module of yours needs, as \`HighlightChangesModule\` in *Jump to the newest ticket* above.
+Every grid registers the AG Grid modules it needs itself, and those its modules list. \`agGridModules\` lists the ones a module of yours needs, as the example under *AG Grid's api* lists \`HighlightChangesModule\`.
 
 Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-extending-hooks--overview', text: 'Change what the grid draws and decides without reaching AG Grid.' },
+    { title: 'Write a module', iconName: 'Puzzle', href: '?path=/docs/controls-grid-extending-write-a-module--overview', text: 'Package AG Grid options and modules in a module of your own.' },
+    { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Change the AG Grid theme, and colour cells and headers.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Extending/AG Grid',
@@ -94,7 +105,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -107,13 +118,6 @@ type Story = StoryObj<typeof meta>
 export const RearrangeColumnsOnRequest: Story = {
     name: 'Rearrange columns on request',
     render: () => renderStory(<RearrangeColumnsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `An option hook sets \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` passes AG Grid the new value. Try: turn on *Rearrange columns* and drag a header.`,
-            },
-        },
-    },
 }
 
 export const JumpToTheNewestTicket: Story = {

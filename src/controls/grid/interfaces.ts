@@ -88,6 +88,6 @@ export interface IGridProps extends Partial<IGridEventHandlers> {
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
     /** Hands you the grid once AG Grid is ready. */
     onReady?: (grid: IGrid) => void;
-    /** Hands you the grid before it tears down, while AG Grid still answers. */
+    /** Hands you the grid as it tears down, once the `gridApi` service is gone. */
     onDestroyed?: (grid: IGrid) => void;
 }

@@ -76,6 +76,6 @@ const GridExample = () => {
 }
 `
 
-export const InsideTheStoreExample = () => <GridExampleRunner seedCode={withFiles(INSIDE_THE_STORE_CODE, VIEWS_FILE)} />
+export const InsideTheStoreExample = () => <GridExampleRunner seedCode={withFiles(INSIDE_THE_STORE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
 
-export const BackWhereYouLeftOffExample = () => <GridExampleRunner seedCode={withFiles(BACK_WHERE_YOU_LEFT_OFF_CODE, VIEWS_FILE)} />
+export const BackWhereYouLeftOffExample = () => <GridExampleRunner seedCode={withFiles(BACK_WHERE_YOU_LEFT_OFF_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

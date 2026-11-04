@@ -332,4 +332,4 @@ export const LongNotesExample = () => <GridExampleRunner seedCode={LONG_NOTES_CO
 
 export const AutoHeightExample = () => <GridExampleRunner seedCode={AUTO_HEIGHT_CODE} onCreateProvider={createNotesProvider} />
 
-export const RememberLayoutExample = () => <GridExampleRunner seedCode={REMEMBER_LAYOUT_CODE} dataset='products' />
+export const RememberLayoutExample = () => <GridExampleRunner seedCode={REMEMBER_LAYOUT_CODE} tabs={['preview', 'code']} />

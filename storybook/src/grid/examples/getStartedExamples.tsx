@@ -310,7 +310,7 @@ const openInForm: IGridModule = {
             if (columnName !== 'name' || isSummaryRow(record)) {
                 return
             }
-            result.items.push({ key: 'openInForm', title: 'Open in a form', iconProps: { iconName: 'OpenPane' }, onClick: () => grid.openRecord({ record, reference: record.getNamedReference(), columnName }) })
+            result.items.push({ key: 'openInForm', text: 'Open in a form', iconOnly: true, iconProps: { iconName: 'OpenPane' }, onClick: () => grid.openRecord({ record, reference: record.getNamedReference(), columnName }) })
         })
     },
 }
@@ -458,8 +458,8 @@ const dealCommands: IGridModule = {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
-            result.items.push({ key: 'won', title: 'Mark as won', iconProps: { iconName: 'Trophy2' }, onClick: event => { closeDeals(record, WON, getOrigin(event?.currentTarget)) } })
-            result.items.push({ key: 'lost', title: 'Mark as lost', iconProps: { iconName: 'Cancel' }, onClick: event => { closeDeals(record, LOST, getOrigin(event?.currentTarget)) } })
+            result.items.push({ key: 'won', text: 'Mark as won', iconOnly: true, iconProps: { iconName: 'Trophy2' }, onClick: event => { closeDeals(record, WON, getOrigin(event?.currentTarget)) } })
+            result.items.push({ key: 'lost', text: 'Mark as lost', iconOnly: true, iconProps: { iconName: 'Cancel' }, onClick: event => { closeDeals(record, LOST, getOrigin(event?.currentTarget)) } })
         })
     },
 }
@@ -620,7 +620,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
 ]
 
 const PRESETS: IShowcasePreset[] = [
-    { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints that read the pipeline for you.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews', 'dealForm'] },
+    { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints on the deals that need attention.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews', 'dealForm'] },
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
     { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
     { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },
@@ -638,6 +638,7 @@ export const ShowcaseExample = () => {
     return <GridExampleRunner
         seedCode={SHOWCASE_FILES}
         previewProps={{ features }}
+        tabs={['preview', 'code']}
         renderAbovePreview={() => <FeatureSwitcher groups={FEATURE_GROUPS} presets={ALL_PRESETS} values={features} onChange={setFeatures} />} />
 }
 
@@ -663,4 +664,4 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: creat
 </DatasetControl>
 `
 
-export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} />
+export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} tabs={['preview', 'code']} />

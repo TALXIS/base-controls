@@ -3,9 +3,10 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { CustomCheckExample, ItemPanelExample, ReadOnlyExample, ReleaseBoardExample } from '../../check-list/checkListExamples'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Apart from its three columns, a checklist is a grid, so you customize it the way you customize a grid: with modules, column definitions, cells and events. Try it below: a release board built from grid features. Hover an item without an owner, then tick an overdue one off.
+Apart from its three columns, a checklist is a grid, so you customise it the way you customise a grid: with modules, column definitions, cells and events. Try it below: hover the owner cell of an unassigned item and pick *Assign to me*.
 
 {{canvas: Run a release board}}
 
@@ -17,18 +18,23 @@ Without the editing module, \`modules={[]}\`, nothing can be ticked, renamed, ad
 
 ## Add grid features
 
-Everything [**Grid**](?path=/docs/controls-grid-columns--overview) offers works on the checklist's columns: \`colDefs\`, cell colours, locks, cell commands and events. The release board above uses all four. Of the modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and your own; sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
+The checklist's columns take everything a grid column does through \`colDefs\`, as on [**Columns**](?path=/docs/controls-grid-columns--overview). The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates with the aggregation module.
+
+\`modules\` replaces the default editing module:
+
+- Add \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` or your own.
+- Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
 
 ## Replace pieces of its cells
 
-The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the [**grid cell's pieces**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a piece of their own:
+The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the grid cell's pieces, from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a piece of their own:
 
 | Column | Piece | Slots |
 |---|---|---|
 | Completed | \`checkbox\` | \`onRenderButton\`, the button; \`onRenderCheck\`, the check inside it |
 | Name | \`name\` | \`onRenderContainer\`, the box that carries the strike-through |
 
-Replacing a slot keeps the cell's behaviour: here the check becomes a star, and ticking, saving and the pop still work.
+Replacing a slot keeps the cell's behaviour: ticking and saving work as before.
 
 {{story: Tick items off with a star}}
 
@@ -41,15 +47,25 @@ Make the name column primary to draw names as links, and handle \`onOpenRecord\`
 ## From your code
 
 The checklist adds a module to the grid: \`useGridModule('checkList')\` in a part the grid draws, or \`grid.modules.find('checkList')\` from \`onReady\`. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+
+## Where next
+
+{{block: explore}}
 `
 
+const EXPLORE: IExploreCard[] = [
+    { title: 'Saving changes', iconName: 'Save', href: '?path=/docs/controls-checklist-saving-changes--overview', text: 'What every tick, drag, new item and delete writes, and sending it to your API.' },
+    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Everything colDefs can do to a column.' },
+    { title: 'Custom cells', iconName: 'Edit', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'The grid cell\'s pieces and slots, which the checklist\'s cells take too.' },
+]
+
 const meta = {
-    title: 'Controls/Checklist/Customization',
+    title: 'Controls/Checklist/Customisation',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -74,13 +90,6 @@ export const KeepAFinishedPlanForReference: Story = {
 export const RunAReleaseBoard: Story = {
     name: 'Run a release board',
     render: () => renderStory(<ReleaseBoardExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Overdue dates coloured, the name and due date of finished items locked, *Assign to me* on unassigned items, and the estimates totalled.`,
-            },
-        },
-    },
 }
 
 export const TickItemsOffWithAStar: Story = {
@@ -89,7 +98,7 @@ export const TickItemsOffWithAStar: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`colDefs\` hands the completion cell a star through \`components.checkbox.onRenderCheck\`.`,
+                story: `\`colDefs\` hands the completion cell a star through \`components.checkbox.onRenderCheck\`. Try: tick an item off.`,
             },
         },
     },
@@ -101,7 +110,7 @@ export const OpenAnItemInAPanel: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The names are links, and \`onOpenRecord\` opens the item in a form.`,
+                story: `The names are links, and \`onOpenRecord\` opens the item in a form. Try: click an item's name.`,
             },
         },
     },

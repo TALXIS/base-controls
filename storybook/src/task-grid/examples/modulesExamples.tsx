@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
-import { withTasks } from './shared'
+import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
 interface IModuleExample {
     /** Declarations above the component, such as the module's view. */
@@ -224,10 +224,10 @@ export const dependenciesModule = createDataverseDependenciesModule({
 `,
 }
 
-export const ModulesExample = () => <GridExampleRunner seedCode={withTasks(MODULES_CODE)} />
-export const ProjectExample = () => <GridExampleRunner seedCode={[...withTasks(PROJECT_CODE), PROJECT_DATAVERSE_FILE]} />
-export const CustomColumnsExample = () => <GridExampleRunner seedCode={[...withTasks(CUSTOM_COLUMNS_CODE), CUSTOM_COLUMNS_TALXIS_FILE]} />
-export const LookupManyExample = () => <GridExampleRunner seedCode={[...withTasks(LOOKUP_MANY_CODE), LOOKUP_MANY_DATAVERSE_FILE]} />
-export const TemplatesExample = () => <GridExampleRunner seedCode={withTasks(TEMPLATES_CODE)} />
-export const ChecklistExample = () => <GridExampleRunner seedCode={withTasks(CHECKLIST_CODE)} />
-export const DependenciesExample = () => <GridExampleRunner seedCode={[...withTasks(DEPENDENCIES_CODE), DEPENDENCIES_DATAVERSE_FILE]} />
+export const ModulesExample = () => <GridExampleRunner seedCode={withTasks(MODULES_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const ProjectExample = () => <GridExampleRunner seedCode={[...withTasks(PROJECT_CODE), PROJECT_DATAVERSE_FILE]} tabs={TASK_EXAMPLE_TABS} />
+export const CustomColumnsExample = () => <GridExampleRunner seedCode={[...withTasks(CUSTOM_COLUMNS_CODE), CUSTOM_COLUMNS_TALXIS_FILE]} tabs={TASK_EXAMPLE_TABS} />
+export const LookupManyExample = () => <GridExampleRunner seedCode={[...withTasks(LOOKUP_MANY_CODE), LOOKUP_MANY_DATAVERSE_FILE]} tabs={TASK_EXAMPLE_TABS} />
+export const TemplatesExample = () => <GridExampleRunner seedCode={withTasks(TEMPLATES_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const ChecklistExample = () => <GridExampleRunner seedCode={withTasks(CHECKLIST_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const DependenciesExample = () => <GridExampleRunner seedCode={[...withTasks(DEPENDENCIES_CODE), DEPENDENCIES_DATAVERSE_FILE]} tabs={TASK_EXAMPLE_TABS} />

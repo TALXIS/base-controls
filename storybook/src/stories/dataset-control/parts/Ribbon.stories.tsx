@@ -3,18 +3,19 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-The ribbon is the bar of commands above the records, such as *Mark as won* or *Reopen*, that act on the view or on the records the user selected. Which commands make sense depends on the selection, so the ribbon asks for them again whenever it changes, and you return only those that apply. You add it with \`DatasetControl.Ribbon\` and return the commands from its \`onLoad\`.
+The ribbon is the bar of commands above the records, such as *Mark as won*, that act on the view or on the records the user selected. You add it with \`DatasetControl.Ribbon\` and return the commands from its \`onLoad\`, which runs again whenever the selection changes, so you return only those that apply. Try it below: select a few deals and mark them won.
 
-{{story: Act on the selected deals}}
+{{canvas: Act on the selected deals}}
 
 ## How it behaves
 
 - **Order:** commands show in the order they are returned, and those that do not fit move into the overflow menu.
 - **Loading:** a shimmer stands in for the commands on the first load; later loads keep the previous commands until the new ones arrive.
 - **Running:** a command's button is disabled while its \`onExecute\` runs, and every button while the provider loads.
-- **Errors:** when \`onLoad\` throws, the error shows with *Try again*; when \`onExecute\` throws, the error dialog opens (see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview)).
+- **Errors:** when \`onLoad\` throws, the error shows with *Try again*; when \`onExecute\` throws, the error dialog opens: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 - **Compact header:** a command with an \`iconName\` shows only its icon; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Commands
@@ -62,7 +63,17 @@ The same command bar is exported as \`Ribbon\`, for use outside DatasetControl. 
 The example's *Sort* menu is added this way, in \`addSortMenu\`.
 
 **Strings:** the commands carry your own labels; a failed load's *Try again* and *Details* come from \`ERROR_MESSAGE_BAR_LABELS\`, keys \`errorMessageBar.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Quick find', iconName: 'Search', href: '?path=/docs/controls-datasetcontrol-parts-quick-find--overview', text: 'The next part: a search field that narrows the records down.' },
+    { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'What the user sees when onLoad or a command throws.' },
+    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Reach the ribbon and the other parts from your own code.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Parts/Ribbon',
@@ -70,7 +81,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -83,11 +94,4 @@ type Story = StoryObj<typeof meta>
 export const CommandsForTheSelectedDeals: Story = {
     name: 'Act on the selected deals',
     render: () => renderStory(<RibbonExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `*DealsRibbon.tsx* reads the selection in \`onLoad\`: *Mark N as won* and *Reopen* follow the stage of the selected deals, and *Copy name* shows for a single deal. Try: select deals and mark them won, which disables the button while it runs and loads the commands again, then pick *Sort* › *By value*.`,
-            },
-        },
-    },
 }

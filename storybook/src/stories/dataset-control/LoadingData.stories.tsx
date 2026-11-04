@@ -4,25 +4,32 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DependenciesExample, WaitingExample } from '../../dataset-control/examples/loadingDataExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A DatasetControl doesn't hold records itself: it loads them every time it shows a view, on its first mount and again whenever the user switches the view or reloads. You decide how through \`onLoad\`, which gets the view the user is on and returns \`{ provider }\` with that view's records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
+A DatasetControl does not hold records itself: it loads them on its first mount and again whenever the user switches the view or reloads. You decide how in \`onLoad\`, which gets the view the user is on and returns \`{ provider }\` with its records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
 
 {{canvas: Wait for the deals}}
 
 ## When the control loads
 
-Every load mounts the control anew, with a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. These start one:
+Every load mounts the control anew, with a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. A load starts on:
 
-| What starts a load | Asks about unsaved changes |
-|---|---|
-| The first mount | – |
-| Picking a view, or \`loadView()\` | Yes |
-| Saving *Edit columns*, closing *Manage views*, or \`reload()\` | Yes |
-| Saving a new user view | Yes |
-| *Try again*, or \`retry()\` | No |
+- the first mount;
+- picking a view, or \`loadView()\`;
+- saving *Edit columns*, saving a new user view, closing *Manage views*, or \`reload()\`;
+- *Try again*, or \`retry()\`.
 
 A placeholder stands in for the parts until the first page is in, so put what must show at once, such as a page title, outside the control. Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+
+## Unsaved changes
+
+Before anything reloads records that have unsaved changes, the control asks the user whether to discard them:
+
+- It asks before every load except the first mount and *Try again* or \`retry()\`, which have no changes to lose.
+- It asks before a part reloads the provider: searching, paging, changing the page size, and sorting, filtering or grouping in a grid.
+- Discarding clears the changes and goes ahead; keeping them cancels the action.
+- The question is the \`dataset.unsavedChangesConfirmation\` label: see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Lifecycle
 
@@ -32,16 +39,24 @@ Each mount runs these steps; what the user changed is on [**State**](?path=/docs
 
 ## Load what every view needs once
 
-\`onLoadDependencies\` loads what both the modules and \`onLoad\` read, such as the entity's metadata or the signed-in user, ahead of them on every load. \`onLoad\` reads it through the control, which \`onMounted\` hands you before the load.
+\`onLoadDependencies\` loads what both the modules and \`onLoad\` read, such as the entity's metadata or the signed-in user, ahead of them on every load. \`onLoad\` reads it through the control, which \`onMounted\` hands you before the load; a module reads it from the control its \`onLoad\` gets.
 
 {{story: Filter by the signed-in user}}
 
-A module reads it the same way, from the control its \`onLoad\` gets.
-
 ## Keep a shared provider
 
-The control destroys every provider it lets go of; to keep one the rest of your page uses, pass \`destroyProviderOnUnmount={false}\` and see *Lifetime* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The control destroys every provider it lets go of. To keep one the rest of your page uses, pass \`destroyProviderOnUnmount={false}\`: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'List the views and set up the one the user picks in onLoad.' },
+    { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'What the user sees when a load fails, and Try again.' },
+    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Follow every load and start one from your own code.' },
+]
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The control mounts', hook: 'onMounted', text: '`onMounted` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
@@ -59,7 +74,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} />, explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -72,13 +87,6 @@ type Story = StoryObj<typeof meta>
 export const WaitForTheDeals: Story = {
     name: 'Wait for the deals',
     render: () => renderStory(<WaitingExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A placeholder stands in for the view switcher and the grid while each view loads. Try: switch the view and watch the placeholder come back for the new mount.`,
-            },
-        },
-    },
 }
 
 export const FilterByTheSignedInUser: Story = {
@@ -87,7 +95,7 @@ export const FilterByTheSignedInUser: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onLoadDependencies\` loads the signed-in user, and \`onLoad\` filters *My deals* by them. Try: switch to *All deals* and back, then change the name in \`loadUser\` to *Ben Carter*.`,
+                story: `\`onLoadDependencies\` loads the signed-in user, and \`onLoad\` filters *My deals* by them. Try: change the name in \`loadUser\` to *Ben Carter*.`,
             },
         },
     },

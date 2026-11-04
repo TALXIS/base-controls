@@ -417,4 +417,4 @@ export const V9 = {
 `,
 }
 
-export const FluentV9Example = () => <GridExampleRunner seedCode={withFiles(FLUENT_V9_CODE, VIEWS_FILE, DEALS_RIBBON_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} />
+export const FluentV9Example = () => <GridExampleRunner seedCode={withFiles(FLUENT_V9_CODE, VIEWS_FILE, DEALS_RIBBON_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} tabs={['preview', 'code']} />

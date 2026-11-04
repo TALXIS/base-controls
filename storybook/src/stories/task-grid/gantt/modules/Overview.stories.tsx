@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCards'
 import { GanttModulesExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The Gantt itself lines the tasks up on a timeline; everything beyond the bars, from dragging them to drawing links and marking today, is a module you add. That keeps the chart to what your app needs, and lets you add features of your own the same way. You pass the modules to \`TaskGantt\`'s \`modules\`, and it loads them in that order on every mount.
+The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links, marking today and the rest come from modules, as on the task grid (see the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview)). You pass them to \`TaskGantt\`'s \`modules\`, and it loads them in that order on every mount. Try it below: delete \`createLinksModule()\` in **Code**.
 
-{{story: Pick the features}}
+{{canvas: Pick the features}}
 
 ## The modules
 
@@ -23,16 +24,26 @@ The Gantt itself lines the tasks up on a timeline; everything beyond the bars, f
 | [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
 | Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). |
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on [**TaskGrid › Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
 
 ## The library
 
 \`createLibraryModule()\` brings the free build of DHTMLX Gantt, with its stylesheet. Everything on these pages works with it.
 
-To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as *pro.ts* in the example does.
+To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as the example's *pro.ts* does.
 
 A module of yours reaches the build as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Editing on the timeline', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview', text: 'Move and resize bars, draw new tasks, and select them from the chart.' },
+    { title: 'Links', iconName: 'Link', href: '?path=/docs/controls-taskgrid-gantt-modules-links--overview', text: 'Dependencies drawn between the bars, and drawn by the user.' },
+    { title: 'Write a module', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-gantt-write-a-module--overview', text: 'Colour bars, relabel the scale, and draw over the chart.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Modules',
@@ -40,7 +51,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -57,11 +68,4 @@ export const Overview: StoryObj<typeof meta> = {
 export const PickTheFeatures: StoryObj<typeof meta> = {
     name: 'Pick the features',
     render: () => renderStory(<GanttModulesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `The library with bar dragging, the tooltip and links. Try: drag a bar and point at it, then delete \`createLinksModule()\` in **Code** and watch the links go.`,
-            },
-        },
-    },
 }

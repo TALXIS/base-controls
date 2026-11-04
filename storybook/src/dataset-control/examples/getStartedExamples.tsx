@@ -73,7 +73,7 @@ const COLUMNS = [
 //the switcher lists the views by name; what a view shows is resolved when it opens
 const loadViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => [
     { id: 'all', name: 'All deals', resolve: () => ({ columns: COLUMNS }) },
-    { id: 'won', name: 'Won deals', resolve: () => ({ columns: COLUMNS, data: { filtering: { filterOperator: 0, conditions: [{ attributeName: 'stage', conditionOperator: 0, value: 'Won' }] } } }) },
+    { id: 'won', name: 'Won deals', resolve: () => ({ columns: COLUMNS, data: { filtering: { filterOperator: Type.And.Value, conditions: [{ attributeName: 'stage', conditionOperator: Operators.Equal.Value, value: 'Won' }] } } }) },
 ]
 
 //called on every load with the view the user is on; returns the provider the parts work on
@@ -106,6 +106,6 @@ const GridExample = () => <DatasetControl onLoadViews={loadViews} onLoad={loadDe
 </DatasetControl>
 `
 
-export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} />
+export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} tabs={['preview', 'code']} />
 
-export const ShowcaseExample = () => <GridExampleRunner seedCode={withFiles(SHOWCASE_CODE, VIEWS_FILE, RIBBON_FILE)} />
+export const ShowcaseExample = () => <GridExampleRunner seedCode={withFiles(SHOWCASE_CODE, VIEWS_FILE, RIBBON_FILE)} tabs={['preview', 'code']} />

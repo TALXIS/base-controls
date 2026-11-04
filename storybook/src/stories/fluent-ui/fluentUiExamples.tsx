@@ -1,7 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const COMMAND_BARS_CODE = `const ITEMS: ICommandBarItemProps[] = [
+const COMMAND_BARS_CODE = `import { CommandBar as FluentCommandBar } from '@fluentui/react'
+import { CommandBar } from '@talxis/base-controls'
+
+const ITEMS: ICommandBarItemProps[] = [
     { key: 'new', text: 'New', iconProps: { iconName: 'Add' } },
     { key: 'edit', text: 'Edit', iconProps: { iconName: 'Edit' } },
     {
@@ -58,4 +61,4 @@ const GridExample = () => {
 }
 `
 
-export const CommandBarsExample = () => <GridExampleRunner seedCode={COMMAND_BARS_CODE} />
+export const CommandBarsExample = () => <GridExampleRunner seedCode={COMMAND_BARS_CODE} tabs={['preview', 'code']} />

@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { TemplatesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A template is a task with subtasks, created again in one go. The templates module adds *From template* beside *New*, and *Save as template* for a selected task.
+A template is a task with subtasks, created again in one go. The templates module adds *From template* beside *New*, and *Save as template* for a selected task. Try it below: pick *From template* from the arrow next to *New*.
 
-{{story: Create tasks from a template}}
+{{canvas: Create tasks from a template}}
 
 ## What the user can do
 
@@ -24,6 +25,17 @@ It needs \`enableCreation\` and \`TaskDatasetControl.Ribbon\`.
 
 A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.
 
+## Changing how it looks
+
+\`createTemplatesModule\` and \`createMemoryTemplatesModule\` take \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`selector\` | \`onRenderContainer\` | | The template picker's frame |
+| \`list\` | \`onRenderRecord\` | | A template in the picker's list |
+
+## Reference
+
 ### Your own store
 
 | Method | Description |
@@ -32,15 +44,15 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 | \`onCreateTasks({ templateId, parentRecord, stackRank })\` | Creates the template's tasks, its own task under \`parentRecord\` at \`stackRank\`. Returns \`{ records }\` with every task created, or \`null\` when cancelled. |
 | \`onCreateTemplate({ name, tree })\` | Optional. Saves a task and its subtasks as a template. Without it, there is no *Save as template*. |
 
-## Changing how it looks
+## Where next
 
-\`createTemplatesModule\` and \`createMemoryTemplatesModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
-
-| Key | Slots | Default | Draws |
-|---|---|---|---|
-| \`selector\` | \`onRenderContainer\` | | The template picker's frame |
-| \`list\` | \`onRenderRecord\` | | A template in the picker's list |
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'Create, edit, delete and move tasks one at a time.' },
+    { title: 'Loading tasks', iconName: 'CloudDownload', href: '?path=/docs/controls-taskgrid-loading-tasks--overview', text: 'The memory database the templates create their tasks in.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Modules/Templates',
@@ -48,7 +60,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -61,11 +73,4 @@ type Story = StoryObj<typeof meta>
 export const CreateTasksFromATemplate: Story = {
     name: 'Create tasks from a template',
     render: () => renderStory(<TemplatesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `An onboarding template beside three sample ones. Try: open the arrow next to *New*, pick *From template* and *Onboard a new colleague*.`,
-            },
-        },
-    },
 }

@@ -4,11 +4,12 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { EventsExample, HandDownExample, OwnProviderExample, ReadExample, ServerProviderExample, SharedProviderExample, SteerFromCodeExample } from '../../data-providers/dataProvidersExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A data provider holds a set of records and everything about them: their columns, sorting, filters, paging, selection and unsaved changes. It has no UI. Whatever shows the records reads them from the provider and writes changes back to it, so every part sharing a provider stays in step.
+A data provider holds a set of records and everything about them: their columns, sorting, filters, paging, selection and unsaved changes. It has no UI: whatever shows the records reads them from the provider and writes changes back to it, so every part sharing a provider stays in step. Try it below: select a few order lines and watch the total follow.
 
-{{story: One provider, every part}}
+{{canvas: One provider, every part}}
 
 ## Pick a provider
 
@@ -35,7 +36,7 @@ Controls take their provider from around them, not from a prop. A [**DatasetCont
 \`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost.
 
 - When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why.
-- Loading clears the selection; see *Selection*.
+- Loading clears the selection.
 - Inside a DatasetControl, loading a provider with unsaved changes asks the user first. If they cancel, nothing loads and \`refresh()\` resolves with \`undefined\`.
 - \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest, and \`isLoading()\` says whether a load is running.
 
@@ -75,21 +76,19 @@ Every load, from \`refresh()\` or a page change, runs these steps.
 | \`provider.newRecord()\` | Adds a record |
 | \`provider.deleteRecords(ids)\` | Removes records |
 
-A record is saved only when it is valid. Set validation, and whether a column is required, on each record as it loads; the first example does so in \`onRecordLoaded\`.
+A record is saved only when it is valid. Set validation, and whether a column is required, on each record as it loads; the example at the top does so in \`onRecordLoaded\`.
 
 ## Selection
 
-The provider keeps which records are selected, so anything showing them can select and every other part sees it. Each change raises \`onRecordsSelected\`. Every load after the first clears the selection, except on a group's provider. *React to changes* below selects from code.
+The provider keeps which records are selected, so anything showing them can select and every other part sees it. Each change raises \`onRecordsSelected\`. Every load after the first clears the selection, except on a group's provider. The example under **React to changes** selects from code.
 
 ## Groups and totals
 
-Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`.
+Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`. The example under **Load and read** groups and totals the deals.
 
 - A group record holds its value under \`<column>_group\` and each total under \`<column>_<function>\`, unless the column sets \`alias\`.
 - A grouped column with no aggregation of its own counts its records, under \`<column>_count\`.
 - For totals over every record, define the \`aggregation\` without grouping and read it from a \`TotalRow\`. Await its \`refresh()\` before the first read, and \`destroy()\` it when you are done.
-
-*Read from code* above groups and totals the deals.
 
 | Function | Gives |
 |---|---|
@@ -97,11 +96,34 @@ Grouping and totals are part of the column definitions. Mark the column to group
 | \`countcolumn\` | The number of records with a value in the column |
 | \`sum\`, \`avg\`, \`min\`, \`max\` | The sum, average, lowest and highest value |
 
-## Events
+## React to changes
 
-Every change raises an event, so whatever shows the records can draw again. \`addEventListener\` returns a function that removes the listener; \`removeEventListener\` does the same.
+Every change raises an event, so whatever shows the records can draw again. \`addEventListener\` returns a function that removes the listener; \`removeEventListener\` does the same. Every event is listed under **Reference**.
 
 {{story: React to changes}}
+
+## Lifetime
+
+Create a provider once and keep it while it is used, such as in \`React.useState\`. \`destroy()\` frees it for good.
+
+- A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails.
+- To keep a provider the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself, as the example under **Sort, filter, search and page** does.
+
+## Your own provider
+
+To work with your API, extend a shipped provider and override only what differs. A provider makes copies of itself from its constructor options, such as one per group, so take one options object and pass it to \`super\`.
+
+Extend \`MemoryDataProvider\` to keep sorting and paging in the browser:
+
+{{story: Save to your API}}
+
+When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the metadata and columns in the constructor, and implement every member listed under **Reference**:
+
+{{story: Page on your server}}
+
+## Reference
+
+### Events
 
 | Event | Fires |
 |---|---|
@@ -120,42 +142,35 @@ Every change raises an event, so whatever shows the records can draw again. \`ad
 | \`onNestedProviderPagingLimitReached\` | When a group's records reach the 5,000 record limit |
 | \`onDestroyed\` | When the provider is destroyed |
 
-## Lifetime
-
-Create a provider once and keep it while it is used, such as in \`React.useState\`. \`destroy()\` frees it for good.
-
-- A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails.
-- To keep a provider the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself, as *Steer it from your code* does.
-
-## Your own provider
-
-To work with your API, extend a shipped provider and override only what differs. A provider makes copies of itself from its constructor options, such as one per group, so take one options object and pass it to \`super\`.
-
-Extend \`MemoryDataProvider\` to keep sorting and paging in the browser:
-
-{{story: Save to your API}}
-
-When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the metadata and columns in the constructor, and implement every member in the table below:
-
-{{story: Page on your server}}
+### Members of your own \`DataProvider\`
 
 | Member | Does |
 |---|---|
-| \`getDataAsync(pageNumber, pageSize, previousPageNumber, event)\` | Loads one page with the provider's sorting, filters and search, and resolves with \`{ data, totalRecordCount, hasNextPage }\` |
+| \`getDataAsync(pageNumber, pageSize, previousPageNumber, event)\` | Loads one page with the provider's sorting, filters and search; resolves with \`{ data, totalRecordCount, hasNextPage }\` |
 | \`getDataSync(...)\` | The same, synchronously, for \`refreshSync()\` |
-| \`onPreload()\` | Prepares what loading needs; a DatasetControl awaits it before it loads the provider |
-| \`onRecordSave(record)\` | Saves one record and resolves with \`{ recordId, success, fields, errors? }\` |
-| \`onRecordsDelete(recordIds)\` | Deletes records and resolves with \`{ success, results }\` |
+| \`onPreload()\` | Prepares what loading needs; a DatasetControl awaits it before it loads |
+| \`onRecordSave(record)\` | Saves one record; resolves with \`{ recordId, success, fields, errors? }\` |
+| \`onRecordsDelete(recordIds)\` | Deletes records; resolves with \`{ success, results }\` |
 | \`onRecordCreate(record, options?)\` | Adds a new record at the \`start\` or \`end\` |
 | \`onRecordRawDataUpdate(recordId, rawData)\` | Stores a record's new raw data |
 | \`onIsRecordActive(recordId)\` | Whether a record is active; an inactive record is read-only |
 | \`onOpenDatasetItem(entityReference, context?)\` | Opens a record |
 | \`onRetrieveRecordCommand(defaultAction, options?)\` | Returns the commands for records; \`defaultAction\` gives the default ones |
 | \`onGetQuickFindColumns()\` | Returns the columns search covers |
-| \`onBulkEdit(records)\` | Edits several records at once, and resolves \`true\` to load again |
+| \`onBulkEdit(records)\` | Edits several records at once; resolves \`true\` to load again |
 | \`onGetAvailableColumns(options?)\` | Returns the columns a user can add |
 | \`onGetAvailableRelatedColumns()\` | Returns the columns of related tables a user can add |
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Loading data', iconName: 'Download', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'Load a provider for each view a DatasetControl shows.' },
+    { title: 'Data', iconName: 'Table', href: '?path=/docs/controls-grid-data--overview', text: 'How the grid draws the columns and records of its provider.' },
+    { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep the sorting, search and paging a user set when they come back.' },
+]
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The first load starts', hook: 'onBeforeFirstDataLoaded', text: 'On the provider\'s first load only, `onBeforeFirstDataLoaded` fires before anything else.' },
@@ -172,7 +187,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} />, explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -185,13 +200,6 @@ type Story = StoryObj<typeof meta>
 export const OneProviderEveryPart: Story = {
     name: 'One provider, every part',
     render: () => renderStory(<SharedProviderExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `An office order in a \`MemoryDataProvider\`, shown by a grid, a search box and an order summary of your own. Try: select lines, set a quantity to 0, then search for *desk* and *\\*desk*.`,
-            },
-        },
-    },
 }
 
 export const SteerItFromYourCode: Story = {
@@ -200,7 +208,7 @@ export const SteerItFromYourCode: Story = {
     parameters: {
         docs: {
             description: {
-                story: `IT tickets, five to a page, steered by buttons that call the provider's setters and \`refresh()\`. Try: click *Newest first* and watch the sort arrow and the pager follow.`,
+                story: `IT tickets, five to a page, steered by buttons that call the provider's setters and \`refresh()\`. Try: click **Newest first** and watch the sort arrow follow.`,
             },
         },
     },
@@ -212,7 +220,7 @@ export const WithoutADatasetControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Deals in a \`DataProviderScope\`, loaded by the page, with a selection count and load status drawn from \`useDataProviderEvents\`. Try: search for *Contoso*, then select a few rows.`,
+                story: `Deals in a \`DataProviderScope\`, loaded by the page, with a selection count and load status drawn from \`useDataProviderEvents\`. Try: select a few rows and watch the count.`,
             },
         },
     },
@@ -224,7 +232,7 @@ export const ReadFromCode: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Each button loads the deals into a new provider and prints what it reads back. Try: *Read a deal* to see the shapes \`getValue()\` returns, then *Group by account manager*.`,
+                story: `Each button loads the deals into a new provider and prints what it reads back. Try: click **Group by account manager**.`,
             },
         },
     },
@@ -236,7 +244,7 @@ export const ReactToChanges: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A log of the provider's events, with each edited value saved as it is made. Try: click *Toggle deal 3*, then double-click a value, change it and press Enter.`,
+                story: `A log of the provider's events, with each edited value saved as it is made. Try: double-click a value, change it and press Enter.`,
             },
         },
     },
@@ -260,7 +268,7 @@ export const PageOnYourServer: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A read-only \`DataProvider\` over a stand-in server in *api.ts*, which sorts, searches and pages the products. Try: sort by price, search for *desk*, and move to the next page.`,
+                story: `A read-only \`DataProvider\` over a stand-in server in \`api.ts\`, which sorts, searches and pages the products. Try: sort by **Price**, then move to the next page.`,
             },
         },
     },

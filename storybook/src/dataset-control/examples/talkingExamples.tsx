@@ -96,6 +96,7 @@ const CLOSING_SOON: IDatasetControlView = {
     id: 'closingSoon',
     name: 'Closing soon',
     group: { id: 'reports', name: 'Reports' },
+    //sortDirection 0 is ascending
     resolve: () => ({ columns: DEAL_COLUMNS, data: { sorting: [{ name: 'closedate', sortDirection: 0 }] } }),
 }
 
@@ -134,6 +135,6 @@ export {}
 `,
 }
 
-export const DriveTheControlExample = () => <GridExampleRunner seedCode={withFiles(DRIVE_CODE, VIEWS_FILE)} />
-export const WatchTheControlExample = () => <GridExampleRunner seedCode={withFiles(WATCH_CONTROL_CODE, VIEWS_FILE)} />
-export const ModuleExample = () => <GridExampleRunner seedCode={withFiles(MODULE_CODE, VIEWS_FILE, MODULE_TYPES_FILE)} />
+export const DriveTheControlExample = () => <GridExampleRunner seedCode={withFiles(DRIVE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
+export const WatchTheControlExample = () => <GridExampleRunner seedCode={withFiles(WATCH_CONTROL_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
+export const ModuleExample = () => <GridExampleRunner seedCode={withFiles(MODULE_CODE, VIEWS_FILE, MODULE_TYPES_FILE)} tabs={['preview', 'code']} />

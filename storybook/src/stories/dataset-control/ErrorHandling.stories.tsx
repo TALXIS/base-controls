@@ -3,35 +3,32 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FailedActionsExample, FailedLoadExample } from '../../dataset-control/examples/errorHandlingExamples'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Loading records, running a command or saving a view all go through code that can fail, and the user needs to see what went wrong and try again. The control takes care of that: it shows every failure to the user, so your code only has to throw. A failed load shows the error in place of the parts, with *Try again*; a failed action, such as a ribbon command, opens the error dialog.
+Loading records, running a command or saving a view can fail, and the user needs to see what went wrong. Your code only has to throw: a failed load shows the error in place of the parts, with *Try again*, and a failed action, such as a ribbon command, opens the error dialog. Try it below: open *Details*, then press *Try again*.
 
-{{story: Recover from a failed load}}
+{{canvas: Recover from a failed load}}
 
-## What fails
+## What the user sees
 
-| What fails | What the user sees |
-|---|---|
-| A load: \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\`, or the provider's first page | The error in place of the parts, with *Details* and *Try again*. |
-| A part throws while it renders | The same error; *Try again* draws the parts again, without loading. |
-| The provider fails a later load, such as a search or another page | The error in \`DatasetControl.Notifications\`. See [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview). |
-| The ribbon's \`onLoad\` throws | The error in place of the commands, with *Details* and *Try again*. |
-| A ribbon command's \`onExecute\` throws | The error dialog. |
-| Saving or deleting a user view fails | The error dialog, while \`DatasetControl.UserQueries\` is rendered. |
-| Loading the columns Edit columns offers throws | The error in place of the pickers, with *Details* and *Try again*. |
+- **A load fails**, in \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page: the error replaces the parts, with *Details* and *Try again*.
+- **A part throws while it renders**: the same error; *Try again* draws the parts again, without loading.
+- **The provider fails a later load**, such as a search or another page: the error shows in \`DatasetControl.Notifications\`, see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
+- **The ribbon's \`onLoad\` throws**: the error replaces the commands, with *Details* and *Try again*.
+- **Loading the columns *Edit columns* offers throws**: the error replaces the pickers, with *Details* and *Try again*.
+- **A ribbon command's \`onExecute\` throws, or saving or deleting a user view fails**: the error dialog opens.
 
 ## Failed loads
 
-The error's \`message\` is the title, and *Details* opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the first example throws.
+The error's \`message\` is the title, and *Details* opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws.
 
 - A failed load leaves no provider behind: the parts are not drawn until a load succeeds.
 - *Try again* calls \`control.retry()\`: the control mounts anew and loads the view that failed, from the first step.
-- \`retry()\` does not ask about unsaved changes, as a failed load has none.
 
 ## Failed actions
 
-A ribbon command that throws, and a user view that fails to save or delete, open the error dialog with the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
+The error dialog shows the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
 A user view fails when:
 
@@ -53,8 +50,18 @@ The control shows the failure either way. To also log it, or show it elsewhere, 
 | \`onExecuteFailed\` | The ribbon's \`events\` | \`command\`, \`error\` |
 | \`onOperationFailed\` | The \`userQueries\` module's \`events\` | \`error\` |
 
-Without \`DatasetControl.UserQueries\` rendered, \`onOperationFailed\` is the only sign a user view failed. Events, parts and modules are on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+Without \`DatasetControl.UserQueries\` rendered, \`onOperationFailed\` is the only sign a user view failed.
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'When the control loads, and the steps a load runs.' },
+    { title: 'Notifications and empty state', iconName: 'Info', href: '?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview', text: 'Show the provider\'s later load errors above the records.' },
+    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Events, parts and modules, reached from your own code.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Error handling',
@@ -62,7 +69,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -75,13 +82,6 @@ type Story = StoryObj<typeof meta>
 export const RecoverFromAFailedLoad: Story = {
     name: 'Recover from a failed load',
     render: () => renderStory(<FailedLoadExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `The first load fails, and the control shows the error in place of its parts. Try: open *Details* to read the \`cause\`, then press *Try again*, which mounts the control anew and succeeds, and watch the logged count.`,
-            },
-        },
-    },
 }
 
 export const TakeTheServerDown: Story = {
@@ -90,7 +90,7 @@ export const TakeTheServerDown: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A ribbon command and the user's own views, both going through a server you can take down. Try: turn on *Server is down*, then press *Sync to CRM*, or pick *Save as new view* in the view switcher: each opens the error dialog and is logged below.`,
+                story: `A ribbon command and the user's views go through a server you can take down. Try: turn on *Server is down*, then press *Sync to CRM*.`,
             },
         },
     },

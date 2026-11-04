@@ -83,7 +83,7 @@ export const loadProductViews = async (): Promise<IDatasetControlView<IProductVi
 export const loadProducts = async ({ view }: IDatasetControlLoadParameters<IProductViewData>): Promise<IDatasetControlLoadResult> => {
     const provider = createProductsProvider()
     const category = view && (await view.resolve(provider)).data?.category
-    provider.setFiltering(category ? { filterOperator: 0, conditions: [{ attributeName: 'category', conditionOperator: 0, value: \`\${category}\` }] } : null)
+    provider.setFiltering(category ? { filterOperator: Type.And.Value, conditions: [{ attributeName: 'category', conditionOperator: Operators.Equal.Value, value: \`\${category}\` }] } : null)
     return { provider }
 }
 `,
@@ -160,5 +160,5 @@ export const ProductDataGrid = () => {
 `,
 }
 
-export const ProviderViewsExample = () => <GridExampleRunner seedCode={withFiles(PROVIDER_VIEWS_CODE, VIEWS_FILE)} />
-export const CustomUiViewsExample = () => <GridExampleRunner seedCode={withFiles(CUSTOM_UI_CODE, PRODUCT_VIEWS_FILE, PRODUCTS_BODY_FILE, PRODUCT_DATA_GRID_FILE, PRODUCT_GALLERY_FILE)} />
+export const ProviderViewsExample = () => <GridExampleRunner seedCode={withFiles(PROVIDER_VIEWS_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
+export const CustomUiViewsExample = () => <GridExampleRunner seedCode={withFiles(CUSTOM_UI_CODE, PRODUCT_VIEWS_FILE, PRODUCTS_BODY_FILE, PRODUCT_DATA_GRID_FILE, PRODUCT_GALLERY_FILE)} tabs={['preview', 'code']} />

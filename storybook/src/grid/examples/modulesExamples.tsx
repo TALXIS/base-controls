@@ -3,10 +3,12 @@ import { ChoiceGroup, IChoiceGroupOption, Icon, mergeStyleSets, Stack, Text } fr
 import { IGridRowModelType } from '@talxis/base-controls'
 import { MemoryDataProvider } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import type { IGridExampleFile } from '../GridLivePreview'
 import { createTicketsProvider } from '../data'
 
-export const OPEN_TICKET_GROUPS_CODE = `interface IGridExampleProps {
+export const OPEN_TICKET_GROUPS_CODE = `//your AG Grid Enterprise key, as your host supplies it
+const AG_GRID_LICENSE_KEY = ''
+
+interface IGridExampleProps {
     rowModel: IGridRowModelType
 }
 
@@ -16,6 +18,8 @@ const GridExample = (props: IGridExampleProps) => <DatasetControl onLoad={async 
         <Grid
             key={props.rowModel}
             modules={[
+                //the key is required, so leave the module out without one
+                ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
                 props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
                 createGroupingModule(),
             ]}
@@ -139,19 +143,6 @@ const RowModelBar = (props: IRowModelBarProps) => <Stack horizontal wrap vertica
     </Stack>
 </Stack>
 
-const LICENSE_FILE: IGridExampleFile = {
-    name: 'license.ts',
-    code: `//in a PCF control, license AG Grid Enterprise for the server-side row model GridExample.tsx offers
-import { createLicenseModule, createServerSideRowModelModule } from '@talxis/base-controls'
-
-//LicenseKey is an input parameter declared in your control's manifest
-export const createModules = (context: ComponentFramework.Context<{ LicenseKey: ComponentFramework.PropertyTypes.StringProperty }>) => {
-    const licenseKey = context.parameters.LicenseKey.raw
-    return [...(licenseKey ? [createLicenseModule({ key: licenseKey })] : []), createServerSideRowModelModule()]
-}
-`,
-}
-
 export const PickModulesExample = () => <GridExampleRunner seedCode={PICK_MODULES_CODE} dataset='tickets' />
 
 export const OpenTicketGroupsExample = () => {
@@ -173,7 +164,7 @@ export const OpenTicketGroupsExample = () => {
     }
 
     return <GridExampleRunner
-        seedCode={[{ name: 'GridExample.tsx', code: OPEN_TICKET_GROUPS_CODE }, LICENSE_FILE]}
+        seedCode={OPEN_TICKET_GROUPS_CODE}
         onCreateProvider={createProvider}
         previewProps={{ rowModel }}
         renderAbovePreview={() => <RowModelBar rowModel={rowModel} groupFetches={providerRef.current?.groupFetches ?? 0} onChange={onRowModelChange} />} />

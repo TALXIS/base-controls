@@ -4,15 +4,16 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { IsolationExample } from '../../isolated-frame/isolatedFrameExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe, built with \`createIsolatedHost\`, \`registerIsolatedContent\` or \`createIsolatedComponent\`, where nothing on the page can style it and nothing it injects reaches the page. Try it below: the grid in the page picks up another app's global CSS, and the same grid in a frame does not.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control in its own iframe, where the page's styles do not reach it and its own do not leak out. Try it below: open **Code** and change \`OTHER_APP_STYLES\`, and only the grid in the page follows.
 
 {{canvas: Overview}}
 
 ## The two sides
 
-A frame can't be handed children: they belong to the page's copy of your code, and the frame runs code of its own. So an isolated component has two sides, tied together by a key:
+A frame cannot be handed children: they belong to the page's copy of your code, and the frame runs code of its own. So an isolated component has two sides, tied together by a key:
 
 | Function | Called | Holds |
 |---|---|---|
@@ -30,25 +31,21 @@ If the frame fails to load, the error shows in its place, with a Retry that star
 
 ## Options
 
-These belong to the host, passed to \`createIsolatedHost\` or as the third argument of \`createIsolatedComponent\`. Both are read as the frame loads.
+The host takes these in \`createIsolatedHost\`, or as the third argument of \`createIsolatedComponent\`, and reads them as the frame loads:
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| \`scripts\` | \`IsolatedFrameScript[]\` | The script the library was loaded from | What the frame loads, in order: a URL, or \`{ src, type: 'module' }\`. |
-| \`onPrepareWindow\` | \`(frameWindow: Window) => void\` | None | Called before the frame's scripts load. What it puts on the window is there while the frame's code evaluates. |
+- **\`scripts\`** (\`IsolatedFrameScript[]\`): what the frame loads, in order, each a URL or \`{ src, type: 'module' }\`. By default, the script the library was loaded from.
+- **\`onPrepareWindow\`** (\`(frameWindow: Window) => void\`): called before the frame's scripts load, so what it puts on the window is there while the frame's code evaluates.
 
 ## The frame prop
 
-One frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. Both fields update on every render, like the content props.
+A frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. Both fields update on every render, like the content props:
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`frame.className\` | \`string\` | None | Added to the iframe, which fills its parent. |
-| \`frame.title\` | \`string\` | None | The frame's accessible name. |
+- **\`frame.className\`**: added to the iframe, which fills its parent.
+- **\`frame.title\`**: the frame's accessible name.
 
 ## How the frame gets its code
 
-The default \`scripts\` works when everything is one bundle, as in a PCF. Pass \`scripts\` when that isn't so:
+The default \`scripts\` works when everything is one bundle, as in a PCF. Pass \`scripts\` when it is not:
 
 - **Your code is split into chunks, or served as ES modules in development:** one module entry that imports the module declaring the frame is enough, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`.
 - **The content is a bundle of its own:** point \`scripts\` at its entry, which calls \`registerIsolatedContent\`.
@@ -67,7 +64,16 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 - **Size.** The frame fills its parent and does not grow with its content.
 - **Events.** Clicks and key presses inside the frame stay inside it, so the page's shortcuts do not see them, and a click on the page does not close the frame's popups.
 - **Security.** The frame shares the page's origin: it keeps out global styles and globals, not hostile code.
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The root providers the framed content brings with it.' },
+    { title: 'Theming', iconName: 'Color', href: '?path=/docs/concepts-theming--overview', text: 'Build the theme the page hands the frame as a prop.' },
+]
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The page renders the host', hook: 'frame', text: 'On the page, the component draws an empty iframe in its place; `frame` sets its class and title.' },
@@ -83,7 +89,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} />, explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

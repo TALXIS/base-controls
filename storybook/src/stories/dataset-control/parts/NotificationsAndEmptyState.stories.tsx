@@ -3,11 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EmptyStateExample, NotificationsExample } from '../../../dataset-control/examples/partsExamples'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Besides the records themselves, a list has things to tell the user: that the records failed to load, a note of your own, or that there is nothing to show. Two parts say them: \`DatasetControl.Notifications\` shows messages in a bar above the records, the provider's load error among them, and \`DatasetControl.EmptyState\` takes the place of the records when there are none.
+\`DatasetControl.Notifications\` shows messages in a bar above the records: your own, and the provider's error when a load fails. \`DatasetControl.EmptyState\` takes the place of the records when there are none. Try it below: press *Break the connection*, then open the summary.
 
-{{story: Show the provider's error}}
+{{canvas: Show the provider's error}}
 
 ## Show messages
 
@@ -21,7 +22,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 
 ## How it behaves
 
-- **HTML:** a message's \`text\` is drawn as HTML, so escape anything you didn't write; the provider's error is escaped for you.
+- **HTML:** a message's \`text\` is drawn as HTML, so escape anything you did not write; the provider's error is escaped.
 - **Colour:** the most severe level among the messages sets the bar's colour.
 - **Several messages:** two or more fold under a summary that opens them; its text is the label \`notificationMessageBar.groupedNotificationsSummary\`.
 - **Load error:** shows while the provider's last load failed, and goes once it loads again.
@@ -53,7 +54,17 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 | \`events\` | \`onNotificationsChanged\`, whenever the provider fails or loads. |
 
 **Strings:** \`NOTIFICATION_MESSAGE_BAR_LABELS\`, keys \`notificationMessageBar.*\`, and \`EMPTY_STATE_LABELS\`, keys \`emptyState.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'Which failures show here, and which replace the parts or open a dialog.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Show the records your own way, wrapped in the empty state.' },
+    { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Reword the summary and the empty state.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Parts/Notifications and empty state',
@@ -61,7 +72,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -74,13 +85,6 @@ type Story = StoryObj<typeof meta>
 export const TheDealsServiceIsUnreachable: Story = {
     name: "Show the provider's error",
     render: () => renderStory(<NotificationsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A message of your own, joined by the provider's error once it fails to load. Try: press *Break the connection*, then open the summary.`,
-            },
-        },
-    },
 }
 
 export const NothingMatches: Story = {
@@ -89,7 +93,7 @@ export const NothingMatches: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A list of the deals of your own, wrapped in \`EmptyState\`. Try: search for something that is not there.`,
+                story: `A list of the deals of your own, wrapped in \`EmptyState\`. Try: search for *zzz*.`,
             },
         },
     },

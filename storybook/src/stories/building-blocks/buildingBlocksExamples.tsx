@@ -38,30 +38,30 @@ const GridExample = () => {
     //the root: one host, one place for state and one theme for everything below
     return <PcfContextProvider>
         <StateProvider>
-            <Stack tokens={{ childrenGap: 12 }}>
-                <Dropdown label='Theme' options={BRANDS} selectedKey={brand.key} onChange={(_, option) => setBrand(BRANDS.find(other => other.key === option?.key)!)} styles={{ root: { width: 160 } }} />
-                <AppThemeProvider theme={theme} style={{ padding: 12 }}>
-                    {/* a control reads the theme as it mounts */}
-                    <DatasetControl key={theme.id} onLoad={async () => ({ provider: deals })} height='400px'>
-                        <DatasetControl.Header>
-                            <DatasetControl.Header.End>
-                                <DatasetControl.QuickFind />
-                            </DatasetControl.Header.End>
-                        </DatasetControl.Header>
-                        <DatasetControl.Body>
-                            {/* click a deal's name to open it */}
-                            <Grid
-                                modules={[createClientSideRowModelModule()]}
-                                enableNavigation
-                                onOpenRecord={({ record }) => setOpenedDeal(record)} />
-                        </DatasetControl.Body>
-                    </DatasetControl>
-                    {/* drawn in the same theme as the grid */}
-                    <Panel isOpen={!!openedDeal} isLightDismiss headerText={openedDeal?.getFormattedValue('name') ?? ''} onDismiss={() => setOpenedDeal(undefined)}>
-                        {openedDeal && <DealForm deal={openedDeal} />}
-                    </Panel>
-                </AppThemeProvider>
-            </Stack>
+            <AppThemeProvider theme={theme} style={{ padding: 12 }}>
+                {/* a control reads the theme as it mounts */}
+                <DatasetControl key={theme.id} onLoad={async () => ({ provider: deals })} height='400px'>
+                    <DatasetControl.Header>
+                        <DatasetControl.Header.Start>
+                            <Dropdown ariaLabel='Theme' options={BRANDS} selectedKey={brand.key} onChange={(_, option) => setBrand(BRANDS.find(other => other.key === option?.key)!)} styles={{ root: { width: 140 } }} />
+                        </DatasetControl.Header.Start>
+                        <DatasetControl.Header.End>
+                            <DatasetControl.QuickFind />
+                        </DatasetControl.Header.End>
+                    </DatasetControl.Header>
+                    <DatasetControl.Body>
+                        {/* click a deal's name to open it */}
+                        <Grid
+                            modules={[createClientSideRowModelModule()]}
+                            enableNavigation
+                            onOpenRecord={({ record }) => setOpenedDeal(record)} />
+                    </DatasetControl.Body>
+                </DatasetControl>
+                {/* drawn in the same theme as the grid */}
+                <Panel isOpen={!!openedDeal} isLightDismiss headerText={openedDeal?.getFormattedValue('name') ?? ''} onDismiss={() => setOpenedDeal(undefined)}>
+                    {openedDeal && <DealForm deal={openedDeal} />}
+                </Panel>
+            </AppThemeProvider>
         </StateProvider>
     </PcfContextProvider>
 }
@@ -106,39 +106,33 @@ const GridExample = () => <Form.Root onLoad={async () => ({ record })}>
 </Form.Root>
 `
 
-const PURE_UI_CODE = `import { BaseControls, DatasetControl, FormUi, NestedControlRenderer, NotificationMessageBar, RibbonUi, usePcfContext } from '@talxis/base-controls'
+const PURE_UI_CODE = `import { BaseControls, DatasetControl, FormUi, NestedControlRenderer, usePcfContext } from '@talxis/base-controls'
 
 //the deals' columns: the stage is an option set, the value a currency
 const DEAL_FIELDS = createDealsProvider().getColumns()
+const SEARCHED_COLUMNS = DEAL_FIELDS.filter(column => column.name === 'name')
+const PAGE_SIZE = 3
 
 interface IDeal {
     id: string
     name: string
     stage: number
     value: number
-    closesInDays: number
 }
 
 const VIEWS = [
     { key: 'all', text: 'All deals', matches: (deal: IDeal) => true },
-    { key: 'open', text: 'Open deals', matches: (deal: IDeal) => deal.stage < 4 },
     { key: 'won', text: 'Won deals', matches: (deal: IDeal) => deal.stage === 4 },
 ]
 
 //plain data in your own state: no provider, no runtime
 const DEALS: IDeal[] = [
-    { id: 'contoso', name: 'Contoso: CRM rollout', stage: 1, value: 4000, closesInDays: 30 },
-    { id: 'fabrikam', name: 'Fabrikam: Support renewal', stage: 2, value: 21500, closesInDays: 5 },
-    { id: 'northwind', name: 'Northwind: Data migration', stage: 3, value: 9000, closesInDays: 3 },
-    { id: 'adventure', name: 'Adventure Works: Licences', stage: 4, value: 26500, closesInDays: 0 },
-    { id: 'tailspin', name: 'Tailspin Toys: CRM rollout', stage: 2, value: 31500, closesInDays: 12 },
-    { id: 'woodgrove', name: 'Woodgrove Bank: Support', stage: 3, value: 19000, closesInDays: 20 },
-    { id: 'litware', name: 'Litware: Onboarding', stage: 4, value: 14000, closesInDays: 0 },
-    { id: 'wingtip', name: 'Wingtip Toys: Analytics', stage: 1, value: 7500, closesInDays: 45 },
+    { id: 'contoso', name: 'Contoso: CRM rollout', stage: 1, value: 4000 },
+    { id: 'fabrikam', name: 'Fabrikam: Support renewal', stage: 2, value: 21500 },
+    { id: 'northwind', name: 'Northwind: Data migration', stage: 3, value: 9000 },
+    { id: 'adventure', name: 'Adventure Works: Licences', stage: 4, value: 26500 },
+    { id: 'litware', name: 'Litware: Onboarding', stage: 1, value: 14000 },
 ]
-
-//what the quick find's callout says it searches
-const SEARCHED_COLUMNS: IColumn[] = [{ name: 'name', displayName: 'Deal', dataType: DataTypes.SingleLineText, alias: 'name', order: 0, visualSizeFactor: 200 }]
 
 //the Base Controls field for a column's data type
 const ColumnControl = (props: { column: IColumn, value: unknown, onChange: (value: unknown) => void }) => {
@@ -165,69 +159,46 @@ const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <F
 const GridExample = () => {
     const [deals, setDeals] = React.useState(DEALS)
     const [view, setView] = React.useState(VIEWS[0])
-    const [isSortedByValue, setIsSortedByValue] = React.useState(false)
-    const [pageSize, setPageSize] = React.useState(6)
-    const [page, setPage] = React.useState(0)
     const [query, setQuery] = React.useState('')
+    const [page, setPage] = React.useState(0)
 
-    const search = (value: string) => { setQuery(value); setPage(0) }
-    const shown = deals.filter(view.matches).filter(deal => deal.name.toLowerCase().startsWith(query.replace(/^\\*/, '').toLowerCase())).sort((a, b) => isSortedByValue ? b.value - a.value : 0)
-    const pageCount = Math.max(Math.ceil(shown.length / pageSize), 1)
-    const pageDeals = shown.slice(page * pageSize, (page + 1) * pageSize)
-    const closingSoon = shown.filter(deal => deal.closesInDays > 0 && deal.closesInDays <= 5)
-
-    const addDeal = () => setDeals([{ id: String(Date.now()), name: 'New deal', stage: 1, value: 1000, closesInDays: 60 }, ...deals])
+    const shown = deals.filter(view.matches).filter(deal => deal.name.toLowerCase().startsWith(query.toLowerCase()))
+    const pageDeals = shown.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+    const find = (value: string) => { setQuery(value); setPage(0) }
 
     //the DatasetControl's frame and parts, each drawn as plain UI from your own state
-    return <DatasetControl.Ui.Container height='460px'>
+    return <DatasetControl.Ui.Container height='420px'>
         <DatasetControl.Ui.Header>
             <DatasetControl.Ui.HeaderStart>
                 <DatasetControl.Ui.ViewSwitcher
                     text={view.text}
                     selectedKey={view.key}
                     items={VIEWS.map(option => ({ key: option.key, text: option.text, onClick: () => { setView(option); setPage(0) } }))} />
-                <RibbonUi items={[
-                    { key: 'new', text: 'New deal', iconProps: { iconName: 'Add' }, onClick: addDeal },
-                    { key: 'sort', text: 'Biggest first', iconProps: { iconName: 'SortDown' }, checked: isSortedByValue, onClick: () => setIsSortedByValue(!isSortedByValue) },
-                ]} />
             </DatasetControl.Ui.HeaderStart>
             <DatasetControl.Ui.HeaderEnd>
                 <DatasetControl.Ui.QuickFind
                     value={query}
                     placeholder='Search deals...'
                     columns={SEARCHED_COLUMNS}
-                    isLikeQuery={query.startsWith('*')}
-                    labels={{ leadingWildcardWarning: "Don't start with an asterisk (*)", columnsHintStart: 'Apply', columnsHintOperator: 'begins with', columnsHintEnd: 'filter on these columns:' }}
-                    onChange={search}
-                    onSearch={() => search(query)}
-                    onClear={() => search('')} />
+                    isLikeQuery={false}
+                    labels={{ leadingWildcardWarning: 'Do not start with an asterisk (*)', columnsHintStart: 'Apply', columnsHintOperator: 'begins with', columnsHintEnd: 'filter on these columns:' }}
+                    onChange={find}
+                    onSearch={() => find(query)}
+                    onClear={() => find('')} />
             </DatasetControl.Ui.HeaderEnd>
         </DatasetControl.Ui.Header>
-        {closingSoon.length > 0 && <div style={{ marginBottom: 12 }}>
-            <NotificationMessageBar messages={closingSoon.map(deal => ({ text: \`\${deal.name} closes in \${deal.closesInDays} days.\`, level: 'WARNING' as const }))} />
-        </div>}
         <DatasetControl.Ui.Body>
-            {pageDeals.length === 0
-                ? <DatasetControl.Ui.EmptyState message='No deals in this view.' />
-                : <FormUi.Tab id='board' layout={{ lg: 3, md: 3, sm: 2, xs: 1 }}>
-                    {pageDeals.map(deal => <FormUi.Column key={deal.id}>
-                        <DealCard deal={deal} onChange={changed => setDeals(deals.map(other => other.id === changed.id ? changed : other))} />
-                    </FormUi.Column>)}
-                </FormUi.Tab>}
+            <FormUi.Tab id='board' layout={{ lg: 3, md: 3, sm: 2, xs: 1 }}>
+                {pageDeals.map(deal => <FormUi.Column key={deal.id}>
+                    <DealCard deal={deal} onChange={changed => setDeals(deals.map(other => other.id === changed.id ? changed : other))} />
+                </FormUi.Column>)}
+            </FormUi.Tab>
         </DatasetControl.Ui.Body>
         <DatasetControl.Ui.Footer>
-            <DatasetControl.Ui.FooterStart>
-                <DatasetControl.Ui.PageSizeSwitcher
-                    text={\`\${shown.length ? page * pageSize + 1 : 0} - \${page * pageSize + pageDeals.length} of \${shown.length}\`}
-                    title='Deals per page'
-                    pageSize={pageSize}
-                    pageSizes={[3, 6, 9]}
-                    onPageSizeChange={size => { setPageSize(size); setPage(0) }} />
-            </DatasetControl.Ui.FooterStart>
             <DatasetControl.Ui.FooterEnd>
                 <DatasetControl.Ui.Pagination
                     canMovePrevious={page > 0}
-                    canMoveNext={page < pageCount - 1}
+                    canMoveNext={(page + 1) * PAGE_SIZE < shown.length}
                     labels={{ firstPageTooltip: 'First page', previousPageTooltip: 'Previous page', nextPageTooltip: 'Next page', currentPage: \`Page \${page + 1}\` }}
                     onMoveFirst={() => setPage(0)}
                     onMovePrevious={() => setPage(page - 1)}
@@ -239,5 +210,5 @@ const GridExample = () => {
 `
 
 export const ApplicationExample = () => <GridExampleRunner seedCode={APPLICATION_CODE} />
-export const CustomFieldExample = () => <GridExampleRunner seedCode={CUSTOM_FIELD_CODE} />
-export const PureUiExample = () => <GridExampleRunner seedCode={PURE_UI_CODE} />
+export const CustomFieldExample = () => <GridExampleRunner seedCode={CUSTOM_FIELD_CODE} tabs={['preview', 'code']} />
+export const PureUiExample = () => <GridExampleRunner seedCode={PURE_UI_CODE} tabs={['preview', 'code']} />

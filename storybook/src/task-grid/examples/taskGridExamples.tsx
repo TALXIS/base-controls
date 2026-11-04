@@ -1,10 +1,11 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
-import { withTasks } from './shared'
+import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
 const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
 
+//sample data from these docs: LOOKUP_MANY_*, CHECKLIST_*, DEPENDENC*, TEMPLATES, getTaskColumns
 const VIEW_COLUMNS = [...LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, ...DEPENDENCY_COLUMNS]
 
 //*Every task on its own* in the view switcher draws the tasks without the tree
@@ -346,10 +347,10 @@ export const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promi
 `,
 }
 
-export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
-export const BasicTaskGridExample = () => <GridExampleRunner seedCode={BASIC_CODE} />
-export const OwnTasksExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_TASKS_CODE }, DATAVERSE_TASKS_FILE]} />
-export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} />
-export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} />
-export const WorkingWithTasksExample = () => <GridExampleRunner seedCode={withTasks(WORKING_CODE)} />
-export const TalkingToTheTaskGridExample = () => <GridExampleRunner seedCode={withTasks(TALKING_CODE)} />
+export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const BasicTaskGridExample = () => <GridExampleRunner seedCode={BASIC_CODE} tabs={TASK_EXAMPLE_TABS} />
+export const OwnTasksExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_TASKS_CODE }, DATAVERSE_TASKS_FILE]} tabs={TASK_EXAMPLE_TABS} />
+export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const WorkingWithTasksExample = () => <GridExampleRunner seedCode={withTasks(WORKING_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const TalkingToTheTaskGridExample = () => <GridExampleRunner seedCode={withTasks(TALKING_CODE)} tabs={TASK_EXAMPLE_TABS} />

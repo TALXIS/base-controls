@@ -75,9 +75,7 @@ export interface IFormEventHandlers {
  * Imperative API exposed through `onFormReady`.
  */
 export interface IFormApi {
-    /**
-     * Re-runs the strategy load pipeline and rebuilds the form with the latest data.
-     */
+    /** Calls `onLoad` again and rebuilds the form. */
     refresh: () => void;
 
     /**

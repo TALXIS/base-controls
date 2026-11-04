@@ -1,10 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
-const BRAND_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
-
-const BRANDS = [
+const BRAND_CODE = `const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
     { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } },
     { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
@@ -15,26 +12,20 @@ const BRANDS = [
 
 const loadCommands = async (): Promise<IRibbonCommand[]> => [
     { id: 'new', label: 'New deal', iconName: 'Add', onExecute: () => {} },
-    { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: () => {} },
-    { id: 'share', label: 'Share', iconName: 'Share', onExecute: () => {} },
+    {
+        id: 'share', label: 'Share', iconName: 'Share', commands: [
+            { id: 'email', label: 'Email a link', iconName: 'Mail', onExecute: () => {} },
+            { id: 'copy', label: 'Copy link', iconName: 'Link', onExecute: () => {} },
+        ],
+    },
 ]
+
+const modules = [createClientSideRowModelModule(), createSortingModule()]
 
 const GridExample = () => {
     const isLightPage = isLightColor(useTheme().semanticColors.bodyBackground)
     const [colors, setColors] = React.useState(BRANDS[isLightPage ? 0 : 1].colors)
     const theme = useThemeBuilder({ colors })
-    const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'theming.deals.views' })], [])
-    const gridModules = React.useMemo(() => [
-        createClientSideRowModelModule(),
-        createEditingModule(),
-        createRowSelectionModule({ mode: 'multiple' }),
-        createCellSelectionModule(),
-        createClipboardModule(),
-        createSortingModule(),
-        createFilteringModule(),
-        createGroupingModule(),
-        createAggregationModule(),
-    ], [])
 
     const setColor = (name: keyof typeof colors, value: string) => setColors({ ...colors, [name]: value })
 
@@ -48,28 +39,15 @@ const GridExample = () => {
         </Stack>
         <AppThemeProvider theme={theme} style={{ padding: 12 }}>
             {/* a control reads the theme only as it mounts */}
-            <DatasetControl key={theme.id} modules={controlModules} onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} onMounted={saveDealViewData} height='480px'>
+            <DatasetControl key={theme.id} onLoad={async () => ({ provider })} height='400px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
-                        <DatasetControl.ViewSwitcher />
                         <DatasetControl.Ribbon onLoad={loadCommands} />
                     </DatasetControl.Header.Start>
-                    <DatasetControl.Header.End>
-                        <DatasetControl.EditColumns />
-                        <DatasetControl.QuickFind />
-                    </DatasetControl.Header.End>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <Grid stateKey='grid' modules={gridModules} />
+                    <Grid modules={modules} />
                 </DatasetControl.Body>
-                <DatasetControl.Footer>
-                    <DatasetControl.Footer.Start>
-                        <DatasetControl.PageSizeSwitcher />
-                    </DatasetControl.Footer.Start>
-                    <DatasetControl.Footer.End>
-                        <DatasetControl.Pagination />
-                    </DatasetControl.Footer.End>
-                </DatasetControl.Footer>
             </DatasetControl>
         </AppThemeProvider>
     </Stack>
@@ -173,7 +151,7 @@ const GridExample = () => {
 }
 `
 
-export const BrandExample = () => <GridExampleRunner seedCode={withFiles(BRAND_CODE, VIEWS_FILE)} />
+export const BrandExample = () => <GridExampleRunner seedCode={BRAND_CODE} />
 export const RedRowsExample = () => <GridExampleRunner seedCode={RED_ROWS_CODE} dataset='tickets' />
-export const ReadableTagsExample = () => <GridExampleRunner seedCode={READABLE_TAGS_CODE} />
-export const DerivedThemesExample = () => <GridExampleRunner seedCode={DERIVED_CODE} />
+export const ReadableTagsExample = () => <GridExampleRunner seedCode={READABLE_TAGS_CODE} tabs={['preview', 'code']} />
+export const DerivedThemesExample = () => <GridExampleRunner seedCode={DERIVED_CODE} tabs={['preview', 'code']} />

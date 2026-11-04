@@ -122,7 +122,7 @@ const PCF_CONTROL_FILE: IGridExampleFile = {
     name: 'index.tsx',
     code: `//in a PCF control, keep the state for the session with the host instead of in GridExample.tsx's memory
 import ReactDOM from 'react-dom'
-import { PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
+import { AppThemeProvider, PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
 import { Deals } from './GridExample'
 
 export class DealsControl implements ComponentFramework.StandardControl<{}, {}> {
@@ -142,7 +142,9 @@ export class DealsControl implements ComponentFramework.StandardControl<{}, {}> 
         this._context = context
         ReactDOM.render(<PcfContextProvider context={context}>
             <StateProvider store={this._store}>
-                <Deals />
+                <AppThemeProvider>
+                    <Deals />
+                </AppThemeProvider>
             </StateProvider>
         </PcfContextProvider>, this._container)
     }
@@ -157,5 +159,5 @@ export class DealsControl implements ComponentFramework.StandardControl<{}, {}> 
 }
 
 export const ComeBackExample = () => <GridExampleRunner seedCode={withFiles(COME_BACK_CODE, VIEWS_FILE, PCF_CONTROL_FILE)} />
-export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} />
-export const ScopesExample = () => <GridExampleRunner seedCode={SCOPES_CODE} />
+export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} tabs={['preview', 'code']} />
+export const ScopesExample = () => <GridExampleRunner seedCode={SCOPES_CODE} tabs={['preview', 'code']} />

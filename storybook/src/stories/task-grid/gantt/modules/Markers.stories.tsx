@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCards'
 import { GanttMarkersExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-A marker is a date marked on the timeline with a line, and a chip on the scale that names it. The markers module marks today, the project's start and end, and dates of your own, such as releases.
+A marker is a date marked on the timeline with a line, and a chip on the scale that names it. The markers module marks today, the project's start and end, and dates of your own, such as releases. Try it below: add a marker to \`RELEASES\` in **Code**.
 
-{{story: Mark the releases}}
+{{canvas: Mark the releases}}
 
 ## A marker
 
@@ -27,7 +28,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 | \`project\` | \`{ enableMarkers: true }\` | \`{ enableMarkers?, color?, lineStyle? }\`, the markers of the project's start and end, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module. |
 | \`components\` | Defaults | See *Changing how it looks* below. |
 
-## Where markers come from
+## Where markers are kept
 
 | Factory | Markers |
 |---|---|
@@ -36,7 +37,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 
 ## Changing how it looks
 
-\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
+\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -44,9 +45,17 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 | \`line\` | \`onRenderContainer\` | \`MarkerUiLineComponents\` | A marker's line over the chart |
 | \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRenderContainer\` | \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The boxes the chips and lines sit in |
 
-Inside a slot, \`useMarker()\` returns the marker it draws, to change only some of them, as \`LaunchChip\` in *Mark the releases* does.
+Inside a slot, \`useMarker()\` returns the marker it draws, to change only some of them, as \`LaunchChip\` in the example does.
 
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Project', iconName: 'ProjectCollection', href: '?path=/docs/controls-taskgrid-modules-project--overview', text: 'The project whose start and end the markers show.' },
+    { title: 'Non-working days', iconName: 'Calendar', href: '?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview', text: 'Weekends and holidays, shaded and left out of durations.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Modules/Markers',
@@ -54,7 +63,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -67,11 +76,4 @@ type Story = StoryObj<typeof meta>
 export const MarkTheReleases: Story = {
     name: 'Mark the releases',
     render: () => renderStory(<GanttMarkersExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Two releases, the project's start and end, and today. The launch chip counts the days. Try: zoom to fit, point at a chip, or add a marker to \`RELEASES\` in **Code**.`,
-            },
-        },
-    },
 }

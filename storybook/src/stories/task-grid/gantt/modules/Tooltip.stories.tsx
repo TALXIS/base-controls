@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCards'
 import { GanttTooltipExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The tooltip module shows what a bar is about when the pointer rests on it: by default the task's name and status, its progress, and when it runs. While a bar is dragged, the tooltip follows it with the dates it would get.
+The tooltip module shows what a bar is about when the pointer rests on it: by default the task's name and status, its progress, and when it runs. While a bar is dragged, the tooltip follows it with the dates it would get. Try it below: drag a bar and watch the tooltip's dates.
 
-{{story: Compose the tooltip}}
+{{canvas: Compose the tooltip}}
 
 ## Options
 
@@ -15,7 +16,7 @@ The tooltip module shows what a bar is about when the pointer rests on it: by de
 |---|---|
 | \`statusColumnName\` | An option set column, shown in the header as a pill in its option's colour. |
 | \`onRender\` | The whole tooltip, composed from \`TaskTooltip\`'s parts. See below. |
-| \`components\` | Pieces of the default tooltip; not read with \`onRender\`. See *Changing how it looks* below. |
+| \`components\` | Slots of the default tooltip; not read with \`onRender\`. See *Changing how it looks* below. |
 
 ## Parts
 
@@ -36,7 +37,7 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 
 ## Changing how it looks
 
-\`createTaskTooltipModule\` takes \`components\` for the default tooltip, read at mount, and \`TaskTooltip.Renderer\` takes the same keys. In a tooltip of your own, each part takes its own slots as \`components\`. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
+\`createTaskTooltipModule\` takes \`components\` for the default tooltip, read at mount, and \`TaskTooltip.Renderer\` takes the same keys. In a tooltip of your own, each part takes its own slots as \`components\`. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Part | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -46,7 +47,16 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 | \`dateRange\` | \`TaskTooltip.DateRangeRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`TooltipUiDateRangeComponents\` | The dates and the duration |
 | | \`TaskTooltip.FieldRows\` | \`onRenderContainer\` | \`TooltipUiFieldRowsComponents\` | The box the field rows sit in |
 | | \`TaskTooltip.FieldRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`TooltipUiFieldRowComponents\` | One row of the tooltip |
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Links', iconName: 'Link', href: '?path=/docs/controls-taskgrid-gantt-modules-links--overview', text: 'Dependencies between the bars, with a tooltip of their own.' },
+    { title: 'Write a module', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-gantt-write-a-module--overview', text: 'Draw your own content over the chart.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Modules/Tooltip',
@@ -54,7 +64,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -67,11 +77,4 @@ type Story = StoryObj<typeof meta>
 export const ComposeTheTooltip: Story = {
     name: 'Compose the tooltip',
     render: () => renderStory(<GanttTooltipExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A tooltip with the status, progress, priority, effort and dates. Try: rest the pointer on a bar, then drag it and watch the dates follow.`,
-            },
-        },
-    },
 }

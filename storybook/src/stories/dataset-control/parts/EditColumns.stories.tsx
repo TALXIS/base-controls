@@ -3,11 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { EditColumnsExample } from '../../../dataset-control/examples/partsExamples'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A view comes with the columns you gave it, but users often want to see something else, such as a deal's probability. Edit columns lets them change that themselves: a button opens a panel where they add, reorder and remove the view's columns, and saving reloads the control with them, each view keeping its own. You add it with \`DatasetControl.EditColumns\`.
+Edit columns lets the user choose the columns of a view: a button opens a panel where they add, reorder and remove columns, and saving reloads the control with them, each view keeping its own. You add it with \`DatasetControl.EditColumns\`. Try it below: switch to *Won deals* and add *Probability (%)* through *Edit columns*.
 
-{{story: Choose the columns of a view}}
+{{canvas: Choose the columns of a view}}
 
 ## How it behaves
 
@@ -17,7 +18,7 @@ A view comes with the columns you gave it, but users often want to see something
 - **Disabled:** the button while the provider loads, and *Save* while no visible column is left.
 - **Cancel:** *Cancel*, or closing the panel, drops the changes.
 - **Saving:** writes the columns, clears the selection and remounts the control; the columns are kept per view (see [**State**](?path=/docs/controls-datasetcontrol-state--overview)).
-- **Unsaved changes:** saving asks about them first, and writes nothing if the user keeps them.
+- **Unsaved changes:** saving asks about them first: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 - **Compact header:** only the icon shows, with the label as its tooltip; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Columns it offers
@@ -43,7 +44,7 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 |---|---|
 | \`open()\` | Opens the editor over the provider's columns. |
 | \`close()\` | Closes the editor and drops what was not saved. |
-| \`save()\` | Asks about unsaved changes, then writes the columns, clears the selection, closes the editor and remounts the control. |
+| \`save()\` | Writes the columns, clears the selection, closes the editor and remounts the control, asking about unsaved changes first. |
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 | \`getSession()\` | The edit in progress, while the editor is open. |
@@ -72,7 +73,17 @@ The example adds *Keep only the deal* above the pickers.
 Dragging swallows clicks: give column commands \`onMouseUp\`, not \`onClick\`.
 
 **Strings:** \`EDIT_COLUMNS_LABELS\`, keys \`editColumns.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Paging', iconName: 'PageList', href: '?path=/docs/controls-datasetcontrol-parts-paging--overview', text: 'The next part: the page size and the pages.' },
+    { title: 'State', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-state--overview', text: 'How each view keeps the columns the user chose.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'The columns each view starts with.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Parts/Edit columns',
@@ -80,7 +91,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -93,11 +104,4 @@ type Story = StoryObj<typeof meta>
 export const ChooseTheColumns: Story = {
     name: 'Choose the columns of a view',
     render: () => renderStory(<EditColumnsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Each view keeps the columns the user chose. Try: switch to *Won deals*, add *Probability (%)* through *Columns* and save, switch to *All deals* and back, then reopen the editor and press *Keep only the deal*.`,
-            },
-        },
-    },
 }

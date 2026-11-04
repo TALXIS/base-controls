@@ -59,6 +59,7 @@ const GridExample = () => {
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule()]}
                 onRecordValueChanged={reloadCommands}
+                //a successful save changes no value, so onRecordValueChanged misses it
                 onAfterSaved={reloadCommands}
                 height='400px' />
         </DatasetControl.Body>
@@ -280,11 +281,11 @@ export const LogHoursExample = () => <GridExampleRunner seedCode={LOG_HOURS_CODE
 
 export const ReviewChangesExample = () => <GridExampleRunner seedCode={REVIEW_CHANGES_CODE} dataset='timesheets' />
 
-export const CheckHoursExample = () => <GridExampleRunner seedCode={CHECK_HOURS_CODE} dataset='timesheets' />
+export const CheckHoursExample = () => <GridExampleRunner seedCode={CHECK_HOURS_CODE} tabs={['preview', 'code']} />
 
 export const FreezeApprovedExample = () => <GridExampleRunner seedCode={FREEZE_APPROVED_CODE} dataset='timesheets' />
 
-export const ServerRefusesExample = () => <GridExampleRunner seedCode={SERVER_REFUSES_CODE} dataset='timesheets' />
+export const ServerRefusesExample = () => <GridExampleRunner seedCode={SERVER_REFUSES_CODE} tabs={['preview', 'code']} />
 
 export const TickBillableExample = () => <GridExampleRunner seedCode={TICK_BILLABLE_CODE} dataset='timesheets' />
 

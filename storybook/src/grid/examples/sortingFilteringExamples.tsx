@@ -180,8 +180,8 @@ const GridExample = () => {
 
 export const TriageQueueExample = () => <GridExampleRunner seedCode={TRIAGE_QUEUE_CODE} dataset='tickets' />
 
-export const OpenOnWhatMattersExample = () => <GridExampleRunner seedCode={OPEN_ON_WHAT_MATTERS_CODE} dataset='tickets' />
+export const OpenOnWhatMattersExample = () => <GridExampleRunner seedCode={OPEN_ON_WHAT_MATTERS_CODE} tabs={['preview', 'code']} />
 
-export const SavedViewsExample = () => <GridExampleRunner seedCode={SAVED_VIEWS_CODE} dataset='tickets' />
+export const SavedViewsExample = () => <GridExampleRunner seedCode={SAVED_VIEWS_CODE} tabs={['preview', 'code']} />
 
-export const TailoredFiltersExample = () => <GridExampleRunner seedCode={TAILORED_FILTERS_CODE} dataset='tickets' />
+export const TailoredFiltersExample = () => <GridExampleRunner seedCode={TAILORED_FILTERS_CODE} tabs={['preview', 'code']} />

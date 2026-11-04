@@ -2,16 +2,20 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { PreviewStateExample, ReopenQueueExample } from '../../grid/examples/stateExamples'
 
 const DESCRIPTION = `
-A user who opens a record from a long list and comes back expects to find the list as they left it, not scrolled to the top with every group closed. The grid can remember where the user was, the row at the top, the focused cell and the open groups, and put them back the next time it mounts. You switch this on by giving the grid a \`stateKey\`: the next grid mounted with the same key puts the user back, and without one the grid keeps nothing.
+The grid can remember where the user was, the row at the top, the focused cell and the open groups, and put them back the next time it mounts. Give it a \`stateKey\` to switch this on; without one it keeps nothing. Try it below: open a few groups and click a cell, then press *Close and reopen*.
 
-{{story: Bring the user back where they left off}}
+{{canvas: Bring the user back where they left off}}
 
-The grid reads its state as it mounts and writes it as the user scrolls, focuses cells and opens groups. Inside a DatasetControl it is kept per view, in the control's own state: see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview). Where the state lives between sessions is up to [**State persistence**](?path=/docs/concepts-state-persistence--overview).
+## Where the state is kept
 
-The column layout, sorting, filtering and grouping belong to the provider, not to this state. See *Remember the layout* on [**Columns**](?path=/docs/controls-grid-columns--overview).
+- The grid reads its state as it mounts and writes it as the user scrolls, focuses cells and opens groups.
+- Inside a DatasetControl it is kept per view, in the control's own state: see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview).
+- Where the state lives between sessions is up to [**State persistence**](?path=/docs/concepts-state-persistence--overview).
+- The column layout, sorting, filtering and grouping belong to the provider: see *Remember the layout* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 ## What the grid keeps
 
@@ -27,7 +31,17 @@ On mount, the grid waits for the top row to appear, which inside a group means o
 The state is a keyed store at \`grid.services.get('state')\`, with \`get\`, \`set\` and \`delete\`. Pick a key of your own, read it once AG Grid is ready, and write it when it changes.
 
 {{story: Reopen the last previewed ticket}}
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'State persistence', iconName: 'Save', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep the state between sessions, in the browser or your own store.' },
+    { title: 'Grouping and totals', iconName: 'GroupList', href: '?path=/docs/controls-grid-modules-grouping-and-totals--overview', text: 'Group the rows by a column, and open the groups as deep as you need.' },
+    { title: 'Write a module', iconName: 'Puzzle', href: '?path=/docs/controls-grid-extending-write-a-module--overview', text: 'Package a feature of your own, with state of its own.' },
+]
 
 const meta = {
     title: 'Controls/Grid/State',
@@ -35,7 +49,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -48,13 +62,6 @@ type Story = StoryObj<typeof meta>
 export const BackWhereYouLeftOff: Story = {
     name: 'Bring the user back where they left off',
     render: () => renderStory(<ReopenQueueExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Tickets grouped by status and assignee, remounted from scratch with the same \`stateKey\`. Try: open or close a few groups, scroll down, click a cell, then press *Close and reopen*.`,
-            },
-        },
-    },
 }
 
 export const ReopenTheLastPreviewedTicket: Story = {
@@ -63,7 +70,7 @@ export const ReopenTheLastPreviewedTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A preview module that writes the clicked ticket to the grid's state under a key of its own, and reads it back on the next mount. Try: click a ticket, then press *Close and reopen*.`,
+                story: `A preview module that keeps the clicked ticket in the grid's state under a key of its own. Try: click a ticket, then press *Close and reopen*.`,
             },
         },
     },

@@ -86,5 +86,5 @@ export class InvoiceControl implements ComponentFramework.StandardControl<{}, {}
 `,
 }
 
-export const FormatExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: FORMAT_CODE }, PCF_CONTROL_FILE]} />
-export const DialogsExample = () => <GridExampleRunner seedCode={DIALOGS_CODE} />
+export const FormatExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: FORMAT_CODE }, PCF_CONTROL_FILE]} tabs={['preview', 'code']} />
+export const DialogsExample = () => <GridExampleRunner seedCode={DIALOGS_CODE} tabs={['preview', 'code']} />

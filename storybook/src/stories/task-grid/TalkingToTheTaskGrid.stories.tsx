@@ -2,16 +2,17 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { TalkingToTheTaskGridExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-The user creates, opens, moves and deletes tasks through the grid's commands, but your code can do the same, from a button outside the grid, a part of your own or a module. It does so through one object, the \`ITaskRuntime\`, which every mounted \`TaskDatasetControl\` creates. It acts on tasks as the user's commands do, runs your own work behind the loading overlay, and reaches the provider and the control.
+Your code can create, open, move and delete tasks as the user's commands do, from a button outside the grid, a part of your own or a module. It does so through the \`ITaskRuntime\` every mounted \`TaskDatasetControl\` creates, which also runs your own work behind the loading overlay and reaches the provider and the control. Try it below: click *Add a task*.
 
-{{story: Drive the task grid from your code}}
+{{canvas: Drive the task grid from your code}}
 
 ## Get the task runtime
 
-Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`onDestroyed\` pass it too, at the steps under *Lifecycle* on [**DatasetControl › Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
+Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`onDestroyed\` pass it too, at the steps under *Lifecycle* on the DatasetControl's [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 
 ## Tasks
 
@@ -30,7 +31,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## Run your own work
 
-\`execute(operation, options?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* above uses it.
+\`execute(operation, options?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* uses it.
 
 | Option | Default | Description |
 |---|---|---|
@@ -39,7 +40,17 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`error.title\` | A generic title | The dialog's title. |
 | \`error.rethrow\` | \`true\` | \`false\` resolves \`undefined\` once the dialog is shown, instead of throwing. |
 
-## Everything else
+## Settings of your own
+
+\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part with \`registerSettings(hook, priority?)\`, as *Show the buttons* in the example does. Each toggle is \`{ key, label, isChecked, onChange }\`.
+
+## The grid
+
+\`TaskGrid\` is a Grid, so \`onReady\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
+
+## Reference
+
+### Other members
 
 | Member | Description |
 |---|---|
@@ -55,16 +66,18 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
 | \`events\` | \`onDestroyed\`. |
 
-\`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**DatasetControl › Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+\`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
-## Settings of your own
+## Where next
 
-\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part with \`registerSettings(hook, priority?)\`, as *Show the buttons* above does. Each toggle is \`{ key, label, isChecked, onChange }\`.
-
-## The grid
-
-\`TaskGrid\` is a Grid, so \`onReady\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Grid › Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'What the user can do with tasks, and the events that follow every change.' },
+    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Switch views, reload, and reach the parts and modules of the DatasetControl.' },
+    { title: 'Write a module', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-gantt-write-a-module--overview', text: 'Reach the task runtime from a Gantt module of your own.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Talking to the task grid',
@@ -72,7 +85,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -85,11 +98,4 @@ type Story = StoryObj<typeof meta>
 export const DriveTheTaskGridFromYourCode: Story = {
     name: 'Drive the task grid from your code',
     render: () => renderStory(<TalkingToTheTaskGridExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Three buttons outside the control call the task runtime, and a setting of its own hides them. Try: select a few tasks and complete them, or turn off *Show the buttons* in the settings.`,
-            },
-        },
-    },
 }

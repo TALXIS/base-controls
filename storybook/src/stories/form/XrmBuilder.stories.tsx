@@ -3,7 +3,8 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { XrmFormXmlBuilderStory } from './XrmFormXmlBuilderStory'
 
 const meta = {
-    title: 'Controls/Form/Xrm',
+    title: 'Dev/Form/FormXml builder',
+    tags: ['dev-only'],
     parameters: {
         layout: 'fullscreen',
         controls: { disable: true },
@@ -25,6 +26,6 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
-    name: 'Builder',
+    name: 'FormXml builder',
     render: () => <XrmFormXmlBuilderStory />,
 }

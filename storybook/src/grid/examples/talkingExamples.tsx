@@ -1,45 +1,41 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const DRIVE_THE_GRID_CODE = `const createReviewProvider = () => {
-    const timesheets = createTimesheetsProvider()
-    timesheets.grouping.addGroupBy({ columnName: 'status', alias: 'status_group' })
-    timesheets.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
-    return timesheets
-}
+export const ASSIGN_FROM_THE_RIBBON_CODE = `const ME = 'Eva Horák'
 
 const GridExample = () => {
-    const timesheets = React.useMemo(createReviewProvider, [])
     const gridRef = React.useRef<IGrid>()
     const [summary, setSummary] = React.useState('')
 
     const summarize = () => {
-        const sorting = timesheets.getSorting()[0]
-        setSummary(\`\${timesheets.getRecords().length} groups\${sorting ? \`, sorted by \${sorting.name}\` : ''}\`)
+        const sorting = provider.getSorting()[0]
+        setSummary(sorting ? 'Sorted by ' + provider.getColumnsMap()[sorting.name]?.displayName : 'Not sorted')
     }
 
+    //the grid onReady passes is what your code talks to
     const onReady = (grid: IGrid) => {
         gridRef.current = grid
         grid.events.addEventListener('onDataLoaded', summarize)
         summarize()
     }
 
-    const expandAll = () => {
-        const grouping = gridRef.current?.modules.find('grouping')
-        grouping?.setExpandedLevel(grouping.getDeepestLevel())
+    //a module, found by its name
+    const sortByDeadline = () => gridRef.current?.modules.find('sorting')?.sortColumn('duedate')
+
+    //a service: a field saves the ticket as its cell would
+    const assignToMe = () => {
+        const fields = gridRef.current?.services.get('fields')
+        provider.getSelectedRecordIds().forEach(id => fields?.get(provider.getRecordsMap()[id], 'assignee').setValue(ME))
+        provider.clearSelectedRecordIds()
     }
 
-    const collapseAll = () => gridRef.current?.modules.find('grouping')?.setExpandedLevel(-1)
-
-    const sortByHours = () => gridRef.current?.modules.find('sorting')?.sortColumn('hours', true)
-
+    //the ribbon loads again whenever the selection changes
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'expandAll', label: 'Expand all', iconName: 'ExploreContent', onExecute: expandAll },
-        { id: 'collapseAll', label: 'Collapse all', iconName: 'CollapseContent', onExecute: collapseAll },
-        { id: 'sortByHours', label: 'Most hours first', iconName: 'SortDown', onExecute: sortByHours },
+        { id: 'assign', label: 'Assign to me', iconName: 'AddFriend', isDisabled: provider.getSelectedRecordIds().length === 0, onExecute: assignToMe },
+        { id: 'sort', label: 'Deadline first', iconName: 'SortUp', onExecute: sortByDeadline },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.Ribbon onLoad={loadCommands} />
@@ -52,13 +48,13 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
+                    createEditingModule({ autoSave: true }),
+                    createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
-                    createGroupingModule(),
-                    createAggregationModule(),
                 ]}
                 enableOptionSetColors
                 onReady={onReady}
-                height='440px' />
+                height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -115,6 +111,6 @@ const GridExample = () => {
 }
 `
 
-export const DriveTheGridExample = () => <GridExampleRunner seedCode={DRIVE_THE_GRID_CODE} dataset='timesheets' />
+export const AssignFromTheRibbonExample = () => <GridExampleRunner seedCode={ASSIGN_FROM_THE_RIBBON_CODE} dataset='tickets' />
 
 export const GridLifeExample = () => <GridExampleRunner seedCode={GRID_LIFE_CODE} dataset='tickets' />

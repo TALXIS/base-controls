@@ -2,15 +2,18 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { GanttOwnModuleExample } from '../../../task-grid/examples/ganttExamples'
 import { ILifecycleStep, Lifecycle } from '../../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-When the built-in modules don't cover what you need, such as drawing critical tasks red or labelling the scale by your fiscal year, you write a module of your own. A module is a small object the Gantt loads on every mount. It hooks into the chart's config, styles and drawing, reaches the task grid's runtime, and can hand an object of its own to the rest of your code.
+When the built-in modules do not cover what you need, such as drawing critical tasks red or labelling the scale by your fiscal year, you write a module of your own. A module is a small object the Gantt loads on every mount: it hooks into the chart's config, styles and drawing, and reaches the task grid's runtime. Try it below: make a task critical in the grid's *Priority* column.
 
-{{story: Colour bars and relabel the scale}}
+{{canvas: Colour bars and relabel the scale}}
 
-A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
+## A module
+
+A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. What \`onLoad\` returns is the module's instance, which the rest of your code reaches by the module's name. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
 
 ## Lifecycle
 
@@ -56,6 +59,10 @@ A surface, a marker slot or a tooltip part reads the Gantt with \`useGantt()\`, 
 ## From outside
 
 \`taskRuntime.services.get('datasetControl').parts.find('gantt')\` returns the Gantt while one is drawn, with the same members as above.
+
+## Where next
+
+{{block: explore}}
 `
 
 const LIFECYCLE: ILifecycleStep[] = [
@@ -67,13 +74,18 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy` gets what its `onLoad` returned, and the chart is destroyed.' },
 ]
 
+const EXPLORE: IExploreCard[] = [
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-taskgrid-gantt-modules--overview', text: 'The built-in Gantt modules, and the library module every Gantt needs.' },
+    { title: 'Talking to the task grid', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview', text: 'What the task runtime a module reaches can do.' },
+]
+
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Write a module',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} /> }),
+            page: gridDocsPage(DESCRIPTION, { lifecycle: () => <Lifecycle steps={LIFECYCLE} />, explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -86,11 +98,4 @@ type Story = StoryObj<typeof meta>
 export const ColourBarsAndRelabelTheScale: Story = {
     name: 'Colour bars and relabel the scale',
     render: () => renderStory(<GanttOwnModuleExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Two modules of a few lines each: critical tasks drawn red, and quarters labelled by a fiscal year that starts in July. Try: zoom out until the scale shows quarters, or make a task critical in the grid's *Priority* column.`,
-            },
-        },
-    },
 }

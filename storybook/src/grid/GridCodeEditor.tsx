@@ -2,7 +2,7 @@ import React from 'react'
 import Editor, { Monaco, OnMount } from '@monaco-editor/react'
 import { ITheme, mergeStyleSets, useTheme } from '@fluentui/react'
 import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs, useMonacoTheme } from '../form/shared/monacoEditor'
-import { gridSandboxDeclarations } from './gridSandboxDeclarations'
+import { gridSandboxDeclarations, gridSandboxImportOnlyDeclarations } from './gridSandboxDeclarations'
 import type { IGridExampleFile } from './GridLivePreview'
 
 const getStyles = (theme: ITheme) => mergeStyleSets({
@@ -17,7 +17,7 @@ let editorCount = 0
 
 //the packages an example imports from hold the same names as the globals
 const SANDBOX_PACKAGES = ['@talxis/base-controls', '@talxis/client-libraries']
-const asPackage = (name: string) => `declare module '${name}' {\n${gridSandboxDeclarations.replace(/^declare module .*$/gm, '').replace(/^declare /gm, '')}\n}`
+const asPackage = (name: string) => `declare module '${name}' {\n${gridSandboxDeclarations.replace(/^declare module .*$/gm, '').replace(/^declare /gm, '')}\n${name === '@talxis/base-controls' ? gridSandboxImportOnlyDeclarations : ''}\n}`
 const SANDBOX_TYPINGS = [gridSandboxDeclarations, ...SANDBOX_PACKAGES.map(asPackage)].join('\n')
 
 //Monaco's typings do not name ModuleDetectionKind.Force

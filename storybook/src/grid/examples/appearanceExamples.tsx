@@ -327,6 +327,6 @@ export const ColumnLinesExample = () => <GridExampleRunner seedCode={COLUMN_LINE
 
 export const HeaderColoursExample = () => <GridExampleRunner seedCode={HEADER_COLOURS_CODE} dataset='timesheets' />
 
-export const InvoiceLinesExample = () => <GridExampleRunner seedCode={INVOICE_LINES_CODE} />
+export const InvoiceLinesExample = () => <GridExampleRunner seedCode={INVOICE_LINES_CODE} tabs={['preview', 'code']} />
 
 export const FillContainerExample = () => <GridExampleRunner seedCode={FILL_CONTAINER_CODE} />

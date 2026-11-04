@@ -3,21 +3,63 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DriveTheControlExample, ModuleExample, WatchTheControlExample } from '../../dataset-control/examples/talkingExamples'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-The user works the control through its parts, but your code can do the same: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through one object, the \`IDatasetControl\`, which every mount of the control creates and hands to you. The toolbar in the footer below is your own. Try: press *Search Contoso*.
+Your code can do what the user does through the parts: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through the \`IDatasetControl\`, which every mount of the control creates and hands to you. Try it below: press *Search Contoso* in the footer.
 
 {{canvas: Drive the control from a toolbar}}
 
 ## Get the control
 
-Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar in the first example does.
-
-Outside it, \`onMounted\`, \`onReady\` and \`onDestroyed\` hand it to you, at the steps under *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Add your listeners in \`onMounted\`: every load is a new mount with a new \`IDatasetControl\`.
+- Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does.
+- Outside it, \`onMounted\`, \`onReady\` and \`onDestroyed\` hand it to you, at the steps on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+- Add your listeners in \`onMounted\`: every load is a new mount with a new \`IDatasetControl\`.
 
 {{story: Watch the control load}}
 
-## Views and loading
+## Switch and reload views
+
+\`loadView(viewId)\` opens a view as picking it does, \`reload()\` opens the current one again, and \`retry()\` the one that failed. Each mounts the control anew; all but \`retry()\` first ask about unsaved changes, as on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+
+## Follow the load
+
+| Event | Arguments | When it fires |
+|---|---|---|
+| \`onLoadStarted\` | None | The mount's load starts. |
+| \`onLoaded\` | \`provider\` | The load succeeded, and the parts are drawn on \`provider\`. |
+| \`onLoadFailed\` | \`error\` | The load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
+| \`onDestroyed\` | None | The mount goes. |
+
+Each fires at most once per \`IDatasetControl\`, on \`control.events\`. \`addEventListener\` returns its own unsubscribe.
+
+## Reach the parts
+
+Every part on the page registers itself on the control under its own key, for as long as it is rendered. \`control.parts\` finds it:
+
+- \`get(key)\` returns the part, and throws when it is not rendered.
+- \`find(key)\` returns the part, or \`undefined\` when it is not rendered.
+- \`observe(key, callback)\` calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call.
+
+The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's own page lists its members.
+
+## Add a module
+
+A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, before \`onLoadViews\`. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
+
+{{story: Add a view from a module}}
+
+| Member | Description |
+|---|---|
+| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it. |
+| \`onLoad(control)\` | Can be async. A throw fails the load. |
+| \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
+
+Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`registerViews\`, and draw the module's own dialogs or panels, with \`surfaces.registerSurface\`.
+
+## Reference
+
+### The control
 
 | Member | Description |
 |---|---|
@@ -30,76 +72,42 @@ Outside it, \`onMounted\`, \`onReady\` and \`onDestroyed\` hand it to you, at th
 | \`getDependencies<T>()\` | What \`onLoadDependencies\` loaded for this mount. |
 | \`isLoadingView()\` | Whether the load is running, behind the placeholder. |
 | \`getError()\` | What the load threw. |
+| \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it: see [**Localization**](?path=/docs/concepts-localization--overview). |
+| \`getTheme()\` | The Fluent theme the control is drawn in: see [**Theming**](?path=/docs/concepts-theming--overview). |
 
-\`loadView()\` and \`reload()\` ask the user first when the records have unsaved changes, and do nothing if they keep them. \`retry()\` does not ask.
+### Part keys
 
-## Events
-
-| Event | Arguments | When it fires |
-|---|---|---|
-| \`onLoadStarted\` | None | The mount's load starts. |
-| \`onLoaded\` | \`provider\` | The load succeeded, and the parts are drawn on \`provider\`. |
-| \`onLoadFailed\` | \`error\` | The load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
-| \`onDestroyed\` | None | The mount goes. |
-
-Each fires at most once per \`IDatasetControl\`. \`addEventListener\` returns its own unsubscribe.
-
-## Reach the parts
-
-Every part on the page registers itself on the control under its own key, for as long as it is rendered. \`control.parts\` finds it:
-
-| Call | Returns |
+| Key | Part |
 |---|---|
-| \`get(key)\` | The part; throws when it isn't rendered. |
-| \`find(key)\` | The part, or \`undefined\` when it isn't rendered. |
-| \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call. |
+| \`viewSwitcher\` | [**Views**](?path=/docs/controls-datasetcontrol-views--overview) |
+| \`ribbon\` | [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview) |
+| \`quickFind\` | [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview) |
+| \`editColumns\` | [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) |
+| \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) |
+| \`notifications\` | [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) |
+| \`grid\` | The grid in the body: [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) |
+| \`loadingOverlay\` | Always there. \`show(message?)\` covers the whole control and returns the function that hides it; it stays until every caller has hidden it. |
 
-| Key | Part | What you do with it |
-|---|---|---|
-| \`viewSwitcher\` | [**Views**](?path=/docs/controls-datasetcontrol-views--overview) | List the views, pick one, add to the menu. |
-| \`ribbon\` | [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview) | Load the commands again, add commands. |
-| \`quickFind\` | [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview) | Set the query and search. |
-| \`editColumns\` | [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor, add commands. |
-| \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) | Move between pages, change the page size. |
-| \`notifications\` | [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) | Read the provider's load error. |
-| \`grid\` | [**Grid**](?path=/docs/controls-grid-get-started--overview) | Reach the grid in the body and its modules. |
-| \`loadingOverlay\` | Always there | Cover the whole control: \`show(message?)\` returns the function that hides it again, and it stays until every caller has hidden it. |
-
-The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's page lists its members under *From your code*.
-
-## Modules
-
-A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, as *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) shows. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
-
-{{story: Add a view from a module}}
-
-Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as *types.ts* in the example does.
-
-| Member | Description |
-|---|---|
-| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it. |
-| \`onLoad(control)\` | Can be async. A throw fails the load. |
-| \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
-
-The control a module's \`onLoad\` gets also has:
+### What a module's control adds
 
 | Member | Description |
 |---|---|
 | \`registerViews(hook, priority?)\` | Adds to or changes the views \`onLoadViews\` returned: \`hook(views)\` changes them in place. |
 | \`getViewStateStore()\` | The open view's entry in the state store. |
-| \`surfaces.registerSurface(hook, priority?)\` | Draws something in the control, such as a dialog: \`hook(surfaces)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
+| \`surfaces.registerSurface(hook, priority?)\` | Draws a dialog or panel of the module's own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 
 Each \`register…\` returns its unregistration.
 
-## Labels and theme
+## Where next
 
-| Member | Description |
-|---|---|
-| \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/concepts-localization--overview). |
-| \`getTheme()\` | The Fluent theme the control is drawn in. See [**Theming**](?path=/docs/concepts-theming--overview). |
-
-Draw a module's dialog as a surface: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview).
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'The steps each mount runs, and when onMounted, onReady and onDestroyed are called.' },
+    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The first of the parts, with its members under From your code.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Parts of your own, registered on the control like the built-in ones.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Talking to the control',
@@ -107,7 +115,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -120,13 +128,6 @@ type Story = StoryObj<typeof meta>
 export const DriveTheControl: Story = {
     name: 'Drive the control from a toolbar',
     render: () => renderStory(<DriveTheControlExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A toolbar of your own in the footer: it switches and reloads views through the control, and searches and opens the column editor through \`control.parts\`.`,
-            },
-        },
-    },
 }
 
 export const WatchTheControl: Story = {
@@ -135,7 +136,7 @@ export const WatchTheControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The control's events and its \`onMounted\`, \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view and watch the old mount go and a new one start, press *Show won deals*, which calls \`loadView('won')\`, then *Remount*.`,
+                story: `The control's events and its \`onMounted\`, \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view and watch the old mount go and a new one start.`,
             },
         },
     },
@@ -147,7 +148,7 @@ export const AddAViewFromAModule: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module of your own adds *Closing soon* to the views \`onLoadViews\` lists, through \`registerViews\`. Try: pick *Closing soon* under *Reports* in the view switcher, then rename it in the module's code.`,
+                story: `A module of your own adds *Closing soon* to the views \`onLoadViews\` lists, through \`registerViews\`. Try: pick *Closing soon* under *Reports* in the view switcher.`,
             },
         },
     },

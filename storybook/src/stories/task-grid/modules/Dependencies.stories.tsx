@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { DependenciesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A dependency says that one task waits on another. The dependencies module holds the tasks' dependencies, and shows how many each task has in a *Predecessors* and a *Successors* column. The [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) module of the Gantt draws them as links between the bars, and lets the user draw and delete them.
+A dependency says that one task waits on another. The dependencies module holds the tasks' dependencies and counts them in a *Predecessors* and a *Successors* column, and the Gantt's [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) module draws them between the bars. Try it below: delete a task and watch its neighbours' counts drop.
 
-{{story: Count the dependencies}}
+{{canvas: Count the dependencies}}
 
 ## A dependency
 
@@ -18,22 +19,34 @@ A dependency says that one task waits on another. The dependencies module holds 
 | \`successorTaskId\` | The task that waits on it. |
 | \`type\` | \`'finishToStart'\`, \`'startToStart'\`, \`'finishToFinish'\` or \`'startToFinish'\`. |
 
-A dependency joins two different tasks, once, without a cycle, and can change while \`enableEditing\` is on. While one saves, both its tasks show as saving; afterwards the store reads the tasks again, for dates the backend rescheduled. Deleting a task drops its dependencies.
+A dependency joins two different tasks, once, without a cycle, and can change while \`enableEditing\` is on. While one saves, both its tasks show as saving. Deleting a task drops its dependencies.
 
 ## Where dependencies are kept
 
 | Factory | Keeps the dependencies |
 |---|---|
 | \`createMemoryDependenciesModule\` | In memory. \`dependencies\` are the starting ones. |
-| \`createDataverseDependenciesModule\` | In a Dataverse table of your own: two lookups to the task table, and an option set of the type. |
+| \`createDataverseDependenciesModule\` | In a Dataverse table of your own: two lookups to the task table, and an option set of the type. The example's *dataverse.ts* keeps them there. |
 | \`createTalxisDependenciesModule\` | In TALXIS's \`talxis_taskdependency\` table. |
 | \`createDependenciesModule\` | In a store of yours: \`onCreateStore\` returns an \`IDependenciesStore\`. |
 
 Every factory also takes \`reloadOnEditorClosed\`, to read a task's dependencies again once its form closes (\`true\` for Dataverse and TALXIS), and \`components\` (see *Changing how it looks* below).
 
-### Dataverse
+## From your code
 
-*dataverse.ts* in the example keeps the dependencies in a Dataverse table.
+\`taskRuntime.services.get('datasetControl').modules.find('dependencies')\` returns the module, with \`getPredecessors(taskId)\`, \`getSuccessors(taskId)\`, \`canCreateDependency(predecessorTaskId, successorTaskId)\`, \`createDependency(dependency)\`, \`updateDependency(dependencyId, { type })\` and \`deleteDependency(dependencyId)\`. \`events.onDependenciesChanged\` fires with the tasks whose dependencies changed.
+
+## Changing how it looks
+
+Every dependencies factory takes \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`count\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependencyCountComponents\` | The count in the *Predecessors* and *Successors* cells |
+
+## Reference
+
+### Dataverse
 
 | Parameter | Description |
 |---|---|
@@ -51,18 +64,15 @@ Every factory also takes \`reloadOnEditorClosed\`, to read a task's dependencies
 | \`onUpdateDependency(dependency)\` | Saves a changed type. |
 | \`onDeleteDependency(dependencyId)\` | Deletes a dependency. |
 
-## Changing how it looks
+## Where next
 
-Every dependencies factory takes \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
-
-| Key | Slots | Default | Draws |
-|---|---|---|---|
-| \`count\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependencyCountComponents\` | The count in the *Predecessors* and *Successors* cells |
-
-## From your code
-
-\`taskRuntime.services.get('datasetControl').modules.find('dependencies')\` returns the module, with \`getPredecessors(taskId)\`, \`getSuccessors(taskId)\`, \`canCreateDependency(predecessorTaskId, successorTaskId)\`, \`createDependency(dependency)\`, \`updateDependency(dependencyId, { type })\` and \`deleteDependency(dependencyId)\`. \`events.onDependenciesChanged\` fires with the tasks whose dependencies changed.
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Links', iconName: 'Link', href: '?path=/docs/controls-taskgrid-gantt-modules-links--overview', text: 'The dependencies drawn between the bars, and drawn by the user.' },
+    { title: 'Loading tasks', iconName: 'CloudDownload', href: '?path=/docs/controls-taskgrid-loading-tasks--overview', text: 'How dates a backend reschedules after a save come back.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Modules/Dependencies',
@@ -70,7 +80,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -83,11 +93,4 @@ type Story = StoryObj<typeof meta>
 export const CountTheDependencies: Story = {
     name: 'Count the dependencies',
     render: () => renderStory(<DependenciesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Dependencies in memory: under every other parent, each task waits on the one before it. Try: delete a task and watch its neighbours' counts drop.`,
-            },
-        },
-    },
 }

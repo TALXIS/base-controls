@@ -2,13 +2,14 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { FilterIconExample, SortArrowsExample } from '../../../grid/examples/moduleComponentsExamples'
 import { OpenOnWhatMattersExample, SavedViewsExample, TailoredFiltersExample, TriageQueueExample } from '../../../grid/examples/sortingFilteringExamples'
 
 const DESCRIPTION = `
-Sorting and filtering let users order a long list and narrow it down from each column's menu. Neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with.
+Sorting and filtering let users order a long list and narrow it down from each column's menu. Neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with. Try it below: filter *Status* to New.
 
-{{story: Triage the support queue}}
+{{canvas: Triage the support queue}}
 
 ## The column menu
 
@@ -51,21 +52,13 @@ Once someone applies or clears a column filter, the provider's filter becomes th
 - Nested filters, and conditions on anything that is not a column, are dropped.
 - So keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
-Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview).
+Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 {{story: Switch between saved views}}
 
 ## Narrow what a filter offers
 
-\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, as \`Operators.GetOperatorsForDataType(dataType)\` returns:
-
-| Data type | Operators |
-|---|---|
-| Text, email, phone, URL, text area, multiline, lookup, two options, option set | \`Equal\`, \`DoesNotEqual\`, \`Like\` (*Contains*), \`NotLike\`, \`BeginsWith\`, \`DoesNotBeginWith\`, \`EndsWith\`, \`DoesNotEndWith\`, \`ContainsData\`, \`DoesNotContainData\` |
-| Whole number, duration, decimal, currency | \`Equal\`, \`DoesNotEqual\`, \`GreaterThan\`, \`GreaterThanOrEqual\`, \`LessThan\`, \`LessThanOrEqual\`, \`Between\`, \`NotBetween\`, \`ContainsData\`, \`DoesNotContainData\` |
-| Date, date and time | \`On\`, \`OnOrAfter\`, \`OnOrBefore\`, \`Between\`, \`NotBetween\`, \`Today\`, \`Yesterday\`, \`Tomorrow\`, \`ThisWeek\`, \`ThisMonth\`, \`ThisYear\`, \`Next7Days\`, \`NextXDays\`, \`LastWeek\`, \`Last7Days\`, \`LastMonth\`, \`LastYear\`, \`LastXDays\`, \`LastXMonths\`, \`ContainsData\`, \`DoesNotContainData\` |
-| Multi-select option set | \`Equal\`, \`DoesNotEqual\`, \`ContainValues\`, \`DoesNotContainValues\`, \`ContainsData\`, \`DoesNotContainData\` |
-| File, image | \`ContainsData\`, \`DoesNotContainData\` |
+\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, as \`Operators.GetOperatorsForDataType(dataType)\` returns; they are under *Reference* below.
 
 - An unfiltered column's callout opens on its data type's own operator: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with nothing picked.
 - On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists.
@@ -75,7 +68,33 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 
 {{story: Offer only the filters that make sense}}
 
-## From your code
+## Options
+
+The options are *At mount*: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| \`components\` | \`IGridSortingComponents\` for sorting, \`IGridFilteringComponents\` for filtering | \`{}\` | What the module draws. See *Changing how it looks*. |
+
+## Changing how it looks
+
+Both modules take \`components\` (see *Options*). How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+
+| Module | Key | Slots | Default | Draws |
+|---|---|---|---|---|
+| Sorting | \`sortIcon\` | \`onRenderIcon\` (with \`descending\`) | \`GridSortingIconComponents\` | The arrow of a sorted column |
+| Filtering | \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
+| | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the callout a filter is set in |
+
+What the callout holds, the operator and value controls and the *Apply* and *Clear* buttons, has no slots; change the controls' parameters with \`registerFilterControlParameters\`. To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in that column's \`context.header.onGetAdornments\`.
+
+{{story: Draw your own sort arrows}}
+
+{{story: Make a filter stand out}}
+
+## Reference
+
+### Members
 
 The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filtering')\`, or \`useGridModule\` inside what the grid draws.
 
@@ -104,22 +123,26 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 | \`components\` | The \`components\` the module was given. |
 | \`events\` | \`onFilterOpened(columnName)\` and \`onFilterClosed()\`, which *Apply* fires too. No event says what was applied. |
 
-## Changing how it looks
+### Operators by data type
 
-Both modules take \`components\`, read at mount. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+| Data type | Operators |
+|---|---|
+| Text, email, phone, URL, text area, multiline, lookup, two options, option set | \`Equal\`, \`DoesNotEqual\`, \`Like\` (*Contains*), \`NotLike\`, \`BeginsWith\`, \`DoesNotBeginWith\`, \`EndsWith\`, \`DoesNotEndWith\`, \`ContainsData\`, \`DoesNotContainData\` |
+| Whole number, duration, decimal, currency | \`Equal\`, \`DoesNotEqual\`, \`GreaterThan\`, \`GreaterThanOrEqual\`, \`LessThan\`, \`LessThanOrEqual\`, \`Between\`, \`NotBetween\`, \`ContainsData\`, \`DoesNotContainData\` |
+| Date, date and time | \`On\`, \`OnOrAfter\`, \`OnOrBefore\`, \`Between\`, \`NotBetween\`, \`Today\`, \`Yesterday\`, \`Tomorrow\`, \`ThisWeek\`, \`ThisMonth\`, \`ThisYear\`, \`Next7Days\`, \`NextXDays\`, \`LastWeek\`, \`Last7Days\`, \`LastMonth\`, \`LastYear\`, \`LastXDays\`, \`LastXMonths\`, \`ContainsData\`, \`DoesNotContainData\` |
+| Multi-select option set | \`Equal\`, \`DoesNotEqual\`, \`ContainValues\`, \`DoesNotContainValues\`, \`ContainsData\`, \`DoesNotContainData\` |
+| File, image | \`ContainsData\`, \`DoesNotContainData\` |
 
-| Module | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| Sorting | \`sortIcon\` | \`onRenderIcon\` (with \`descending\`) | \`GridSortingIconComponents\` | The arrow of a sorted column |
-| Filtering | \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
-| | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the callout a filter is set in |
+## Where next
 
-What the callout holds, the operator and value controls and the *Apply* and *Clear* buttons, has no slots; change the controls' parameters with \`registerFilterControlParameters\`. To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in that column's \`context.header.onGetAdornments\`.
-
-{{story: Draw your own sort arrows}}
-
-{{story: Make a filter stand out}}
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'The sort and filter the provider holds, and how to set them.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'Saved views, each with a sort and a filter of its own.' },
+    { title: 'Grouping and totals', iconName: 'GroupList', href: '?path=/docs/controls-grid-modules-grouping-and-totals--overview', text: 'Group the rows by a column, and total its values.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Modules/Sorting and filtering',
@@ -127,7 +150,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -140,13 +163,6 @@ type Story = StoryObj<typeof meta>
 export const TriageTheSupportQueue: Story = {
     name: 'Triage the support queue',
     render: () => renderStory(<TriageQueueExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `This week's support tickets, with a *Sorting* and a *Filtering* section in every column's menu. Try: filter *Status* to New, sort by *Customer*, then Shift+click *Sort older to newer* under *Opened*.`,
-            },
-        },
-    },
 }
 
 export const OpenOnWhatMatters: Story = {
@@ -155,7 +171,7 @@ export const OpenOnWhatMatters: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The queue opens on the tickets still to resolve, unassigned first, through \`provider.setSorting\` and \`provider.setFiltering\` before \`refresh()\`. Try: open the *Status* or *Assigned to* menu to see the preset.`,
+                story: `\`provider.setSorting\` and \`provider.setFiltering\` before \`refresh()\` open the queue on the tickets still to resolve, unassigned first. Try: open the *Status* menu.`,
             },
         },
     },
@@ -167,7 +183,7 @@ export const SwitchBetweenSavedViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Each view loads a provider of its own, sorted and filtered in \`onLoad\`. Try: on *Open tickets*, filter *Priority* to High, switch to another view and back; the control's \`stateKey\` keeps your filter.`,
+                story: `Each view loads a provider of its own, sorted and filtered in \`onLoad\`, and the control's \`stateKey\` keeps what the user changes. Try: filter *Priority* to High, then switch views and back.`,
             },
         },
     },
@@ -179,7 +195,7 @@ export const OfferOnlyTheFiltersThatMakeSense: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`SupportedFilterConditionOperators\` narrows each column's operators, *Time spent* gets none, and \`registerFilterControlParameters\` puts a hint in the text boxes. Try: filter *Subject* to see the hint.`,
+                story: `\`SupportedFilterConditionOperators\` narrows each column's operators, and \`registerFilterControlParameters\` puts a hint in the text boxes. Try: filter *Subject*.`,
             },
         },
     },
@@ -203,7 +219,7 @@ export const AFilterThatStandsOut: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`filterIcon\` marks the filtered In stock column with a solid blue icon, and \`filterCallout.onRenderTitle\` heads the callout with what it filters by. Try: open the In stock filter from its menu.`,
+                story: `\`filterIcon\` marks the filtered *In stock* column with a solid blue icon, and \`filterCallout.onRenderTitle\` heads the callout. Try: open the *In stock* filter from its menu.`,
             },
         },
     },

@@ -3,40 +3,41 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ProviderViewsExample } from '../../dataset-control/examples/viewsExamples'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A view is a named way of looking at the same records, such as *All deals* or *Won deals*: it decides which columns show, and can carry its own filter or sorting. The user picks one from the view switcher, and the control loads the records anew for it. You list the views in \`onLoadViews\`, show them with \`DatasetControl.ViewSwitcher\`, and set up the one the user picks in \`onLoad\`.
+A view is a named way of looking at the same records, such as *All deals* or *Won deals*: it decides which columns show, and can carry its own filter or sorting. You list the views in \`onLoadViews\`, show them with \`DatasetControl.ViewSwitcher\`, and set up the one the user picks in \`onLoad\`. Try it below: switch to *Biggest deals*, listed under *Reports*.
 
-{{story: Views that set up the provider}}
+{{canvas: Views that set up the provider}}
 
 ## Describe a view
 
-The switcher needs only a view's name. What the view shows is resolved when it opens, so it can be fetched then.
+The switcher needs only a view's name; what the view shows is resolved when it opens, so it can be fetched then.
 
-| View field | Description |
-|---|---|
-| \`id\` | Identifies the view. |
-| \`name\` | Shown in the switcher. |
-| \`group\` | \`{ id, name }\`, the header it is listed under. Views without one go under *System views*. |
-| \`resolve(provider)\` | Required. Returns what the view shows, given the provider it opens on. Can be async. |
+- \`id\` identifies the view.
+- \`name\` is shown in the switcher.
+- \`group\`, as \`{ id, name }\`, is the header it is listed under; views without one go under *System views*.
+- \`resolve(provider)\` is required: it returns what the view shows, given the provider it opens on, and can be async.
 
 | \`resolve\` returns | Default | Description |
 |---|---|---|
-| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override. The rest is filled in from the provider's available columns; a column the provider doesn't offer is used as given. |
+| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override. The rest comes from the provider's available columns. |
 | \`linking\` | The provider's own | The related entities its columns come from, as \`alias.column\`. |
 | \`data\` | None | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
 
+A column the provider does not offer is used as given.
+
 ## Load the view
 
-\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's *views.ts* shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return \`{ provider }\`. Don't set the columns or linking: the control does.
+\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's \`views.ts\` shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return \`{ provider }\`. Do not set the columns or linking: the control does. The full sequence is on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
-The full sequence is under *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 ## Let users save their own views
 
 A user queries module adds *Save as new view*, *Save changes* and *Manage views* to the switcher, and lists the user's views under *My views*: see [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
 
-## ViewSwitcher props
+## Props
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
@@ -45,26 +46,24 @@ A user queries module adds *Save as new view*, *Save changes* and *Manage views*
 
 ## From your code
 
-| On the control | Description |
-|---|---|
-| \`loadView(viewId)\` | Opens the view, as picking it does. |
-| \`reload()\` | Lists the views and opens the current one again. |
-| \`getViews()\` | The views as listed for this mount, user views included. |
-| \`getView()\` | The open view, with what \`resolve\` returned. |
+The control opens and lists views with \`loadView\`, \`reload\`, \`getViews\` and \`getView\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). \`control.parts.get('viewSwitcher')\` returns the switcher once it is drawn:
 
-| On \`control.parts.get('viewSwitcher')\` | Description |
+| Member | Does |
 |---|---|
 | \`getViews()\`, \`getCurrentView()\` | The views, and the open one as listed; \`undefined\` when it is not among them. |
 | \`select(viewId)\` | Opens the view; nothing when it is already open. |
 | \`registerItems(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its unregistration. |
 
-See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+## Where next
 
-## Good to know
-
-- Switching the view asks first when the records have unsaved changes.
-- Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards: see *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'User views', iconName: 'SaveAs', href: '?path=/docs/controls-datasetcontrol-views-user-views--overview', text: 'Let each user save how they sorted, filtered and arranged a view.' },
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'When the control loads a view, and the steps each load runs.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Draw each view in a UI of its own, such as cards.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Views',
@@ -72,7 +71,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -85,11 +84,4 @@ type Story = StoryObj<typeof meta>
 export const ViewsThatSetUpTheProvider: Story = {
     name: 'Views that set up the provider',
     render: () => renderStory(<ProviderViewsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Three views of the deals, each with its columns and, in its \`data\`, its filter or sorting; *Biggest deals* is listed under *Reports*. Try: switch between them, then double-click a deal, change it and switch again; the control asks before it throws your change away.`,
-            },
-        },
-    },
 }

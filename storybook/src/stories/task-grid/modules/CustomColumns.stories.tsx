@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { CustomColumnsExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Custom columns are columns users add to the tasks themselves, from *Edit columns*. Each one is drawn and edited like any column of its data type, and saved apart from the tasks.
+Custom columns are columns users add to the tasks themselves, from *Edit columns*. Each one is drawn and edited like any column of its data type, and saved apart from the tasks. Try it below: add *Risk* to the view from *Edit columns*.
 
-{{story: Add your own columns}}
+{{canvas: Add your own columns}}
 
 ## Options
 
@@ -19,17 +20,19 @@ Custom columns are columns users add to the tasks themselves, from *Edit columns
 
 The values are edited in the grid, with \`createTaskEditingModule()\`, and saved one by one.
 
-## Where they are kept
+## Where the columns are kept
 
 | Factory | Keeps the columns and their values |
 |---|---|
-| \`createIndexedDbCustomColumnsModule\` | In the browser's IndexedDB, under \`databaseName\`. \`columns\` are what a new database starts with: each one a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A new column is a text column named *Custom column 1*, and so on. |
+| \`createIndexedDbCustomColumnsModule\` | In the browser's IndexedDB, under \`databaseName\`. \`columns\` are what a new database starts with. |
 | \`createTalxisCustomColumnsModule\` | In TALXIS attribute definitions and attribute values. A new or edited column opens the definition's form in a side dialog. |
 | \`createCustomColumnsModule\` | In a store of yours: \`onCreateStore\` returns an \`ICustomColumnsStore\`. |
 
-### TALXIS
+Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A column the user adds is a text column named *Custom column 1*, and so on. The example's *talxis.ts* keeps the project's columns in TALXIS.
 
-*talxis.ts* in the example keeps the project's columns in TALXIS.
+## Reference
+
+### TALXIS
 
 | Parameter | Description |
 |---|---|
@@ -45,7 +48,16 @@ The values are edited in the grid, with \`createTaskEditingModule()\`, and saved
 | \`onLoadValues(taskIds)\` | The tasks' values, by task id and column name. |
 | \`onSaveValue(record, column, value)\` | Saves one value and returns the save result. |
 | \`onCreateColumn()\`, \`onUpdateColumn(columnName)\`, \`onDeleteColumn(columnName)\` | Create, change or delete a column, such as in a dialog of yours. Return the column's name, or \`null\` when the user cancelled. |
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Lookup many', iconName: 'People', href: '?path=/docs/controls-taskgrid-modules-lookup-many--overview', text: 'Columns of many related records, such as assignees and tags.' },
+    { title: 'Edit columns', iconName: 'TripleColumnEdit', href: '?path=/docs/controls-datasetcontrol-parts-edit-columns--overview', text: 'The panel where users pick, order and add columns.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Modules/Custom columns',
@@ -53,7 +65,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -66,11 +78,4 @@ type Story = StoryObj<typeof meta>
 export const AddYourOwnColumns: Story = {
     name: 'Add your own columns',
     render: () => renderStory(<CustomColumnsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Custom columns kept in this browser, starting with *Risk* and *Budget*. Try: open *Edit columns*, add *Risk* to the view and fill it in, then reload the page.`,
-            },
-        },
-    },
 }

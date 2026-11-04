@@ -2,6 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FirstAppExample } from './quickStartExamples'
 
 const DESCRIPTION = `
@@ -28,13 +29,16 @@ Wrap the application in the shared providers once, then add controls anywhere be
 | \`StateProvider\` | Saved state: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | One in-memory store for the page |
 | \`LabelsProvider\` | Your wording: [**Localization**](?path=/docs/concepts-localization--overview) | English |
 
-## Next steps
+## Where next
 
-- Put your own records in a provider: [**Data providers**](?path=/docs/concepts-data-providers--overview).
-- Switch on sorting, filtering, editing and more: [**Grid**](?path=/docs/controls-grid-get-started--overview).
-- Add views, a ribbon and quick find around it: [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview).
-
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Put your own records in a provider, from memory, Dataverse or your own API.' },
+    { title: 'Grid', iconName: 'Table', href: '?path=/docs/controls-grid-get-started--overview', text: 'Switch on sorting, filtering, editing and more, module by module.' },
+    { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-get-started--overview', text: 'Add views, a ribbon, quick find and paging around the grid.' },
+]
 
 const meta = {
     title: 'Concepts/Quick start',
@@ -42,7 +46,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },

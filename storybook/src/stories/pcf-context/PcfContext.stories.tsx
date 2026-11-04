@@ -2,10 +2,11 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { DialogsExample, FormatExample } from './pcfContextExamples'
 
 const DESCRIPTION = `
-Controls need things only the host they run in knows: who the user is, how their dates, numbers and money are formatted, and how to open a dialog or reach data. Power Apps hands every PCF control this as its *context*, and the controls read the same shape, so in Power Apps the host's context is passed straight in, and elsewhere the library builds one. One \`PcfContextProvider\` at the root of the application shares it with every control below. Try it below: pick another culture and watch the invoice format for it.
+Controls need things only their host knows: who the user is, how to format their dates, numbers and money, and how to open a dialog or reach data. Power Apps hands this to every PCF control as its *context*, and one \`PcfContextProvider\` at the root shares it with every control below, or builds one outside Power Apps. Try it below: pick another culture and watch the invoice follow.
 
 {{canvas: Format for the user}}
 
@@ -21,7 +22,7 @@ To show an error, \`useOpenErrorDialog()\` returns a function that opens the PCF
 
 ## In a PCF control
 
-Pass the context the host hands \`updateView\` to the provider, as *index.tsx* in the example above does.
+Pass the context the host hands \`updateView\` to the provider, as \`index.tsx\` in the example at the top does.
 
 - Its \`userSettings\`, \`navigation\`, \`webAPI\`, \`utils\`, \`mode\` and the rest are used as they are.
 - \`formatting\` is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
@@ -37,7 +38,8 @@ Without a \`context\`, the provider builds one:
 | Part | Filled in as |
 |---|---|
 | \`userSettings\`, \`formatting\` | From the \`userSettings\` prop: \`lcid\` and \`formatInfoCultureName\`, \`1033\` and \`'en-US'\` when left out |
-| \`navigation\` | \`openAlertDialog\`, \`openConfirmDialog\` and \`openErrorDialog\` open the browser's own dialogs; \`openForm\`, \`navigateTo\`, \`openUrl\`, \`openFile\` and \`openWebResource\` throw |
+| \`navigation\` dialogs | \`openAlertDialog\`, \`openConfirmDialog\` and \`openErrorDialog\` open the browser's own |
+| \`openForm\`, \`navigateTo\` and the rest of \`navigation\` | Throw |
 | \`webAPI\`, \`utils.getEntityMetadata\` | Throw, so load data through providers of your own |
 | \`device\`, \`resources\`, \`factory.getPopupService\` | Throw |
 | \`mode\` | Enabled and visible, with \`setControlState\` accepted |
@@ -46,7 +48,15 @@ The provider builds the context again on every render, so \`usePcfContext()\` se
 
 {{story: Ask the user}}
 
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The providers at the root of an application, the PCF context among them.' },
+    { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate the strings the controls draw, beside the culture that formats values.' },
+]
 
 const meta = {
     title: 'Concepts/PCF context',
@@ -54,7 +64,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -67,13 +77,6 @@ type Story = StoryObj<typeof meta>
 export const FormatForTheUser: Story = {
     name: 'Format for the user',
     render: () => renderStory(<FormatExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `An invoice formatted from \`usePcfContext().formatting\`, with the culture passed in \`userSettings\`. Try: pick another culture.`,
-            },
-        },
-    },
 }
 
 export const AskTheUser: Story = {
@@ -82,7 +85,7 @@ export const AskTheUser: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A confirmation and an alert through \`usePcfContext().navigation\`, with the browser's own dialogs standing in for a host. Try: click *Archive* and cancel, then confirm.`,
+                story: `A confirmation and an alert through \`usePcfContext().navigation\`, with the browser's own dialogs standing in for a host. Try: click **Archive**.`,
             },
         },
     },

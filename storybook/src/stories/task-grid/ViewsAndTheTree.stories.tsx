@@ -2,16 +2,17 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { TaskViewsExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-A task view looks at the tasks a particular way, such as sorted by start date or searched for *design*, while the tasks keep their tree. Sorting orders the subtasks under each parent, and a filter or a search keeps each match's ancestors, so a match still shows where it belongs. A view can also drop the tree and show the matching tasks as a flat list.
+A task view looks at the tasks a particular way, such as sorted by start date or searched for *design*, while the tasks keep their tree. Sorting orders the subtasks under each parent, a filter or a search keeps each match's ancestors, and a view can also drop the tree and show a flat list. Try it below: open the *Design work* view.
 
-{{story: Switch between task views}}
+{{canvas: Switch between task views}}
 
 ## Task view data
 
-\`onLoadViews\` lists the views, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens, as on a DatasetControl (see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`:
+\`onLoadViews\` lists the views, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens, as on a DatasetControl (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`:
 
 | Key | Description |
 |---|---|
@@ -23,20 +24,26 @@ A task view looks at the tasks a particular way, such as sorted by start date or
 
 ## The tree
 
-Ancestors a filter or a search keeps are in italics where they don't match themselves. The header of the commands column opens or closes one level of the whole tree, and a parent opens by itself when a task is created or dropped under it.
+Ancestors a filter or a search keeps are in italics where they do not match themselves. The header of the commands column opens or closes one level of the whole tree, and a parent opens by itself when a task is created or dropped under it.
 
 ## Flat list
 
 A flat list shows the matching tasks on their own, without their ancestors. A *Path* column after the subject lists each task's ancestors, and tasks cannot be dragged. The user switches it with *Show hierarchy* in \`TaskDatasetControl.Settings\`, and your code with \`taskRuntime.setFlatList()\`.
 
-## Inactive tasks
-
-*Hide inactive tasks* in \`TaskDatasetControl.Settings\` filters out every task whose \`stateCode\` is not \`0\`.
-
 ## User views and state
 
-With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see [**DatasetControl › User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview)).
+With a user queries module, a saved view keeps its sorting, filters, quick find columns, search and flat list (see [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview)). A \`stateKey\` on \`TaskDatasetControl\` also keeps, per view, which tasks are open; one on \`TaskGrid\` keeps the scroll and focus (see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview)).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'Let the user create, edit, delete and move tasks, and hide the inactive ones.' },
+    { title: 'User views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views-user-views--overview', text: 'Let the user save a view of their own, kept where you choose.' },
+    { title: 'Talking to the task grid', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview', text: 'Switch to a flat list, open tasks and run your own work from code.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Views and the tree',
@@ -44,7 +51,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -57,11 +64,4 @@ type Story = StoryObj<typeof meta>
 export const SwitchBetweenTaskViews: Story = {
     name: 'Switch between task views',
     render: () => renderStory(<TaskViewsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Four views of the sample projects: the tree, sorted by start date, a search for *design*, and a flat list. Try: open *Design work* to see the ancestors kept.`,
-            },
-        },
-    },
 }

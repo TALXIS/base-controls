@@ -3,11 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { PagingExample } from '../../../dataset-control/examples/partsExamples'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A view can hold far more records than fit on the screen, so the control shows them a page at a time. Two parts let the user move through them: \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and lets the user pick how many a page shows, and \`DatasetControl.Pagination\` moves to the first, previous and next page.
+Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and lets the user pick how many a page shows, and \`DatasetControl.Pagination\` moves to the first, previous and next page. Try it below: press *Pages of 10*, then move to the next page.
 
-{{story: Page through the deals}}
+{{canvas: Page through the deals}}
 
 ## How it behaves
 
@@ -16,7 +17,7 @@ A view can hold far more records than fit on the screen, so the control shows th
 - **Count limit:** past the provider's count limit, the total shows as *5000+*.
 - **Current page:** the pagination shows its number between the buttons.
 - **Disabled:** the buttons while there is no page to move to, and every control while the provider loads.
-- **Unsaved changes:** moving to another page or changing the page size asks first.
+- **Unsaved changes:** moving to another page or changing the page size asks about them first: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
 ## Props
 
@@ -42,7 +43,7 @@ A view can hold far more records than fit on the screen, so the control shows th
 | Member | Does |
 |---|---|
 | \`getPageSize()\`, \`getPageSizes()\` | The page size, and the sizes the menu offers. |
-| \`setPageSize(size)\` | Loads the records in pages of that size; asks first when there are unsaved changes. |
+| \`setPageSize(size)\` | Loads the records in pages of that size, asking about unsaved changes first. |
 | \`getRecordRange()\` | The range as the switcher shows it: \`{ first: number, last: string, total?: string }\`. |
 | \`isLoading()\` | Whether the provider is loading. |
 | \`events\` | \`onPageSizeChanged\`, whenever the page size or the records on the page change. |
@@ -53,11 +54,21 @@ A view can hold far more records than fit on the screen, so the control shows th
 |---|---|
 | \`getPageNumber()\` | The current page, counted from 1. |
 | \`canMovePrevious()\`, \`canMoveNext()\` | Whether there is a page to move to, and nothing is loading. |
-| \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` | Loads that page; asks first when there are unsaved changes. |
+| \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` | Loads that page, asking about unsaved changes first. |
 | \`events\` | \`onPagingChanged\`, whenever the page changes or starts loading. |
 
 **Strings:** \`PAGE_SIZE_SWITCHER_LABELS\`, keys \`pageSizeSwitcher.*\`, and \`PAGINATION_LABELS\`, keys \`pagination.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Notifications and empty state', iconName: 'Info', href: '?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview', text: 'The next part: messages above the records, and what shows when there are none.' },
+    { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Page the provider directly, and how it counts its records.' },
+    { title: 'Layout', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-layout--overview', text: 'Place the paging parts in the footer.' },
+]
 
 const meta = {
     title: 'Controls/DatasetControl/Parts/Paging',
@@ -65,7 +76,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -78,11 +89,4 @@ type Story = StoryObj<typeof meta>
 export const PageThroughTheDeals: Story = {
     name: 'Page through the deals',
     render: () => renderStory(<PagingExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Thirty deals, all on one page until you pick a size. Try: press *Pages of 10*, move to the next page, then press *First page*.`,
-            },
-        },
-    },
 }

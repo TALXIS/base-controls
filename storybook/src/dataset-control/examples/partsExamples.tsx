@@ -6,6 +6,7 @@ const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
 const sortBy = async (control: IDatasetControl, name: string) => {
     const provider = control.getProvider()!
+    //sortDirection 1 is descending
     provider.setSorting([{ name, sortDirection: 1 }])
     await provider.refresh()
 }
@@ -187,9 +188,9 @@ const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async (
 </DatasetControl>
 `
 
-export const RibbonExample = () => <GridExampleRunner seedCode={withFiles(RIBBON_CODE, RIBBON_FILE)} />
-export const QuickFindExample = () => <GridExampleRunner seedCode={QUICK_FIND_CODE} />
-export const EditColumnsExample = () => <GridExampleRunner seedCode={withFiles(EDIT_COLUMNS_CODE, VIEWS_FILE)} />
-export const NotificationsExample = () => <GridExampleRunner seedCode={NOTIFICATIONS_CODE} />
-export const EmptyStateExample = () => <GridExampleRunner seedCode={EMPTY_STATE_CODE} />
-export const PagingExample = () => <GridExampleRunner seedCode={PAGING_CODE} />
+export const RibbonExample = () => <GridExampleRunner seedCode={withFiles(RIBBON_CODE, RIBBON_FILE)} tabs={['preview', 'code']} />
+export const QuickFindExample = () => <GridExampleRunner seedCode={QUICK_FIND_CODE} tabs={['preview', 'code']} />
+export const EditColumnsExample = () => <GridExampleRunner seedCode={withFiles(EDIT_COLUMNS_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
+export const NotificationsExample = () => <GridExampleRunner seedCode={NOTIFICATIONS_CODE} tabs={['preview', 'code']} />
+export const EmptyStateExample = () => <GridExampleRunner seedCode={EMPTY_STATE_CODE} tabs={['preview', 'code']} />
+export const PagingExample = () => <GridExampleRunner seedCode={PAGING_CODE} tabs={['preview', 'code']} />

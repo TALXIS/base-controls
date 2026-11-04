@@ -83,7 +83,7 @@ const GridExample = () => {
 `
 
 /** A ticket queue, grouped by status and assignee, that is closed and reopened where the user left it. */
-export const ReopenQueueExample = () => <GridExampleRunner seedCode={REOPEN_QUEUE_CODE} dataset='tickets' />
+export const ReopenQueueExample = () => <GridExampleRunner seedCode={REOPEN_QUEUE_CODE} tabs={['preview', 'code']} />
 
 /** A preview module that keeps the ticket it shows in the grid's state. */
 export const PreviewStateExample = () => <GridExampleRunner seedCode={PREVIEW_STATE_CODE} dataset='tickets' />

@@ -70,7 +70,9 @@ const describeProvider = (provider: IDataProvider) => {
     }, null, 2)
 }
 
-type IRunnerTab = 'preview' | 'code' | 'data'
+export type IRunnerTab = 'preview' | 'code' | 'data'
+
+const ALL_TABS: IRunnerTab[] = ['preview', 'code', 'data']
 
 export interface IGridExampleRunnerProps {
     /** The snippet the example starts with, or its files; the first must define a `GridExample` component. */
@@ -83,6 +85,8 @@ export interface IGridExampleRunnerProps {
     previewProps?: object
     /** Drawn above the preview, outside the code the reader edits. */
     renderAbovePreview?: () => React.ReactNode
+    /** The tabs shown; leave out `'data'` for an example that does not use the docs dataset. */
+    tabs?: IRunnerTab[]
 }
 
 /** A live Grid with tabs for its preview, its editable code and the data it is handed. */
@@ -90,6 +94,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     const monacoTheme = useMonacoTheme()
     const theme = useTheme()
     const styles = React.useMemo(() => getStyles(theme), [theme])
+    const tabs = props.tabs ?? ALL_TABS
     const [tab, setTab] = React.useState<IRunnerTab>('preview')
     const seedFiles = React.useMemo(() => toFiles(props.seedCode), [props.seedCode])
     const [files, setFiles] = React.useState(seedFiles)
@@ -148,9 +153,9 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     return <div className={styles.root}>
         <div className={styles.toolbar}>
             <Pivot headersOnly selectedKey={tab} onLinkClick={item => setTab(item?.props.itemKey as IRunnerTab)}>
-                <PivotItem itemKey='preview' headerText='Preview' itemIcon='View' />
-                <PivotItem itemKey='code' headerText='Code' itemIcon='Code' />
-                <PivotItem itemKey='data' headerText='Data' itemIcon='Database' />
+                {tabs.includes('preview') && <PivotItem itemKey='preview' headerText='Preview' itemIcon='View' />}
+                {tabs.includes('code') && <PivotItem itemKey='code' headerText='Code' itemIcon='Code' />}
+                {tabs.includes('data') && <PivotItem itemKey='data' headerText='Data' itemIcon='Database' />}
             </Pivot>
             <div className={styles.actions}>
                 {isEdited && <Text variant='small' className={styles.edited}>Edited</Text>}

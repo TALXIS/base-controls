@@ -208,12 +208,12 @@ const GridExample = () => {
 }
 `
 
-export const PipelineByManagerExample = () => <GridExampleRunner seedCode={PIPELINE_BY_MANAGER_CODE} dataset='deals' />
+export const PipelineByManagerExample = () => <GridExampleRunner seedCode={PIPELINE_BY_MANAGER_CODE} tabs={['preview', 'code']} />
 
-export const HoursByEmployeeExample = () => <GridExampleRunner seedCode={HOURS_BY_EMPLOYEE_CODE} dataset='timesheets' />
+export const HoursByEmployeeExample = () => <GridExampleRunner seedCode={HOURS_BY_EMPLOYEE_CODE} tabs={['preview', 'code']} />
 
-export const FilteredTotalsExample = () => <GridExampleRunner seedCode={FILTERED_TOTALS_CODE} dataset='deals' />
+export const FilteredTotalsExample = () => <GridExampleRunner seedCode={FILTERED_TOTALS_CODE} tabs={['preview', 'code']} />
 
-export const ExpandFromRibbonExample = () => <GridExampleRunner seedCode={EXPAND_FROM_RIBBON_CODE} dataset='timesheets' />
+export const ExpandFromRibbonExample = () => <GridExampleRunner seedCode={EXPAND_FROM_RIBBON_CODE} tabs={['preview', 'code']} />
 
-export const SubmittedEntriesExample = () => <GridExampleRunner seedCode={SUBMITTED_ENTRIES_CODE} dataset='timesheets' />
+export const SubmittedEntriesExample = () => <GridExampleRunner seedCode={SUBMITTED_ENTRIES_CODE} tabs={['preview', 'code']} />

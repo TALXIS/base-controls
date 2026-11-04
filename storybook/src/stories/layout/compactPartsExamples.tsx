@@ -110,18 +110,17 @@ const GridExample = () => {
     const [selectedKey, setSelectedKey] = React.useState('summary')
     return <Stack tokens={{ childrenGap: 12 }}>
         <Slider label='Width (px)' min={280} max={800} step={20} value={width} onChange={setWidth} />
-        <div style={{ width, padding: 12, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
-            <BreakpointCompactProvider>
-                <Stack tokens={{ childrenGap: 12 }}>
-                    <Sections selectedKey={selectedKey} onChange={setSelectedKey} />
-                    <Text>{SECTIONS.find(section => section.key === selectedKey)!.content}</Text>
-                </Stack>
-            </BreakpointCompactProvider>
-        </div>
+        {/* the slider sets the width the provider compares with 479px */}
+        <BreakpointCompactProvider style={{ width }}>
+            <Stack tokens={{ childrenGap: 12 }} style={{ padding: 12, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
+                <Sections selectedKey={selectedKey} onChange={setSelectedKey} />
+                <Text>{SECTIONS.find(section => section.key === selectedKey)!.content}</Text>
+            </Stack>
+        </BreakpointCompactProvider>
     </Stack>
 }
 `
 
-export const ToolbarExample = () => <GridExampleRunner seedCode={TOOLBAR_CODE} />
-export const FilterChipsExample = () => <GridExampleRunner seedCode={FILTER_CHIPS_CODE} />
-export const SectionTabsExample = () => <GridExampleRunner seedCode={SECTION_TABS_CODE} />
+export const ToolbarExample = () => <GridExampleRunner seedCode={TOOLBAR_CODE} tabs={['preview', 'code']} />
+export const FilterChipsExample = () => <GridExampleRunner seedCode={FILTER_CHIPS_CODE} tabs={['preview', 'code']} />
+export const SectionTabsExample = () => <GridExampleRunner seedCode={SECTION_TABS_CODE} tabs={['preview', 'code']} />

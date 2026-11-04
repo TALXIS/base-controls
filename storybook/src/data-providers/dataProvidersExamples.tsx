@@ -205,7 +205,7 @@ const GridExample = () => {
         deals.setColumns(deals.getColumns().map(column => column.name === 'owner' ? { ...column, grouping: { isGrouped: true } } : sumOfValue(column)))
         //one record per group now
         const groups = await deals.refresh()
-        const results = []
+        const results: string[] = []
         for (const group of groups) {
             const groupDeals = deals.createGroupedRecordDataProvider(group)
             const records = await groupDeals.refresh()
@@ -477,7 +477,7 @@ export const SteerFromCodeExample = () => <GridExampleRunner seedCode={STEER_FRO
 
 export const HandDownExample = () => <GridExampleRunner seedCode={HAND_DOWN_CODE} />
 
-export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} />
+export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} tabs={['preview', 'code']} />
 
 export const EventsExample = () => <GridExampleRunner seedCode={EVENTS_CODE} />
 

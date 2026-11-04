@@ -38,7 +38,7 @@ const GridExample = () => {
         const provider = createDealsProvider()
         await view!.resolve(provider)
         if (view!.id === 'mine') {
-            provider.setFiltering({ filterOperator: 0, conditions: [{ attributeName: 'owner', conditionOperator: 0, value: user.name }] })
+            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'owner', conditionOperator: Operators.Equal.Value, value: user.name }] })
         }
         return { provider }
     }
@@ -57,5 +57,5 @@ const GridExample = () => {
 }
 `
 
-export const WaitingExample = () => <GridExampleRunner seedCode={withFiles(WAITING_CODE, VIEWS_FILE)} />
-export const DependenciesExample = () => <GridExampleRunner seedCode={DEPENDENCIES_CODE} />
+export const WaitingExample = () => <GridExampleRunner seedCode={withFiles(WAITING_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
+export const DependenciesExample = () => <GridExampleRunner seedCode={DEPENDENCIES_CODE} tabs={['preview', 'code']} />

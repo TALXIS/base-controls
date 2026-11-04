@@ -6,7 +6,7 @@ import { VIEWS_FILE, withFiles } from './shared'
 const USER_VIEWS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
 
 const GridExample = () => {
-    //keeps the user's views in localStorage; the other stores are under Where views are kept
+    //keeps the user's views in this browser's localStorage
     const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.dealViews' })], [])
 
     //saveDealViewData, in views.ts, saves the sorting, filter and search with every view
@@ -162,5 +162,5 @@ export const createDataverseViewsModule = (context: ComponentFramework.Context) 
 `,
 }
 
-export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_TYPES_FILE, USER_VIEWS_DATAVERSE_FILE)} />
-export const OwnStoreExample = () => <GridExampleRunner seedCode={withFiles(OWN_STORE_CODE, VIEWS_FILE)} />
+export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_TYPES_FILE, USER_VIEWS_DATAVERSE_FILE)} tabs={['preview', 'code']} />
+export const OwnStoreExample = () => <GridExampleRunner seedCode={withFiles(OWN_STORE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

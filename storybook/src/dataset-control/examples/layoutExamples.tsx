@@ -1,8 +1,5 @@
 import React from 'react'
-import { ITheme, mergeStyleSets, Text } from '@fluentui/react'
-import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider, useTheme } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { loadDeals, loadDealViews } from '../dealViews'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
@@ -89,29 +86,22 @@ const GridExample = () => {
 }
 `
 
-export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, LAYOUT_RIBBON_FILE)} />
+export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, LAYOUT_RIBBON_FILE)} tabs={['preview', 'code']} />
 
-const FullPageRibbon = () => {
-    const provider = useDataProvider()
-    const onLoad = async (): Promise<IRibbonCommand[]> => [
-        { id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
-        ...(provider.getSelectedRecordIds().length > 0 ? [{ id: 'clearSelection', label: 'Clear selection', iconName: 'Clear', onExecute: () => provider.clearSelectedRecordIds() }] : []),
-    ]
-    return <DatasetControl.Ribbon onLoad={onLoad} />
-}
+const FULL_PAGE_CODE = `import { loadDeals, loadDealViews } from './views'
 
-const getFullPageStyles = (theme: ITheme) => mergeStyleSets({
+const getPageStyles = (theme: ITheme) => mergeStyleSets({
     //stands in for the window the page fills
-    window: { height: 480, border: `1px solid ${theme.semanticColors.bodyDivider}` },
-    //a line of its own, above the regions
+    window: { height: 480, border: \`1px solid \${theme.semanticColors.bodyDivider}\` },
+    //a line of its own, above the header's start and end
     title: { flexBasis: '100%' },
 })
 
-/** A page that is all the control, filling the window with `height='100%'`, its title in the header. */
-export const FullPageExample = () => {
+const GridExample = () => {
     const theme = useTheme()
-    const styles = React.useMemo(() => getFullPageStyles(theme), [theme])
+    const styles = React.useMemo(() => getPageStyles(theme), [theme])
 
+    //height='100%' fills the parent, which needs a height of its own
     return <div className={styles.window}>
         <DatasetControl onLoadViews={loadDealViews} stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
             <DatasetControl.Header>
@@ -120,13 +110,13 @@ export const FullPageExample = () => {
                     <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
-                    <FullPageRibbon />
                     <DatasetControl.EditColumns />
                     <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
+            {/* takes what the header and the footer leave */}
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createSortingModule()]} />
+                <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createSortingModule()]} />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.Start>
@@ -139,3 +129,6 @@ export const FullPageExample = () => {
         </DatasetControl>
     </div>
 }
+`
+
+export const FullPageExample = () => <GridExampleRunner seedCode={withFiles(FULL_PAGE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

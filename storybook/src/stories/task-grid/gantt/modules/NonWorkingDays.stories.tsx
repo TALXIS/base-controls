@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCards'
 import { GanttNonWorkingDaysExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The non-working days module shades weekends and the days you list, such as holidays, on the timeline, and leaves them out of every task's duration.
+The non-working days module shades weekends and the days you list, such as holidays, on the timeline, and leaves them out of every task's duration. Try it below: drag a bar onto a weekend.
 
-{{story: Shade the holidays}}
+{{canvas: Shade the holidays}}
 
 ## What it does
 
@@ -33,7 +34,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 | \`enableDropOnNonWorkingDays\` | \`false\` | Lets a bar land on non-working days. |
 | \`components\` | Defaults | See *Changing how it looks* below. |
 
-## Where the days come from
+## Where non-working days are kept
 
 | Factory | Days |
 |---|---|
@@ -42,12 +43,21 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 
 ## Changing how it looks
 
-\`createNonWorkingDaysModule\` and \`createMemoryNonWorkingDaysModule\` take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Grid › Appearance**](?path=/docs/controls-grid-appearance--overview).
+\`createNonWorkingDaysModule\` and \`createMemoryNonWorkingDaysModule\` take \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | \`tooltip\` | \`onRenderCallout\`, \`onRenderContainer\`, \`onRenderDescription\` (with the whole \`day\`) | \`NonWorkingDaysUiTooltipComponents\` | What a shaded day on the scale says when pointed at |
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Editing on the timeline', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview', text: 'Move and resize bars, and draw new tasks.' },
+    { title: 'Markers', iconName: 'Flag', href: '?path=/docs/controls-taskgrid-gantt-modules-markers--overview', text: 'Today, the project\'s start and end, and dates of your own.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Gantt/Modules/Non-working days',
@@ -55,7 +65,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -68,11 +78,4 @@ type Story = StoryObj<typeof meta>
 export const ShadeTheHolidays: Story = {
     name: 'Shade the holidays',
     render: () => renderStory(<GanttNonWorkingDaysExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Weekends, common holidays, a company offsite, a monthly team day and a hackathon. Try: zoom in to days and point at a shaded day on the scale, drag a bar onto a weekend, or turn on *Hide non-working days* in the settings.`,
-            },
-        },
-    },
 }

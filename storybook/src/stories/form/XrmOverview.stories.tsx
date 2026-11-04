@@ -1,62 +1,50 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { mergeStyleSets } from '@fluentui/react'
-import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
-import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
-import { XrmOverviewCodeEditor } from '../../form/xrm-form/XrmOverviewCodeEditor'
-import { getCurrentFormXml, setCurrentFormXml } from '../../form/xrm-form/xrmModel'
-import { XrmOverviewPreview } from './XrmOverviewPreview'
-import { ExampleRunner, StaticCodeBlock, codeBlockStyles, renderStory } from './storyHelpers'
+import { renderStory } from './storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
+import { XrmOverviewExample } from '../../form/xrm-form/examples/overviewExamples'
 
-const xmlEditorStyles = mergeStyleSets({
-    xmlEditor: {
-        height: 520,
-    },
-})
+const DESCRIPTION = `
+\`XrmForm\` draws a form from FormXml, the layout Dataverse keeps for every model-driven form, and gives your code the \`formContext\` that form scripts use. Teams with Dataverse forms and the scripts written for them can bring both into a React application or a PCF control. Try it below: open *formXml.ts* in **Code** and move *Phone* into the *Status* section.
 
-const xrmFormReactSnippet = `// Resolves the record to edit and the FormXml to draw it with
-const onLoad = async () => ({
-  record: createMemoryRecord({
-    data: getXrmRecord(),
-    columns: xrmModelStore.getRuntimeColumns(),
-    metadata: formMetadata,
-  }),
-  formXml: currentFormXml,
-});
+{{canvas: Overview}}
 
-const XrmOverviewExample = () => {
-  return <XrmForm onLoad={onLoad} />;
-};`
+## The FormXml
 
-const XrmOverviewStory = () => {
-    const [code, setCode] = React.useState(xrmFormReactSnippet)
-    const [formXml, setFormXml] = React.useState(() => getCurrentFormXml())
+Take a form's FormXml as Dataverse stores it, in the \`formxml\` of its \`systemform\` record or in an exported solution. \`XrmForm\` draws its tabs, their columns and sections, and the cells in them:
 
-    React.useEffect(() => {
-        const timeoutId = window.setTimeout(() => {
-            setCurrentFormXml(formXml)
-        }, 300)
+- Each cell's \`control\` binds the record's column named in \`datafieldname\`, and is drawn for that column's data type, so \`classid\` and the like can stay.
+- A label shows in the user's language, by \`languagecode\`, or else in English (1033).
+- A section has one column per digit of \`columns\`: \`11\` is two.
+- It reads \`visible\`, \`showlabel\` and \`disabled\` where Dataverse has them, a tab's \`expanded\`, a column's \`width\`, a cell's \`colspan\` and \`rowspan\`, and a section's \`celllabelposition\` and \`labelwidth\`.
+- It does not draw the header, the footer, the navigation, subgrids, quick view forms, web resources or unbound controls.
+- It does not load form libraries: run their code in \`onFormReady\`, as [**Form context**](?path=/docs/controls-form-xrm-form-context--overview) shows.
 
-        return () => window.clearTimeout(timeoutId)
-    }, [formXml])
+## The record
 
-    return (
-        <div className={codeBlockStyles.root}>
-            <StaticCodeBlock title="FormXml">
-                <div className={xmlEditorStyles.xmlEditor}>
-                    <FormXmlEditor value={formXml} onChange={setFormXml} hideLabel />
-                </div>
-            </StaticCodeBlock>
-            <ExampleRunner
-                code={code}
-                seedCode={xrmFormReactSnippet}
-                onCodeChange={setCode}
-                renderPreview={() => <XrmOverviewPreview formXml={formXml} code={code} />}
-                renderCode={() => <XrmOverviewCodeEditor value={code} onChange={setCode} />}
-            />
-        </div>
-    )
-}
+\`onLoad\` resolves the record with the FormXml. The record has a column for every \`datafieldname\`, and its data is shaped as the Dataverse Web API returns it. \`createMemoryRecord\` holds one in memory, as *account.ts* does; how to load and save a record is on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
+
+## Props
+
+- \`onLoad\`: resolves \`{ record, formXml }\`, on mount and on refresh. See [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
+- \`onFormReady\`: called with \`{ formContext, api }\` once the record and the FormXml are loaded. See [**Form context**](?path=/docs/controls-form-xrm-form-context--overview).
+- \`autoSave\`: saves each change as soon as the user commits it. At mount.
+- \`components\`: draws the controls, the tabs, the ribbon or the notifications your own way. See [**Your own UI**](?path=/docs/controls-form-xrm-your-own-ui--overview).
+- \`onFieldValueChanged\`, \`onDirtyStateChanged\`, \`onValidationSummaryChanged\`, \`onBeforeSave\`, \`onAfterSave\` and \`onError\`: the events of \`Form.Root\`. See [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
+
+Like every control, \`XrmForm\` needs the root providers above it: see [**Quick start**](?path=/docs/concepts-quick-start--overview).
+
+## Where next
+
+{{block: explore}}
+`
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Form context', iconName: 'Code', href: '?path=/docs/controls-form-xrm-form-context--overview', text: 'Read and change values, show and hide parts of the form, and check a save from your scripts.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-form-xrm-your-own-ui--overview', text: 'Draw the controls, the tabs, the ribbon or the notifications your own way.' },
+    { title: 'Loading and saving', iconName: 'Save', href: '?path=/docs/controls-form-loading-and-saving--overview', text: 'Hand the form a record from memory or from a data provider, and save it where it belongs.' },
+]
 
 const meta = {
     title: 'Controls/Form/Xrm/Overview',
@@ -64,29 +52,17 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            story: {
-                inline: true,
-            },
-            canvas: {
-                sourceState: 'none',
-                additionalActions: [],
-            },
-            description: {
-                component: `
-Author the layout in FormXml and render it as React with \`XrmForm\`. The record comes from \`onLoad\`, see [**Loading a record**](?path=/docs/controls-form-get-started-loading-a-record--overview); the visible structure comes from the FormXml it returns. On top of it, the form exposes the Xrm-style surface for tabs, sections, controls, validation, notifications and \`formContext\`.
-
-Try: edit the **FormXml** panel to change the layout live, then open **Code** to see how \`XrmForm\` is wired up.
-                `.trim(),
-            },
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
 } satisfies Meta
 
 export default meta
-
 type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<XrmOverviewStory />),
+    render: () => renderStory(<XrmOverviewExample />),
 }

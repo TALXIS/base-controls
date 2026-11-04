@@ -1,23 +1,34 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
 
-export const OWN_RECORDS_CODE = `const createCatalogue = () => new MemoryDataProvider({
+export const VALUE_TYPES_CODE = `const CATEGORIES = [
+    { Value: 1, Label: 'Paper', Color: '#0078d4' },
+    { Value: 2, Label: 'Writing', Color: '#8764b8' },
+    { Value: 3, Label: 'Desk', Color: '#038387' },
+]
+
+//two options need the values 0 and 1
+const YES_NO = [
+    { Value: 0, Label: 'No', Color: '' },
+    { Value: 1, Label: 'Yes', Color: '' },
+]
+
+const createCatalogue = () => new MemoryDataProvider({
     dataSource: [
-        { itemid: 'pens-blue', name: 'Ballpoint pens, blue, box of 50', sku: 'WRI-1001', price: 9.9, instock: 140 },
-        { itemid: 'pens-gel', name: 'Gel pens, assorted colours, pack of 12', sku: 'WRI-1004', price: 7.5, instock: 62 },
-        { itemid: 'notepads', name: 'Notepads A5, ruled, pack of 10', sku: 'PAP-2010', price: 14, instock: 85 },
-        { itemid: 'paper', name: 'Copy paper A4, 80 g, 5 reams', sku: 'PAP-2001', price: 24.9, instock: 38 },
-        { itemid: 'notes', name: 'Sticky notes 76 x 76 mm, pack of 12', sku: 'PAP-2030', price: 11.6, instock: 0 },
-        { itemid: 'stapler', name: 'Desk stapler, 30 sheets', sku: 'DSK-3002', price: 12.4, instock: 21 },
-        { itemid: 'staples', name: 'Staples 24/6, box of 5,000', sku: 'DSK-3003', price: 3.2, instock: 210 },
-        { itemid: 'files', name: 'Lever arch files A4, pack of 10', sku: 'FIL-4001', price: 29, instock: 16 },
+        { itemid: 'paper', name: 'Copy paper A4, 5 reams', category: 1, price: 24.9, instock: 38, restocked: '2026-10-02', onorder: true },
+        { itemid: 'notes', name: 'Sticky notes, pack of 12', category: 1, price: 11.6, instock: 0, restocked: '2026-08-21', onorder: true },
+        { itemid: 'pens', name: 'Gel pens, pack of 12', category: 2, price: 7.5, instock: 62, restocked: '2026-09-15', onorder: false },
+        { itemid: 'stapler', name: 'Desk stapler', category: 3, price: 12.4, instock: 21, restocked: '2026-07-30', onorder: false },
     ],
     metadata: { PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name', LogicalName: 'catalogueitem' },
+    //each column's data type decides how its values are drawn
     columns: [
-        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 300 },
-        { name: 'sku', displayName: 'SKU', dataType: DataTypes.SingleLineText, visualSizeFactor: 120 },
-        { name: 'price', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
-        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
+        { name: 'name', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 220 },
+        { name: 'category', displayName: 'Category', dataType: DataTypes.OptionSet, metadata: { OptionSet: CATEGORIES } },
+        { name: 'price', displayName: 'Unit price', dataType: DataTypes.Currency },
+        { name: 'instock', displayName: 'In stock', dataType: DataTypes.WholeNone },
+        { name: 'restocked', displayName: 'Last restocked', dataType: DataTypes.DateAndTimeDateOnly },
+        { name: 'onorder', displayName: 'On order', dataType: DataTypes.TwoOptions, metadata: { OptionSet: YES_NO } },
     ],
 })
 
@@ -25,7 +36,8 @@ const GridExample = () => {
     const catalogue = React.useMemo(createCatalogue, [])
     return <DatasetControl onLoad={async () => ({ provider: catalogue })}>
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} height='400px' />
+            {/* enableOptionSetColors draws options as tags in their colour */}
+            <Grid modules={[createClientSideRowModelModule()]} enableOptionSetColors />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -162,9 +174,9 @@ const GridExample = () => {
 }
 `
 
-export const OwnRecordsExample = () => <GridExampleRunner seedCode={OWN_RECORDS_CODE} />
+export const ValueTypesExample = () => <GridExampleRunner seedCode={VALUE_TYPES_CODE} tabs={['preview', 'code']} />
 
-export const EveryDataTypeExample = () => <GridExampleRunner seedCode={EVERY_DATA_TYPE_CODE} />
+export const EveryDataTypeExample = () => <GridExampleRunner seedCode={EVERY_DATA_TYPE_CODE} tabs={['preview', 'code']} />
 
-export const RequiredAndReadOnlyExample = () => <GridExampleRunner seedCode={REQUIRED_AND_READ_ONLY_CODE} />
+export const RequiredAndReadOnlyExample = () => <GridExampleRunner seedCode={REQUIRED_AND_READ_ONLY_CODE} tabs={['preview', 'code']} />
 

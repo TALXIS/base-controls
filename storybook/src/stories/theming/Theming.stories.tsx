@@ -2,10 +2,11 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { BrandExample, DerivedThemesExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
-A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it below: pick a brand, then open the menus.
+A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it below: pick a brand, then open **Share**.
 
 {{canvas: Brand colours}}
 
@@ -15,7 +16,7 @@ A theme is the colours, fonts and effects everything is drawn in. You generate i
 |---|---|
 | \`AppThemeProvider\` | The application's theme, at the root: see [**Quick start**](?path=/docs/concepts-quick-start--overview). |
 | \`ThemeProvider\` | An area that looks different, such as a dark banner. Themes only what is inside it. |
-| \`ThemeContext\` | The same without an element of its own; cheap enough for every item of a long list. |
+| \`ThemeContext\` | The same, without an element of its own: use it for each item of a long list. |
 
 - Without a \`theme\`, a provider takes the one above it, or Fluent's default colours.
 - A control reads the theme when it mounts: to switch themes, remount it with the theme's \`id\` as its \`key\`.
@@ -31,7 +32,7 @@ A theme is the colours, fonts and effects everything is drawn in. You generate i
 
 ## Surfaces
 
-Menus, callouts, tooltips, pickers, panels and dialogs open over the whole application, so they draw in the app theme, never in a local \`ThemeProvider\`'s: a red row's status list is not red. Draw a surface of your own in the theme \`useAppTheme()\` returns.
+Menus, callouts, tooltips, pickers, panels and dialogs open over the whole application, so they draw in the app theme, never in a local \`ThemeProvider\`'s. Draw a surface of your own in the theme \`useAppTheme()\` returns.
 
 {{story: Red rows}}
 
@@ -48,7 +49,16 @@ Read the theme with \`useTheme()\` from \`@talxis/base-controls\` and take colou
 | \`mixColors(color, base, weight)\` | \`color\` mixed into \`base\`, by a \`weight\` from 0 to 1 |
 
 {{story: Readable tags}}
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Fluent UI', iconName: 'Puzzle', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Which Fluent UI and Base Controls components to use beside the controls.' },
+    { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Colour the grid\'s cells, rows and headers.' },
+]
 
 const meta = {
     title: 'Concepts/Theming',
@@ -56,7 +66,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -82,7 +92,7 @@ export const RedRows: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets drawn red; colouring cells is on [**Appearance**](?path=/docs/controls-grid-appearance--overview). Try: open the *Status* list of a red ticket: it is not red.`,
+                story: `Escalated tickets drawn red by a cell theme, which [**Appearance**](?path=/docs/controls-grid-appearance--overview) explains. Try: open the **Status** list of a red ticket.`,
             },
         },
     },

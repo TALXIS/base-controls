@@ -2,14 +2,22 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { ModulesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. A task grid takes modules in two places: \`TaskDatasetControl\`'s \`modules\` and \`TaskGrid\`'s.
+A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. Try it below: sort by *Checklist*.
 
-{{story: Modules in both places}}
+{{canvas: Modules in both places}}
 
-\`TaskGrid\` takes Grid modules (see [**Grid › Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-modules--overview) has modules of its own.
+## Where modules go
+
+A task grid takes modules in two places:
+
+- \`TaskDatasetControl\`'s \`modules\` takes the task modules below, and DatasetControl modules such as user views. At mount.
+- \`TaskGrid\`'s \`modules\` takes Grid modules (see the Grid's [**Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. At mount.
+
+The Gantt has modules of its own: see the Gantt's [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview).
 
 ## The modules
 
@@ -25,20 +33,28 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 | [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | Which tasks wait on which. | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
 | Dragging | Moving tasks by dragging their rows. See *Dragging* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
 
-User views come in the same variants: see *Where views are kept* on [**DatasetControl › User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
-
-*Memory* keeps the data in the page, starts over on every mount and pauses briefly like a server: right for prototypes, tests and these docs. *Dataverse* reads and writes tables you map to the module through the PCF context's Web API, and *TALXIS* is Dataverse with the TALXIS tables already mapped.
+*Memory* keeps the data in the page and starts over on every mount, pausing briefly like a server. *Dataverse* reads and writes tables you map to the module through the PCF context's Web API, and *TALXIS* is Dataverse with the TALXIS tables already mapped. User views come in the same variants: see *Where views are kept* on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
 
 ## Your own store
 
-The base factory takes \`onCreateStore\`, which the module calls with the task runtime on every mount; the checklist above uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
+The base factory takes \`onCreateStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
 
 ## Columns from modules
 
 Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in *Edit columns*, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first.
 
 Modules that draw something take \`components\` to change it (see *Changing how it looks* on each module's page), and every module's strings are labels (see [**Localization**](?path=/docs/concepts-localization--overview)).
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Project', iconName: 'ProjectCollection', href: '?path=/docs/controls-taskgrid-modules-project--overview', text: 'The project the tasks belong to, read by the other modules and the Gantt.' },
+    { title: 'Lookup many', iconName: 'People', href: '?path=/docs/controls-taskgrid-modules-lookup-many--overview', text: 'Assignees, tags and other columns of many related records.' },
+    { title: 'Dependencies', iconName: 'Link', href: '?path=/docs/controls-taskgrid-modules-dependencies--overview', text: 'Which tasks wait on which, counted in the grid and drawn on the Gantt.' },
+]
 
 const meta = {
     title: 'Controls/TaskGrid/Modules',
@@ -46,7 +62,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -63,11 +79,4 @@ export const Overview: StoryObj<typeof meta> = {
 export const ModulesInBothPlaces: StoryObj<typeof meta> = {
     name: 'Modules in both places',
     render: () => renderStory(<ModulesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Dragging, a checklist from a store of its own and user views in the control, with selection, editing and sorting in the grid. Try: drag a task, sort by *Checklist*, or save the view as your own.`,
-            },
-        },
-    },
 }

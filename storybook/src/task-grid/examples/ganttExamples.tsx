@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
-import { withTasks } from './shared'
+import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
 interface IGanttExample {
     /** Declarations above the component. */
@@ -244,12 +244,12 @@ export const libraryModule = createProLibraryModule({ Gantt })
 `,
 }
 
-export const GanttShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} />
-export const GanttBasicExample = () => <GridExampleRunner seedCode={withTasks(BASIC_CODE)} />
-export const GanttModulesExample = () => <GridExampleRunner seedCode={[...withTasks(MODULES_CODE), PRO_LIBRARY_FILE]} />
-export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} />
-export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(MARKERS_CODE)} />
-export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} />
-export const GanttTooltipExample = () => <GridExampleRunner seedCode={withTasks(TOOLTIP_CODE)} />
-export const GanttLinksExample = () => <GridExampleRunner seedCode={withTasks(LINKS_CODE)} />
-export const GanttOwnModuleExample = () => <GridExampleRunner seedCode={withTasks(OWN_MODULE_CODE)} />
+export const GanttShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttBasicExample = () => <GridExampleRunner seedCode={withTasks(BASIC_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttModulesExample = () => <GridExampleRunner seedCode={[...withTasks(MODULES_CODE), PRO_LIBRARY_FILE]} tabs={TASK_EXAMPLE_TABS} />
+export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(MARKERS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttTooltipExample = () => <GridExampleRunner seedCode={withTasks(TOOLTIP_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttLinksExample = () => <GridExampleRunner seedCode={withTasks(LINKS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttOwnModuleExample = () => <GridExampleRunner seedCode={withTasks(OWN_MODULE_CODE)} tabs={TASK_EXAMPLE_TABS} />

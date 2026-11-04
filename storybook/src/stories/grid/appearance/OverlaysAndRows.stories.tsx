@@ -2,16 +2,17 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseLoadingExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-A grid does not always have records to draw: the provider may still be loading them or hold none at all, and a group's records may still be on their way or fail to load. In those moments the grid draws something in their place, an overlay over the rows or a row standing in for the missing records, so the user knows what is going on. You can redraw each of them to fit your page, from a different icon to a whole card of your own.
+While the provider loads, or when it holds no records, the grid draws an overlay over the rows; a group whose records are still loading, or failed to load, gets a row in their place. \`components\` on \`<Grid>\` redraws each of them, from a different icon to a card of your own. Try it below: open **Code** and change the hint under the message.
 
-{{story: Show an empty catalogue}}
+{{canvas: Show an empty catalogue}}
 
 ## Changing how it looks
 
-These are the only pieces \`<Grid>\` itself takes \`components\` for, read on every render. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+These are the only pieces \`<Grid>\` itself takes \`components\` for; \`components\` is *Live*. How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -22,7 +23,7 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for, read on ev
 
 ## No records
 
-\`overlays.emptyState\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview). The example at the top of this page redraws it.
+\`overlays.emptyState\` draws the grid's empty state, as the example above does. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
 
 ## Loading
 
@@ -39,7 +40,17 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for, read on ev
 \`rows.error\` draws a group's records that failed to load on the server-side row model, and a totals row whose query failed.
 
 {{story: Try a category again}}
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'Pick the row model that loads a group\'s records as it opens.' },
+    { title: 'Localization', iconName: 'Translate', href: '?path=/docs/concepts-localization--overview', text: 'Change the empty state\'s text and every other label.' },
+    { title: 'Custom cells', iconName: 'TableComputed', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'Redraw pieces of a column\'s cells, or lay a cell out yourself.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Appearance/Overlays and rows',
@@ -47,7 +58,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -60,13 +71,6 @@ type Story = StoryObj<typeof meta>
 export const AnEmptyCatalogue: Story = {
     name: 'Show an empty catalogue',
     render: () => renderStory(<EmptyCatalogueExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `\`overlays.emptyState\` swaps the icon and adds a hint under the message, and \`LabelsProvider\` rewords \`grid.noRecordsFound\`.`,
-            },
-        },
-    },
 }
 
 export const WaitingForTheWarehouse: Story = {
@@ -99,7 +103,7 @@ export const TryACategoryAgain: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`rows.error\` turns a failed load into a warning with a *Try again* button, which calls AG Grid's \`retryServerSideLoads()\`. Try: open a category; the warehouse drops the first one, then loads it on retry (AG Grid Enterprise).`,
+                story: `\`rows.error\` turns a failed load into a warning with a *Try again* button, which calls AG Grid's \`retryServerSideLoads()\`. Try: open a category, whose first load fails (AG Grid Enterprise).`,
             },
         },
     },

@@ -53,4 +53,4 @@ declare module '@talxis/base-controls' {
 `,
 }
 
-export const SelectedValueExample = () => <GridExampleRunner seedCode={withFiles(SELECTED_VALUE_CODE, VIEWS_FILE, SELECTED_VALUE_TYPES_FILE)} />
+export const SelectedValueExample = () => <GridExampleRunner seedCode={withFiles(SELECTED_VALUE_CODE, VIEWS_FILE, SELECTED_VALUE_TYPES_FILE)} tabs={['preview', 'code']} />

@@ -5,7 +5,7 @@ import type { IGridExampleFile } from '../grid/GridLivePreview'
 const ISOLATION_FILES: IGridExampleFile[] = [
     {
         name: 'GridExample.tsx',
-        code: `//the page: changing OTHER_APP_STYLES reaches only the page's grid, never the framed one
+        code: `import { DealsGrid } from './deals'
 
 //another app's global CSS on the same page: it restyles every AG Grid it reaches
 const OTHER_APP_STYLES = \`
@@ -16,7 +16,7 @@ const OTHER_APP_STYLES = \`
 
 //the page knows only the key, the props and where the frame's code is: it never imports FramedDeals
 const IsolatedDeals = createIsolatedHost<{ theme: ITheme }>('deals', {
-    //in your app, the frame's own entry; here, the docs' bundle and FramedDeals.tsx
+    //in your app, the frame's entry script; here, the docs' runner, which runs these files
     scripts: SANDBOX_FRAME_SCRIPTS,
     //runs on the frame's window before its scripts load
     onPrepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by onPrepareWindow' }),
@@ -46,9 +46,11 @@ const GridExample = () => {
     },
     {
         name: 'FramedDeals.tsx',
-        code: `//the frame's own entry: only the frame runs this file, so the page's bundle never holds it
+        code: `import { DealsGrid } from './deals'
 
-//the frame starts empty: it registers its own icons, and the content brings its providers and application theme
+//the frame's own entry: only the frame runs this file, so the page's bundle never holds it
+
+//the frame starts empty: it registers its own icons, and the content brings its providers and theme
 initializeIcons()
 
 //a props type shared with the page can be a type-only import, which leaves no code in either bundle
@@ -65,6 +67,34 @@ const FramedDeals = (props: { theme: ITheme }) => {
 
 //under the key the page's host names
 registerIsolatedContent('deals', FramedDeals)
+`,
+    },
+    {
+        name: 'deals.tsx',
+        code: `//used by both sides: the page and the frame each run their own copy
+const createDeals = () => new MemoryDataProvider({
+    dataSource: [
+        { dealid: 'contoso', name: 'Contoso: CRM rollout', owner: 'Anna Novak', value: 4000 },
+        { dealid: 'fabrikam', name: 'Fabrikam: Support renewal', owner: 'Ben Carter', value: 21500 },
+        { dealid: 'northwind', name: 'Northwind: Data migration', owner: 'Anna Novak', value: 9000 },
+        { dealid: 'litware', name: 'Litware: Onboarding', owner: 'Ben Carter', value: 14000 },
+    ],
+    metadata: { PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name', LogicalName: 'deal' },
+    columns: [
+        { name: 'name', displayName: 'Deal', dataType: DataTypes.SingleLineText, visualSizeFactor: 220 },
+        { name: 'owner', displayName: 'Account manager', dataType: DataTypes.SingleLineText, visualSizeFactor: 160 },
+        { name: 'value', displayName: 'Value', dataType: DataTypes.Currency, visualSizeFactor: 120 },
+    ],
+})
+
+export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childrenGap: 8 }} styles={{ root: { padding: 12 } }}>
+    <Text variant='mediumPlus'>{props.heading}</Text>
+    <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='380px'>
+        <DatasetControl.Body>
+            <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
+        </DatasetControl.Body>
+    </DatasetControl>
+</Stack>
 `,
     },
 ]

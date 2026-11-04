@@ -2,7 +2,7 @@ import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
 import { CheckList as CheckListBase, DatasetControl, Grid, ICheckListProps, IsolatedFrameScript, IDatasetControlProps, IGridProps, ITaskGridProps, TaskGrid as TaskGridBase, useDataProvider } from '@talxis/base-controls'
-import { GRID_SANDBOX_PACKAGES, GRID_SANDBOX_SCOPE } from './gridSandboxScope'
+import { GRID_SANDBOX_IMPORT_ONLY, GRID_SANDBOX_PACKAGES, GRID_SANDBOX_SCOPE } from './gridSandboxScope'
 import { createDealsProvider } from './data'
 import { createSandboxFrameScripts } from '../isolated-frame/sandboxFrame'
 
@@ -99,7 +99,10 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
 
     const load = (path: string): ISnippetModule => {
         //an example imports from the packages as an app does, and gets the sandbox's own copies
-        if (path === '@talxis/base-controls' || path === '@talxis/client-libraries') {
+        if (path === '@talxis/base-controls') {
+            return { exports: { ...scope, ...GRID_SANDBOX_IMPORT_ONLY } }
+        }
+        if (path === '@talxis/client-libraries') {
             return { exports: scope }
         }
         const sandboxPackage = GRID_SANDBOX_PACKAGES[path]

@@ -1,3 +1,4 @@
+import type { IRunnerTab } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
 /** The sample tasks, their views and a memory loader, imported by the Task Grid examples. */
@@ -33,3 +34,6 @@ export const createLoadTasks = (database: MemoryTaskDatabase) => async ({ taskRu
 }
 
 export const withTasks = (code: string): IGridExampleFile[] => [{ name: 'GridExample.tsx', code }, TASKS_FILE]
+
+/** The Task Grid examples load their own tasks, so they show no Data tab. */
+export const TASK_EXAMPLE_TABS: IRunnerTab[] = ['preview', 'code']

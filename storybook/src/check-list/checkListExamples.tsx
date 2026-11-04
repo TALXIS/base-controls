@@ -110,7 +110,7 @@ const GridExample = () => {
 
 export const CUSTOM_CHECK_CODE = `${FIELD_MAPPING}
 
-//a star in place of Fluent's round check; it gets whether the item is finished, and the pop as a class
+//a star in place of Fluent's round check; className animates a fresh tick
 const StarCheck = (props: ICheckProps) => {
     const theme = useTheme()
     return <Icon
@@ -217,7 +217,7 @@ const GridExample = () => {
 export const LaunchPlanExample = () => <GridExampleRunner seedCode={LAUNCH_PLAN_CODE} onCreateProvider={createLaunchPlanProvider} />
 
 /** The least a checklist needs: two items and a field mapping. */
-export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} />
+export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} tabs={['preview', 'code']} />
 
 /** The same list without the editing module. */
 export const ReadOnlyExample = () => <GridExampleRunner seedCode={READ_ONLY_CODE} onCreateProvider={createLaunchPlanProvider} />
@@ -228,7 +228,8 @@ export const ReleaseBoardExample = () => <GridExampleRunner seedCode={RELEASE_BO
 /** Every save and delete the checklist asks of its provider, logged beside it. */
 export const SaveLogExample = () => <GridExampleRunner seedCode={SAVE_LOG_CODE} onCreateProvider={createLaunchPlanProvider} />
 
-/** Item names as links that open the item in a form. */
+/** A star in place of the completion cell's check. */
 export const CustomCheckExample = () => <GridExampleRunner seedCode={CUSTOM_CHECK_CODE} onCreateProvider={createLaunchPlanProvider} />
 
+/** Item names as links that open the item in a form. */
 export const ItemPanelExample = () => <GridExampleRunner seedCode={ITEM_PANEL_CODE} onCreateProvider={createLaunchPlanProvider} />

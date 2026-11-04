@@ -2,51 +2,47 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { OpenTicketGroupsExample, PickModulesExample } from '../../../grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Editing, selecting, sorting, filtering, grouping, totals and copying are modules. You pass the ones you want in \`modules\`, and a feature you leave out is not there at all. Every grid also needs exactly one row model, which is a module too.
+Editing, selecting, sorting, filtering, grouping, totals and copying are modules: you pass the ones you want in \`modules\`, and a feature you leave out is not there at all. Every grid also needs exactly one row model, which is a module too. Try it below: turn off *Sorting* and open a column's menu.
 
-{{story: Pick the features of a ticket queue}}
-
-\`modules\` and every option you pass to a factory are read once, at mount: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
+{{canvas: Pick the features of a ticket queue}}
 
 ## The modules
 
-| Name | Factory | What it adds | Page |
-|---|---|---|---|
-| \`rowModel\` | \`createClientSideRowModelModule()\`, \`createServerSideRowModelModule()\` | How the grid gets its rows. Required; the server side needs AG Grid Enterprise. | *Row models* below |
-| \`editing\` | \`createEditingModule()\` | Editing in place, a save status per row, locks and saving | [**Editing**](?path=/docs/controls-grid-modules-editing--overview) |
-| \`rowSelection\` | \`createRowSelectionModule({ mode })\` | A checkbox column, and selecting rows by clicking them | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
-| \`cellSelection\` | \`createCellSelectionModule()\` | Highlighting blocks of cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
-| \`clipboard\` | \`createClipboardModule()\` | Copying and pasting cells. AG Grid Enterprise. | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
-| \`sorting\` | \`createSortingModule()\` | Sorting from a column's menu | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) |
-| \`filtering\` | \`createFilteringModule()\` | Filtering from a column's menu | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) |
-| \`grouping\` | \`createGroupingModule()\` | Grouping the rows by a column's values. AG Grid Enterprise. | [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
-| \`aggregation\` | \`createAggregationModule()\` | A totals row, and totals in group rows | [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
-| \`legacyClientApiCompatibility\` | \`createLegacyClientApiCompatibilityModule()\` | What client scripts set on records: locks, colours, notifications, loading and controls | [**Legacy client API**](?path=/docs/controls-grid-modules-legacy-client-api--overview) |
-| \`license\` | \`createLicenseModule({ key })\` | Your AG Grid Enterprise licence | *AG Grid Enterprise and the licence* below |
-| Your own | an \`IGridModule\` | Anything else | [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) |
+- \`createClientSideRowModelModule()\` or \`createServerSideRowModelModule()\`: how the grid gets its rows; one is required. See *Row models* below.
+- \`createEditingModule()\`: editing in place, a save status per row, locks and saving. See [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
+- \`createRowSelectionModule({ mode })\`, \`createCellSelectionModule()\`, \`createClipboardModule()\`: selecting rows, highlighting blocks of cells, copying and pasting. See [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview).
+- \`createSortingModule()\`, \`createFilteringModule()\`: sorting and filtering from a column's menu. See [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview).
+- \`createGroupingModule()\`, \`createAggregationModule()\`: grouping the rows by a column, and totals. See [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+- \`createLegacyClientApiCompatibilityModule()\`: what client scripts set on records. See [**Legacy client API**](?path=/docs/controls-grid-modules-legacy-client-api--overview).
+- \`createLicenseModule({ key })\`: your AG Grid Enterprise licence. See *AG Grid Enterprise and the licence* below.
+- An \`IGridModule\` of your own: see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
-Which columns offer a feature comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\` (see [**Data**](?path=/docs/controls-grid-data--overview)). Once loaded, a module is reached as \`grid.modules.find(name)\`, or with \`useGridModule(name)\` inside what the grid draws; each module's page lists its members under *From your code*.
-
-## Text and looks
-
-Modules take no text of their own: to change it, see [**Localization**](?path=/docs/concepts-localization--overview).
-
-Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw. The editing and row selection modules draw columns of their own, which you restyle through \`colDefs\` with the cells they export. Every entry point is mapped on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+Which columns offer a feature comes from the provider's columns: \`disableSorting\`, and the metadata keys \`SupportedFilterConditionOperators\`, \`CanBeGrouped\` and \`SupportedAggregations\` (see [**Data**](?path=/docs/controls-grid-data--overview)). Once loaded, a module is reached by its name: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Switch a module on or off
 
-To switch a module on or off, or to change its options, give the grid a new \`key\`, as the queue above does.
+\`modules\` and every module's options are read at mount: to switch a module or change its options, give the grid a new \`key\`, as the queue above does (see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
 
 What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too. When grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\` and call \`provider.refresh()\`; see *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
+## Text and looks
+
+- Modules take no text of their own: to change it, see [**Localization**](?path=/docs/concepts-localization--overview).
+- Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw.
+- The editing and row selection modules draw columns of their own, which you restyle through \`colDefs\` with the cells they export.
+- Every module page lists what it draws under *Changing how it looks*; all of them are mapped on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+
 ## AG Grid Enterprise and the licence
 
-The grid runs on AG Grid Community. Server-side rows, cell selection, the clipboard and grouping use AG Grid Enterprise, which needs a licence from AG Grid. The packages come with \`@talxis/base-controls\`; to license them, pass your key to the \`license\` module, as *license.ts* in *Open ticket groups on demand* does.
+The grid runs on AG Grid Community. Server-side rows, cell selection, the clipboard and grouping use AG Grid Enterprise, which needs a licence from AG Grid. The packages come with \`@talxis/base-controls\`; to license them, pass your key to \`createLicenseModule\`, as the example under *Row models* does.
 
-\`key\` is required, so leave the module out while there is no key. The key holds for the whole page: once one grid registers it, every grid on the page is licensed. Without one, AG Grid logs a licence message to the console and, on any host but \`localhost\` and \`127.0.0.1\`, draws a watermark over every grid on the page.
+- \`key\` is required, so leave the module out while there is no key.
+- The key holds for the whole page: once one grid registers it, every grid on the page is licensed.
+- Without a key, AG Grid logs a licence message to the console and, on any host but \`localhost\` and \`127.0.0.1\`, draws a watermark over every grid on the page.
 
 ## Row models
 
@@ -60,7 +56,17 @@ The row model decides how the grid gets its rows. Both show the provider's curre
 Use the client side by default, and the server side when users group by a column with many values or into big groups.
 
 {{story: Open ticket groups on demand}}
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Edit values in place, check them and save them.' },
+    { title: 'Grouping and totals', iconName: 'GroupList', href: '?path=/docs/controls-grid-modules-grouping-and-totals--overview', text: 'Group the rows by a column, and total its values.' },
+    { title: 'Write a module', iconName: 'Puzzle', href: '?path=/docs/controls-grid-extending-write-a-module--overview', text: 'Package a feature of your own as a module.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Modules',
@@ -68,7 +74,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -84,7 +90,7 @@ export const OpenTicketGroupsOnDemand: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support queue grouped by customer, against a slow service: the client-side row model fetches every customer's tickets as the list loads, the server-side one when you open a customer. Try: pick a row model, open a few customers and watch the count of fetches (AG Grid Enterprise).`,
+                story: `A support queue grouped by customer, against a slow service that counts its fetches. Try: pick *Server side* and open a customer (AG Grid Enterprise).`,
             },
         },
     },
@@ -93,11 +99,4 @@ export const OpenTicketGroupsOnDemand: Story = {
 export const PickTheFeaturesOfATicketQueue: Story = {
     name: 'Pick the features of a ticket queue',
     render: () => renderStory(<PickModulesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A ticket queue whose modules are switched by toggles, each switch remounting the grid with a new \`key\`. Try: sort by a column, turn *Sorting* off and open the column's menu again.`,
-            },
-        },
-    },
 }

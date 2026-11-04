@@ -2,18 +2,19 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample } from '../../grid/examples/columnsExamples'
 
 const DESCRIPTION = `
-The grid builds its columns from the provider: each column the provider holds becomes a grid column, with its header text, width and data type. A page usually wants more than that, such as key columns that stay in view, a link that opens the record, a value worked out from others, or a button on every row. You add these per column with \`colDefs\`, on top of what the provider gives and without changing the provider.
+The grid builds a column for each of the provider's columns, with its header text, width and data type. \`colDefs\` changes those columns, or adds columns of your own, without touching the provider: key columns that stay in view, a link to the record, a calculated value or a button on every row. Try it below: turn off *Show every column*.
 
-{{story: Keep key columns in view}}
+{{canvas: Keep key columns in view}}
 
 ## Change a column
 
 \`colDefs\` is keyed by column id, the provider column's \`name\`. What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview).
 
-- An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads, listed under *The column context* below.
+- An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads, under *The column context* below.
 - An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set.
 - Any other key adds a column at the end.
 - A function entry receives the column as built, \`null\` for an added one, and returns what to change.
@@ -33,9 +34,11 @@ The grid builds its columns from the provider: each column the provider holds be
 
 ## Add a calculated column
 
-Give \`colDefs\` a key that isn't a provider column, and calculate its value from the record. \`valueGetter\` returns the value, which copying uses too. \`cellRenderer\` draws the cell: reuse the grid's cell or build your own, both on [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), and read the record with \`useGridCell()\` inside it so the value follows the record. Without a \`cellRenderer\` the cell is empty.
-
-The column takes the grid's header, is placed last and keeps its \`initialWidth\`. The modules add nothing to its menu, it has no editor, and it is not kept with the column layout. Group rows and the totals row draw it too, so draw nothing for them: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+- Give \`colDefs\` a key that is not a provider column.
+- \`valueGetter\` returns the value; copying uses it too.
+- \`cellRenderer\` draws the cell, with the grid's cell or your own (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)). Read the record with \`useGridCell()\` inside it, so the value follows the record; without a \`cellRenderer\` the cell is empty.
+- The column takes the grid's header, is placed last and keeps its \`initialWidth\`. It has no editor, the modules add nothing to its menu, and the column layout does not keep it.
+- Group rows and the totals row draw it too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 {{story: Calculate the stock value}}
 
@@ -72,36 +75,39 @@ To size rows to the text instead, set AG Grid's \`autoHeight: true\` on the colu
 
 ## Remember the layout
 
-The widths, order and visibility of the columns live on the provider's columns. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view: see [**DatasetControl › State**](?path=/docs/controls-datasetcontrol-state--overview). Columns added through \`colDefs\` are not kept.
-
-A grid on its own keeps nothing. \`onColumnsChanged(columns)\` fires after the user resizes or moves a column, with the provider's columns updated: save each one's \`name\`, \`visualSizeFactor\` and \`order\`, and apply them with \`setColumns()\` before you load the provider.
+The widths, order and visibility of the columns live on the provider's columns. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view: see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview).
 
 {{story: Remember the layout}}
 
-## The column context
+- Columns added through \`colDefs\` are not kept.
+- A grid outside a DatasetControl keeps nothing: save each column's \`name\`, \`visualSizeFactor\` and \`order\` in \`onColumnsChanged(columns)\`, and apply them with \`setColumns()\` before the provider loads.
+
+## Reference
+
+### The column context
 
 What the grid reads from a column's \`context\`. The \`cell\` and \`header\` callbacks run after the hooks of their kind on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview), so a column overrides them.
 
 | Key | Type | Description |
 |---|---|---|
 | \`isPrimary\` | \`boolean\` | Draws the value as a link to the record. |
-| \`isRequired\` | \`boolean\` | Draws the required marker in the header; the editing module sets it from \`RequiredLevel\`. It validates nothing: see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`isLocked\` | \`boolean\` | With the editing module: locks the column for good. The module sets it from \`IsValidForUpdate\`. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from. Numbers and currency default to \`'right'\`. |
-| \`widthOffset\` | \`number\` | Pixels added to the column's width for what a module draws in it, such as grouping's indent. Not saved with the layout. |
+| \`isRequired\` | \`boolean\` | Draws the required marker in the header; the editing module sets it from \`RequiredLevel\`. Validates nothing. |
+| \`isLocked\` | \`boolean\` | With editing, locks the column for good; defaults to \`!IsValidForUpdate\`. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from; numbers and currency default to \`'right'\`. |
+| \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |
-| \`cell.oneClickEdit\` | \`boolean\` | With the editing module: draws the editing control in the cell itself. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.onGetCommands\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands* above. |
+| \`cell.oneClickEdit\` | \`boolean\` | With editing, draws the editing control in the cell. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`cell.onGetCommands\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands*. |
 | \`cell.onGetTheme\` | \`(builder, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`cell.onGetLoading\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
-| \`cell.onGetLock\` | \`(result, { record }) => void\` | With the editing module: locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`cell.onGetLock\` | \`(result, { record }) => void\` | With editing, locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`cell.onGetValidation\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.onGetControlParameters\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters* below. |
-| \`header.onGetAdornments\`, \`header.onGetMenuSections\`, \`header.onGetMenuItems\`, \`header.onGetTheme\` | Callbacks | See *Extend the header* above. |
+| \`cell.onGetControlParameters\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters*. |
+| \`header.onGetAdornments\`, \`onGetMenuSections\`, \`onGetMenuItems\`, \`onGetTheme\` | Callbacks | See *Extend the header*. |
 
 ### Control parameters
 
-\`cell.onGetControlParameters\`, and the \`registerControlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)), which reads these:
+\`cell.onGetControlParameters\`, and the \`registerControlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
 
 | Parameter | Description |
 |---|---|
@@ -113,8 +119,19 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
+- An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`.
+- \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Custom cells', iconName: 'TableComputed', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'Redraw a column\'s cells, or lay a cell out from its parts.' },
+    { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Colour cells and headers by their data, and size the grid.' },
+    { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-extending-hooks--overview', text: 'Change what every column draws and decides from a module.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Columns',
@@ -122,7 +139,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -135,13 +152,6 @@ type Story = StoryObj<typeof meta>
 export const KeepKeyColumnsInView: Story = {
     name: 'Keep key columns in view',
     render: () => renderStory(<KeyColumnsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `\`pinned\` keeps *Product* left and *Category* right, \`maxWidth\` keeps *Photo* narrow, and a function entry renames *Price* from the header it was built with. Try: turn *Show every column* off to see the rest stretch.`,
-            },
-        },
-    },
 }
 
 export const OpenAProductFromItsName: Story = {
@@ -150,7 +160,7 @@ export const OpenAProductFromItsName: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`context.isPrimary\` makes *Product* a link, and \`onOpenRecord\` opens the product in a form in a panel. Try: click a name, change the product and save it from the panel's ribbon.`,
+                story: `\`context.isPrimary\` makes *Product* a link, and \`onOpenRecord\` opens the product in a form in a panel. Try: click a product's name.`,
             },
         },
     },
@@ -162,7 +172,7 @@ export const WorkOutTheStockValue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `*Stock value* is *Price* × *In stock*, calculated in a column of its own. Try: change either value and watch it follow.`,
+                story: `*Stock value* is *Price* × *In stock*, calculated in a column of its own. Try: double-click a price and change it.`,
             },
         },
     },
@@ -210,7 +220,7 @@ export const FitRowsToTheirNotes: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`autoHeight: true\` on *Notes* makes every row as tall as its note, up to six lines. Try: shorten a note.`,
+                story: `\`autoHeight: true\` on *Notes* makes every row as tall as its note, up to six lines. Try: open **Code** and remove \`autoHeight\`.`,
             },
         },
     },
@@ -222,7 +232,7 @@ export const RememberTheLayout: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The control's \`stateKey\` keeps the widths and the order. Try: resize or move a column, then reopen the list.`,
+                story: `The control's \`stateKey\` keeps the widths and the order. Try: move a column, then press *Reopen the list*.`,
             },
         },
     },

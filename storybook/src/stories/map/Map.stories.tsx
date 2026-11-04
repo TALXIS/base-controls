@@ -1,39 +1,45 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Stack, TextField, Toggle } from '@fluentui/react'
-import { Map, createGoogleMapsProvider, usePcfContext } from '@talxis/base-controls'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { createLeafletMapProvider } from './LeafletMapProvider'
-import { mapPinMetadata, useSampleMapDataset } from './useSampleMapDataset'
+import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
+import { MapExample } from './mapExamples'
 
 const DESCRIPTION = `
-Map shows the records of a dataset as pins. Each record's position comes from the two columns \`PinMetadata\` names, \`LatitudeAttributeName\` and \`LongitudeAttributeName\`, and the map redraws its pins whenever the dataset loads new records. What draws the map is a *map provider*: \`createGoogleMapsProvider({ apiKey })\` for Google Maps, or a component of your own that takes the \`locations\` and draws them. Try: switch the pins off and on.
+Map shows the records of a dataset as pins on a map, each at the latitude and longitude two of its columns hold. What draws the map is a *map provider*: Google Maps, or a component of your own. Try it below: open **Code** and add Vienna, at 48.2082, 16.3738, to \`data.ts\`.
 
-{{story: Pins from a dataset}}
+{{canvas: Pins from a dataset}}
 
-## Google Maps
+## Show records as pins
 
-The example draws with a keyless Leaflet and OpenStreetMap provider of its own; paste a Google Maps JavaScript API key above to switch it to \`createGoogleMapsProvider\`. Use a referrer-restricted test key, not a production one.
+Like a PCF control, \`Map\` takes the PCF \`context\` and its \`parameters\`:
+
+- \`Dataset\` holds the records, usually a \`Dataset\` over a data provider: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
+- \`PinMetadata\` names the columns with each record's position: \`LatitudeAttributeName\` and \`LongitudeAttributeName\`.
+- \`MapProvider\` draws the map.
+
+A record whose position is not a number gets no pin. The map draws its pins again whenever the dataset loads new records.
+
+## Draw with Google Maps
+
+\`createGoogleMapsProvider({ apiKey })\` draws the map with the Google Maps JavaScript API, under a key of yours.
+
+- One pin is shown close up; more pins fit into view together.
+- Without pins, the map centres on the user's approximate location, looked up from their IP address.
+
+## Draw with a map of your own
+
+A map provider is any component that takes \`locations\`, each \`{ id, latitude, longitude }\` with the record's id. The example draws with Leaflet and OpenStreetMap this way, as Google Maps needs a key.
+
+## Where next
+
+{{block: explore}}
 `
 
-const MapDemo = () => {
-    const context = usePcfContext()
-    const [apiKey, setApiKey] = React.useState('')
-    const [showPins, setShowPins] = React.useState(true)
-    const dataset = useSampleMapDataset(showPins)
-    const mapProvider = React.useMemo(() => apiKey ? createGoogleMapsProvider({ apiKey }) : createLeafletMapProvider(), [apiKey])
-
-    return <Stack tokens={{ childrenGap: 12 }}>
-        <Stack horizontal wrap verticalAlign='end' tokens={{ childrenGap: 16 }}>
-            <TextField label='Google Maps API key' placeholder='Empty for Leaflet' type='password' value={apiKey} onChange={(_, value) => setApiKey(value ?? '')} />
-            <Toggle label='Pins' checked={showPins} onChange={(_, checked) => setShowPins(!!checked)} />
-        </Stack>
-        <div style={{ height: 480 }}>
-            <Map context={context} parameters={{ Dataset: dataset, PinMetadata: mapPinMetadata, MapProvider: mapProvider }} />
-        </div>
-    </Stack>
-}
+const EXPLORE: IExploreCard[] = [
+    { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Where the records behind the pins come from.' },
+    { title: 'PCF context', iconName: 'Plug', href: '?path=/docs/concepts-pcf-context--overview', text: 'The context the map takes, inside and outside a PCF control.' },
+]
 
 const meta = {
     title: 'Controls/Map/Get started',
@@ -41,7 +47,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -53,12 +59,5 @@ type Story = StoryObj<typeof meta>
 
 export const PinsFromADataset: Story = {
     name: 'Pins from a dataset',
-    render: () => renderStory(<MapDemo />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Four cities from a \`MemoryDataProvider\`, drawn by Leaflet until you paste a Google Maps key.`,
-            },
-        },
-    },
+    render: () => renderStory(<MapExample />),
 }

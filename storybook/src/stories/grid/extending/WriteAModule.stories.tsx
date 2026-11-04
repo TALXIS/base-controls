@@ -2,12 +2,13 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { UnsavedChangesBarExample } from '../../../grid/examples/writeModuleExamples'
 
 const DESCRIPTION = `
-A module packages a feature of your own: it registers hooks, follows events, shares an instance other parts of the grid can use, and draws its own UI inside the grid. The built-in modules are written the same way, against the same \`IGrid\`.
+A module packages a feature of your own: it registers hooks, follows events, shares an instance other code can use, and draws its own UI inside the grid. The built-in modules are written the same way, against the same \`IGrid\`. Try it below: change a few prices.
 
-{{story: Show an unsaved changes bar}}
+{{canvas: Show an unsaved changes bar}}
 
 ## What a module is
 
@@ -64,7 +65,17 @@ Surfaces are drawn in ascending priority, beside the built-in ones:
 | \`'filterCallout'\` | The filtering module, for a column's filter |
 | \`'groupSelectionLimit'\` | The grouping module, when a selection would load too many groups |
 | \`'notificationCallout'\` | The legacy client API module |
+
+## Where next
+
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-extending-hooks--overview', text: 'Every decision a module can step into, and the order hooks run in.' },
+    { title: 'Talking to the grid', iconName: 'Settings', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'The services, modules and events a module reaches through the grid.' },
+    { title: 'AG Grid', iconName: 'Table', href: '?path=/docs/controls-grid-extending-ag-grid--overview', text: 'AG Grid\'s options, api and modules, for what no hook covers.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Extending/Write a module',
@@ -72,7 +83,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -85,11 +96,4 @@ type Story = StoryObj<typeof meta>
 export const AnUnsavedChangesBar: Story = {
     name: 'Show an unsaved changes bar',
     render: () => renderStory(<UnsavedChangesBarExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `A buyer updates prices across the catalogue, then saves once: the module returns an \`unsavedChanges\` instance, follows the provider's save events, and draws a bar through \`registerSurface\` that reads it with \`useGridModule\`. Try: change a few prices, then press *Save all* or *Discard*.`,
-            },
-        },
-    },
 }

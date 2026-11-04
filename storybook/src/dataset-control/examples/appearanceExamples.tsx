@@ -42,4 +42,4 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-export const YourOwnPiecesExample = () => <GridExampleRunner seedCode={withFiles(YOUR_OWN_PIECES_CODE, VIEWS_FILE)} />
+export const YourOwnPiecesExample = () => <GridExampleRunner seedCode={withFiles(YOUR_OWN_PIECES_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

@@ -2,13 +2,14 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
+import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { ExpandFromRibbonExample, FilteredTotalsExample, HoursByEmployeeExample, PipelineByManagerExample, SubmittedEntriesExample } from '../../../grid/examples/groupingTotalsExamples'
 import { GroupBadgesExample, StockTotalsExample } from '../../../grid/examples/moduleComponentsExamples'
 
 const DESCRIPTION = `
-Grouping gathers the rows under a group row for each value of a column, level by level. The aggregation module adds totals, to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not (see [**Modules**](?path=/docs/controls-grid-modules--overview)).
+Grouping gathers the rows under a group row for each value of a column, level by level, and the aggregation module adds totals to every group row and to a row pinned under the list. Grouping needs AG Grid Enterprise and totals do not (see [**Modules**](?path=/docs/controls-grid-modules--overview)). Try it below: group by *Stage* too from its menu.
 
-{{story: Group the pipeline by account manager}}
+{{canvas: Group the pipeline by account manager}}
 
 ## What grouping does to the grid
 
@@ -85,9 +86,9 @@ What matters for the grid:
 - A grouped column's \`count\` is the number on its group rows and in the totals row; its *Totals* section has no *None*.
 - \`aggregation.getAggregations()\` stays empty while nothing is grouped, so read an ungrouped list's totals from \`provider.getColumns().filter(column => column.aggregation?.aggregationFunction)\`.
 
-## Module options
+## Options
 
-Both modules' options are read at mount.
+The options are *At mount*: see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 | \`createGroupingModule\` option | Type | Default | Description |
 |---|---|---|---|
@@ -105,7 +106,32 @@ Both modules' options are read at mount.
 
 To change the menu texts, tooltips and totals' names, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-## From your code
+## Changing how it looks
+
+Both modules take \`components\` (see *Options*). How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+
+| Module | Key | Slots | Default | Draws |
+|---|---|---|---|---|
+| Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
+| | \`groupCell.toggle\` | \`onRenderContainer\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
+| | \`groupCell.count\` | \`onRenderCount\` | \`GroupingUiCountComponents\` | How many records the group holds |
+| | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)) | | The rest of a group's cell |
+| Aggregation | \`totalCell.totalValue\` | \`onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
+| | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
+| | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
+
+{{story: Show group sizes as badges}}
+
+- The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`; a key in their own \`components\` prop replaces the module's for that key.
+- To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
+
+The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.onGetAdornments\`. The alert for a refused selection is the host's own dialog and has no slots.
+
+{{story: Make totals read at a glance}}
+
+## Reference
+
+### Members
 
 The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggregation')\`, or \`useGridModule\` inside what the grid draws. Neither raises an event when the grouping or the totals change: follow \`onDataLoaded\`.
 
@@ -136,29 +162,16 @@ The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggre
 | \`getAggregateValueColumnName(record, columnName)\` | The alias a group row or the totals row holds the column's total under. |
 | \`components\` | The \`components\` the module was given. |
 
-## Changing how it looks
+## Where next
 
-Both modules take \`components\`, read at mount. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
-
-| Module | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
-| | \`groupCell.toggle\` | \`onRenderContainer\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
-| | \`groupCell.count\` | \`onRenderCount\` | \`GroupingUiCountComponents\` | How many records the group holds |
-| | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)) | | The rest of a group's cell |
-| Aggregation | \`totalCell.totalValue\` | \`onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
-| | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
-| | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
-
-{{story: Show group sizes as badges}}
-
-- The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`; a key in their own \`components\` prop replaces the module's for that key.
-- To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
-
-The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.onGetAdornments\`. The alert for a refused selection is the host's own dialog and has no slots.
-
-{{story: Make totals read at a glance}}
+{{block: explore}}
 `
+
+const EXPLORE: IExploreCard[] = [
+    { title: 'Selection and clipboard', iconName: 'MultiSelect', href: '?path=/docs/controls-grid-modules-selection-and-clipboard--overview', text: 'Select whole groups of records, and copy them out.' },
+    { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Group and total the records on the provider, with aliases.' },
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'Pick the row model that loads a group\'s records as it opens.' },
+]
 
 const meta = {
     title: 'Controls/Grid/Modules/Grouping and totals',
@@ -166,7 +179,7 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
-            page: gridDocsPage(DESCRIPTION),
+            page: gridDocsPage(DESCRIPTION, { explore: () => <ExploreCards cards={EXPLORE} /> }),
             story: { inline: true },
             canvas: { sourceState: 'none', additionalActions: [] },
         },
@@ -179,13 +192,6 @@ type Story = StoryObj<typeof meta>
 export const PipelineByAccountManager: Story = {
     name: 'Group the pipeline by account manager',
     render: () => renderStory(<PipelineByManagerExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Each account manager's pipeline, biggest first: the provider is grouped by \`owner\`, *Value* is summed, and \`defaultExpandedLevel: 0\` opens every group. Try: group by *Stage* too from its menu (AG Grid Enterprise).`,
-            },
-        },
-    },
 }
 
 export const HoursByEmployeeAndDay: Story = {
@@ -194,7 +200,7 @@ export const HoursByEmployeeAndDay: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Last week's hours per person and per day, with *Hours* summed on every group row. Try: switch between \`type: 'nested'\` and \`type: 'flat'\`; the grid remounts with a new \`key\` and the provider regroups.`,
+                story: `Last week's hours per person and per day, with *Hours* summed on every group row. Try: pick *One group per employee and day*.`,
             },
         },
     },
@@ -206,7 +212,7 @@ export const ExpandAndCollapseFromTheRibbon: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Timesheets by status, then by employee, with a ribbon that calls \`grouping.setExpandedLevel\` through the grid from \`onReady\`. Try: expand one level, then expand all.`,
+                story: `Timesheets by status, then by employee, with a ribbon that calls \`grouping.setExpandedLevel\`. Try: press *Expand one level*.`,
             },
         },
     },
@@ -218,7 +224,7 @@ export const TotalsForTheFilteredList: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The provider counts the deals and sums *Value* over whatever the pipeline is filtered to. Try: filter *Stage* to Negotiate, then pick *Average* under *Totals* in the *Probability (%)* menu.`,
+                story: `The provider counts the deals and sums *Value* over whatever the pipeline is filtered to. Try: filter *Stage* to Negotiate.`,
             },
         },
     },
@@ -242,7 +248,7 @@ export const TotalsThatReadAtAGlance: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`totalCell.totalValue\` draws the label small and uppercase and the value bold in the theme's colour, and a \`cellRendererSelector\` gives *In stock* a \`TotalCell\` of its own. Try: pick another total from a column's menu.`,
+                story: `\`totalCell.totalValue\` restyles every total, and a \`cellRendererSelector\` gives *In stock* a \`TotalCell\` of its own. Try: pick another total from a column's menu.`,
             },
         },
     },
@@ -254,7 +260,7 @@ export const LockSubmittedEntriesOnly: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Timesheets grouped by status, where \`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected* and skips summary rows by their summarization type. Try: turn *Skip summary rows* off and watch the group rows dim with a lock.`,
+                story: `\`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected*, and skips summary rows by their summarization type. Try: turn off *Skip summary rows*.`,
             },
         },
     },

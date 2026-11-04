@@ -27,8 +27,6 @@ declare const Checkbox: typeof import('@fluentui/react').Checkbox;
 declare const ChoiceGroup: typeof import('@fluentui/react').ChoiceGroup;
 /** Fluent's command bar, with its menus drawn in the application's theme. */
 declare const CommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element;
-/** Fluent's own command bar, which the docs compare with Base Controls'. */
-declare const FluentCommandBar: typeof import('@fluentui/react').CommandBar;
 declare const DefaultButton: typeof import('@fluentui/react').DefaultButton;
 declare const DocumentCard: typeof import('@fluentui/react').DocumentCard;
 declare const DocumentCardActivity: typeof import('@fluentui/react').DocumentCardActivity;
@@ -830,8 +828,6 @@ declare class TotalRow {
 
 /** A new, unloaded provider over the 30 deals of a sales pipeline. */
 declare function createDealsProvider(): MemoryDataProvider;
-/** The deals in a DatasetControl, under a heading. */
-declare const DealsGrid: (props: { heading: string }) => JSX.Element;
 /** A script an isolated frame loads, in order: a URL, or a module. */
 type IsolatedFrameScript = string | { src: string; type: 'module' };
 interface IIsolatedComponentOptions {
@@ -4828,4 +4824,31 @@ declare const createTalxisCustomColumnsModule: (parameters: { entityName: string
 /** The project module for a project record in Dataverse. */
 declare const createDataverseProjectModule: (parameters: { entityName: string; id: string; startDateColumn?: string; endDateColumn?: string; columns?: string[] }) => IProjectModule;
 
+declare const ValueRendererUiComponents: typeof import('@talxis/base-controls').ValueRendererUiComponents;
+declare const CellColumnControlComponents: typeof import('@talxis/base-controls').CellColumnControlComponents;
+declare const CellUiCommandsComponents: typeof import('@talxis/base-controls').CellUiCommandsComponents;
+declare const RecordSaveUiIndicatorComponents: typeof import('@talxis/base-controls').RecordSaveUiIndicatorComponents;
+declare const RecordSaveUiErrorCalloutComponents: typeof import('@talxis/base-controls').RecordSaveUiErrorCalloutComponents;
+declare const RowSelectionUiCheckboxComponents: typeof import('@talxis/base-controls').RowSelectionUiCheckboxComponents;
+declare const RowSelectionUiHeaderCheckboxComponents: typeof import('@talxis/base-controls').RowSelectionUiHeaderCheckboxComponents;
+declare const GroupingUiToggleComponents: typeof import('@talxis/base-controls').GroupingUiToggleComponents;
+declare const GroupingUiCountComponents: typeof import('@talxis/base-controls').GroupingUiCountComponents;
+declare const AggregationUiTotalValueComponents: typeof import('@talxis/base-controls').AggregationUiTotalValueComponents;
+declare const GroupingUiExpandCollapseComponents: typeof import('@talxis/base-controls').GroupingUiExpandCollapseComponents;
+declare const FilteringUiCalloutComponents: typeof import('@talxis/base-controls').FilteringUiCalloutComponents;
+declare const ThemeContext: typeof import('@talxis/base-controls').ThemeContext;
+declare const Dialog: typeof import('@talxis/base-controls').Dialog;
+declare const XrmForm: typeof import('@talxis/base-controls').XrmForm;
+declare module '@fluentui/react';
+declare const Dataset: typeof import('@talxis/client-libraries').Dataset;
+type IMapProvider = import('@talxis/base-controls').IMapProvider;
+declare const ControlComponents: typeof import('@talxis/base-controls').ControlComponents;
+type IXrmFormContext = import('@talxis/base-controls').IXrmFormContext;
+declare const useForm: typeof import('@talxis/base-controls').useForm;
+declare const useValidationSummary: typeof import('@talxis/base-controls').useValidationSummary;
+type IFormApi = import('@talxis/base-controls').IFormApi;
+type ITabsComponentProps = import('@talxis/base-controls').ITabsComponentProps;
 `
+
+/** What only `import { … } from '@talxis/base-controls'` reaches, never a global. */
+export const gridSandboxImportOnlyDeclarations = `const Map: typeof import('@talxis/base-controls').Map;`
