@@ -301,6 +301,9 @@ const renderLayoutExample = (example: ILayoutExample) => {
 
     return (
         <ExampleRunner
+            code={code}
+            seedCode={example.code}
+            onCodeChange={setCode}
             error={compileError}
             renderPreview={() => (
                 <ReactComposeLivePreview code={code} formProps={formProps} onError={setCompileError} />

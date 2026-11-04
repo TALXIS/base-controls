@@ -1,12 +1,10 @@
 import React from "react"
-import { MessageBar, MessageBarType, Stack, Text, TextField, Icon, ComboBox, IconButton, Slider, mergeStyleSets } from "@fluentui/react"
+import { Stack, Text, TextField, Icon, ComboBox, IconButton, Slider, mergeStyleSets } from "@fluentui/react"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
 import { Form, useField } from "@talxis/base-controls"
 import type { IFormApi } from "@talxis/base-controls"
-import { FormCodeEditor } from "../../form/react-form/FormCodeEditor"
 import { LiveFormCode } from "../../form/react-form/LiveFormCode"
 import { OpenMap } from "../../form/react-form/OpenMap"
-import { defaultFormCode } from "../../form/react-form/defaultFormCode"
 import { getDemoRecord, getMemoryStrategy } from "../../form/shared/formModel"
 
 const styles = mergeStyleSets({
@@ -33,18 +31,14 @@ const styles = mergeStyleSets({
         overflow: "auto",
         width: "100%",
     },
-    editorStatus: {
-        flexShrink: 0,
-    },
 })
 
 interface IReactComposeOverviewPreviewProps {
-    showCode?: boolean
+    code: string
+    onError: (error: string | null) => void
 }
 
 export const ReactComposeOverviewPreview = (props: IReactComposeOverviewPreviewProps) => {
-    const [code, setCode] = React.useState(defaultFormCode)
-    const [compileError, setCompileError] = React.useState<string | null>(null)
     const formApiRef = React.useRef<IFormApi | null>(null)
     const currentRecord = React.useMemo(() => getDemoRecord(), [])
     const strategy = React.useMemo(() => getMemoryStrategy(), [])
@@ -82,27 +76,17 @@ export const ReactComposeOverviewPreview = (props: IReactComposeOverviewPreviewP
 
     return (
         <div className={styles.root}>
-            {props.showCode ? (
-                <FormCodeEditor value={code} onChange={setCode} />
-            ) : (
-                <div className={styles.previewSurface}>
-                    <div className={styles.viewportWindow}>
-                        <LiveFormCode
-                            code={code}
-                            formProps={formProps}
-                            useField={useField}
-                            fluent={fluent}
-                            onError={setCompileError}
-                        />
-                    </div>
+            <div className={styles.previewSurface}>
+                <div className={styles.viewportWindow}>
+                    <LiveFormCode
+                        code={props.code}
+                        formProps={formProps}
+                        useField={useField}
+                        fluent={fluent}
+                        onError={props.onError}
+                    />
                 </div>
-            )}
-
-            {compileError && (
-                <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
-                    <pre className="toast-details">{compileError}</pre>
-                </MessageBar>
-            )}
+            </div>
         </div>
     )
 }

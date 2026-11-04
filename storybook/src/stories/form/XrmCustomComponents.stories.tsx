@@ -413,6 +413,9 @@ const renderCustomComponentsExample = (example: IXrmCustomComponentsExample) => 
 
     return (
         <ExampleRunner
+            code={code}
+            seedCode={example.code}
+            onCodeChange={setCode}
             error={compileError}
             renderPreview={() => <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />}
             renderCode={() => (

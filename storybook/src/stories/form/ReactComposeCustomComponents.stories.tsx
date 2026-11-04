@@ -976,6 +976,9 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
 
     return (
         <ExampleRunner
+            code={code}
+            seedCode={example.code}
+            onCodeChange={setCode}
             error={compileError}
             renderPreview={() => (
                 <ReactComposeLivePreview

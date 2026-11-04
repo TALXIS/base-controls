@@ -1,6 +1,6 @@
 import React from 'react'
 import Editor from '@monaco-editor/react'
-import { IconButton, ITheme, Text, Toggle, mergeStyleSets, useTheme } from '@fluentui/react'
+import { ActionButton, IconButton, ITheme, Pivot, PivotItem, Text, mergeStyleSets, useTheme } from '@fluentui/react'
 import { baseEditorOptions, useMonacoTheme } from '../../form/shared/monacoEditor'
 
 export const renderStory = (node: React.ReactNode, padding = 18) => (
@@ -91,36 +91,51 @@ export const StaticCodeBlock = (props: IStaticCodeBlockProps) => {
 }
 
 const getExampleRunnerStyles = (theme: ITheme) => mergeStyleSets({
-    header: {
-        borderBottom: `1px solid ${theme.palette.neutralLighter}`,
+    toolbar: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        gap: 16,
+        justifyContent: 'space-between',
+        gap: 8,
         flexWrap: 'wrap',
+        borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+        marginBottom: 12,
     },
-    body: {
+    actions: {
         display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
+        alignItems: 'center',
+        gap: 4,
+    },
+    edited: {
+        color: theme.semanticColors.bodySubtext,
+        marginRight: 4,
     },
     previewFrame: {
         minHeight: 420,
         width: '100%',
     },
-    codeFrame: {
-        border: `1px solid ${theme.palette.neutralLight}`,
-        borderRadius: 8,
+    hidden: {
+        display: 'none',
     },
-    viewportWindow: {
-        width: '100%',
+    codeFrame: {
+        border: `1px solid ${theme.semanticColors.bodyDivider}`,
+        borderRadius: 4,
+        overflow: 'hidden',
     },
     error: {
-        color: theme.palette.redDark,
+        display: 'block',
+        marginTop: 8,
+        color: theme.semanticColors.errorText,
     },
 })
 
 interface IExampleRunnerProps {
+    /** The code the editor holds now. */
+    code: string
+    /** The code the example starts with, which Reset restores. */
+    seedCode: string
+    onCodeChange: (code: string) => void
+    /** Runs after Reset has restored the seed code. */
+    onReset?: () => void
     renderPreview: () => React.ReactNode
     renderCode: () => React.ReactNode
     error?: string | null
@@ -131,30 +146,41 @@ interface IExampleRunnerProps {
     previewMinHeight?: number
 }
 
-/** Toggles between a live preview and its source, shared by every "editable example" doc page. */
-export const ExampleRunner = ({ renderPreview, renderCode, error, previewMinHeight }: IExampleRunnerProps) => {
-    const theme = useTheme()
-    const exampleRunnerStyles = React.useMemo(() => getExampleRunnerStyles(theme), [theme])
-    const [showCode, setShowCode] = React.useState(false)
+type IExampleRunnerTab = 'preview' | 'code'
 
-    return (
-        <div>
-            <div className={exampleRunnerStyles.header}>
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
-                />
-            </div>
-            <div className={exampleRunnerStyles.body}>
-                <div className={exampleRunnerStyles.previewFrame} style={previewMinHeight === undefined ? undefined : { minHeight: previewMinHeight }}>
-                    <div className={exampleRunnerStyles.viewportWindow}>
-                        {showCode ? <div className={exampleRunnerStyles.codeFrame}>{renderCode()}</div> : renderPreview()}
-                    </div>
-                </div>
-                {error ? <Text variant="small" className={exampleRunnerStyles.error}>{error}</Text> : null}
+/** The same Preview and Code tabs as the grid's examples, for examples that run through their own preview. */
+export const ExampleRunner = (props: IExampleRunnerProps) => {
+    const theme = useTheme()
+    const styles = React.useMemo(() => getExampleRunnerStyles(theme), [theme])
+    const [tab, setTab] = React.useState<IExampleRunnerTab>('preview')
+    const [isCopied, setIsCopied] = React.useState(false)
+
+    const reset = () => {
+        props.onCodeChange(props.seedCode)
+        props.onReset?.()
+    }
+
+    const copy = async () => {
+        await navigator.clipboard?.writeText(props.code)
+        setIsCopied(true)
+        window.setTimeout(() => setIsCopied(false), 1500)
+    }
+
+    return <div>
+        <div className={styles.toolbar}>
+            <Pivot headersOnly selectedKey={tab} onLinkClick={item => setTab(item?.props.itemKey as IExampleRunnerTab)}>
+                <PivotItem itemKey='preview' headerText='Preview' itemIcon='View' />
+                <PivotItem itemKey='code' headerText='Code' itemIcon='Code' />
+            </Pivot>
+            <div className={styles.actions}>
+                {props.code !== props.seedCode && <Text variant='small' className={styles.edited}>Edited</Text>}
+                <ActionButton iconProps={{ iconName: 'Undo' }} text='Reset' title="Restore the example's code" onClick={reset} />
+                <ActionButton iconProps={{ iconName: isCopied ? 'CheckMark' : 'Copy' }} text={isCopied ? 'Copied' : 'Copy code'} onClick={() => { copy() }} />
             </div>
         </div>
-    )
+        {/* both stay mounted, so a preview keeps its state while its code is edited */}
+        <div className={tab === 'preview' ? styles.previewFrame : styles.hidden} style={props.previewMinHeight === undefined ? undefined : { minHeight: props.previewMinHeight }}>{props.renderPreview()}</div>
+        <div className={tab === 'code' ? styles.codeFrame : styles.hidden}>{props.renderCode()}</div>
+        {props.error ? <Text variant='small' className={styles.error}>{props.error}</Text> : null}
+    </div>
 }

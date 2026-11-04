@@ -53,6 +53,9 @@ const StrategyExample = () => {
 
     return (
         <ExampleRunner
+            code={code}
+            seedCode={strategyCode}
+            onCodeChange={setCode}
             error={compileError}
             renderPreview={() => <ReactComposeLivePreview code={code} onError={setCompileError} />}
             renderCode={() => <FormCodeEditor value={code} onChange={setCode} />}

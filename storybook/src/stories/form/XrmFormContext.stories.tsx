@@ -33,6 +33,9 @@ const OnFormReadyExample = () => {
 
     return (
         <ExampleRunner
+            code={code}
+            seedCode={onFormReadyCode}
+            onCodeChange={setCode}
             error={compileError}
             renderPreview={() => <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />}
             renderCode={() => (

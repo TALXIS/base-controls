@@ -1,26 +1,23 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Toggle } from '@fluentui/react'
 import { ReactComposeOverviewPreview } from './ReactComposeOverviewPreview'
-import { codeBlockStyles, renderStory } from './storyHelpers'
+import { ExampleRunner, renderStory } from './storyHelpers'
+import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
+import { defaultFormCode } from '../../form/react-form/defaultFormCode'
 
 const ReactComposeOverviewStory = () => {
-    const [showCode, setShowCode] = React.useState(false)
+    const [code, setCode] = React.useState(defaultFormCode)
+    const [compileError, setCompileError] = React.useState<string | null>(null)
 
     return (
-        <div className={codeBlockStyles.root}>
-            <div className={codeBlockStyles.previewHeader}>
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
-                />
-            </div>
-            <div style={{ minHeight: 0, flex: 1 }}>
-                <ReactComposeOverviewPreview showCode={showCode} />
-            </div>
-        </div>
+        <ExampleRunner
+            code={code}
+            seedCode={defaultFormCode}
+            onCodeChange={setCode}
+            error={compileError}
+            renderPreview={() => <ReactComposeOverviewPreview code={code} onError={setCompileError} />}
+            renderCode={() => <FormCodeEditor value={code} onChange={setCode} />}
+        />
     )
 }
 
