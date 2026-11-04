@@ -38,6 +38,7 @@ export const XrmForm = (props: IXrmFormProps) => {
 
     return <Form.Root
         onLoad={onLoad}
+        autoSave={props.autoSave}
         onAfterSave={props.onAfterSave}
         onBeforeSave={props.onBeforeSave}
         onDirtyStateChanged={props.onDirtyStateChanged}

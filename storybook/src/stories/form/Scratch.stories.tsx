@@ -9,7 +9,7 @@ const ScratchForm = () => {
 
     return (
         <>
-        <Form.Root onLoad={async () => ({ record: getMemoryRecord() })}>
+        <Form.Root onLoad={async () => ({ record: getMemoryRecord() })} autoSave>
             <Form.Notifications />
             <Form.Ribbon />
             <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>

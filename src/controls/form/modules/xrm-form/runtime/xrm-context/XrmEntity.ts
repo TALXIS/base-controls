@@ -50,9 +50,7 @@ export class XrmEntity implements IXrmEntityContext {
 
     public async save(saveOptions?: Xrm.SaveOptions): Promise<void> {
         void saveOptions;
-        return this._formContext.getFormXmlModel().getForm().save({
-            blocker: this._createSaveBlocker(),
-        });
+        return this._formContext.getFormXmlModel().getForm().save();
     }
 
     get attributes(): Xrm.Collection.ItemCollection<IXrmAttributeContext> {
@@ -60,7 +58,14 @@ export class XrmEntity implements IXrmEntityContext {
     }
 
     private _registerEventListeners(): void {
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+        const form = this._formContext.getFormXmlModel().getForm();
+        //every save runs the OnSave handlers, whoever starts it
+        const isBlocked = this._createSaveBlocker();
+        const unregisterSaveBlocker = form.registerSaveBlocker(async request => {
+            request.isBlocked = await isBlocked();
+        });
+        form.events.addEventListener('onDestroy', () => {
+            unregisterSaveBlocker();
             this._onSaveHandlerSet.clear();
         });
     }

@@ -110,6 +110,9 @@ export interface IFormProps extends Partial<IFormEventHandlers> {
      */
     children?: ReactNode;
 
+    /** Saves the record after each change the user commits; read as the form mounts. */
+    autoSave?: boolean;
+
     /**
      * Fired when the form runtime is ready and the public imperative API can be used.
      */

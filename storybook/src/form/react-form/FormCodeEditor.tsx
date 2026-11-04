@@ -98,6 +98,7 @@ interface ISandboxFormEventHandlers {
 interface ISandboxFormProps extends Partial<ISandboxFormEventHandlers> {
   onLoad: () => Promise<{ record: ISandboxRecord }>;
   children?: React.ReactNode;
+  autoSave?: boolean;
   onFormReady?: (api: ISandboxFormApi) => void;
   labels?: Record<string, string>;
 }

@@ -33,6 +33,7 @@ interface IXrmFormLoadResult {
 }
 interface IXrmFormProps {
   onLoad: () => Promise<IXrmFormLoadResult>;
+  autoSave?: boolean;
   children?: React.ReactNode;
 }
 declare const XrmForm: React.ComponentType<IXrmFormProps>;

@@ -226,6 +226,8 @@ export interface IOnXrmFormReadyParams {
 export interface IXrmFormProps extends Partial<IFormEventHandlers> {
     /** Runs on mount and on refresh; remount with a `key` to load another record. */
     onLoad: () => Promise<IXrmFormLoadResult>;
+    /** Saves the record after each change the user commits; read as the form mounts. */
+    autoSave?: boolean;
     /** Fired when the form context runtime and the base Form API are ready. */
     onFormReady?: (params: IOnXrmFormReadyParams) => void;
     /** Top-level Xrm overridable UI configuration. */

@@ -242,7 +242,7 @@ Lookup fields currently only work in environments where `window.Xrm` is availabl
 - loads the record through `onLoad()`
 - binds fields to the record model
 - validates before save
-- saves through `record.save()`
+- saves through `record.save()`, and with `autoSave` after each change the user commits
 - exposes lifecycle callbacks through `IFormProps`
 
 Useful callbacks:

@@ -1,19 +1,25 @@
 import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult, Localization } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { ErrorHelper } from "@core";
+import { ErrorHelper, HookRegistry } from "@core";
 import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
 
 export interface IFormRuntimeParameters {
     record: IRecord;
+    /** Saves the record after each change committed to it. */
+    autoSave?: boolean;
 }
+
+/** A save about to happen; a blocker sets `isBlocked` to stop it. */
+export interface IFormSaveRequest {
+    isBlocked: boolean;
+}
+
+/** Runs before every save, and may stop it. */
+export type FormSaveBlocker = (request: IFormSaveRequest) => Promise<void> | void;
 
 export interface IFormEvents extends IFormEventHandlers {
     onRefreshRequested: () => void;
     onDestroy: () => void;
-}
-
-interface ISaveParams {
-    blocker?: () => Promise<boolean>;
 }
 
 export interface IFormRuntime {
@@ -31,7 +37,9 @@ export interface IFormRuntime {
      * that may currently be invalid.
      */
     getData: () => { [key: string]: any };
-    save: (params?: ISaveParams) => Promise<void>;
+    save: () => Promise<void>;
+    /** Runs `blocker` before every save from now on; returns what takes it off again. */
+    registerSaveBlocker: (blocker: FormSaveBlocker) => () => void;
     destroy: () => void;
     getRecord(): IRecord;
     getFields: () => IField[];
@@ -58,9 +66,16 @@ export class FormRuntime implements IFormRuntime {
     private _validationExpressions: Map<string, () => IFieldValidationResult> = new Map();
     private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
     private _isDirty: boolean = false;
+    private _saveBlockers = new HookRegistry<FormSaveBlocker>();
+    private _isAutoSaveEnabled: boolean;
+    private _isSaving = false;
+    private _isAutoSaveScheduled = false;
+    //a change committed while a save runs is saved once that save ends
+    private _isAutoSavePending = false;
 
     constructor(params: IFormRuntimeParameters) {
         this._record = params.record;
+        this._isAutoSaveEnabled = !!params.autoSave;
         this._isDirty = this.isDirty();
         this._registerEventHandlers();
     }
@@ -146,9 +161,21 @@ export class FormRuntime implements IFormRuntime {
         return this._validationSummary;
     }
 
-    public async save(params?: ISaveParams): Promise<void> {
-        const { blocker } = params ?? {};
+    public registerSaveBlocker(blocker: FormSaveBlocker): () => void {
+        return this._saveBlockers.register(blocker);
+    }
 
+    public async save(): Promise<void> {
+        this._isSaving = true;
+        try {
+            await this._save();
+        }
+        finally {
+            this._isSaving = false;
+        }
+    }
+
+    private async _save(): Promise<void> {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this._saveOperationPerformed = true;
@@ -161,7 +188,9 @@ export class FormRuntime implements IFormRuntime {
                     return;
                 }
 
-                if (await blocker?.()) {
+                const request: IFormSaveRequest = { isBlocked: false };
+                await this._saveBlockers.applyAsync(request);
+                if (request.isBlocked) {
                     this._dispatchAfterSave({ success: false });
                     return;
                 }
@@ -214,6 +243,35 @@ export class FormRuntime implements IFormRuntime {
     private _handleFieldValueChanged = (fieldName: string, newValue: any): void => {
         this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue);
         this._dispatchDirtyStateIfChanged();
+        if (this._isAutoSaveEnabled) {
+            this._scheduleAutoSave();
+        }
+    }
+
+    //one save for every value set in the same task
+    private _scheduleAutoSave(): void {
+        if (this._isAutoSaveScheduled) {
+            return;
+        }
+        this._isAutoSaveScheduled = true;
+        queueMicrotask(() => {
+            this._isAutoSaveScheduled = false;
+            this._autoSave();
+        });
+    }
+
+    private async _autoSave(): Promise<void> {
+        if (this._isSaving) {
+            this._isAutoSavePending = true;
+            return;
+        }
+        await this.save();
+        if (this._isAutoSavePending) {
+            this._isAutoSavePending = false;
+            if (this.isDirty()) {
+                await this._autoSave();
+            }
+        }
     }
 
     private _dispatchAfterSave(params: IFormAfterSaveParams): void {

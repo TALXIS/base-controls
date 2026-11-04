@@ -44,7 +44,7 @@ export const Root = (props: IFormProps) => {
 
 export const RootInternal = (props: IFormProps & { record: IRecord, onRefreshRequested: () => void }) => {
     const { children, onFormReady, onRefreshRequested } = props;
-    const form = useMemo(() => new FormRuntime({ record: props.record }), []);
+    const form = useMemo(() => new FormRuntime({ record: props.record, autoSave: props.autoSave }), []);
 
     const formApi = useMemo(() => {
         return new FormApi(form);

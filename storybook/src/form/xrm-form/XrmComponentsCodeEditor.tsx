@@ -158,6 +158,7 @@ interface IXrmTabsComponents {
 }
 interface IXrmFormProps {
   onLoad: () => Promise<IXrmFormLoadResult>;
+  autoSave?: boolean;
   onFormReady?: (params: IXrmFormReadyParams) => void;
   components?: {
     control?: IXrmControlComponents;
