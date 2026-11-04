@@ -1,4 +1,5 @@
-import { ThemeProvider, useLabels } from "@utils";
+import { ThemeProvider, useThemeBuilder, useTheme } from "@theme";
+import { useLabels } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from '@dnd-kit/utilities';
@@ -7,7 +8,6 @@ import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { Text } from "@fluentui/react";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeBuilder, useTheme } from "@theme";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;

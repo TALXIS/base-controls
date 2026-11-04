@@ -1,4 +1,4 @@
-import { ErrorHelper } from "@utils/error-handling";
+import { ErrorHelper } from "@core/error-handling";
 import { TASK_GRID_LABELS } from "../labels";
 import type { ITaskExecuteError, ITaskExecuteLoading, ITaskExecuteOptions, ITaskRuntime } from "./interfaces";
 

@@ -1,0 +1,26 @@
+import { IDatePickerProps } from "@legacy";
+import { IDateTimeProperty, IStringProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
+import { IControl, IOutputs } from "@core/pcf/interfaces/context";
+import { IInputParameters } from "@core/pcf/interfaces/parameters";
+
+
+
+export interface IDateTime extends IControl<IDateTimeParameters, IDateTimeOutputs, IDatePickerProps> {
+}
+export interface IDateTimeParameters extends IInputParameters {
+    value: IDateTimeProperty;
+    EnableMonthPicker?: ITwoOptionsProperty;
+    EnableDayPicker?: ITwoOptionsProperty;
+    /**
+* JSON array of dates that should not be selectable, example: ['2019-01-10', '2019-01-11']
+*/
+    RestrictedDates?: IStringProperty;
+        /**
+* JSON array of week days that should not be selectable (0 = Sunday,...6 = Saturday), example: [0,2,3]
+*/
+    RestrictedDaysOfWeek?: IStringProperty;
+}
+
+export interface IDateTimeOutputs extends IOutputs {
+    value?: Date;
+}

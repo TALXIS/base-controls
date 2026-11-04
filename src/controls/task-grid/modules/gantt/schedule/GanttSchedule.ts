@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { DataTypes, IRecord } from "@talxis/client-libraries";
-import { HookRegistry } from "@utils";
+import { HookRegistry } from "@core";
 import type { IGantt } from "../interfaces";
 import { addClockDuration, getClockDuration } from "./clockTime";
 import { MILLISECONDS_PER_MINUTE, MINUTES_PER_DAY, MINUTES_PER_HOUR } from "./timeUnits";

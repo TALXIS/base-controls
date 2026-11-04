@@ -1,11 +1,10 @@
-import { useLabels } from "@utils";
+import { useLabels } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import React, { useEffect, useMemo } from "react";
-import { InputActionMeta } from "react-select";
+import { InputActionMeta, SelectInstance } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
 import { Selector } from "../selector/Selector";
 import { useEditColumns } from "../useEditColumns";
-import { SelectInstance } from 'react-select';
 import { Attribute, IColumn } from "@talxis/client-libraries";
 
 interface IColumnSelectorProps {

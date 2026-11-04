@@ -1,5 +1,5 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
-import { HookRegistry } from "@utils";
+import { HookRegistry } from "@core";
 import { DAYS_PER_UNIT, IGanttSpan, MILLISECONDS_PER_DAY, MILLISECONDS_PER_HOUR, MILLISECONDS_PER_WEEK } from "../schedule";
 import { getHorizontalScrollbar, renderGeometry, shiftTimelineDrag, syncWheelScrollOrigin } from "../chart";
 

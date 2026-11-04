@@ -1,5 +1,5 @@
 import { IDataProvider, IInternalDataProvider } from "@talxis/client-libraries";
-import { DATASET_CONTROL_LABELS } from "../components/adapters/root/labels";
+import { DATASET_CONTROL_LABELS } from "../adapters/root/labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 
 export interface IDatasetControlUnsavedChangesGuardParameters {

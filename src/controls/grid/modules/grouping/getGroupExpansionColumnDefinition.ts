@@ -1,6 +1,6 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { GroupExpansionHeader } from "./components/group-expansion-header/GroupExpansionHeader";
+import { GroupExpansionHeader } from "./adapters/group-expansion-header/GroupExpansionHeader";
 
 /** The key the expansion column takes. */
 export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';

@@ -1,8 +1,7 @@
 export * from './createGroupingModule';
 export type { IGroupingSettings, IGridGrouping } from './GridGrouping';
-export * from './moduleComponents';
-export * from './services';
 export * from './components';
+export * from './runtime';
+export * from './adapters';
 export { GROUP_EXPANSION_COLUMN_KEY } from './getGroupExpansionColumnDefinition';
 export * from './labels';
-export * from './labels.cs';

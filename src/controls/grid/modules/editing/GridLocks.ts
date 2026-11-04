@@ -1,10 +1,10 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { HookRegistry } from "@utils";
-import { IGridServiceLocator } from "../../services";
-import { getColumnContext } from "../../services/columns/colDef";
+import { HookRegistry } from "@core";
+import { IGridServiceLocator } from "../../runtime";
+import { getColumnContext } from "../../runtime/columns/colDef";
 
-declare module "../../services/columns/colDef" {
+declare module "../../runtime/columns/colDef" {
     interface IGridColumnContext {
         /** Whether what the cells hold is locked for good. */
         isLocked?: boolean;
@@ -17,7 +17,7 @@ declare module "../../services/columns/colDef" {
     }
 }
 
-declare module "../../services/rows/GridRows" {
+declare module "../../runtime/rows/GridRows" {
     interface IGridRowSettings {
         /** Locks a record as a whole, after the record-level `registerLock` hooks. */
         onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;

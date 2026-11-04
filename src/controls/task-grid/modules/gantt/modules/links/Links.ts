@@ -1,12 +1,13 @@
 import { createElement } from "react";
 import type { GanttStatic, Link } from "dhtmlx-gantt";
-import type { LabelsOf } from "@utils";
+import type { LabelsOf } from "@core";
 import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { extendTaskVisibility, GANTT_DRAG_MARKER_CLASS, GANTT_LINK_CONTROL_CLASS, GANTT_LINK_CONTROL_START_CLASS, GANTT_LINK_TOOLTIP_CLASS } from "../../chart";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { ILinkTooltipRendererComponents, LinkTooltipRenderer } from "./components";
+import { ILinkTooltipRendererComponents } from "./adapters/renderer/components";
+import { LinkTooltipRenderer } from "./adapters/renderer/LinkTooltipRenderer";
 import { LINKS_LABELS } from "./labels";
 import { LINK_DRAG_POINTER_VARIABLES, LINK_DROP_ATTRIBUTE, LINK_SAVING_CLASS } from "./classNames";
 import { getDragLinkTooltipClass, getDragLinkTooltipHtml, IDragLinkTooltipEnd } from "./dragTooltip";

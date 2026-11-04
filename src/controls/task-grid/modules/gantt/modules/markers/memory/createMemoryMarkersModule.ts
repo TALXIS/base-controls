@@ -1,4 +1,4 @@
-import { simulateBackend } from "../../../../../data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../../../runtime/data-sources/memory/simulateBackend";
 import type { IMarker, IMarkersParameters, IMarkersStore } from "../Markers";
 import { createMarkersModule, IMarkersModule } from "../createMarkersModule";
 

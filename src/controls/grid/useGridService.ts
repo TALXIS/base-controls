@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { IGridDeferredService, IGridInternalServiceMap, IGridServiceLocator, IGridServiceMap } from "./services";
+import { IGridDeferredService, IGridInternalServiceMap, IGridServiceLocator, IGridServiceMap } from "./runtime";
 import { GridServicesContext } from "./context";
 
 /** The grid's services, typed with a module's own map to reach what that module adds. */

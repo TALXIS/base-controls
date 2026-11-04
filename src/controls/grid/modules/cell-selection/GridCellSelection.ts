@@ -1,5 +1,5 @@
-import { IGridServiceLocator } from "../../services";
-import { IGridAgGridOptions } from "../../services/runtime";
+import { IGridServiceLocator } from "../../runtime";
+import { IGridAgGridOptions } from "../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridCellSelectionOptions } from "./createCellSelectionModule";
 

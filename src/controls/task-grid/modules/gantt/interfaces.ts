@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LabelsService } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LabelsService } from "@core";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";

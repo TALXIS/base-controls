@@ -1,0 +1,143 @@
+import { IMultiSelectOptionSet } from './interfaces';
+import { useControl } from "@core";
+import { ComboBox } from "@legacy";
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
+import { useEffect, useMemo, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import React from 'react';
+import { ColorfulOptions } from './ui/colorful-options/ColorfulOptions';
+import { getIsColorFeatureEnabled, onRenderColorfulOption } from '../option-set/ui/shared';
+import { getComboBoxStyles } from './ui/styles';
+import { AppThemeContext, ThemeContext, useAppTheme, useTheme } from '@theme';
+
+export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
+    const { sizing, onNotifyOutputChanged } = useControl('MultiSelectOptionSet', props);
+    const theme = useTheme();
+    const appTheme = useAppTheme();
+    const ref = useRef<HTMLDivElement>(null);
+    const parameters = props.parameters;
+    const boundValue = parameters.value;
+    const componentRef = useRef<IComboBox>(null);
+    const { Options } = parameters.value.attributes;
+    const context = props.context;
+    const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableOptionSetColors?.raw, Options), [props.parameters.EnableOptionSetColors?.raw, Options]);
+    const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
+        key: option.Value.toString(),
+        text: option.Label,
+    }));
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
+    const handleChange = (option?: IComboBoxOption | null): void => {
+        if (!option) {
+            onNotifyOutputChanged({
+                value: undefined
+            });
+            return;
+        }
+        const optionKey = option.key.toString();
+        const updatedSelectedKeys = new Set(boundValue.raw || []);
+        if (option.selected) {
+            updatedSelectedKeys.add(+optionKey);
+        } else {
+            updatedSelectedKeys.delete(+optionKey);
+        }
+        const updatedSelectedKeysArray = Array.from(updatedSelectedKeys);
+
+        onNotifyOutputChanged({
+            value: updatedSelectedKeysArray.map(key => +key)
+        });
+    };
+
+    const isEmptyValue = () => {
+        if (!boundValue.raw) {
+            return true;
+        }
+        if (boundValue.raw.length === 0) {
+            return true;
+        }
+        return false;
+    }
+
+    const renderColorfulOptions = () => {
+        const className = 'talxis__multiSelectOptionSet__colorfulOptions';
+        const parent: HTMLDivElement = ref.current?.querySelector('.ms-ComboBox')!;
+        const container = document.createElement('div');
+        container.setAttribute('class', `${className} ${styles.colorfulOptionsWrapper}`);
+        container.onclick = () => componentRef.current?.focus(true);
+
+        //a root of its own, which the themes do not reach unless handed over
+        ReactDOM.render(<AppThemeContext.Provider value={appTheme}>
+            <ThemeContext theme={theme}>
+                <ColorfulOptions value={boundValue} context={props.context} />
+            </ThemeContext>
+        </AppThemeContext.Provider>, container);
+
+        const existingContainer = parent.querySelector(`:scope>.${className}`);
+        if (existingContainer && isEmptyValue()) {
+            //clear the container if no values are selected
+            parent.removeChild(existingContainer);
+        }
+        if (!existingContainer) {
+            parent.prepend(container);
+        }
+        else {
+            existingContainer.replaceWith(container);
+        }
+    }
+
+    useEffect(() => {
+        if (parameters.AutoFocus?.raw) {
+            componentRef.current?.focus(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isColorFeatureEnabled) {
+            renderColorfulOptions();
+        }
+    }, [boundValue.raw]);
+
+    const styles = getComboBoxStyles(isColorFeatureEnabled, isEmptyValue(), sizing.width, sizing.height)
+
+    const componentProps = onOverrideComponentProps({
+        componentRef: componentRef,
+        ref: ref,
+        options: comboBoxOptions,
+        allowFreeInput: true,
+        multiSelect: true,
+        autoComplete: "on",
+        autofill: parameters.AutoFocus?.raw === true ? {
+            autoFocus: true,
+        } : undefined,
+        onRenderOption: isColorFeatureEnabled ? (option) => onRenderColorfulOption(Options, option, theme) : undefined,
+        readOnly: context.mode.isControlDisabled,
+        errorMessage: boundValue.errorMessage,
+        selectedKey: boundValue.raw ? boundValue.raw.map(key => key.toString()) : null,
+        useComboBoxAsMenuWidth: true,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        styles: { root: styles.root, callout: styles.callout },
+        clickToCopyProps: parameters.EnableCopyButton?.raw === true ? {
+            key: 'copy',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Copy'
+            }
+        } : undefined,
+        deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
+            key: 'delete',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Cancel'
+            },
+            onClick: (e, value) => {
+                handleChange(null);
+            }
+        } : undefined,
+        fillAvailableSpace: sizing.fillsAvailableSpace,
+        onChange: (e, option) => handleChange(option),
+    });
+
+    return (
+        <ComboBox {...componentProps} />
+    );
+};

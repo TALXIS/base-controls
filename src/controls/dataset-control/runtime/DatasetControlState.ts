@@ -1,5 +1,5 @@
 import { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { IStateStore } from "@utils";
+import { IStateStore } from "@core";
 
 /** What the control keeps of a view's provider, for the next time the view is loaded. */
 export interface IDatasetControlProviderState {

@@ -1,25 +1,25 @@
-import { IEventSubscriber } from "@utils";
+import { IEventSubscriber } from "@core";
 import { createElement } from "react";
 import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { IGridServiceLocator } from "../../services";
-import type { IGridCell } from "../../services/cells";
-import { IColumnHeaderAdornment, IGridColumnHeader } from "../../services/column-header";
-import { CellUi } from "../../components/cells/ui";
+import { IGridServiceLocator } from "../../runtime";
+import type { IGridCell } from "../../runtime/cells";
+import { IColumnHeaderAdornment, IGridColumnHeader } from "../../runtime/column-header";
+import { CellUi } from "../../ui/cells";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { ITheme } from "@theme";
-import { IGridStyles } from "../../services/theme";
+import { IGridStyles } from "../../runtime/theme";
 import { GridLocks, IGridLocks } from "./GridLocks";
 import { getGridEditingStyles } from "./styles";
 import { LOCKED_RECORD_ROW_CLASS, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY } from "./constants";
-import { RecordLockIndicatorCell } from "./components/record-lock-indicator/RecordLockIndicatorCell";
+import { RecordLockIndicatorCell } from "./adapters/record-lock-indicator/RecordLockIndicatorCell";
 import { SELECTION_COLUMN_KEY } from "../row-selection/constants";
-import { RecordSaveSelectionCell } from "./components/record-save-selection-cell/RecordSaveSelectionCell";
-import { RecordSaveIndicatorCell } from "./components/record-save-indicator/RecordSaveIndicatorCell";
-import { CellFieldEditor } from "./components/field-cell-editor/CellFieldEditor";
-import { getColumnContext } from "../../services/columns/colDef";
-import { getRowNode } from "../../services/rows/getRowNode";
+import { RecordSaveSelectionCell } from "./adapters/record-save-selection-cell/RecordSaveSelectionCell";
+import { RecordSaveIndicatorCell } from "./adapters/record-save-indicator/RecordSaveIndicatorCell";
+import { CellFieldEditor } from "./adapters/field-cell-editor/CellFieldEditor";
+import { getColumnContext } from "../../runtime/columns/colDef";
+import { getRowNode } from "../../runtime/rows/getRowNode";
 import { GRID_LABELS } from "../../labels";
 
 declare module "../../interfaces" {

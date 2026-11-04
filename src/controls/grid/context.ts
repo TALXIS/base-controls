@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import { IGridInternalServiceLocator } from "./services";
-import { IGridComponents } from "./components/components";
+import { IGridInternalServiceLocator } from "./runtime";
+import { IGridComponents } from "./components";
 
 export const GridServicesContext = createContext<IGridInternalServiceLocator>(undefined as unknown as IGridInternalServiceLocator);
 GridServicesContext.displayName = 'GridServices';

@@ -2,9 +2,9 @@ import { useTheme } from '@theme';
 import React, { useMemo } from 'react';
 import { IconButton, IMessageBarStyles, MessageBar, MessageBarType } from '@fluentui/react';
 import { ContextualMenu } from '@ui/surfaces';
-import { INotificationMessageBarComponents } from './components';
+import { INotificationMessageBarComponents } from "./components";
 import { getNotificationMessageBarStyles } from './styles';
-import { useLabels } from '@utils/localization';
+import { useLabels } from '@core/localization';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
 
 /** One message of a notification bar. */

@@ -1,9 +1,9 @@
 import { ICommand } from "@talxis/client-libraries";
-import { IControl } from "@interfaces/context";
+import { IControl } from "@core/pcf/interfaces/context";
 import { ICommandBarProps } from "@legacy";
-import { ITwoOptionsProperty } from "@interfaces";
+import { ITwoOptionsProperty } from "@core/pcf/interfaces";
 import { IShimmerProps } from "@fluentui/react";
-import { IThemeProviderProps } from "@utils";
+import { IThemeProviderProps } from "@theme";
 
 export interface IRibbon extends IControl<IRibbonParameters, any, IRibbonComponentProps> {
 }

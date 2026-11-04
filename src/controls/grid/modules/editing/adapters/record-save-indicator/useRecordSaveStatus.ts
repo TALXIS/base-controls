@@ -1,0 +1,43 @@
+import { useEffect, useRef, useState } from "react";
+import { IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { useRerender, useEventEmitter } from "@core";
+
+/** How long a successful save stays on screen before the cell goes back to what it was showing. */
+const SUCCESS_VISIBLE_FOR = 2000;
+
+/** What a record has to say about the last time the grid saved it. */
+export interface IRecordSaveStatus {
+    isSaving: boolean;
+    /** `null` once there is nothing left to report. */
+    saveResult: IRecordSaveOperationResult | null;
+    clearSaveResult: () => void;
+}
+
+/** Follows a record's saves. */
+export const useRecordSaveStatus = (record: IRecord): IRecordSaveStatus => {
+    const { rerender } = useRerender();
+    const successTimeoutRef = useRef<NodeJS.Timeout>();
+    const [saveResult, setSaveResult] = useState<IRecordSaveOperationResult | null>(null);
+
+    const onAfterSaved = (result: IRecordSaveOperationResult) => {
+        setSaveResult(result);
+        clearTimeout(successTimeoutRef.current);
+        //a failure stays until dismissed: it is the only place the reason for it is offered
+        if (result.success) {
+            successTimeoutRef.current = setTimeout(() => setSaveResult(null), SUCCESS_VISIBLE_FOR);
+        }
+    };
+
+    //a save starting renders nothing by itself
+    useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
+    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
+
+    useEffect(() => () => clearTimeout(successTimeoutRef.current), []);
+
+    const isSaving = record.isSaving();
+    return {
+        isSaving: isSaving,
+        saveResult: saveResult,
+        clearSaveResult: () => setSaveResult(null),
+    };
+};

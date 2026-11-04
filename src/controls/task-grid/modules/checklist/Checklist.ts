@@ -1,15 +1,15 @@
 import type { ColDef } from "ag-grid-community";
 import type { IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import type { LabelsOf } from "@utils";
-import type { ITaskDataProvider } from "../../provider";
+import type { LabelsOf } from "@core";
+import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { createReadOnlyLookupColumn, TaskColumnValues } from "../column-values";
 import { CHECKLIST_LABELS } from "./labels";
-import { ChecklistCell } from "./components/adapters/checklist-cell";
-import type { IChecklistProgressComponents } from "./components/ui/checklist-progress";
+import { ChecklistCell } from "./adapters/checklist-cell";
+import type { IChecklistProgressComponents } from "./ui/checklist-progress";
 
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 

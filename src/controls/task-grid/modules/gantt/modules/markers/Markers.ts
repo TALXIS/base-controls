@@ -1,13 +1,13 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import type { LabelsOf } from "@utils";
+import type { LabelsOf } from "@core";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { MARKERS_LABELS } from "./labels";
-import type { MarkerLineStyle, IMarkerUiChipComponents, IMarkerUiColumnComponents, IMarkerUiLayerComponents, IMarkerUiLineComponents, IMarkerUiScaleComponents, IMarkerUiTrackComponents } from "./components/ui";
-import { MarkerLayer } from "./components/adapters/marker-layer";
+import type { MarkerLineStyle, IMarkerUiChipComponents, IMarkerUiColumnComponents, IMarkerUiLayerComponents, IMarkerUiLineComponents, IMarkerUiScaleComponents, IMarkerUiTrackComponents } from "./ui";
+import { MarkerLayer } from "./adapters/marker-layer";
 import { getMarkersStyles } from "./styles";
 
 /** A date marked on the timeline with a line and a chip on the scale. */

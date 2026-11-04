@@ -1,5 +1,4 @@
-import { mergeStyleSets } from "@fluentui/react";
-import { ITheme } from "@fluentui/react";
+import { mergeStyleSets, ITheme } from "@fluentui/react";
 
 export const getSuffixStyles = (theme: ITheme) => {
     return mergeStyleSets({

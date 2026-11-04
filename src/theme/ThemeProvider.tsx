@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from "react";
 import { ITheme, ThemeContext as FluentThemeContext } from "@fluentui/react";
-import { getClassNames } from "@utils/styling";
+import { getClassNames } from "@core/styling";
 import { ThemeContext } from "./ThemeContext";
 import { createThemeBuilder } from "./theme-builder";
 import { getThemeProviderStyles } from "./styles";

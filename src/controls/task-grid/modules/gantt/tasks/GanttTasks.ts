@@ -1,8 +1,8 @@
-import { HookRegistry } from "@utils";
+import { HookRegistry } from "@core";
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { GridApi, IRowNode } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
-import type { ITaskDataProviderEvents } from "../../../provider";
+import type { ITaskDataProviderEvents } from "../../../runtime/provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../interfaces";
 import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SAVING_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS, setTaskIndexResolver } from "../chart";

@@ -1,4 +1,4 @@
-export { useField } from './components/adapters/field';
-export { useValidationSummary } from './components/adapters/root';
-export { useForm } from './components/adapters/root/context';
-export { useFieldName } from './components/adapters/field/context';
+export { useField } from './adapters/field';
+export { useValidationSummary } from './adapters/root';
+export { useForm } from './adapters/root/context';
+export { useFieldName } from './adapters/field/context';

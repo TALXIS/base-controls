@@ -1,5 +1,5 @@
 import { IInternalDataProvider } from "@talxis/client-libraries";
-import { LabelsOf } from "@utils";
+import { LabelsOf } from "@core";
 import { IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
 import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
 

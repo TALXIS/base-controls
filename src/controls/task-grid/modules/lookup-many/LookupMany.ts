@@ -1,17 +1,17 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
 import type { IColumnMenuSection, IGrid } from "@controls/grid";
-import { ErrorHelper, type LabelsOf } from "@utils";
-import type { ITaskColumnMatcher, ITaskDataProvider } from "../../provider";
+import { ErrorHelper, type LabelsOf } from "@core";
+import type { ITaskColumnMatcher, ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { TaskColumnValues } from "../column-values";
 import { LOOKUP_MANY_LABELS } from "./labels";
-import { LookupManyCell } from "./components/adapters/lookup-many-cell";
-import { LookupManyCellEditor } from "./components/adapters/lookup-many-cell-editor";
-import { LookupManyColumnHeader } from "./components/adapters/lookup-many-column-header";
-import type { ILookupManyEditorPopupComponents, ILookupManyFilterComponents, ILookupManyPillsComponents, ILookupManySelectComponents } from "./components/ui";
+import { LookupManyCell } from "./adapters/lookup-many-cell";
+import { LookupManyCellEditor } from "./adapters/lookup-many-cell-editor";
+import { LookupManyColumnHeader } from "./adapters/lookup-many-column-header";
+import type { ILookupManyEditorPopupComponents, ILookupManyFilterComponents, ILookupManyPillsComponents, ILookupManySelectComponents } from "./ui";
 
 type Reference = ComponentFramework.EntityReference;
 type Condition = ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression;

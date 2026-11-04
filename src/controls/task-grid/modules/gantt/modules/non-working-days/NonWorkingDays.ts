@@ -2,9 +2,9 @@ import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import type { LabelsOf } from "@utils";
+import type { LabelsOf } from "@core";
 import type { ITaskRuntime } from "../../../../runtime";
-import type { ITaskGridSetting } from "../../../../dataset-control/settings";
+import type { ITaskGridSetting } from "../../../../adapters/root/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline";
@@ -14,8 +14,8 @@ import { NON_WORKING_DAYS_LABELS } from "./labels";
 import { NON_WORKING_DAY_CLASS } from "./classNames";
 import { getNonWorkingDaysStyles } from "./styles";
 import { NonWorkingDayCalendar } from "./NonWorkingDayCalendar";
-import { NonWorkingDayScaleTooltip } from "./components/adapters/scale-tooltip";
-import type { INonWorkingDaysUiTooltipComponents } from "./components/ui/tooltip";
+import { NonWorkingDayScaleTooltip } from "./adapters/scale-tooltip";
+import type { INonWorkingDaysUiTooltipComponents } from "./ui/tooltip";
 
 const SHOW_NON_WORKING_DAYS_STATE_KEY = 'showNonWorkingDays';
 //a year of non-working days in a row is a calendar to give up on

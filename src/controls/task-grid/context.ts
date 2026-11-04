@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { useContextWithNullCheck } from "@utils";
+import { useContextWithNullCheck } from "@core";
 import type { ITaskGridComponents } from "./interfaces";
 
 export interface ITaskGridContext {

@@ -1,8 +1,8 @@
-import { ServiceLocator } from "@utils";
+import { ServiceLocator } from "@core";
 import { IGridModule } from "../../interfaces";
-import { IGridSortingComponents } from "./moduleComponents";
+import { IGridSortingComponents } from "./components";
 import { GridSorting } from "./GridSorting";
-import { IGridSortingServiceMap } from "./services";
+import { IGridSortingServiceMap } from "./runtime";
 
 export interface ISortingModuleOptions {
     /** Overrides for the parts of what this module draws, by piece. */

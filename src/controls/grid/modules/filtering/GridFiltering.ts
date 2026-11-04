@@ -1,15 +1,14 @@
-import { IEventSubscriber } from "@utils";
+import { IEventSubscriber, HookRegistry, LabelsOf } from "@core";
 import { createElement } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
 import { ColumnFilter, DataTypes, FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as FilterType, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, LabelsOf } from "@utils";
-import { IParameters } from "@interfaces";
+import { IParameters } from "@core/pcf/interfaces";
 import { GRID_FILTERING_LABELS } from "./labels";
-import { GridFilteringIconComponents, IGridFilteringComponents } from "./moduleComponents";
-import { FilterCalloutHost } from "./components/filter-callout-host/FilterCalloutHost";
-import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
-import { IGridFilteringServiceLocator } from "./services";
-import { IGridSurface } from "../../services/surfaces";
+import { GridFilteringIconComponents, IGridFilteringComponents } from "./components";
+import { FilterCalloutHost } from "./adapters/filter-callout-host/FilterCalloutHost";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
+import { IGridFilteringServiceLocator } from "./runtime";
+import { IGridSurface } from "../../runtime/surfaces";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 declare module "../../interfaces" {

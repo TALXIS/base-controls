@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { CommandBar as CommandBarBase, composeComponentAs, concatStyleSetsWithProps, ICommandBarItemProps, ICommandBarProps as ICommandBarPropsBase, ICommandBarStyleProps } from "@fluentui/react";
 import { useAppTheme } from "@theme";
-import { useCompact } from "@utils/layout";
-import { getThemedContextualItems } from "../surfaces";
-import { useSurfaceMenuProps } from "../surfaces";
+import { useCompact } from "../layout";
+import { getThemedContextualItems, useSurfaceMenuProps } from "../surfaces";
 import { getCommandBarStyles } from "./styles";
 import { ObservedResizeGroup } from "./ObservedResizeGroup";
 

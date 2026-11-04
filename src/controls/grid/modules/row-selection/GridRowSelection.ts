@@ -1,13 +1,13 @@
-import { HookRegistry, IEventSubscriber } from "@utils";
+import { HookRegistry, IEventSubscriber } from "@core";
 import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
-import { IGridRowSelectionServiceLocator } from "./services";
+import { IGridRowSelectionServiceLocator } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { IGridAgGridOptions } from "../../services/runtime";
-import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
-import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/components/ui/toggle/styles";
+import { IGridAgGridOptions } from "../../runtime/grid";
+import { CELL_COMMANDS_CLASS_NAME } from "../../ui/cells/commands/styles";
+import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/ui/toggle/styles";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {

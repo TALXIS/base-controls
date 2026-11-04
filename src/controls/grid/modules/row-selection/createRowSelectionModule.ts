@@ -1,8 +1,8 @@
 import { RowSelectionModule } from "ag-grid-community";
-import { ServiceLocator } from "@utils";
+import { ServiceLocator } from "@core";
 import { IGridModule } from "../../interfaces";
 import { GridRowSelection } from "./GridRowSelection";
-import { IGridRowSelectionServiceMap } from "./services";
+import { IGridRowSelectionServiceMap } from "./runtime";
 
 export interface IRowSelectionModuleOptions {
     /** How many rows may be selected at once. */

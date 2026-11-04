@@ -2,12 +2,12 @@ import { IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
-import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../provider";
+import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "../../tree/constants";
-import type { ITaskExpansion } from "../../tree/TaskExpansion";
+import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "../../constants";
+import type { ITaskExpansion } from "../../runtime/tree/TaskExpansion";
 import { getTaskDraggingStyles } from "./styles";
 
 //AG Grid would open a hovered parent on its own once this runs out

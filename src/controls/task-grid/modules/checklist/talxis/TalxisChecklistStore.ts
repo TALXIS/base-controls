@@ -1,6 +1,6 @@
 import { DataTypes } from "@talxis/client-libraries";
 import type { ITaskRuntime } from "../../../runtime";
-import type { ITaskDataProvider } from "../../../provider";
+import type { ITaskDataProvider } from "../../../runtime/provider";
 import type { IChecklistItem, IChecklistStore } from "../Checklist";
 
 const CHECKLIST_FIELD = 'talxis_checklistjson';

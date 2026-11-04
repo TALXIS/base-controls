@@ -1,6 +1,6 @@
 import type { IRecord } from "@talxis/client-libraries";
-import { ErrorHelper } from "@utils/error-handling";
-import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../../provider";
+import { ErrorHelper } from "@core/error-handling";
+import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../provider";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 

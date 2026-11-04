@@ -1,5 +1,6 @@
 import { TaskGanttRoot } from "./TaskGantt";
-import { GanttZoomSlider, GridGanttSplit } from "./components";
+import { GanttZoomSlider } from "./adapters/zoom-slider/GanttZoomSlider";
+import { GridGanttSplit } from "./adapters/grid-gantt-split/GridGanttSplit";
 
 export interface ITaskGanttParts {
     /** The Gantt's zoom, for the header. */

@@ -1,5 +1,5 @@
 import { IStyle, mergeStyleSets } from "@fluentui/react";
-import { FIELD_ERROR_OUTLINE_CLASS_NAME, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./components/cells/ui/field-error/styles";
+import { FIELD_ERROR_OUTLINE_CLASS_NAME, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./ui/cells/field-error/styles";
 
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;

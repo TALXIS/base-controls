@@ -1,12 +1,9 @@
-export {
-    Form,
-} from './components';
-export { ControlComponents } from './components/adapters/control';
-export type { IControlComponents } from './components/adapters/control';
-export * from './components/ui';
+export { Form } from "./Form";
+export { ControlComponents } from './adapters/control';
+export type { IControlComponents } from './adapters/control';
+export * from './ui';
 export * from './interfaces';
 export * from './hooks';
 export * from './labels';
-export * from './labels.cs';
-export * from './extensions/xrm-form';
-export * from './strategies';
+export * from './modules/xrm-form';
+export * from './runtime/strategies';

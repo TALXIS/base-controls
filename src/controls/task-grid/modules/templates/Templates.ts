@@ -2,15 +2,16 @@ import { createElement } from "react";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
-import type { LabelsOf } from "@utils";
-import type { ICreateTaskTree, ITaskCreateParams, ITasksCreateResult } from "../../provider";
+import type { LabelsOf } from "@core";
+import type { ICreateTaskTree, ITaskCreateParams, ITasksCreateResult } from "../../runtime/provider";
 import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { TASK_COMMANDS_COLUMN_KEY } from "../../tree/constants";
+import { TASK_COMMANDS_COLUMN_KEY } from "../../constants";
 import { TEMPLATES_LABELS } from "./labels";
-import { TemplateSelector } from "./components/adapters/template-selector";
-import type { IRecordListComponents, IRecordSelectorFrameComponents } from "../../components/record-selector";
+import { TemplateSelector } from "./adapters/template-selector";
+import type { IRecordListComponents } from "./ui/record-selector/record-list/components";
+import type { IRecordSelectorFrameComponents } from "./ui/record-selector/record-selector-frame/components";
 import { runQuietly } from "../../runtime/runQuietly";
 
 /** A template's own task, named after it, with the tasks under it. */

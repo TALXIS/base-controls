@@ -3,18 +3,18 @@ import { useCallback, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 
-import { useControlStateStore } from "@controls/dataset-control/components/adapters/root/useControlStateStore";
-import { useDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
-import { useDatasetControlPart } from "@controls/dataset-control/components/adapters/root/useDatasetControlPart";
-import { getClassNames, useDataProvider, useLabelsService, usePcfContext } from "@utils";
+import { useControlStateStore } from "../dataset-control/adapters/root/useControlStateStore";
+import { useDatasetControlRuntime } from "../dataset-control/adapters/root/context";
+import { useDatasetControlPart } from "../dataset-control/adapters/root/useDatasetControlPart";
+import { getClassNames, useLabelsService, usePcfContext, useLatest } from "@core";
+import { useDataProvider } from "@data";
 import { IGridProps } from "./interfaces";
-import { GridRuntime } from "./services/runtime";
+import { GridRuntime } from "./runtime/grid";
 import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
 import { GridComponentsContext, GridServicesContext } from "./context";
-import { IGridComponents } from "./components/components";
-import { Surfaces } from "./components/surfaces";
-import { useLatest } from "@hooks";
+import { IGridComponents } from "./components";
+import { Surfaces } from "./adapters/surfaces";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 

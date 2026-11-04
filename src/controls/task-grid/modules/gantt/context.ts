@@ -1,5 +1,5 @@
 import { createContext, useEffect, useMemo, useState } from "react";
-import { useContextWithNullCheck } from "@utils";
+import { useContextWithNullCheck } from "@core";
 import type { IGantt, IGanttDeferredService, IGanttModuleMap, IGanttServiceMap } from "./interfaces";
 
 export const GanttContext = createContext<IGantt | null>(null);

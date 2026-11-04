@@ -1,12 +1,11 @@
 import { useEffect, useMemo } from "react";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { useEventEmitter, useLatest } from "@hooks";
-import { useRerender } from "@legacy";
-import { ErrorBoundary, ErrorHelper, getClassNames, usePcfContext } from "@utils";
+import { useEventEmitter, useLatest, useRerender, ErrorHelper, getClassNames, useOpenErrorDialog, usePcfContext } from "@core";
+import { ErrorMessageBoundary } from "@ui";
 import { Shimmer } from "@ui/shimmer";
 import { ILoadingBoundaryComponents, LoadingBoundary } from "@ui/loading-boundary";
 import { IRibbonCommand } from "./interfaces";
-import { IRibbonRuntime, IRibbonRuntimeEvents, RibbonRuntime } from "./RibbonRuntime";
+import { IRibbonRuntime, IRibbonRuntimeEvents, RibbonRuntime } from "./runtime/RibbonRuntime";
 import { IRibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { RibbonUi } from "./ui";
@@ -36,6 +35,7 @@ export const Ribbon = (props: IRibbonProps) => {
     const styles = useMemo(() => getRibbonStyles(props.align ?? 'start'), [props.align]);
     const { rerender } = useRerender();
     const pcfContext = usePcfContext();
+    const openErrorDialog = useOpenErrorDialog();
     const { loadingBoundary, errorMessage, ...commandBar } = props.components ?? {};
 
     useEventEmitter<IRibbonRuntimeEvents>(runtime.events, ['onBeforeLoad', 'onLoaded', 'onBeforeExecute', 'onAfterExecute'], rerender);
@@ -70,9 +70,9 @@ export const Ribbon = (props: IRibbonProps) => {
 
     const items = (commands ?? []).map(toItem);
 
-    return <ErrorBoundary error={runtime.getError()} onRetry={() => runtime.reload()} components={errorMessage}>
+    return <ErrorMessageBoundary error={runtime.getError()} onRetry={() => runtime.reload()} onOpenDetails={openErrorDialog} components={errorMessage}>
         <LoadingBoundary isLoading={commands === undefined} components={loadingBoundaryComponents}>
             <RibbonUi items={items} align={props.align} className={props.className} components={commandBar} />
         </LoadingBoundary>
-    </ErrorBoundary>;
+    </ErrorMessageBoundary>;
 };

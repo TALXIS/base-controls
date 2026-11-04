@@ -1,6 +1,6 @@
 import { IServerSideDatasource, IServerSideGetRowsParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../../services";
+import { IGridServiceLocator } from "../../../runtime";
 
 export class ServerSideDatasource implements IServerSideDatasource {
     private _services: IGridServiceLocator;

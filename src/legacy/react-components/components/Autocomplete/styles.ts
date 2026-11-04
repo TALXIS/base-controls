@@ -1,5 +1,4 @@
-import { ContextualMenuItemType } from "@fluentui/react";
-import { ITheme, mergeStyles } from "@fluentui/react";
+import { ContextualMenuItemType, ITheme, mergeStyles } from "@fluentui/react";
 import { IAutoCompleteItemProps } from "./Autocomplete";
 
 export const getAutocompleteStyles = () => {

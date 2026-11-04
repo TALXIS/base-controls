@@ -1,16 +1,16 @@
 import type { ColDef } from "ag-grid-community";
 import { EventEmitter, IColumn, IEntityReference, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import type { LabelsOf } from "@utils";
-import type { ITaskDataProvider } from "../../provider";
+import type { LabelsOf } from "@core";
+import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime, TaskSavingChainLinksHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { createReadOnlyLookupColumn, TaskColumnValues } from "../column-values";
 import { DEPENDENCIES_LABELS } from "./labels";
-import { DependenciesCell } from "./components/adapters/dependencies-cell";
+import { DependenciesCell } from "./adapters/dependencies-cell";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./constants";
-import type { IDependencyCountComponents } from "./components/ui/dependency-count";
+import type { IDependencyCountComponents } from "./ui/dependency-count";
 
 const DEPENDENCY_COLUMN_NAMES = [PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME];
 

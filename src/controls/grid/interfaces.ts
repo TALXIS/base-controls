@@ -1,10 +1,10 @@
 import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { IGridColDefOverride } from "./services/columns/colDef";
-import type { IGrid } from "./services/runtime";
-import type { IServiceLocator } from "@utils";
-import type { IGridComponents } from "./components/components";
-import type { IGridRowSettings } from "./services/rows";
+import type { IGridColDefOverride } from "./runtime/columns/colDef";
+import type { IGrid } from "./runtime/grid";
+import type { IServiceLocator } from "@core";
+import type { IGridComponents } from "./components";
+import type { IGridRowSettings } from "./runtime/rows";
 
 /** What the grid's modules load, by module name; each module adds its own entry. */
 export interface IGridModuleMap { }

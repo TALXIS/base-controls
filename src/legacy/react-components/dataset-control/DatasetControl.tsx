@@ -1,14 +1,13 @@
-import { useTheme } from "@theme";
+import { useTheme, ThemeProvider } from "@theme";
 import { useEffect, useMemo, useRef } from "react";
-import { ThemeProvider, useLabels } from "@utils";
+import { useLabels, useRerender } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
-import { useRerender } from "@legacy";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";
 import { Pagination } from "./pagination/Pagination";
 import { getDatasetControlStyles } from "./styles";
 import { Header } from "./header/Header";
-import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useEventEmitter } from "@core/hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
 

@@ -1,11 +1,11 @@
 import { ColDef } from "ag-grid-community";
 import { IContextualMenuItem } from "@fluentui/react";
 import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@talxis/client-libraries";
-import { LabelsOf } from "@utils";
+import { LabelsOf } from "@core";
 import { GRID_SORTING_LABELS } from "./labels";
-import { GridSortingIconComponents, IGridSortingComponents } from "./moduleComponents";
-import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
-import { IGridSortingServiceLocator } from "./services";
+import { GridSortingIconComponents, IGridSortingComponents } from "./components";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
+import { IGridSortingServiceLocator } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 declare module "../../interfaces" {

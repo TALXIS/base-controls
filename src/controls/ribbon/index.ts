@@ -1,5 +1,5 @@
 export * from './Ribbon';
-export * from './RibbonRuntime';
+export * from './runtime/RibbonRuntime';
 export * from './interfaces';
 export * from './components';
 export * from './ui';

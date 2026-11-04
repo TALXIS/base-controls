@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { createClientSideRowModelModule, Grid, IGridModule, IGridOpenRecordParams } from "@controls/grid";
 import { ITaskGridProps } from "./interfaces";
 import { ITaskGridContext, TaskGridContext } from "./context";
-import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/components/adapters/root/context";
-import { useTaskRuntime } from "./dataset-control/context";
+import { useRequiredDatasetControlRuntime } from "../dataset-control/adapters/root/context";
+import { useTaskRuntime } from "./adapters/root/context";
 import { runQuietly } from "./runtime/runQuietly";
-import { createTaskTreeModule } from "./tree/createTaskTreeModule";
+import { createTaskTreeModule } from "./runtime/tree/createTaskTreeModule";
 
 /** The tasks of a `TaskDatasetControl`, drawn as a tree in its body. */
 export const TaskGridRoot = (props: ITaskGridProps) => {

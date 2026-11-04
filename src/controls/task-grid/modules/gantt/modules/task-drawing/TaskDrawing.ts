@@ -3,8 +3,8 @@ import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { IGanttSpan } from "../../schedule";
 import { runQuietly } from "../../../../runtime/runQuietly";
-import { TaskDrawingLayer } from "./components/adapters/task-drawing-layer";
-import type { ITaskDrawingUiPreviewComponents } from "./components/ui/preview";
+import { TaskDrawingLayer } from "./adapters/task-drawing-layer";
+import type { ITaskDrawingUiPreviewComponents } from "./ui/preview";
 import { getTaskDrawingStyles } from "./styles";
 
 /** The replaceable pieces of drawing a task, by the part they belong to. */

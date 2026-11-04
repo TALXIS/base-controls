@@ -1,7 +1,6 @@
-import { Icon } from "@fluentui/react";
+import { Icon, Text } from "@fluentui/react";
 import React from "react";
 import { getColorfulOptionStyles } from "./styles";
-import { Text } from "@fluentui/react";
 
 export interface IColorfulOption {
     label: string;

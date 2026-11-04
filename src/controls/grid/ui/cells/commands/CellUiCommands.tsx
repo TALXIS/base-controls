@@ -1,0 +1,33 @@
+import { useMemo } from "react";
+import { concatStyleSets, ICommandBarProps } from "@fluentui/react";
+import { getClassNames, IAlignment } from "@core";
+import { CellUiCommandsComponents, ICellUiCommandsComponents } from "./components";
+import { CELL_COMMANDS_CLASS_NAME, getCellUiCommandsStyles } from "./styles";
+
+export interface ICellUiCommandsProps extends ICommandBarProps {
+    /** Where the buttons sit in the width the bar takes. */
+    alignment?: IAlignment;
+    components?: Partial<ICellUiCommandsComponents>;
+}
+
+/** The commands a cell offers, drawn to fit the row it is in. */
+export const CellUiCommands = (props: ICellUiCommandsProps) => {
+    const { alignment = 'left', className, items, overflowItems, components: _, ...commandBarProps } = props;
+    const components = { ...CellUiCommandsComponents, ...props.components };
+    const styles = useMemo(() => getCellUiCommandsStyles(alignment), [alignment]);
+
+    if (items.length === 0 && !overflowItems?.length) {
+        return null;
+    }
+
+    return components.onRenderContainer({
+        className: getClassNames([CELL_COMMANDS_CLASS_NAME, styles.commandsRoot, className]),
+        children: components.onRenderCommandBar({
+            ...commandBarProps,
+            items: items,
+            overflowItems: overflowItems,
+            className: styles.commandBar,
+            styles: concatStyleSets({ root: styles.commandBarRoot, primarySet: styles.primarySet }, props.styles),
+        }),
+    });
+};

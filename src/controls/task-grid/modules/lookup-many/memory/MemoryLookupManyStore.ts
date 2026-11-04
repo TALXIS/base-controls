@@ -1,6 +1,6 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
 import type { ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
-import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../data-sources/memory/simulateBackend";
+import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
 import type { IMemoryLookupManyModuleParameters, IMemoryLookupManySource } from "./createMemoryLookupManyModule";
 
 type Reference = ComponentFramework.EntityReference;

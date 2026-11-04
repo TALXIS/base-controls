@@ -2,18 +2,10 @@ import { useTheme } from "@theme";
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import React from 'react';
 import { getMultistageStyles } from "./styles";
-import { Text } from "@fluentui/react";
-import { IButtonProps } from "@fluentui/react";
-import { BaseButton } from "@fluentui/react";
-import { Button } from "@fluentui/react";
-import { IconButton } from "@fluentui/react";
+import { Text, IButtonProps, BaseButton, Button, IconButton, Icon, IMessageBarProps, MessageBar, PrimaryButton } from "@fluentui/react";
 import { TooltipHost } from "@ui/surfaces";
-import { Icon } from "@fluentui/react";
 import { IndicatorService } from "./IndicatorService";
-import { IMessageBarProps } from "@fluentui/react";
 
-import { MessageBar } from "@fluentui/react";
-import { PrimaryButton } from "@fluentui/react";
 
 
 export enum StageValue {

@@ -1,0 +1,102 @@
+import { DataProvider, DataType, DataTypes, IColumn } from "@talxis/client-libraries";
+import { BaseControls } from "@core";
+import { IGridValueRendererParameters } from "@fields/value-renderer";
+import { IGridInternalServiceLocator } from "..";
+import { IGridField } from "../fields";
+import type { IGridCell } from "./GridCell";
+
+export interface IGridFieldControlParameters {
+    services: IGridInternalServiceLocator;
+    /** The field this draws. */
+    field: IGridField;
+    /** The cell it draws in, whose column definition says how. */
+    cell: IGridCell;
+    takesInput?: boolean;
+}
+
+/** What a cell bound to a record's column draws with. */
+export interface IGridFieldControl {
+    getField(): IGridField;
+    /** The column as this record's own provider has it. */
+    getColumn(): IColumn;
+    /** The control this column's data type asks for. */
+    getControlName(): string;
+    /** What the field adds to the parameters a control is drawn with. */
+    getParameters(): Partial<IGridValueRendererParameters>;
+}
+
+export class GridFieldControl implements IGridFieldControl {
+    private _services: IGridInternalServiceLocator;
+    private _field: IGridField;
+    private _cell: IGridCell;
+    private _takesInput: boolean;
+
+    constructor(parameters: IGridFieldControlParameters) {
+        this._services = parameters.services;
+        this._field = parameters.field;
+        this._cell = parameters.cell;
+        this._takesInput = !!parameters.takesInput;
+    }
+
+    public getField(): IGridField {
+        return this._field;
+    }
+
+    public getColumn(): IColumn {
+        return this._field.getColumn();
+    }
+
+    public getControlName(): string {
+        const column = this.getColumn();
+        switch (column.dataType) {
+            //file and image draw whether or not the cell takes input
+            case DataTypes.File:
+            case DataTypes.Image: {
+                return BaseControls.GridValueRenderer;
+            }
+        }
+        if (column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
+            return BaseControls.GridInlineRibbon;
+        }
+        return this._takesInput ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : BaseControls.GridValueRenderer;
+    }
+
+    public getParameters(): Partial<IGridValueRendererParameters> {
+        const column = this.getColumn();
+        return {
+            value: { raw: this._field.getValue() },
+            Column: { raw: column },
+            EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
+            ...(column.metadata?.HoursPerDay !== undefined && { HoursPerDay: { raw: column.metadata.HoursPerDay } }),
+        };
+    }
+
+    /** Whether this column's value is one that can be followed at all. */
+    private _isNavigationSupported(): boolean {
+        if (!this._services.get('settings').isNavigationEnabled()) {
+            return false;
+        }
+        const column = this.getColumn();
+        switch (column.dataType) {
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupRegarding:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupSimple:
+            case DataTypes.File:
+            case DataTypes.Image:
+            case DataTypes.SingleLineEmail:
+            case DataTypes.SingleLineUrl:
+            case DataTypes.SingleLinePhone: {
+                return true;
+            }
+            default: {
+                const metadata = this._field.getRecord().getDataProvider().getMetadata() as Xrm.Metadata.EntityMetadata | undefined;
+                return this._isPrimary() || column.name === metadata?.PrimaryNameAttribute;
+            }
+        }
+    }
+
+    private _isPrimary(): boolean {
+        return !!this._cell.getContext().isPrimary;
+    }
+}

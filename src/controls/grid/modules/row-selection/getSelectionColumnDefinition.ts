@@ -1,8 +1,8 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { SELECTION_COLUMN_KEY } from "./constants";
-import { SelectionCell } from "./components/selection-cell/SelectionCell";
-import { SelectionHeader } from "./components/selection-header/SelectionHeader";
+import { SelectionCell } from "./adapters/selection-cell/SelectionCell";
+import { SelectionHeader } from "./adapters/selection-header/SelectionHeader";
 
 /** The column the checkboxes live in. */
 export const getSelectionColumnDefinition = (): ColDef<IRecord> => ({

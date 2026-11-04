@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { EventEmitter, IEventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
-import { HookRegistry, IStateStore } from "@utils";
+import { HookRegistry, IStateStore } from "@core";
 import type { ITaskRuntime } from "../../../runtime";
 import { DAYS_PER_UNIT, HOURS_PER_DAY, IGanttSchedule, IGanttSpan, MILLISECONDS_PER_DAY } from "../schedule";
 import type { IGanttTimeline } from "../timeline";

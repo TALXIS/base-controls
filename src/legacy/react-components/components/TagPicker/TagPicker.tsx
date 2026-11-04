@@ -1,18 +1,11 @@
 import { useTheme } from '@theme';
 import * as React from 'react';
-import { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
-import { IPickerItemProps } from "@fluentui/react";
-import { ISuggestionModel } from "@fluentui/react";
-import { ISuggestionItemProps } from "@fluentui/react";
-import { IButtonProps } from '@fluentui/react';
+import { ICommandBarItemProps, IContextualMenuItem, IPickerItemProps, ISuggestionModel, ISuggestionItemProps, IButtonProps, IBasePicker, ValidationState, Text } from "@fluentui/react";
 import { TagPicker as TagPickerBase } from '@ui/tag-picker';
 import { ITag, ITagPickerProps as ITagPickerPropsBase } from '@fluentui/react/lib/Pickers';
 import { CommandBarButton as CommandBarButtonBase } from '@fluentui/react/lib/Button';
-import { IBasePicker, ValidationState } from '@fluentui/react';
 import { CommandBar } from '../CommandBar/CommandBar';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { Text } from '@fluentui/react'
+import { useEffect, useState } from 'react';
 import { IDisabled, IErrorMessage, IFillAvailableSpace, IReadOnly } from '@legacy/interfaces/components';
 import { getSuggestionsStyles, getTagPickerStyles } from './styles';
 

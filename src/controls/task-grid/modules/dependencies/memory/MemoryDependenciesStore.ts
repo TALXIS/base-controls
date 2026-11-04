@@ -1,5 +1,5 @@
 import type { IDependenciesStore, ITaskDependency, TaskDependencyCreate } from "../Dependencies";
-import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../data-sources/memory/simulateBackend";
+import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
 
 export class MemoryDependenciesStore implements IDependenciesStore {
     private _dependencies: ITaskDependency[];

@@ -1,9 +1,9 @@
 import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@talxis/client-libraries";
-import type { ICreateTaskTree, ITasksCreateResult } from "../../../provider";
-import type { MemoryTaskDatabase } from "../../../data-sources/memory/MemoryTaskDatabase";
+import type { ICreateTaskTree, ITasksCreateResult } from "../../../runtime/provider";
+import type { MemoryTaskDatabase } from "../../../runtime/data-sources/memory/MemoryTaskDatabase";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParams } from "../Templates";
-import { simulateBackend } from "../../../data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
 import { TEMPLATES_LABELS } from "../labels";
 
 /** One task of a memory template, with its subtree. */

@@ -1,8 +1,8 @@
-import { ServiceLocator } from "@utils";
+import { ServiceLocator } from "@core";
 import { IGridModule } from "../../interfaces";
 import { GridFiltering } from "./GridFiltering";
-import { IGridFilteringServiceMap } from "./services";
-import { IGridFilteringComponents } from "./moduleComponents";
+import { IGridFilteringServiceMap } from "./runtime";
+import { IGridFilteringComponents } from "./components";
 
 export interface IFilteringModuleOptions {
     /** Overrides for the parts of what this module draws, by piece. */

@@ -1,0 +1,13 @@
+import { IStringProperty } from "@core/pcf/interfaces";
+import { Property } from "./Property";
+
+export class TextProperty extends Property {
+    public getParameter(): IStringProperty {
+        const value = this.getValue();
+        return {
+            raw: value,
+            formatted: this.getFormattedValue(),
+            attributes: this.attributeMetadata
+        }
+    }
+}

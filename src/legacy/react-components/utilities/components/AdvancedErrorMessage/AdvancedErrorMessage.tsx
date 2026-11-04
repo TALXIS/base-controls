@@ -1,7 +1,4 @@
-import { Icon } from "@fluentui/react";
-import { Link } from "@fluentui/react";
-import { MessageBar } from "@fluentui/react";
-import { MessageBarType } from "@fluentui/react";
+import { Icon, Link, MessageBar, MessageBarType } from "@fluentui/react";
 import * as React from "react";
 
 export interface IErrorMessage {

@@ -1,7 +1,7 @@
-import { CellEditor } from "./components/cell-editor/CellEditor";
+import { CellEditor } from "./adapters/cell-editor/CellEditor";
 
 //the editing module's cells share their names with the core ones in `Grid.Cell`
-export type { ICellEditorProps as IEditingCellEditorProps, ICellEditorComponents as IEditingCellEditorComponents } from "./components/cell-editor";
+export type { ICellEditorProps as IEditingCellEditorProps, ICellEditorComponents as IEditingCellEditorComponents } from "./adapters/cell-editor";
 
 /** The cells the editing module draws its columns with. */
 export interface IEditingCellNamespace {

@@ -1,3 +1,3 @@
 export * from './createTaskDrawingModule';
-export * from './components';
+export * from './ui/preview';
 export type { ITaskDrawing, ITaskDrawingComponents, ITaskDrawingParameters } from './TaskDrawing';

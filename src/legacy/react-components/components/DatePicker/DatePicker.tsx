@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { ICommandBarItemProps, IDatePicker } from "@fluentui/react";
+import { ICommandBarItemProps, IDatePicker, IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
 import { DatePicker as DatePickerBase } from "@ui/date-picker";
 import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, IFillAvailableSpace, ISuffix, IPrefix, ICopyButton } from '@legacy/interfaces/components';
 
-import { IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
 import { getDatePickerStyles } from './styles';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 import { PASSWORD_MANAGER_IGNORE_PROPS } from '@legacy/utilities/passwordManagerProps';

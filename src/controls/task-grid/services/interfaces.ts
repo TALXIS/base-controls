@@ -1,6 +1,6 @@
 import type { IGridServiceLocator, IGridServiceMap } from "@controls/grid";
-import type { ITaskDataProvider } from "../provider";
-import type { ITaskExpansion } from "../tree";
+import type { ITaskDataProvider } from "../runtime/provider";
+import type { ITaskExpansion } from "../runtime/tree";
 
 /** The grid's services as a task grid has them. */
 export interface ITaskGridServiceMap extends IGridServiceMap {

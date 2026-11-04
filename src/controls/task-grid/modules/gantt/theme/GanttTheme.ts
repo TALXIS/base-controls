@@ -1,6 +1,6 @@
 import type { IStyle, ITheme } from "@fluentui/react";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { HookRegistry } from "@utils";
+import { HookRegistry } from "@core";
 
 /** What the chart is styled with, on top of the Gantt's own styles. */
 export interface IGanttStyles {

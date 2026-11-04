@@ -1,4 +1,4 @@
-import { HookRegistry } from "@utils";
+import { HookRegistry } from "@core";
 
 /** Something a module draws in the DatasetControl. */
 export interface IDatasetControlSurface {

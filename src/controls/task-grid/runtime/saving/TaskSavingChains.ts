@@ -1,6 +1,6 @@
 import { EventEmitter, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber } from "@utils";
-import type { ITaskDataProvider } from "../../provider";
+import { HookRegistry, IEventSubscriber } from "@core";
+import type { ITaskDataProvider } from "../provider";
 
 //a save quicker than this is not worth a flicker
 const SAVING_DELAY = 300;

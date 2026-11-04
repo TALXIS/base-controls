@@ -1,10 +1,10 @@
 import { GridApi, IsServerSideGroupOpenByDefaultParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../../services";
-import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../services/row-model";
+import { IGridServiceLocator } from "../../../runtime";
+import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../runtime/row-model";
 import { ServerSideDatasource } from "./ServerSideDatasource";
 import { ServerSideRowModelGrouping } from "./ServerSideRowModelGrouping";
-import { IGridAgGridOptions } from "../../../services/runtime";
+import { IGridAgGridOptions } from "../../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../../priorities";
 
 export interface IServerSideRowModelParameters {

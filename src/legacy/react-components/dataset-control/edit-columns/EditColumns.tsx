@@ -1,5 +1,5 @@
 import { useTheme } from "@theme";
-import { useLabels } from "@utils";
+import { useLabels, useEventEmitter, useRerender } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { DefaultButton, IPanelProps, Label, Overlay, PrimaryButton, Spinner } from "@fluentui/react";
 import { Panel } from "@ui";
@@ -10,15 +10,12 @@ import { DndContext, PointerSensor, useSensor } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortable-item/SortableItem";
-import { useEventEmitter } from "@hooks";
-import { useRerender } from "@legacy";
 import { ColumnSelector } from "./column-selector/ColumnSelector";
-import { useShouldRemount } from "@hooks/useShouldRemount";
+import { useShouldRemount } from "@core/hooks/useShouldRemount";
 import { ScopeSelector } from "./scope-selector/ScopeSelector";
 import { IEditColumns, IEditColumnsEvents } from "@legacy/dataset-control/model/EditColumns";
 import { EditColumnsContext } from "./useEditColumns";
-import { IComponents } from "./components";
-import { components as defaultComponents } from "./components";
+import { IComponents, components as defaultComponents } from "./components";
 import { IColumn } from "@talxis/client-libraries";
 import { Grid } from "@controls/grid";
 

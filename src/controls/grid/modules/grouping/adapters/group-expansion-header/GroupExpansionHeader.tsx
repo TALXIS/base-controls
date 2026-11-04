@@ -1,0 +1,39 @@
+import { useRerender, useLabels } from "@core";
+import { useGridModule } from "../../../../useGridModule";
+import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../adapters/column-header/root/ColumnHeaderRoot";
+import { ColumnHeaderTheme } from "../../../../adapters/column-header/theme/ColumnHeaderTheme";
+import { GRID_GROUPING_LABELS } from "../../labels";
+import { GroupingUi } from "../../ui";
+import { IGroupExpansionHeaderComponents } from "./components";
+
+export interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
+    components?: IGroupExpansionHeaderComponents;
+}
+
+/** Opens and closes the groups a level at a time. */
+export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
+    //the grouping module is registered wherever this header draws
+    const grouping = useGridModule('grouping');
+    const labels = useLabels(GRID_GROUPING_LABELS);
+    const { rerender } = useRerender();
+    const expandedLevel = grouping.getExpandedLevel();
+
+    const onStepLevel = (step: number) => {
+        grouping.setExpandedLevel(expandedLevel + step);
+        rerender();
+    };
+
+    //no container: it draws the menu button this column lacks
+    return <ColumnHeaderRoot {...props}>
+        <ColumnHeaderTheme>
+            <GroupingUi.ExpandCollapse
+                expandTitle={labels.get('gridGrouping.expandLevel')}
+                collapseTitle={labels.get('gridGrouping.collapseLevel')}
+                canExpand={expandedLevel < grouping.getDeepestLevel()}
+                canCollapse={expandedLevel >= 0}
+                onExpand={() => onStepLevel(1)}
+                onCollapse={() => onStepLevel(-1)}
+                components={props.components?.expandCollapse} />
+        </ColumnHeaderTheme>
+    </ColumnHeaderRoot>;
+};

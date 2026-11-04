@@ -1,14 +1,14 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LabelsService } from "@utils";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LabelsService } from "@core";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
-import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "../components/adapters/view-switcher/DatasetControlViewSwitcher";
-import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "../components/adapters/quick-find/DatasetControlQuickFind";
-import type { DatasetControlPagination, IDatasetControlPagination } from "../components/adapters/pagination/DatasetControlPagination";
-import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "../components/adapters/page-size-switcher/DatasetControlPageSizeSwitcher";
-import type { DatasetControlNotifications, IDatasetControlNotifications } from "../components/adapters/notifications/DatasetControlNotifications";
-import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "../components/adapters/edit-columns/DatasetControlEditColumns";
-import type { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlay } from "../components/adapters/loading-overlay/DatasetControlLoadingOverlay";
+import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
+import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
+import type { DatasetControlPagination, IDatasetControlPagination } from "./parts/pagination/DatasetControlPagination";
+import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "./parts/page-size-switcher/DatasetControlPageSizeSwitcher";
+import type { DatasetControlNotifications, IDatasetControlNotifications } from "./parts/notifications/DatasetControlNotifications";
+import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
+import type { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlay } from "./parts/loading-overlay/DatasetControlLoadingOverlay";
 import type { IRibbonRuntime } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 

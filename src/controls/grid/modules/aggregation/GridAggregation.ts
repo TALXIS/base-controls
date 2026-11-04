@@ -1,22 +1,21 @@
 import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
-import { ThemeBuilder } from "@theme";
+import { ThemeBuilder, ITheme } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
-import { LabelsOf } from "@utils";
+import { LabelsOf } from "@core";
 import { GRID_AGGREGATION_LABELS } from "./labels";
-import { IGridAggregationComponents } from "./moduleComponents";
-import { IGridCellLoading } from "../../services/cells";
-import { IGridRowHeight } from "../../services/rows";
-import { RowError } from "@controls/grid/components/rows/error";
-import { IGridAgGridOptions } from "../../services/runtime";
-import { CellEmptyRenderer } from "../../components/cells/empty-cell-renderer/CellEmptyRenderer";
-import { TotalCell } from "./components/total-cell/TotalCell";
-import { AggregateCell } from "./components/aggregate-cell/AggregateCell";
-import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
-import { IGridAggregationServiceLocator } from "./services";
+import { IGridAggregationComponents } from "./components";
+import { IGridCellLoading } from "../../runtime/cells";
+import { IGridRowHeight } from "../../runtime/rows";
+import { RowError } from "../../adapters/rows/error";
+import { IGridAgGridOptions } from "../../runtime/grid";
+import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
+import { TotalCell } from "./adapters/total-cell/TotalCell";
+import { AggregateCell } from "./adapters/aggregate-cell/AggregateCell";
+import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
+import { IGridAggregationServiceLocator } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { ITheme } from "@theme";
-import { IGridAgTheme } from "../../services/theme";
+import { IGridAgTheme } from "../../runtime/theme";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {

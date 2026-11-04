@@ -1,9 +1,9 @@
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { ITaskSavingChains } from "./saving";
 import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
-import type { IPcfContext } from "@interfaces";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels } from "@utils";
-import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "../provider";
+import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels } from "@core";
+import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import type { ITaskActions } from "./tasks";
 
 /** A hook that changes an item `TaskDatasetControl.Ribbon` draws in place. */

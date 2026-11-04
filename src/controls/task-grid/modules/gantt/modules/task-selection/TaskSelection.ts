@@ -1,14 +1,14 @@
 import { createElement } from "react";
 import type { ITheme } from "@fluentui/react";
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { ITaskDataProvider } from "../../../../provider";
+import type { ITaskDataProvider } from "../../../../runtime/provider";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { IGanttTasks } from "../../tasks";
 import type { IGanttStyles } from "../../theme";
 import { ROW_SELECTED_CLASS, BAR_SELECTED_CLASS } from "./classNames";
-import { SelectionBoxLayer } from "./components/adapters/selection-box-layer";
+import { SelectionBoxLayer } from "./adapters/selection-box-layer";
 import { getTaskSelectionStyles } from "./styles";
 
 export interface ITaskSelectionParameters {

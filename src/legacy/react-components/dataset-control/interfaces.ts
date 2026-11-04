@@ -1,14 +1,12 @@
-import { IPcfContext } from "@interfaces";
+import { IPcfContext, IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@core/pcf/interfaces";
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps } from "@fluentui/react";
-import { IThemeProviderProps } from "@utils";
-import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
-import { IDataset } from "@talxis/client-libraries";
+import { IThemeProviderProps } from "@theme";
+import { IDataset, IColumn } from "@talxis/client-libraries";
 
 import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
 import React from "react";
 import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
 import { IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
-import { IColumn } from "@talxis/client-libraries";
 
 
 export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IOutputs, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {

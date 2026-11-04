@@ -1,17 +1,8 @@
 
-import { BaseButton } from "@fluentui/react";
-import { Button } from "@fluentui/react";
-import { IButtonProps } from "@fluentui/react";
-import { CommandBarButton } from "@fluentui/react";
+import { BaseButton, Button, IButtonProps, CommandBarButton, Persona, IPersonaProps, Text, ICalloutProps as ICalloutPropsBase, Link, ILinkProps } from "@fluentui/react";
 import { Callout } from "@ui/surfaces";
-import { Persona } from "@fluentui/react";
-import { IPersonaProps} from "@fluentui/react";
-import { Text } from "@fluentui/react";
-import { ICalloutProps as ICalloutPropsBase } from "@fluentui/react";
 import * as React from 'react';
 import { getLoginCalloutStyles, getLoginStyles } from './styles';
-import { Link } from "@fluentui/react";
-import { ILinkProps } from "@fluentui/react";
 
 export interface ILoginProps extends IButtonProps {
     personaProps?: IPersonaProps;

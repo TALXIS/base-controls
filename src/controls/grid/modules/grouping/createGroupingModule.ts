@@ -1,9 +1,9 @@
-import { ServiceLocator } from "@utils";
+import { ServiceLocator } from "@core";
 import { RowGroupingModule, TreeDataModule } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
-import { IGridGroupingComponents } from "./moduleComponents";
+import { IGridGroupingComponents } from "./components";
 import { GridGrouping } from "./GridGrouping";
-import { IGridGroupingServiceMap } from "./services";
+import { IGridGroupingServiceMap } from "./runtime";
 
 export interface IGroupingModuleOptions {
     /** Overrides for the parts of what this module draws, by piece. */

@@ -1,0 +1,124 @@
+import { ColDef, Column } from "ag-grid-community";
+import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
+import { IContextualMenuItem } from "@fluentui/react";
+import { IAlignment } from "@core";
+import { IGridInternalServiceLocator } from "..";
+import { getColumnContext, IGridColumnContext } from "../columns/colDef";
+import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
+import { IColumnHeaderAdornment } from "./GridColumnHeaders";
+
+export interface IGridColumnHeaderEvents {
+    /** Whether the header's menu is to be drawn. */
+    onMenuVisibilityChanged: (isOpen: boolean) => void;
+}
+
+export interface IGridColumnHeaderParameters {
+    services: IGridInternalServiceLocator;
+    /** The column AG Grid is drawing. */
+    column: Column;
+    /** The element AG Grid draws the header in. */
+    element?: HTMLElement;
+}
+
+/** The column a header is drawn for, with what the modules add to it. */
+export interface IGridColumnHeader {
+    readonly events: IEventEmitter<IGridColumnHeaderEvents>;
+    /** What this header is drawn in. */
+    getTheme(): IGridColumnHeaderTheme;
+    /** Asks for the menu to open. */
+    openMenu(): void;
+    /** Asks for it to go away again. */
+    closeMenu(): void;
+    getColDef(): ColDef<IRecord>;
+    /** The provider's column for this one, if it has one. */
+    getColumn(): IColumn | undefined;
+    /** What the column says its cells and its header are. */
+    getContext(): IGridColumnContext;
+    /** Which edge the column reads from. */
+    getAlignment(): IAlignment;
+    /** Whether the column asks for a value. */
+    isRequired(): boolean;
+    getName(): string;
+    /** The header's tooltip: the name plus the adornments' titles in parentheses. */
+    getTitle(): string;
+    /** What the modules draw beside the name, all of them or those of one placement. */
+    getAdornments(placement?: IColumnHeaderAdornment['placement']): IColumnHeaderAdornment[];
+    /** Everything the modules offer for this column. */
+    getMenuItems(): IContextualMenuItem[];
+    /** The element AG Grid draws the header in. */
+    getElement(): HTMLElement | undefined;
+}
+
+export class GridColumnHeader implements IGridColumnHeader {
+    public readonly events: IEventEmitter<IGridColumnHeaderEvents> = new EventEmitter<IGridColumnHeaderEvents>();
+    private _services: IGridInternalServiceLocator;
+    private _column: Column;
+    private _element?: HTMLElement;
+    private _theme: IGridColumnHeaderTheme;
+
+    constructor(parameters: IGridColumnHeaderParameters) {
+        this._services = parameters.services;
+        this._column = parameters.column;
+        this._element = parameters.element;
+        this._theme = new GridColumnHeaderTheme({ services: parameters.services, header: this });
+    }
+
+    public getTheme(): IGridColumnHeaderTheme {
+        return this._theme;
+    }
+
+    public openMenu(): void {
+        this.events.dispatchEvent('onMenuVisibilityChanged', true);
+    }
+
+    public closeMenu(): void {
+        this.events.dispatchEvent('onMenuVisibilityChanged', false);
+    }
+
+    public getColDef(): ColDef<IRecord> {
+        return this._column.getColDef();
+    }
+
+    public getColumn(): IColumn | undefined {
+        return this._services.get('provider').getColumnsMap()[this.getColDef().colId!];
+    }
+
+    public getContext(): IGridColumnContext {
+        return getColumnContext(this.getColDef());
+    }
+
+    public getAlignment(): IAlignment {
+        return this.getContext().alignment ?? 'left';
+    }
+
+    public isRequired(): boolean {
+        return !!this.getContext().isRequired;
+    }
+
+    public getName(): string {
+        return this.getColDef().headerName ?? '';
+    }
+
+    public getTitle(): string {
+        const titles = this.getAdornments().map(adornment => adornment.title).filter(Boolean);
+        return titles.length ? `${this.getName()} (${titles.join(', ')})` : this.getName();
+    }
+
+    public getAdornments(placement?: IColumnHeaderAdornment['placement']): IColumnHeaderAdornment[] {
+        const adornments = this._headers.getAdornments(this);
+        return placement ? adornments.filter(adornment => adornment.placement === placement) : adornments;
+    }
+
+    public getMenuItems(): IContextualMenuItem[] {
+        return this._headers.getMenuItems(this);
+    }
+
+    public getElement(): HTMLElement | undefined {
+        return this._element;
+    }
+
+
+    private get _headers() {
+        return this._services.get('columns').headers;
+    }
+}

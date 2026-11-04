@@ -1,6 +1,6 @@
 import type { IRawRecord } from "@talxis/client-libraries";
 import type { GridCellLoadingHook, IGrid } from "@controls/grid";
-import type { ITaskDataProvider, TaskLoadWaiter } from "../../provider";
+import type { ITaskDataProvider, TaskLoadWaiter } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";

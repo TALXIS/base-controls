@@ -1,12 +1,10 @@
-import { ThemeProvider, useTheme } from "@theme";
+import { ThemeProvider, useTheme, useThemeBuilder, getTextColorForBackground } from "@theme";
 import { getSuffixStyles } from "./styles";
 import { useInputButtons } from "./useInputButtons";
 import { useMemo } from "react";
 import { CommandBar, ICommandBarItemProps } from "@legacy/components/CommandBar/CommandBar";
 import { useClassNames } from "@legacy/hooks/useClassNames";
 import { ICopyButton } from "@legacy/interfaces/components";
-import { useThemeBuilder } from "@theme";
-import { getTextColorForBackground } from "@theme";
 
 export interface IInputButtons {
     /**

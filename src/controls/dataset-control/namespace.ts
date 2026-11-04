@@ -1,17 +1,17 @@
-import { Root } from './components/adapters/root';
-import { Header } from './components/adapters/header';
-import { Body } from './components/adapters/body';
-import { Footer } from './components/adapters/footer';
-import { ViewSwitcher } from './components/adapters/view-switcher';
-import { Ribbon } from './components/adapters/ribbon';
-import { QuickFind } from './components/adapters/quick-find';
-import { Notifications } from './components/adapters/notifications';
-import { Pagination } from './components/adapters/pagination';
-import { PageSizeSwitcher } from './components/adapters/page-size-switcher';
-import { EmptyRecords } from './components/adapters/empty-records';
-import { EditColumns } from './components/adapters/edit-columns';
-import { UserQueries } from './modules/user-queries/components/adapters/user-queries';
-import { DatasetControlUi, IDatasetControlUi } from './components/ui';
+import { Root } from './adapters/root';
+import { Header } from './adapters/header';
+import { Body } from './adapters/body';
+import { Footer } from './adapters/footer';
+import { ViewSwitcher } from './adapters/view-switcher';
+import { Ribbon } from './adapters/ribbon';
+import { QuickFind } from './adapters/quick-find';
+import { Notifications } from './adapters/notifications';
+import { Pagination } from './adapters/pagination';
+import { PageSizeSwitcher } from './adapters/page-size-switcher';
+import { EmptyRecords } from './adapters/empty-records';
+import { EditColumns } from './adapters/edit-columns';
+import { UserQueries } from './modules/user-queries/adapters/user-queries';
+import { DatasetControlUi, IDatasetControlUi } from './ui';
 
 /** The parts of the control, attached to the control itself. */
 export interface IDatasetControlParts {

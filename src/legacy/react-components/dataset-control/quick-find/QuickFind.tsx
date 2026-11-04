@@ -1,4 +1,4 @@
-import { useLabels } from "@utils";
+import { useLabels } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { useEffect, useMemo, useState } from "react";
 import { IRibbonQuickFindWrapperProps } from "../interfaces";
@@ -6,9 +6,8 @@ import { useModel } from "../useModel";
 import { TextField } from "@legacy";
 import { getQuickFindStyles } from "./styles";
 import { IInternalDataProvider } from "@talxis/client-libraries";
-import { FontIcon } from "@fluentui/react";
+import { FontIcon, Text } from "@fluentui/react";
 import { Callout } from "@ui";
-import { Text } from "@fluentui/react";
 
 export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperProps['onRenderQuickFind'] }) => {
   const [query, setQuery] = useState<string>('');

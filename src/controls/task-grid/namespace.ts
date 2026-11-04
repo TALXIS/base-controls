@@ -1,6 +1,6 @@
 import { TaskGridRoot } from "./TaskGrid";
-import { TaskDatasetControlRoot } from "./dataset-control/TaskDatasetControl";
-import { PageSizeSwitcher, Ribbon, Settings } from "./components/adapters";
+import { TaskDatasetControlRoot } from "./adapters/root/TaskDatasetControl";
+import { PageSizeSwitcher, Ribbon, Settings } from "./adapters";
 
 export interface ITaskDatasetControlParts {
     /** A menu of the task grid's toggles, such as Show hierarchy. */

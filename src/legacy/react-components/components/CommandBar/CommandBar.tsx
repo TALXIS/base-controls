@@ -1,9 +1,8 @@
-import { ICommandBarProps as ICommandBarPropsBase } from '@fluentui/react';
+import { ICommandBarProps as ICommandBarPropsBase, ICommandBarItemProps as ICommandBarItemPropsBase } from '@fluentui/react';
 import { CommandBar as CommandBarBase } from '@ui/command-bar';
 import { useClassNames } from "@legacy/hooks/useClassNames";
 import { useMemo } from "react";
 import { getCommandBarStyles } from "./styles";
-import { ICommandBarItemProps as ICommandBarItemPropsBase } from "@fluentui/react";
 
 /**  
     Extends the native CommandBarItemProps interface to allow for additional functionality.

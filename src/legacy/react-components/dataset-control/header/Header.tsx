@@ -1,14 +1,14 @@
-import { useLabels } from "@utils";
+import { useLabels, useRerender } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
-import { ICommandBarItemProps, useRerender } from "@legacy";
+import { ICommandBarItemProps } from "../..";
 import { QuickFind } from "../quick-find/QuickFind";
 import { Ribbon } from "@legacy/ribbon/Ribbon";
-import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useEventEmitter } from "@core/hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "@legacy/dataset-control/model/DatasetControl";
 import { EditColumns } from "../edit-columns/EditColumns";

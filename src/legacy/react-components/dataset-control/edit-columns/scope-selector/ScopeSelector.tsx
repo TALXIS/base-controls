@@ -1,4 +1,4 @@
-import { useLabels } from "@utils";
+import { useLabels } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { IAvailableRelatedColumn } from "@talxis/client-libraries";
 import { Selector } from "../selector/Selector";

@@ -1,8 +1,8 @@
 import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
 import type { IDatasetControlLoadParameters } from "@controls/dataset-control";
-import type { ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./provider";
-import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./components/adapters";
+import type { ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./runtime/provider";
+import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./adapters";
 
 /** The task grid's own variants of the grid modules it takes, by name. */
 export interface ITaskGridGridModuleMap { }

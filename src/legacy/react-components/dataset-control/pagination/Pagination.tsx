@@ -1,5 +1,5 @@
 import { useTheme } from "@theme";
-import { useLabels } from "@utils";
+import { useLabels } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { IFooterProps } from "../interfaces";

@@ -1,7 +1,7 @@
-import { IParameters } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
+import { IParameters } from "@core/pcf/interfaces";
+import { IControl, IOutputs } from "@core/pcf/interfaces/context";
 import { IDataset } from "@talxis/client-libraries";
-import { IMapProvider } from "./providers";
+import { IMapProvider } from "./runtime/providers";
 
 
 export interface IMap extends IControl<IMapParameters, IMapOutputs, unknown> {

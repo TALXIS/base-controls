@@ -1,9 +1,9 @@
 import { PinnedRowModule } from "ag-grid-community";
-import { ServiceLocator } from "@utils";
+import { ServiceLocator } from "@core";
 import { IGridModule } from "../../interfaces";
-import { IGridAggregationComponents } from "./moduleComponents";
+import { IGridAggregationComponents } from "./components";
 import { GridAggregation } from "./GridAggregation";
-import { IGridAggregationServiceMap } from "./services";
+import { IGridAggregationServiceMap } from "./runtime";
 
 export interface IAggregationModuleOptions {
     /** Whether a column's menu offers the totals. */

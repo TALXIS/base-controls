@@ -1,5 +1,5 @@
 import { IStyle, ITheme } from "@fluentui/react";
-import { TASK_ROW_CLASS_NAMES } from "../../tree/constants";
+import { TASK_ROW_CLASS_NAMES } from "../../constants";
 
 export const getTaskDraggingStyles = (theme: ITheme, rowSlideMs: number): IStyle => ({
     selectors: {

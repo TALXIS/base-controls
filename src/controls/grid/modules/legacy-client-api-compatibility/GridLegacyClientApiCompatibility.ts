@@ -1,15 +1,15 @@
 import { createElement } from "react";
 import { EventEmitter, IAddControlNotificationOptions, IControlParameters, ICustomColumnControl, IEventEmitter, IField, IRecord } from "@talxis/client-libraries";
 import { ICommandBarItemProps, Target } from "@fluentui/react";
-import { CELL_COMMANDS_CLASS_NAME } from "../../components/cells/ui/commands/styles";
+import { CELL_COMMANDS_CLASS_NAME } from "../../ui/cells/commands/styles";
 import { merge } from "merge-anything";
 import { createThemeBuilder, getTextColorForBackground } from "@theme";
-import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../services/cells";
+import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../runtime/cells";
 import type { GridLockHook } from "../editing/GridLocks";
-import type { IGridSurface } from "../../services/surfaces";
-import type { IGridServiceLocator } from "../../services";
+import type { IGridSurface } from "../../runtime/surfaces";
+import type { IGridServiceLocator } from "../../runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { NotificationCalloutHost } from "./components/notification-callout-host";
+import { NotificationCalloutHost } from "./adapters/notification-callout-host";
 
 const COMPATIBILITY_HOOK_PRIORITY = GRID_MODULE_PRIORITY.legacyClientApiCompatibility;
 

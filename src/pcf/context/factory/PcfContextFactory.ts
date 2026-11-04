@@ -1,0 +1,95 @@
+import { IPcfContext } from "../../interfaces";
+import { Client, getFormatting, getLocaleFromLanguageId } from "@talxis/client-libraries";
+import { XrmFactory } from "../../xrm";
+import { Device } from "./Device";
+import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
+import { IModeParams, Mode } from "./Mode";
+import { Resources } from "./Resources";
+import { UserSettings } from "../../xrm/UserSettings";
+
+interface IPcfContextUserSettingsParams {
+    lcid?: number;
+    formatInfoCultureName?: string;
+}
+
+interface IPcfContextFactoryParams {
+    baseContext?: ComponentFramework.Context<any, any>;
+    userSettings?: IPcfContextUserSettingsParams;
+    mode?: IModeParams;
+    factory?: IFactoryApiParams;
+}
+
+/**
+ * Creates PCF context objects as a compatibility layer for non-PCF
+ * environments.
+ *
+ * When a base context is provided, existing surfaces are reused. Missing
+ * surfaces are filled from helper implementations or Xrm-backed fallbacks so
+ * PCF-dependent code can continue to run even when no real PCF host is
+ * available.
+ */
+export class PcfContextFactory {
+    /**
+     * Builds a context by combining the optional base context with generated
+     * fallback implementations.
+     *
+     * Fallback precedence is:
+     * provided `baseContext` surface -> generated fallback surface.
+     *
+     * The generated context always gets fresh formatting and client helpers,
+     * and its `userSettings.numberFormattingInfo` is synchronized with the
+     * current formatting configuration.
+     *
+     * @param params Optional inputs used to seed or override individual PCF
+     * context surfaces.
+     * @returns A context object shaped like a PCF runtime context.
+     */
+    public static createContext(params: IPcfContextFactoryParams = {}): IPcfContext {
+        const { baseContext, userSettings, mode, factory } = params;
+        const xrm = XrmFactory.createXrm({ userSettings });
+        const resolvedUserSettings = baseContext?.userSettings ?? new UserSettings(userSettings);
+        const formatting = getFormatting({
+            formatInfoCultureName: (resolvedUserSettings as { formatInfoCultureName?: string }).formatInfoCultureName ?? 'en-US',
+            locale: getLocaleFromLanguageId(resolvedUserSettings.languageId ?? 1033),
+        });
+
+        const context: IPcfContext = {
+            ...baseContext,
+            formatting,
+            client: new Client(),
+            userSettings: resolvedUserSettings,
+            events: baseContext?.events ?? {},
+            mode: baseContext?.mode ?? new Mode(mode),
+            webAPI: baseContext?.webAPI ?? xrm.WebApi as any,
+            navigation: baseContext?.navigation ?? xrm.Navigation as any,
+            utils: baseContext?.utils ?? xrm.Utility as any,
+            device: baseContext?.device ?? new Device(),
+            parameters: baseContext?.parameters ?? {},
+            updatedProperties: baseContext?.updatedProperties ?? [],
+            resources: baseContext?.resources ?? new Resources(),
+            factory: baseContext?.factory ?? this._createFactoryApi(factory)
+        };
+        context.userSettings.numberFormattingInfo = formatting.numberFormattingInfo;
+        context.userSettings.dateFormattingInfo = formatting.dateFormattingInfo;
+        return context;
+    }
+
+    /**
+        * Creates the fallback factory surface used when no base factory is
+        * available.
+        *
+        * If `requestRender` is provided, it is forwarded through the factory's
+        * `onRequestRender` event so consumers can react to render requests the
+        * same way they would in a hosted PCF environment.
+        *
+        * @param params Optional factory configuration.
+        * @returns A factory surface compatible with the PCF context contract.
+     */
+    private static _createFactoryApi(params?: IFactoryApiParams): ComponentFramework.Factory {
+        const factory = new FactoryApi();
+        if (params?.requestRender) {
+            factory.events.addEventListener("onRequestRender", () => params.requestRender?.());
+        }
+        return factory;
+    }
+}

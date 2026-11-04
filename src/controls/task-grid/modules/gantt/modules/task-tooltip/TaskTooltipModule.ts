@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
-import { ITaskTooltipRendererComponents, TaskTooltipRenderer } from "./components/adapters/renderer";
+import { ITaskTooltipRendererComponents, TaskTooltipRenderer } from "./adapters/renderer";
 
 export interface ITaskTooltipParameters {
     /** The whole tooltip, composed from `TaskTooltip`'s parts. */

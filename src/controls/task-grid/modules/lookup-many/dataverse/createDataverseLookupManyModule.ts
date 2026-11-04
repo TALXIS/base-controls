@@ -1,4 +1,4 @@
-import type { IDataverseHostRecord } from "../../../data-sources/dataverse/DataverseTaskStore";
+import type { IDataverseHostRecord } from "../../../runtime/data-sources/dataverse/DataverseTaskStore";
 import { createLookupManyModule, ILookupManyModule } from "../createLookupManyModule";
 import type { ILookupManyParameters } from "../LookupMany";
 import { DataverseLookupManyStore, IDataverseLookupManyColumn } from "./DataverseLookupManyStore";

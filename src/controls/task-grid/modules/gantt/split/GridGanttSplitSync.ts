@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";
-import type { IStateStore } from "@utils";
+import type { IStateStore } from "@core";
 import type { ITaskRuntime } from "../../../runtime";
 import { TASK_GRID_PRIORITY } from "../../../priorities";
 import type { IGantt } from "../interfaces";

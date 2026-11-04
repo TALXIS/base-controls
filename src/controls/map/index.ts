@@ -1,5 +1,4 @@
 export * from './interfaces';
-export * from './components/Map';
-export * from './providers';
+export * from './Map';
+export * from './runtime/providers';
 export * from './labels';
-export * from './labels.cs';

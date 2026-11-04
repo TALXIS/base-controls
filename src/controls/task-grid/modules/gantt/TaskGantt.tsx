@@ -2,20 +2,18 @@ import { useTheme } from "@theme";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Dayjs } from "dayjs";
-import { useEventEmitter, useLatest } from "@hooks";
-import { useRerender } from "@legacy";
-import { useLabelsService } from "@utils";
-import { useControlStateStore, useDatasetControlPart } from "@controls/dataset-control/components/adapters/root";
-import { useTaskRuntime } from "../../dataset-control/context";
+import { useEventEmitter, useLatest, useRerender, useLabelsService } from "@core";
+import { useControlStateStore, useDatasetControlPart } from "../../../dataset-control/adapters/root";
+import { useTaskRuntime } from "../../adapters/root/context";
 import { GanttRuntime } from "./runtime";
 import { GanttContext } from "./context";
 import type { IGanttEvents, IGanttModule } from "./interfaces";
 import type { IGanttThemeEvents } from "./theme";
-import { GanttOverlayLayer } from "./components/adapters/overlay";
-import { GanttSkeletonLayer } from "./components/adapters/skeleton";
-import { GanttUiChart, IGanttUiChartComponents } from "./components/ui/chart";
-import type { IGanttUiOverlayComponents } from "./components/ui/overlay";
-import type { IGanttUiSkeletonComponents } from "./components/ui/skeleton";
+import { GanttOverlayLayer } from "./adapters/overlay";
+import { GanttSkeletonLayer } from "./adapters/skeleton";
+import { GanttUiChart, IGanttUiChartComponents } from "./ui/chart";
+import type { IGanttUiOverlayComponents } from "./ui/overlay";
+import type { IGanttUiSkeletonComponents } from "./ui/skeleton";
 
 export interface ITaskGanttProps {
     /** Read once, at mount. */
