@@ -7,7 +7,7 @@ import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control in its own iframe, where the page's styles do not reach it and its own do not leak out. Try it below: open **Code** and change \`OTHER_APP_STYLES\`, and only the grid in the page follows.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control in its own iframe, where the page's styles do not reach it and its own do not leak out. Try it below: open **Edit columns** on both sides, and the framed panel stays inside its frame.
 
 {{canvas: Overview}}
 

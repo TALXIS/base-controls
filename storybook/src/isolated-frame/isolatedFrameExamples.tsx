@@ -32,7 +32,7 @@ const GridExample = () => {
         return () => style.remove()
     }, [])
 
-    return <Stack horizontal tokens={{ childrenGap: 16 }} styles={{ root: { height: 460 } }}>
+    return <Stack horizontal tokens={{ childrenGap: 16 }} styles={{ root: { height: 640 } }}>
         <Stack.Item grow styles={{ root: { flexBasis: 0, minWidth: 0 } }}>
             <DealsGrid heading='In the page' />
         </Stack.Item>
@@ -89,7 +89,13 @@ const createDeals = () => new MemoryDataProvider({
 
 export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childrenGap: 8 }} styles={{ root: { padding: 12 } }}>
     <Text variant='mediumPlus'>{props.heading}</Text>
-    <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='380px'>
+    <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='560px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.End>
+                {/* its panel opens in the window it was rendered in */}
+                <DatasetControl.EditColumns />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
         </DatasetControl.Body>

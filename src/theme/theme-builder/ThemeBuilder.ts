@@ -147,10 +147,16 @@ export class ThemeBuilder {
         if (Array.isArray(value)) {
             return value.map(entry => this._clone(entry)) as T;
         }
-        if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) {
+        if (!value || typeof value !== 'object' || !this._isPlainObject(value)) {
             return value;
         }
         return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, this._clone(entry)])) as T;
+    }
+
+    //a theme handed over from another window has that window's `Object.prototype`
+    private _isPlainObject(value: object): boolean {
+        const prototype = Object.getPrototypeOf(value);
+        return prototype === null || Object.getPrototypeOf(prototype) === null;
     }
 
     /** The theme these colours generate, cached on them. */
