@@ -1,9 +1,9 @@
 import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult, Localization } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { ErrorHelper, IServiceRegistry, ServiceLocator } from "@core";
-import { IFormAfterSaveParams, IFormEventHandlers, IFormPartLocator, IFormPartMap, IValidation } from "../interfaces";
+import { ErrorHelper } from "@core";
+import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
 
-export interface IFormRuntimeParameters {
+export interface IFormParams {
     record: IRecord;
 }
 
@@ -16,17 +16,8 @@ interface ISaveParams {
     blocker?: () => Promise<boolean>;
 }
 
-export interface IFormServiceMap extends IFormPartMap {
-    runtime: IFormRuntime;
-}
-
-export type IFormServiceLocator = IServiceRegistry<IFormServiceMap>;
-
-export interface IFormRuntime {
+export interface IForm {
     events: IEventEmitter<IFormEvents>;
-    /** What the form and its parts register. */
-    readonly services: IFormServiceLocator;
-    readonly parts: IFormPartLocator;
     saveOperationPerformed: boolean;
     getRecordReference: () => ComponentFramework.EntityReference;
     getValidationSummary: () => IValidation[];
@@ -59,7 +50,7 @@ const isEmpty = (value: unknown) => value === undefined || value === null || val
 
 const getRequiredMessage = () => Localization.GetString('utils/dataset/data-providers/Record/Field/Validation/ColumnRequired');
 
-export class FormRuntime implements IFormRuntime {
+export class FormModel implements IForm {
     public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _saveOperationPerformed: boolean = false;
@@ -67,21 +58,11 @@ export class FormRuntime implements IFormRuntime {
     private _validationExpressions: Map<string, () => IFieldValidationResult> = new Map();
     private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
     private _isDirty: boolean = false;
-    private _services = new ServiceLocator<IFormServiceMap>();
 
-    constructor(params: IFormRuntimeParameters) {
+    constructor(params: IFormParams) {
         this._record = params.record;
-        this._services.register('runtime', () => this);
         this._isDirty = this.isDirty();
         this._registerEventHandlers();
-    }
-
-    public get services(): IFormServiceLocator {
-        return this._services;
-    }
-
-    public get parts(): IFormPartLocator {
-        return this._services;
     }
 
     public get saveOperationPerformed(): boolean {
@@ -110,7 +91,7 @@ export class FormRuntime implements IFormRuntime {
 
     //kept off the record until expressions are hooks: see Dev › Provider rework, section 8
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
-        this._requiredLevelExpressions.set(fieldName, () => FormRuntime.getXrmRequirementLevelFromEnum(requiredLevel));
+        this._requiredLevelExpressions.set(fieldName, () => FormModel.getXrmRequirementLevelFromEnum(requiredLevel));
     }
 
     public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {
@@ -143,7 +124,6 @@ export class FormRuntime implements IFormRuntime {
         this.events.dispatchEvent('onDestroy');
         this.events.clearEventListeners();
         this._record.removeEventListener('onFieldValueChanged', this._handleFieldValueChanged);
-        this._services.destroy();
     }
 
     public isDirty(): boolean {

@@ -1,6 +1,6 @@
 import { IField, IFieldValidationResult } from "@talxis/client-libraries";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
-import { FormRuntime } from "../../../../runtime/FormRuntime";
+import { FormModel } from "../../../../runtime/FormModel";
 import type { IFormXmlAttribute } from "../form-xml-form";
 import { makeItemCollection } from "./collection";
 import type { IXrmAttributeContext, IXrmControlContext } from "../../interfaces";
@@ -90,7 +90,7 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        const requiredLevel = FormRuntime.getRequiredLevelEnumFromXrm(level);
+        const requiredLevel = FormModel.getRequiredLevelEnumFromXrm(level);
         this._attribute.setRequiredLevel(requiredLevel);
     }
 

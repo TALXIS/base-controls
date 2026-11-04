@@ -230,7 +230,7 @@ A record's expressions decide how its columns behave: validation, required level
 - **One slot per column, last writer wins.** \`record.expressions.setValidationExpression(column, fn)\` and the others replace whatever was set. Nothing can be read back from the record, and nothing can be removed.
 - **The grid takes the validation slot on every record** (\`GridValidation._register\`). A form or a script that sets a validator on the same record replaces the grid's, and the grid replaces theirs.
 - **Nothing is taken back.** A rule set by a part that has since unmounted stays on the record and keeps running.
-- **What works around it:** the Form keeps its own validation and required-level rules and combines them with the record's when it reads them, instead of setting them on a record it may share with a grid (\`FormRuntime.isFieldValid\`, \`getFieldRequiredLevel\`).
+- **What works around it:** the Form keeps its own validation and required-level rules and combines them with the record's when it reads them, instead of setting them on a record it may share with a grid (\`FormModel.isFieldValid\`, \`getFieldRequiredLevel\`).
 
 ### What every provider should do
 

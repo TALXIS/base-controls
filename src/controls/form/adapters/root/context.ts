@@ -1,11 +1,11 @@
 import React from "react";
-import { IFormRuntime } from "../../runtime/FormRuntime";
+import { IForm } from "../../runtime/FormModel";
 import { useContextWithNullCheck } from "@core";
 
-export const FormContext = React.createContext<IFormRuntime | null>(null);
+export const FormContext = React.createContext<IForm | null>(null);
 
 FormContext.displayName = "FormContext";
 
-export const useForm = (): IFormRuntime => {
+export const useForm = (): IForm => {
     return useContextWithNullCheck(FormContext);
 };

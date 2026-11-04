@@ -1,5 +1,5 @@
 import React from "react";
-import { IFormRuntime } from "../../runtime/FormRuntime";
+import { IForm } from "../../runtime/FormModel";
 import { Field, IFieldProps } from "../field";
 
 interface IRegisteredFieldConfig {
@@ -35,7 +35,7 @@ const collectFieldConfigs = (children: React.ReactNode): IRegisteredFieldConfig[
     return Array.from(fieldConfigs.values());
 };
 
-export const applyFieldConfigs = (form: IFormRuntime, children: React.ReactNode): void => {
+export const applyFieldConfigs = (form: IForm, children: React.ReactNode): void => {
     collectFieldConfigs(children).forEach(({ name, requiredLevel, validation }) => {
         if (requiredLevel != null) {
             form.setFieldRequiredLevel(name, requiredLevel);
