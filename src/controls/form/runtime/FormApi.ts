@@ -1,18 +1,18 @@
 import { IApiField, IFormApi } from "../interfaces";
-import { IForm } from "./FormModel";
+import { IFormRuntime } from "./FormRuntime";
 
 export interface IFormApiInternal extends IFormApi {
-    _getForm(): IForm;
+    _getForm(): IFormRuntime;
 }
 
 export class FormApi implements IFormApiInternal {
-    private _form: IForm;
+    private _form: IFormRuntime;
 
-    constructor(form: IForm) {
+    constructor(form: IFormRuntime) {
         this._form = form;
     }
 
-    public _getForm(): IForm {
+    public _getForm(): IFormRuntime {
         return this._form;
     }
 

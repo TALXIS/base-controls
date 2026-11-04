@@ -3,7 +3,7 @@ import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { ErrorHelper } from "@core";
 import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
 
-export interface IFormParams {
+export interface IFormRuntimeParameters {
     record: IRecord;
 }
 
@@ -16,7 +16,7 @@ interface ISaveParams {
     blocker?: () => Promise<boolean>;
 }
 
-export interface IForm {
+export interface IFormRuntime {
     events: IEventEmitter<IFormEvents>;
     saveOperationPerformed: boolean;
     getRecordReference: () => ComponentFramework.EntityReference;
@@ -50,7 +50,7 @@ const isEmpty = (value: unknown) => value === undefined || value === null || val
 
 const getRequiredMessage = () => Localization.GetString('utils/dataset/data-providers/Record/Field/Validation/ColumnRequired');
 
-export class FormModel implements IForm {
+export class FormRuntime implements IFormRuntime {
     public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _saveOperationPerformed: boolean = false;
@@ -59,7 +59,7 @@ export class FormModel implements IForm {
     private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
     private _isDirty: boolean = false;
 
-    constructor(params: IFormParams) {
+    constructor(params: IFormRuntimeParameters) {
         this._record = params.record;
         this._isDirty = this.isDirty();
         this._registerEventHandlers();
@@ -91,7 +91,7 @@ export class FormModel implements IForm {
 
     //kept off the record until expressions are hooks: see Dev › Provider rework, section 8
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
-        this._requiredLevelExpressions.set(fieldName, () => FormModel.getXrmRequirementLevelFromEnum(requiredLevel));
+        this._requiredLevelExpressions.set(fieldName, () => FormRuntime.getXrmRequirementLevelFromEnum(requiredLevel));
     }
 
     public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {

@@ -25,11 +25,11 @@ import type {
     FormXmlControlParameters,
     RequiredLevelEnum,
 } from "@talxis/client-metadata";
-import type { IForm } from "../../../../runtime/FormModel";
+import type { IFormRuntime } from "../../../../runtime/FormRuntime";
 
 export interface IFormXmlFormProps {
     formXml: string;
-    form: IForm;
+    form: IFormRuntime;
     lcid: number;
 }
 
@@ -127,7 +127,7 @@ export interface IFormXmlFormEvents {
 export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> {
     tabs: IFormXmlTabs;
     events: IEventEmitter<IFormXmlFormEvents>;
-    getForm: () => IForm;
+    getForm: () => IFormRuntime;
     getVisibleTabs: () => IFormXmlTab[];
     getSections: () => IFormXmlSection[];
     getCells: () => IFormXmlCell[];
