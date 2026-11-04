@@ -15,7 +15,7 @@ interface IXrmCustomComponentsExample {
 const customComponentsExamples: IXrmCustomComponentsExample[] = [
     {
         id: 'controls',
-        title: 'Replace control presentation',
+        title: 'Replace controls',
         summary: 'Swap selected Xrm control rendering with custom React while keeping the Xrm runtime and FormXml-driven structure intact.',
         notes: [
             'Use this when specific Xrm controls need a tailored visual treatment.',
@@ -190,7 +190,7 @@ const XrmCustomComponentsExample = () => {
     },
     {
         id: 'tabs',
-        title: 'Replace the tabs renderer',
+        title: 'Replace the tabs',
         summary: 'Swap the default Xrm tabs presentation for a custom tabs shell while keeping the same underlying runtime-driven tab content.',
         notes: [
             'The example keeps the orientation switch inside the rendered preview, matching the React compose tabs demo.',
@@ -266,7 +266,7 @@ const XrmCustomComponentsExample = () => {
     },
     {
         id: 'ribbon',
-        title: 'Replace the ribbon renderer',
+        title: 'Replace the ribbon',
         summary: 'Swap the default command bar shell with a fully native Material UI toolbar, wiring Save directly to formContext.data.save().',
         notes: [
             'Use this when the host application renders the rest of its UI in Material UI and wants a real MUI Button, not the runtime-supplied Fluent Save button.',
@@ -315,7 +315,7 @@ const XrmCustomComponentsExample = () => {
     },
     {
         id: 'notifications',
-        title: 'Replace the notifications renderer',
+        title: 'Replace the notifications',
         summary: 'Swap the default notifications list with dismissable, self-clearing Material UI Snackbars while notifications are still raised through the standard formContext.ui API.',
         notes: [
             'Use this when the host application renders the rest of its UI in Material UI and wants form notifications to match, stacked as toasts instead of an inline list.',
@@ -444,20 +444,16 @@ const meta = {
             },
             description: {
                 component: `
-Replace parts of the Xrm rendering with your own components while the layout stays driven by FormXml.
+Replace pieces of the Xrm form with your own components while the layout stays driven by FormXml and \`formContext\` works as before. Each piece is drawn by an \`onRender…\` slot.
 
-These stories keep the same FormXml-driven structure and \`formContext\` surface; only the rendering of selected pieces changes.
-
-> Some stories below use Material UI purely to demonstrate that presentation is fully swappable, not because it's the recommended choice. To keep a form visually coherent, prefer sticking to Fluent UI where possible — that's what the rest of the runtime renders with.
+Material UI here only shows that pieces are swappable; see [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview) for what to use.
 
 ## What you can replace
 
-- **Control presentation** — swap the rendered UI for selected Xrm controls without touching the rest of the form.
-- **Tabs shell** — replace the tabs renderer with a custom stepper, wizard, or other navigation shell while tab state and content stay runtime-driven.
-- **Ribbon** — replace the command bar shell with a custom toolbar while the Save button and dirty-state behavior stay runtime-driven.
-- **Notifications** — replace the notifications list with a custom renderer while notifications are still raised through \`formContext.ui.setFormNotification\`.
-
-Each story runs its own isolated form instance and opens directly in the live preview for that scenario.
+- **Controls:** the UI of selected Xrm controls, leaving the rest of the form as it is.
+- **Tabs:** a stepper, wizard or other navigation, over the same tab state and content.
+- **Ribbon:** your own toolbar, with saving and unsaved changes still tracked by the form.
+- **Notifications:** your own list, still raised through \`formContext.ui.setFormNotification\`.
                 `.trim(),
             },
         },
@@ -471,7 +467,7 @@ type Story = StoryObj<typeof meta>
 const samplesById = Object.fromEntries(customComponentsExamples.map((sample) => [sample.id, sample])) as Record<string, IXrmCustomComponentsExample>
 
 export const ReplaceControlPresentation: Story = {
-    name: 'Replace control presentation',
+    name: 'Replace controls',
     parameters: {
         docs: {
             canvas: {
@@ -479,13 +475,7 @@ export const ReplaceControlPresentation: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Swaps selected Xrm controls with custom React renderers while keeping the same formContext-driven behavior and FormXml layout.
-
-- targets individual controls without replacing the whole form shell
-- keeps the Xrm runtime contract intact
-- focuses on tailored field visuals for selected controls
-                `.trim(),
+                story: `Selected Xrm controls drawn by components of your own, with the same \`formContext\` behaviour and FormXml layout.`,
             },
         },
     },
@@ -493,7 +483,7 @@ Swaps selected Xrm controls with custom React renderers while keeping the same f
 }
 
 export const ReplaceTabsRenderer: Story = {
-    name: 'Replace the tabs renderer',
+    name: 'Replace the tabs',
     parameters: {
         docs: {
             canvas: {
@@ -501,13 +491,7 @@ export const ReplaceTabsRenderer: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Replaces the default tabs shell with a custom stepper-based renderer while preserving the same runtime-backed tab content and navigation.
-
-- swaps only the tabs presentation layer
-- keeps tab state and content driven by the Xrm runtime
-- supports switching between horizontal and vertical orientations
-                `.trim(),
+                story: `The tabs drawn as a Material UI stepper over the same tab state and content. Try: switch the stepper between horizontal and vertical.`,
             },
         },
     },
@@ -515,7 +499,7 @@ Replaces the default tabs shell with a custom stepper-based renderer while prese
 }
 
 export const ReplaceRibbonRenderer: Story = {
-    name: 'Replace the ribbon renderer',
+    name: 'Replace the ribbon',
     parameters: {
         docs: {
             canvas: {
@@ -523,13 +507,7 @@ export const ReplaceRibbonRenderer: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Replaces the default command bar shell with a native Material UI toolbar, wiring Save directly to \`formContext.data.save()\` instead of the runtime-supplied Fluent button.
-
-- swaps the ribbon presentation layer for real MUI components (AppBar, Toolbar, Button, Chip)
-- ignores the runtime's \`commandBarButtonAs\` renderer entirely; Save is a plain MUI \`Button\`
-- still reads the "unsaved-changes" far item to drive a dirty-state \`Chip\`
-                `.trim(),
+                story: `A Material UI toolbar whose Save calls \`formContext.data.save()\`. Try: change a value and watch the unsaved-changes chip.`,
             },
         },
     },
@@ -537,7 +515,7 @@ Replaces the default command bar shell with a native Material UI toolbar, wiring
 }
 
 export const ReplaceNotificationsRenderer: Story = {
-    name: 'Replace the notifications renderer',
+    name: 'Replace the notifications',
     parameters: {
         docs: {
             canvas: {
@@ -545,13 +523,7 @@ export const ReplaceNotificationsRenderer: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Replaces the default notifications list with dismissable, self-clearing Material UI \`Snackbar\`/\`Alert\` toasts, driven by \`formContext.ui.setFormNotification\`.
-
-- swaps the notifications presentation layer for real MUI components (\`Snackbar\`, \`Alert\`)
-- each toast auto-hides after 6 seconds or can be dismissed early via its close button
-- includes buttons to add info/warning/error notifications so you can see the custom renderer react live
-                `.trim(),
+                story: `Notifications from \`formContext.ui.setFormNotification\` drawn as Material UI toasts that hide after 6 seconds. Try: add a warning with the buttons.`,
             },
         },
     },

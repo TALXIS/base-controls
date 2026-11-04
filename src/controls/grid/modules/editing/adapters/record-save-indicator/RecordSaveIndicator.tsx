@@ -1,5 +1,5 @@
 import { useGridService } from "../../../../useGridService";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { GRID_LABELS } from "../../../../labels";
 import { useGridCell } from "../../../../adapters/cells/root/context";
 import { useRecordSaveStatus } from "./useRecordSaveStatus";

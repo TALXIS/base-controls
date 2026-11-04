@@ -53,13 +53,12 @@ Legacy note:
 - Apply only when `overridableUi=yes`.
 - `I<ComponentName>Props` must include `components?: Partial<I<ComponentName>Components>`.
 - `I<ComponentName>Components` must be scaffolded as an empty interface by default.
-- `I<ComponentName>Components` should be defined in `components/components.tsx`.
+- `I<ComponentName>Components` should be defined in `components.tsx` next to the component.
 - Do not scaffold a separate `interfaces.ts` file unless explicitly requested.
 - Do not scaffold any `onRender...` callback names unless explicitly requested.
-- Store default component mappings in a dedicated `components` subfolder.
-- Put default component mappings in `components/components.tsx`.
-- Add `components/index.ts` that exports everything from `components/components.tsx`.
-- In scaffolds, `components/components.tsx` must export an empty object placeholder:
+- Put default component mappings in the same `components.tsx`.
+- Export everything from `components.tsx` through the component folder's `index.ts`.
+- In scaffolds, `components.tsx` must export an empty object placeholder:
 
 ```ts
 export const <ComponentName>Components: I<ComponentName>Components = {};
@@ -100,7 +99,7 @@ Folder structure:
 
 ```ts
 import React, { useMemo } from 'react';
-import { useTheme } from '@fluentui/react';
+import { useTheme } from '@theme';
 import { get<ComponentName>Styles } from './styles';
 
 export interface I<ComponentName>Props {}
@@ -137,7 +136,7 @@ Use the same `index.ts` export pattern for all scaffolded component folders.
 
 When `overridableUi=yes`:
 
-- Add `components` subfolder and use Template B.
+- Add `components.tsx` and use Template B.
 - Do not scaffold `onRender...` callback names or render payload objects unless explicitly requested.
 
 ### Template B: `overridableUi=yes`
@@ -149,16 +148,14 @@ Folder structure:
   <ComponentName>.tsx
   styles.ts
   index.ts
-  components/
-	components.tsx
-	index.ts
+  components.tsx
 ```
 
 `<ComponentName>.tsx`
 
 ```ts
 import React, { useMemo } from 'react';
-import { useTheme } from '@fluentui/react';
+import { useTheme } from '@theme';
 import { <ComponentName>Components, I<ComponentName>Components } from './components';
 import { get<ComponentName>Styles } from './styles';
 
@@ -175,7 +172,7 @@ export const <ComponentName> = (props: I<ComponentName>Props) => {
 };
 ```
 
-`components/components.tsx`
+`components.tsx`
 
 ```ts
 export interface I<ComponentName>Components {}
@@ -183,9 +180,10 @@ export interface I<ComponentName>Components {}
 export const <ComponentName>Components: I<ComponentName>Components = {};
 ```
 
-`components/index.ts`
+`index.ts`
 
 ```ts
+export * from './<ComponentName>';
 export * from './components';
 ```
 

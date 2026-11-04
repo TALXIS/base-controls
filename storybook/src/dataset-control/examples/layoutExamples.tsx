@@ -1,6 +1,6 @@
 import React from 'react'
-import { ITheme, mergeStyleSets, Text, useTheme } from '@fluentui/react'
-import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
+import { ITheme, mergeStyleSets, Text } from '@fluentui/react'
+import { createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useDataProvider, useTheme } from '@talxis/base-controls'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { loadDeals, loadDealViews } from '../dealViews'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'

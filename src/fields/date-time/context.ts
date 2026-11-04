@@ -1,6 +1,6 @@
 import { createContext, MutableRefObject, useContext } from "react";
 import { ITheme } from "@theme";
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import { IDateTimeParameters } from "./interfaces";
 import { useDateTime } from "./hooks/useDateTime";
 

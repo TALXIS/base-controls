@@ -1,7 +1,7 @@
 import { FetchXmlBuilder, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
-import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../..";
 import { TASK_GRID_LABELS } from "../../../labels";
 

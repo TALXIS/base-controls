@@ -35,7 +35,7 @@ The base factory takes \`onCreateStore\`, which the module calls with the task r
 
 ## Columns from modules
 
-Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in Edit columns, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first.
+Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in *Edit columns*, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first.
 
 Modules that draw something take \`components\` to change it (see *Changing how it looks* on each module's page), and every module's strings are labels (see [**Localization**](?path=/docs/concepts-localization--overview)).
 `

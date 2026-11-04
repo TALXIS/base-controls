@@ -1,0 +1,18 @@
+{
+    ". useIsLoading": null,
+    ". DatasetAdapter": "DatasetControlEntry",
+    ". VirtualDatasetAdapter": "VirtualDatasetControlEntry",
+    ". PcfXrmFormAdapter": "PcfXrmFormEntry",
+    ". IPcfXrmFormAdapterInputs": "IPcfXrmFormEntryInputs",
+    ". IPcfXrmFormAdapterRenderProps": "IPcfXrmFormEntryRenderProps",
+    ". EMPTY_RECORDS_LABELS": "EMPTY_STATE_LABELS",
+    ". EMPTY_RECORDS_LABELS_CS": "EMPTY_STATE_LABELS_CS",
+    ". EmptyRecordsUiComponents": "EmptyStateUiComponents",
+    ". IEmptyRecordsProps": "IEmptyStateProps",
+    ". IEmptyRecordsUiComponents": "IEmptyStateUiComponents",
+    ". IEmptyRecordsUiProps": "IEmptyStateUiProps",
+    ". DATASET_CONTROL_NOTIFICATIONS_LABELS": "NOTIFICATION_MESSAGE_BAR_LABELS",
+    ". DATASET_CONTROL_NOTIFICATIONS_LABELS_CS": "NOTIFICATION_MESSAGE_BAR_LABELS_CS",
+    ". IGridValueRendererComponents": "IValueRendererUiComponents",
+    ". GridValueRendererComponents": "ValueRendererUiComponents"
+}

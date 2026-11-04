@@ -1,5 +1,5 @@
 import { useGridInternalService } from "../../../useGridService";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { GRID_LABELS } from "../../../labels";
 import { useGridCell } from "../root/context";
 import { CellUi, ICellUiLockIconComponents } from "../../../ui/cells";

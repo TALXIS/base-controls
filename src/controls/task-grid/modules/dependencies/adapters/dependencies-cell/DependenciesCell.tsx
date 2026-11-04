@@ -1,7 +1,7 @@
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { useOpenErrorDialog } from "@core";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui";
-import { Grid, IGridCellParams, useGridCell, useGridField } from "../../../../../grid";
+import { Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { PREDECESSORS_COLUMN_NAME } from "../../constants";
 import { DependencyCount } from "../../ui";
 

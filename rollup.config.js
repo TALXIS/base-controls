@@ -6,10 +6,12 @@ import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
 import { glob } from 'glob';
 import path from 'path';
+import { readAliases } from './scripts/aliases.mjs';
 
 const inputs = glob.sync("src/**/index.ts");
 const srcRoot = path.resolve('src');
-const internalAliases = ['@controls', '@ui', '@theme', '@hooks', '@interfaces', '@legacy', '@utils'];
+const aliases = readAliases();
+const internalAliases = aliases.map(([aliasName]) => aliasName);
 
 const isBareImport = (id) => {
     if (id.startsWith('\0') || id.startsWith('.') || id.startsWith('/') || path.isAbsolute(id)) {
@@ -41,13 +43,7 @@ export default [
             del({ hook: "buildStart", targets: ['dist/*'] }),
             alias({
                 entries: [
-                    { find: '@controls', replacement: `${srcRoot}/controls` },
-                    { find: '@ui', replacement: `${srcRoot}/ui` },
-                    { find: '@theme', replacement: `${srcRoot}/theme` },
-                    { find: '@hooks', replacement: `${srcRoot}/hooks` },
-                    { find: '@interfaces', replacement: `${srcRoot}/interfaces` },
-                    { find: '@legacy', replacement: `${srcRoot}/legacy/react-components` },
-                    { find: '@utils', replacement: `${srcRoot}/utils` },
+                    ...aliases.map(([aliasName, folder]) => ({ find: aliasName, replacement: path.resolve(folder) })),
                     { find: /^@\//, replacement: `${srcRoot}/` },
                 ],
             }),

@@ -1,6 +1,6 @@
 import { FieldValue, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./Property";
-import { ILookupProperty } from "@core/pcf/interfaces";
+import { ILookupProperty } from "@pcf/interfaces";
 
 const LookupCache = new PromiseCache();
 

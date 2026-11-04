@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Ribbon as LegacyRibbon } from "@legacy/ribbon";
 import { IGridInlineRibbon } from "./interfaces"
-import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "./GridInlineRibbonModel";
+import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "../../runtime/inline-ribbon/GridInlineRibbonModel";
 import { useEventEmitter } from "@core/hooks/useEventEmitter";
 import { useRerender, useResizeObserver, getClassNames, useLatest } from "@core";
 import { ICommandBar } from "@fluentui/react";
-import { getGridInlineRibbonStyles } from "./ui/styles";
+import { getGridInlineRibbonStyles } from "../../ui/inline-ribbon/styles";
 import { DataProvider } from "@talxis/client-libraries";
 
 const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefreshed', 'onAfterCommandsRefreshed'];

@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { BrandExample, DerivedThemesExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
-A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it: pick a brand, then open the menus.
+A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it below: pick a brand, then open the menus.
 
 {{canvas: Brand colours}}
 
@@ -13,7 +13,7 @@ A theme is the colours, fonts and effects everything is drawn in. You generate i
 
 | Provider | For |
 |---|---|
-| \`AppThemeProvider\` | The application's theme, at the root. Required: the controls throw without it. |
+| \`AppThemeProvider\` | The application's theme, at the root: see [**Quick start**](?path=/docs/concepts-quick-start--overview). |
 | \`ThemeProvider\` | An area that looks different, such as a dark banner. Themes only what is inside it. |
 | \`ThemeContext\` | The same without an element of its own; cheap enough for every item of a long list. |
 
@@ -69,25 +69,11 @@ type Story = StoryObj<typeof meta>
 export const BrandColours: Story = {
     name: 'Brand colours',
     render: () => renderStory(<BrandExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Deals in an app theme built from three colours. Try: pick a brand, then edit, sort, filter and open the menus.`,
-            },
-        },
-    },
 }
 
 export const TintAndEdit: Story = {
     name: 'Tint and edit',
     render: () => renderStory(<DerivedThemesExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `One card in three themes built from the page's. Try: change the hue or the font size.`,
-            },
-        },
-    },
 }
 
 export const RedRows: Story = {

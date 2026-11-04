@@ -1,15 +1,11 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { GRID_MODULE_PRIORITY } from "../../grid/modules/priorities";
-import { RECORD_SAVE_COLUMN_KEY } from "../../grid/modules/editing/constants";
-import { IGridCellCommands } from "../../grid/runtime/cells";
-import { IGridColumnContext } from "../../grid/runtime/columns/colDef";
-import { IGridServiceLocator } from "../../grid/runtime";
-import { IGridCheckList } from "./GridCheckList";
-import { CHECK_LIST_LABELS } from "../labels";
-import { CompletionCell } from "./completion-cell";
-import { NameCell } from "./name-cell";
-import { CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME } from "./constants";
+import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, IGridCellCommands, IGridColumnContext, IGridServiceLocator } from "@controls/grid";
+import { IGridCheckList } from "../GridCheckList";
+import { CHECK_LIST_LABELS } from "../../../labels";
+import { CompletionCell } from "../adapters/completion-cell";
+import { NameCell } from "../adapters/name-cell";
+import { CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME } from "../constants";
 
 //AG Grid's colDef defaults are `{ resizable: true, sortable: true }`
 const CONTROL_COLUMN_DEFINITION: ColDef<IRecord> = {

@@ -1,5 +1,5 @@
 import { useEventEmitter, useRerender } from "@core";
-import { DatasetControl, IPageSizeSwitcherProps, PageSizeSwitcherUiComponents } from "../../../dataset-control";
+import { DatasetControl, IPageSizeSwitcherProps, PageSizeSwitcherUiComponents } from "@controls/dataset-control";
 import type { ITaskDataProviderEvents } from "../../runtime/provider";
 import { useTaskRuntime } from "../root/context";
 

@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the dependencies module. */
 export const DEPENDENCIES_LABELS = defineLabels({

@@ -1,7 +1,7 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IControl } from "@core/pcf/interfaces/context";
+import { IControl } from "@pcf/interfaces/context";
 import { IRibbonComponentProps } from "@legacy/ribbon/interfaces";
-import { IStringProperty } from "@core/pcf/interfaces";
+import { IStringProperty } from "@pcf/interfaces";
 import { IAlignment } from "@core";
 
 export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, IGridInlineRibbonComponentProps> {

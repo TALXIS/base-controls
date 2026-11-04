@@ -1,4 +1,4 @@
-import { IControl, IParameters, IStringProperty } from "@core/pcf/interfaces";
+import { IControl, IParameters, IStringProperty } from "@pcf/interfaces";
 import { IOptionSet } from "@fields/option-set";
 import { INestedControlRenderer } from "@fields/nested-control-renderer/interfaces";
 import { IButtonProps as IFluentButtonProps } from "@fluentui/react";

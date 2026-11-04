@@ -2,7 +2,7 @@ import { useTheme, ThemeContext, AppThemeContext } from "@theme";
 import { useContext, useLayoutEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 
-import { PcfContext } from "@core/pcf/context/context";
+import { PcfContext } from "@pcf/context/context";
 import { GridServicesContext } from "../../../context";
 import { GridCellContext, GridCellRevisionContext } from "../root/context";
 import { GridFieldContext } from "../field/context";

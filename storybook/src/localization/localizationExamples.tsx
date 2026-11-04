@@ -307,7 +307,7 @@ export const JAPANESE_LABELS: { [key: string]: string } = {
     'pageSizeSwitcher.recordRange': '{{ start }} - {{ end }}',
     'pageSizeSwitcher.recordTotal': '/ {{ total }}',
     'pageSizeSwitcher.pageSizeTooltip': 'ページあたりのレコード数',
-    'emptyRecords.noRecordsFound': 'レコードが見つかりません。',
+    'emptyState.noRecordsFound': 'レコードが見つかりません。',
     'gridSorting.sortTextAscending': '昇順 (A → Z)',
     'gridSorting.sortTextDescending': '降順 (Z → A)',
     'gridSorting.sortDateAscending': '古い順',
@@ -385,8 +385,8 @@ export const JAPANESE_LABELS: { [key: string]: string } = {
 `,
 }
 
-const OWN_LABELS_CODE = `import { INVOICE_LABELS } from './labels'
-import { INVOICE_LABELS_CS } from './labels.cs'
+const OWN_LABELS_CODE = `import { INVOICE_LABELS } from './labels/en'
+import { INVOICE_LABELS_CS } from './labels/cs'
 
 const LINES = ['Standing desk', 'Ergonomic chair', 'Desk lamp']
 
@@ -410,7 +410,7 @@ const GridExample = () => {
 `
 
 const LABELS_FILE = {
-    name: 'labels.ts',
+    name: 'labels/en.ts',
     code: `//every key prefixed with the component's name
 export const INVOICE_LABELS = defineLabels({
     'invoice.title': 'Invoice',
@@ -420,8 +420,8 @@ export const INVOICE_LABELS = defineLabels({
 }
 
 const CZECH_FILE = {
-    name: 'labels.cs.ts',
-    code: `import { INVOICE_LABELS } from './labels'
+    name: 'labels/cs.ts',
+    code: `import { INVOICE_LABELS } from './en'
 
 //keys checked against the set
 export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {

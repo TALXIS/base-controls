@@ -1,14 +1,13 @@
 import { useEffect, useMemo } from "react";
-import { useEventEmitter, useRerender, useLabels } from "@core";
+import { useEventEmitter, useRerender } from "@core";
 import { INotificationMessageBarProps } from "@ui/notifications";
 import { useDataProvider } from "@data";
 import { useDatasetControlPart } from "../root";
-import { NOTIFICATIONS_LABELS } from "./labels";
 import { INotificationsComponents, NotificationsComponents } from "./components";
 import { DatasetControlNotifications, IDatasetControlNotificationsEvents } from "../../runtime/parts/notifications/DatasetControlNotifications";
 
 /** Props for `DatasetControl.Notifications`. */
-export interface INotificationsProps extends Omit<INotificationMessageBarProps, 'groupedNotificationsSummary' | 'components'> {
+export interface INotificationsProps extends Omit<INotificationMessageBarProps, 'components'> {
     /** Replacements for the notifications' pieces. */
     components?: Partial<INotificationsComponents>;
 }
@@ -19,7 +18,6 @@ export const Notifications = (props: INotificationsProps) => {
     const notifications = useDatasetControlPart('notifications', () => new DatasetControlNotifications({ provider }));
     const { rerender } = useRerender();
     const { messages = [], components: componentsProp, ...notificationsProps } = props;
-    const labels = useLabels(NOTIFICATIONS_LABELS);
     const components = { ...NotificationsComponents, ...componentsProp };
 
     useEventEmitter<IDatasetControlNotificationsEvents>(notifications.events, 'onNotificationsChanged', rerender);
@@ -29,7 +27,6 @@ export const Notifications = (props: INotificationsProps) => {
 
     return components.onRenderNotifications({
         ...notificationsProps,
-        groupedNotificationsSummary: labels.get('notifications.groupedNotificationsSummary', { count: allMessages.length }),
         messages: allMessages,
     });
 };

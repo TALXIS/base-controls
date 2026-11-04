@@ -1,6 +1,6 @@
 import { useEventEmitter, useRerender } from "@core";
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { Grid, IColumnHeaderRendererProps } from "../../../../../grid";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { Grid, IColumnHeaderRendererProps } from "@controls/grid";
 import type { ILookupManyEvents } from "../../LookupMany";
 import { LookupManyFilterCallout } from "../lookup-many-filter-callout";
 

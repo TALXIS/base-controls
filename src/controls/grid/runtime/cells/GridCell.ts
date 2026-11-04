@@ -1,6 +1,7 @@
 import { ColDef, IRowNode } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import { IAlignment, IControlHostCell } from "@core";
+import { IAlignment } from "@core";
+import { IControlHostCell } from "@pcf";
 import { IGridInternalServiceLocator } from "..";
 import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";

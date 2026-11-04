@@ -1,4 +1,4 @@
-import { IGridValueRenderer } from "@fields/value-renderer";
+import { IGridValueRenderer } from "../../value-renderer";
 
 /** The replaceable piece of what a column draws for a cell's value. */
 export interface ICellColumnControlComponents {

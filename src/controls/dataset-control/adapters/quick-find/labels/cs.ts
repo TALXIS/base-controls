@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { QUICK_FIND_LABELS } from "./en";
 
 export const QUICK_FIND_LABELS_CS = translateLabels(QUICK_FIND_LABELS, {

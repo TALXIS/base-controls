@@ -224,7 +224,7 @@ const GridExample = () => {
 
 export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     overlays: {
-        emptyRecords: {
+        emptyState: {
             onRenderIcon: props => <Icon {...props} iconName='ProductCatalog' />,
             onRenderText: props => <Stack horizontalAlign='center' tokens={{ childrenGap: 4 }}>
                 <Text {...props} variant='large' />

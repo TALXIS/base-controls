@@ -1,7 +1,7 @@
 import { ITextFieldProps } from "@legacy";
-import { IStringProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
-import { IInputParameters } from "@core/pcf/interfaces/parameters";
+import { IStringProperty, ITwoOptionsProperty } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
+import { IInputParameters } from "@pcf/interfaces/parameters";
 
 export interface ITextField extends IControl<ITextFieldParameters, ITextFieldOutputs, ITextFieldProps> {
 }

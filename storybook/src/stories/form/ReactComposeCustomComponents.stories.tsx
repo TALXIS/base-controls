@@ -29,7 +29,7 @@ const sharedStrategyCode = `const strategy = new MemoryStrategy({
 const customComponentsExamples: ICustomComponentsExample[] = [
     {
         id: 'custom-tabs',
-        title: 'Replace the tabs renderer',
+        title: 'Replace the tabs',
         summary: 'Use `Form.Tabs components.onRenderTabs` to swap the default tab header with a custom presentation component.',
         notes: [
             'This is useful when navigation should look like a stepper, wizard, sidebar, or another domain-specific shell.',
@@ -375,7 +375,7 @@ const FormExample = () => {
     },
     {
         id: 'custom-rich-cells',
-        title: 'Mix runtime fields with custom content cells',
+        title: 'Mix form fields with your own content cells',
         summary: 'Custom components do not have to replace the whole form surface; they can be introduced selectively alongside standard fields.',
         notes: [
             'This is useful for summaries, helper panels, or domain-specific visualizations embedded in the form layout.',
@@ -683,7 +683,7 @@ const FormExample = () => {
     },
     {
         id: 'custom-ribbon',
-        title: 'Replace the ribbon renderer',
+        title: 'Replace the ribbon',
         summary: 'Use `Form.Ribbon components.onRenderCommandBar` to render a fully native Material UI toolbar, wiring Save directly through `useForm()`.',
         notes: [
             'Use this when the host application renders the rest of its UI in Material UI and wants a real MUI Button, not the runtime-supplied Fluent Save button.',
@@ -779,7 +779,7 @@ const FormExample = () => {
     },
     {
         id: 'custom-notifications',
-        title: 'Replace the notifications renderer',
+        title: 'Replace the notifications',
         summary: 'Use `Form.Notifications components.onRenderNotifications` to render dismissable, self-clearing Material UI Snackbars instead of the stock notifications list.',
         notes: [
             'In React compose, notifications are just a controlled `messages` prop; there is no separate runtime API to call into.',
@@ -1005,20 +1005,18 @@ const meta = {
             },
             description: {
                 component: `
-Replace parts of the React compose rendering with your own components while the runtime keeps handling state, validation, and save flow.
+Replace pieces of the form with your own components while the form keeps handling state, validation and saving. Each piece is drawn by an \`onRender…\` slot, or by your own JSX inside \`Form.Root\`, so you own the look of one area and the rest stays managed.
 
-Custom components don't opt you out of the runtime — they let you own presentation for one area while everything else (binding, validation, notifications, dirty tracking, save) stays managed.
-
-> Some stories below use Material UI purely to demonstrate that presentation is fully swappable, not because it's the recommended choice. To keep a form visually coherent, prefer sticking to Fluent UI where possible — that's what the rest of the runtime renders with.
+Material UI here only shows that pieces are swappable; see [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview) for what to use.
 
 ## What you can replace
 
-- **Presentation shells** — swap the tabs renderer for a stepper, wizard, sidebar, or other domain-specific navigation.
-- **Field widgets** — compose custom read/write UI with \`Form.Field\`, \`Form.Cell\`, and \`useField\` that still participates in validation and save flow.
-- **Embedded content** — mix runtime-managed controls with summaries, helper panels, maps, and other custom cells.
-- **Section framing** — render fields through a custom section wrapper when one area needs presentation the stock section chrome doesn't provide.
-- **Ribbon** — replace the command bar with a native toolbar while \`useForm()\` still drives save and dirty state.
-- **Notifications** — replace the notifications list with a custom renderer over the same controlled \`messages\` prop.
+- **Tabs:** \`Form.Tabs components.onRenderTabs\` swaps the tab header for a stepper, wizard or sidebar.
+- **Field widgets:** \`Form.Field\`, \`Form.Cell\` and \`useField\` bind your own widget to a field, with validation and saving.
+- **Embedded content:** summaries, helper panels and maps sit in cells next to the form's fields.
+- **Section framing:** your own wrapper draws \`Form.Field\` and \`Form.Cell\` where the stock section won't do.
+- **Ribbon:** \`Form.Ribbon components.onRenderCommandBar\` swaps the command bar, with \`useForm()\` for saving.
+- **Notifications:** \`Form.Notifications components.onRenderNotifications\` draws the same \`messages\` your way.
                 `.trim(),
             },
         },
@@ -1032,7 +1030,7 @@ type Story = StoryObj<typeof meta>
 const samplesById = Object.fromEntries(customComponentsExamples.map((sample) => [sample.id, sample])) as Record<string, ICustomComponentsExample>
 
 export const ReplaceTabsRenderer: Story = {
-    name: 'Replace the tabs renderer',
+    name: 'Replace the tabs',
     parameters: {
         docs: {
             canvas: {
@@ -1043,13 +1041,7 @@ export const ReplaceTabsRenderer: Story = {
                 code: samplesById['custom-tabs'].previewCode ?? samplesById['custom-tabs'].code,
             },
             description: {
-                story: `
-Uses \`Form.Tabs components.onRenderTabs\` to swap the default tab header with a stepper-style presentation component.
-
-- replaces only the tabs shell
-- keeps the tab state and content on the same runtime
-- supports horizontal and vertical orientations
-                `.trim(),
+                story: `\`Form.Tabs components.onRenderTabs\` draws the tabs as a Material UI stepper, over the same tab state. Try: pick another step.`,
             },
         },
     },
@@ -1068,13 +1060,7 @@ export const ComposeCustomFieldContent: Story = {
                 code: samplesById['custom-field-content'].previewCode ?? samplesById['custom-field-content'].code,
             },
             description: {
-                story: `
-Shows how to build custom read/write field UI with \`Form.Field\`, \`Form.Cell\`, and \`useField\` while staying inside the form runtime.
-
-- binds custom widgets to form-managed values
-- keeps validation and save flow integrated
-- mixes stock controls with custom field projections
-                `.trim(),
+                story: `\`Form.Field\`, \`Form.Cell\` and \`useField\` bind widgets of your own to the record, with validation and saving. Try: change a value with a custom widget and watch the ribbon.`,
             },
         },
     },
@@ -1082,7 +1068,7 @@ Shows how to build custom read/write field UI with \`Form.Field\`, \`Form.Cell\`
 }
 
 export const MixRuntimeFieldsWithCustomContentCells: Story = {
-    name: 'Mix runtime fields with custom content cells',
+    name: 'Mix form fields with your own content cells',
     parameters: {
         docs: {
             canvas: {
@@ -1093,13 +1079,7 @@ export const MixRuntimeFieldsWithCustomContentCells: Story = {
                 code: samplesById['custom-rich-cells'].previewCode ?? samplesById['custom-rich-cells'].code,
             },
             description: {
-                story: `
-Adds compact custom summary content alongside standard runtime-managed fields in the same authored layout.
-
-- keeps standard controls where they already fit
-- embeds helper or summary panels selectively
-- uses custom content cells without replacing the whole form surface
-                `.trim(),
+                story: `Summary panels of your own sit in cells next to the form's fields. Try: change a field the summary reads.`,
             },
         },
     },
@@ -1118,13 +1098,7 @@ export const RenderCellsThroughCustomSectionComponent: Story = {
                 code: samplesById['custom-sections-and-labels'].previewCode ?? samplesById['custom-sections-and-labels'].code,
             },
             description: {
-                story: `
-Renders fields through a fully custom section wrapper when one area needs distinct framing beyond the stock section chrome.
-
-- places custom React directly inside \`Form.Root\`
-- renders \`Form.Field\` and \`Form.Cell\` through a custom wrapper
-- combines branded framing with runtime-backed form fields
-                `.trim(),
+                story: `A section wrapper of your own frames \`Form.Field\` and \`Form.Cell\`, which still bind to the record. Try: edit a field inside the custom frame.`,
             },
         },
     },
@@ -1132,7 +1106,7 @@ Renders fields through a fully custom section wrapper when one area needs distin
 }
 
 export const ReplaceRibbonRenderer: Story = {
-    name: 'Replace the ribbon renderer',
+    name: 'Replace the ribbon',
     parameters: {
         docs: {
             canvas: {
@@ -1143,13 +1117,7 @@ export const ReplaceRibbonRenderer: Story = {
                 code: samplesById['custom-ribbon'].previewCode ?? samplesById['custom-ribbon'].code,
             },
             description: {
-                story: `
-Renders a native Material UI toolbar through \`Form.Ribbon components.onRenderCommandBar\`, wiring Save directly through \`useForm()\`.
-
-- swaps the ribbon presentation layer for real MUI components (AppBar, Toolbar, Button, Chip)
-- ignores the runtime's \`commandBarButtonAs\` renderer entirely; Save is a plain MUI \`Button\` calling \`useForm().save()\`
-- still reads the "unsaved-changes" far item to drive a dirty-state \`Chip\`
-                `.trim(),
+                story: `\`Form.Ribbon components.onRenderCommandBar\` draws a Material UI toolbar whose Save calls \`useForm().save()\`. Try: change a value and watch the unsaved-changes chip.`,
             },
         },
     },
@@ -1157,7 +1125,7 @@ Renders a native Material UI toolbar through \`Form.Ribbon components.onRenderCo
 }
 
 export const ReplaceNotificationsRenderer: Story = {
-    name: 'Replace the notifications renderer',
+    name: 'Replace the notifications',
     parameters: {
         docs: {
             canvas: {
@@ -1168,13 +1136,7 @@ export const ReplaceNotificationsRenderer: Story = {
                 code: samplesById['custom-notifications'].previewCode ?? samplesById['custom-notifications'].code,
             },
             description: {
-                story: `
-Renders dismissable, self-clearing Material UI \`Snackbar\`/\`Alert\` toasts through \`Form.Notifications components.onRenderNotifications\`.
-
-- swaps the notifications presentation layer for real MUI components (\`Snackbar\`, \`Alert\`)
-- notifications are a plain controlled \`messages\` prop; there is no separate runtime API to call
-- each toast auto-hides after 6 seconds or can be dismissed early via its close button
-                `.trim(),
+                story: `\`Form.Notifications components.onRenderNotifications\` draws the controlled \`messages\` as Material UI toasts that hide after 6 seconds. Try: dismiss a toast early.`,
             },
         },
     },

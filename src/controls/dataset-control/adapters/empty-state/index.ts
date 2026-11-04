@@ -1,2 +1,2 @@
-export * from './EmptyRecords';
+export * from './EmptyState';
 export * from './labels';

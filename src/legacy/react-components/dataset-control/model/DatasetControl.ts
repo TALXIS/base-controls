@@ -1,4 +1,4 @@
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "@legacy/dataset-control/interfaces";

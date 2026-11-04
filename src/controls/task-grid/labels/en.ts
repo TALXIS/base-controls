@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings the task dataset control renders beside the grid's own. */
 export const TASK_GRID_LABELS = defineLabels({

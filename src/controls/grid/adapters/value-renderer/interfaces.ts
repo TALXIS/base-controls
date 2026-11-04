@@ -1,23 +1,9 @@
-import { IAlignment, IControl, IControlHostCell, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@core";
+import { IAlignment } from "@core";
+import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@pcf";
+import type { IGridCell } from "../../runtime/cells";
+import type { IGrid } from "../../runtime/grid";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridValueRendererComponents } from "./components";
-
-/** A file or an image, as a record holds one. */
-export interface IFileValue {
-    fileName: string;
-    /** In bytes, where the host reported one. */
-    fileSize?: number;
-    /** Where the contents can be fetched from. */
-    fileUrl?: string;
-    /** A picture of the contents, where the host built one. */
-    thumbnailUrl?: string;
-    mimeType?: string;
-}
-
-/** What a value's links open records through, such as the grid it is drawn in. */
-export interface IValueRendererHost {
-    openRecord(params: { record: IRecord; reference: ComponentFramework.EntityReference; columnName?: string }): void;
-}
+import { IValueRendererUiComponents } from "../../ui/value-renderer/components";
 
 export interface IGridValueRendererParameters extends IParameters {
     value: { raw: any };
@@ -35,7 +21,7 @@ export interface IGridValueRendererParameters extends IParameters {
     }
     /** The cell this is drawn in: what it may do there and what it offers. */
     Cell: {
-        raw: IControlHostCell | undefined;
+        raw: IGridCell | undefined;
     }
     /** Always the main provider, even when the cell is drawn by a child data provider. */
     Provider: {
@@ -44,9 +30,9 @@ export interface IGridValueRendererParameters extends IParameters {
     Record: {
         raw: IRecord;
     }
-    /** What opens the records the value links to. */
+    /** The grid the value is drawn in, which opens records. */
     Runtime: {
-        raw: IValueRendererHost;
+        raw: IGrid;
     }
     PrefixIcon: IStringProperty;
     SuffixIcon: IStringProperty;
@@ -57,5 +43,5 @@ export interface IGridValueRendererParameters extends IParameters {
 export interface IGridValueRenderer extends IControl<IGridValueRendererParameters, IOutputs, never> {
     /** Put on the element the value is drawn in, alongside its own class. */
     className?: string;
-    components?: Partial<IGridValueRendererComponents>;
+    components?: Partial<IValueRendererUiComponents>;
 }

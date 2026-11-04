@@ -17,12 +17,14 @@ The checklist module shows how far each task's checklist is done, as *done/total
 | \`createTalxisChecklistModule\` | As JSON in each TALXIS task's \`talxis_checklistjson\` column, read with the tasks. |
 | \`createChecklistModule\` | In a store of yours: \`onCreateStore\` returns an \`IChecklistStore\` with \`onLoadItems(taskIds)\`, which returns the items by task id. A task left out has none. |
 
+A task without items shows an empty cell.
+
+## Options
+
 | Option | Default | Description |
 |---|---|---|
 | \`reloadOnEditorClosed\` | \`false\`; \`true\` for TALXIS | Reads a task's items again once its form closes. |
 | \`components\` | Defaults | See *Changing how it looks* below. |
-
-A task without items shows an empty cell.
 
 ## Changing how it looks
 

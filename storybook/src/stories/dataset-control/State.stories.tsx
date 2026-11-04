@@ -45,7 +45,7 @@ Everything the control keeps is plain data under its \`stateKey\`, in the tree l
 
 ## Keep your own part's state
 
-\`useControlStateStore(stateKey)\` gives a component of your own a store in the view shown, so its state comes back with the view: see *Keep state in your own component* on [**State persistence**](?path=/docs/concepts-state-persistence--overview). A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+To have a component of your own come back with the view, see *Keep state in your own component* on [**State persistence**](?path=/docs/concepts-state-persistence--overview). A gallery that keeps its scroll this way is under *Your own collection view* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 `
 
 const meta = {

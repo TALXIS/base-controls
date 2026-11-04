@@ -2,8 +2,8 @@ import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetPr
 import { mergeStyles } from "@fluentui/react";
 import { IDatasetControlParameters, IDatasetControlProps } from "@legacy/dataset-control/interfaces";
 import { DatasetControl, IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
-import { PcfContextFactory } from "@core/pcf/context/factory";
-import { IPcfContext } from "@core/pcf/interfaces";
+import { PcfContextFactory } from "../context/factory";
+import { IPcfContext } from "../interfaces";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;

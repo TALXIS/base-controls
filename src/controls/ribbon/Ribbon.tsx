@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { ICommandBarItemProps } from "@fluentui/react";
-import { useEventEmitter, useLatest, useRerender, ErrorHelper, getClassNames, useOpenErrorDialog, usePcfContext } from "@core";
+import { useEventEmitter, useLatest, useRerender, ErrorHelper, getClassNames } from "@core";
+import { useOpenErrorDialog, usePcfContext } from "@pcf";
 import { ErrorMessageBoundary } from "@ui";
 import { Shimmer } from "@ui/shimmer";
 import { ILoadingBoundaryComponents, LoadingBoundary } from "@ui/loading-boundary";

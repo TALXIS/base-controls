@@ -1,4 +1,4 @@
-import { IPcfContext, IControl, IParameters, IProperty } from "@core/pcf/interfaces";
+import { IPcfContext, IControl, IParameters, IProperty } from "@pcf/interfaces";
 import { DataType, DataTypes, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./properties/Property";
 import { TextProperty } from "./properties/TextProperty";

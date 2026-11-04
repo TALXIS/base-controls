@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the templates module. */
 export const TEMPLATES_LABELS = defineLabels({

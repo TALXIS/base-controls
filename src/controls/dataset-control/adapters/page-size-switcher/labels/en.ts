@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the page size switcher. */
 export const PAGE_SIZE_SWITCHER_LABELS = defineLabels({

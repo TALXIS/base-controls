@@ -1,7 +1,8 @@
-import type { IXrmFormStrategy, IXrmFormContext } from '../../interfaces';
-import { IFormConfig, XrmClientApiStrategyFactory } from '../../runtime/strategies/XrmClientApiStrategyFactory';
-import { FORM_LABELS } from '../../../../labels';
-import { translateLabels, type Labels } from "@core";
+import type { IXrmFormStrategy, IXrmFormContext } from '@controls/form/modules/xrm-form/interfaces';
+import { IFormConfig, XrmClientApiStrategyFactory } from '@controls/form/modules/xrm-form/runtime/strategies/XrmClientApiStrategyFactory';
+import { FORM_LABELS } from '@controls/form/labels';
+import { translateLabels, type Labels } from "@labels";
+import { NOTIFICATION_MESSAGE_BAR_LABELS } from "@ui";
 import { createThemeBuilder, ITheme } from '@theme';
 
 export interface IPcfXrmFormEntryInputs {
@@ -106,13 +107,17 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
     }
 
     private _getLabels(): Labels {
-        return translateLabels(FORM_LABELS, {
-            'form.save': this._context.resources.getString('save'),
-            'form.saving': this._context.resources.getString('saving'),
-            'form.saved': this._context.resources.getString('saved'),
-            'form.unsavedChanges': this._context.resources.getString('unsavedChanges'),
-            'form.groupedNotificationsSummary': this._context.resources.getString('groupedNotificationsSummary'),
-        });
+        return {
+            ...translateLabels(FORM_LABELS, {
+                'form.save': this._context.resources.getString('save'),
+                'form.saving': this._context.resources.getString('saving'),
+                'form.saved': this._context.resources.getString('saved'),
+                'form.unsavedChanges': this._context.resources.getString('unsavedChanges'),
+            }),
+            ...translateLabels(NOTIFICATION_MESSAGE_BAR_LABELS, {
+                'notificationMessageBar.groupedNotificationsSummary': this._context.resources.getString('groupedNotificationsSummary'),
+            }),
+        };
     }
 
     private _getTheme(): ITheme {

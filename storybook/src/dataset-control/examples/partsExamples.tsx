@@ -117,7 +117,7 @@ const GridExample = () => <DatasetControl stateKey='notificationsDeals' onLoad={
 </DatasetControl>
 `
 
-const EMPTY_RECORDS_CODE = `const getDealListStyles = (theme: ITheme) => mergeStyleSets({
+const EMPTY_STATE_CODE = `const getDealListStyles = (theme: ITheme) => mergeStyleSets({
     list: { height: '100%', overflow: 'auto', padding: '0 12px' },
     row: { padding: '8px 0', borderBottom: \`1px solid \${theme.semanticColors.bodyDivider}\` },
     owner: { color: theme.semanticColors.bodySubtext },
@@ -144,16 +144,16 @@ const loadSearchableDeals = async () => {
     return { provider }
 }
 
-const GridExample = () => <DatasetControl stateKey='emptyRecordsDeals' onLoad={loadSearchableDeals} height='360px'>
+const GridExample = () => <DatasetControl stateKey='emptyStateDeals' onLoad={loadSearchableDeals} height='360px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <DatasetControl.EmptyRecords>
+        <DatasetControl.EmptyState>
             <DealList />
-        </DatasetControl.EmptyRecords>
+        </DatasetControl.EmptyState>
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -191,5 +191,5 @@ export const RibbonExample = () => <GridExampleRunner seedCode={withFiles(RIBBON
 export const QuickFindExample = () => <GridExampleRunner seedCode={QUICK_FIND_CODE} />
 export const EditColumnsExample = () => <GridExampleRunner seedCode={withFiles(EDIT_COLUMNS_CODE, VIEWS_FILE)} />
 export const NotificationsExample = () => <GridExampleRunner seedCode={NOTIFICATIONS_CODE} />
-export const EmptyRecordsExample = () => <GridExampleRunner seedCode={EMPTY_RECORDS_CODE} />
+export const EmptyStateExample = () => <GridExampleRunner seedCode={EMPTY_STATE_CODE} />
 export const PagingExample = () => <GridExampleRunner seedCode={PAGING_CODE} />

@@ -1,5 +1,6 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, IStateStore, Labels, LabelsService } from "@core";
+import type { IEventSubscriber, IServiceLocator, IServiceRegistry, IStateStore } from "@core";
+import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskRuntime } from "../../runtime";
@@ -26,7 +27,7 @@ export interface IGanttModule<TName extends keyof IGanttModuleMap = keyof IGantt
     onDestroy?(instance: IGanttModuleMap[TName]): void;
 }
 
-export type IGanttModuleLocator = Pick<IServiceLocator<IGanttModuleMap>, 'get' | 'find' | 'observe'>;
+export type IGanttModuleLocator = IServiceLocator<IGanttModuleMap>;
 
 /** The services the modules register by augmenting this. */
 export interface IGanttModuleServiceMap { }
@@ -51,7 +52,7 @@ export interface IGanttServiceMap extends IGanttModuleServiceMap {
     tasks: IGanttTasks;
 }
 
-export type IGanttServiceLocator = IServiceLocator<IGanttServiceMap>;
+export type IGanttServiceLocator = IServiceRegistry<IGanttServiceMap>;
 
 /** The services there only once the chart, or the module adding them, is. */
 export type IGanttDeferredService = keyof IGanttModuleServiceMap | 'chart' | 'zooming' | 'timeline' | 'dragging' | 'grid' | 'tasks';

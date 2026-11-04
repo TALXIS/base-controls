@@ -1,5 +1,5 @@
-import { RibbonUiComponents } from "../../../ribbon";
-import { DatasetControl, IDatasetControlRibbonProps } from "../../../dataset-control";
+import { RibbonUiComponents } from "@controls/ribbon";
+import { DatasetControl, IDatasetControlRibbonProps } from "@controls/dataset-control";
 import { useTaskRuntime } from "../root/context";
 
 /** Props for `TaskDatasetControl.Ribbon`. */

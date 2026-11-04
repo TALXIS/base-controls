@@ -1,10 +1,9 @@
 import { useTheme } from '@theme';
 import React, { useMemo } from 'react';
-import { IconButton, IMessageBarStyles, MessageBar, MessageBarType } from '@fluentui/react';
-import { ContextualMenu } from '@ui/surfaces';
-import { INotificationMessageBarComponents } from "./components";
+import { IMessageBarStyles, MessageBarType } from '@fluentui/react';
+import { INotificationMessageBarComponents, NotificationMessageBarComponents } from "./components";
 import { getNotificationMessageBarStyles } from './styles';
-import { useLabels } from '@core/localization';
+import { useLabels } from '@labels';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
 
 /** One message of a notification bar. */
@@ -19,8 +18,6 @@ export interface INotificationMessageBarProps {
 	/** The messages to show; the bar is not drawn without any. */
 	messages?: INotificationMessage[],
 	components?: Partial<INotificationMessageBarComponents>;
-	/** Replaces the summary shown over several messages. */
-	groupedNotificationsSummary?: string;
 }
 
 const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = []): MessageBarType => {
@@ -34,6 +31,7 @@ const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = 
 export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 	const theme = useTheme();
 	const { messages = [] } = props;
+	const components = { ...NotificationMessageBarComponents, ...props.components };
 	const [isUnfolded, setIsUnfolded] = React.useState(false);
 	const styles = useMemo(() => getNotificationMessageBarStyles(theme, isUnfolded), [theme, isUnfolded]);
 	const groupedNotificationRef = React.useRef<HTMLDivElement>(null);
@@ -48,45 +46,34 @@ export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 
 	if (messages.length === 0) return <></>;
 
+	const renderMessage = (message: INotificationMessage) => components.onRenderMessage({ dangerouslySetInnerHTML: { __html: message.text } });
+
 	if (messages.length === 1) {
-		const message = messages[0];
-		return <MessageBar styles={messageBarStyles} messageBarType={messageBarType}>
-			<div dangerouslySetInnerHTML={{ __html: message.text }} />
-		</MessageBar>;
+		return components.onRenderMessageBar({ styles: messageBarStyles, messageBarType, children: renderMessage(messages[0]) });
 	}
 
 	return <div ref={groupedNotificationRef} className={styles.groupedNotification} onClick={() => setIsUnfolded(!isUnfolded)}>
-		<MessageBar
-			styles={{ ...messageBarStyles, innerText: styles.groupedInnerText }}
-			messageBarType={messageBarType}
-			actions={
-				<IconButton styles={{ root: styles.chevronBtn, icon: styles.chevronBtnIcon }} iconProps={{ iconName: 'ChevronDown' }} />
-			}
-		>
-			{props.groupedNotificationsSummary ?? labels.get('notificationMessageBar.groupedNotificationsSummary', { count: messages.length })}
-		</MessageBar>
-		{isUnfolded &&
-			<ContextualMenu
-				items={messages.map((message, index) => ({
-					key: index.toString(),
-				}))}
-				onRenderContextualMenuItem={(menuItemProps) => {
-					const key = parseInt(menuItemProps?.key || '0');
-					const message = messages[key];
-					const isLastItem = key === messages.length - 1;
-
-					return <MessageBar
-						className={!isLastItem ? styles.lastGroupedNotificationItem : undefined}
-						styles={messageBarStyles}
-						messageBarType={getMessageBarType([message])}
-					>
-						<div dangerouslySetInnerHTML={{ __html: message.text }} />
-					</MessageBar>;
-				}}
-				useTargetWidth
-				target={groupedNotificationRef.current}
-				onDismiss={() => setIsUnfolded(!isUnfolded)}
-			/>
-		}
+		{components.onRenderMessageBar({
+			styles: { ...messageBarStyles, innerText: styles.groupedInnerText },
+			messageBarType,
+			actions: components.onRenderToggleButton({ styles: { root: styles.chevronBtn, icon: styles.chevronBtnIcon }, iconProps: { iconName: 'ChevronDown' } }) ?? undefined,
+			children: labels.get('notificationMessageBar.groupedNotificationsSummary', { count: messages.length }),
+		})}
+		{isUnfolded && components.onRenderMenu({
+			items: messages.map((message, index) => ({ key: index.toString() })),
+			onRenderContextualMenuItem: menuItemProps => {
+				const index = parseInt(menuItemProps?.key || '0');
+				const message = messages[index];
+				return components.onRenderMessageBar({
+					className: index < messages.length - 1 ? styles.lastGroupedNotificationItem : undefined,
+					styles: messageBarStyles,
+					messageBarType: getMessageBarType([message]),
+					children: renderMessage(message),
+				});
+			},
+			useTargetWidth: true,
+			target: groupedNotificationRef.current,
+			onDismiss: () => setIsUnfolded(!isUnfolded),
+		})}
 	</div>;
 };

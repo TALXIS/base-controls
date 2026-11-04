@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Operators } from "@talxis/client-libraries";
-import { useLabels, usePcfContext } from "@core";
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS, GRID_FILTERING_LABELS, useGridColumnHeader, useGridService } from "../../../../../grid";
+import { useLabels } from "@labels";
+import { usePcfContext } from "@pcf";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS, GRID_FILTERING_LABELS, useGridColumnHeader, useGridService } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
 import { LookupManyFilter, LookupManyFilterValueKind } from "../../ui";
 import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";

@@ -1,5 +1,5 @@
 import { FieldValue } from "@talxis/client-libraries";
-import { IWholeNumberProperty } from "@core/pcf/interfaces";
+import { IWholeNumberProperty } from "@pcf/interfaces";
 import { Property } from "./Property";
 
 export class NumberProperty extends Property {

@@ -1,0 +1,58 @@
+{
+    "layers": [
+        "core",
+        "labels",
+        "pcf",
+        "theme",
+        "ui",
+        "fields",
+        "data",
+        "controls",
+        "entries",
+        "labelSets"
+    ],
+    "folders": {
+        "core/": "core",
+        "labels/sets/": "labelSets",
+        "labels/": "labels",
+        "pcf/entries/": "entries",
+        "pcf/": "pcf",
+        "theme/": "theme",
+        "ui/": "ui",
+        "fields/": "fields",
+        "data/": "data",
+        "controls/": "controls",
+        "legacy/": "legacy"
+    },
+    "importsLegacy": [
+        "fields",
+        "controls",
+        "entries",
+        "labelSets"
+    ],
+    "widgets": {
+        "ribbon": [],
+        "dataset-control": [
+            "ribbon"
+        ],
+        "grid": [
+            "dataset-control",
+            "ribbon"
+        ],
+        "check-list": [
+            "grid",
+            "dataset-control",
+            "ribbon"
+        ],
+        "task-grid": [
+            "grid",
+            "dataset-control",
+            "ribbon"
+        ],
+        "form": [
+            "ribbon"
+        ],
+        "map": [],
+        "isolated-frame": []
+    }
+}

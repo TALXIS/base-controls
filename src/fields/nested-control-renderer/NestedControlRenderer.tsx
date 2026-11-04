@@ -9,15 +9,16 @@ import { DateTime } from '../date-time';
 import { MultiSelectOptionSet } from '../multi-select-option-set';
 import { Lookup } from '../lookup';
 import { OptionSet } from '../option-set';
-import { BaseControls, useLabels, useRerender } from "@core";
+import { BaseControls } from "@pcf";
+import { useLabels } from "@labels";
+import { useRerender } from "@core";
 import { getInternalNestedControlStyles, getNestedControlStyles } from './ui/styles';
 import { MessageBar, MessageBarButton, MessageBarType, SpinnerSize, Spinner } from '@fluentui/react';
 import { Shimmer } from '@ui';
 import ReactDOM from 'react-dom';
 import { NESTED_CONTROL_RENDERER_LABELS } from './labels';
 import { Ribbon as LegacyRibbon } from '@legacy/ribbon';
-import { GridInlineRibbon } from '../inline-ribbon';
-import { GridValueRenderer } from '../value-renderer';
+import { getRegisteredBaseControl } from './registry';
 
 interface IRef {
     control: NestedControl | null;
@@ -98,17 +99,12 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return Decimal;
             case 'Duration':
                 return Duration;
-            case 'GridValueRenderer':
-                return GridValueRenderer;
-            case 'GridInlineRibbon': {
-                return GridInlineRibbon;
-            }
             case 'Ribbon': {
                 return LegacyRibbon;
             }
             //a name nobody recognises gets the plainest control there is rather than nothing at all
             default:
-                return GridValueRenderer;
+                return getRegisteredBaseControl(getRef().controlName) ?? getRegisteredBaseControl(BaseControls.GridValueRenderer) ?? (() => null);
         }
     };
 

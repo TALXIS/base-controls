@@ -7,6 +7,8 @@ import { JumpToNewestTicketExample, RearrangeColumnsExample } from '../../../gri
 const DESCRIPTION = `
 The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. For what no hook covers, a module can set AG Grid's options, and your code can call AG Grid's api once the grid is ready. Reach for them last: the grid sets many options itself, and what you change through AG Grid is not written back to the provider.
 
+{{story: Rearrange columns on request}}
+
 ## AG Grid's options
 
 | Call | Its hooks run | For |
@@ -18,8 +20,6 @@ The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="norefer
 Each hook receives \`{ options }\` and sets what it needs on it. Both register calls return a function that takes the hook off again, and their priorities work as every hook's do: see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 \`refreshAgGridOptions()\` compares each option with what AG Grid was last passed, by reference. A hook that builds a new object or function each time passes it again on every refresh, so create them once, outside the hook. It does not build the column definitions again: those follow the provider's loads, so call \`provider.refresh()\` for them.
-
-{{story: Rearrange columns on request}}
 
 ## Options the grid sets
 
@@ -48,7 +48,11 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 | Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
-Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid: widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. Set an option through a hook rather than \`gridApi.setGridOption\` when a hook also sets it, or the hook's value replaces yours.
+Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid:
+
+- Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`.
+- A value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`.
+- An option a hook also sets is replaced by the hook's value, so set it through a hook rather than \`gridApi.setGridOption\`.
 
 To read AG Grid as it goes, return a cleanup from the observer: it runs while AG Grid still works, as *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) shows.
 
@@ -56,9 +60,9 @@ To read AG Grid as it goes, return a cleanup from the observer: it runs while AG
 
 ## The AG Grid theme
 
-The grid builds AG Grid's theme from your Fluent theme as it mounts, with no lines between columns, no frame round the grid, and a header as tall as a row:
+The grid builds AG Grid's theme from the app theme as it mounts, with no lines between columns, no frame round the grid, and a header as tall as a row:
 
-| AG Grid parameter | From the Fluent theme |
+| AG Grid parameter | From the app theme |
 |---|---|
 | \`accentColor\`, \`rangeSelectionBorderColor\` | \`palette.themePrimary\` |
 | \`backgroundColor\`, \`foregroundColor\` | \`semanticColors.bodyBackground\`, \`bodyText\` |
@@ -72,8 +76,8 @@ The \`gridTheme\` service changes it, once, as the grid mounts:
 
 | Hook | Receives | Does |
 |---|---|---|
-| \`registerTheme(hook, priority?)\` | \`{ theme }\`, the Fluent theme | Replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a> |
-| \`registerStyles(hook, priority?)\` | \`{ styles }\`, the Fluent theme | Push Fluent \`IStyle\` rules for the grid's root element, for what no parameter covers |
+| \`registerTheme(hook, priority?)\` | \`result: { theme }\` and \`fluentTheme\` | Replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a> |
+| \`registerStyles(hook, priority?)\` | \`result: { styles }\` and \`fluentTheme\` | Push Fluent \`IStyle\` rules for the grid's root element, for what no parameter covers |
 
 An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 
@@ -106,7 +110,7 @@ export const RearrangeColumnsOnRequest: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A shop that keeps its columns in place until someone asks to rearrange them: an initial option hook sets \`ensureDomOrder\`, an option hook sets \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` passes AG Grid the new value. Try: turn on *Rearrange columns* and drag a header; \`onColumnsChanged\` lists the order the provider now holds.`,
+                story: `An option hook sets \`suppressMovableColumns\` from a ref, and \`refreshAgGridOptions()\` passes AG Grid the new value. Try: turn on *Rearrange columns* and drag a header.`,
             },
         },
     },
@@ -118,7 +122,7 @@ export const JumpToTheNewestTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A ribbon command keeps the grid from \`onReady\` and calls \`gridApi\`: \`autoSizeAllColumns()\` fits the columns, and \`ensureNodeVisible()\` with \`flashCells()\` scrolls to the newest ticket and flashes it, with \`HighlightChangesModule\` listed in \`agGridModules\`. Try: press *Jump to the newest ticket*.`,
+                story: `A ribbon command calls \`gridApi\` to fit the columns, scroll to the newest ticket and flash it. Try: press *Jump to the newest ticket*.`,
             },
         },
     },

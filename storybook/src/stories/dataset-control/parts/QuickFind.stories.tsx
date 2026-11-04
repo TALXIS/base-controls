@@ -12,7 +12,7 @@ Quick find lets the user narrow the records down by typing, without building a f
 ## How it behaves
 
 - **Search:** Enter or the search icon searches; clicking the field opens a callout listing the columns it searches.
-- **Matching:** a value matches when it begins with the query; a leading \`*\` matches anywhere, more slowly, and the callout warns about it.
+- **Leading \`*\`:** the callout warns that it searches more slowly.
 - **Clear:** the cross empties the field and searches again.
 - **Placeholder:** names the records from the provider's metadata, or says *records*.
 - **Disabled:** while the provider loads, and when there is no column to search.
@@ -21,15 +21,7 @@ Quick find lets the user narrow the records down by typing, without building a f
 
 ## Columns it searches
 
-The provider decides, and the field is disabled while it names none:
-
-| Provider | Searches |
-|---|---|
-| \`MemoryDataProvider\` | The columns in \`metadata.QuickFindColumns\`, or the columns marked \`isPrimary\` without it |
-| \`FetchXmlDataProvider\` | The columns of the table's quick find view |
-| Your own | What its \`onGetQuickFindColumns()\` returns |
-
-See *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The provider decides which columns are searched and what matches, and the field is disabled while it names none: see *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## Props
 

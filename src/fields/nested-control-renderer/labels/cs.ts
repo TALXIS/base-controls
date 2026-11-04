@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { NESTED_CONTROL_RENDERER_LABELS } from "./en";
 
 export const NESTED_CONTROL_RENDERER_LABELS_CS = translateLabels(NESTED_CONTROL_RENDERER_LABELS, {

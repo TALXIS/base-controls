@@ -2,46 +2,45 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { ItemPanelExample, ReadOnlyExample, ReleaseBoardExample } from '../../check-list/checkListExamples'
+import { CustomCheckExample, ItemPanelExample, ReadOnlyExample, ReleaseBoardExample } from '../../check-list/checkListExamples'
 
 const DESCRIPTION = `
-A checklist is a grid with a few columns of its own: an item's name, its hidden position and whether it is finished. Everything else is the grid's, so you customize a checklist the way you customize a grid, through its modules, labels, columns and events. Try it below: a release board built from grid features; hover an item without an owner, then tick an overdue one.
+Apart from its three columns, a checklist is a grid, so you customize it the way you customize a grid: with modules, column definitions, cells and events. Try it below: a release board built from grid features. Hover an item without an owner, then tick an overdue one off.
 
 {{canvas: Run a release board}}
 
 ## Make it read-only
 
-Without the editing module, \`modules={[]}\`, the list is read-only: no ticking, renaming, adding, deleting or dragging.
+Without the editing module, \`modules={[]}\`, nothing can be ticked, renamed, added, deleted or dragged.
 
 {{story: Keep a finished plan for reference}}
 
-## Change its wording
+## Add grid features
 
-Its strings are labels: see [**Localization**](?path=/docs/concepts-localization--overview).
+Everything [**Grid**](?path=/docs/controls-grid-columns--overview) offers works on the checklist's columns: \`colDefs\`, cell colours, locks, cell commands and events. The release board above uses all four. Of the modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and your own; sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
 
-## Configure the grid
+## Replace pieces of its cells
 
-Everything \`Grid\` offers works on the checklist's other columns: column definitions, cell colours, locks, cell commands, events. Of the grid's modules, \`modules\` takes \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` and modules of your own. Sorting, filtering and grouping would change the order, and cell selection turns dragging off, so they are left out.
+The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the [**grid cell's pieces**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a piece of their own:
 
-The release board above colours overdue dates (see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview)), locks the name and due date of finished items (see *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)), offers *Assign to me* (see *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview)) and totals the estimates (see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview)).
+| Column | Piece | Slots |
+|---|---|---|
+| Completed | \`checkbox\` | \`onRenderButton\`, the button; \`onRenderCheck\`, the check inside it |
+| Name | \`name\` | \`onRenderContainer\`, the box that carries the strike-through |
+
+Replacing a slot keeps the cell's behaviour: here the check becomes a star, and ticking, saving and the pop still work.
+
+{{story: Tick items off with a star}}
 
 ## Open an item
 
-A primary column draws the item's name as a link, and \`onOpenRecord\` decides what opening it does. Here it opens the item in a form in a panel. How links and opening work is under *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview); while editing is on, as it is by default, only the link opens an item, not a double-click.
+Make the name column primary to draw names as links, and handle \`onOpenRecord\` to decide what opening one does; here it opens the item in a form in a panel.
 
 {{story: Open an item in a panel}}
 
 ## From your code
 
-The checklist adds its own module to the grid: \`grid.modules.find('checkList')\`, on the grid \`onReady\` or a module's \`onLoad\` passes you, or \`useGridModule('checkList')\` in a part the grid draws. The release board above uses it to tell items from the row that adds one.
-
-| Member | Description |
-|---|---|
-| \`isItem(record)\` | Whether the record is one of the list's items, not the row that adds one. |
-| \`isCompleted(record)\` | Whether the item is finished. |
-| \`getFieldMapping()\` | The columns the checklist works with. |
-
-Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+The checklist adds a module to the grid: \`useGridModule('checkList')\` in a part the grid draws, or \`grid.modules.find('checkList')\` from \`onReady\`. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 `
 
 const meta = {
@@ -66,7 +65,7 @@ export const KeepAFinishedPlanForReference: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The launch is over: \`modules={[]}\` keeps the plan for reference. Try: click an item; nothing can be changed.`,
+                story: `The launch is over, and the plan is kept for reference with \`modules={[]}\`.`,
             },
         },
     },
@@ -78,7 +77,19 @@ export const RunAReleaseBoard: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Grid features on a checklist: overdue dates coloured, the name and due date of finished items locked, *Assign to me* on unassigned items, and the estimates totalled. Try: hover an item without an owner, then tick an overdue one.`,
+                story: `Overdue dates coloured, the name and due date of finished items locked, *Assign to me* on unassigned items, and the estimates totalled.`,
+            },
+        },
+    },
+}
+
+export const TickItemsOffWithAStar: Story = {
+    name: 'Tick items off with a star',
+    render: () => renderStory(<CustomCheckExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `\`colDefs\` hands the completion cell a star through \`components.checkbox.onRenderCheck\`.`,
             },
         },
     },
@@ -90,7 +101,7 @@ export const OpenAnItemInAPanel: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`isPrimary\` turns the names into links, and \`onOpenRecord\` opens the item in a form. Try: click a name and change the item in the panel.`,
+                story: `The names are links, and \`onOpenRecord\` opens the item in a form.`,
             },
         },
     },

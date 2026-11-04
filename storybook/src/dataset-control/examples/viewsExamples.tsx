@@ -109,9 +109,9 @@ export const ProductsBody = () => {
     const Ui = UIS[control.getView()?.data?.ui ?? 'grid']
 
     //what shows instead of the UI when nothing matches
-    return <DatasetControl.EmptyRecords>
+    return <DatasetControl.EmptyState>
         <Ui />
-    </DatasetControl.EmptyRecords>
+    </DatasetControl.EmptyState>
 }
 `,
 }

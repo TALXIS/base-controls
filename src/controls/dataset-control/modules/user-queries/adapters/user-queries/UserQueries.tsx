@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useEventEmitter, ErrorHelper, useLabels, usePcfContext } from "@core";
+import { useEventEmitter, ErrorHelper } from "@core";
+import { useLabels } from "@labels";
+import { usePcfContext } from "@pcf";
 import { useRequiredDatasetControlRuntime } from "../../../../adapters/root/context";
 import type { IDatasetControlUserQueriesEvents } from "../../DatasetControlUserQueries";
 import { USER_QUERIES_LABELS } from "../../labels";

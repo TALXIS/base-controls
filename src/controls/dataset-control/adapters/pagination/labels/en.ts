@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the pagination. */
 export const PAGINATION_LABELS = defineLabels({

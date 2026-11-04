@@ -1,4 +1,4 @@
-import type { ICellRendererComponents, IGroupingUiToggleComponents } from "../../../grid";
+import type { ICellRendererComponents, IGroupingUiToggleComponents } from "@controls/grid";
 import type { ITaskGridUiTreeCellIndentComponents } from "../../ui";
 
 /** The replaceable pieces of the subject cell, by the part they belong to. */

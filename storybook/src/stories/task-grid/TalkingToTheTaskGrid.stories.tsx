@@ -24,6 +24,7 @@ Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`on
 | \`delete(taskIds)\` | Asks the user, then deletes the tasks with their subtasks. Does nothing while \`enableDeletion\` is off. |
 | \`move(taskId, targetTaskId, position)\` | Moves a task \`'above'\`, \`'below'\` or as a \`'child'\` of another, and saves it. Returns \`true\`, or \`null\` when it cannot go there. |
 | \`openRecord(reference, columnName?)\` | Opens the task, or the record a lookup points to, as a link in the grid does. |
+| \`openRelatedRecord(reference, columnName)\` | Opens the record the task's lookup in \`columnName\` points to. |
 
 To change a value, set it on the record and save it, as *Complete the selected* does.
 
@@ -45,11 +46,13 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`getProvider()\` | The task provider: the tasks, the selection and the record tree. |
 | \`getView()\` | The open view, with its \`data\`. |
 | \`getFieldMapping()\` | The field mapping \`onLoad\` returned. |
+| \`getLabels(set)\` | A label set as the control translates it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`isFlatList()\`, \`setFlatList(isFlatList)\` | The flat list. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). |
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |
 | \`getHoursPerDay()\` | The control's \`hoursPerDay\`. |
 | \`registerRibbonCommandUi(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
-| \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`. |
+| \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied, menus included. |
+| \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
 | \`events\` | \`onDestroyed\`. |
 
 \`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**DatasetControl › Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).

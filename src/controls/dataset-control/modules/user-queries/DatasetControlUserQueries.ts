@@ -2,7 +2,8 @@ import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { EventEmitter, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
-import type { IEventSubscriber, LabelsOf } from "@core";
+import type { IEventSubscriber } from "@core";
+import type { LabelsOf } from "@labels";
 import { USER_QUERIES_LABELS } from "./labels";
 import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQuerySavedValueMap, IUserQueryView } from "./interfaces";
 

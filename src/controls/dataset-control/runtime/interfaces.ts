@@ -1,6 +1,7 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IEventSubscriber, ILabels, ILabelSet, IServiceLocator, Labels, LabelsService } from "@core";
+import type { IEventSubscriber, IServiceLocator, IServiceRegistry } from "@core";
+import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
 import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
@@ -79,7 +80,7 @@ export interface IDatasetControlPartMap {
 }
 
 /** Looks up the parts rendered right now. */
-export type IDatasetControlPartLocator = Pick<IServiceLocator<IDatasetControlPartMap>, 'get' | 'find' | 'observe'>;
+export type IDatasetControlPartLocator = IServiceLocator<IDatasetControlPartMap>;
 
 /** The modules a DatasetControl loaded, by name; each module adds its own entry. */
 export interface IDatasetControlModuleMap { }
@@ -95,7 +96,7 @@ export interface IDatasetControlModule<TName extends keyof IDatasetControlModule
 }
 
 /** Looks up the modules the control loaded. */
-export type IDatasetControlModuleLocator = Pick<IServiceLocator<IDatasetControlModuleMap>, 'get' | 'find' | 'observe'>;
+export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModuleMap>;
 
 /** The DatasetControl as its consumer drives it. */
 export interface IDatasetControl<TData = unknown> {
@@ -146,4 +147,4 @@ export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     loadingOverlay: DatasetControlLoadingOverlay;
 }
 
-export type IDatasetControlServiceLocator = IServiceLocator<IDatasetControlServiceMap>;
+export type IDatasetControlServiceLocator = IServiceRegistry<IDatasetControlServiceMap>;

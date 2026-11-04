@@ -3,7 +3,7 @@ import type { Target } from "@fluentui/react";
 import { IOptionSet, OptionSet } from "@fields/option-set";
 import { TextField } from "@fields/text-field";
 import type { IDataProvider } from "@talxis/client-libraries";
-import { FilteringUi } from "../../../../../grid";
+import { FilteringUi } from "@controls/grid";
 import { LookupManySelect } from "../lookup-many-select";
 import { ILookupManyFilterComponents, LookupManyFilterComponents } from "./components";
 import { getLookupManyFilterStyles } from "./styles";

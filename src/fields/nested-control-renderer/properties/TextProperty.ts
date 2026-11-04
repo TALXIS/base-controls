@@ -1,4 +1,4 @@
-import { IStringProperty } from "@core/pcf/interfaces";
+import { IStringProperty } from "@pcf/interfaces";
 import { Property } from "./Property";
 
 export class TextProperty extends Property {

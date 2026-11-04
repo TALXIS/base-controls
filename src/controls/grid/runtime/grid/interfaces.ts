@@ -1,4 +1,5 @@
-import type { IEventSubscriber, ILabels, ILabelSet, Labels } from "@core";
+import type { IEventSubscriber } from "@core";
+import type { ILabels, ILabelSet, Labels } from "@labels";
 import type { IGridEventHandlers, IGridModuleLocator, IGridOpenRecordParams } from "../../interfaces";
 import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
@@ -37,7 +38,7 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
     openRecord(params: IGridOpenRecordParams): void;
 }
 
-declare module "../../../dataset-control/runtime/interfaces" {
+declare module "@controls/dataset-control/runtime/interfaces" {
     interface IDatasetControlPartMap {
         /** The Grid in the body, while one is drawn. */
         grid: IGrid;

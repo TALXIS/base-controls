@@ -96,9 +96,51 @@ If not, delete it.
 - Do update or delete comments your edit made wrong or stale.
 - Don't strip comments you didn't invalidate — someone wrote them for a reason.
 
+## Layers
+
+`src/` is layered; each layer imports only the ones before it. `npm run check:layers` enforces this.
+
+| Layer | Holds |
+|---|---|
+| `core` | Plumbing with no look: generic hooks, state, events, service locator |
+| `labels` | The labels framework: `defineLabels`, `LabelsProvider`, `useLabels`, `LabelsService` |
+| `pcf` | The PCF contract: `context/`, `interfaces/`, `control/` (`useControl`…), `xrm/` shims |
+| `theme` | Themes, colours, theme builder |
+| `ui` | UI that takes only props, shared by more than one widget |
+| `fields` | Field controls and the nested control renderer |
+| `data` | Data provider context |
+| `controls` | Widgets: `ribbon` → `dataset-control` → `grid` → `check-list`/`task-grid`; `form`, `map`, `isolated-frame` |
+| `pcf/entries` | PCF entry points that render the controls from a PCF's `init`/`updateView` |
+| `labels/sets` | Every part's label sets gathered (`BASE_CONTROLS_LABEL_SETS`, `CZECH_LABELS`); the top layer |
+
+- `legacy` is a sidecar: only `fields`, `controls`, `pcf/entries` and `labels/sets` import it.
+- The `@pcf` and `@labels` barrels leave out `entries` and `sets`; only the root index exports them.
+- A widget's `modules/` may use any widget; a widget's own code follows the order above.
+- Within a layer import by relative path; across layers or widgets use the alias (`@core`, `@controls/grid/...`).
+- Never import your own layer's or widget's barrel.
+
+### Adapter and UI
+
+- **UI** takes plain props and owns the look: `styles.ts`, slots, default labels. It never reads a runtime,
+  the PCF context or a store.
+- **Adapter** reads the runtime and renders the UI with props. No styles.
+
+### Inside a widget or module
+
+| Folder | Holds |
+|---|---|
+| `<Widget>.tsx` | The drop-in component |
+| `runtime/` | State and logic, no rendering; per-part classes in `runtime/parts/<part>` |
+| `adapters/<part>/` | Reads the runtime, renders the UI part |
+| `ui/<part>/` | `<Part>.tsx`, `styles.ts`, `components.tsx` |
+| `modules/<module>/` | The same split; the module class and factory sit at its root |
+| `labels/` | `en.ts` defines the labels, one file per translation (`cs.ts`), `index.ts` exports them |
+
+Every folder with labels keeps them in a `labels/` folder, never as loose files.
+
 ## Component codestyle
 
-Follow these conventions when creating or restructuring components in `src/components`.
+Follow these conventions when creating or restructuring components.
 
 ### Folder structure
 
@@ -131,9 +173,8 @@ export * from './ComponentName';
 ### Overridable UI
 
 - Only add overridable UI scaffolding when the component actually needs it.
-- When used, keep the defaults in a local `components/` subfolder.
-- Define `I<ComponentName>Components` in `components/components.tsx`.
-- Export the defaults through `components/index.ts`.
+- When used, define `I<ComponentName>Components` and its defaults in a `components.tsx` next to the component.
+- Export it from the component folder's `index.ts`.
 - Merge default and user-provided component mappings in the component body.
 - Do not add `onRender...` callback scaffolding unless explicitly requested.
 

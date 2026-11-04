@@ -1,7 +1,6 @@
 import { CHECK_LIST_LABELS } from '@controls/check-list/labels/en';
 import { EDIT_COLUMNS_LABELS } from '@controls/dataset-control/adapters/edit-columns/labels/en';
-import { EMPTY_RECORDS_LABELS } from '@controls/dataset-control/adapters/empty-records/labels/en';
-import { NOTIFICATIONS_LABELS } from '@controls/dataset-control/adapters/notifications/labels/en';
+import { EMPTY_STATE_LABELS } from '@controls/dataset-control/adapters/empty-state/labels/en';
 import { PAGE_SIZE_SWITCHER_LABELS } from '@controls/dataset-control/adapters/page-size-switcher/labels/en';
 import { PAGINATION_LABELS } from '@controls/dataset-control/adapters/pagination/labels/en';
 import { QUICK_FIND_LABELS } from '@controls/dataset-control/adapters/quick-find/labels/en';
@@ -36,14 +35,13 @@ import { LEGACY_DATASET_CONTROL_LABELS } from '@legacy/dataset-control/labels';
 import { ERROR_MESSAGE_BAR_LABELS } from '@ui/error-message-bar/labels/en';
 import { LOADING_BOUNDARY_LABELS } from '@ui/loading-boundary/labels/en';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from '@ui/notifications/message-bar/labels/en';
-import type { ILabelSet } from '@core/localization';
+import type { ILabelSet } from '..';
 
 /** Every label set base-controls defines, for reading a consumer's translations of them. */
 export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     CHECK_LIST_LABELS,
     EDIT_COLUMNS_LABELS,
-    EMPTY_RECORDS_LABELS,
-    NOTIFICATIONS_LABELS,
+    EMPTY_STATE_LABELS,
     PAGE_SIZE_SWITCHER_LABELS,
     PAGINATION_LABELS,
     QUICK_FIND_LABELS,

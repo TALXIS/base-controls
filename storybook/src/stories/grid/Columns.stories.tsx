@@ -7,19 +7,23 @@ import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, 
 const DESCRIPTION = `
 The grid builds its columns from the provider: each column the provider holds becomes a grid column, with its header text, width and data type. A page usually wants more than that, such as key columns that stay in view, a link that opens the record, a value worked out from others, or a button on every row. You add these per column with \`colDefs\`, on top of what the provider gives and without changing the provider.
 
+{{story: Keep key columns in view}}
+
 ## Change a column
 
-What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview). \`colDefs\` is keyed by column id, which is the provider column's \`name\`. An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads about the column, listed under *The column context* below.
+\`colDefs\` is keyed by column id, the provider column's \`name\`. What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview).
 
-An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set; any other key adds a column at the end. A function entry receives the column as built, \`null\` for an added one, and returns what to change. \`colDefs\` runs after every module, so it overrides what they set.
-
-The modules' own columns have keys too: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (editing), \`SELECTION_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (grouping). Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
+- An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads, listed under *The column context* below.
+- An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set.
+- Any other key adds a column at the end.
+- A function entry receives the column as built, \`null\` for an added one, and returns what to change.
+- \`colDefs\` runs after every module, so it overrides what they set.
+- The modules' own columns have keys too: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (editing), \`SELECTION_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (grouping).
+- Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
 
 ## Pin and size columns
 
-\`pinned: 'left'\` or \`'right'\` keeps a column at that edge. A column's width comes from its provider column's \`visualSizeFactor\`, or \`initialWidth\` in \`colDefs\`; columns stretch to fill the grid, and \`maxWidth\` caps one.
-
-{{story: Keep key columns in view}}
+\`pinned: 'left'\` or \`'right'\` keeps a column at that edge, as in the example above. A column's width comes from its provider column's \`visualSizeFactor\`, or \`initialWidth\` in \`colDefs\`; columns stretch to fill the grid, and \`maxWidth\` caps one.
 
 ## Link to the record
 
@@ -97,7 +101,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 
 ### Control parameters
 
-\`cell.onGetControlParameters\`, and the \`registerControlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by the grid's value renderer, which reads these:
+\`cell.onGetControlParameters\`, and the \`registerControlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)), which reads these:
 
 | Parameter | Description |
 |---|---|
@@ -109,7 +113,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. The value renderer reads the value from the record, so changing \`value\` here shows nothing.
+An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
 `
 
 const meta = {

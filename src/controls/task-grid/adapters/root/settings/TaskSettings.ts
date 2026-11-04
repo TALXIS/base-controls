@@ -1,5 +1,5 @@
 import { HookRegistry } from "@core";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import { TASK_GRID_LABELS } from "../../../labels";
 import type { ITaskRuntime } from "../../../runtime";
 import { runQuietly } from "../../../runtime/runQuietly";
@@ -74,7 +74,7 @@ export class TaskSettings implements ITaskSettings {
     }
 }
 
-declare module "../../../../dataset-control/runtime/interfaces" {
+declare module "@controls/dataset-control/runtime/interfaces" {
     interface IDatasetControlPartMap {
         /** `TaskDatasetControl.Settings`. */
         taskSettings: ITaskSettings;

@@ -24,6 +24,7 @@ const GridExample = () => {
     return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} onMounted={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
+                {/* save a view of your own, then open Manage views to see its drawer in v9 */}
                 <DatasetControl.ViewSwitcher components={V9.viewSwitcher}>
                     <DatasetControl.UserQueries components={V9.userQueries} />
                 </DatasetControl.ViewSwitcher>
@@ -34,11 +35,13 @@ const GridExample = () => {
                 <DatasetControl.QuickFind components={V9.quickFind} />
             </DatasetControl.Header.End>
         </DatasetControl.Header>
+        {/* Break the connection in the ribbon adds a second message, and both collapse under a summary */}
         <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} components={V9.notifications} />
         <DatasetControl.Body>
-            <DatasetControl.EmptyRecords components={V9.emptyRecords}>
+            {/* search for something no deal has to see the empty state */}
+            <DatasetControl.EmptyState components={V9.emptyState}>
                 <RecordDataGrid />
-            </DatasetControl.EmptyRecords>
+            </DatasetControl.EmptyState>
         </DatasetControl.Body>
         <DatasetControl.Footer>
             <DatasetControl.Footer.Start>
@@ -265,8 +268,10 @@ const MenuFromButton = (props: IButtonProps) => <Menu onOpenChange={(_, data) =>
 const getIntent = (messages: { level: string }[]) => messages.some(message => message.level === 'ERROR') ? 'error' : messages.some(message => message.level === 'WARNING') ? 'warning' : 'info'
 
 //more than one message collapses under a summary, as the default bar does
-const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[], groupedNotificationsSummary?: string }) => {
+const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => {
     const [isExpanded, setIsExpanded] = React.useState(false)
+    //the same summary the default bar shows, and translated the same way
+    const labels = useLabels(NOTIFICATION_MESSAGE_BAR_LABELS)
     const messages = props.messages ?? []
     if (messages.length === 0) {
         return null
@@ -274,7 +279,7 @@ const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WAR
     if (messages.length === 1) {
         return <MessageBar intent={getIntent(messages)} style={{ margin: '0 8px 8px' }}><MessageBarBody>{messages[0].text}</MessageBarBody></MessageBar>
     }
-    const summary = props.groupedNotificationsSummary
+    const summary = labels.get('notificationMessageBar.groupedNotificationsSummary', { count: messages.length })
     return <div style={{ margin: '0 8px 8px', display: 'grid', gap: 4 }}>
         <MessageBar intent={getIntent(messages)}>
             <MessageBarBody>{summary}</MessageBarBody>
@@ -379,7 +384,7 @@ export const V9 = {
     notifications: {
         onRenderNotifications: props => <Notifications {...props} />,
     },
-    emptyRecords: {
+    emptyState: {
         onRenderIcon: () => <DocumentSearchRegular fontSize={48} />,
         onRenderText: props => <Subtitle2>{props.children}</Subtitle2>,
     },

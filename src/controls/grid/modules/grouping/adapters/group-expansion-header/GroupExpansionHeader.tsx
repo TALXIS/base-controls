@@ -1,4 +1,5 @@
-import { useRerender, useLabels } from "@core";
+import { useRerender } from "@core";
+import { useLabels } from "@labels";
 import { useGridModule } from "../../../../useGridModule";
 import { ColumnHeaderRoot, IColumnHeaderParams } from "../../../../adapters/column-header/root/ColumnHeaderRoot";
 import { ColumnHeaderTheme } from "../../../../adapters/column-header/theme/ColumnHeaderTheme";

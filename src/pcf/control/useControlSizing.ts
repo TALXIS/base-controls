@@ -1,4 +1,4 @@
-import { IBaseParameters } from "./interfaces/parameters";
+import { IBaseParameters } from "../interfaces/parameters";
 
 export interface IControlSizing {
     height?: number | string;

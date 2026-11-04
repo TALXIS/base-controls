@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const DATE_TIME_LABELS = defineLabels({
     'dateTime.time': 'Time',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { IGrid } from "../../../../../grid";
+import type { IGrid } from "@controls/grid";
 import { useGantt } from "../../context";
 import { GanttUiSkeleton, IGanttUiSkeletonComponents } from "../../ui/skeleton";
 

@@ -1,20 +1,14 @@
-import { IServiceLocator, ServiceObserver } from "./interfaces";
+import { IServiceRegistry, ServiceObserver } from "./interfaces";
 
-/**
- * A {@link IServiceLocator}: a map of resolvers and nothing else.
- *
- * Name the map at the construction site — `new ServiceLocator<IGanttServiceMap>()` — rather than
- * subclassing. Reaching some other locator from this one is the caller's business: register it under a key
- * of its own.
- */
 interface IObserver {
     callback: ServiceObserver<any>;
     cleanup?: () => void;
 }
 
-export class ServiceLocator<TServiceMap extends object> implements IServiceLocator<TServiceMap> {
-    private _resolvers: Map<keyof TServiceMap, () => unknown> = new Map();
-    private _observers: Map<keyof TServiceMap, Set<IObserver>> = new Map();
+/** Services registered by name; type it at construction, as in `new ServiceLocator<IGanttServiceMap>()`. */
+export class ServiceLocator<TServiceMap extends object> implements IServiceRegistry<TServiceMap> {
+    private _getters = new Map<keyof TServiceMap, () => unknown>();
+    private _observers = new Map<keyof TServiceMap, Set<IObserver>>();
     private _isDestroyed = false;
 
     public get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] {
@@ -26,24 +20,18 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
     }
 
     public find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined {
-        //the resolver runs per lookup and nothing is memoized: `() => new Something()` is a different
-        //instance to every caller, which is why a resolver hands back something already built
-        return this._resolvers.get(key)?.() as TServiceMap[TKey] | undefined;
+        return this._getters.get(key)?.() as TServiceMap[TKey] | undefined;
     }
 
-    public register<TKey extends keyof TServiceMap>(key: TKey, resolve: () => TServiceMap[TKey]): void {
+    public register<TKey extends keyof TServiceMap>(key: TKey, getter: () => TServiceMap[TKey]): void {
         if (this._isDestroyed) {
             return;
         }
-        this._resolvers.set(key, resolve);
+        this._getters.set(key, getter);
+        //the getter runs only when something observes the key
         const observers = this._observers.get(key);
-        //nothing observes it, so the resolver stays untouched and lazy
-        if (!observers?.size) {
-            return;
-        }
-        //a resolver over a binding its owner has not assigned yet: the observers wait for one that has
-        const service = this.find(key);
-        if (service !== undefined) {
+        if (observers?.size) {
+            const service = this.find(key);
             observers.forEach(observer => this._notify(observer, service));
         }
     }
@@ -54,12 +42,8 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
         }
         const observer: IObserver = { callback };
         const observers = this._observers.get(key) ?? new Set();
-        observers.add(observer);
-        this._observers.set(key, observers);
-        const service = this.find(key);
-        if (service !== undefined) {
-            this._notify(observer, service);
-        }
+        this._observers.set(key, observers.add(observer));
+        this._notify(observer, this.find(key));
         return () => {
             if (observers.delete(observer)) {
                 this._cleanUp(observer);
@@ -68,26 +52,30 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
     }
 
     public unregister<TKey extends keyof TServiceMap>(key: TKey): void {
-        this._resolvers.delete(key);
-        this._observers.get(key)?.forEach(observer => this._cleanUp(observer));
+        this._getters.delete(key);
+        this._observers.get(key)?.forEach(this._cleanUp);
     }
 
     public destroy(): void {
         this._isDestroyed = true;
-        this._resolvers.clear();
-        this._observers.forEach(observers => observers.forEach(observer => this._cleanUp(observer)));
+        this._getters.clear();
+        this._observers.forEach(observers => observers.forEach(this._cleanUp));
         this._observers.clear();
     }
 
+    //a getter over something not assigned yet returns undefined, and the observer waits for the next one
     private _notify(observer: IObserver, service: unknown): void {
+        if (service === undefined) {
+            return;
+        }
         this._cleanUp(observer);
         const cleanup = observer.callback(service);
         observer.cleanup = typeof cleanup === 'function' ? cleanup : undefined;
     }
 
-    private _cleanUp(observer: IObserver): void {
+    private _cleanUp = (observer: IObserver): void => {
         const cleanup = observer.cleanup;
         observer.cleanup = undefined;
         cleanup?.();
-    }
+    };
 }

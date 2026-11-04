@@ -7,7 +7,9 @@ import { TicketPreviewPaneExample, WatchEveryEventExample } from '../../grid/exa
 const DESCRIPTION = `
 A grid is set up through a small set of props: which modules it has, how it looks, and what it does when the user opens a record. Some are read only once, as the grid mounts, and the events tell your page what the user did and what the grid loaded. The tables below are the reference for all of them, and each row links to the page that shows it in use.
 
-The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/concepts-localization--overview). The provider is not a prop: the grid shows the one around it, in a DatasetControl or a \`DataProviderScope\`, and never loads it itself. See *Basic usage* on [**Get started**](?path=/docs/controls-grid-get-started--overview).
+{{story: Watch every event}}
+
+The grid takes no strings as props: to change its labels, see [**Localization**](?path=/docs/concepts-localization--overview). The provider is not a prop either: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## Props
 
@@ -21,7 +23,7 @@ The grid takes no strings as props: to change its labels, see [**Localization**]
 | \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows the grid grows to before it scrolls, while \`height\` is not set. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`height\` | \`string\` | None: the grid grows with its rows | Live | How tall the grid is, as a CSS length. Ignored inside a DatasetControl that has a height. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`className\` | \`string\` | None | Live | Added to the grid's root element, beside its own classes. |
-| \`components\` | \`IGridComponents\` | \`{}\` | Live | Replaces parts of what the grid draws: \`overlays.loading\`, \`overlays.emptyRecords\`, \`rows.loading\` and \`rows.error\`. See [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`components\` | \`IGridComponents\` | \`{}\` | Live | Replaces pieces of what the grid draws: \`overlays.loading\`, \`overlays.emptyState\`, \`rows.loading\` and \`rows.error\`. See [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 | \`colDefs\` | \`{ [colId: string]: IGridColDefOverride }\` | None | When the grid is ready, then on every load | Changes to columns by id, and columns of your own. See [**Columns**](?path=/docs/controls-grid-columns--overview). |
 | \`stateKey\` | \`string\` | None | At mount | The key the grid keeps the user's place under: the scroll position, the open groups and the focused cell. Per view inside a DatasetControl. See [**State**](?path=/docs/controls-grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Each time a row is drawn | \`onGetHeight\` sets \`result.height\`, in pixels, for one row. With the editing module, \`onGetLock\` locks a record as a whole: see [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
@@ -52,8 +54,6 @@ Every event of the grid itself is a prop, and a module's events come in through 
 | \`onReady\` | \`grid: IGrid\` | Once, when AG Grid is ready. The grid is what your code talks to: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
 | \`onDestroyed\` | \`grid: IGrid\` | Once, as AG Grid is about to be destroyed. The \`gridApi\` service is already gone: to read AG Grid before it goes, see *AG Grid's api* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
-{{story: Watch every event}}
-
 The events can drive a whole page around the grid, such as a preview of the focused record:
 
 {{story: Ticket queue with a preview pane}}
@@ -81,7 +81,7 @@ export const WatchEveryEvent: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support queue with editing on, beside a log of every event prop as it fires. Try: edit a ticket with *Auto-save* on, then off and press *Save all*; sort or resize a column; press *Remount* to see \`onDestroyed\`, then \`onDataLoaded\` just before \`onReady\`.`,
+                story: `A support queue with editing on, beside a log of every event prop as it fires. Try: edit a ticket, sort a column, or press *Remount*.`,
             },
         },
     },

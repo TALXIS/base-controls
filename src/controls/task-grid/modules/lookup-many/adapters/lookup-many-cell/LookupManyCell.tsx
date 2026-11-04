@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { useOpenErrorDialog } from "@core";
+import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui";
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "../../../../../grid";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
 import { runQuietly } from "../../../../runtime/runQuietly";
 import { LookupManyPills } from "../../ui";

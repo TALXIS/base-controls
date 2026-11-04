@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { TASK_GRID_LABELS } from "./en";
 
 export const TASK_GRID_LABELS_CS = translateLabels(TASK_GRID_LABELS, {

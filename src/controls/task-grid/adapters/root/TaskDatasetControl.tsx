@@ -1,8 +1,9 @@
 import { useMemo, useRef } from "react";
 import type { IRecord } from "@talxis/client-libraries";
-import { useLatest, usePcfContext } from "@core";
-import { DatasetControl } from "../../../dataset-control";
-import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlModule, IDatasetControlProps } from "../../../dataset-control";
+import { useLatest } from "@core";
+import { usePcfContext } from "@pcf";
+import { DatasetControl } from "@controls/dataset-control";
+import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlModule, IDatasetControlProps } from "@controls/dataset-control";
 import type { ITaskGridLoadParameters, ITaskGridLoadResult } from "../../interfaces";
 import type { ITaskViewData, TaskCreatePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";

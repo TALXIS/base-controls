@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const LINKS_LABELS = defineLabels({
     'links.confirmDeleteLink': 'Delete this dependency?',

@@ -17,6 +17,8 @@ Put the provider at the root of the application, as in [**Quick start**](?path=/
 - the formatting of dates, numbers and money, in \`formatting\`
 - the host's dialogs, records and data, in \`navigation\`, \`webAPI\` and \`utils\`
 
+To show an error, \`useOpenErrorDialog()\` returns a function that opens the PCF error dialog with its \`title\` and \`details\`.
+
 ## In a PCF control
 
 Pass the context the host hands \`updateView\` to the provider, as *index.tsx* in the example above does.

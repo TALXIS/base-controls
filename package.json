@@ -75,7 +75,10 @@
     "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js && node ./scripts/unwrap-dts-augmentations.mjs",
     "yalc": "npm run build && yalc publish --sig",
     "storybook": "npm --prefix ./storybook run storybook",
-    "build-storybook": "npm --prefix ./storybook run build-storybook"
+    "build-storybook": "npm --prefix ./storybook run build-storybook",
+    "check:layers": "node ./scripts/check-layers.mjs",
+    "check:exports": "node ./scripts/check-exports.mjs",
+    "check:consumer": "tsc -p ./scripts/consumer-smoke/tsconfig.json"
   },
   "browserslist": {
     "production": [

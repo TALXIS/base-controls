@@ -17,9 +17,8 @@ export { VIEW_SWITCHER_LABELS, VIEW_SWITCHER_LABELS_CS } from './adapters/view-s
 export { QUICK_FIND_LABELS, QUICK_FIND_LABELS_CS } from './adapters/quick-find';
 export { PAGINATION_LABELS, PAGINATION_LABELS_CS } from './adapters/pagination';
 export { PAGE_SIZE_SWITCHER_LABELS, PAGE_SIZE_SWITCHER_LABELS_CS, DEFAULT_PAGE_SIZES } from './adapters/page-size-switcher';
-export { EMPTY_RECORDS_LABELS, EMPTY_RECORDS_LABELS_CS } from './adapters/empty-records';
-export type { IEmptyRecordsProps } from './adapters/empty-records';
-export { NOTIFICATIONS_LABELS as DATASET_CONTROL_NOTIFICATIONS_LABELS, NOTIFICATIONS_LABELS_CS as DATASET_CONTROL_NOTIFICATIONS_LABELS_CS } from './adapters/notifications';
+export { EMPTY_STATE_LABELS, EMPTY_STATE_LABELS_CS } from './adapters/empty-state';
+export type { IEmptyStateProps } from './adapters/empty-state';
 export { EDIT_COLUMNS_LABELS, EDIT_COLUMNS_LABELS_CS } from './adapters/edit-columns';
 export type { ISkeletonComponents as IDatasetControlSkeletonComponents } from './adapters/skeleton';
 export type { IHeaderProps as IDatasetControlHeaderProps, IHeaderStartProps as IDatasetControlHeaderStartProps, IHeaderEndProps as IDatasetControlHeaderEndProps } from './adapters/header';
@@ -37,6 +36,6 @@ export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColu
 export * from './ui';
 export {
     ContainerUiComponents, SkeletonUiComponents, HeaderUiComponents, BodyUiComponents, FooterUiComponents, ViewSwitcherUiComponents,
-    QuickFindUiComponents, QuickFindCalloutComponents, QuickFindCompactButtonComponents, PaginationUiComponents, PageSizeSwitcherUiComponents, EmptyRecordsUiComponents, HeaderStartUiComponents, HeaderEndUiComponents, FooterStartUiComponents, FooterEndUiComponents, EditColumnsButtonUiComponents, EditColumnsPanelUiComponents,
+    QuickFindUiComponents, QuickFindCalloutComponents, QuickFindCompactButtonComponents, PaginationUiComponents, PageSizeSwitcherUiComponents, EmptyStateUiComponents, HeaderStartUiComponents, HeaderEndUiComponents, FooterStartUiComponents, FooterEndUiComponents, EditColumnsButtonUiComponents, EditColumnsPanelUiComponents,
     EditColumnsSelectorUiComponents, EditColumnsColumnListUiComponents,
 } from './ui/components';

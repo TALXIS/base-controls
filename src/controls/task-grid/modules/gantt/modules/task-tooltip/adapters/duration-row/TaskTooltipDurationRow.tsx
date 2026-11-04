@@ -1,4 +1,4 @@
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { TASK_TOOLTIP_LABELS } from "../../labels";
 import { ITooltipUiFieldRowComponents, TooltipUiFieldRow } from "../../../../ui/tooltip";
 import { useTaskTooltip } from "../task-tooltip-root";

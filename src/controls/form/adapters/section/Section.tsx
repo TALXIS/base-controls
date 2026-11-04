@@ -1,4 +1,4 @@
-import { usePcfContext } from "@core";
+import { usePcfContext } from "@pcf";
 import { FormUi, ISectionProps } from "../../ui";
 
 export type { ISectionProps } from "../../ui";

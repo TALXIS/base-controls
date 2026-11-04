@@ -25,14 +25,14 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 | Hook | Returns |
 |---|---|
-| \`useStateStore()\` | The nearest store. |
-| \`useControlStateStore(stateKey)\` | The component's scope: \`useStateStore().scope(stateKey)\`. Inside a DatasetControl, a scope in the entry of the view shown instead. Without a \`stateKey\`, a throwaway store: nothing survives a remount. |
+| \`useStateStore()\` | The nearest store: the general hook, scope it yourself with \`scope(id)\`. |
+| \`useControlStateStore(stateKey)\` | Comes with the DatasetControl: the component's scope, kept per view inside a DatasetControl and \`useStateStore().scope(stateKey)\` elsewhere. Without a \`stateKey\`, a throwaway store: nothing survives a remount. |
 
 That is all a \`stateKey\` is: the id of a component's scope. It is read once, at mount. Every control in the library that takes a \`stateKey\` keeps its state this way.
 
 ## Keep state in your own component
 
-Take your scope with \`useControlStateStore\`, read what was kept when the component mounts, and write as the user works.
+Take your scope with \`useControlStateStore\`, so it also keeps per view inside a DatasetControl, read what was kept when the component mounts, and write as the user works.
 
 {{story: Keep a draft}}
 

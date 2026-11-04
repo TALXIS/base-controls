@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the custom columns module. */
 export const CUSTOM_COLUMNS_LABELS = defineLabels({

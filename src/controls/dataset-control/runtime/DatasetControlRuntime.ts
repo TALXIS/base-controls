@@ -1,6 +1,7 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LabelsService, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ServiceLocator } from "@core";
+import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
 import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";

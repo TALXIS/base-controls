@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings `DatasetControl` shows itself. */
 export const DATASET_CONTROL_LABELS = defineLabels({

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { IHeaderUiComponents, IQuickFindUiComponents } from "../../../../../../dataset-control";
+import type { IHeaderUiComponents, IQuickFindUiComponents } from "@controls/dataset-control";
 import { getClassNames } from "@core";
 import { WrapCompactProvider } from "@ui";
 import { IRecordSelectorFrameComponents, RecordSelectorFrameComponents } from "./components";

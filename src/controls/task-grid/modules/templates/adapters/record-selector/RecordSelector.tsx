@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { IDataProvider } from "@talxis/client-libraries";
-import { DatasetControl } from "../../../../../dataset-control";
-import { Labels, LabelsProvider } from "@core";
+import { DatasetControl } from "@controls/dataset-control";
+import { Labels, LabelsProvider } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { RecordList, RecordSelectorFrame } from "../../ui/record-selector";
 import { IRecordSelectorComponents } from "./components";
@@ -27,7 +27,7 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
     const { searchPlaceholder, noRecordsFound } = props.labels ?? {};
     const labels = useMemo((): Labels => ({
         ...(searchPlaceholder && { 'quickFind.searchPlaceholder': searchPlaceholder }),
-        ...(noRecordsFound && { 'emptyRecords.noRecordsFound': noRecordsFound }),
+        ...(noRecordsFound && { 'emptyState.noRecordsFound': noRecordsFound }),
     }), [searchPlaceholder, noRecordsFound]);
 
     return <RecordSelectorFrame components={props.components?.frame}>
@@ -39,9 +39,9 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
                     </DatasetControl.Header.Start>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <DatasetControl.EmptyRecords>
+                    <DatasetControl.EmptyState>
                         <RecordSelectorList onRecordSelected={props.onRecordSelected} components={props.components} />
-                    </DatasetControl.EmptyRecords>
+                    </DatasetControl.EmptyState>
                 </DatasetControl.Body>
                 <DatasetControl.Footer>
                     <DatasetControl.Footer.End>

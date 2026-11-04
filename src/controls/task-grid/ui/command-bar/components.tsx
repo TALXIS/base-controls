@@ -1,4 +1,4 @@
-import { CellUiCommandsComponents, ICellUiCommandsComponents } from "../../../grid";
+import { CellUiCommandsComponents, ICellUiCommandsComponents } from "@controls/grid";
 
 /** The replaceable pieces of a task's row commands bar. */
 export type ITaskGridUiCommandBarComponents = Pick<ICellUiCommandsComponents, 'onRenderCommandBar'>;

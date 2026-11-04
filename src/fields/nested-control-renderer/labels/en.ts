@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const NESTED_CONTROL_RENDERER_LABELS = defineLabels({
     'nestedControlRenderer.detail': 'Detail',

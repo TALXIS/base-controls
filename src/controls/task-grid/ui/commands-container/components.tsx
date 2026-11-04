@@ -1,4 +1,4 @@
-import { CellUiCommandsComponents, ICellUiCommandsComponents } from "../../../grid";
+import { CellUiCommandsComponents, ICellUiCommandsComponents } from "@controls/grid";
 
 /** The replaceable pieces of the element a task's row commands are drawn in. */
 export type ITaskGridUiCommandsContainerComponents = Pick<ICellUiCommandsComponents, 'onRenderContainer'>;

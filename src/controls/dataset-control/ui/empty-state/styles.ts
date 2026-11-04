@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getEmptyRecordsUiStyles = () => mergeStyleSets({
-    datasetControlEmptyRecords: {
+export const getEmptyStateUiStyles = () => mergeStyleSets({
+    datasetControlEmptyState: {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',

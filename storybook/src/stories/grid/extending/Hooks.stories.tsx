@@ -60,7 +60,7 @@ The hook runs for every column of every record, so check \`columnName\` first. A
 
 {{story: Assign new tickets to yourself}}
 
-\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters the value renderer reads are under *Control parameters* on [**Columns**](?path=/docs/controls-grid-columns--overview). \`takesInput\` is \`true\` for an editor and for a one-click cell.
+\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters \`GridValueRenderer\` reads are under *Control parameters* on [**Columns**](?path=/docs/controls-grid-columns--overview). \`takesInput\` is \`true\` for an editor and for an in-place cell.
 
 {{story: Show placeholders for missing values}}
 

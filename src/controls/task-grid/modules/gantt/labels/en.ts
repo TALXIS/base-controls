@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const GANTT_LABELS = defineLabels({
     'gantt.zoomSlider': 'Zoom',

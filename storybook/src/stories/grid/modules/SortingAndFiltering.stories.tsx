@@ -45,7 +45,11 @@ Write condition values the way the filter callout does, or it opens with nothing
 | *Contains* text | \`Like\` with \`'%invoice%'\` |
 | An operator with no value, such as \`Today\` | \`''\` |
 
-Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required: an OR becomes an AND, and nested filters or conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
+Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required:
+
+- An OR becomes an AND.
+- Nested filters, and conditions on anything that is not a column, are dropped.
+- So keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
 
 Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**DatasetControl › Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
@@ -53,7 +57,7 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 
 ## Narrow what a filter offers
 
-\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, which is what \`Operators.GetOperatorsForDataType(dataType)\` returns:
+\`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, as \`Operators.GetOperatorsForDataType(dataType)\` returns:
 
 | Data type | Operators |
 |---|---|
@@ -63,7 +67,9 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 | Multi-select option set | \`Equal\`, \`DoesNotEqual\`, \`ContainValues\`, \`DoesNotContainValues\`, \`ContainsData\`, \`DoesNotContainData\` |
 | File, image | \`ContainsData\`, \`DoesNotContainData\` |
 
-An unfiltered column's callout opens on its data type's own operator, whatever the list holds: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with nothing picked. On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists. Dates are compared by day.
+- An unfiltered column's callout opens on its data type's own operator: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with nothing picked.
+- On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists.
+- Dates are compared by day.
 
 \`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`: \`control\` is \`'operator'\` or \`'value'\`, and \`index\` is \`1\` for the second value of *Between*. It runs after the grid's own parameters, so it can change those too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
 
@@ -100,7 +106,7 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 
 ## Changing how it looks
 
-Both modules take \`components\`, read at mount. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+Both modules take \`components\`, read at mount. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Module | Key | Slots | Default | Draws |
 |---|---|---|---|---|

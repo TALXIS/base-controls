@@ -1,6 +1,7 @@
 import { useTheme, ThemeProvider } from "@theme";
 import { CommandBar, ICommandBarItemProps } from "..";
-import { useRerender, getClassNames, useControl } from "@core";
+import { useRerender, getClassNames } from "@core";
+import { useControl } from "@pcf";
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";

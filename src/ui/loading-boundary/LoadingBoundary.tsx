@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { SpinnerSize } from "@fluentui/react";
-import { useLabels } from "@core/localization";
+import { useLabels } from "@labels";
 import { ILoadingBoundaryComponents, LoadingBoundaryComponents } from "./components";
 import { LOADING_BOUNDARY_LABELS } from "./labels";
 import { getLoadingBoundaryStyles } from "./styles";

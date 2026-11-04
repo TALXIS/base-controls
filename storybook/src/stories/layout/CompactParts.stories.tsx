@@ -63,13 +63,6 @@ type Story = StoryObj<typeof meta>
 export const Toolbar: Story = {
     name: 'Toolbar',
     render: () => renderStory(<ToolbarExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Try: drag the slider until the buttons turn into icons, then widen it again and see where they come back.`,
-            },
-        },
-    },
 }
 
 export const FilterChips: Story = {

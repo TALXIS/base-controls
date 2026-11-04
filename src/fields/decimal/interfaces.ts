@@ -1,6 +1,6 @@
-import { IDecimalNumberProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
-import { IInputParameters } from "@core/pcf/interfaces/parameters";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
+import { IDecimalNumberProperty, ITwoOptionsProperty } from "@pcf/interfaces";
+import { IInputParameters } from "@pcf/interfaces/parameters";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
 import { ITextFieldProps } from "@legacy";
 
 export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, ITextFieldProps> {

@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const MARKERS_LABELS = defineLabels({
     'markers.today': 'Today',

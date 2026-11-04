@@ -1,4 +1,4 @@
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import { DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ICustomColumnsStore } from "../CustomColumns";

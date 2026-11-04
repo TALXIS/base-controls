@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { LINKS_LABELS } from "./en";
 
 export const LINKS_LABELS_CS = translateLabels(LINKS_LABELS, {

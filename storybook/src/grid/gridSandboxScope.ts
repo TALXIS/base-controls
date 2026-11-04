@@ -6,22 +6,22 @@ import { HighlightChangesModule } from 'ag-grid-community'
 import { DefaultEditor } from 'react-simple-wysiwyg'
 import {
     ActionButton, Checkbox, ChoiceGroup, CommandBar as FluentCommandBar, ContextualMenuItemType, DefaultButton, DocumentCard, DocumentCardActivity, DocumentCardDetails, DocumentCardImage, DocumentCardTitle, Dropdown, FontWeights, Icon, IconButton, ImageFit, Label, Link, mergeStyleSets, MessageBar, MessageBarButton, MessageBarType, PanelType,
-    initializeIcons, Pivot, PivotItem, PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle, TooltipHost,
+    initializeIcons, Pivot, PivotItem, PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Spinner, Stack, Text, TextField, Toggle,
 } from '@fluentui/react'
 import {
     AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, createFilteringModule,
     createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule,
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, getColorContrast, getTintColors, mixColors, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
-    GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationMessageBar, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, Form, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
+    GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
+    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUi, Form, FormUi, useField, NestedControlRenderer, BaseControls, MemoryStrategy, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { createIsolatedComponent, createIsolatedHost, registerIsolatedContent, CZECH_LABELS, PcfContextProvider, EmptyRecordsUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
-import { CheckList, CHECK_LIST_LABELS, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
+import { createIsolatedComponent, createIsolatedHost, registerIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, EmptyStateUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
+import { CheckList, CHECK_LIST_LABELS, CompletionCell, NameCell, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
 import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
@@ -68,6 +68,11 @@ export const GRID_SANDBOX_SCOPE = {
     ViewSwitcherUiComponents,
     ErrorMessageBarComponents,
     Ribbon,
+    RibbonUi,
+    FormUi,
+    useField,
+    NestedControlRenderer,
+    BaseControls,
     LoadingBoundaryComponents,
     ContextualMenuItemType,
     useGridModule,
@@ -88,6 +93,7 @@ export const GRID_SANDBOX_SCOPE = {
     GRID_MODULE_PRIORITY,
     getColumnContext,
     GRID_LABELS,
+    NOTIFICATION_MESSAGE_BAR_LABELS,
     GRID_SORTING_LABELS,
     GRID_FILTERING_LABELS,
     GRID_GROUPING_LABELS,
@@ -134,7 +140,9 @@ export const GRID_SANDBOX_SCOPE = {
     GridFilteringIconComponents,
     GridGroupingIconComponents,
     NotificationCard,
+    NotificationCardComponents,
     NotificationMessageBar,
+    NotificationMessageBarComponents,
     getTextColorForBackground,
     mixColors,
     getTintColors,
@@ -161,6 +169,8 @@ export const GRID_SANDBOX_SCOPE = {
     createProductsProvider,
     createLaunchPlanProvider,
     CheckList,
+    CompletionCell,
+    NameCell,
     sortCheckListProvider,
     CHECK_LIST_LABELS,
     TaskDatasetControl,
@@ -176,7 +186,7 @@ export const GRID_SANDBOX_SCOPE = {
     LocalStorageUserQueriesStore,
     QuickFindUiComponents,
     PaginationUiComponents,
-    EmptyRecordsUiComponents,
+    EmptyStateUiComponents,
     createMemoryTaskDataSource,
     MemoryTaskStore,
     MemoryTaskDatabase,

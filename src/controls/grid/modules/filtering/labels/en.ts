@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** Every localizable string this module renders. */
 export const GRID_FILTERING_LABELS = defineLabels({

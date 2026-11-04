@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The words a typed duration may use for each unit, separated by commas. */
 export const DURATION_LABELS = defineLabels({

@@ -1,7 +1,7 @@
 import { ITagPickerProps } from "@legacy";
-import { ILookupProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
-import { IBaseParameters } from "@core/pcf/interfaces/parameters";
+import { ILookupProperty, ITwoOptionsProperty } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
+import { IBaseParameters } from "@pcf/interfaces/parameters";
 
 export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, ITagPickerProps> {
     /**

@@ -5,7 +5,9 @@ import type { IGridExampleFile } from '../grid/GridLivePreview'
 const ISOLATION_FILES: IGridExampleFile[] = [
     {
         name: 'GridExample.tsx',
-        code: `//another app's global CSS on the same page: it restyles every AG Grid it reaches
+        code: `//the page: changing OTHER_APP_STYLES reaches only the page's grid, never the framed one
+
+//another app's global CSS on the same page: it restyles every AG Grid it reaches
 const OTHER_APP_STYLES = \`
 .ag-header-cell * { color: #e3008c !important; text-transform: uppercase; }
 .ag-cell * { font-family: 'Courier New', monospace !important; }

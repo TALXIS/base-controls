@@ -1,13 +1,14 @@
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowIdParams, GridReadyEvent, GridStateModule, ManagedGridOptionKey, ManagedGridOptions, ModuleRegistry, RenderApiModule, RowApiModule, RowAutoHeightModule, RowStyleModule, ScrollApiModule } from "ag-grid-community";
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, ILabels, ILabelSet, IStateStore, Labels, LabelsService, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ServiceLocator } from "@core";
+import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
-import { EmptyRecordsOverlay } from "../../adapters/overlays/empty-records";
-import type { IDatasetControlRuntime } from "../../../dataset-control/runtime/DatasetControlRuntime";
+import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
+import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps, IGridEventHandlers, IGridModule, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParams } from "../../interfaces";
 import { IGridInternalServiceLocator, IGridInternalServiceMap } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
@@ -207,7 +208,7 @@ export class GridRuntime implements IGrid {
                 onGridReady: this._onGridReady,
                 onGridPreDestroyed: this._onGridPreDestroyed,
                 loadingOverlayComponent: LoadingOverlay,
-                noRowsOverlayComponent: EmptyRecordsOverlay,
+                noRowsOverlayComponent: EmptyStateOverlay,
             },
         };
         this._agGridInitialOptionsHooks.apply(result);

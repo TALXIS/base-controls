@@ -1,7 +1,8 @@
 import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
-import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "../../../dataset-control/adapters/edit-columns";
-import { ErrorHelper, type LabelsOf } from "@core";
+import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/adapters/edit-columns";
+import { ErrorHelper } from "@core";
+import { type LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import { TaskColumnValues } from "../column-values";

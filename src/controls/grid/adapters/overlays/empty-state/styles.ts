@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getEmptyRecordsOverlayStyles = () => mergeStyleSets({
-    emptyRecordsOverlay: {
+export const getEmptyStateOverlayStyles = () => mergeStyleSets({
+    emptyStateOverlay: {
         position: 'relative',
         top: 18,
     },

@@ -1,5 +1,6 @@
 import * as React from "react";
-import { useEventEmitter, useLabels } from "@core";
+import { useEventEmitter } from "@core";
+import { useLabels } from "@labels";
 import { useGridService } from "../../../../useGridService";
 import { useGridModule } from "../../../../useGridModule";
 import { IGridGroupingEvents } from "../../GridGrouping";

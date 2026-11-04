@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useEventEmitter, useRerender, useLabels } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { GanttUiZoomSlider, IGanttUiZoomSliderComponents } from "../../ui/zoom-slider";
-import { useRequiredDatasetControlRuntime } from "../../../../../dataset-control/adapters/root/context";
+import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
 import type { IGantt, IGanttEvents } from "../../interfaces";
 import type { IGanttZoomingEvents } from "../../zooming";
 import { GANTT_LABELS } from "../../labels";

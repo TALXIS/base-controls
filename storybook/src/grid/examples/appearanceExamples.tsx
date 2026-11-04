@@ -32,6 +32,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                             onGetTheme: (builder, { record }) => {
                                 const urgency = getUrgency(record)
                                 if (urgency) {
+                                    //tint keeps the hue readable in light and dark themes
                                     builder.tint(urgency)
                                 }
                             },

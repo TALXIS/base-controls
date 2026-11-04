@@ -1,4 +1,4 @@
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { LINKS_LABELS } from "../../labels";
 import { ITooltipUiHeaderComponents, TooltipUiHeader } from "../../../../ui/tooltip";
 import { useLinkTooltip } from "../link-tooltip-root";

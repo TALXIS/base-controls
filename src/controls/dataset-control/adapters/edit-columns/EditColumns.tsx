@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { DatasetConstants, IAvailableRelatedColumn, IColumn } from "@talxis/client-libraries";
-import { useEventEmitter, useRerender, useLabels, useOpenErrorDialog } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
+import { useOpenErrorDialog } from "@pcf";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
 import { ErrorMessageBoundary } from "@ui";

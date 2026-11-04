@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { DependenciesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A dependency says that one task waits on another. The dependencies module holds the tasks' dependencies, and shows how many each task has in a *Predecessors* and a *Successors* column. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) draws them as links between the bars, and lets the user draw and delete them.
+A dependency says that one task waits on another. The dependencies module holds the tasks' dependencies, and shows how many each task has in a *Predecessors* and a *Successors* column. The [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) module of the Gantt draws them as links between the bars, and lets the user draw and delete them.
 
 {{story: Count the dependencies}}
 

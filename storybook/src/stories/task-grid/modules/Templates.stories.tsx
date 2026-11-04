@@ -64,7 +64,7 @@ export const CreateTasksFromATemplate: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An onboarding template beside three sample ones. Try: open the arrow next to *New*, pick *From template* and *Onboard a new colleague*. Then select a task, save it as a template, and find it in the list.`,
+                story: `An onboarding template beside three sample ones. Try: open the arrow next to *New*, pick *From template* and *Onboard a new colleague*.`,
             },
         },
     },

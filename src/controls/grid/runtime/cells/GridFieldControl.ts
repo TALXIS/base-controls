@@ -1,6 +1,6 @@
 import { DataProvider, DataType, DataTypes, IColumn } from "@talxis/client-libraries";
-import { BaseControls } from "@core";
-import { IGridValueRendererParameters } from "@fields/value-renderer";
+import { BaseControls } from "@pcf";
+import { IGridValueRendererParameters } from "../../adapters/value-renderer";
 import { IGridInternalServiceLocator } from "..";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";

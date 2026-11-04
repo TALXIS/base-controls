@@ -1,5 +1,5 @@
 import { PinnedRowModule, RowDragModule } from "ag-grid-community";
-import { IGridModule } from "../../grid/interfaces";
+import { IGridModule } from "@controls/grid";
 import { GridCheckList, ICheckListFieldMapping } from "./GridCheckList";
 
 export interface ICheckListModuleOptions {

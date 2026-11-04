@@ -28,7 +28,10 @@ A value reaches the record when the cell's control commits it:
 | Picker that closes | Option set, two options, date only, a duration picked from its list | As soon as a value is picked; the editor closes |
 | Picker that stays open | Date and time, multi-select option set, lookup | On every pick; the editor stays open until you leave the cell |
 
-Esc closes the editor and keeps what was typed; \`record.clearChanges()\` is the undo. Closing an editor without changing the value commits nothing. A paste, a cut or a fill writes text into each cell, parsed with the column's data type, and text that does not parse leaves the cell as it was. With \`autoSave\`, each record saves once after all its cells are written.
+- Esc closes the editor and keeps what was typed; \`record.clearChanges()\` is the undo.
+- Closing an editor without changing the value commits nothing.
+- A paste, a cut or a fill writes text into each cell, parsed with the column's data type; text that does not parse leaves the cell as it was.
+- With \`autoSave\`, each record saves once after all its cells are written.
 
 ## Save
 
@@ -40,7 +43,13 @@ With \`autoSave\`, each commit calls \`record.save()\` straight away. Without it
 
 ### The save status
 
-An editable grid adds a save status column, \`RECORD_SAVE_COLUMN_KEY\`, pinned at the start of each row. It shows a spinner while the record saves, a green check for two seconds once it saved, and a red icon once it was refused; clicking the red icon lists each error under its column's name. With row selection on, the status is drawn in the row's checkbox cell instead. The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it. To hide the column, pass \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`.
+An editable grid adds a save status column, \`RECORD_SAVE_COLUMN_KEY\`, pinned at the start of each row:
+
+- A spinner while the record saves, a green check for two seconds once it saved, and a red icon once it was refused.
+- Clicking the red icon lists each error under its column's name.
+- With row selection on, the status is drawn in the row's checkbox cell instead.
+- The red icon lives only on screen: a row that scrolls out of view and back, or a grid that remounts, loses it.
+- To hide the column, pass \`colDefs={{ [RECORD_SAVE_COLUMN_KEY]: { hide: true } }}\`.
 
 ## Validation
 
@@ -55,7 +64,11 @@ A value that fails validation draws a red outline and an error icon in its cell,
 | One column | \`context.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column; it may read any column of the record |
 | Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service | Your rule for every column. See *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 
-Your rules run first, then the required and built-in checks; a rule can add an error but not clear a built-in one. Validation does not depend on editing, so a read-only grid outlines invalid values too. The rules are set on the provider's records, so they gate every save, a \`provider.save()\` from outside the grid included, and they replace a \`record.expressions.setValidationExpression\` of your own on the same column. \`context.isRequired\` only draws the asterisk.
+- Your rules run first, then the required and built-in checks; a rule can add an error but not clear a built-in one.
+- Validation does not depend on editing, so a read-only grid outlines invalid values too.
+- The rules are set on the provider's records, so they gate every save, a \`provider.save()\` from outside the grid included.
+- They replace a \`record.expressions.setValidationExpression\` of your own on the same column.
+- \`context.isRequired\` only draws the asterisk.
 
 ## Edit in place
 
@@ -80,7 +93,10 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 
 To change the tooltips, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-\`context.isLocked: true\` is final, and no hook reopens the column; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.onGetLock(result, { record })\` runs after the record-level hooks with \`result.isLocked\` starting as \`!record.isActive()\`, so it can also unlock. \`context.cell.onGetLock(result, { record })\` runs after the cell-level hooks, and only for a cell whose column and record are open. A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
+- \`context.isLocked: true\` is final, and no hook reopens the column; to open a column its metadata locks, give it \`context: { isLocked: false }\`.
+- \`rowSettings.onGetLock(result, { record })\` runs after the record-level hooks with \`result.isLocked\` starting as \`!record.isActive()\`, so it can also unlock.
+- \`context.cell.onGetLock(result, { record })\` runs after the cell-level hooks, and only for a cell whose column and record are open.
+- A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`.
 
@@ -96,7 +112,10 @@ A server can refuse a save the browser allowed. A provider reports that as \`{ s
 
 {{story: Refuse a save on the server}}
 
-\`fieldName\` is the column's logical name, and the callout shows its header name; leave it out for an error about the whole record. Resolve a refusal rather than throwing: a save that throws is reported as failed, with the error's message in the callout. A refused record keeps its values and stays unsaved, ready to be saved again. The callout's title and button are \`grid.recordSaveErrorTitle\` and \`grid.recordSaveErrorDismiss\`.
+- \`fieldName\` is the column's logical name, and the callout shows its header name; leave it out for an error about the whole record.
+- Resolve a refusal rather than throwing: a save that throws is reported as failed, with the error's message in the callout.
+- A refused record keeps its values and stays unsaved, ready to be saved again.
+- The callout's title and button are \`grid.recordSaveErrorTitle\` and \`grid.recordSaveErrorDismiss\`.
 
 ## Keyboard
 
@@ -127,7 +146,7 @@ To change a value as a cell would, saving it with \`autoSave\`, go through its f
 
 ## Changing how it looks
 
-The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -138,10 +157,10 @@ The editing module takes no \`components\` option. It draws two columns of its o
 | | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked record |
 | \`RecordSaveSelectionCell\` | the keys of \`RecordSaveIndicatorCell\`, and \`checkbox\` | \`checkbox\`: \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | The checkbox column's cell (\`SELECTION_COLUMN_KEY\`) with row selection on |
 
-| Piece | How to change it |
+Two locks are drawn outside these columns:
+
+| Lock | How to change it |
 |---|---|
-| The save status and its error callout | Through their slots; the defaults \`RecordSaveUiIndicatorComponents\` and \`RecordSaveUiErrorCalloutComponents\` are exported |
-| The checkbox column, with row selection on | It is drawn by \`RecordSaveSelectionCell\`: use \`cellRendererParams\` to keep the save status, or render \`RecordSaveSelectionCell\` in a \`cellRenderer\` of your own |
 | The lock in a locked column's header | An adornment keyed \`'lock'\` without slots: replace or remove it in \`context.header.onGetAdornments\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)) |
 | The lock in a locked cell | The cell's own \`lockIcon\`: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview) |
 
@@ -218,7 +237,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Approved entries are locked by \`rowSettings.onGetLock\`, Hourly rate by \`context.cell.onGetLock\` wherever the work is not billable, and Employee for good by \`context.isLocked\`; \`LabelsProvider\` words each lock's tooltip. Try: hover a lock, approve a Submitted entry, then close the week to remount the grid without the editing module.`,
+                story: `Locks at every level: approved entries by \`rowSettings.onGetLock\`, Hourly rate by \`context.cell.onGetLock\`, and Employee by \`context.isLocked\`. Try: hover a lock, or approve a Submitted entry.`,
             },
         },
     },

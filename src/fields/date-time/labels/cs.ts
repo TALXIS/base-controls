@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { DATE_TIME_LABELS } from "./en";
 
 export const DATE_TIME_LABELS_CS = translateLabels(DATE_TIME_LABELS, {

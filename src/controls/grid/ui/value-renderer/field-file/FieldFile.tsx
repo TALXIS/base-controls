@@ -1,8 +1,19 @@
 import { useMemo, useState } from "react";
 import { Icon, Image, ImageFit, Link } from "@fluentui/react";
-import { IFileValue } from "../../interfaces";
 import { getFileIconName } from "./getFileIconName";
 import { getFieldFileStyles } from "./styles";
+
+/** A file or an image, as a record holds one. */
+export interface IFileValue {
+    fileName: string;
+    /** In bytes, where the host reported one. */
+    fileSize?: number;
+    /** Where the contents can be fetched from. */
+    fileUrl?: string;
+    /** A picture of the contents, where the host built one. */
+    thumbnailUrl?: string;
+    mimeType?: string;
+}
 
 export interface IFieldFileProps {
     file: IFileValue;

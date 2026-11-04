@@ -2,7 +2,7 @@ import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "ag-grid-commu
 import { FontWeights } from "@fluentui/react";
 import { ThemeBuilder, ITheme } from "@theme";
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
-import { LabelsOf } from "@core";
+import { LabelsOf } from "@labels";
 import { GRID_AGGREGATION_LABELS } from "./labels";
 import { IGridAggregationComponents } from "./components";
 import { IGridCellLoading } from "../../runtime/cells";

@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { CHECKLIST_LABELS } from "./en";
 
 export const CHECKLIST_LABELS_CS = translateLabels(CHECKLIST_LABELS, {

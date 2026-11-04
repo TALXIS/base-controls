@@ -356,13 +356,7 @@ export const TabLayoutBreakpoints: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Uses \`Form.Tab layout\` to control how many top-level columns render at each breakpoint.
-
-- collapses from multiple columns down to one as space tightens
-- controls the broad page density for a tab
-- keeps each section in its own top-level column shell
-                `.trim(),
+                story: `\`Form.Tab layout\` sets how many top-level columns the tab has at each breakpoint. Try: change \`lg: 3\` to \`lg: 2\` in the code.`,
             },
         },
     },
@@ -378,13 +372,7 @@ export const SectionLayoutGrids: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Uses \`Form.Section layout\` to control how many cells render per row inside a section.
-
-- densifies one section progressively across breakpoints
-- separates section grid behavior from tab column behavior
-- fits wider sets of fields into a single responsive section
-                `.trim(),
+                story: `\`Form.Section layout\` sets how many cells a row of the section holds at each breakpoint. Try: change \`lg: 4\` to \`lg: 3\` in the code.`,
             },
         },
     },
@@ -400,13 +388,7 @@ export const CombineTabAndSectionResponsiveness: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Combines tab and section breakpoint maps to create coarse and fine-grained responsive behavior together.
-
-- lets tabs collapse independently from section grids
-- keeps logical groups intact while each group repacks its fields
-- mixes responsive field grids with richer custom content cells
-                `.trim(),
+                story: `Tab and section breakpoint maps work together: the tab repacks its columns while each section repacks its fields. Try: change the tab's \`lg: 2\` to \`lg: 1\` in the code.`,
             },
         },
     },
@@ -422,13 +404,7 @@ export const SectionLabelBehavior: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Uses \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` to tune how labels behave as sections get narrower.
-
-- keeps denser horizontal labels where space allows
-- collapses labels above controls below a chosen width
-- aligns left labels consistently across fields
-                `.trim(),
+                story: `\`labelWidth\`, \`cellLabelPosition\` and \`cellLabelCollapseBreakpoint\` decide where labels sit as a section narrows. Try: raise \`cellLabelCollapseBreakpoint\` to \`800\` in the code.`,
             },
         },
     },
@@ -444,13 +420,7 @@ export const CellRowspanAndColspan: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Uses \`Form.Cell colspan\` and \`rowspan\` when fields or custom content should span across multiple grid tracks.
-
-- gives larger cells more room within the section grid
-- supports multiline fields, maps, and other wider content
-- combines naturally with responsive section layouts
-                `.trim(),
+                story: `\`Form.Cell colspan\` and \`rowspan\` let a field or your own content span several grid tracks. Try: change the long description's \`colspan={2}\` to \`colspan={3}\` in the code.`,
             },
         },
     },

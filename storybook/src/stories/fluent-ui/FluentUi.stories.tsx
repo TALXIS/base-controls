@@ -13,7 +13,7 @@ Base Controls is built on Fluent UI v8, Microsoft's React component library: its
 
 | What | From Fluent |
 |---|---|
-| Components | Fluent UI v8, \`@fluentui/react\` 8.121.5 or earlier, which your application installs |
+| Components | Fluent UI v8, which your application installs: see [**Quick start**](?path=/docs/concepts-quick-start--overview) |
 | Themes | Fluent's \`ITheme\`: see [**Theming**](?path=/docs/concepts-theming--overview) |
 | Styles | \`mergeStyleSets\`, and the \`styles\` props Fluent's components take |
 | Icons | Fluent's icon font: register it once per window with \`initializeIcons()\`, unless your host already has |
@@ -26,7 +26,7 @@ Base Controls' versions take the same props as Fluent's. Use them where there is
 |---|---|
 | \`CommandBar\` | Menus and tooltips in the app theme, folds when its own box resizes, no side padding, icon-only buttons when compact, \`align\` |
 | \`ComboBox\`, \`DatePicker\`, \`TimePicker\`, \`TagPicker\` | Lists and calendars in the app theme |
-| \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme, not in the theme around what opened them |
+| \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview) |
 | \`useSurfaceMenuProps(menuProps)\` | A Fluent button's \`menuProps\`, drawn in the app theme |
 | \`useTheme()\` | Fluent's theme, and it requires an \`AppThemeProvider\` |
 

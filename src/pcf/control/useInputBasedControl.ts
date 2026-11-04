@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { IControl, IOutputs } from "./interfaces/context";
+import { IControl, IOutputs } from "../interfaces/context";
 import { IControlController, useControl } from "./useControl";
-import { IInputParameters } from "./interfaces/parameters";
+import { IInputParameters } from "../interfaces/parameters";
 
 /**
  * Description

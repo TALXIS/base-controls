@@ -23,9 +23,9 @@ Grid shows the records of a data provider as rows and columns, on top of <a href
 
 {{story: Two products}}
 
-The grid takes no provider prop. It shows the provider around it: the one a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads, which also brings the header, paging, views, loading and error states. For a grid on its own, wrap it in a \`DataProviderScope\` and load the provider yourself with \`refresh()\`. Without either, the grid throws.
+The grid takes no provider prop: how it gets one, from a DatasetControl or a \`DataProviderScope\`, is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-\`modules\` switches features on, and only a row model is required. A [**PCF context**](?path=/docs/concepts-pcf-context--overview) must wrap the grid.
+\`modules\` switches features on, and only a row model is required. Like every control, it needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview).
 
 ## How it fits together
 

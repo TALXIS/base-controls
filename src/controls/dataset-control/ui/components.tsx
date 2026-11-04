@@ -15,4 +15,4 @@ export { EditColumnsButtonUiComponents } from './edit-columns-button';
 export { EditColumnsPanelUiComponents } from './edit-columns-panel';
 export { EditColumnsSelectorUiComponents } from './edit-columns-selector';
 export { EditColumnsColumnListUiComponents } from './edit-columns-column-list';
-export { EmptyRecordsUiComponents } from '@ui/empty-records';
+export { EmptyStateUiComponents } from './empty-state';

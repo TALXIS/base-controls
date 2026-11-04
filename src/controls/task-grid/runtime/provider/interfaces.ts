@@ -1,6 +1,6 @@
 import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { IDatasetControlResolvedView } from "../../../dataset-control";
-import type { IUserQuerySavedValueMap } from "../../../dataset-control/modules/user-queries/interfaces";
+import type { IDatasetControlResolvedView } from "@controls/dataset-control";
+import type { IUserQuerySavedValueMap } from "@controls/dataset-control/modules/user-queries/interfaces";
 import type { IEventSubscriber } from "@core";
 import type { IRecordTree } from "./record-tree";
 
@@ -21,7 +21,7 @@ export interface IFieldMapping {
     percentComplete?: string;
 }
 
-declare module "../../../dataset-control/modules/user-queries/interfaces" {
+declare module "@controls/dataset-control/modules/user-queries/interfaces" {
     interface IUserQuerySavedValueMap {
         sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
         filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null;

@@ -17,4 +17,3 @@ export * from './loading';
 export * from './option-tag';
 export * from './shimmer';
 export * from './layout';
-export * from './empty-records';

@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const TWO_OPTIONS_LABELS = defineLabels({
     'twoOptions.yes': 'Yes',

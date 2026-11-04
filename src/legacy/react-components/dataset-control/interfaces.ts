@@ -1,4 +1,4 @@
-import { IPcfContext, IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@core/pcf/interfaces";
+import { IPcfContext, IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@pcf/interfaces";
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps } from "@fluentui/react";
 import { IThemeProviderProps } from "@theme";
 import { IDataset, IColumn } from "@talxis/client-libraries";

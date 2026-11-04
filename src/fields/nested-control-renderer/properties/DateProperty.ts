@@ -1,4 +1,4 @@
-import { IDateTimeProperty } from "@core/pcf/interfaces";
+import { IDateTimeProperty } from "@pcf/interfaces";
 import { Property } from "./Property";
 
 export class DateProperty extends Property {

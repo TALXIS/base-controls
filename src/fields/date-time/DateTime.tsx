@@ -7,7 +7,7 @@ import { useDateTime } from "./hooks/useDateTime";
 import { Calendar } from "./ui/Calendar";
 import { DateTimeContext, IDateTimeContext } from "./context";
 import { DatePicker } from "@legacy";
-import { useControlSizing } from "@core/pcf/useControlSizing";
+import { useControlSizing } from "@pcf/control/useControlSizing";
 import dayjs from "dayjs";
 import { useDebouncedCallback } from "use-debounce";
 

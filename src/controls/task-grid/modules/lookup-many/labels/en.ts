@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the lookup-many module. */
 export const LOOKUP_MANY_LABELS = defineLabels({

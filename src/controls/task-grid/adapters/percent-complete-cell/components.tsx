@@ -1,4 +1,4 @@
-import type { ICellRendererComponents } from "../../../grid";
+import type { ICellRendererComponents } from "@controls/grid";
 import type { ITaskGridUiPercentCompleteComponents } from "../../ui";
 
 /** The replaceable pieces of the percent complete cell, by the part they belong to. */

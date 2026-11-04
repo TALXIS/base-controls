@@ -1,5 +1,5 @@
 import { Property } from "./Property";
-import { IOptionSetProperty } from "@core/pcf/interfaces";
+import { IOptionSetProperty } from "@pcf/interfaces";
 
 export class OptionSetProperty extends Property {
 

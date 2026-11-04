@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { PAGE_SIZE_SWITCHER_LABELS } from "./en";
 
 export const PAGE_SIZE_SWITCHER_LABELS_CS = translateLabels(PAGE_SIZE_SWITCHER_LABELS, {

@@ -12,13 +12,26 @@ export const useCompactItem = () => {
     useLayoutEffect(() => () => onItemRemoved?.(), [onItemRemoved]);
 };
 
-/** A box that tells everything inside it to draw compact once it grows taller than one line of compact content, until it gets wider or loses an item. */
+//the boxes the box lays out in its lines, looking through `display: contents` wrappers
+const getLineItems = (element: Element): Element[] => [...element.children].flatMap(child => {
+    const { display, position } = getComputedStyle(child);
+    if (display === 'contents') {
+        return getLineItems(child);
+    }
+    return display === 'none' || position === 'absolute' || position === 'fixed' ? [] : [child];
+});
+
+const isWrapped = (element: Element): boolean => {
+    const rects = getLineItems(element).map(item => item.getBoundingClientRect()).filter(rect => rect.height > 0);
+    const firstLineBottom = Math.min(...rects.map(rect => rect.bottom));
+    return rects.some(rect => rect.top >= firstLineBottom);
+};
+
+/** A box that tells everything inside it to draw compact once its parts wrap onto a second line, until it gets wider or loses an item. */
 export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
     const { children, ...divProps } = props;
-    //starts compact, so the first layout measures how tall one line is
     const [isCompact, setIsCompact] = useState(true);
     const elementRef = useRef<HTMLDivElement>(null);
-    const lineHeightRef = useRef(0);
     //the width the box had when its content wrapped; compact holds until the box is wider
     const wrappedAtWidthRef = useRef<number>();
 
@@ -33,16 +46,13 @@ export const WrapCompactProvider = (props: IWrapCompactProviderProps) => {
             return;
         }
         const width = element.offsetWidth;
-        const height = element.offsetHeight;
         if (!isCompact) {
-            //full-size parts are as tall as compact ones, so a taller box has wrapped
-            if (height > lineHeightRef.current) {
+            if (isWrapped(element)) {
                 wrappedAtWidthRef.current = width;
                 setIsCompact(true);
             }
             return;
         }
-        lineHeightRef.current = height;
         if (wrappedAtWidthRef.current !== undefined && width > wrappedAtWidthRef.current) {
             wrappedAtWidthRef.current = undefined;
         }

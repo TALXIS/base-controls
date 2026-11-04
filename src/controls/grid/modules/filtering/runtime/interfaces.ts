@@ -1,4 +1,4 @@
-import type { IServiceLocator } from "@core";
+import type { IServiceRegistry } from "@core";
 import type { IGridServiceLocator } from "../../../runtime";
 import type { IGridFilteringComponents } from "../components";
 
@@ -11,4 +11,4 @@ export interface IGridFilteringServiceMap {
 }
 
 /** Where this module's own parts find each other. */
-export type IGridFilteringServiceLocator = IServiceLocator<IGridFilteringServiceMap>;
+export type IGridFilteringServiceLocator = IServiceRegistry<IGridFilteringServiceMap>;

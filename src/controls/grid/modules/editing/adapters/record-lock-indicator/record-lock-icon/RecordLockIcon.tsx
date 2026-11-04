@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { useGridService } from "../../../../../useGridService";
 import { GRID_LABELS } from "../../../../../labels";
 import { useGridCell } from "../../../../../adapters/cells/root/context";

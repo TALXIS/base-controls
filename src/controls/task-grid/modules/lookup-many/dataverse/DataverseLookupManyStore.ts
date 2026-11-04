@@ -1,6 +1,6 @@
 import { FetchXmlDataProvider, IDataProvider, IEntityReference, IRawRecord } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskDataProvider } from "../../../runtime/provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDataverseHostRecord } from "../../../runtime/data-sources/dataverse/DataverseTaskStore";

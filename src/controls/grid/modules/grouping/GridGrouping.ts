@@ -1,4 +1,5 @@
-import { IEventSubscriber, LabelsOf } from "@core";
+import { IEventSubscriber } from "@core";
+import { LabelsOf } from "@labels";
 import { createElement } from "react";
 import { ColDef, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";

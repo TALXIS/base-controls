@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { DURATION_LABELS } from "./en";
 
 export const DURATION_LABELS_CS = translateLabels(DURATION_LABELS, {

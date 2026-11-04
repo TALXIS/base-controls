@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from "react";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import type { ICellEditorParams } from "ag-grid-community";
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "../../../../../grid";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
 import { LookupManyEditorPopup, LookupManySelect } from "../../ui";
 import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";

@@ -83,46 +83,16 @@ const OverviewForm = () => {
 }
 
 const DESCRIPTION = `
-A form shows one record laid out in tabs, sections and columns, and keeps every field in step with it. Values typed into fields land on the record, validation and notifications show where they apply, and the ribbon knows when there are unsaved changes and saves them. Form is the runtime that wires this together, so you describe the layout and supply the record instead of connecting each control by hand. Try it below: switch tabs, change a value and watch the ribbon report unsaved changes.
+A form shows one record laid out in tabs, sections and columns, and keeps every field in step with it. Values typed into fields land on the record, validation and notifications show where they apply, and the ribbon knows when there are unsaved changes and saves them. You describe the layout and supply the record through a [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview); the form wires the rest. Try: change a value and watch the ribbon report unsaved changes.
 
-## What you get from the runtime
+## Lay it out in React
 
-- Bind fields to a shared runtime instead of managing each control in isolation.
-- Keep validation, notifications, and form state coordinated across the full page.
-- Support both React-first authoring and Xrm-style FormXml authoring on the same underlying runtime.
-- Allow custom UI layers without throwing away the form behavior underneath.
+Write the tabs, sections and fields in JSX under \`Form.Root\`, and swap any piece for your own component: see [**React compose**](?path=/docs/controls-form-react-compose--overview).
 
-## Choose an authoring path
+## Lay it out in FormXml
 
-Form supports two authoring models over the same runtime: directly in React, or driven from an Xrm/FormXml model. They differ in how the layout is authored and how the runtime surface is exposed, so choose the one that matches where your form definition lives and how you want to work.
-
-Before choosing the layout authoring path, see [**Form strategy**](?path=/story/controls-form-get-started-form-strategy--overview) for the shared \`IFormStrategy\` contract and the \`columns\` / \`metadata\` / \`data\` shape both paths expect.
-
-### React compose
-Choose this path when you want to author the layout directly in JSX with \`Form.Root\`, tabs, sections, fields, and optional React-level UI overrides.
-
-This is the best fit when:
-
-- the form layout should live in React code
-- you want component-level composition and custom rendering directly in JSX
-- you do not need an Xrm-style \`formContext\` API surface
-
-Go to [**React compose Overview**](?path=/story/controls-form-react-compose--overview).
-
-### Xrm
-Choose this path when the form should be driven by FormXml and expose Xrm form context APIs.
-
-\`XrmForm\` builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes a Microsoft form-context-compatible \`formContext\` surface while persistence still comes from the base Form strategy contract.
-
-This is the best fit when:
-
-- the layout is defined in FormXml
-- the record payload already follows Dataverse conventions
-- you want to script against \`formContext\` in a model-driven-app style
-- you want to combine Base Controls React events with Xrm-style runtime access
-
-Go to [**Xrm Builder**](?path=/story/controls-form-xrm--overview), [**Xrm Form Context Overview**](?path=/story/controls-form-xrm-form-context-overview--overview), or [**Xrm Form Context Samples**](?path=/story/controls-form-xrm-form-context-samples--qualification-review).
-                `
+\`XrmForm\` draws a FormXml layout over the same form and lets your scripts talk to it through an Xrm-style \`formContext\`, as a model-driven app does: see [**Xrm**](?path=/docs/controls-form-xrm-overview--overview).
+`
 
 const meta = {
     title: 'Controls/Form/Get started',

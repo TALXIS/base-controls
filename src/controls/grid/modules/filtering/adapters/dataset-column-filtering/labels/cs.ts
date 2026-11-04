@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { FILTER_OPERATORS_LABELS } from "./en";
 
 export const FILTER_OPERATORS_LABELS_CS = translateLabels(FILTER_OPERATORS_LABELS, {

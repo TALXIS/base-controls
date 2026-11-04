@@ -1,5 +1,5 @@
 import { IMultiSelectOptionSet } from './interfaces';
-import { useControl } from "@core";
+import { useControl } from "@pcf";
 import { ComboBox } from "@legacy";
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';

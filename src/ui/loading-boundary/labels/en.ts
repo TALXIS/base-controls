@@ -1,4 +1,4 @@
-import { defineLabels } from "@core/localization";
+import { defineLabels } from "@labels";
 
 /** The texts of the loading boundary. */
 export const LOADING_BOUNDARY_LABELS = defineLabels({

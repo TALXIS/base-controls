@@ -4,7 +4,7 @@ import { Toggle, mergeStyleSets } from '@fluentui/react'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
 import { XrmOverviewCodeEditor } from '../../form/xrm-form/XrmOverviewCodeEditor'
-import { getCurrentFormXml, getXrmRecord, setCurrentFormXml, xrmModelStore } from '../../form/xrm-form/xrmModel'
+import { getCurrentFormXml, setCurrentFormXml } from '../../form/xrm-form/xrmModel'
 import { XrmOverviewPreview } from './XrmOverviewPreview'
 import { StaticCodeBlock, codeBlockStyles, renderStory } from './storyHelpers'
 
@@ -44,8 +44,6 @@ const XrmOverviewStory = () => {
 
     return (
         <div className={codeBlockStyles.root}>
-            <StaticCodeBlock title="Model" value={JSON.stringify(xrmModelStore.getRuntimeColumns(), null, 2)} />
-            <StaticCodeBlock title="Data" value={JSON.stringify(getXrmRecord(), null, 2)} />
             <StaticCodeBlock title="FormXml">
                 <div className={xmlEditorStyles.xmlEditor}>
                     <FormXmlEditor value={formXml} onChange={setFormXml} hideLabel />
@@ -90,13 +88,9 @@ const meta = {
             },
             description: {
                 component: `
-Author the layout in FormXml and render it as React with \`XrmForm\`.
+Author the layout in FormXml and render it as React with \`XrmForm\`. The columns and the record come from the [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview); the visible structure comes from FormXml. On top of it, the form exposes the Xrm-style surface for tabs, sections, controls, validation, notifications and \`formContext\`.
 
-The field model and record data come from the strategy; the visible structure comes from FormXml. The runtime exposes the Xrm-style surface for tabs, sections, controls, validation, notifications, and \`formContext\`-driven interactions on top of it.
-
-## What this page shows
-
-This mirrors the React compose overview. Expand **Model** and **Data** to inspect the inputs, edit the **FormXml** panel to change the layout live, then switch on **Code** to see how \`XrmForm\` is wired up.
+Try: edit the **FormXml** panel to change the layout live, then switch on **Code** to see how \`XrmForm\` is wired up.
                 `.trim(),
             },
         },

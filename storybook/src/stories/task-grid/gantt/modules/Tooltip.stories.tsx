@@ -70,7 +70,7 @@ export const ComposeTheTooltip: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A tooltip with the status, progress, priority, effort and dates. Try: rest the pointer on a bar, then drag it and watch the dates follow. In **Code**, add a \`FieldRow\` for \`description\`.`,
+                story: `A tooltip with the status, progress, priority, effort and dates. Try: rest the pointer on a bar, then drag it and watch the dates follow.`,
             },
         },
     },

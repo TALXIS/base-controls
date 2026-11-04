@@ -6,3 +6,5 @@ export * from './rows';
 export * from '../components';
 //aliased: what a cell renderer is handed
 export type { IGridCellParams } from './interfaces';
+export * from './value-renderer';
+export * from './inline-ribbon';

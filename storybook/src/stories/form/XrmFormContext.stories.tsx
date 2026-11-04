@@ -59,15 +59,9 @@ const meta = {
                 component: `
 \`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, shaped after the Microsoft model-driven-app \`formContext\`. It reads values, toggles visibility, enables controls, handles events, focuses tabs and coordinates saves.
 
-It is compatible in shape and intent, not a one-to-one port of every Microsoft Client API feature. Microsoft Learn references:
+It matches Microsoft's [formContext](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context) in shape and intent, not every Client API feature; the [formContext.data](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data) and [formContext.ui](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui) references cover most of what you call.
 
-- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context" target="_blank" rel="noreferrer">formContext</a>
-- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data" target="_blank" rel="noreferrer">formContext.data</a>
-- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui" target="_blank" rel="noreferrer">formContext.ui</a>
-- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes" target="_blank" rel="noreferrer">attribute methods</a>
-- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls" target="_blank" rel="noreferrer">control methods</a>
-
-Switch on **Code** below, write the body of \`onExecuteScenario\`, then press **Run code** to run it against the form. For ready-made patterns, go to [**Samples**](?path=/story/controls-form-xrm-form-context-samples--qualification-review).
+Switch on **Code** below, write the body of \`onExecuteScenario\`, then press **Run code** to run it against the form. For ready-made patterns, go to [**Samples**](?path=/docs/controls-form-xrm-form-context-samples--overview).
                 `.trim(),
             },
         },

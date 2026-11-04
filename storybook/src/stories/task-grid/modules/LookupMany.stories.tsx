@@ -90,7 +90,7 @@ export const AssignPeopleAndTags: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Three lookup-many columns in memory: people, coloured tags and plain teams. Try: double-click a *Tags* cell and add a tag, or filter *Assigned to* from its column menu. Open **Code** and change an \`appearance\`.`,
+                story: `Three lookup-many columns in memory: people, coloured tags and plain teams. Try: double-click a *Tags* cell and add a tag.`,
             },
         },
     },

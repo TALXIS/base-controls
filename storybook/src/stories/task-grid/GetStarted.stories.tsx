@@ -6,9 +6,9 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { BasicTaskGridExample, TaskGridShowcaseExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-TaskGrid shows tasks as a tree: every task sits under its parent, in its place among its siblings. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) with a [**Grid**](?path=/docs/controls-grid-get-started--overview) in its body, so views, quick find, Edit columns, the ribbon and the Grid modules work as they do there. On top, it adds the tree, commands to create, edit, delete and move tasks, and modules for what tasks carry: assignees, checklists, dependencies, templates and more. A [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) can draw the same tasks on a timeline beside the grid.
+TaskGrid shows tasks as a tree: every task sits under its parent, in its place among its siblings. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) with a [**Grid**](?path=/docs/controls-grid-get-started--overview) in its body, so views, quick find, *Edit columns*, the ribbon and the Grid modules work as they do there. On top, it adds the tree, commands to create, edit, delete and move tasks, and modules for what tasks carry: assignees, checklists, dependencies, templates and more. A [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) can draw the same tasks on a timeline beside the grid.
 
-Below are seven projects of a software company. Try: open a task's subtasks, drag a task onto another, add a subtask from the **+** at the start of a row, switch to *Every task on its own*, or open **Edit columns** to add a checklist, a dependency or a custom column. Open **Code** to read and edit the source.
+Try it below on seven projects of a software company: open a task's subtasks and drag a task onto another; open **Code** for more to try.
 
 {{canvas: Overview}}
 
@@ -16,7 +16,7 @@ Below are seven projects of a software company. Try: open a task's subtasks, dra
 
 {{story: The smallest task grid}}
 
-\`TaskDatasetControl\` takes the DatasetControl's parts and most of its props, and \`TaskGrid\` takes the Grid's props. \`onLoad\` is covered on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview), and \`PcfContextProvider\` wraps it all in your app (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
+\`TaskDatasetControl\` takes the DatasetControl's parts and most of its props, and \`TaskGrid\` takes the Grid's props. \`onLoad\` is covered on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). Place it under the root providers: see [Quick start](?path=/docs/concepts-quick-start--overview).
 
 ## TaskDatasetControl props
 

@@ -8,7 +8,7 @@ import { QuickFind } from './adapters/quick-find';
 import { Notifications } from './adapters/notifications';
 import { Pagination } from './adapters/pagination';
 import { PageSizeSwitcher } from './adapters/page-size-switcher';
-import { EmptyRecords } from './adapters/empty-records';
+import { EmptyState } from './adapters/empty-state';
 import { EditColumns } from './adapters/edit-columns';
 import { UserQueries } from './modules/user-queries/adapters/user-queries';
 import { DatasetControlUi, IDatasetControlUi } from './ui';
@@ -34,7 +34,7 @@ export interface IDatasetControlParts {
     /** Picks how many records a page holds, and shows which of them it shows. */
     PageSizeSwitcher: typeof PageSizeSwitcher;
     /** The empty state in place of what shows the records while the provider has none. */
-    EmptyRecords: typeof EmptyRecords;
+    EmptyState: typeof EmptyState;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: typeof EditColumns;
     /** Saving and managing the user's own views; goes inside `ViewSwitcher`, with the user queries module. */
@@ -57,7 +57,7 @@ export const DatasetControl: IDatasetControlNamespace = Object.assign(Root, {
     Notifications,
     Pagination,
     PageSizeSwitcher,
-    EmptyRecords,
+    EmptyState,
     EditColumns,
     UserQueries,
     Ui: DatasetControlUi,

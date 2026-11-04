@@ -1,13 +1,10 @@
 import { CellFocusedEvent, GridApi } from "ag-grid-community";
 import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IParameters } from "@core/pcf/interfaces";
+import { IParameters } from "@pcf/interfaces";
 import { StackRank } from "@core/stack-rank";
-import { IGridAgGridOptions, IGrid } from "../../grid/runtime/grid";
-import { IGridCellHookParameters } from "../../grid/runtime/cells";
-import { IGridEditedCell } from "../../grid/modules/editing";
-import { GRID_MODULE_PRIORITY } from "../../grid/modules/priorities";
-import { IGridCheckList } from "./GridCheckList";
-import { CHECK_LIST_LABELS } from "../labels";
+import { IGridAgGridOptions, IGrid, IGridCellHookParameters, IGridEditedCell, GRID_MODULE_PRIORITY } from "@controls/grid";
+import { IGridCheckList } from "../GridCheckList";
+import { CHECK_LIST_LABELS } from "../../../labels";
 
 export interface ICheckListNewItemRowParameters {
     grid: IGrid;

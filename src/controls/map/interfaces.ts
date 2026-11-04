@@ -1,5 +1,5 @@
-import { IParameters } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
+import { IParameters } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
 import { IDataset } from "@talxis/client-libraries";
 import { IMapProvider } from "./runtime/providers";
 

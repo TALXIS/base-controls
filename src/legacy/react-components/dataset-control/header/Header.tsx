@@ -1,4 +1,5 @@
-import { useLabels, useRerender } from "@core";
+import { useLabels } from "@labels";
+import { useRerender } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../labels";
 import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";

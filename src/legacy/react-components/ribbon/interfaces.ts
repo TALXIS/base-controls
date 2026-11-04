@@ -1,7 +1,7 @@
 import { ICommand } from "@talxis/client-libraries";
-import { IControl } from "@core/pcf/interfaces/context";
+import { IControl } from "@pcf/interfaces/context";
 import { ICommandBarProps } from "@legacy";
-import { ITwoOptionsProperty } from "@core/pcf/interfaces";
+import { ITwoOptionsProperty } from "@pcf/interfaces";
 import { IShimmerProps } from "@fluentui/react";
 import { IThemeProviderProps } from "@theme";
 

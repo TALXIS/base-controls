@@ -3,7 +3,7 @@ import { useTheme } from "@theme";
 import { ContextualMenuItemType, IContextualMenuItem, CommandBarButton } from "@fluentui/react";
 import { useSurfaceMenuProps } from "@ui";
 import { IEntity } from "../interfaces";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { LOOKUP_LABELS } from "../labels";
 import { getLookupStyles } from "./styles";
 import { useLoadedEntities } from "../hooks/useLoadedEntities";

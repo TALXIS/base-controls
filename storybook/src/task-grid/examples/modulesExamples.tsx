@@ -60,14 +60,14 @@ const CUSTOM_COLUMNS_CODE = createModuleCode({
 
 const LOOKUP_MANY_CODE = createModuleCode({
     setup: `
-//assignedto draws people, tags coloured pills, and teams plain ones
+//assignedto draws people, tags coloured pills, and teams plain ones; try another appearance
 const COLUMNS: { [columnName: string]: ILookupManyColumn } = {
     assignedto: { displayName: 'Assigned to', entityName: 'mem_person', appearance: { type: 'people' } },
     tags: { displayName: 'Tags', entityName: 'mem_tag', appearance: { type: 'colorful' } },
     teams: { displayName: 'Teams', entityName: 'mem_team' },
 }
 
-//a view lists each column by name, as a Lookup.Simple column
+//a view lists each column by name, as a Lookup.Simple column; filter one from its column menu
 const VIEW_COLUMNS: IColumn[] = Object.keys(COLUMNS).map(name => ({ name, displayName: COLUMNS[name].displayName, dataType: 'Lookup.Simple', visualSizeFactor: 200 }))
 `,
     modules: `[createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: COLUMNS, values: LOOKUP_MANY_VALUES })]`,
@@ -76,6 +76,7 @@ const VIEW_COLUMNS: IColumn[] = Object.keys(COLUMNS).map(name => ({ name, displa
 
 const TEMPLATES_CODE = createModuleCode({
     setup: `
+//listed under From template; select a task to save it as a template of your own
 const ONBOARDING: IMemoryTemplate = {
     id: 'onboarding',
     name: 'Onboard a new colleague',

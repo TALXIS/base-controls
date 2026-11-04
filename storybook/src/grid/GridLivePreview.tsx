@@ -68,6 +68,22 @@ const transpile = (code: string) => Babel.transform(code, {
 
 const withoutExtension = (name: string) => name.replace(/^\.\//, '').replace(/\.tsx?$/, '')
 
+const resolveImport = (importer: string, path: string) => {
+    if (!path.startsWith('.')) {
+        return path
+    }
+    const segments = withoutExtension(importer).split('/').slice(0, -1)
+    for (const segment of path.split('/')) {
+        if (segment === '..') {
+            segments.pop()
+        }
+        else if (segment !== '.') {
+            segments.push(segment)
+        }
+    }
+    return segments.join('/')
+}
+
 /** Why a snippet does not compile, or `null` when it does. */
 export const getGridExampleSyntaxError = (code: string): string | null => {
     try {
@@ -106,7 +122,7 @@ const compileGridExample = (files: IGridExampleFile[], scope: ISandboxScope, pro
             ${transpile(file.code)}
             return typeof GridExample !== "undefined" ? GridExample : undefined;
         }`)
-        module.component = factory((path: string) => load(path).exports, module, module.exports, ...Object.values(scope), provider, frameScripts)
+        module.component = factory((path: string) => load(resolveImport(file.name, path)).exports, module, module.exports, ...Object.values(scope), provider, frameScripts)
         return module
     }
 

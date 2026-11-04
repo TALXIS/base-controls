@@ -1,6 +1,6 @@
 import { ICalendarDayGridStyles, ICalendarProps, IComboBox, IProcessedStyleSet, ITheme } from "@fluentui/react";
 import { ThemeProvider, useAppTheme } from "@theme";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "./styles";

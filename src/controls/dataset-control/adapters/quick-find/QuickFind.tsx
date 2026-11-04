@@ -1,4 +1,5 @@
-import { useEventEmitter, useRerender, useLabels } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
 import { DatasetControlUi, IQuickFindUiComponents } from "../../ui";
 import { useDataProviderEvents } from "@data";
 import { useDatasetControlPart } from "../root";

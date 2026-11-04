@@ -1,7 +1,7 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
-import { IPcfContext, IMultiSelectOptionSetProperty } from "@core/pcf/interfaces";
+import { IPcfContext, IMultiSelectOptionSetProperty } from "@pcf/interfaces";
 
 import { OptionTag } from "@ui";
 

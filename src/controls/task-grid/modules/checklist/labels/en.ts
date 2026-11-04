@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the checklist module. */
 export const CHECKLIST_LABELS = defineLabels({

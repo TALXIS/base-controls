@@ -5,7 +5,9 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ColumnLinesExample, DensityExample, EscalatedTicketsExample, FillContainerExample, HeaderColoursExample, InvoiceLinesExample, SpotBreachesExample, ThemeEditExample } from '../../../grid/examples/appearanceExamples'
 
 const DESCRIPTION = `
-The grid takes its colours and fonts from your Fluent theme, so it matches the rest of your page with no setup. From there you change only as much as the page needs: how tall the grid is and how dense its rows, colours that tell the user what a cell or a header holds, or your own drawing in place of anything the grid draws, from a single icon to a whole column's cells.
+The grid draws in the app theme (see [**Theming**](?path=/docs/concepts-theming--overview)), so it matches the rest of your page with no setup. From there you change only as much as the page needs: how tall the grid is and how dense its rows, colours that tell the user what a cell or a header holds, or your own drawing in place of anything the grid draws, from a single icon to a whole column's cells.
+
+{{story: Flag tickets about to breach}}
 
 ## What you can change
 
@@ -29,16 +31,9 @@ Each change has its own way in. This page covers the props and theme hooks; the 
 
 ## Changing how it looks
 
-What the grid draws takes a \`components\` map: on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`. Its keys name the pieces, and each ends in *slots*, functions named \`onRender…\` that get the props their default draws with and return an element, or \`null\`. A slot you leave out keeps its default, and a nested key merges over the default slot by slot.
+What the grid draws takes a \`components\` map: on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`. How its pieces and slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
-| To | Write |
-|---|---|
-| Change one prop of the default | \`props => GridSortingIconComponents.onRenderIcon({ ...props, styles: { root: { color: 'red' } } })\` |
-| Wrap the default | \`props => <TooltipHost content='Sorted'>{GridSortingIconComponents.onRenderIcon(props)}</TooltipHost>\` |
-| Replace it | \`props => <Icon {...props} iconName='SortUp' />\` |
-| Remove it | \`() => null\` |
-
-Spread the props you get: they carry the class names, handlers and refs that make the piece work. A slot is called during render, so to use hooks there, return a component of your own: \`props => <MyIcon {...props} />\`. Every page that offers \`components\` lists them under *Changing how it looks*, in one table: the *Key*, its *Slots*, the *Default* a slot can call, and what it *Draws*. A blank *Default* is not exported, so a slot there draws its own element.
+Every Grid page that offers \`components\` lists them under *Changing how it looks*: the *Key*, its *Slots*, the *Default* a slot can call, and what it *Draws*. A blank *Default* is not exported, so a slot there draws its own element.
 
 ## Size the grid
 
@@ -66,9 +61,12 @@ All three are read at mount: see *Change a prop that is read at mount* on [**Pro
 
 A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
 
-To colour a cell by a hue, call \`builder.tint(hue)\`, or \`builder.tint(hue, 'strong')\` for a fill. It works out the background and text from the colours the cell already has, so the same hue reads in a light theme and a dark one. For full control, \`builder.colors\` holds \`primary\`, \`background\` and \`text\`. Change any of them and the grid generates the cell's whole palette, so the value, its links and tags, and the editor all follow. A new background does not change the text colour, so set \`text\` too; \`getTextColorForBackground(background)\` returns a readable one. Colours are strings Fluent can parse, such as hex, \`rgb()\` or a colour name, not CSS variables. The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+- \`builder.tint(hue)\` colours a cell by a hue, and \`builder.tint(hue, 'strong')\` fills it.
+- For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`); the cell's value, links, tags and editor all follow.
+- Colour formats and helpers such as \`getTextColorForBackground\` are under *Your own components* on [**Theming**](?path=/docs/concepts-theming--overview).
+- The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
-{{story: Flag tickets about to breach}}
+The example at the top of this page colours *Respond by* this way.
 
 Zebra rows, grouping and totals colour rows too. A row hook at the default priority loses to grouping while the rows are grouped, so register it at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
@@ -80,13 +78,15 @@ Zebra rows, grouping and totals colour rows too. A row hook at the default prior
 
 ## Colour column headers
 
-A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours: the name, the required marker and the module icons, while its menu keeps the grid's theme. Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`.
+A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours: the name, the required marker and the module icons; its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`.
 
 {{story: Show which columns need a review}}
 
 ## Change the AG Grid theme
 
-Under the cells, AG Grid draws the grid itself: the row lines, hover and selection, the focus and range borders, and its popups. The grid builds that theme from your Fluent theme as it mounts, with no lines between columns and no frame. To change it, register \`registerTheme(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above rather than AG Grid's parameters. The mapping and the parameters are under *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview).
+Under the cells, AG Grid draws the grid itself: the row lines, hover and selection, the focus and range borders, and its popups. The grid builds that theme from the app theme as it mounts, with no lines between columns and no frame.
+
+To change it, register \`registerTheme(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above instead. The parameters are under *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview).
 
 {{story: Draw lines between columns}}
 `
@@ -125,7 +125,7 @@ export const TintEscalatedTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets tinted across their whole row by a module's \`registerCellTheme\` at \`GRID_MODULE_PRIORITY.grouping + 1\` with \`builder.tint\`. Try: turn on *Escalated* for another ticket, then group by *Status* from its column menu (AG Grid Enterprise).`,
+                story: `A module's \`registerCellTheme\` tints the whole row of every escalated ticket. Try: turn on *Escalated* for another ticket, then group by *Status*.`,
             },
         },
     },
@@ -137,7 +137,7 @@ export const TicketNumbersInAFixedWidthFont: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`theme.edit\` swaps the Ticket column's font for a monospace one, keyed \`'monospace'\` so every cell shares one theme. Try: double-click a ticket number to see the editor use the font too.`,
+                story: `\`builder.edit\` swaps the Ticket column's font for a monospace one, keyed \`'monospace'\` so every cell shares one theme. Try: double-click a ticket number to see the editor use the font too.`,
             },
         },
     },

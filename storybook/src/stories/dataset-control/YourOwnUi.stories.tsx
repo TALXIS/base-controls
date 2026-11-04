@@ -14,7 +14,7 @@ The built-in parts are drawn in Fluent UI, and they won't always look or behave 
 
 ## Change how it looks
 
-The control and each part take a \`components\` map. Its keys name the pieces, and each ends in *slots*: functions named \`onRender…\` that get the props their default draws with and return an element, or \`null\`.
+The control and each part take a \`components\` map. Its keys are the *pieces*, and each piece is drawn by *slots*: functions named \`onRender…\` that get the props their default draws with and return an element, or \`null\`.
 
 | To | Write |
 |---|---|
@@ -23,11 +23,12 @@ The control and each part take a \`components\` map. Its keys name the pieces, a
 | Replace it | \`props => <SearchBox {...props} />\` |
 | Remove it | \`() => null\` |
 
+- \`TooltipHost\` comes from \`@talxis/base-controls\`.
 - A slot you leave out keeps its default, and a nested key merges over the default slot by slot.
 - Spread the props you get: they carry the class names, handlers and refs that make the piece work.
 - A slot is called during render. To use hooks there, return a component of your own: \`props => <MyViewButton {...props} />\`.
 - To add menu items or commands, use the part's \`registerItems\`, \`registerCommands\` or \`registerColumnCommands\`, not a slot: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
-- Every key and slot is listed under *Every slot* below.
+- Every piece and its slots are listed under *Every slot* below.
 
 The control's own box takes two more props:
 
@@ -64,7 +65,7 @@ A part of your own is any component you put inside the control: a total in the f
 
 A part of your own needs its key declared before \`useDatasetControlPart\` takes it, as *types.ts* in *Total the selected deals* does.
 
-\`DatasetControl.Ui\` holds the regions and most parts as plain UI, with no control behind them, for a part that looks like a built-in one. The ribbon and the notifications are not in it: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
+\`DatasetControl.Ui\` (also exported as \`DatasetControlUi\`) holds the regions and most parts as plain UI, with no control behind them, for a part that looks like a built-in one. The ribbon and the notifications are not in it: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 
 ### A part in a region
 
@@ -78,7 +79,7 @@ Read the records, columns and selection from the provider, and draw again on \`o
 
 - Pass the events your view shows to \`useDataProviderEvents\`.
 - Keep what the view should remember, such as its scroll, with \`useControlStateStore\`.
-- Wrap it in \`DatasetControl.EmptyRecords\` for an empty state: see [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview).
+- Wrap it in \`DatasetControl.EmptyState\` for an empty state: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
 - *Edit columns* changes the provider's columns, so offer it only when your view shows them.
 - Every view switch mounts the body anew, so it reads the view once.
 
@@ -86,9 +87,9 @@ Read the records, columns and selection from the provider, and draw again on \`o
 
 ## Every slot
 
-Each key's defaults are exported under the name in *Defaults*; a blank one is not exported.
+Each piece's defaults are exported under the name in *Defaults*; a blank one is not exported.
 
-| Key | Slots | Defaults |
+| Piece | Slots | Defaults |
 |---|---|---|
 | \`DatasetControl\` | \`onRenderContainer\` | \`ContainerUiComponents\` |
 | \`DatasetControl\` › \`skeleton\` | \`onRenderSkeleton\`, \`loadingBoundary\` | \`SkeletonUiComponents\`, \`LoadingBoundaryComponents\` |
@@ -109,7 +110,7 @@ Each key's defaults are exported under the name in *Defaults*; a blank one is no
 | \`EditColumns\` › \`columnList\` | \`onRenderColumn\` | \`EditColumnsColumnListUiComponents\` |
 | \`EditColumns\` › \`errorMessage\` | As \`DatasetControl\` › \`errorMessage\` | \`ErrorMessageBarComponents\` |
 | \`Notifications\` | \`onRenderNotifications\` | |
-| \`EmptyRecords\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyRecordsUiComponents\` |
+| \`EmptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` |
 | \`Pagination\` | \`onRenderCommandBar\` | \`PaginationUiComponents\` |
 | \`PageSizeSwitcher\` | \`onRenderButton\` | \`PageSizeSwitcherUiComponents\` |
 | \`UserQueries\` › \`manageViewsPanel\` | \`onRenderPanel\`, \`onRenderCloseButton\` | \`ManageViewsPanelUiComponents\` |
@@ -156,7 +157,7 @@ export const EverythingInFluentV9: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The deals, drawn entirely in Fluent UI v9. Try: switch the view and the page size, save a view of your own and open *Manage views*, sort by a column header, select deals to change the ribbon, click the search, open *Edit columns*, press *Break the connection* to see the notifications collapse under a summary, search for something that is not there for the empty state, and *Fail the next load* for the error, then *Try again*. Open the *v9.tsx* file to see every piece.`,
+                story: `Every piece drawn in Fluent UI v9; open *v9.tsx*.`,
             },
         },
     },
@@ -180,7 +181,7 @@ export const ADifferentUiPerView: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Four views of the products. *All products* is the grid, *Price list* is Fluent UI v9's \`DataGrid\`, and *Seating* and *Lighting* are a gallery that keeps its scroll per view. Try: select products in one UI, search for something none of them have to see the empty state, and open the *views.ts* file to change which UI a view uses.`,
+                story: `Four views of the products: *All products* is the grid, *Price list* is Fluent UI v9's \`DataGrid\`, and *Seating* and *Lighting* are a gallery that keeps its scroll per view. Try: open *views.ts* and change which UI a view uses.`,
             },
         },
     },

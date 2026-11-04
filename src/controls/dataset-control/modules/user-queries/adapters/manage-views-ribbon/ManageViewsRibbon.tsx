@@ -1,7 +1,9 @@
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { useEventEmitter, useLabels, usePcfContext } from "@core";
+import { useEventEmitter } from "@core";
+import { useLabels } from "@labels";
+import { usePcfContext } from "@pcf";
 import { useDataProvider } from "@data";
-import type { IRibbonCommand, IRibbonComponents } from "../../../../../ribbon";
+import type { IRibbonCommand, IRibbonComponents } from "@controls/ribbon";
 import { useRequiredDatasetControlRuntime } from "../../../../adapters/root/context";
 import { Ribbon } from "../../../../adapters/ribbon/Ribbon";
 import type { DatasetControlUserQueries } from "../../DatasetControlUserQueries";

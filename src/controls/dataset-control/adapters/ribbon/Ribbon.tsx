@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { useEventEmitter, getClassNames } from "@core";
 import { useDataProviderEvents } from "@data";
-import { IRibbonProps, IRibbonRuntime, Ribbon as SharedRibbon } from "../../../ribbon";
+import { IRibbonProps, IRibbonRuntime, Ribbon as SharedRibbon } from "@controls/ribbon";
 import { useRequiredDatasetControlRuntime } from "../root";
 import { useDatasetControlRegion } from "../region";
 import { getDatasetControlRibbonStyles } from "./styles";

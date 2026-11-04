@@ -1,5 +1,5 @@
 import { TextField } from "@legacy";
-import { useInputBasedControl } from "@core/pcf/useInputBasedControl";
+import { useInputBasedControl } from "@pcf/control/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
 import { ICommandBarItemProps } from "@fluentui/react";

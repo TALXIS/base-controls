@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import type { GanttStatic, Link } from "dhtmlx-gantt";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import type { IDependencies, TaskDependencyType } from "../../../dependencies";
 import { extendTaskVisibility, GANTT_DRAG_MARKER_CLASS, GANTT_LINK_CONTROL_CLASS, GANTT_LINK_CONTROL_START_CLASS, GANTT_LINK_TOOLTIP_CLASS } from "../../chart";
 import { runQuietly } from "../../../../runtime/runQuietly";

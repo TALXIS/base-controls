@@ -2,7 +2,7 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { useAppTheme } from "@theme";
 import { LOOKUP_LABELS } from "./labels";
 import { IItemProps, TagPicker } from "@legacy";
@@ -13,7 +13,7 @@ import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.t
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
 import { RecordCreator } from "./ui/RecordCreator";
 import { useFocusIn } from "@core/hooks/useFocusIn";
-import { useControlSizing } from "@core/pcf/useControlSizing";
+import { useControlSizing } from "@pcf/control/useControlSizing";
 import dayjs from "dayjs";
 
 export const Lookup = (props: ILookup) => {

@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";

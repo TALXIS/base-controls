@@ -1,4 +1,4 @@
-import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDependenciesStore, ITaskDependency, TaskDependencyCreate, TaskDependencyType } from "../Dependencies";
 import { retrieveInBatches } from "../../dataverse";

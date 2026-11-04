@@ -2,7 +2,7 @@ import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import type { GanttStatic } from "dhtmlx-gantt";
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import type { ITaskRuntime } from "../../../../runtime";
 import type { ITaskGridSetting } from "../../../../adapters/root/settings";
 import type { IGantt } from "../../interfaces";

@@ -108,6 +108,29 @@ const GridExample = () => {
 }
 `
 
+export const CUSTOM_CHECK_CODE = `${FIELD_MAPPING}
+
+//a star in place of Fluent's round check; it gets whether the item is finished, and the pop as a class
+const StarCheck = (props: ICheckProps) => {
+    const theme = useTheme()
+    return <Icon
+        iconName={props.checked ? 'FavoriteStarFill' : 'FavoriteStar'}
+        className={props.className}
+        styles={{ root: { fontSize: 18, color: props.checked ? theme.palette.yellowDark : theme.palette.neutralSecondary } }} />
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+    <DatasetControl.Body>
+        <CheckList
+            fieldMapping={FIELD_MAPPING}
+            colDefs={{
+                //the completion column keeps its cell and its behaviour: only the check inside is replaced
+                completed: { cellRendererParams: { components: { checkbox: { onRenderCheck: props => <StarCheck {...props} /> } } } },
+            }} />
+    </DatasetControl.Body>
+</DatasetControl>
+`
+
 export const SAVE_LOG_CODE = `${FIELD_MAPPING}
 
 const GridExample = () => {
@@ -219,4 +242,6 @@ export const ReleaseBoardExample = () => <GridExampleRunner seedCode={RELEASE_BO
 export const SaveLogExample = () => <GridExampleRunner seedCode={SAVE_LOG_CODE} onCreateProvider={createLaunchPlanProvider} />
 
 /** Item names as links that open the item in a form. */
+export const CustomCheckExample = () => <GridExampleRunner seedCode={CUSTOM_CHECK_CODE} onCreateProvider={createLaunchPlanProvider} />
+
 export const ItemPanelExample = () => <GridExampleRunner seedCode={ITEM_PANEL_CODE} onCreateProvider={createLaunchPlanProvider} />

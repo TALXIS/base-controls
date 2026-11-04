@@ -3,8 +3,8 @@ import type { IRecord } from "@talxis/client-libraries";
 import { useEventEmitter, useContextWithNullCheck } from "@core";
 import { DataProviderContext } from "@data";
 import type { ITaskDataProvider, ITaskDataProviderEvents } from "../../runtime/provider";
-import { useRequiredDatasetControlRuntime } from "../../../dataset-control/adapters/root/context";
-import { useDatasetControlPart } from "../../../dataset-control";
+import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
+import { useDatasetControlPart } from "@controls/dataset-control";
 import { TaskRuntime } from "../../runtime/TaskRuntime";
 import { TaskRuntimeContext, TaskDatasetControlPropsContext } from "./context";
 

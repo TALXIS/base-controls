@@ -1,7 +1,6 @@
 import { CHECK_LIST_LABELS_CS } from '@controls/check-list/labels/cs';
 import { EDIT_COLUMNS_LABELS_CS } from '@controls/dataset-control/adapters/edit-columns/labels/cs';
-import { EMPTY_RECORDS_LABELS_CS } from '@controls/dataset-control/adapters/empty-records/labels/cs';
-import { NOTIFICATIONS_LABELS_CS } from '@controls/dataset-control/adapters/notifications/labels/cs';
+import { EMPTY_STATE_LABELS_CS } from '@controls/dataset-control/adapters/empty-state/labels/cs';
 import { PAGE_SIZE_SWITCHER_LABELS_CS } from '@controls/dataset-control/adapters/page-size-switcher/labels/cs';
 import { PAGINATION_LABELS_CS } from '@controls/dataset-control/adapters/pagination/labels/cs';
 import { QUICK_FIND_LABELS_CS } from '@controls/dataset-control/adapters/quick-find/labels/cs';
@@ -36,14 +35,13 @@ import { LEGACY_DATASET_CONTROL_LABELS_CS } from '@legacy/dataset-control/labels
 import { ERROR_MESSAGE_BAR_LABELS_CS } from '@ui/error-message-bar/labels/cs';
 import { LOADING_BOUNDARY_LABELS_CS } from '@ui/loading-boundary/labels/cs';
 import { NOTIFICATION_MESSAGE_BAR_LABELS_CS } from '@ui/notifications/message-bar/labels/cs';
-import type { Labels } from '@core/localization';
+import type { Labels } from '..';
 
 /** The Czech strings of every base-controls component. */
 export const CZECH_LABELS: Labels = {
     ...CHECK_LIST_LABELS_CS,
     ...EDIT_COLUMNS_LABELS_CS,
-    ...EMPTY_RECORDS_LABELS_CS,
-    ...NOTIFICATIONS_LABELS_CS,
+    ...EMPTY_STATE_LABELS_CS,
     ...PAGE_SIZE_SWITCHER_LABELS_CS,
     ...PAGINATION_LABELS_CS,
     ...QUICK_FIND_LABELS_CS,

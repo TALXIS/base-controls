@@ -2,7 +2,7 @@ import { createElement } from "react";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import type { ICreateTaskTree, ITaskCreateParams, ITasksCreateResult } from "../../runtime/provider";
 import type { ITaskRuntime, TaskRibbonCommandUiHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";

@@ -1,7 +1,6 @@
+import { IGridValueRenderer, Grid, useGridField } from "@controls/grid";
 import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridValueRenderer } from "@fields";
-import { Grid, useGridField } from "../../../grid";
 import { useTaskGridContext } from "../../context";
 import { ITaskGridUiPercentCompleteComponents, TaskGridUiPercentComplete } from "../../ui";
 import { mergeComponentNamespaces } from "../mergeComponentNamespaces";

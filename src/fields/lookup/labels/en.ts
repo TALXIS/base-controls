@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const LOOKUP_LABELS = defineLabels({
     'lookup.search': 'Search',

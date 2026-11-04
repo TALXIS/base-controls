@@ -1,5 +1,7 @@
 import { DefaultButton, DirectionalHint, PrimaryButton } from "@fluentui/react";
-import { useLabels, useControl, useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
+import { useEventEmitter, useRerender } from "@core";
+import { useControl } from "@pcf";
 import { OptionSet } from "@fields/option-set";
 import { IDatasetColumnFiltering } from "./interfaces";
 import { FILTER_OPERATORS_LABELS } from "./labels";

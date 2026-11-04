@@ -15,7 +15,7 @@ Loading records, running a command or saving a view all go through code that can
 |---|---|
 | A load: \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\`, or the provider's first page | The error in place of the parts, with *Details* and *Try again*. |
 | A part throws while it renders | The same error; *Try again* draws the parts again, without loading. |
-| The provider fails a later load, such as a search or another page | The error in \`DatasetControl.Notifications\`. See [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview). |
+| The provider fails a later load, such as a search or another page | The error in \`DatasetControl.Notifications\`. See [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview). |
 | The ribbon's \`onLoad\` throws | The error in place of the commands, with *Details* and *Try again*. |
 | A ribbon command's \`onExecute\` throws | The error dialog. |
 | Saving or deleting a user view fails | The error dialog, while \`DatasetControl.UserQueries\` is rendered. |

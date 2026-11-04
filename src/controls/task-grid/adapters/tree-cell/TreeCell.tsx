@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@core";
-import { Grid, GroupingUi } from "../../../grid";
+import { Grid, GroupingUi } from "@controls/grid";
 import { useTaskGridService } from "../../useTaskGridServices";
 import { useTaskGridContext } from "../../context";
 import { useTaskRuntime } from "../root/context";

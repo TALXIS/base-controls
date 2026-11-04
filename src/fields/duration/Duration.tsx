@@ -1,9 +1,9 @@
 import { ComboBox } from "@legacy";
 import { useEffect, useMemo, useRef } from 'react';
-import { useInputBasedControl } from '@core/pcf/useInputBasedControl';
+import { useInputBasedControl } from '@pcf/control/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { DURATION_LABELS } from './labels';
 import { DEFAULT_DURATION_OPTIONS, WORKING_DAY_DURATION_OPTIONS } from "./durationOptions";
 

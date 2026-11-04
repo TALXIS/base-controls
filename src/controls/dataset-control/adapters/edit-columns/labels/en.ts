@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the column editor. */
 export const EDIT_COLUMNS_LABELS = defineLabels({

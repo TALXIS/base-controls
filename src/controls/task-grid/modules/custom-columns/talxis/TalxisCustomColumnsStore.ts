@@ -1,7 +1,7 @@
 import { Attribute, DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import type { Attribute as IAttribute } from "@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition";
-import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ICustomColumnsStore } from "../CustomColumns";
 import { retrieveInBatches } from "../../dataverse";

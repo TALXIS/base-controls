@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { EDIT_COLUMNS_LABELS } from "./en";
 
 export const EDIT_COLUMNS_LABELS_CS = translateLabels(EDIT_COLUMNS_LABELS, {

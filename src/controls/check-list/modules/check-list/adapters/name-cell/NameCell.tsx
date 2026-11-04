@@ -1,22 +1,29 @@
-import { useMemo } from "react";
 import { ICellRendererParams } from "ag-grid-community";
-import { useGridModule } from "../../../grid/useGridModule";
-import { ICellRendererComponents } from "../../../grid/adapters/cells/cell-renderer/components";
-import { CellFieldRenderer } from "../../../grid/adapters/cells/field-cell-renderer/CellFieldRenderer";
-import { GridValueRenderer, IGridValueRenderer } from "@fields/value-renderer";
-import { getNameCellStyles } from "./styles";
+import { IRecord } from "@talxis/client-libraries";
+import { GridValueRenderer, IGridValueRenderer, Grid, useGridModule } from "@controls/grid";
+import { INameCellUiComponents, NameCellUi } from "../../ui/name-cell";
+import { INameCellComponents } from "./components";
 
-const NameValue = (props: IGridValueRenderer) => {
+export interface INameCellProps extends ICellRendererParams<IRecord> {
+    components?: INameCellComponents;
+}
+
+const NameValue = (props: IGridValueRenderer & { nameComponents?: Partial<INameCellUiComponents> }) => {
+    const { nameComponents, ...valueProps } = props;
     const checkList = useGridModule('checkList');
-    const styles = useMemo(() => getNameCellStyles(), []);
-    const isCompleted = checkList.isCompleted(props.parameters.Record.raw);
-
-    return <GridValueRenderer {...props} className={isCompleted ? styles.completed : undefined} />;
-};
-
-const COMPONENTS: ICellRendererComponents = {
-    columnControl: { onRenderControl: props => <NameValue {...props} /> },
+    const isCompleted = checkList.isCompleted(valueProps.parameters.Record.raw);
+    return <GridValueRenderer {...valueProps} components={{ ...valueProps.components, onRenderContainer: containerProps => <NameCellUi {...containerProps} isCompleted={isCompleted} components={nameComponents} /> }} />;
 };
 
 /** The cell of an item's name, struck through once the item is finished. */
-export const NameCell = (props: ICellRendererParams) => <CellFieldRenderer {...props} components={COMPONENTS} />;
+export const NameCell = (props: INameCellProps) => {
+    const { name, ...components } = props.components ?? {};
+    const onRenderValue = components.columnControl?.onRenderControl ?? ((controlProps, defaultRender) => defaultRender(controlProps));
+
+    //an override of the column's control still gets the struck-through name as its default
+    const onRenderControl = (controlProps: IGridValueRenderer) => onRenderValue(controlProps, valueProps => <NameValue {...valueProps} nameComponents={name} />);
+
+    return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
+        <Grid.Cell.Renderer {...props} components={{ ...components, columnControl: { onRenderControl } }} />
+    </Grid.Cell.Field>;
+};

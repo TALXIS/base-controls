@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { DriveTheControlExample, ModuleExample, WatchTheControlExample } from '../../dataset-control/examples/talkingExamples'
 
 const DESCRIPTION = `
-The user works the control through its parts, but your code can do the same: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through one object, the \`IDatasetControl\`, which every mount of the control creates and hands to you. Try the toolbar in the footer below: it is your own, and it switches and reloads views, searches and opens the column editor through the control.
+The user works the control through its parts, but your code can do the same: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through one object, the \`IDatasetControl\`, which every mount of the control creates and hands to you. The toolbar in the footer below is your own. Try: press *Search Contoso*.
 
 {{canvas: Drive the control from a toolbar}}
 
@@ -61,7 +61,7 @@ Every part on the page registers itself on the control under its own key, for as
 | \`quickFind\` | [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview) | Set the query and search. |
 | \`editColumns\` | [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) | Open, save and close the column editor, add commands. |
 | \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) | Move between pages, change the page size. |
-| \`notifications\` | [**Notifications and empty records**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-records--overview) | Read the provider's load error. |
+| \`notifications\` | [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) | Read the provider's load error. |
 | \`grid\` | [**Grid**](?path=/docs/controls-grid-get-started--overview) | Reach the grid in the body and its modules. |
 | \`loadingOverlay\` | Always there | Cover the whole control: \`show(message?)\` returns the function that hides it again, and it stays until every caller has hidden it. |
 
@@ -98,7 +98,7 @@ Each \`register…\` returns its unregistration.
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it, such as \`control.getLabels(QUICK_FIND_LABELS).get('quickFind.defaultCollectionName')\`. See [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in. See [**Theming**](?path=/docs/concepts-theming--overview). |
 
-A dialog a module draws is a surface over the application, so draw it in the theme \`useAppTheme()\` returns.
+Draw a module's dialog as a surface: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview).
 `
 
 const meta = {
@@ -123,7 +123,7 @@ export const DriveTheControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A toolbar of your own in the footer: it switches and reloads views through the control, and searches and opens the column editor through \`control.parts\`. Try: press each button, then open **Code**.`,
+                story: `A toolbar of your own in the footer: it switches and reloads views through the control, and searches and opens the column editor through \`control.parts\`.`,
             },
         },
     },

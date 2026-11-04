@@ -1,15 +1,15 @@
 import { useMemo } from "react";
-import { EmptyRecords } from "@ui/empty-records";
-import { useLabels } from "@core";
+import { EmptyState } from "@controls/dataset-control/ui/empty-state";
+import { useLabels } from "@labels";
 import { GRID_LABELS } from "../../../labels";
 import { useGridComponents } from "../../../context";
-import { getEmptyRecordsOverlayStyles } from "./styles";
+import { getEmptyStateOverlayStyles } from "./styles";
 
 /** What the grid shows while it has no rows. */
-export const EmptyRecordsOverlay = () => {
+export const EmptyStateOverlay = () => {
     const labels = useLabels(GRID_LABELS);
     const components = useGridComponents();
-    const styles = useMemo(() => getEmptyRecordsOverlayStyles(), []);
+    const styles = useMemo(() => getEmptyStateOverlayStyles(), []);
 
-    return <EmptyRecords className={styles.emptyRecordsOverlay} message={labels.get('grid.noRecordsFound')} components={components.overlays?.emptyRecords} />;
+    return <EmptyState className={styles.emptyStateOverlay} message={labels.get('grid.noRecordsFound')} components={components.overlays?.emptyState} />;
 };

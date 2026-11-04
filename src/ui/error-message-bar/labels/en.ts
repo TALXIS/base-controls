@@ -1,4 +1,4 @@
-import { defineLabels } from "@core/localization";
+import { defineLabels } from "@labels";
 
 /** The texts of the error message bar's commands. */
 export const ERROR_MESSAGE_BAR_LABELS = defineLabels({

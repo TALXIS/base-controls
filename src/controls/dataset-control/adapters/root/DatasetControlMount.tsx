@@ -1,7 +1,9 @@
 import { useTheme } from "@theme";
 import { Fragment, useEffect, useMemo } from "react";
 
-import { useEventEmitter, useLatest, useRerender, useLabelsService, useOpenErrorDialog } from "@core";
+import { useEventEmitter, useLatest, useRerender } from "@core";
+import { useLabelsService } from "@labels";
+import { useOpenErrorDialog } from "@pcf";
 import { DataProviderContext } from "@data";
 import { ErrorMessageBoundary } from "@ui";
 import { DatasetControlRuntime, IDatasetControlEvents } from "../../runtime";

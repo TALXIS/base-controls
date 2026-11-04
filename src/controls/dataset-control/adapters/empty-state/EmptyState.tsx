@@ -1,23 +1,23 @@
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { DatasetControlUi } from "../../ui";
-import { IEmptyRecordsUiComponents } from "@ui";
-import { EMPTY_RECORDS_LABELS } from "./labels";
+import { IEmptyStateUiComponents } from "../../ui/empty-state";
+import { EMPTY_STATE_LABELS } from "./labels";
 
-/** Props for `DatasetControl.EmptyRecords`. */
-export interface IEmptyRecordsProps {
+/** Props for `DatasetControl.EmptyState`. */
+export interface IEmptyStateProps {
     /** What shows the records while there are some. */
     children?: React.ReactNode;
     /** Replacements for the empty state's slots. */
-    components?: Partial<IEmptyRecordsUiComponents>;
+    components?: Partial<IEmptyStateUiComponents>;
 }
 
 /** The empty state in place of its children while the provider has no records. */
-export const EmptyRecords = (props: IEmptyRecordsProps) => {
+export const EmptyState = (props: IEmptyStateProps) => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onLoading']);
-    const labels = useLabels(EMPTY_RECORDS_LABELS);
+    const labels = useLabels(EMPTY_STATE_LABELS);
     if (provider.isLoading() || provider.getRecords().length > 0) {
         return <>{props.children}</>;
     }
-    return <DatasetControlUi.EmptyRecords message={labels.get('emptyRecords.noRecordsFound')} components={props.components} />;
+    return <DatasetControlUi.EmptyState message={labels.get('emptyState.noRecordsFound')} components={props.components} />;
 };

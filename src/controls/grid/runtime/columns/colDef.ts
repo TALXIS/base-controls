@@ -3,7 +3,7 @@ import type { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import type { IAlignment } from "@core";
 import type { ThemeBuilder } from "@theme";
 import type { IContextualMenuItem } from "@fluentui/react";
-import type { IParameters } from "@core/pcf/interfaces";
+import type { IParameters } from "@pcf/interfaces";
 import type { IGridCellCommands, IGridCellLoading } from "../cells";
 import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-header";
 

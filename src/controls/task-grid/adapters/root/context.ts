@@ -1,6 +1,6 @@
 import { createContext, MutableRefObject } from "react";
 import { useContextWithNullCheck } from "@core";
-import type { IPcfContext } from "@core/pcf/interfaces";
+import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskDatasetControlProps } from "./TaskDatasetControl";
 

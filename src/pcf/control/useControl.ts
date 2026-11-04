@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { IControl, IOutputs, IParameters } from "./interfaces";
+import { IControl, IOutputs, IParameters } from "../interfaces";
 import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import dayjs from "dayjs";

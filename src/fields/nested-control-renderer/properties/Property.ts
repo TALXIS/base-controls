@@ -1,4 +1,4 @@
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import { FieldValue, IAttributeMetadata} from "@talxis/client-libraries";
 import { IOptions } from "../NestedControl";
 import { IBinding } from "../interfaces";

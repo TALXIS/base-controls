@@ -7,5 +7,3 @@ export * from './option-set';
 export * from './text-field';
 export * from './two-options';
 export * from './nested-control-renderer';
-export * from './value-renderer';
-export * from './inline-ribbon';

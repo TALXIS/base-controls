@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** Every localizable string the grid itself renders. */
 export const GRID_LABELS = defineLabels({

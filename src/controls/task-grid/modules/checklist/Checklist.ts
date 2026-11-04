@@ -1,7 +1,7 @@
 import type { ColDef } from "ag-grid-community";
 import type { IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
-import type { LabelsOf } from "@core";
+import type { LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";

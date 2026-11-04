@@ -1,6 +1,7 @@
 import { useTheme, ThemeProvider } from "@theme";
 import { useEffect, useMemo, useRef } from "react";
-import { useLabels, useRerender } from "@core";
+import { useLabels } from "@labels";
+import { useRerender } from "@core";
 import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";

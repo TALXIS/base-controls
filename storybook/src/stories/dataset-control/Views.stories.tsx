@@ -28,7 +28,7 @@ The switcher needs only a view's name. What the view shows is resolved when it o
 
 ## Load the view
 
-\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's *views.ts* shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return it. Don't set the columns or linking: the control does.
+\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's *views.ts* shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return \`{ provider }\`. Don't set the columns or linking: the control does.
 
 The full sequence is under *Lifecycle* on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 

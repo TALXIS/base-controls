@@ -1,6 +1,7 @@
 import { useTheme } from '@theme';
 import { Toggle } from '@fluentui/react';
-import { useControl, useLabels } from "@core";
+import { useControl } from "@pcf";
+import { useLabels } from "@labels";
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
 import { OptionSet } from '../option-set';

@@ -1,8 +1,8 @@
 import { Client } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "@fields/nested-control-renderer";
 import { INestedControlRendererComponentProps } from "@fields/nested-control-renderer/interfaces";
-import { IGridValueRenderer } from "@fields/value-renderer";
-import { IControl } from "@core/pcf/interfaces";
+import { IGridValueRenderer } from "../../value-renderer";
+import { IControl } from "@pcf/interfaces";
 import { IGridControl } from "../../../runtime/cells";
 import { useGridCell } from "../root";
 import { useGridInternalService } from "../../../useGridService";

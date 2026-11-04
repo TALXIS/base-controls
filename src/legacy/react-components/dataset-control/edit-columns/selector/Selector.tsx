@@ -1,5 +1,5 @@
 import { useTheme } from "@theme";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { DatasetConstants, IColumn } from "@talxis/client-libraries";
 import { GroupBase, components } from 'react-select';

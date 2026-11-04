@@ -1,6 +1,6 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { parseFormXml, FormXml as MetadataFormXml } from "@talxis/client-metadata";
-import { XrmFactory } from "@core/pcf/xrm";
+import { XrmFactory } from "@pcf/xrm";
 import type {
     IFormXmlAttribute,
     IFormXmlCell,

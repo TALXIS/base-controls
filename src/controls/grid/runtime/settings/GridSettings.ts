@@ -1,4 +1,4 @@
-import type { IDatasetControlRuntime } from "../../../dataset-control/runtime/DatasetControlRuntime";
+import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps } from "../../interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;

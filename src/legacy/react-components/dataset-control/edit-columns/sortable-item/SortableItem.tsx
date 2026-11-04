@@ -1,5 +1,5 @@
 import { ThemeProvider, useThemeBuilder, useTheme } from "@theme";
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { LEGACY_DATASET_CONTROL_LABELS } from "../../labels";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from '@dnd-kit/utilities';

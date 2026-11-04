@@ -2,8 +2,8 @@ import { mergeStyles } from "@fluentui/react";
 import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IDataset, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IDatasetControlParameters, IDatasetControlProps } from "@legacy/dataset-control/interfaces";
 import { DatasetControl, IDatasetControl } from "@legacy/dataset-control/model/DatasetControl";
-import { PcfContextFactory } from "@core/pcf/context/factory";
-import { IPcfContext } from "@core/pcf/interfaces";
+import { PcfContextFactory } from "../context/factory";
+import { IPcfContext } from "../interfaces";
 
 interface IOutputs {
     DatasetControl?: any;

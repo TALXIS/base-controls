@@ -1,11 +1,9 @@
 import { GridApi, IRowDragItem, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { StackRank } from "@core/stack-rank";
-import { IGridAgGridInitialOptions, IGridAgGridOptions, IGrid } from "../../grid/runtime/grid";
-import { IGridEditedCell } from "../../grid/modules/editing";
-import { IGridCheckList } from "./GridCheckList";
-import { IGridStyles } from "../../grid/runtime/theme";
-import { getCheckListReorderingStyles } from "./styles";
+import { IGridAgGridInitialOptions, IGridAgGridOptions, IGrid, IGridEditedCell, IGridStyles } from "@controls/grid";
+import { IGridCheckList } from "../GridCheckList";
+import { getCheckListReorderingStyles } from "../ui/reordering/styles";
 
 export interface ICheckListReorderingParameters {
     grid: IGrid;

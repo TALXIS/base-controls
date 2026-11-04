@@ -1,5 +1,5 @@
-import { useLabels } from "@core";
-import { useDatasetControlModule } from "../../../../../dataset-control";
+import { useLabels } from "@labels";
+import { useDatasetControlModule } from "@controls/dataset-control";
 import { RecordListComponents } from "../../ui/record-selector/record-list/components";
 import { RecordSelector } from "../record-selector/RecordSelector";
 import { TEMPLATES_LABELS } from "../../labels";

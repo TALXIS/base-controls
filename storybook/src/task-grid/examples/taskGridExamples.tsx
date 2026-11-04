@@ -7,6 +7,7 @@ const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskVie
 
 const VIEW_COLUMNS = [...LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, ...DEPENDENCY_COLUMNS]
 
+//*Every task on its own* in the view switcher draws the tasks without the tree
 const loadViews = async () => (await loadTaskViews()).map(view => view.id === 'all'
     ? { ...view, resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(VIEW_COLUMNS), data: { quickFindColumns: ['subject', 'assignedto', 'tags'] } }) }
     : view)
@@ -30,6 +31,7 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
 
+    //enableCreation adds the + at the start of a row, which adds a subtask
     return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoadViews={loadViews} onLoad={loadTasks} stateKey='taskGridDocs.showcase' height='560px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -39,6 +41,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <TaskDatasetControl.Ribbon />
+                {/* adds a checklist, a dependency or a custom column */}
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
                 <TaskDatasetControl.Settings />

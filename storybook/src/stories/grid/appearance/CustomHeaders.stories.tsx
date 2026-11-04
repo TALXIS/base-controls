@@ -13,7 +13,7 @@ A column's header shows the column's name, icons such as a sort arrow, and a men
 
 Every column draws its header with \`Grid.ColumnHeader.Renderer\`. To change a column's header, hand it new slots through \`headerComponentParams\` in \`colDefs\`, as the example above does; to lay it out yourself, give the column a \`headerComponent\` of your own.
 
-\`headerComponentParams\` take \`components\`, a map of the header's parts and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+\`headerComponentParams\` take \`components\`, a map of the header's pieces and their slots, and \`theme\`, a Fluent theme the header's colours are generated from in place of the grid's own. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

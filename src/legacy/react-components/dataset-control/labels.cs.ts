@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { LEGACY_DATASET_CONTROL_LABELS } from "./labels";
 
 export const LEGACY_DATASET_CONTROL_LABELS_CS = translateLabels(LEGACY_DATASET_CONTROL_LABELS, {

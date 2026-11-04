@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { PAGINATION_LABELS } from "./en";
 
 export const PAGINATION_LABELS_CS = translateLabels(PAGINATION_LABELS, {

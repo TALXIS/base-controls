@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the quick find. */
 export const QUICK_FIND_LABELS = defineLabels({

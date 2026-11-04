@@ -1,9 +1,8 @@
 import { IRecord } from "@talxis/client-libraries";
-import { IGrid } from "../../grid/runtime/grid";
-import { CheckListColumns } from "./CheckListColumns";
-import { CheckListReordering } from "./CheckListReordering";
-import { CheckListNewItemRow } from "./CheckListNewItemRow";
-
+import { IGrid } from "@controls/grid";
+import { CheckListColumns } from "./runtime/CheckListColumns";
+import { CheckListReordering } from "./runtime/CheckListReordering";
+import { CheckListNewItemRow } from "./runtime/CheckListNewItemRow";
 
 /** Which of the provider's columns carry the label, the order and the completion state. */
 export interface ICheckListFieldMapping {
@@ -15,7 +14,7 @@ export interface ICheckListFieldMapping {
     completed: string;
 }
 
-declare module "../../grid/interfaces" {
+declare module "@controls/grid/interfaces" {
     interface IGridModuleMap {
         /** The checklist, in a grid the `CheckList` draws. */
         checkList: IGridCheckList;

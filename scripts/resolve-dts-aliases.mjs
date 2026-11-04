@@ -1,19 +1,13 @@
 import { globSync } from 'glob';
 import fs from 'fs';
 import path from 'path';
+import { readAliases } from './aliases.mjs';
 
 const distRoot = path.resolve('dist');
-const aliasTargets = [
-    ['@controls', path.join(distRoot, 'controls')],
-    ['@ui', path.join(distRoot, 'ui')],
-    ['@theme', path.join(distRoot, 'theme')],
-    ['@hooks', path.join(distRoot, 'hooks')],
-    ['@interfaces', path.join(distRoot, 'interfaces')],
-    ['@legacy', path.join(distRoot, 'legacy', 'react-components')],
-    ['@utils', path.join(distRoot, 'utils')],
-];
+const aliasTargets = readAliases().map(([aliasName, folder]) => [aliasName, path.join(distRoot, path.relative('src', folder))]);
 
-const aliasPattern = /(['"])(@controls(?:\/[^'"]*)?|@ui(?:\/[^'"]*)?|@theme(?:\/[^'"]*)?|@hooks(?:\/[^'"]*)?|@interfaces(?:\/[^'"]*)?|@legacy(?:\/[^'"]*)?|@utils(?:\/[^'"]*)?|@\/[^'"]+)\1/g;
+const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const aliasPattern = new RegExp(`(['"])((?:${aliasTargets.map(([aliasName]) => escape(aliasName)).join('|')})(?:\\/[^'"]*)?|@\\/[^'"]+)\\1`, 'g');
 
 const toPosixPath = (value) => value.split(path.sep).join('/');
 

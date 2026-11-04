@@ -6,15 +6,17 @@ import { ShowcaseExample } from '../../grid/examples/getStartedExamples'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Base Controls is a set of ready-made React components for business applications: grids, task grids with a Gantt chart, checklists, forms, maps and more. You hand them your data, and they show it, edit it and save it. They are built on Fluent UI v8 and run in Power Apps as PCF controls, or in your own React 16.8 or 17 application.
+Base Controls is a foundation to build business applications from parts: grids, task grids with a Gantt chart, checklists, forms, maps and the pieces around them. You hand them your data, and they show it, edit it and save it. They are built on Fluent UI v8, run in your own React 16.8 or 17 application, and plug into Power Apps as PCF controls.
 
 {{canvas: Overview}}
 
 ## How it works
 
-- **Your data goes into a data provider.** It holds the records and knows how to load and save them, from memory, Dataverse or your own API.
-- **A control shows it.** Data controls such as the grid, task grid and checklist draw a provider. Add only the features you need.
-- **Your application sets shared settings once.** The theme, language and host are set at the root and apply to every control.
+- **The root sets up the host and the look once.** The PCF context gives every part the same navigation, dialogs and formatting, and the app theme the same colours.
+- **Your data goes into a data provider.** Every list of records works the same way, whether it comes from memory, Dataverse or your own API.
+- **Controls show it, and you customise them** from a single option down to what each part draws.
+
+How these fit together, and where they come from: [**Building blocks**](?path=/docs/concepts-building-blocks--overview).
 
 ## Learn the concepts
 
@@ -26,6 +28,7 @@ Base Controls is a set of ready-made React components for business applications:
 `
 
 const EXPLORE: IExploreCard[] = [
+    { title: 'Building blocks', iconName: 'Org', href: '?path=/docs/concepts-building-blocks--overview', text: 'The idea: an application from parts, where the PCF context comes from, and how far you can customise.' },
     { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'Install the package, set up your application and add a first control.' },
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'The data layer the grid, task grid and checklist read: records, sorting, filters, paging, selection and saving.' },
     { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate every label, change the wording, and add languages of your own.' },
@@ -43,7 +46,7 @@ const CONTROLS: IExploreCard[] = [
     { title: 'TaskGrid', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-get-started--overview', text: 'Tasks as a tree, with commands to build the plan and an optional Gantt chart.' },
     { title: 'Checklist', iconName: 'CheckList', href: '?path=/docs/controls-checklist-get-started--overview', text: 'A to-do list over a provider: tick items off, rename, reorder, add and delete them.' },
     { title: 'Form', iconName: 'Questionnaire', href: '?path=/docs/controls-form-get-started--overview', text: 'A record laid out in tabs and sections, with validation, change tracking and saving.' },
-    { title: 'Map', iconName: 'MapPin', href: '?path=/docs/controls-map-overview--overview', text: 'Records with an address or location as pins on a map.' },
+    { title: 'Map', iconName: 'MapPin', href: '?path=/docs/controls-map-get-started--overview', text: 'Records with an address or location as pins on a map.' },
 ]
 
 const meta = {

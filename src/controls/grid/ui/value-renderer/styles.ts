@@ -2,9 +2,9 @@ import { CSSProperties } from "react";
 import { mergeStyleSets } from "@fluentui/react";
 import { getJustifyContent, IAlignment } from "@core";
 
-export const getGridValueRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
+export const getValueRendererUiStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
-        gridValueRendererRoot: {
+        valueRendererUi: {
             //fills whatever it is put in
             flex: 1,
             //8 off the edge plus the pixel an editor control's border takes

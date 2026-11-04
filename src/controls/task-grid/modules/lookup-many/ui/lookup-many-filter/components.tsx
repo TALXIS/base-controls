@@ -1,5 +1,5 @@
 import { DefaultButton, IButtonProps, PrimaryButton } from "@fluentui/react";
-import type { IFilteringUiCalloutComponents } from "../../../../../grid";
+import type { IFilteringUiCalloutComponents } from "@controls/grid";
 import type { ILookupManySelectComponents } from "../lookup-many-select";
 
 /** The replaceable pieces of {@link LookupManyFilter}. */

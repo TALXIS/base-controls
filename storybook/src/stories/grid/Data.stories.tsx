@@ -65,19 +65,14 @@ Each data type has its own way of drawing a value, and its own editor once the e
 | File, image | \`File\`, \`Image\` | The file's name, or a thumbnail | Not editable |
 | Language, time zone | \`WholeLanguage\`, \`WholeTimeZone\` | The number | A text box |
 
-Links need \`enableNavigation\`, which is on by default. An empty value is shown as \`---\`.
+Links need \`enableNavigation\`, which is on by default.
 
 ## Read values
 
-\`record.getValue()\` returns some types in another shape than the record holds. Reading records is under *Load and read* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+How \`record.getValue()\` shapes option sets, two options, dates and lookups is under *Load and read* on [**Data providers**](?path=/docs/concepts-data-providers--overview). Files and images are read like this:
 
 | Data type | Record holds | \`getValue()\` returns |
 |---|---|---|
-| Option set | \`2\` | \`'2'\` |
-| Multi-select option set | \`[1, 4]\` | \`'1,4'\` |
-| Two options | \`true\` | \`'1'\` |
-| Date only, date and time | An ISO string | A \`Date\` in local time |
-| Lookup | \`[{ entityType, id, name }]\` | \`[{ etn, id: { guid }, name }]\` |
 | File | \`<column>\` plus \`<column>.filename\`, \`.fileurl\`, \`.filesizeinbytes\`, \`.mimetype\` | \`{ fileName, fileUrl, fileSize, mimeType }\` |
 | Image | Base64 content in \`<column>\` plus \`<column>.filename\`, \`.mimetype\`, \`.thumbnailurl\` | \`{ fileName, fileContent, thumbnailUrl, fileUrl, mimeType }\` |
 

@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the user queries. */
 export const USER_QUERIES_LABELS = defineLabels({

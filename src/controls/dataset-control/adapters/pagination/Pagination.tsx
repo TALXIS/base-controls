@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { useEventEmitter, useRerender, useLabels } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
 import { DatasetControlUi, IPaginationUiComponents } from "../../ui";
 import { useDataProvider } from "@data";
 import { useDatasetControlPart } from "../root";

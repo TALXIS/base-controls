@@ -69,6 +69,8 @@ declare const Toggle: typeof import('@fluentui/react').Toggle;
 declare const TooltipHost: typeof import('@fluentui/react').TooltipHost;
 
 type IButtonProps = import('@fluentui/react').IButtonProps;
+type ILinkProps = import('@fluentui/react').ILinkProps;
+type ICheckProps = import('@fluentui/react').ICheckProps;
 type ICalloutProps = import('@fluentui/react').ICalloutProps;
 type ICheckboxProps = import('@fluentui/react').ICheckboxProps;
 type IChoiceGroupOption = import('@fluentui/react').IChoiceGroupOption;
@@ -1018,15 +1020,21 @@ interface ILabelsService {
     getLabels(set: ILabelSet): ILabels;
 }
 
+/** Finds services by name. */
 interface IServiceLocator<TServiceMap extends object> {
     /** Throws while nothing registered the service. */
     get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey];
     /** Undefined while nothing registered the service. */
     find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined;
-    /** The resolver runs on every lookup. */
-    register<TKey extends keyof TServiceMap>(key: TKey, resolve: () => TServiceMap[TKey]): void;
-    /** Runs the callback now and on every register; what it returns runs before the next call. */
+    /** Runs the callback now and after every registration; what it returns runs before the next call. */
     observe<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void | (() => void)): () => void;
+}
+
+/** A locator that services are registered on. */
+interface IServiceRegistry<TServiceMap extends object> extends IServiceLocator<TServiceMap> {
+    /** The getter runs on every lookup. */
+    register<TKey extends keyof TServiceMap>(key: TKey, getter: () => TServiceMap[TKey]): void;
+    unregister<TKey extends keyof TServiceMap>(key: TKey): void;
     destroy(): void;
 }
 
@@ -1424,7 +1432,7 @@ interface IGridColDef {
     /** Defaults to the grid's cell bound to the column, or Grid.Cell.EmptyRenderer for an added column. */
     cellRenderer?: (props: IGridCellParams) => JSX.Element | null;
     /** The grid's cell renderers read theme and components from it. */
-    cellRendererParams?: { theme?: ITheme; components?: ICellRendererComponents } & { [param: string]: any };
+    cellRendererParams?: { theme?: ITheme; components?: ICellRendererComponents | ICompletionCellComponents | INameCellComponents } & { [param: string]: any };
     cellRendererSelector?: (params: ICellRendererParams<IRecord>) => CellRendererSelectorResult | undefined;
     cellEditor?: any;
     cellEditorParams?: any;
@@ -2116,7 +2124,7 @@ interface IGridServiceMap {
 
 type IGridDeferredService = 'gridApi';
 
-type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
+type IGridServiceLocator = IServiceRegistry<IGridServiceMap>;
 
 /** Reads a grid service from inside something the grid draws. */
 declare function useGridService<TKey extends keyof IGridServiceMap>(key: TKey): TKey extends IGridDeferredService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey];
@@ -2155,6 +2163,7 @@ interface IPcfNavigation {
     openAlertDialog(alertStrings: { text: string; confirmButtonLabel?: string; title?: string }): Promise<void>;
     openConfirmDialog(confirmStrings: { text: string; title?: string; subtitle?: string; confirmButtonLabel?: string; cancelButtonLabel?: string }): Promise<{ confirmed: boolean }>;
     openErrorDialog(options: { message?: string; details?: string; errorCode?: number }): Promise<void>;
+    openForm(options: { entityName: string; entityId?: string }): Promise<unknown>;
 }
 
 /** The PCF context the controls are drawn in. */
@@ -2190,6 +2199,14 @@ declare function useControlStateStore(stateKey: string | undefined): IStateStore
 
 /** The record form: Form.Root, Form.Section, Form.Field, Form.Cell, Form.Control and the rest. */
 declare const Form: typeof import('@talxis/base-controls').Form;
+/** The form's layout as plain UI, with no record behind it. */
+declare const FormUi: typeof import('@talxis/base-controls').FormUi;
+/** The form field the component sits in, or the one named. */
+declare const useField: typeof import('@talxis/base-controls').useField;
+/** Draws the Base Controls field for a data type, from PCF-style bindings. */
+declare const NestedControlRenderer: (props: Omit<React.ComponentProps<typeof import('@talxis/base-controls').NestedControlRenderer>, 'context'> & { context: IPcfContext }) => JSX.Element;
+/** Picks the Base Controls field for a column's data type. */
+declare const BaseControls: typeof import('@talxis/base-controls').BaseControls;
 /** A form strategy over a record kept in memory. */
 declare const MemoryStrategy: typeof import('@talxis/base-controls').MemoryStrategy;
 
@@ -2397,7 +2414,9 @@ interface IOptionSetRendererProps {
 }
 
 /** The replaceable pieces of how a value is drawn. */
-interface IGridValueRendererComponents {
+interface IValueRendererUiComponents {
+    /** The box the value sits in; its \`children\` are the icons and the value. */
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderText: (props: IFieldTextProps) => JSX.Element;
     /** What an empty value shows in place of itself. */
     onRenderPlaceholder: (props: IFieldTextProps) => JSX.Element;
@@ -2407,6 +2426,12 @@ interface IGridValueRendererComponents {
     onRenderFile: (props: IFieldFileProps) => JSX.Element;
     onRenderPrefixIcon: (props: IIconProps) => JSX.Element;
     onRenderSuffixIcon: (props: IIconProps) => JSX.Element;
+}
+
+/** The cell of a host, such as a grid, that a control is drawn in. */
+interface IControlHostCell {
+    /** Tells the host the control has nothing more to take. */
+    finishEditing(): void;
 }
 
 /** The parameters a cell's control is handed. */
@@ -2437,7 +2462,7 @@ interface IGridValueRenderer {
     parameters: IGridValueRendererParameters;
     /** Put on the element the value is drawn in, alongside its own class. */
     className?: string;
-    components?: Partial<IGridValueRendererComponents>;
+    components?: Partial<IValueRendererUiComponents>;
     onNotifyOutputChanged?: (outputs: { [key: string]: any }) => void;
 }
 
@@ -2763,7 +2788,7 @@ interface IOverlayUiLoadingComponents {
     onRenderText: (props: ITextProps) => JSX.Element | null;
 }
 
-interface IEmptyRecordsUiComponents {
+interface IEmptyStateUiComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderText: (props: ITextProps) => JSX.Element | null;
@@ -2775,10 +2800,10 @@ interface IOverlayUiLoadingProps {
     components?: Partial<IOverlayUiLoadingComponents>;
 }
 
-interface IEmptyRecordsUiProps {
+interface IEmptyStateUiProps {
     message: string;
     className?: string;
-    components?: Partial<IEmptyRecordsUiComponents>;
+    components?: Partial<IEmptyStateUiComponents>;
 }
 
 interface IOverlayUi {
@@ -2789,8 +2814,8 @@ interface IOverlayUi {
 interface IGridOverlayNamespace {
     /** Its parts are replaced through components.overlays.loading. */
     Loading: () => JSX.Element;
-    /** Its parts are replaced through components.overlays.emptyRecords. */
-    EmptyRecords: () => JSX.Element;
+    /** Its parts are replaced through components.overlays.emptyState. */
+    EmptyState: () => JSX.Element;
     Ui: IOverlayUi;
 }
 
@@ -2941,7 +2966,7 @@ interface IRecordSaveSelectionCellProps extends ICellRendererParams<IRecord> {
 /** Replaces parts of what the grid draws over its rows. */
 interface IGridOverlayComponents {
     loading?: Partial<IOverlayUiLoadingComponents>;
-    emptyRecords?: Partial<IEmptyRecordsUiComponents>;
+    emptyState?: Partial<IEmptyStateUiComponents>;
 }
 
 /** Replaces parts of the rows the grid draws in place of records. */
@@ -3330,25 +3355,54 @@ interface INotificationCardAction {
     onClick: () => void;
 }
 
+/** The replaceable pieces of a notification card. */
+interface INotificationCardComponents {
+    /** The card; its \`children\` are the title, the message and the actions. */
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderTitle: (props: ITextProps) => JSX.Element | null;
+    onRenderMessage: (props: ITextProps) => JSX.Element | null;
+    /** The row of actions; its \`children\` are the buttons or the links. */
+    onRenderActions: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    /** One action while there are two at most; the first is the primary one. */
+    onRenderButton: (props: IButtonProps & { isPrimary: boolean }) => JSX.Element | null;
+    /** One action once there are more than two. */
+    onRenderLink: (props: ILinkProps) => JSX.Element | null;
+}
+
 interface INotificationCardProps {
     title?: string;
     message?: string;
     /** More than two are drawn as links. */
     actions?: INotificationCardAction[];
+    components?: Partial<INotificationCardComponents>;
 }
 
 /** A notification read in full, as a cell's notification callout shows it. */
 declare const NotificationCard: (props: INotificationCardProps) => JSX.Element;
+/** The defaults for the card's pieces. */
+declare const NotificationCardComponents: INotificationCardComponents;
+
+/** The replaceable pieces of a notification bar. */
+interface INotificationMessageBarComponents {
+    /** Every bar drawn: the single one, the grouped one and each message listed under it. */
+    onRenderMessageBar: (props: IMessageBarProps) => JSX.Element | null;
+    /** A message's text, handed over as \`dangerouslySetInnerHTML\`. */
+    onRenderMessage: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    /** The chevron that unfolds the grouped messages. */
+    onRenderToggleButton: (props: IButtonProps) => JSX.Element | null;
+    /** The unfolded list of grouped messages. */
+    onRenderMenu: (props: IContextualMenuProps) => JSX.Element | null;
+}
 
 interface INotificationMessageBarProps {
     /** Several messages fold into one bar. */
     messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[];
-    components?: {};
-    /** The summary shown over several messages, already localized. */
-    groupedNotificationsSummary?: string;
+    components?: Partial<INotificationMessageBarComponents>;
 }
 
 declare const NotificationMessageBar: (props: INotificationMessageBarProps) => JSX.Element;
+/** The defaults for the bar's pieces. */
+declare const NotificationMessageBarComponents: INotificationMessageBarComponents;
 
 /** Holds every row at once. */
 declare function createClientSideRowModelModule(): IGridModule;
@@ -3414,14 +3468,44 @@ interface ICheckListFieldMapping {
 /** The strings a checklist draws on top of the grid's own. */
 
 declare const CHECK_LIST_LABELS: ILabelSet;
+/** The notification bar's strings, keys \`notificationMessageBar.*\`. */
+declare const NOTIFICATION_MESSAGE_BAR_LABELS: ILabelSet;
+
+/** The replaceable pieces of the completion checkbox. */
+interface ICompletionCheckboxUiComponents {
+    /** The button; its \`children\` are the check. */
+    onRenderButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => JSX.Element | null;
+    onRenderCheck: (props: ICheckProps) => JSX.Element | null;
+}
 
 interface ICheckListProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount. */
     fieldMapping: ICheckListFieldMapping;
     /** Defaults to an auto-saving editing module; a list without editing is read-only. Read once, at mount. */
     modules?: IGridModule[];
-    /** The grid's strings and the checklist's own. Read once, at mount. */
 }
+
+/** The cell an item is ticked off in; put it on a column through the grid's column hooks. */
+/** The completion cell's pieces: the cell's own, and the checkbox under \`checkbox\`. */
+interface ICompletionCellComponents extends ICellRendererComponents {
+    checkbox?: Partial<ICompletionCheckboxUiComponents>;
+}
+
+declare const CompletionCell: (props: ICellRendererParams & { components?: ICompletionCellComponents }) => JSX.Element;
+
+/** The replaceable pieces of an item's name. */
+interface INameCellUiComponents {
+    /** The box the name is drawn in; its \`className\` carries the strike-through. */
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+}
+
+/** The name cell's pieces: the cell's own, and the struck-through name under \`name\`. */
+interface INameCellComponents extends ICellRendererComponents {
+    name?: Partial<INameCellUiComponents>;
+}
+
+/** The cell of an item's name, struck through once finished; put it on a column through the grid's column hooks. */
+declare const NameCell: (props: ICellRendererParams & { components?: INameCellComponents }) => JSX.Element;
 
 /** A grid over the provider's records as a checklist. */
 declare const CheckList: (props: ICheckListProps) => JSX.Element;
@@ -3671,6 +3755,8 @@ interface IRibbonProps {
 
 /** A command bar of the commands onLoad returns, each run when clicked. */
 declare const Ribbon: (props: IRibbonProps) => JSX.Element;
+/** The ribbon's commands as plain UI, with no runtime behind them. */
+declare const RibbonUi: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
 /** The loading boundary's default slots: a spinner with a text beside it. */
 declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['components']>['loadingBoundary']>;
 
@@ -3948,14 +4034,14 @@ interface IDatasetControlNamespace {
     Pagination: (props: { components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
     PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
-    EmptyRecords: (props: { children?: React.ReactNode; components?: Partial<IEmptyRecordsUiComponents> }) => JSX.Element;
+    EmptyState: (props: { children?: React.ReactNode; components?: Partial<IEmptyStateUiComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: (props: {
         components?: IEditColumnsComponents;
     }) => JSX.Element;
     /** Saving and managing the user's own views; goes inside ViewSwitcher, with the user queries module. */
     UserQueries: (props: { components?: any }) => JSX.Element;
-    Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyRecords: (props: IEmptyRecordsUiProps) => JSX.Element | null; [part: string]: any };
+    Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyState: (props: IEmptyStateUiProps) => JSX.Element | null; [part: string]: any };
 }
 
 declare const DatasetControl: IDatasetControlNamespace;
@@ -4209,8 +4295,8 @@ declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQuer
 declare const QuickFindUiComponents: IQuickFindUiComponents;
 /** The pagination's default slots. */
 declare const PaginationUiComponents: { onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
-/** The empty records part's default slots. */
-declare const EmptyRecordsUiComponents: IEmptyRecordsUiComponents;
+/** The empty state part's default slots. */
+declare const EmptyStateUiComponents: IEmptyStateUiComponents;
 
 /** The task runtime of the TaskDatasetControl around the component. */
 declare const useTaskRuntime: () => ITaskRuntime;

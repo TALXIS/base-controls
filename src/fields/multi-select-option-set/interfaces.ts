@@ -1,7 +1,7 @@
 import { IComboBoxProps } from "@legacy";
-import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
-import { IInputParameters } from "@core/pcf/interfaces/parameters";
+import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
+import { IInputParameters } from "@pcf/interfaces/parameters";
 
 export interface IMultiSelectOptionSet extends IControl<IMultiSelectOptionSetParameters, IMultiSelectOptionSetOutputs, IComboBoxProps> {
 }

@@ -1,69 +1,64 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { useMemo } from 'react'
-import { Map, createGoogleMapsProvider } from '@talxis/base-controls'
-import { usePcfContext } from '@talxis/base-controls'
+import { Stack, TextField, Toggle } from '@fluentui/react'
+import { Map, createGoogleMapsProvider, usePcfContext } from '@talxis/base-controls'
+import { renderStory } from '../form/storyHelpers'
+import { gridDocsPage } from '../../grid/gridDocsPage'
 import { createLeafletMapProvider } from './LeafletMapProvider'
 import { mapPinMetadata, useSampleMapDataset } from './useSampleMapDataset'
 
-interface IMapDemoProps {
-    apiKey: string
-    showPins: boolean
-}
+const DESCRIPTION = `
+Map shows the records of a dataset as pins. Each record's position comes from the two columns \`PinMetadata\` names, \`LatitudeAttributeName\` and \`LongitudeAttributeName\`, and the map redraws its pins whenever the dataset loads new records. What draws the map is a *map provider*: \`createGoogleMapsProvider({ apiKey })\` for Google Maps, or a component of your own that takes the \`locations\` and draws them. Try: switch the pins off and on.
 
-const MapDemo = ({ apiKey, showPins }: IMapDemoProps) => {
+{{story: Pins from a dataset}}
+
+## Google Maps
+
+The example draws with a keyless Leaflet and OpenStreetMap provider of its own; paste a Google Maps JavaScript API key above to switch it to \`createGoogleMapsProvider\`. Use a referrer-restricted test key, not a production one.
+`
+
+const MapDemo = () => {
     const context = usePcfContext()
+    const [apiKey, setApiKey] = React.useState('')
+    const [showPins, setShowPins] = React.useState(true)
     const dataset = useSampleMapDataset(showPins)
-    const mapProvider = useMemo(
-        () => (apiKey ? createGoogleMapsProvider({ apiKey }) : createLeafletMapProvider()),
-        [apiKey],
-    )
+    const mapProvider = React.useMemo(() => apiKey ? createGoogleMapsProvider({ apiKey }) : createLeafletMapProvider(), [apiKey])
 
-    return (
-        <div style={{ height: 480, padding: 18 }}>
-            <Map
-                context={context}
-                parameters={{
-                    Dataset: dataset,
-                    PinMetadata: mapPinMetadata,
-                    MapProvider: mapProvider,
-                }}
-            />
+    return <Stack tokens={{ childrenGap: 12 }}>
+        <Stack horizontal wrap verticalAlign='end' tokens={{ childrenGap: 16 }}>
+            <TextField label='Google Maps API key' placeholder='Empty for Leaflet' type='password' value={apiKey} onChange={(_, value) => setApiKey(value ?? '')} />
+            <Toggle label='Pins' checked={showPins} onChange={(_, checked) => setShowPins(!!checked)} />
+        </Stack>
+        <div style={{ height: 480 }}>
+            <Map context={context} parameters={{ Dataset: dataset, PinMetadata: mapPinMetadata, MapProvider: mapProvider }} />
         </div>
-    )
+    </Stack>
 }
 
 const meta = {
-    title: 'Controls/Map/Overview',
-    component: MapDemo,
+    title: 'Controls/Map/Get started',
     tags: ['autodocs'],
-    argTypes: {
-        apiKey: {
-            control: 'text',
-            description: 'Optional Google Maps JavaScript API key. Leave empty to use the built-in Leaflet/OpenStreetMap provider (no key needed); paste your own key to switch to the real GoogleMapsProvider. Not stored or committed, but Storybook reflects control values in the page URL, so the key will appear there — use a referrer-restricted test key, not a production one.',
-        },
-        showPins: {
-            control: 'boolean',
-            description: 'Toggle the sample dataset\'s pins on or off.',
+    parameters: {
+        controls: { disable: true },
+        docs: {
+            page: gridDocsPage(DESCRIPTION),
+            story: { inline: true },
+            canvas: { sourceState: 'none', additionalActions: [] },
         },
     },
-    args: {
-        apiKey: '',
-        showPins: false,
-    },
+} satisfies Meta
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const PinsFromADataset: Story = {
+    name: 'Pins from a dataset',
+    render: () => renderStory(<MapDemo />),
     parameters: {
         docs: {
-            story: { inline: true },
             description: {
-                component: 'Renders pins from a bound dataset. Uses a keyless Leaflet/OpenStreetMap provider by default; paste a Google Maps API key into the "apiKey" control below to switch to the real GoogleMapsProvider.',
+                story: `Four cities from a \`MemoryDataProvider\`, drawn by Leaflet until you paste a Google Maps key.`,
             },
         },
     },
-} satisfies Meta<typeof MapDemo>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-export const Overview: Story = {
-    name: 'Overview',
 }

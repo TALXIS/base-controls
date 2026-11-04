@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The names of the operators a column can be filtered by. */
 export const FILTER_OPERATORS_LABELS = defineLabels({

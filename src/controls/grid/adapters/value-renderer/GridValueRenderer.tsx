@@ -1,40 +1,35 @@
-import { Fragment, useMemo } from "react";
 import { DataTypes } from "@talxis/client-libraries";
-import { getClassNames } from "@core";
-import { GridValueRendererComponents } from "./components";
-import { getSelectedOptions } from "./ui/option-set-renderer";
-import { IFileValue, IGridValueRenderer } from "./interfaces";
-import { getGridValueRendererStyles } from "./ui/styles";
+import { getSelectedOptions } from "../../ui/value-renderer/option-set-renderer";
+import { IFileValue } from "../../ui/value-renderer/field-file";
+import { IValueRendererUiValue, ValueRendererUi } from "../../ui/value-renderer/ValueRendererUi";
+import { IGridValueRenderer } from "./interfaces";
 
 const DEFAULT_PLACEHOLDER = '---';
 
-/** A value, drawn by its column's data type, with every piece replaceable through `components`. */
+/** A record's value in a cell, drawn by its column's data type. */
 export const GridValueRenderer = (props: IGridValueRenderer) => {
     const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, IsPrimaryColumn, IsMultiline, Column, Record, Runtime } = props.parameters;
     const record = Record.raw;
     const column = Column.raw;
     const dataType = column?.dataType;
     const enableNavigation = EnableNavigation.raw;
-    const alignment = ColumnAlignment.raw ?? 'left';
     const value = column ? record.getValue(column.name) : undefined;
     const formattedValue = column ? record.getFormattedValue(column.name) : null;
-    const isMultiline = !!IsMultiline?.raw;
-    const styles = useMemo(() => getGridValueRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
-    const components = { ...GridValueRendererComponents, ...props.components };
 
-    const renderValue = (): JSX.Element => {
+    const openRecord = (reference: ComponentFramework.EntityReference) => () => Runtime.raw.openRecord({ record, reference, columnName: column?.name });
+
+    const getValue = (): IValueRendererUiValue => {
         if (!formattedValue) {
-            return components.onRenderPlaceholder({ text: Placeholder?.raw ?? DEFAULT_PLACEHOLDER, isMultiline: isMultiline });
+            return { type: 'placeholder', text: Placeholder?.raw ?? DEFAULT_PLACEHOLDER };
         }
         switch (dataType) {
             case DataTypes.File:
             case DataTypes.Image: {
                 const file: IFileValue | null = value ?? null;
-                if (!file) {
-                    break;
+                if (file) {
+                    return { type: 'file', file, isImage: dataType === DataTypes.Image };
                 }
-                //no click handler: the url the value carries is what a file link follows
-                return components.onRenderFile({ file: file, isImage: dataType === DataTypes.Image });
+                break;
             }
             case DataTypes.LookupSimple:
             case DataTypes.LookupOwner:
@@ -45,43 +40,44 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
                 }
                 //every record it names: an array, or one reference on its own
                 const references: ComponentFramework.EntityReference[] = Array.isArray(value) ? value : value ? [value] : [];
-                return components.onRenderLookup({
-                    children: references.map((reference, index) => <Fragment key={reference.id?.guid ?? `${reference.name}-${index}`}>
-                        {components.onRenderLink({ text: reference.name, onClick: () => Runtime.raw.openRecord({ record: record, reference: reference, columnName: column?.name }), isMultiline: isMultiline })}
-                    </Fragment>),
-                });
+                return {
+                    type: 'lookup',
+                    links: references.map((reference, index) => ({ key: reference.id?.guid ?? `${reference.name}-${index}`, text: reference.name, onClick: openRecord(reference) })),
+                };
             }
             case DataTypes.SingleLineEmail:
             case DataTypes.SingleLinePhone:
             case DataTypes.SingleLineUrl: {
-                if (!enableNavigation) {
-                    break;
+                if (enableNavigation) {
+                    return { type: 'link', link: { text: formattedValue, href: getHref(dataType, value) } };
                 }
-                return components.onRenderLink({ text: formattedValue, href: getHref(dataType, value) });
+                break;
             }
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet:
             case DataTypes.TwoOptions: {
-                //a formatted value the cell has is a column's, whatever the props say
                 const selected = getSelectedOptions(value, column!);
                 //a colour is what makes an option worth a shape of its own
                 if (props.parameters.EnableOptionSetColors?.raw && selected.some(option => option.color)) {
-                    return components.onRenderOptions({ options: selected, alignment: alignment });
+                    return { type: 'options', options: selected };
                 }
                 break;
             }
         }
         //the primary column's value is the one that stands for the record itself
         return enableNavigation && IsPrimaryColumn?.raw
-            ? components.onRenderLink({ text: formattedValue, onClick: () => Runtime.raw.openRecord({ record: record, reference: record.getNamedReference(), columnName: column?.name }), isMultiline: isMultiline })
-            : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
+            ? { type: 'link', link: { text: formattedValue, onClick: openRecord(record.getNamedReference()) } }
+            : { type: 'text', text: formattedValue };
     };
 
-    return <div className={getClassNames([styles.gridValueRendererRoot, props.className])}>
-        {PrefixIcon?.raw && components.onRenderPrefixIcon({ iconName: PrefixIcon.raw })}
-        {renderValue()}
-        {SuffixIcon?.raw && components.onRenderSuffixIcon({ iconName: SuffixIcon.raw })}
-    </div>;
+    return <ValueRendererUi
+        value={getValue()}
+        alignment={ColumnAlignment.raw ?? 'left'}
+        isMultiline={!!IsMultiline?.raw}
+        prefixIconName={PrefixIcon?.raw ?? undefined}
+        suffixIconName={SuffixIcon?.raw ?? undefined}
+        className={props.className}
+        components={props.components} />;
 };
 
 const getHref = (dataType: string, value: any): string => {

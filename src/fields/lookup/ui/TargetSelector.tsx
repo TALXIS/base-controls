@@ -5,7 +5,7 @@ import { Text } from '@fluentui/react/lib/Text';
 import { Link } from '@fluentui/react';
 import { getTargetSelectorStyles } from './styles';
 import { useLoadedEntities } from '../hooks/useLoadedEntities';
-import { useLabels } from "@core";
+import { useLabels } from "@labels";
 import { LOOKUP_LABELS } from '../labels';
 
 interface ITargetSelector {

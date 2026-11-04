@@ -23,7 +23,7 @@ The Gantt itself lines the tasks up on a timeline; everything beyond the bars, f
 | [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
 | Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). |
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on [**Task grid › Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on [**TaskGrid › Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
 
 ## The library
 
@@ -31,7 +31,7 @@ The Gantt itself lines the tasks up on a timeline; everything beyond the bars, f
 
 To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as *pro.ts* in the example does.
 
-A module of yours reaches the build with \`gantt.getLibrary()\`.
+A module of yours reaches the build as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
 `
 
 const meta = {

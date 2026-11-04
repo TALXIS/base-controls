@@ -20,16 +20,7 @@ const meta = {
             },
             description: {
                 component: `
-Ready-made business flows built on the Xrm \`formContext\` runtime, each runnable and editable in place.
-
-## What's here
-
-- **Qualification review** — focuses the Overview tab, requires Text and Phone, validates the phone prefix.
-- **Digital engagement route** — hides Phone, promotes the URL field, requires \`https://\`.
-- **Financial approval checkpoint** — focuses the Metrics tab, requires Budget, locks review-only fields.
-- **Scheduling handoff** — focuses the Scheduling tab, hides secondary details, requires final scheduling fields.
-
-Each sample keeps its own isolated form instance, so **Run code** and **Clear** act on that example only. Start from a blank snippet instead on [**Overview**](?path=/story/controls-form-xrm-form-context-overview--overview).
+Ready-made business flows built on the Xrm \`formContext\`, each runnable and editable in place. Each sample has a form of its own, so **Run code** and **Clear** act on that sample only; to start from a blank snippet, see [**Form Context**](?path=/docs/controls-form-xrm-form-context-overview--overview).
                 `.trim(),
             },
         },
@@ -49,14 +40,7 @@ export const QualificationReview: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Mimics a lead qualification step where identity and contact data become required and phone formatting is validated before handoff.
-
-- focuses the Overview tab
-- marks Text and Phone as required
-- raises a qualification notification
-- validates the phone prefix
-                `.trim(),
+                story: `A lead qualification step that focuses *Overview*, requires Text and Phone, and validates the phone prefix. Try: press **Run code**, then enter a phone number without the prefix.`,
             },
         },
     },
@@ -72,14 +56,7 @@ export const DigitalEngagement: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Shows a digital-only path where phone is hidden, web contact becomes primary, and the URL must be secure.
-
-- keeps the user on Overview
-- renames the contact section
-- requires the URL field
-- validates \`https://\` usage
-                `.trim(),
+                story: `A digital-only path that hides Phone, renames the contact section and requires a secure URL. Try: press **Run code**, then enter an \`http://\` URL.`,
             },
         },
     },
@@ -95,14 +72,7 @@ export const FinancialApproval: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Simulates a review stage where metrics become partially read-only and duration is validated against an approval threshold.
-
-- focuses the Metrics tab
-- requires the budget field
-- locks review-only metric inputs
-- validates duration limits
-                `.trim(),
+                story: `A review stage that focuses *Metrics*, requires the budget, locks review-only inputs and validates the duration. Try: press **Run code**.`,
             },
         },
     },
@@ -118,14 +88,7 @@ export const SchedulingHandoff: Story = {
                 additionalActions: [],
             },
             description: {
-                story: `
-Demonstrates a late-stage handoff where scheduling fields are promoted and secondary handoff content is hidden.
-
-- focuses the Scheduling tab
-- renames the dates section
-- hides secondary handoff details
-- requires final scheduling fields
-                `.trim(),
+                story: `A late-stage handoff that focuses *Scheduling*, renames the dates section, hides secondary details and requires the final scheduling fields.`,
             },
         },
     },

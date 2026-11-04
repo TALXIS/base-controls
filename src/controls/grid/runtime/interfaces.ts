@@ -1,8 +1,9 @@
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import type { GridApi } from "ag-grid-community";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
 import type { ITheme } from "@theme";
-import type { IServiceLocator, IStateStore, LabelsService } from "@core";
+import type { IServiceRegistry, IStateStore } from "@core";
+import type { LabelsService } from "@labels";
 import type { IGridSettings } from "./settings";
 import type { IGrid } from "./grid";
 import type { IGridColumns, IGridColumnsInternal } from "./columns";
@@ -69,6 +70,6 @@ export interface IGridInternalServiceMap extends IGridServiceMap {
 export type IGridDeferredService = 'gridRoot' | 'gridApi';
 
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
-export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceLocator<TServices>;
+export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceRegistry<TServices>;
 
-export type IGridInternalServiceLocator<TServices extends IGridInternalServiceMap = IGridInternalServiceMap> = IServiceLocator<TServices>;
+export type IGridInternalServiceLocator<TServices extends IGridInternalServiceMap = IGridInternalServiceMap> = IServiceRegistry<TServices>;

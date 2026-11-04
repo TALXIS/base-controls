@@ -23,7 +23,7 @@ A task view looks at the tasks a particular way, such as sorted by start date or
 
 ## The tree
 
-The tree always follows the parent lookups; sorting only orders the subtasks under each parent. A filter or a search keeps each match's ancestors, in italics where they don't match themselves. The header of the commands column opens or closes one level of the whole tree, and a parent opens by itself when a task is created or dropped under it.
+Ancestors a filter or a search keeps are in italics where they don't match themselves. The header of the commands column opens or closes one level of the whole tree, and a parent opens by itself when a task is created or dropped under it.
 
 ## Flat list
 
@@ -60,7 +60,7 @@ export const SwitchBetweenTaskViews: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Four views of the sample projects: the tree, the tree sorted by start date, a search for *design*, and a flat list. Try: open *Design work* to see the ancestors kept, then switch to *Every task on its own*, or turn off *Show hierarchy* in the settings.`,
+                story: `Four views of the sample projects: the tree, sorted by start date, a search for *design*, and a flat list. Try: open *Design work* to see the ancestors kept.`,
             },
         },
     },

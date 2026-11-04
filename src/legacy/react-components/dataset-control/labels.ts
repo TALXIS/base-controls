@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const LEGACY_DATASET_CONTROL_LABELS = defineLabels({
     'legacyDatasetControl.search': "Search",

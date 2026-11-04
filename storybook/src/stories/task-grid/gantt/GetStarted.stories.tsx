@@ -8,7 +8,7 @@ import { GanttBasicExample, GanttShowcaseExample } from '../../../task-grid/exam
 const DESCRIPTION = `
 The Gantt draws the task grid's tasks on a timeline, row for row with the grid beside it: same order, same tree, same scroll. It is drawn with <a href="https://dhtmlx.com/docs/products/dhtmlxGantt/" target="_blank" rel="noreferrer">DHTMLX Gantt</a>, and everything beyond the bars is a module: dragging bars, drawing tasks, links, markers, non-working days and tooltips.
 
-Below are the sample projects. Try: zoom with the slider or Ctrl+wheel, drag a bar or its ends, hold Ctrl and drag over a row to draw a task, drag from the end of one bar to another to link them, and point at a bar. Open **Code** to read and edit the source.
+Try it below on the sample projects: zoom with the slider or Ctrl+wheel, and drag a bar or its ends; open **Code** for more to try.
 
 {{canvas: Overview}}
 

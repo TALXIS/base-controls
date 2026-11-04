@@ -1,6 +1,7 @@
-import { useEventEmitter, useRerender, useLabels } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
-import { Grid, GroupingUi, IColumnHeaderParams } from "../../../grid";
+import { Grid, GroupingUi, IColumnHeaderParams } from "@controls/grid";
 import { useTaskGridService } from "../../useTaskGridServices";
 import { useTaskGridContext } from "../../context";
 import { TASK_GRID_LABELS } from "../../labels";

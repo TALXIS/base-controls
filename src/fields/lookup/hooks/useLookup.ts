@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useControl, useLabels } from "@core";
+import { useControl } from "@pcf";
+import { useLabels } from "@labels";
 import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
 import { LOOKUP_LABELS } from "../labels";
 import { useFetchXml } from "./useFetchXml";

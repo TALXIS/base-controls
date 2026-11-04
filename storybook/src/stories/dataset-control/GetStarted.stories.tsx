@@ -8,13 +8,13 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 const DESCRIPTION = `
 DatasetControl is the frame around a list of records. It loads them, shows a placeholder or an error while it does, and holds the parts around them: views, a ribbon, quick find, column editing, paging and notifications. What shows the records is up to you, usually a [**Grid**](?path=/docs/controls-grid-get-started--overview).
 
-Below is a sales pipeline with every part and grid module switched on. Try: sort, filter or group, then *Save as new view* from the view switcher; edit a deal, search, and select deals to change the ribbon.
+Below is a sales pipeline with every part and grid module switched on. Try: group by a column, then pick *Save as new view* from the view switcher.
 
 {{canvas: Overview}}
 
 ## Basic usage
 
-The least a control needs: views to switch between, an \`onLoad\` that returns a provider, and the parts you want. Open **Code**; its comments walk through each piece.
+The least a control needs: views to switch between, an \`onLoad\` that returns \`{ provider }\`, and the parts you want. Open **Code**; its comments walk through each piece.
 
 {{story: Three deals, two views}}
 

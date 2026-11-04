@@ -1,7 +1,8 @@
 import { IContextualMenuItem } from "@fluentui/react";
-import { useRerender, useLabels, useLatest } from "@core";
+import { useRerender, useLatest } from "@core";
+import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
-import { useDatasetControlPart } from "../../../dataset-control";
+import { useDatasetControlPart } from "@controls/dataset-control";
 import { ITaskGridUiSettingsMenuComponents, TaskGridUiSettingsMenu } from "../../ui";
 import { useTaskRuntime } from "../root/context";
 import { TASK_GRID_LABELS } from "../../labels";

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { createClientSideRowModelModule, Grid, IGridModule, IGridOpenRecordParams } from "@controls/grid";
 import { ITaskGridProps } from "./interfaces";
 import { ITaskGridContext, TaskGridContext } from "./context";
-import { useRequiredDatasetControlRuntime } from "../dataset-control/adapters/root/context";
+import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
 import { useTaskRuntime } from "./adapters/root/context";
 import { runQuietly } from "./runtime/runQuietly";
 import { createTaskTreeModule } from "./runtime/tree/createTaskTreeModule";

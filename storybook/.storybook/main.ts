@@ -9,6 +9,14 @@ const githubPagesBasePath = '/base-controls/';
 const clientLibrariesDir = fs.realpathSync(path.resolve(storybookDir, '../../node_modules/@talxis/client-libraries'));
 const isLocalDevelopment = process.env.NODE_ENV !== 'production';
 
+//the library's own `@name` aliases, read from its tsconfig so the two never drift apart
+const libraryPaths: Record<string, string[]> = JSON.parse(fs.readFileSync(path.resolve(storybookDir, '../../tsconfig.json'), 'utf8')).compilerOptions.paths;
+const libraryAliases = Object.entries(libraryPaths)
+  .filter(([alias]) => alias !== '@/*')
+  .map(([alias, [target]]) => alias.endsWith('/*')
+    ? { find: new RegExp(`^${alias.slice(0, -2)}/(.*)$`), replacement: path.resolve(storybookDir, '../..', target.slice(0, -2), '$1') }
+    : { find: new RegExp(`^${alias}$`), replacement: path.resolve(storybookDir, '../..', target) });
+
 const stories: NonNullable<StorybookConfig['stories']> = ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'];
 
 if (!isLocalDevelopment) {
@@ -80,62 +88,7 @@ const config: StorybookConfig = {
         find: /^@talxis\/base-controls\/(.*)$/,
         replacement: path.resolve(storybookDir, '../../src/$1'),
       },
-      {
-        find: /^@controls$/,
-        replacement: path.resolve(storybookDir, '../../src/controls/index.ts'),
-      },
-      {
-        find: /^@controls\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/controls/$1'),
-      },
-      {
-        find: /^@ui$/,
-        replacement: path.resolve(storybookDir, '../../src/ui/index.ts'),
-      },
-      {
-        find: /^@ui\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/ui/$1'),
-      },
-      {
-        find: /^@theme$/,
-        replacement: path.resolve(storybookDir, '../../src/theme/index.ts'),
-      },
-      {
-        find: /^@theme\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/theme/$1'),
-      },
-      {
-        find: /^@hooks$/,
-        replacement: path.resolve(storybookDir, '../../src/hooks/index.ts'),
-      },
-      {
-        find: /^@hooks\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/hooks/$1'),
-      },
-      {
-        find: /^@interfaces$/,
-        replacement: path.resolve(storybookDir, '../../src/interfaces/index.ts'),
-      },
-      {
-        find: /^@interfaces\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/interfaces/$1'),
-      },
-      {
-        find: /^@legacy$/,
-        replacement: path.resolve(storybookDir, '../../src/legacy/react-components/index.ts'),
-      },
-      {
-        find: /^@legacy\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/legacy/react-components/$1'),
-      },
-      {
-        find: /^@utils$/,
-        replacement: path.resolve(storybookDir, '../../src/utils/index.ts'),
-      },
-      {
-        find: /^@utils\/(.*)$/,
-        replacement: path.resolve(storybookDir, '../../src/utils/$1'),
-      },
+      ...libraryAliases,
       {
         find: /^@\/(.*)$/,
         replacement: path.resolve(storybookDir, '../../src/$1'),

@@ -3,11 +3,14 @@ import { useCallback, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 
-import { useControlStateStore } from "../dataset-control/adapters/root/useControlStateStore";
-import { useDatasetControlRuntime } from "../dataset-control/adapters/root/context";
-import { useDatasetControlPart } from "../dataset-control/adapters/root/useDatasetControlPart";
-import { getClassNames, useLabelsService, usePcfContext, useLatest } from "@core";
+import { useControlStateStore } from "@controls/dataset-control/adapters/root/useControlStateStore";
+import { useDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
+import { useDatasetControlPart } from "@controls/dataset-control/adapters/root/useDatasetControlPart";
+import { BaseControls, usePcfContext } from "@pcf";
+import { getClassNames, useLatest } from "@core";
+import { useLabelsService } from "@labels";
 import { useDataProvider } from "@data";
+import { registerBaseControl } from "@fields";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./runtime/grid";
 import { useGridEventHandlers } from "./useGridEventHandlers";
@@ -15,6 +18,12 @@ import { getGridStyles } from "./styles";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components";
 import { Surfaces } from "./adapters/surfaces";
+import { GridValueRenderer } from "./adapters/value-renderer";
+import { GridInlineRibbon } from "./adapters/inline-ribbon";
+
+//NestedControlRenderer finds the grid's own controls by name
+registerBaseControl(BaseControls.GridValueRenderer, GridValueRenderer);
+registerBaseControl(BaseControls.GridInlineRibbon, GridInlineRibbon);
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 

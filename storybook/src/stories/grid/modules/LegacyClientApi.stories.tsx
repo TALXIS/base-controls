@@ -13,7 +13,11 @@ The module takes no options and needs no AG Grid Enterprise licence.
 
 ## Register expressions
 
-A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that. Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)). An expression for a column the provider does not have is ignored with a console warning.
+A record drops its expressions every time it loads again, so:
+
+- Register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that.
+- Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)).
+- An expression for a column the provider does not have is ignored with a console warning.
 
 {{story: Colour, lock and load cells from a script}}
 
@@ -63,13 +67,17 @@ Each notification an expression returns is an \`IAddControlNotificationOptions\`
 | Several actions, or none, and a \`text\` or a message | Opens a callout with the title, the first message and the actions. An action closes the callout, then runs its callbacks. |
 | No actions and no content | Runs only \`buttonProps.onClick\` |
 
-The grid shows one callout at a time, and it cannot be restyled. Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading; buttons that do not fit move into the **…** menu. The expression runs each time a highlighted cell draws, so keep it cheap. A \`cellRenderer\` of your own shows them only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
+- The grid shows one callout at a time, and it cannot be restyled.
+- Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading.
+- Buttons that do not fit move into the **…** menu.
+- The expression runs each time a highlighted cell draws, so keep it cheap.
+- A \`cellRenderer\` of your own shows them only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
 
 ## With the rest of the grid
 
-The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority, so those run in the order they were registered. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
+The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
-The grid's validation replaces a script's \`setValidationExpression\`: a column with \`context.cell.onGetValidation\`, or every column once a \`registerValidation\` hook exists, gets the grid's own validation expression and the script's never runs, so move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
+The grid's validation replaces a script's \`setValidationExpression\` on a column with \`context.cell.onGetValidation\`, and on every column once a \`registerValidation\` hook exists. Move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
 | When | What happens |
 |---|---|
@@ -124,7 +132,7 @@ export const ColoursLocksAndLoadingFromScripts: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An inventory script colours In stock with \`ui.setCustomFormattingExpression\`, locks discontinued products with \`setDisabledExpression\`, and shimmers In stock during a sync with \`ui.setLoadingExpression\` and \`provider.requestRender()\`. Try: turn a product's Discontinued on, or press *Sync stock*.`,
+                story: `An inventory script that colours, locks and shimmers cells through record expressions. Try: turn a product's Discontinued on, or press *Sync stock*.`,
             },
         },
     },

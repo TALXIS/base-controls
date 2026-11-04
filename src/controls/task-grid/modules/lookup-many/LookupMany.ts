@@ -1,7 +1,8 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
 import type { IColumnMenuSection, IGrid } from "@controls/grid";
-import { ErrorHelper, type LabelsOf } from "@core";
+import { ErrorHelper } from "@core";
+import { type LabelsOf } from "@labels";
 import type { ITaskColumnMatcher, ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";

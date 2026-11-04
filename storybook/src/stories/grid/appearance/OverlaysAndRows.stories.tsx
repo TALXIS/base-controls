@@ -7,22 +7,22 @@ import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseL
 const DESCRIPTION = `
 A grid does not always have records to draw: the provider may still be loading them or hold none at all, and a group's records may still be on their way or fail to load. In those moments the grid draws something in their place, an overlay over the rows or a row standing in for the missing records, so the user knows what is going on. You can redraw each of them to fit your page, from a different icon to a whole card of your own.
 
+{{story: Show an empty catalogue}}
+
 ## Changing how it looks
 
-These are the only parts \`<Grid>\` itself takes \`components\` for, read on every render. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+These are the only pieces \`<Grid>\` itself takes \`components\` for, read on every render. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`overlays.emptyRecords\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyRecordsUiComponents\` | The overlay of a grid with no rows; its text is \`grid.noRecordsFound\` |
+| \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The overlay of a grid with no rows; its text is \`grid.noRecordsFound\` |
 | \`overlays.loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
 | \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load on the server-side row model |
 | \`rows.error\` | \`onRenderMessageBar\` | | Records or totals that failed to load, with the provider's error message |
 
 ## No records
 
-\`overlays.emptyRecords\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.Ui.EmptyRecords\`.
-
-{{story: Show an empty catalogue}}
+\`overlays.emptyState\` draws the grid's empty state. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview). The example at the top of this page redraws it.
 
 ## Loading
 
@@ -63,7 +63,7 @@ export const AnEmptyCatalogue: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`overlays.emptyRecords\` swaps the icon and adds a hint under the message, and \`LabelsProvider\` rewords \`grid.noRecordsFound\`.`,
+                story: `\`overlays.emptyState\` swaps the icon and adds a hint under the message, and \`LabelsProvider\` rewords \`grid.noRecordsFound\`.`,
             },
         },
     },

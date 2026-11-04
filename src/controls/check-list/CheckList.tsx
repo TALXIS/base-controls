@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { createClientSideRowModelModule, createEditingModule, Grid, IGridProps, IGridModule, IGridModuleMap } from "@controls/grid";
-import { createCheckListModule, ICheckListFieldMapping } from "./module";
+import { createCheckListModule, ICheckListFieldMapping } from "./modules/check-list";
 
 /** A checklist's grid module; the row model is always client-side and the checklist's own is added last. */
 export type ICheckListGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'checkList'>>;

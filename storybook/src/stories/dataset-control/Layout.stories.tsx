@@ -51,7 +51,7 @@ The layout follows the control's own width, not the window's.
 | The header's parts no longer fit on one line | The header turns *compact*: the ribbon and *Edit columns* show only their icons, with their names in a tooltip, and the quick find becomes a search button, with a dot while it holds a query. Clicking it opens the field across the whole header until you leave it. |
 | The footer's parts no longer fit | The footer's \`End\` moves onto a line of its own. |
 
-The header stays compact until the control is wider than it was when the parts ran out of room, or until you take a part out.
+When the header turns back is under *Shrink when parts would wrap* on [**Compact parts**](?path=/docs/concepts-layout-compact-parts--overview).
 
 ### Your own part in a compact header
 

@@ -5,17 +5,17 @@ import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { CustomColumnsExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Custom columns are columns users add to the tasks themselves, from Edit columns. Each one is drawn and edited like any column of its data type, and saved apart from the tasks.
+Custom columns are columns users add to the tasks themselves, from *Edit columns*. Each one is drawn and edited like any column of its data type, and saved apart from the tasks.
 
 {{story: Add your own columns}}
 
-## What the user can do
+## Options
 
 | Option | Default | Description |
 |---|---|---|
-| \`enableCreation\` | \`false\` | *Add custom column* in Edit columns. |
-| \`enableEditing\` | \`false\` | An edit command on each custom column in Edit columns. Not on the IndexedDB module. |
-| \`enableDeletion\` | \`false\` | A delete command on each custom column in Edit columns, which deletes its values in every task too, after the user confirms. |
+| \`enableCreation\` | \`false\` | *Add custom column* in *Edit columns*. |
+| \`enableEditing\` | \`false\` | An edit command on each custom column in *Edit columns*. Not on the IndexedDB module. |
+| \`enableDeletion\` | \`false\` | A delete command on each custom column in *Edit columns*, which deletes its values in every task too, after the user confirms. |
 
 The values are edited in the grid, with \`createTaskEditingModule()\`, and saved one by one.
 
@@ -69,7 +69,7 @@ export const AddYourOwnColumns: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Custom columns kept in this browser, starting with *Risk* and *Budget*. Try: open **Edit columns**, add *Risk* to the view and fill it in, or add a column of your own. Reload the page: they are still there.`,
+                story: `Custom columns kept in this browser, starting with *Risk* and *Budget*. Try: open *Edit columns*, add *Risk* to the view and fill it in, then reload the page.`,
             },
         },
     },

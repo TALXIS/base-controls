@@ -13,7 +13,7 @@ A cell draws its value with the control for its column's data type, and swaps in
 
 Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`, as the example above does; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
-\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's parts and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is under *Changing how it looks* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
+\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's pieces and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is on [**DatasetControl › Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -25,6 +25,8 @@ Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound 
 | \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` | | The validation outline and message. Keep the \`className\` \`onRenderOutline\` gets: the grid hides an invalid cell's focus border by it |
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
 | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
+
+To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`ValueRendererUiComponents\`.
 
 The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`; in an editor, \`columnControl\` draws the input. Group rows and totals draw their own cells, restyled through the grouping and aggregation modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
@@ -48,7 +50,7 @@ To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings
 | \`Loading\` | The shimmer while the cell waits, in place of what it wraps. |
 | \`LockIcon\` | The lock of a locked cell, with the editing module. Goes inside \`Loading\`, before \`Control\`. |
 | \`Control\` | The room the value is drawn in; the commands, error icon and lock keep to its edge. |
-| \`ColumnControl\` | Draws the value: the grid's value renderer, a PCF control the column names, or your \`onRenderControl\`. Goes inside \`Control\`. |
+| \`ColumnControl\` | Draws the value: \`GridValueRenderer\`, a PCF control the column names, or your \`onRenderControl\`. Goes inside \`Control\`. |
 | \`Commands\` | The column's commands, shown while the row is hovered. |
 | \`FieldError\` | The validation outline and its message. |
 
@@ -100,7 +102,7 @@ export const ForecastTheWinChance: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Win chance composed from the parts, with a ring gauge inside \`Control\` in place of \`ColumnControl\`: zebra rows, a Forecast command, a shimmer while it forecasts, the lock on won and lost deals and an outline over 100 still reach it. Try: press Forecast on a row, or double-click a chance and enter 120.`,
+                story: `Win chance composed from the parts, with a ring gauge inside \`Control\` in place of \`ColumnControl\`. Try: press Forecast on a row, or double-click a chance and enter 120.`,
             },
         },
     },

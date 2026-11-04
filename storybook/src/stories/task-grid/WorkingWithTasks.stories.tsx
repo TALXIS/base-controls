@@ -29,7 +29,10 @@ Deleting takes every subtask along. Tasks that could not be deleted are listed i
 
 ## Dragging
 
-A row dropped between two rows lands at the level its distance from the left suggests. Held over a task for a moment, it becomes a subtask; held over a closed parent a little longer, the parent opens. Dragging works while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited. The new parent and rank are saved through the store.
+- A row dropped between two rows lands at the level its distance from the left suggests.
+- Held over a task for a moment, it becomes a subtask; held over a closed parent a little longer, the parent opens.
+- Dragging works while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited.
+- The new parent and rank are saved through the store.
 
 | Option | Description |
 |---|---|

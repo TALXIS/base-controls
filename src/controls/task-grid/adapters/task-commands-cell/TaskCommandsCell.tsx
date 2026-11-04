@@ -1,4 +1,4 @@
-import { Grid, ICellEmptyRendererProps } from "../../../grid";
+import { Grid, ICellEmptyRendererProps } from "@controls/grid";
 import { useTaskGridContext } from "../../context";
 import { TaskGridUiCommandBar, TaskGridUiCommandsContainer } from "../../ui";
 import { mergeComponentNamespaces } from "../mergeComponentNamespaces";

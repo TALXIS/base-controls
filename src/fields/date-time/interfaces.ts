@@ -1,7 +1,7 @@
 import { IDatePickerProps } from "@legacy";
-import { IDateTimeProperty, IStringProperty, ITwoOptionsProperty } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
-import { IInputParameters } from "@core/pcf/interfaces/parameters";
+import { IDateTimeProperty, IStringProperty, ITwoOptionsProperty } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
+import { IInputParameters } from "@pcf/interfaces/parameters";
 
 
 

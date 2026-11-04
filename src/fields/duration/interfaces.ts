@@ -1,7 +1,7 @@
 import { IComboBoxProps } from "@legacy";
-import { IStringProperty, IWholeNumberProperty } from "@core/pcf/interfaces";
-import { IControl, IOutputs } from "@core/pcf/interfaces/context";
-import { IInputParameters } from "@core/pcf/interfaces/parameters";
+import { IStringProperty, IWholeNumberProperty } from "@pcf/interfaces";
+import { IControl, IOutputs } from "@pcf/interfaces/context";
+import { IInputParameters } from "@pcf/interfaces/parameters";
 
 export interface IDuration extends IControl<IDurationParameters, IDurationOutputs, IComboBoxProps> {
 }

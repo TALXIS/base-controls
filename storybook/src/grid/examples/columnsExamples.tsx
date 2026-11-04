@@ -18,6 +18,7 @@ const GridExample = () => {
                 //a new key makes the grid build its columns again
                 key={String(showEveryColumn)}
                 modules={[createClientSideRowModelModule()]}
+                //keyed by the provider column's name; an entry is merged over the column
                 colDefs={{
                     ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
                     name: { pinned: 'left' },

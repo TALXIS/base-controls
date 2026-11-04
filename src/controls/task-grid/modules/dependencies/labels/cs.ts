@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { DEPENDENCIES_LABELS } from "./en";
 
 export const DEPENDENCIES_LABELS_CS = translateLabels(DEPENDENCIES_LABELS, {

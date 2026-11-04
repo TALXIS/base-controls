@@ -59,9 +59,12 @@ const SHOWCASE_CODE = createGanttCode({
         createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
         createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
         createBarDraggingModule(),
+        //hold Ctrl and drag over a row to draw a task
         createTaskDrawingModule(),
         createTaskSelectionModule(),
+        //point at a bar
         createTaskTooltipModule({ statusColumnName: 'statuscode' }),
+        //drag from the end of one bar to another to link them
         createLinksModule(),`,
 })
 
@@ -173,6 +176,7 @@ const TOOLTIP_CODE = createGanttCode({
                     <TaskTooltip.FieldRows>
                         <TaskTooltip.FieldRow columnName='priority' iconName='Flag' />
                         <TaskTooltip.FieldRow columnName='estimatedeffort' iconName='Clock' />
+                        {/* add a FieldRow for description */}
                     </TaskTooltip.FieldRows>
                     <TaskTooltip.DateRangeRow />
                 </TaskTooltip.Callout>

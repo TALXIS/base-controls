@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 /** The strings of the view switcher. */
 export const VIEW_SWITCHER_LABELS = defineLabels({

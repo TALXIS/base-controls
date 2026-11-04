@@ -1,6 +1,7 @@
 import { FormXmlForm } from '../../runtime/form-xml-form';
 import { Form } from "../../../../Form";
-import { useEventEmitter, useRerender, usePcfContext } from "@core";
+import { useEventEmitter, useRerender } from "@core";
+import { usePcfContext } from "@pcf";
 import React from "react";
 import type { IXrmFormComponents, IXrmFormContext, IXrmFormProps } from '../../interfaces';
 import type { IXrmFormContextInternal } from '../../runtime/xrm-context/XrmFormContext';

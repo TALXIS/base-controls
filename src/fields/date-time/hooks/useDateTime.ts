@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useInputBasedControl } from "@core/pcf/useInputBasedControl";
+import { useInputBasedControl } from "@pcf/control/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';

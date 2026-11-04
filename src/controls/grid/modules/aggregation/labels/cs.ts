@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { GRID_AGGREGATION_LABELS } from "./en";
 
 export const GRID_AGGREGATION_LABELS_CS = translateLabels(GRID_AGGREGATION_LABELS, {

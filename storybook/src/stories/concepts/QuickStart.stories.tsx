@@ -5,7 +5,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { FirstAppExample } from './quickStartExamples'
 
 const DESCRIPTION = `
-An application built with Base Controls has the same shape everywhere: a few providers at its root say who the user is, how things look and where state is kept, and every control placed below them picks that up. The controls themselves draw records held in a data provider. Below is the smallest such application: a data provider holds three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) draws it. Try it: open **Code** and change it.
+The smallest application has the providers every application needs at its root, a data provider with three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) that loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) that draws it. Why the application is shaped like this: [**Building blocks**](?path=/docs/concepts-building-blocks--overview). Try it below: open **Code** and change it.
 
 {{canvas: Overview}}
 
@@ -27,10 +27,6 @@ Wrap the application in the shared providers once, then add controls anywhere be
 | \`AppThemeProvider\` | The theme: [**Theming**](?path=/docs/concepts-theming--overview) | The controls throw |
 | \`StateProvider\` | Saved state: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | One in-memory store for the page |
 | \`LabelsProvider\` | Your wording: [**Localization**](?path=/docs/concepts-localization--overview) | English |
-
-## In a PCF control
-
-Pass \`PcfContextProvider\` the context the host hands \`updateView\`: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
 ## Next steps
 

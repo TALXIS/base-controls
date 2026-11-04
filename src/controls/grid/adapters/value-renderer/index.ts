@@ -1,4 +1,4 @@
 export * from './GridValueRenderer';
-export * from './components';
+export * from '../../ui/value-renderer/components';
 export * from './interfaces';
-export * from './ui';
+export * from '../../ui/value-renderer';

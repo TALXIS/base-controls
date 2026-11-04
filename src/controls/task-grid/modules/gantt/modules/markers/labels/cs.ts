@@ -1,4 +1,4 @@
-import { translateLabels } from "@core";
+import { translateLabels } from "@labels";
 import { MARKERS_LABELS } from "./en";
 
 export const MARKERS_LABELS_CS = translateLabels(MARKERS_LABELS, {

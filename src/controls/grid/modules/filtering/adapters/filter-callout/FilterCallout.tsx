@@ -1,11 +1,13 @@
 import { useEffect, useMemo } from "react";
 import { Target } from "@fluentui/react";
 import { IColumn, IInternalDataProvider } from "@talxis/client-libraries";
-import { getClassNames, useLabels, usePcfContext } from "@core";
+import { getClassNames } from "@core";
+import { useLabels } from "@labels";
+import { usePcfContext } from "@pcf";
 import { DatasetColumnFiltering } from "../dataset-column-filtering/DatasetColumnFiltering";
 import { IOptionSet } from "@fields/option-set";
 import { INestedControlRenderer } from "@fields/nested-control-renderer/interfaces";
-import { IControl, IParameters } from "@core/pcf/interfaces";
+import { IControl, IParameters } from "@pcf/interfaces";
 import { GridFilterControl } from "../../GridFiltering";
 import { useGridService } from "../../../../useGridService";
 import { useGridModule } from "../../../../useGridModule";

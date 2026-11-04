@@ -1,4 +1,4 @@
-import { defineLabels } from "@core";
+import { defineLabels } from "@labels";
 
 export const NON_WORKING_DAYS_LABELS = defineLabels({
     'nonWorkingDays.hideNonWorkingDays': 'Hide non-working days',

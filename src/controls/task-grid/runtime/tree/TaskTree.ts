@@ -1,8 +1,8 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "../../../grid";
-import type { IGrid } from "../../../grid";
+import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@core";
 import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";

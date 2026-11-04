@@ -3,8 +3,9 @@ import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react"
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
-import type { IPcfContext } from "@core/pcf/interfaces";
-import { HookRegistry, ILabels, ILabelSet, Labels, ServiceLocator } from "@core";
+import type { IPcfContext } from "@pcf/interfaces";
+import { HookRegistry, ServiceLocator } from "@core";
+import { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import { PATH_COLUMN_NAME } from "./provider/record-tree";
 import { TASK_GRID_LABELS } from "../labels";

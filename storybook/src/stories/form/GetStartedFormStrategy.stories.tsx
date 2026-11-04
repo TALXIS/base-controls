@@ -77,8 +77,8 @@ const meta = {
                 component: `
 Both authoring paths take an \`IFormStrategy\`: it loads the record with \`onLoad()\` and persists changes with \`onSave()\`. The same strategy output drives either path:
 
-- **React compose** passes it to \`Form.Root\` and lays fields out in JSX — see [**React compose Overview**](?path=/story/controls-form-react-compose--overview).
-- **Xrm** passes it to \`XrmForm\`, lays fields out in FormXml and adds \`formContext\` — see [**Xrm Overview**](?path=/story/controls-form-xrm-overview--overview).
+- **React compose** passes it to \`Form.Root\` and lays fields out in JSX — see [**React compose**](?path=/docs/controls-form-react-compose--overview).
+- **Xrm** passes it to \`XrmForm\`, lays fields out in FormXml and adds \`formContext\` — see [**Xrm**](?path=/docs/controls-form-xrm-overview--overview).
 
 The example below loads one account by hand. Try: switch \`telephone1\` to \`SingleLine.Email\`, or edit a field, save, and check the console.
                 `.trim(),

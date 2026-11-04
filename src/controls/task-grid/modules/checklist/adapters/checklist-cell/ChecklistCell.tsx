@@ -1,8 +1,8 @@
 import type { IEntityReference } from "@talxis/client-libraries";
-import { useOpenErrorDialog } from "@core";
+import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui";
-import { useDatasetControlModule } from "../../../../../dataset-control";
-import { Grid, IGridCellParams, useGridField } from "../../../../../grid";
+import { useDatasetControlModule } from "@controls/dataset-control";
+import { Grid, IGridCellParams, useGridField } from "@controls/grid";
 import type { IChecklistItemData } from "../../Checklist";
 import { ChecklistProgress } from "../../ui";
 

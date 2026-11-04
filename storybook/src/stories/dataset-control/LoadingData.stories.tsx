@@ -6,7 +6,7 @@ import { DependenciesExample, WaitingExample } from '../../dataset-control/examp
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-A DatasetControl doesn't hold records itself: it loads them every time it shows a view, on its first mount and again whenever the user switches the view or reloads. You decide how through \`onLoad\`, which gets the view the user is on and returns a provider with that view's records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
+A DatasetControl doesn't hold records itself: it loads them every time it shows a view, on its first mount and again whenever the user switches the view or reloads. You decide how through \`onLoad\`, which gets the view the user is on and returns \`{ provider }\` with that view's records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
 
 {{canvas: Wait for the deals}}
 
@@ -47,7 +47,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The control mounts', hook: 'onMounted', text: '`onMounted` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
     { title: 'Dependencies and modules load', hook: 'onLoadDependencies', text: '`onLoadDependencies` runs first, then each module\'s `onLoad` in the order of `modules`.' },
     { title: 'The view is picked', hook: 'onLoadViews', text: '`onLoadViews` lists the views, the modules add theirs, and the control picks the one asked for or the one the user was on while it is listed, else the first.' },
-    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` gets that view and returns the provider, and `view.resolve(provider)` gives the view\'s `data`, resolved once either way.' },
+    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` gets that view and returns `{ provider }`, and `view.resolve(provider)` gives the view\'s `data`, resolved once either way.' },
     { title: 'The view is applied', text: 'The control sets the view\'s linking and columns on the provider and puts back what the user changed in the view.' },
     { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `onReady` gets the control.' },
     { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `onDestroyed` gets it before its modules and provider are destroyed.' },

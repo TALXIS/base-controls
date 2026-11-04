@@ -1,7 +1,7 @@
 import { NestedControlRenderer } from "@fields/nested-control-renderer";
 import { IControlProps } from "../Control";
 import { useField, useForm } from "../../../hooks";
-import { BaseControls, usePcfContext } from "@core";
+import { BaseControls, usePcfContext } from "@pcf";
 import { IColumn, Sanitizer } from "@talxis/client-libraries";
 
 const getControlValue = (column: IColumn, value: any): any => {

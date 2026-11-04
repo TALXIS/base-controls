@@ -6,7 +6,7 @@ import { IsolationExample } from '../../isolated-frame/isolatedFrameExamples'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe instead, where nothing on the page can style it and nothing it injects reaches the page. It is meant for controls that share a page with styles or scripts you do not control. Try it below: the page carries another app's global CSS, which the grid in the page picks up and the same grid in a frame does not. Open **Code**: *GridExample.tsx* is the page, where changing that CSS reaches only the page's grid, and *FramedDeals.tsx* is what runs in the frame.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control inside its own iframe, built with \`createIsolatedHost\`, \`registerIsolatedContent\` or \`createIsolatedComponent\`, where nothing on the page can style it and nothing it injects reaches the page. Try it below: the grid in the page picks up another app's global CSS, and the same grid in a frame does not.
 
 {{canvas: Overview}}
 
@@ -48,7 +48,7 @@ One frame's own settings go in its \`frame\` prop, so every other prop goes to t
 
 ## How the frame gets its code
 
-By default, the frame loads the script \`@talxis/base-controls\` was loaded from: your bundle when everything is one file, as in a PCF. Pass \`scripts\` when that isn't so:
+The default \`scripts\` works when everything is one bundle, as in a PCF. Pass \`scripts\` when that isn't so:
 
 - **Your code is split into chunks, or served as ES modules in development:** one module entry that imports the module declaring the frame is enough, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`.
 - **The content is a bundle of its own:** point \`scripts\` at its entry, which calls \`registerIsolatedContent\`.

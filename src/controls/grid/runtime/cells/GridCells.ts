@@ -3,7 +3,7 @@ import { ThemeBuilder } from "@theme";
 import { CellFocusedEvent } from "ag-grid-community";
 import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@core";
-import { IParameters } from "@core/pcf/interfaces";
+import { IParameters } from "@pcf/interfaces";
 import { IGridInternalServiceLocator } from "..";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
 import { getRowNode } from "../rows/getRowNode";

@@ -1,4 +1,4 @@
-import { IPcfContext } from "@core/pcf/interfaces";
+import { IPcfContext } from "@pcf/interfaces";
 import { useRef } from "react"
 import { IEntity } from "../interfaces";
 import { FetchXmlBuilder } from "@talxis/client-libraries";

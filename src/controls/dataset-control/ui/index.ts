@@ -11,7 +11,7 @@ import { ViewSwitcher } from './view-switcher';
 import { QuickFind, QuickFindCallout, QuickFindCompactButton } from './quick-find';
 import { Pagination } from './pagination';
 import { PageSizeSwitcher } from './page-size-switcher';
-import { EmptyRecords } from '@ui/empty-records';
+import { EmptyState } from './empty-state';
 import { EditColumnsButton } from './edit-columns-button';
 import { EditColumnsPanel } from './edit-columns-panel';
 import { EditColumnsSelector } from './edit-columns-selector';
@@ -32,7 +32,7 @@ export type { IViewSwitcherUiProps, IViewSwitcherUiComponents } from './view-swi
 export type { IQuickFindUiProps, IQuickFindUiComponents, IQuickFindUiLabels, IQuickFindCalloutProps, IQuickFindCalloutComponents, IQuickFindCalloutColumnProps, IQuickFindCompactButtonProps, IQuickFindCompactButtonComponents } from './quick-find';
 export type { IPaginationUiProps, IPaginationUiComponents, IPaginationUiLabels } from './pagination';
 export type { IPageSizeSwitcherUiProps, IPageSizeSwitcherUiComponents } from './page-size-switcher';
-export type { IEmptyRecordsUiProps, IEmptyRecordsUiComponents } from '@ui/empty-records';
+export type { IEmptyStateUiProps, IEmptyStateUiComponents } from './empty-state';
 export type { IEditColumnsButtonUiProps, IEditColumnsButtonUiComponents } from './edit-columns-button';
 export type { IEditColumnsPanelUiProps, IEditColumnsPanelUiComponents, IEditColumnsPanelFooterProps } from './edit-columns-panel';
 export type { IEditColumnsSelectorUiProps, IEditColumnsSelectorUiComponents, IEditColumnsSelectorOptionProps } from './edit-columns-selector';
@@ -73,7 +73,7 @@ export interface IDatasetControlUi {
     /** The record range and the page size menu. */
     PageSizeSwitcher: typeof PageSizeSwitcher;
     /** The empty state. */
-    EmptyRecords: typeof EmptyRecords;
+    EmptyState: typeof EmptyState;
     /** The button that opens the column editor. */
     EditColumnsButton: typeof EditColumnsButton;
     /** The panel the column editor sits in. */
@@ -107,7 +107,7 @@ export const DatasetControlUi: IDatasetControlUi = {
     QuickFindCompactButton,
     Pagination,
     PageSizeSwitcher,
-    EmptyRecords,
+    EmptyState,
     EditColumnsButton,
     EditColumnsPanel,
     EditColumnsSelector,

@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { useRerender, useLabels } from "@core";
+import { useRerender } from "@core";
+import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../runtime";
 import { DatasetControlUi } from "../../ui";

@@ -5,17 +5,11 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@controls": [
-        "src/controls/index.ts"
+      "@core": [
+        "src/core/index.ts"
       ],
-      "@controls/*": [
-        "src/controls/*"
-      ],
-      "@ui": [
-        "src/ui/index.ts"
-      ],
-      "@ui/*": [
-        "src/ui/*"
+      "@core/*": [
+        "src/core/*"
       ],
       "@theme": [
         "src/theme/index.ts"
@@ -23,29 +17,47 @@
       "@theme/*": [
         "src/theme/*"
       ],
-      "@hooks": [
-        "src/hooks/index.ts"
+      "@ui": [
+        "src/ui/index.ts"
       ],
-      "@hooks/*": [
-        "src/hooks/*"
+      "@ui/*": [
+        "src/ui/*"
       ],
-      "@interfaces": [
-        "src/interfaces/index.ts"
+      "@fields": [
+        "src/fields/index.ts"
       ],
-      "@interfaces/*": [
-        "src/interfaces/*"
+      "@fields/*": [
+        "src/fields/*"
+      ],
+      "@data": [
+        "src/data/index.ts"
+      ],
+      "@data/*": [
+        "src/data/*"
+      ],
+      "@controls": [
+        "src/controls/index.ts"
+      ],
+      "@controls/*": [
+        "src/controls/*"
+      ],
+      "@labels": [
+        "src/labels/index.ts"
+      ],
+      "@labels/*": [
+        "src/labels/*"
+      ],
+      "@pcf": [
+        "src/pcf/index.ts"
+      ],
+      "@pcf/*": [
+        "src/pcf/*"
       ],
       "@legacy": [
         "src/legacy/react-components/index.ts"
       ],
       "@legacy/*": [
         "src/legacy/react-components/*"
-      ],
-      "@utils": [
-        "src/utils/index.ts"
-      ],
-      "@utils/*": [
-        "src/utils/*"
       ],
       "@/*": [
         "src/*"

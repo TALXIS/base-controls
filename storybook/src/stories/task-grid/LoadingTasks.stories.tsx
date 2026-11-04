@@ -67,7 +67,10 @@ Every data source also takes \`provider\`, a class extending \`TaskDataProvider\
 | \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`onGetParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
 | \`onGetNewTaskDefaults\` | \`(params) => IRawRecord\`, values every new task starts with. |
 
-*Edit* opens the task's form in a side dialog, or the bulk edit form for several, read-only for inactive tasks or without \`enableEditing\`. New tasks are created straight away in their place, with the project lookup filled in when the Project module is there. After a form closes or a save, the store reads back what changed, so dates a backend rescheduled show up. Every method is \`protected\`, for a subclass to change.
+- *Edit* opens the task's form in a side dialog, or the bulk edit form for several, read-only for inactive tasks or without \`enableEditing\`.
+- New tasks are created straight away in their place, with the project lookup filled in when the Project module is there.
+- After a form closes or a save, the store reads back what changed, so dates a backend rescheduled show up.
+- Every method is \`protected\`, for a subclass to change.
 
 ## Start from a task
 
@@ -82,7 +85,7 @@ Implement \`ITaskStore\` and pass it to \`createTaskDataSource\`:
 | Method | Description |
 |---|---|
 | \`onLoad(provider)\` | Returns \`{ rawData, metadata, columns }\`: every task of the view, the table's metadata, and the columns. |
-| \`onGetAvailableColumns(options?)\`, \`onGetAvailableRelatedColumns()\` | What Edit columns offers. |
+| \`onGetAvailableColumns(options?)\`, \`onGetAvailableRelatedColumns()\` | What *Edit columns* offers. |
 | \`onCreateTask(params)\` | Creates the task the grid already shows, from \`{ parentRecord, stackRank, data, taskId }\`. Returns \`{ record }\`, or \`null\` to drop it. |
 | \`onSaveTask(task)\` | Saves what changed on a task, its parent and rank included. |
 | \`onDeleteTasks({ taskIds, tree })\` | Deletes the tasks, deepest first. Returns the ones deleted and the ones that failed, or \`null\` when cancelled. |

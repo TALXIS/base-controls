@@ -1,5 +1,6 @@
 import { EventEmitter, Filtering, Operators, Type, Condition } from "@talxis/client-libraries";
-import { BaseControls, LabelsOf } from "@core";
+import { BaseControls } from "@pcf";
+import { LabelsOf } from "@labels";
 import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS } from "./labels";
 
 export interface IDatasetColumnFilteringModelEvents {

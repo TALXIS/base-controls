@@ -1,7 +1,7 @@
-import { IPcfContext, IParameters } from "@core/pcf/interfaces";
+import { IPcfContext, IParameters } from "@pcf/interfaces";
 import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { BaseControls } from "@core";
-import { IGridValueRenderer, IGridValueRendererParameters } from "@fields/value-renderer";
+import { BaseControls } from "@pcf";
+import { IGridValueRenderer, IGridValueRendererParameters } from "../../adapters/value-renderer";
 import { IGridInternalServiceLocator } from "..";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";

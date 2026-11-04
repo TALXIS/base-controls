@@ -2,7 +2,7 @@ import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
 import { IAlignment } from "@core";
-import { IGridValueRenderer } from "@fields/value-renderer";
+import { IGridValueRenderer } from "../../../../adapters/value-renderer";
 import { CellField } from "../../../../adapters/cells/field/CellField";
 import { CellRoot } from "../../../../adapters/cells/root/CellRoot";
 import { CellTheme } from "../../../../adapters/cells/theme/CellTheme";
