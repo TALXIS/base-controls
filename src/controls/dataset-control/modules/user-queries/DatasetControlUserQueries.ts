@@ -1,5 +1,5 @@
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
-import { EventEmitter, IDataProvider, ILinkEntityExposedExpression, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
 import type { IEventSubscriber } from "@core";
@@ -114,11 +114,6 @@ export class DatasetControlUserQueries {
         }
     }
 
-    /** Saves the changes made to the views in Manage views. */
-    public async saveViews(): Promise<void> {
-        await this._execute(async () => this._throwIfSaveFailed(await this.getManageProvider().save()));
-    }
-
     /** Deletes the views, then lists the ones left in Manage views. */
     public async deleteViews(viewIds: string[]): Promise<void> {
         await this._execute(async () => {
@@ -191,14 +186,6 @@ export class DatasetControlUserQueries {
             }
         }
         return linking.filter(link => !!link.alias && usedAliases.has(link.alias));
-    }
-
-    private _throwIfSaveFailed(results: IRecordSaveOperationResult[]): void {
-        const failed = results.filter(result => !result.success);
-        if (failed.length > 0) {
-            const messages = failed.flatMap(result => result.errors?.map(error => error.message) ?? []);
-            throw new Error(messages.length > 0 ? messages.join('\n') : this._labels.get('userQueries.saveFailed'));
-        }
     }
 
     //the menu calls operations without awaiting them

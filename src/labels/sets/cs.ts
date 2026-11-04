@@ -4,6 +4,7 @@ import { EMPTY_STATE_LABELS_CS } from '@controls/dataset-control/adapters/empty-
 import { PAGE_SIZE_SWITCHER_LABELS_CS } from '@controls/dataset-control/adapters/page-size-switcher/labels/cs';
 import { PAGINATION_LABELS_CS } from '@controls/dataset-control/adapters/pagination/labels/cs';
 import { QUICK_FIND_LABELS_CS } from '@controls/dataset-control/adapters/quick-find/labels/cs';
+import { RIBBON_LABELS_CS } from '@controls/dataset-control/adapters/ribbon/labels/cs';
 import { DATASET_CONTROL_LABELS_CS } from '@controls/dataset-control/adapters/root/labels/cs';
 import { VIEW_SWITCHER_LABELS_CS } from '@controls/dataset-control/adapters/view-switcher/labels/cs';
 import { USER_QUERIES_LABELS_CS } from '@controls/dataset-control/modules/user-queries/labels/cs';
@@ -45,6 +46,7 @@ export const CZECH_LABELS: Labels = {
     ...PAGE_SIZE_SWITCHER_LABELS_CS,
     ...PAGINATION_LABELS_CS,
     ...QUICK_FIND_LABELS_CS,
+    ...RIBBON_LABELS_CS,
     ...DATASET_CONTROL_LABELS_CS,
     ...VIEW_SWITCHER_LABELS_CS,
     ...USER_QUERIES_LABELS_CS,

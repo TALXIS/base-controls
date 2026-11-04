@@ -4,6 +4,7 @@ import { EMPTY_STATE_LABELS } from '@controls/dataset-control/adapters/empty-sta
 import { PAGE_SIZE_SWITCHER_LABELS } from '@controls/dataset-control/adapters/page-size-switcher/labels/en';
 import { PAGINATION_LABELS } from '@controls/dataset-control/adapters/pagination/labels/en';
 import { QUICK_FIND_LABELS } from '@controls/dataset-control/adapters/quick-find/labels/en';
+import { RIBBON_LABELS } from '@controls/dataset-control/adapters/ribbon/labels/en';
 import { DATASET_CONTROL_LABELS } from '@controls/dataset-control/adapters/root/labels/en';
 import { VIEW_SWITCHER_LABELS } from '@controls/dataset-control/adapters/view-switcher/labels/en';
 import { USER_QUERIES_LABELS } from '@controls/dataset-control/modules/user-queries/labels/en';
@@ -45,6 +46,7 @@ export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     PAGE_SIZE_SWITCHER_LABELS,
     PAGINATION_LABELS,
     QUICK_FIND_LABELS,
+    RIBBON_LABELS,
     DATASET_CONTROL_LABELS,
     VIEW_SWITCHER_LABELS,
     USER_QUERIES_LABELS,
