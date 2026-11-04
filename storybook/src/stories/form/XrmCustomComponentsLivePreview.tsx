@@ -1,6 +1,6 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
-import { XrmForm, XrmMemoryStrategy, useField } from "@talxis/base-controls"
+import { XrmForm, createMemoryRecord, useField } from "@talxis/base-controls"
 import { ControlComponents } from "@talxis/base-controls"
 import { ComboBox, Stack, Text } from "@fluentui/react"
 import { FormControl, InputLabel, MenuItem, Select, Slider as MuiSlider, TextField as MuiTextField } from "@mui/material"
@@ -28,7 +28,7 @@ export const XrmCustomComponentsLivePreview = (props: IXrmCustomComponentsLivePr
             const factory = new Function(
                 "React",
                 "XrmForm",
-                "XrmMemoryStrategy",
+                "createMemoryRecord",
                 "useField",
                 "ControlComponents",
                 "formMetadata",
@@ -62,7 +62,7 @@ export const XrmCustomComponentsLivePreview = (props: IXrmCustomComponentsLivePr
             const Component = factory(
                 React,
                 XrmForm,
-                XrmMemoryStrategy,
+                createMemoryRecord,
                 useField,
                 ControlComponents,
                 formMetadata,

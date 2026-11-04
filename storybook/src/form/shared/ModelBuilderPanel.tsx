@@ -14,11 +14,11 @@ import {
     getTheme,
     mergeStyleSets,
 } from "@fluentui/react"
-import { DataTypes, Dataset, IColumn, IRawRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries"
+import { DataTypes, Dataset, IColumn, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, Panel } from "@talxis/base-controls"
 import { usePcfContext } from "@talxis/base-controls"
-import { Form, IMemoryStrategyParams, IOnSaveParams, MemoryStrategy, useField } from "@talxis/base-controls"
+import { createMemoryRecord, Form, useField } from "@talxis/base-controls"
 import type { ICommandBarItemProps } from "@fluentui/react"
 import { IModelOption, TSupportedModelDataType, createModelColumn, getModelTypeDefinition, modelTypeDefinitions } from "./modelDefinition"
 import { parseModelColumns, serializeModelColumns } from "./modelStore"
@@ -177,24 +177,6 @@ const describeColumn = (column: IColumn): string => {
     }
 
     return "—"
-}
-
-class FieldEditorStrategy extends MemoryStrategy {
-    private _onCommit: (updatedData: { [key: string]: any }) => void
-
-    constructor(params: IMemoryStrategyParams, onCommit: (updatedData: { [key: string]: any }) => void) {
-        super(params)
-        this._onCommit = onCommit
-    }
-
-    public async onSave(params: IOnSaveParams): Promise<IRecordSaveOperationResult> {
-        this._onCommit(params.updatedData)
-        return {
-            success: true,
-            fields: Object.keys(params.updatedData),
-            recordId: params.recordId,
-        }
-    }
 }
 
 const LookupTargetsField = () => {
@@ -550,25 +532,29 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         )))
     }
 
-    const fieldStrategy = useMemo(() => {
+    const fieldRecord = useMemo(() => {
         const column = draftColumn ?? (selectedIndex !== null ? columns[selectedIndex] ?? null : null)
-        return new FieldEditorStrategy({
-            onGetColumns: () => [
+        const rawTargets = column?.metadata?.Targets
+        return createMemoryRecord({
+            columns: [
                 { name: "name", alias: "name", displayName: "Name", dataType: DataTypes.SingleLineText },
                 { name: "targets", alias: "targets", displayName: "Lookup targets", dataType: DataTypes.Multiple },
                 { name: "optionSet", alias: "optionSet", displayName: "Options", dataType: DataTypes.Multiple },
             ],
-            onGetData: () => {
-                const rawTargets = column?.metadata?.Targets
-                return {
-                    id: column?.name ?? "",
-                    name: column?.name ?? "",
-                    targets: Array.isArray(rawTargets) ? rawTargets : [],
-                    optionSet: normalizeOptions(column?.metadata?.OptionSet),
-                }
+            data: {
+                id: column?.name ?? "",
+                name: column?.name ?? "",
+                targets: Array.isArray(rawTargets) ? rawTargets : [],
+                optionSet: normalizeOptions(column?.metadata?.OptionSet),
             },
-            onGetMetadata: () => ({ PrimaryIdAttribute: "id", PrimaryNameAttribute: "name" }),
-        }, (updatedData) => commitFieldChangesRef.current(updatedData))
+            metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "name" },
+            onSave: async (record) => {
+                const fields = record.getColumns().map((fieldColumn) => fieldColumn.name).filter((name) => record.isDirty(name))
+                const rawData = record.toRawData()
+                commitFieldChangesRef.current(Object.fromEntries(fields.map((name) => [name, rawData[name]])))
+                return { success: true, fields, recordId: record.getRecordId() }
+            },
+        })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [draftColumn, selectedIndex])
 
@@ -764,7 +750,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                 <div className={styles.panelSection}>
                     <Form.Root
                         key={selectedColumn.name}
-                        strategy={fieldStrategy}
+                        onLoad={async () => ({ record: fieldRecord })}
                         onAfterSave={({ success }: { success: boolean }) => {
                             if (success) {
                                 closePanel()

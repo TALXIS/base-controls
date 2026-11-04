@@ -20,24 +20,22 @@ const styles = mergeStyleSets({
 })
 
 const sandboxDeclarations = `declare const React: typeof import("react");
-interface IXrmFormStrategy {
-  onGetData(): any;
-  onGetColumns(): any[];
-  onGetMetadata(): any;
-  onGetFormXml(): string;
+interface IMemoryRecordParams {
+  columns: any[];
+  data: Record<string, any>;
+  metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
+  onSave?: (record: any) => Promise<{ success: boolean; errors?: any[] }>;
+}
+declare const createMemoryRecord: (params: IMemoryRecordParams) => any;
+interface IXrmFormLoadResult {
+  record: any;
+  formXml: string;
 }
 interface IXrmFormProps {
-  strategy: IXrmFormStrategy;
+  onLoad: () => Promise<IXrmFormLoadResult>;
   children?: React.ReactNode;
 }
 declare const XrmForm: React.ComponentType<IXrmFormProps>;
-interface IXrmMemoryStrategyParams {
-  onGetData: () => any;
-  onGetColumns: () => any[];
-  onGetMetadata: () => any;
-  onGetFormXml: () => string;
-}
-declare const XrmMemoryStrategy: new (config: IXrmMemoryStrategyParams) => IXrmFormStrategy;
 declare const formMetadata: {
   PrimaryIdAttribute: string;
   PrimaryNameAttribute: string;

@@ -21,11 +21,13 @@ const customComponentsExamples: IXrmCustomComponentsExample[] = [
             'Use this when specific Xrm controls need a tailored visual treatment.',
             'The form remains model-driven; only the rendered control presentation changes.',
         ],
-        code: `const strategy = new XrmMemoryStrategy({
-  onGetData: () => getCustomComponentsRecord(),
-  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => getCustomComponentsFormXml(),
+        code: `const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getCustomComponentsRecord(),
+    columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: getCustomComponentsFormXml(),
 });
 
 const customControlIds = new Set(["customLeadName", "customPhoneNumber", "customEngagementStage", "customMomentumScore", "customWorkspaceUrl", "customNotesPanel"]);
@@ -145,7 +147,7 @@ const XrmCustomComponentsExample = () => {
 
   return (
     <XrmForm
-      strategy={strategy}
+      onLoad={onLoad}
       onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
       components={{
         control: {
@@ -196,11 +198,13 @@ const XrmCustomComponentsExample = () => {
             'The example keeps the orientation switch inside the rendered preview, matching the React compose tabs demo.',
             'The code view isolates the custom tabs implementation without showing extra data or FormXml panels.',
         ],
-        code: `const strategy = new XrmMemoryStrategy({
-  onGetData: () => getCustomComponentsRecord(),
-  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => getCustomComponentsFormXml(),
+        code: `const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getCustomComponentsRecord(),
+    columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: getCustomComponentsFormXml(),
 });
 
 function XrmStepperTabs(props) {
@@ -253,7 +257,7 @@ const XrmCustomComponentsExample = () => {
 
       <XrmForm
         key={orientation}
-        strategy={strategy}
+        onLoad={onLoad}
         components={{
           tabs: {
             onRenderTabs: (tabsProps) => <XrmStepperTabs {...tabsProps} orientation={orientation} />,
@@ -272,11 +276,13 @@ const XrmCustomComponentsExample = () => {
             'Use this when the host application renders the rest of its UI in Material UI and wants a real MUI Button, not the runtime-supplied Fluent Save button.',
             'The runtime-supplied "save" item (and its commandBarButtonAs renderer) is ignored entirely; only the "unsaved-changes" far item is read, to drive the dirty-state chip.',
         ],
-        code: `const strategy = new XrmMemoryStrategy({
-  onGetData: () => getCustomComponentsRecord(),
-  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => getCustomComponentsFormXml(),
+        code: `const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getCustomComponentsRecord(),
+    columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: getCustomComponentsFormXml(),
 });
 
 function MaterialRibbon(props) {
@@ -300,7 +306,7 @@ const XrmCustomComponentsExample = () => {
 
   return (
     <XrmForm
-      strategy={strategy}
+      onLoad={onLoad}
       onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
       components={{
         ribbon: {
@@ -322,11 +328,13 @@ const XrmCustomComponentsExample = () => {
             'Each toast auto-hides after 6 seconds and can also be dismissed early via its close button; dismissal is local to this renderer, not a call back into the runtime.',
             'The buttons in this example call formContext.ui.setFormNotification to raise notifications, exactly like a form script would.',
         ],
-        code: `const strategy = new XrmMemoryStrategy({
-  onGetData: () => getCustomComponentsRecord(),
-  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => getCustomComponentsFormXml(),
+        code: `const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getCustomComponentsRecord(),
+    columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: getCustomComponentsFormXml(),
 });
 
 function MaterialNotifications(props) {
@@ -393,7 +401,7 @@ const XrmCustomComponentsExample = () => {
       </MuiStack>
 
       <XrmForm
-        strategy={strategy}
+        onLoad={onLoad}
         onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
         components={{
           notifications: {

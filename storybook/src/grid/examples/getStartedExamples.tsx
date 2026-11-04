@@ -284,32 +284,9 @@ const FORM_SECTIONS = [
     { label: 'Timing', columnNames: ['closedate', 'timespent', 'nextstep'] },
 ]
 
-//the form saves into the record the grid shows
-class DealStrategy extends MemoryStrategy {
-    private _deal: IRecord
-
-    constructor(deal: IRecord) {
-        super({
-            onGetColumns: () => deal.getDataProvider().getColumns(),
-            onGetData: () => ({ ...deal.getRawData() }),
-            onGetMetadata: () => ({ PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name' }),
-        })
-        this._deal = deal
-    }
-
-    public async onSave({ updatedData }: { updatedData: { [columnName: string]: unknown } }) {
-        Object.entries(updatedData).forEach(([columnName, value]) => this._deal.setValue(columnName, value))
-        return this._deal.save()
-    }
-}
-
-const createDealStrategy = (deal: IRecord) => new DealStrategy(deal)
-
 /** The deal in a form, saved from its ribbon. */
 const DealForm = (props: { deal: IRecord }) => {
-    const strategy = React.useMemo(() => createDealStrategy(props.deal), [props.deal])
-
-    return <Form.Root strategy={strategy}>
+    return <Form.Root key={props.deal.getRecordId()} onLoad={async () => ({ record: props.deal })}>
         <Form.Ribbon />
         {FORM_SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: 2 }} cellLabelPosition='Top'>
             {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>

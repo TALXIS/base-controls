@@ -181,21 +181,8 @@ const SECTIONS = [
     { label: 'Planning', columnNames: ['owner', 'duedate', 'estimate'] },
 ]
 
-const createItemStrategy = (item: IRecord) => new MemoryStrategy({
-    onGetColumns: () => item.getDataProvider().getColumns(),
-    onGetData: () => ({ ...item.getRawData() }),
-    onGetMetadata: () => ({ PrimaryIdAttribute: 'itemid', PrimaryNameAttribute: 'name' }),
-})
-
 const ItemForm = (props: { item: IRecord }) => {
-    const strategy = React.useMemo(() => createItemStrategy(props.item), [props.item])
-    //every change is saved into the item the checklist shows
-    const saveChange = async (columnName: string, value: unknown) => {
-        props.item.setValue(columnName, value)
-        await props.item.save()
-    }
-
-    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName: string, value: unknown) => { saveChange(columnName, value) }}>
+    return <Form.Root key={props.item.getRecordId()} onLoad={async () => ({ record: props.item })}>
         {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} cellLabelPosition='Top'>
             {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
                 <Form.Cell>

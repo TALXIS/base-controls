@@ -17,22 +17,27 @@ import { XrmFormComponents } from "./components";
 
 
 export const XrmForm = (props: IXrmFormProps) => {
-    const { strategy } = props;
     const components = {...XrmFormComponents, ...props.components};
     const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal } | null>(null);
     const pcfContext = usePcfContext();
+    const formXmlRef = React.useRef('');
+
+    const onLoad = async () => {
+        const result = await props.onLoad();
+        formXmlRef.current = result.formXml;
+        return result;
+    };
 
     const onFormReady = (api: IFormApi) => {
         const form = (api as IFormApiInternal)._getForm();
-        const formXml = strategy.onGetFormXml();
-        const nextFormXmlModel = new FormXmlForm({ formXml, lcid: pcfContext.userSettings.languageId, form });
+        const nextFormXmlModel = new FormXmlForm({ formXml: formXmlRef.current, lcid: pcfContext.userSettings.languageId, form });
         const formContext = createXrmFormContext(nextFormXmlModel);
         setForm({ xmlModel: nextFormXmlModel, xrmFormContext: formContext });
         props.onFormReady?.({ formContext, api });
     }
 
     return <Form.Root
-        strategy={strategy}
+        onLoad={onLoad}
         onAfterSave={props.onAfterSave}
         onBeforeSave={props.onBeforeSave}
         onDirtyStateChanged={props.onDirtyStateChanged}

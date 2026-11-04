@@ -1,12 +1,10 @@
-import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult, Localization } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { IFormStrategy, IOnLoadResult } from "./strategies/interfaces";
 import { ErrorHelper } from "@core";
 import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
 
 export interface IFormParams {
-    deps: IOnLoadResult;
-    strategy: IFormStrategy;
+    record: IRecord;
 }
 
 export interface IFormEvents extends IFormEventHandlers {
@@ -40,24 +38,29 @@ export interface IForm {
     getField: (fieldName: string) => IField;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
+    /** The form's own required level for the field when set, otherwise the record's. */
+    getFieldRequiredLevel: (fieldName: string) => Xrm.Attributes.RequirementLevel;
+    /** The form's own rules for the field first, then the record's. */
+    isFieldValid: (fieldName: string) => IFieldValidationResult;
 }
+
+const VALID: IFieldValidationResult = { error: false, errorMessage: '' };
+
+const isEmpty = (value: unknown) => value === undefined || value === null || value === '';
+
+const getRequiredMessage = () => Localization.GetString('utils/dataset/data-providers/Record/Field/Validation/ColumnRequired');
 
 export class FormModel implements IForm {
     public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
-    private _dataProvider: IMemoryProvider;
-    private _strategy: IFormStrategy;
     private _saveOperationPerformed: boolean = false;
     private _validationSummary: IValidation[] = [];
     private _validationExpressions: Map<string, () => IFieldValidationResult> = new Map();
     private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
-    private _disabledExpressions: Map<string, () => boolean> = new Map();
     private _isDirty: boolean = false;
 
     constructor(params: IFormParams) {
-        this._strategy = params.strategy;
-        this._dataProvider = this._createDataProvider(params.deps);
-        this._record = this._dataProvider.getRecords()[0];
+        this._record = params.record;
         this._isDirty = this.isDirty();
         this._registerEventHandlers();
     }
@@ -79,40 +82,56 @@ export class FormModel implements IForm {
     }
 
     public getMetadata() {
-        return this._dataProvider.getMetadata() as any;
+        return this._record.getDataProvider().getMetadata() as any;
     }
 
     public getRecordReference(): ComponentFramework.EntityReference {
         return this._record.getNamedReference();
     }
 
+    //kept off the record until expressions are hooks: see Dev › Provider rework, section 8
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
-        this._requiredLevelExpressions.set(fieldName, () => {
-            return FormModel.getXrmRequirementLevelFromEnum(requiredLevel);
-        });
-        this._record.expressions.setRequiredLevelExpression(fieldName, () => this._requiredLevelExpressions.get(fieldName)!());
+        this._requiredLevelExpressions.set(fieldName, () => FormModel.getXrmRequirementLevelFromEnum(requiredLevel));
     }
 
     public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {
         this._validationExpressions.set(fieldName, () => validation);
-        this._record.expressions.setValidationExpression(fieldName, () => this._validationExpressions.get(fieldName)!());
+    }
+
+    public getFieldRequiredLevel(fieldName: string): Xrm.Attributes.RequirementLevel {
+        return this._requiredLevelExpressions.get(fieldName)?.() ?? this.getField(fieldName).getRequiredLevel();
+    }
+
+    public isFieldValid(fieldName: string): IFieldValidationResult {
+        const field = this.getField(fieldName);
+        const ownResult = this._validationExpressions.get(fieldName)?.();
+        if (ownResult?.error) {
+            return ownResult;
+        }
+        const ownRequiredLevel = this._requiredLevelExpressions.get(fieldName)?.();
+        if (ownRequiredLevel === undefined) {
+            return field.isValid();
+        }
+        const isValueEmpty = isEmpty(field.getValue());
+        if (isValueEmpty && ownRequiredLevel === 'required') {
+            return { error: true, errorMessage: getRequiredMessage() };
+        }
+        const recordResult = field.isValid();
+        return isValueEmpty && recordResult.errorMessage === getRequiredMessage() ? VALID : recordResult;
     }
 
     public destroy(): void {
         this.events.dispatchEvent('onDestroy');
         this.events.clearEventListeners();
-        this._validationExpressions.clear();
-        this._requiredLevelExpressions.clear();
-        this._disabledExpressions.clear();
-        this._dataProvider.destroy();
+        this._record.removeEventListener('onFieldValueChanged', this._handleFieldValueChanged);
     }
 
     public isDirty(): boolean {
-        return this._dataProvider.isDirty();
+        return this._record.isDirty();
     }
 
     public isValid(): boolean {
-        return this._record.isValid();
+        return this.getFields().every(field => !this.isFieldValid(field.getColumn().name).error);
     }
 
     public getData(): { [key: string]: any } {
@@ -147,14 +166,7 @@ export class FormModel implements IForm {
                     return;
                 }
 
-                // Computed after the blocker so any values a before-save handler sets are
-                // included in what actually gets persisted.
-                const changedData = this._getChangedData(this._getDirtyFields());
-
-                const saveResult = await this._strategy.onSave({
-                    updatedData: changedData,
-                    recordId: this._record.getRecordId(),
-                });
+                const saveResult = await this._record.save();
 
                 if (!saveResult.success) {
                     this._createValidationSummaryFromSaveResult(saveResult);
@@ -162,8 +174,6 @@ export class FormModel implements IForm {
                     return;
                 }
 
-                await this._record.save();
-                this._registerExistingExpressions();
                 this._createValidationSummaryFromFields(this.getFields());
                 this._dispatchDirtyStateIfChanged();
                 this._dispatchAfterSave({ success: true });
@@ -197,19 +207,6 @@ export class FormModel implements IForm {
         }
     }
 
-    private _createDataProvider(deps: IOnLoadResult): IMemoryProvider {
-        const { data, columns, metadata } = deps;
-
-        const provider = new MemoryDataProvider({
-            dataSource: [data],
-            metadata: metadata
-        });
-
-        provider.setColumns(columns);
-        provider.refreshSync();
-        return provider;
-    }
-
     private _registerEventHandlers(): void {
         this._record.addEventListener('onFieldValueChanged', this._handleFieldValueChanged);
     }
@@ -231,33 +228,12 @@ export class FormModel implements IForm {
         this.events.dispatchEvent('onDirtyStateChanged', isDirty);
     }
 
-    private _registerExistingExpressions(): void {
-        this._requiredLevelExpressions.forEach((expression, fieldName) => {
-            this._record.expressions.setRequiredLevelExpression(fieldName, expression);
-        });
-        this._validationExpressions.forEach((expression, fieldName) => {
-            this._record.expressions.setValidationExpression(fieldName, expression);
-        });
-    }
-
-    private _getChangedData(dirtyFields: IField[]): { [key: string]: any } {
-        const rawData = this._record.toRawData();
-
-        return Object.fromEntries(
-            dirtyFields.map(field => [field.getColumn().name, rawData[field.getColumn().name]])
-        );
-    }
-
-    private _getDirtyFields(): IField[] {
-        return this._record.getFields().filter(field => field.isDirty());
-    }
-
     private _createValidationSummaryFromFields(fields: IField[]): void {
         this._validationSummary = fields
             .map(field => {
                 return {
                     fieldName: field.getColumn().name,
-                    ...field.isValid()
+                    ...this.isFieldValid(field.getColumn().name)
                 };
             })
             .filter(validation => !!validation.error);

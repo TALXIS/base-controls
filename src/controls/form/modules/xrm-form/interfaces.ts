@@ -1,5 +1,4 @@
-import type { IFormApi, IFormEventHandlers } from "../../interfaces";
-import type { IFormStrategy } from "../../runtime/strategies";
+import type { IFormApi, IFormEventHandlers, IFormLoadResult } from "../../interfaces";
 import type { IControlComponents } from "../../adapters/control/components";
 import type { IRibbonComponents } from "../../adapters/ribbon/components";
 import type { IFormNotificationsComponents } from "../../adapters/notifications/components";
@@ -205,14 +204,10 @@ export interface IXrmFormContext {
     getControl(nameOrIndexOrDelegate?: any): any;
 }
 
-/**
- * Strategy contract required by `XrmForm`.
- */
-export interface IXrmFormStrategy extends IFormStrategy {
-    /**
-     * Returns the FormXml definition used to build the form layout model.
-     */
-    onGetFormXml: () => string;
+/** What an `XrmForm`'s `onLoad` resolves. */
+export interface IXrmFormLoadResult extends IFormLoadResult {
+    /** The layout the form is drawn from. */
+    formXml: string;
 }
 
 /**
@@ -229,8 +224,8 @@ export interface IOnXrmFormReadyParams {
  * Props for the React `XrmForm` runtime.
  */
 export interface IXrmFormProps extends Partial<IFormEventHandlers> {
-    /** Strategy responsible for loading/saving the record and supplying FormXml. */
-    strategy: IXrmFormStrategy;
+    /** Runs on mount and on refresh; remount with a `key` to load another record. */
+    onLoad: () => Promise<IXrmFormLoadResult>;
     /** Fired when the form context runtime and the base Form API are ready. */
     onFormReady?: (params: IOnXrmFormReadyParams) => void;
     /** Top-level Xrm overridable UI configuration. */

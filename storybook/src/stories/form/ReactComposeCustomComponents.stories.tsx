@@ -4,7 +4,7 @@ import { Form } from '@talxis/base-controls'
 import type { IFormApi } from '@talxis/base-controls'
 import { ExampleRunner, renderStory } from './storyHelpers'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
-import { getMemoryStrategy } from '../../form/shared/formModel'
+import { getMemoryRecord } from '../../form/shared/formModel'
 import { ReactComposeLivePreview } from './ReactComposeLivePreview'
 
 interface ICustomComponentsExample {
@@ -16,13 +16,10 @@ interface ICustomComponentsExample {
     previewCode?: string
 }
 
-const sharedStrategyCode = `const strategy = new MemoryStrategy({
-  onGetData: () => recordData,
-  onGetColumns: () => modelColumns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "id",
-    PrimaryNameAttribute: "text",
-  }),
+const sharedRecordCode = `const record = createMemoryRecord({
+  columns: modelColumns,
+  data: recordData,
+  metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "text" },
 });
 `
 
@@ -35,7 +32,7 @@ const customComponentsExamples: ICustomComponentsExample[] = [
             'This is useful when navigation should look like a stepper, wizard, sidebar, or another domain-specific shell.',
             'The underlying tabs state and tab content stay the same; you replace the presentation layer only.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 const stepperTabs = [
   { id: "general", label: "General" },
   { id: "details", label: "Details" },
@@ -76,7 +73,7 @@ const FormExample = () => {
   const [orientation, setOrientation] = React.useState("horizontal");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
@@ -133,7 +130,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const stepperTabs = [
   { id: "general", label: "General" },
   { id: "details", label: "Details" },
@@ -174,7 +171,7 @@ const FormExample = () => {
   const [orientation, setOrientation] = React.useState("horizontal");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
@@ -240,7 +237,7 @@ const FormExample = () => {
             'This is a good fit for read/write custom widgets that still participate in the form runtime.',
             'You can read and write the bound field value while keeping validation, save flow, and notifications integrated.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 function RatingButtons() {
   const field = useField();
   const currentValue = Number(field?.getValue() ?? 0);
@@ -280,7 +277,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("custom");
 
   return (
-    <Form.Root strategy={strategy} onFormReady={(api) => api.getField("number").setValue(0)}>
+    <Form.Root onLoad={async () => ({ record })} onFormReady={(api) => api.getField("number").setValue(0)}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -306,7 +303,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 function RatingButtons() {
   const field = useField();
   const currentValue = Number(field?.getValue() ?? 0);
@@ -346,7 +343,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("custom");
 
   return (
-    <Form.Root strategy={strategy} onFormReady={(api) => api.getField("number").setValue(0)}>
+    <Form.Root onLoad={async () => ({ record })} onFormReady={(api) => api.getField("number").setValue(0)}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -381,7 +378,7 @@ const FormExample = () => {
             'This is useful for summaries, helper panels, or domain-specific visualizations embedded in the form layout.',
             'Keeping the custom content compact usually reads better than mixing several large custom surfaces in one section.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 function SummaryPanel() {
   const textField = useField("text");
   const phoneField = useField("phone");
@@ -409,7 +406,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -439,7 +436,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 function SummaryPanel() {
   const textField = useField("text");
   const phoneField = useField("phone");
@@ -467,7 +464,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -506,7 +503,7 @@ const FormExample = () => {
             'A custom section can render `Form.Field` and `Form.Cell` directly while taking full control over header and body presentation.',
             'This is useful when one area needs branded visuals or a distinct framing that the stock section chrome does not provide.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 function CustomSection(props) {
   return (
     <Stack
@@ -554,7 +551,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -593,7 +590,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 function CustomSection(props) {
   return (
     <Stack
@@ -641,7 +638,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -690,7 +687,7 @@ const FormExample = () => {
             '`useForm()` gives direct access to `save()` from inside the custom renderer; the runtime-supplied "save" item is ignored entirely.',
             'The "unsaved-changes" far item is still read from the runtime to drive the dirty-state chip, since that stays reactive for free.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 function MaterialRibbon(props) {
   const { farItems = [] } = props;
   const form = useForm();
@@ -712,7 +709,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon
         components={{
@@ -733,7 +730,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 function MaterialRibbon(props) {
   const { farItems = [] } = props;
   const form = useForm();
@@ -755,7 +752,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon
         components={{
@@ -785,7 +782,7 @@ const FormExample = () => {
             'In React compose, notifications are just a controlled `messages` prop; there is no separate runtime API to call into.',
             'Each toast auto-hides after 6 seconds and can also be dismissed early via its close button.',
         ],
-        previewCode: `${sharedStrategyCode}
+        previewCode: `${sharedRecordCode}
 function MaterialNotifications(props) {
   const { messages = [] } = props;
   const [dismissed, setDismissed] = React.useState({});
@@ -842,7 +839,7 @@ const FormExample = () => {
   };
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Stack horizontal tokens={{ childrenGap: 8 }} styles={{ root: { marginBottom: 12 } }}>
         <MuiButton variant="contained" onClick={() => addNotification("INFO")}>Add info</MuiButton>
         <MuiButton variant="outlined" color="warning" onClick={() => addNotification("WARNING")}>Add warning</MuiButton>
@@ -868,7 +865,7 @@ const FormExample = () => {
     </Form.Root>
   );
 };`,
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 function MaterialNotifications(props) {
   const { messages = [] } = props;
   const [dismissed, setDismissed] = React.useState({});
@@ -925,7 +922,7 @@ const FormExample = () => {
   };
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Stack horizontal tokens={{ childrenGap: 8 }} styles={{ root: { marginBottom: 12 } }}>
         <MuiButton variant="contained" onClick={() => addNotification("INFO")}>Add info</MuiButton>
         <MuiButton variant="outlined" color="warning" onClick={() => addNotification("WARNING")}>Add warning</MuiButton>
@@ -957,12 +954,11 @@ const FormExample = () => {
 const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
     const [code, setCode] = useState(example.code)
     const [compileError, setCompileError] = useState<string | null>(null)
-    const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
 
     const formProps = useMemo(
         () => ({
-            strategy,
+            onLoad: async () => ({ record: getMemoryRecord() }),
             onFormReady: (api: IFormApi) => {
                 formApiRef.current = api
             },
@@ -971,7 +967,7 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
                 console.log(success ? "Form saved" : "Save failed", { success, currentData })
             },
         } as React.ComponentProps<typeof Form.Root>),
-        [strategy],
+        [],
     )
 
     return (

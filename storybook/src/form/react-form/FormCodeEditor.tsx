@@ -35,11 +35,29 @@ declare const MuiStepper: any;
 declare const MuiStep: any;
 declare const MuiStepButton: any;
 declare const MuiStepContent: any;
-declare const MemoryStrategy: new (config: {
-  onGetData: () => any;
-  onGetColumns: () => any;
-  onGetMetadata: () => any;
-}) => unknown;
+interface ISandboxRecordSaveResult {
+  recordId: string;
+  success: boolean;
+  fields: string[];
+  errors?: { fieldName?: string; message: string }[];
+}
+
+interface ISandboxRecord {
+  getRecordId(): string;
+  getValue(columnName: string): any;
+  setValue(columnName: string, value: any): void;
+  isDirty(columnName?: string): boolean;
+  getColumns(): { name: string; dataType: string; alias?: string; displayName?: string }[];
+  toRawData(): { [key: string]: any };
+  save(): Promise<ISandboxRecordSaveResult>;
+}
+
+declare const createMemoryRecord: (params: {
+  columns: { name: string; dataType: string; alias?: string; displayName?: string; [key: string]: any }[];
+  data: { [key: string]: any };
+  metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
+  onSave?: (record: ISandboxRecord) => Promise<ISandboxRecordSaveResult>;
+}) => ISandboxRecord;
 declare const recordData: Record<string, any>;
 declare const modelColumns: any[];
 interface ISandboxFieldValidationResult {
@@ -78,7 +96,7 @@ interface ISandboxFormEventHandlers {
 }
 
 interface ISandboxFormProps extends Partial<ISandboxFormEventHandlers> {
-  strategy: unknown;
+  onLoad: () => Promise<{ record: ISandboxRecord }>;
   children?: React.ReactNode;
   onFormReady?: (api: ISandboxFormApi) => void;
   labels?: Record<string, string>;
@@ -183,18 +201,6 @@ declare const Form: {
 
 declare const useField: (name?: string | null) => ISandboxField | null;
 
-interface IFormStrategy {
-  onLoad(): Promise<{
-    columns: { name: string; dataType: string; alias?: string; displayName?: string }[];
-    data: { [key: string]: any };
-    metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
-  }>;
-  onSave(params: { updatedData: { [key: string]: any }; recordId: string }): Promise<{
-    recordId: string;
-    success: boolean;
-    fields: string[];
-  }>;
-}
 `
 
 export const FormCodeEditor = (props: IFormCodeEditorProps) => {

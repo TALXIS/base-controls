@@ -135,11 +135,16 @@ interface IXrmFormContext {
 
 const xrmComponentsDeclarations = `${xrmTypeBridgeDeclarations}
 declare const React: typeof import("react");
-interface IXrmMemoryStrategyParams {
-  onGetData: () => any;
-  onGetColumns: () => any[];
-  onGetMetadata: () => any;
-  onGetFormXml: () => string;
+interface IMemoryRecordParams {
+  columns: any[];
+  data: Record<string, any>;
+  metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
+  onSave?: (record: any) => Promise<{ success: boolean; errors?: any[] }>;
+}
+declare const createMemoryRecord: (params: IMemoryRecordParams) => any;
+interface IXrmFormLoadResult {
+  record: any;
+  formXml: string;
 }
 interface IXrmControlComponents {
   onRenderControl?: (props: IXrmControlRenderProps) => React.ReactNode;
@@ -152,7 +157,7 @@ interface IXrmTabsComponents {
   }) => React.ReactNode;
 }
 interface IXrmFormProps {
-  strategy: IXrmFormStrategy;
+  onLoad: () => Promise<IXrmFormLoadResult>;
   onFormReady?: (params: IXrmFormReadyParams) => void;
   components?: {
     control?: IXrmControlComponents;
@@ -160,7 +165,6 @@ interface IXrmFormProps {
   };
 }
 declare const XrmForm: React.ComponentType<IXrmFormProps>;
-declare const XrmMemoryStrategy: new (params: IXrmMemoryStrategyParams) => IXrmFormStrategy;
 declare const formMetadata: {
   PrimaryIdAttribute: string;
   PrimaryNameAttribute: string;
@@ -192,13 +196,6 @@ interface IXrmControlRenderProps {
 interface IXrmFormReadyParams {
   formContext: IXrmFormContext;
   api: unknown;
-}
-
-interface IXrmFormStrategy {
-  onGetData(): any;
-  onGetColumns(): any[];
-  onGetMetadata(): any;
-  onGetFormXml(): string;
 }
 `
 

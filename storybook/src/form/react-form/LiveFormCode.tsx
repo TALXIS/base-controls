@@ -1,6 +1,6 @@
 import * as Babel from "@babel/standalone"
 import React, { useEffect, useMemo, useRef } from "react"
-import { Form, MemoryStrategy, useField } from "@talxis/base-controls"
+import { createMemoryRecord, Form, useField } from "@talxis/base-controls"
 import { ComboBox, Icon, IconButton, Slider, Stack, Text, TextField } from "@fluentui/react"
 import { OpenMap } from "./OpenMap"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
@@ -59,7 +59,7 @@ export const LiveFormCode = (props: ILiveFormCodeProps) => {
                 "MuiStep",
                 "MuiStepButton",
                 "MuiStepContent",
-                "MemoryStrategy",
+                "createMemoryRecord",
                 "recordData",
                 "modelColumns",
                 "getFormProps",
@@ -91,7 +91,7 @@ export const LiveFormCode = (props: ILiveFormCodeProps) => {
                  fluent.MuiStep,
                  fluent.MuiStepButton,
                  fluent.MuiStepContent,
-                 MemoryStrategy,
+                 createMemoryRecord,
                  recordData,
                  modelColumns,
                  () => formPropsRef.current,

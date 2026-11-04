@@ -1,7 +1,7 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
 import { XrmForm } from "@talxis/base-controls"
-import { XrmMemoryStrategy } from "@talxis/base-controls"
+import { createMemoryRecord } from "@talxis/base-controls"
 import { formMetadata } from "../../form/shared/formModel"
 import { getXrmRecord, xrmModelStore } from "../../form/xrm-form/xrmModel"
 
@@ -26,7 +26,7 @@ export const XrmOverviewPreview = (props: IXrmOverviewPreviewProps) => {
             const factory = new Function(
                 "React",
                 "XrmForm",
-                "XrmMemoryStrategy",
+                "createMemoryRecord",
                 "formMetadata",
                 "currentFormXml",
                 "getXrmRecord",
@@ -39,7 +39,7 @@ export const XrmOverviewPreview = (props: IXrmOverviewPreviewProps) => {
             const Component = factory(
                 React,
                 XrmForm,
-                XrmMemoryStrategy,
+                createMemoryRecord,
                 formMetadata,
                 props.formXml,
                 getXrmRecord,

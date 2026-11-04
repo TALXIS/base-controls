@@ -2207,8 +2207,8 @@ declare const useField: typeof import('@talxis/base-controls').useField;
 declare const NestedControlRenderer: (props: Omit<React.ComponentProps<typeof import('@talxis/base-controls').NestedControlRenderer>, 'context'> & { context: IPcfContext }) => JSX.Element;
 /** Picks the Base Controls field for a column's data type. */
 declare const BaseControls: typeof import('@talxis/base-controls').BaseControls;
-/** A form strategy over a record kept in memory. */
-declare const MemoryStrategy: typeof import('@talxis/base-controls').MemoryStrategy;
+/** A record held in memory, for a form that has no data provider of its own. */
+declare const createMemoryRecord: typeof import('@talxis/base-controls').createMemoryRecord;
 
 declare const FluentProvider: typeof import('@fluentui/react-components').FluentProvider;
 declare const webLightTheme: typeof import('@fluentui/react-components').webLightTheme;

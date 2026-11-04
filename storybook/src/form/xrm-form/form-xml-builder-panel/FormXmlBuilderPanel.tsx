@@ -132,7 +132,7 @@ export const FormXmlBuilderPanel = ({
     builderError,
     onFormXmlTextChange,
     selectedLanguageCode,
-    strategy,
+    onLoad,
     columns: modelColumns,
     onUndoStackChange,
 }: IFormXmlBuilderPanelProps) => {
@@ -219,7 +219,7 @@ export const FormXmlBuilderPanel = ({
         () => (
             <XrmForm
                 key={formXmlText}
-                strategy={strategy}
+                onLoad={onLoad}
                 components={{
                     tabs: {
                         // The builder measures every tab header's real DOM position to draw its
@@ -247,7 +247,7 @@ export const FormXmlBuilderPanel = ({
                 }}
             />
         ),
-        [activeTabIndex, formXmlText, strategy, tabs]
+        [activeTabIndex, formXmlText, onLoad, tabs]
     )
 
     const applyFormXmlUpdate = (updater: (formXml: FormXml) => FormXml) => {

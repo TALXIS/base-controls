@@ -2,15 +2,9 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { MessageBar, MessageBarType, Stack, Text } from '@fluentui/react'
 import { RequiredLevelEnum } from '@talxis/client-metadata'
-import { Form, MemoryStrategy } from '@talxis/base-controls'
+import { Form } from '@talxis/base-controls'
 import { renderStory } from './storyHelpers'
-import { getDemoRecord, getFormColumns, formMetadata } from '../../form/shared/formModel'
-
-const strategy = new MemoryStrategy({
-    onGetData: () => getDemoRecord(),
-    onGetColumns: () => getFormColumns(),
-    onGetMetadata: () => formMetadata,
-})
+import { getMemoryRecord } from '../../form/shared/formModel'
 
 const HiddenTabValidationRegistrationScenario = () => {
     const [activeTab, setActiveTab] = React.useState('main')
@@ -22,7 +16,7 @@ const HiddenTabValidationRegistrationScenario = () => {
     }), [])
 
     return (
-        <Form.Root strategy={strategy} onValidationSummaryChanged={setValidationSummary}>
+        <Form.Root onLoad={async () => ({ record: getMemoryRecord() })} onValidationSummaryChanged={setValidationSummary}>
             <Stack tokens={{ childrenGap: 12 }}>
                 <MessageBar messageBarType={MessageBarType.info} isMultiline>
                     <Stack tokens={{ childrenGap: 6 }}>

@@ -1,6 +1,6 @@
 # Form
 
-`Form` is the React-composed form runtime for building record-driven forms from layout components and a load/save strategy.
+`Form` is the React-composed form runtime for building record-driven forms from layout components over one `IRecord`.
 
 It provides:
 
@@ -14,21 +14,18 @@ It provides:
 The intended entry point is the composed `Form` object.
 
 ```tsx
-import { Form } from "@talxis/base-controls/components/Form";
-import { MemoryStrategy } from "@talxis/base-controls/components/Form";
+import { createMemoryRecord, Form } from "@talxis/base-controls";
 
-const strategy = new MemoryStrategy({
-  onGetData: () => ({ id: "1", name: "Contoso", phone: "+420123456789" }),
-  onGetColumns: () => columns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "id",
-    PrimaryNameAttribute: "name",
-  }),
+const record = createMemoryRecord({
+  columns,
+  data: { id: "1", name: "Contoso", phone: "+420123456789" },
+  metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "name" },
+  onSave: async (record) => saveSomewhere(record),
 });
 
 export const AccountForm = () => {
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs>
@@ -54,9 +51,11 @@ export const AccountForm = () => {
 };
 ```
 
+`onLoad` resolves `{ record }` on mount and on refresh; remount with a `key` to load another record. The form edits that record in place and saves through `record.save()`, so a record from a grid or any data provider can be passed as is.
+
 ## Record contract: columns, metadata, and data
 
-The form runtime is driven by three related inputs from the strategy:
+`createMemoryRecord` builds the record from three inputs:
 
 - `columns`
 - `metadata`
@@ -240,10 +239,10 @@ Lookup fields currently only work in environments where `window.Xrm` is availabl
 
 `Form.Root` owns the runtime:
 
-- loads the record through `strategy.onLoad()`
+- loads the record through `onLoad()`
 - binds fields to the record model
 - validates before save
-- saves through `strategy.onSave()`
+- saves through `record.save()`
 - exposes lifecycle callbacks through `IFormProps`
 
 Useful callbacks:
@@ -323,7 +322,7 @@ const Example = () => {
 
   return (
     <Form.Root
-      strategy={strategy}
+      onLoad={async () => ({ record })}
       onFormReady={(api) => {
         formApiRef.current = api;
       }}
@@ -353,7 +352,7 @@ const Example = () => {
 
   return (
     <Form.Root
-      strategy={strategy}
+      onLoad={async () => ({ record })}
       onFieldValueChanged={(fieldName, newValue) => {
         if (fieldName !== "phone") {
           return;

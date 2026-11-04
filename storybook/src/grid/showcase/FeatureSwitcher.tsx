@@ -1,6 +1,6 @@
 import React from 'react'
 import { DefaultButton, ITheme, mergeStyleSets, PanelType, Text, useTheme } from '@fluentui/react'
-import { CommandBar, Form, MemoryStrategy, Panel } from '@talxis/base-controls'
+import { CommandBar, createMemoryRecord, Form, Panel } from '@talxis/base-controls'
 import { DataTypes, IColumn } from '@talxis/client-libraries'
 import { RequiredLevelEnum } from '@talxis/client-metadata'
 import { metadataFor } from '../data/metadata'
@@ -109,10 +109,10 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
     const isActive = (preset: IShowcasePreset) => Object.entries(getValues(preset)).every(([key, value]) => (props.values[key] ?? false) === value)
 
     //recreated on open to load the current features
-    const strategy = React.useMemo(() => new MemoryStrategy({
-        onGetColumns: () => features.map(toColumn),
-        onGetData: () => ({ id: 'features', ...Object.fromEntries(features.map(feature => [feature.key, toFieldValue(feature, props.values[feature.key])])) }),
-        onGetMetadata: () => ({ PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'id' }),
+    const record = React.useMemo(() => createMemoryRecord({
+        columns: features.map(toColumn),
+        data: { id: 'features', ...Object.fromEntries(features.map(feature => [feature.key, toFieldValue(feature, props.values[feature.key])])) },
+        metadata: { PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'id' },
     }), [isPanelOpen])
 
     const onFieldValueChanged = (fieldName: string, newValue: unknown) => {
@@ -137,7 +137,7 @@ export const FeatureSwitcher = (props: IFeatureSwitcherProps) => {
             items={props.presets.map(preset => ({ key: preset.key, text: preset.label, title: preset.description, iconProps: { iconName: preset.iconName }, canCheck: true, checked: isActive(preset), buttonStyles: { labelChecked: { fontWeight: 600 } }, onClick: () => props.onChange(getValues(preset)) }))}
             farItems={[{ key: 'features', text: 'Features & Modules', iconProps: { iconName: 'Settings' }, onClick: () => setIsPanelOpen(true) }]} />
         <Panel isOpen={isPanelOpen} headerText='Features & Modules' isLightDismiss type={PanelType.medium} onDismiss={() => setIsPanelOpen(false)} onRenderFooterContent={() => <DefaultButton text='Close' onClick={() => setIsPanelOpen(false)} />}>
-            <Form.Root strategy={strategy} onFieldValueChanged={onFieldValueChanged}>
+            <Form.Root onLoad={async () => ({ record })} onFieldValueChanged={onFieldValueChanged}>
                 <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
                     <Form.Tab id='core' label='Core'>
                         <Form.Column>{props.groups.filter(group => group.isCore).map(renderGroup)}</Form.Column>

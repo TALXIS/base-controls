@@ -50,35 +50,13 @@ interface IProductPhotoProps {
 //a photo reads better as a picture than as a file field
 const ProductPhoto = (props: IProductPhotoProps) => <img className={styles.photo} src={props.product.getValue('photo')?.thumbnailUrl} alt={props.product.getFormattedValue('name') ?? ''} />
 
-//the ribbon's save writes the changes into the record the grid shows
-class ProductStrategy extends MemoryStrategy {
-    private _product: IRecord
-
-    constructor(product: IRecord) {
-        super({
-            onGetColumns: () => provider.getColumns(),
-            onGetData: () => ({ ...product.getRawData() }),
-            onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
-        })
-        this._product = product
-    }
-
-    public async onSave({ updatedData }: { updatedData: { [columnName: string]: unknown } }) {
-        Object.entries(updatedData).forEach(([columnName, value]) => this._product.setValue(columnName, value))
-        return this._product.save()
-    }
-}
-
-const createProductStrategy = (product: IRecord) => new ProductStrategy(product)
-
 interface IProductFormProps {
     product: IRecord
 }
 
 const ProductForm = (props: IProductFormProps) => {
-    const strategy = React.useMemo(() => createProductStrategy(props.product), [props.product])
-
-    return <Form.Root strategy={strategy}>
+    //the ribbon's save saves the record the grid shows
+    return <Form.Root key={props.product.getRecordId()} onLoad={async () => ({ record: props.product })}>
         <Form.Notifications />
         <Form.Ribbon />
         {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: 2 }} cellLabelPosition='Top'>

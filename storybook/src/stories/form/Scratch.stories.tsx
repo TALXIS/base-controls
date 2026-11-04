@@ -1,21 +1,15 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Form, MemoryStrategy, XrmForm } from '@talxis/base-controls'
+import { Form, XrmForm } from '@talxis/base-controls'
 import { renderStory } from './storyHelpers'
-import { getDemoRecord, getFormColumns, formMetadata } from '../../form/shared/formModel'
-
-const strategy = new MemoryStrategy({
-    onGetData: () => getDemoRecord(),
-    onGetColumns: () => getFormColumns(),
-    onGetMetadata: () => formMetadata,
-})
+import { getMemoryRecord } from '../../form/shared/formModel'
 
 const ScratchForm = () => {
     const [activeTab, setActiveTab] = React.useState('main')
 
     return (
         <>
-        <Form.Root strategy={strategy}>
+        <Form.Root onLoad={async () => ({ record: getMemoryRecord() })}>
             <Form.Notifications />
             <Form.Ribbon />
             <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>

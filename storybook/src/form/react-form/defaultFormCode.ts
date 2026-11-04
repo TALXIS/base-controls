@@ -1,17 +1,14 @@
-export const defaultFormCode = `const strategy = new MemoryStrategy({
-  onGetData: () => recordData,
-  onGetColumns: () => modelColumns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "id",
-    PrimaryNameAttribute: "text",
-  }),
+export const defaultFormCode = `const record = createMemoryRecord({
+  columns: modelColumns,
+  data: recordData,
+  metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "text" },
 });
 
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>

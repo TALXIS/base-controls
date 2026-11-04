@@ -96,12 +96,6 @@ const styles = mergeStyleSets({
     pane: { width: 320, flexShrink: 0, maxHeight: 480, overflowY: 'auto', paddingLeft: 16, borderLeft: '1px solid #edebe9' },
 })
 
-const createTicketStrategy = (ticket: IRecord) => new MemoryStrategy({
-    onGetColumns: () => provider.getColumns(),
-    onGetData: () => ({ ...ticket.getRawData() }),
-    onGetMetadata: () => ({ PrimaryIdAttribute: provider.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'title' }),
-})
-
 interface ITicketFormProps {
     ticket: IRecord
     /** How many fields a section puts side by side. */
@@ -109,14 +103,7 @@ interface ITicketFormProps {
 }
 
 const TicketForm = (props: ITicketFormProps) => {
-    const strategy = React.useMemo(() => createTicketStrategy(props.ticket), [props.ticket])
-    //every change is saved into the record the grid shows
-    const saveChange = async (columnName: string, value: unknown) => {
-        props.ticket.setValue(columnName, value)
-        await props.ticket.save()
-    }
-
-    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName, value) => { saveChange(columnName, value) }}>
+    return <Form.Root key={props.ticket.getRecordId()} onLoad={async () => ({ record: props.ticket })}>
         {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: props.columnsPerSection ?? 1 }} cellLabelPosition='Top'>
             {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
                 <Form.Cell>

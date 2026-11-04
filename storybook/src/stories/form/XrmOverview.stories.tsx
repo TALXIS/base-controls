@@ -14,19 +14,18 @@ const xmlEditorStyles = mergeStyleSets({
     },
 })
 
-const xrmFormReactSnippet = `const record = getXrmRecord();
-const columns = xrmModelStore.getRuntimeColumns();
-const formXml = currentFormXml;
-
-const strategy = new XrmMemoryStrategy({
-  onGetData: () => record,
-  onGetColumns: () => columns,
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => formXml,
+const xrmFormReactSnippet = `// Resolves the record to edit and the FormXml to draw it with
+const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getXrmRecord(),
+    columns: xrmModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: currentFormXml,
 });
 
 const XrmOverviewExample = () => {
-  return <XrmForm strategy={strategy} />;
+  return <XrmForm onLoad={onLoad} />;
 };`
 
 const XrmOverviewStory = () => {
@@ -74,7 +73,7 @@ const meta = {
             },
             description: {
                 component: `
-Author the layout in FormXml and render it as React with \`XrmForm\`. The columns and the record come from the [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview); the visible structure comes from FormXml. On top of it, the form exposes the Xrm-style surface for tabs, sections, controls, validation, notifications and \`formContext\`.
+Author the layout in FormXml and render it as React with \`XrmForm\`. The record comes from \`onLoad\`, see [**Loading a record**](?path=/docs/controls-form-get-started-loading-a-record--overview); the visible structure comes from the FormXml it returns. On top of it, the form exposes the Xrm-style surface for tabs, sections, controls, validation, notifications and \`formContext\`.
 
 Try: edit the **FormXml** panel to change the layout live, then open **Code** to see how \`XrmForm\` is wired up.
                 `.trim(),

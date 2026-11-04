@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { MessageBarType } from '@fluentui/react'
 import { Form } from '@talxis/base-controls'
-import { getOverviewStrategy } from '../../form/overview/overviewModel'
+import { getOverviewRecord } from '../../form/overview/overviewModel'
 import { renderStory } from './storyHelpers'
 import { docsPageWithExample } from '../docsPageWithExample'
 
@@ -10,7 +10,7 @@ const OverviewForm = () => {
     const [activeTab, setActiveTab] = React.useState('overview')
 
     return (
-        <Form.Root strategy={getOverviewStrategy()}>
+        <Form.Root onLoad={async () => ({ record: getOverviewRecord() })}>
             <Form.Notifications
                 messages={[
                     {
@@ -83,7 +83,7 @@ const OverviewForm = () => {
 }
 
 const DESCRIPTION = `
-A form shows one record laid out in tabs, sections and columns, and keeps every field in step with it. Values typed into fields land on the record, validation and notifications show where they apply, and the ribbon knows when there are unsaved changes and saves them. You describe the layout and supply the record through a [**Form strategy**](?path=/docs/controls-form-get-started-form-strategy--overview); the form wires the rest. Try: change a value and watch the ribbon report unsaved changes.
+A form shows one record laid out in tabs, sections and columns, and keeps every field in step with it. Values typed into fields land on the record, validation and notifications show where they apply, and the ribbon knows when there are unsaved changes and saves them. You describe the layout and supply the record from \`onLoad\` (see [**Loading a record**](?path=/docs/controls-form-get-started-loading-a-record--overview)); the form wires the rest. Try: change a value and watch the ribbon report unsaved changes.
 
 ## Lay it out in React
 

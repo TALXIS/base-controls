@@ -4,7 +4,7 @@ import { Form } from '@talxis/base-controls'
 import type { IFormApi } from '@talxis/base-controls'
 import { ExampleRunner, renderStory } from './storyHelpers'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
-import { getMemoryStrategy } from '../../form/shared/formModel'
+import { getMemoryRecord } from '../../form/shared/formModel'
 import { ReactComposeLivePreview } from './ReactComposeLivePreview'
 
 interface ILayoutExample {
@@ -15,13 +15,10 @@ interface ILayoutExample {
     code: string
 }
 
-const sharedStrategyCode = `const strategy = new MemoryStrategy({
-  onGetData: () => recordData,
-  onGetColumns: () => modelColumns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "id",
-    PrimaryNameAttribute: "text",
-  }),
+const sharedRecordCode = `const record = createMemoryRecord({
+  columns: modelColumns,
+  data: recordData,
+  metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "text" },
 });
 `
 
@@ -34,12 +31,12 @@ const layoutExamples: ILayoutExample[] = [
             '`layout={{ xs: 1, md: 2, lg: 3 }}` lets one tab collapse from three columns down to one as space tightens.',
             'This is the main lever for overall form density within a tab.',
         ],
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("profile");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -76,12 +73,12 @@ const FormExample = () => {
             '`layout={{ xs: 1, sm: 2, lg: 4 }}` is ideal when one section should progressively densify.',
             'Tab layout decides column shells; section layout decides the grid inside each shell.',
         ],
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("overview");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -112,12 +109,12 @@ const FormExample = () => {
             'A tab can collapse from two columns to one while each section also changes its own internal grid.',
             'This is useful when the page should keep logical groupings even as each group repacks its fields.',
         ],
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -163,12 +160,12 @@ const FormExample = () => {
             '`cellLabelCollapseBreakpoint` flips labels above controls below a chosen width.',
             '`labelWidth` keeps left-aligned labels visually consistent across cells.',
         ],
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("labels");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -213,12 +210,12 @@ const FormExample = () => {
             '`rowspan` helps when one cell should stay taller while neighboring cells stack beside it; multiline fields are a common fit.',
             'These options work inside the section grid, so they combine naturally with `Form.Section layout`.',
         ],
-        code: `${sharedStrategyCode}
+        code: `${sharedRecordCode}
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("span");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root onLoad={async () => ({ record })}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -282,12 +279,11 @@ const FormExample = () => {
 const renderLayoutExample = (example: ILayoutExample) => {
     const [code, setCode] = useState(example.code)
     const [compileError, setCompileError] = useState<string | null>(null)
-    const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
 
     const formProps = useMemo(
         () => ({
-            strategy,
+            onLoad: async () => ({ record: getMemoryRecord() }),
             onFormReady: (api: IFormApi) => {
                 formApiRef.current = api
             },
@@ -296,7 +292,7 @@ const renderLayoutExample = (example: ILayoutExample) => {
                 console.log(success ? "Form saved" : "Save failed", { success, currentData })
             },
         } as React.ComponentProps<typeof Form.Root>),
-        [strategy],
+        [],
     )
 
     return (

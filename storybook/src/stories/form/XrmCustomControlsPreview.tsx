@@ -3,7 +3,7 @@ import { FormControl, InputLabel, MenuItem, Select, Slider as MuiSlider, TextFie
 import { XrmForm } from "@talxis/base-controls"
 import { ControlComponents } from "@talxis/base-controls"
 import { useField } from "@talxis/base-controls"
-import { getCustomComponentsStrategy } from "../../form/xrm-form/xrmCustomComponentsModel"
+import { loadCustomComponentsForm } from "../../form/xrm-form/xrmCustomComponentsModel"
 
 const customControlIds = new Set(["customLeadName", "customPhoneNumber", "customEngagementStage", "customMomentumScore", "customWorkspaceUrl", "customNotesPanel"])
 
@@ -104,11 +104,9 @@ const NotesControl = () => {
 }
 
 export const XrmCustomControlsPreview = () => {
-    const strategy = React.useMemo(() => getCustomComponentsStrategy(), [])
-
     return (
         <XrmForm
-            strategy={strategy}
+            onLoad={loadCustomComponentsForm}
             components={{
                 control: {
                     onRenderControl: (props) => {

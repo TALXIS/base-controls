@@ -220,6 +220,29 @@ A provider can make a new record: \`newRecord()\` marks it new, and saving it cr
   - It creates through \`newRecord\` and \`save\` on its FetchXML provider, after defining any column the new task needs but the view doesn't show, such as the project lookup.
   - Its \`_toWebApiPayload\`, \`_toServerDate\` and \`_getNavigationPropertyName\` go.
 - **Templates and other modules** that create records get the same conversion for free.
+
+## 8. Take expressions as hooks
+
+A record's expressions decide how its columns behave: validation, required level, disabled, value, formatting, notifications. Several parts can have a say about the same record at once: the grid, a form opened over its row, a script. Each should add its rule and take it back without touching the others'.
+
+### Today
+
+- **One slot per column, last writer wins.** \`record.expressions.setValidationExpression(column, fn)\` and the others replace whatever was set. Nothing can be read back from the record, and nothing can be removed.
+- **The grid takes the validation slot on every record** (\`GridValidation._register\`). A form or a script that sets a validator on the same record replaces the grid's, and the grid replaces theirs.
+- **Nothing is taken back.** A rule set by a part that has since unmounted stays on the record and keeps running.
+- **What works around it:** the Form keeps its own validation and required-level rules and combines them with the record's when it reads them, instead of setting them on a record it may share with a grid (\`FormModel.isFieldValid\`, \`getFieldRequiredLevel\`).
+
+### What every provider should do
+
+- **Register an expression as a hook** that returns a function removing it, for validation, required level, disabled and the rest.
+- **Hooks chain in order:** each gets the result so far and can change or keep it; the column's own metadata gives the first result.
+- **Removing one leaves the others,** and the record evaluates again when one is added or removed.
+
+### What would use it
+
+- **The Form** adds its rules as hooks on the record it is given and removes them when it unmounts; its own combining code goes.
+- **The grid's validation** adds a hook instead of taking the slot.
+- **Xrm scripts** (\`setValidation\`, \`setRequiredLevel\`) add hooks for the form's lifetime.
 `
 
 const meta = {

@@ -3,8 +3,8 @@ import Editor from '@monaco-editor/react'
 import { ComboBox, IComboBoxOption, MessageBar, MessageBarType, Pivot, PivotItem, Toggle, mergeStyleSets } from '@fluentui/react'
 import { parseFormXml } from '@talxis/client-metadata'
 import { XrmForm } from '@talxis/base-controls'
-import type { IXrmFormStrategy } from '@talxis/base-controls'
-import { MemoryStrategy } from '@talxis/base-controls'
+import type { IXrmFormLoadResult } from '@talxis/base-controls'
+import { createMemoryRecord } from '@talxis/base-controls'
 import { CommandBar, ICommandBarItemProps } from '@legacy';
 import { PcfContextProvider } from '@talxis/base-controls'
 import { FormXmlBuilderPanel, FormXmlTranslationsPanel } from '../../form/xrm-form/form-xml-builder-panel'
@@ -25,17 +25,11 @@ let currentFormXml = defaultFormXml
 
 type TBuilderView = 'preview' | 'workspace' | 'model' | 'translations' | 'data'
 
-class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmFormStrategy {
-    public onGetFormXml(): string {
-        return currentFormXml
-    }
-}
-
 const builderRecord = structuredClone(getBuilderRecord())
-const builderStrategy = new StorybookFormXmlBuilderStrategy({
-    onGetData: () => builderRecord,
-    onGetColumns: () => builderModelStore.getRuntimeColumns(),
-    onGetMetadata: () => builderMetadata,
+
+const loadBuilderForm = async (): Promise<IXrmFormLoadResult> => ({
+    record: createMemoryRecord({ data: builderRecord, columns: builderModelStore.getRuntimeColumns(), metadata: builderMetadata }),
+    formXml: currentFormXml,
 })
 
 const styles = mergeStyleSets({
@@ -412,7 +406,7 @@ export const XrmFormXmlBuilderStory = () => {
                                     builderError={parsedFormXml.error}
                                     onFormXmlTextChange={setFormXmlText}
                                     selectedLanguageCode={selectedLanguageCode}
-                                    strategy={builderStrategy}
+                                    onLoad={loadBuilderForm}
                                     columns={modelColumns}
                                     onUndoStackChange={(count, undo) => {
                                         setUndoCount(count)
@@ -474,7 +468,7 @@ export const XrmFormXmlBuilderStory = () => {
                     {activeView === 'preview' && (
                         <XrmForm
                             key={`${previewKey}:${selectedLanguageCode}`}
-                            strategy={builderStrategy}
+                            onLoad={loadBuilderForm}
                         />
                     )}
                 </PcfContextProvider>

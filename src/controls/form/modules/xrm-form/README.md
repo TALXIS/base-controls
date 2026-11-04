@@ -4,7 +4,7 @@
 
 ## What `XrmForm` adds
 
-The layout is driven from FormXml, while persistence still comes from the base Form strategy contract.
+The layout is driven from FormXml. `onLoad` resolves the record to edit and the FormXml; saving calls `record.save()`.
 
 ## Host note
 
@@ -17,7 +17,7 @@ The layout is driven from FormXml, while persistence still comes from the base F
 import { PcfContextProvider } from "@talxis/base-controls";
 
 <PcfContextProvider context={context}>
-  <XrmForm strategy={strategy} />
+  <XrmForm onLoad={onLoad} />
 </PcfContextProvider>
 ```
 
@@ -26,22 +26,22 @@ Lookup fields currently only work in environments where `window.Xrm` is availabl
 ## Basic usage
 
 ```tsx
-import { XrmForm, XrmMemoryStrategy } from "@talxis/base-controls/components/Form";
+import { XrmForm, createMemoryRecord } from "@talxis/base-controls";
 
-const strategy = new XrmMemoryStrategy({
-  onGetData: () => record,
-  onGetColumns: () => columns,
-  onGetMetadata: () => ({
-    PrimaryIdAttribute: "accountid",
-    PrimaryNameAttribute: "name",
+//runs once on mount and on refresh; remount with a `key` to load another record
+const onLoad = async () => ({
+  record: createMemoryRecord({
+    data,
+    columns,
+    metadata: { PrimaryIdAttribute: "accountid", PrimaryNameAttribute: "name" },
   }),
-  onGetFormXml: () => formXml,
+  formXml,
 });
 
 export const AccountXrmForm = () => {
   return (
     <XrmForm
-      strategy={strategy}
+      onLoad={onLoad}
       onFormReady={({ formContext, api }) => {
         console.log(formContext.data.entity.getId());
         console.log(api.getData());
@@ -53,7 +53,7 @@ export const AccountXrmForm = () => {
 
 ## Record contract: columns, metadata, and data
 
-The strategy behind the form is still driven by:
+`createMemoryRecord` builds the record from:
 
 - `columns`
 - `metadata`

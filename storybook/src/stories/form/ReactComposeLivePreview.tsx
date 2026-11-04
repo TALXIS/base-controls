@@ -1,7 +1,7 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
 import { ComboBox, Icon, IconButton, Slider, Stack, Text, TextField } from "@fluentui/react"
-import { Form, MemoryStrategy, useField, useForm } from "@talxis/base-controls"
+import { createMemoryRecord, Form, useField, useForm } from "@talxis/base-controls"
 import { OpenMap } from "../../form/react-form/OpenMap"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
 import { Alert, AppBar, Button as MuiButton, Chip, Snackbar, Stack as MuiStack, Toolbar } from "@mui/material"
@@ -77,7 +77,7 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 "MuiStack",
                 "Toolbar",
                 "Snackbar",
-                "MemoryStrategy",
+                "createMemoryRecord",
                 "recordData",
                 "modelColumns",
                 "getFormProps",
@@ -117,7 +117,7 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 fluent.MuiStack,
                 fluent.Toolbar,
                 fluent.Snackbar,
-                MemoryStrategy,
+                createMemoryRecord,
                 recordData,
                 modelColumns,
                 () => formPropsRef.current ?? {},

@@ -18,7 +18,7 @@ const BoundControl = (props: IControlProps & { field: IField }) => {
     const { field, ...rest } = props;
     const form = useForm();
     const components = useControlComponents();
-    const validationResult = form.saveOperationPerformed ? field.isValid() : null;
+    const validationResult = form.saveOperationPerformed ? form.isFieldValid(field.getColumn().name) : null;
     const styles = useMemo(() => getControlStyles(), []);
 
 

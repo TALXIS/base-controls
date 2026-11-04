@@ -2,7 +2,7 @@ import React from "react"
 import { ComboBox, Stack, Text } from "@fluentui/react"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
 import { XrmForm } from "@talxis/base-controls"
-import { getCustomComponentsStrategy } from "../../form/xrm-form/xrmCustomComponentsModel"
+import { loadCustomComponentsForm } from "../../form/xrm-form/xrmCustomComponentsModel"
 
 interface IXrmCustomTabsProps {
     children?: React.ReactNode
@@ -38,7 +38,6 @@ const StepperTabs = (props: IXrmCustomTabsProps) => {
 }
 
 export const XrmCustomTabsPreview = () => {
-    const strategy = React.useMemo(() => getCustomComponentsStrategy(), [])
     const [orientation, setOrientation] = React.useState<"horizontal" | "vertical">("horizontal")
 
     return (
@@ -61,7 +60,7 @@ export const XrmCustomTabsPreview = () => {
 
             <XrmForm
                 key={orientation}
-                strategy={strategy}
+                onLoad={loadCustomComponentsForm}
                 components={{
                     tabs: {
                         onRenderTabs: (tabsProps) => <StepperTabs {...tabsProps} orientation={orientation} />,

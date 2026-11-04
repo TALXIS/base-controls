@@ -1,4 +1,4 @@
-import type { IXrmFormStrategy } from "@talxis/base-controls"
+import type { IXrmFormLoadResult } from "@talxis/base-controls"
 import type { FormXml, FormXmlCell, FormXmlSection, FormXmlTab } from "@talxis/client-metadata"
 import type { IColumn } from "@talxis/client-libraries"
 
@@ -8,7 +8,7 @@ export interface IFormXmlBuilderPanelProps {
     builderError: string | null
     onFormXmlTextChange: (value: string) => void
     selectedLanguageCode: number
-    strategy: IXrmFormStrategy
+    onLoad: () => Promise<IXrmFormLoadResult>
     columns: IColumn[]
     onUndoStackChange?: (count: number, undo: (() => void) | null) => void
 }

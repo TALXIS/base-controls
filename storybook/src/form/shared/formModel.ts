@@ -1,4 +1,4 @@
-import { MemoryStrategy } from "@talxis/base-controls"
+import { createMemoryRecord } from "@talxis/base-controls"
 import { getDemoData } from "../../data"
 import { reactModelStore } from "../react-form/reactModel"
 
@@ -15,12 +15,15 @@ export const getFormColumns = () =>
         (column) => !column.isHidden && !!column.displayName && !unsupportedSandboxFields.has(column.name)
     )
 
-const memoryStrategy = new MemoryStrategy({
-    onGetData: () => demoRecord,
-    onGetColumns: () => getFormColumns(),
-    onGetMetadata: () => formMetadata,
-})
-
 export const getDemoRecord = () => demoRecord
 
-export const getMemoryStrategy = () => memoryStrategy
+export const getMemoryRecord = () => createMemoryRecord({
+    columns: getFormColumns(),
+    data: { ...demoRecord },
+    metadata: formMetadata,
+    onSave: async (record) => {
+        const fields = record.getColumns().map((column) => column.name).filter((name) => record.isDirty(name))
+        Object.assign(demoRecord, record.toRawData())
+        return { success: true, fields, recordId: record.getRecordId() }
+    },
+})

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { IOnLoadResult } from "../../runtime/strategies/interfaces";
-import { useEventEmitter, useIsMounted } from "@core";
+import { IRecord } from "@talxis/client-libraries";
+import { useEventEmitter, useIsMounted, useLatest } from "@core";
 import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '../../runtime/FormModel';
 import { FormContext } from "./context";
@@ -14,41 +14,37 @@ import { applyFieldConfigs } from "./fieldConfigs";
 initializeIcons();
 
 export const Root = (props: IFormProps) => {
-    const { strategy } = props;
-    const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
+    const [record, setRecord] = React.useState<IRecord | null>(null);
+    const propsRef = useLatest(props);
     const isMounted = useIsMounted();
 
-    const onLoad = async () => {
-        setFormDeps(null);
-        const result = await strategy.onLoad();
-        if (!isMounted()) return;
-        setFormDeps(result);
-    };
-
-    const onRefreshRequested = async () => {
-        await onLoad();
+    const load = async () => {
+        setRecord(null);
+        try {
+            const result = await propsRef.current.onLoad();
+            if (isMounted()) {
+                setRecord(result.record);
+            }
+        }
+        catch (error) {
+            propsRef.current.onError?.(error, (error as Error)?.message ?? String(error));
+        }
     };
 
     React.useEffect(() => {
-        onLoad();
-    }, [strategy]);
+        load();
+    }, []);
 
-    if (!formDeps) {
+    if (!record) {
         return <FormUi.Skeleton />
     }
 
-    return <RootInternal {...props} deps={formDeps} onRefreshRequested={onRefreshRequested} />
+    return <RootInternal {...props} record={record} onRefreshRequested={load} />
 };
 
-export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefreshRequested: () => void }) => {
-    const { children, strategy, deps, onFormReady, onRefreshRequested } = props;
-    const form = useMemo(() => {
-        const instance = new FormModel({
-            strategy: strategy,
-            deps: deps
-        });
-        return instance;
-    }, []);
+export const RootInternal = (props: IFormProps & { record: IRecord, onRefreshRequested: () => void }) => {
+    const { children, onFormReady, onRefreshRequested } = props;
+    const form = useMemo(() => new FormModel({ record: props.record }), []);
 
     const formApi = useMemo(() => {
         return new FormApi(form);

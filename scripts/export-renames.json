@@ -14,5 +14,13 @@
     ". DATASET_CONTROL_NOTIFICATIONS_LABELS": "NOTIFICATION_MESSAGE_BAR_LABELS",
     ". DATASET_CONTROL_NOTIFICATIONS_LABELS_CS": "NOTIFICATION_MESSAGE_BAR_LABELS_CS",
     ". IGridValueRendererComponents": "IValueRendererUiComponents",
-    ". GridValueRendererComponents": "ValueRendererUiComponents"
+    ". GridValueRendererComponents": "ValueRendererUiComponents",
+    ". MemoryStrategy": "createMemoryRecord",
+    ". XrmMemoryStrategy": "createMemoryRecord",
+    ". IMemoryStrategyParams": "IMemoryRecordParams",
+    ". IOnLoadResult": "IFormLoadResult",
+    ". IXrmFormStrategy": "IXrmFormLoadResult",
+    ". IFormStrategy": null,
+    ". IOnSaveParams": null,
+    ". XrmClientApiStrategyFactory": null
 }

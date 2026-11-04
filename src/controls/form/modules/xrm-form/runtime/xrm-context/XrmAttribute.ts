@@ -30,7 +30,7 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public isValid(): boolean {
-        return !this._getField().isValid().error
+        return !this._formContext.getFormXmlModel().getForm().isFieldValid(this.getName()).error
     }
 
     public setValue(value: any): void {
@@ -86,7 +86,7 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public getRequiredLevel(): Xrm.Attributes.RequirementLevel {
-        return this._getField().getRequiredLevel();
+        return this._formContext.getFormXmlModel().getForm().getFieldRequiredLevel(this.getName());
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {

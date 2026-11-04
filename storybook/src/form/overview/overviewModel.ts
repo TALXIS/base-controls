@@ -1,4 +1,4 @@
-import { MemoryStrategy } from '@talxis/base-controls'
+import { createMemoryRecord } from '@talxis/base-controls'
 import { DataTypes, type IColumn } from '@talxis/client-libraries'
 import { createModelColumn, formMetadata } from '../shared/overviewShared'
 import { createModelStore } from '../shared/modelStore'
@@ -145,10 +145,13 @@ const overviewRecord = {
 
 export const overviewModelStore = createModelStore(overviewColumns)
 
-const overviewStrategy = new MemoryStrategy({
-    onGetData: () => overviewRecord,
-    onGetColumns: () => overviewModelStore.getRuntimeColumns(),
-    onGetMetadata: () => formMetadata,
+export const getOverviewRecord = () => createMemoryRecord({
+    columns: overviewModelStore.getRuntimeColumns(),
+    data: { ...overviewRecord },
+    metadata: formMetadata,
+    onSave: async (record) => {
+        const fields = record.getColumns().map((column) => column.name).filter((name) => record.isDirty(name))
+        Object.assign(overviewRecord, record.toRawData())
+        return { success: true, fields, recordId: record.getRecordId() }
+    },
 })
-
-export const getOverviewStrategy = () => overviewStrategy

@@ -9,16 +9,18 @@ import { ExampleRunner, renderStory } from './storyHelpers'
 interface IXrmFormContextArgs {
 }
 
-const onFormReadyCode = `const strategy = new XrmMemoryStrategy({
-  onGetData: () => getCustomComponentsRecord(),
-  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-  onGetMetadata: () => formMetadata,
-  onGetFormXml: () => getCustomComponentsFormXml(),
+const onFormReadyCode = `const onLoad = async () => ({
+  record: createMemoryRecord({
+    data: getCustomComponentsRecord(),
+    columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+    metadata: formMetadata,
+  }),
+  formXml: getCustomComponentsFormXml(),
 });
 
 const XrmCustomComponentsExample = () => (
   <XrmForm
-    strategy={strategy}
+    onLoad={onLoad}
     onFormReady={({ formContext }) => {
       //the record is already loaded when this fires
       const name = formContext.data.entity.getPrimaryAttributeValue();

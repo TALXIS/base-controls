@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, MemoryStrategy, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
+const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
 
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
@@ -11,20 +11,9 @@ const BRANDS = [
     { key: 'midnight', text: 'Midnight', colors: { primary: '#4cc2ff', background: '#0f1b2d', text: '#e6edf7' } },
 ]
 
-//the Base Controls form over the opened deal; every change goes back into the grid's record
-const DealForm = (props: { deal: IRecord, deals: IDataProvider }) => {
-    const strategy = React.useMemo(() => new MemoryStrategy({
-        onGetColumns: () => props.deals.getColumns(),
-        onGetData: () => ({ ...props.deal.getRawData() }),
-        onGetMetadata: () => ({ PrimaryIdAttribute: props.deals.getMetadata().PrimaryIdAttribute, PrimaryNameAttribute: 'name' }),
-    }), [props.deal])
-
-    const onChange = async (columnName: string, value: unknown) => {
-        props.deal.setValue(columnName, value)
-        await props.deal.save()
-    }
-
-    return <Form.Root strategy={strategy} onFieldValueChanged={(columnName, value) => { onChange(columnName, value) }}>
+//the Base Controls form edits the grid's own record of the opened deal
+const DealForm = (props: { deal: IRecord }) => {
+    return <Form.Root key={props.deal.getRecordId()} onLoad={async () => ({ record: props.deal })}>
         <Form.Section label='Deal' layout={{ lg: 1 }} cellLabelPosition='Top'>
             {['name', 'owner', 'stage', 'value', 'probability', 'closedate'].map(name => <Form.Field key={name} name={name}>
                 <Form.Cell>
@@ -69,7 +58,7 @@ const GridExample = () => {
                     </DatasetControl>
                     {/* drawn in the same theme as the grid */}
                     <Panel isOpen={!!openedDeal} isLightDismiss headerText={openedDeal?.getFormattedValue('name') ?? ''} onDismiss={() => setOpenedDeal(undefined)}>
-                        {openedDeal && <DealForm deal={openedDeal} deals={deals} />}
+                        {openedDeal && <DealForm deal={openedDeal} />}
                     </Panel>
                 </AppThemeProvider>
             </Stack>
@@ -78,12 +67,12 @@ const GridExample = () => {
 }
 `
 
-const CUSTOM_FIELD_CODE = `import { Form, MemoryStrategy, useField } from '@talxis/base-controls'
+const CUSTOM_FIELD_CODE = `import { createMemoryRecord, Form, useField } from '@talxis/base-controls'
 
-const strategy = new MemoryStrategy({
-    onGetColumns: () => createDealsProvider().getColumns(),
-    onGetData: () => ({ docs_dealid: 'fabrikam', name: 'Fabrikam: Support renewal', owner: 'Ben Carter', value: 21500, probability: 55 }),
-    onGetMetadata: () => ({ PrimaryIdAttribute: 'docs_dealid', PrimaryNameAttribute: 'name' }),
+const record = createMemoryRecord({
+    columns: createDealsProvider().getColumns(),
+    data: { docs_dealid: 'fabrikam', name: 'Fabrikam: Support renewal', owner: 'Ben Carter', value: 21500, probability: 55 },
+    metadata: { PrimaryIdAttribute: 'docs_dealid', PrimaryNameAttribute: 'name' },
 })
 
 //a control of your own: reads and writes the field it sits in
@@ -93,7 +82,7 @@ const WinChanceSlider = () => {
 }
 
 //the form's own parts, with one field drawn by your control
-const GridExample = () => <Form.Root strategy={strategy}>
+const GridExample = () => <Form.Root onLoad={async () => ({ record })}>
     {/* saves the form, and says when it has unsaved changes */}
     <Form.Ribbon />
     <Form.Notifications />

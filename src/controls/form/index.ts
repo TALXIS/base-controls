@@ -6,4 +6,4 @@ export * from './interfaces';
 export * from './hooks';
 export * from './labels';
 export * from './modules/xrm-form';
-export * from './runtime/strategies';
+export * from './runtime/createMemoryRecord';

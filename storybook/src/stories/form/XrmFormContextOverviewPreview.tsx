@@ -87,7 +87,7 @@ export const XrmFormContextOverviewPreview = (props: IXrmFormContextOverviewPrev
                     <CommandBar items={commandBarItems} />
                     <XrmForm
                         key={previewKey}
-                        strategy={sandbox.getStrategy()}
+                        onLoad={sandbox.onLoad}
                         onFormReady={(params) => {
                             setFormContext(params.formContext)
                         }}

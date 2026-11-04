@@ -1,5 +1,5 @@
 import { DataTypes, type IColumn } from "@talxis/client-libraries"
-import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls"
+import { IXrmFormLoadResult, createMemoryRecord } from "@talxis/base-controls"
 import { createModelStore } from "../shared/modelStore"
 import { createModelColumn } from "../shared/modelDefinition"
 
@@ -183,18 +183,6 @@ let currentCustomComponentsFormXml = customComponentsFormXml
 
 export const xrmCustomComponentsModelStore = createModelStore(customComponentsColumns)
 
-class SandboxCustomComponentsStrategy extends MemoryStrategy implements IXrmFormStrategy {
-    public onGetFormXml(): string {
-        return currentCustomComponentsFormXml
-    }
-}
-
-const customComponentsStrategy = new SandboxCustomComponentsStrategy({
-    onGetData: () => customComponentsRecord,
-    onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
-    onGetMetadata: () => customComponentsMetadata,
-})
-
 export const getCustomComponentsFormXml = () => currentCustomComponentsFormXml
 
 export const setCustomComponentsFormXml = (value: string) => {
@@ -203,4 +191,11 @@ export const setCustomComponentsFormXml = (value: string) => {
 
 export const getCustomComponentsRecord = () => customComponentsRecord
 
-export const getCustomComponentsStrategy = () => customComponentsStrategy
+export const loadCustomComponentsForm = async (): Promise<IXrmFormLoadResult> => ({
+    record: createMemoryRecord({
+        data: customComponentsRecord,
+        columns: xrmCustomComponentsModelStore.getRuntimeColumns(),
+        metadata: customComponentsMetadata,
+    }),
+    formXml: currentCustomComponentsFormXml,
+})

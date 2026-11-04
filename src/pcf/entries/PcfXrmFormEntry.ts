@@ -1,5 +1,6 @@
-import type { IXrmFormStrategy, IXrmFormContext } from '@controls/form/modules/xrm-form/interfaces';
-import { IFormConfig, XrmClientApiStrategyFactory } from '@controls/form/modules/xrm-form/runtime/strategies/XrmClientApiStrategyFactory';
+import { IColumn, IRecord, IRecordSaveOperationResult } from '@talxis/client-libraries';
+import type { IXrmFormContext, IXrmFormLoadResult } from '@controls/form/modules/xrm-form/interfaces';
+import { createMemoryRecord } from '@controls/form/runtime/createMemoryRecord';
 import { FORM_LABELS } from '@controls/form/labels';
 import { translateLabels, type Labels } from "@labels";
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from "@ui";
@@ -12,11 +13,29 @@ export interface IPcfXrmFormEntryInputs {
     ClientApiFormContextFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
 }
 
+export type ISaveResponse = { success: true } | { success: false, error: string };
+
+/** What the client API config script hands `setConfig`. */
+export interface IFormConfig {
+    formXml?: string;
+    entityName?: string;
+    entityId?: string;
+    formId?: string;
+    columns?: IColumn[];
+    data?: { [key: string]: any };
+    metadata?: {
+        PrimaryIdAttribute: string;
+        PrimaryNameAttribute: string;
+    };
+    onSave?: (params: { updatedData: { [key: string]: any }, recordId: string }) => Promise<ISaveResponse>;
+}
+
 export interface IPcfXrmFormEntryRenderProps<IInputs extends IPcfXrmFormEntryInputs> {
     container: HTMLDivElement;
     context: ComponentFramework.Context<IInputs>;
-    strategy: IXrmFormStrategy;
-    strategyVersion: string;
+    onLoad: () => Promise<IXrmFormLoadResult>;
+    /** Changes each time the config is set again; key the form with it. */
+    loadVersion: string;
     labels: Labels;
     theme: ITheme;
     onFormReady: (formContext: IXrmFormContext) => Promise<void>;
@@ -24,13 +43,13 @@ export interface IPcfXrmFormEntryRenderProps<IInputs extends IPcfXrmFormEntryInp
 
 /**
  * Helper class that keeps Form PCF wrappers thin by owning the Xrm client-api
- * setup, strategy refresh flow, and host container layout.
+ * setup, record loading, and host container layout.
  */
 export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
     private _container!: HTMLDivElement;
     private _context!: ComponentFramework.Context<IInputs>;
-    private _strategy?: IXrmFormStrategy;
-    private _strategyVersion: string = crypto.randomUUID();
+    private _config?: IFormConfig;
+    private _loadVersion: string = crypto.randomUUID();
 
     public init(context: ComponentFramework.Context<IInputs>, container: HTMLDivElement): void {
         this._context = context;
@@ -47,7 +66,7 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
     ): void {
         this._context = context;
 
-        if (!this._strategy) {
+        if (!this._config) {
             onRenderLoading?.(this._container);
             return;
         }
@@ -55,8 +74,8 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
         onRenderForm({
             container: this._container,
             context: this._context,
-            strategy: this._strategy,
-            strategyVersion: this._strategyVersion,
+            onLoad: this._onLoad,
+            loadVersion: this._loadVersion,
             labels: this._getLabels(),
             theme: this._getTheme(),
             onFormReady: (formContext) => this._executeClientApiFormContextScript(formContext),
@@ -66,10 +85,35 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
     public destroy(): void {
     }
 
-    private _setStrategy(config: IFormConfig): void {
-        this._strategy = XrmClientApiStrategyFactory.create(config);
-        this._strategyVersion = crypto.randomUUID();
+    private _setConfig(config: IFormConfig): void {
+        if (!config.formXml || !config.metadata || !config.columns) {
+            throw new Error("Form control requires formXml, metadata and columns to be provided in the config.");
+        }
+        this._config = config;
+        this._loadVersion = crypto.randomUUID();
         this._context.factory.requestRender();
+    }
+
+    private _onLoad = async (): Promise<IXrmFormLoadResult> => {
+        const { columns, data, metadata, formXml, onSave } = this._config!;
+        const record = createMemoryRecord({
+            columns: columns!,
+            data: data ?? {},
+            metadata: metadata!,
+            onSave: onSave && (savedRecord => this._save(onSave, savedRecord)),
+        });
+        return { record, formXml: formXml! };
+    };
+
+    private async _save(onSave: NonNullable<IFormConfig['onSave']>, record: IRecord): Promise<IRecordSaveOperationResult> {
+        const recordId = record.getRecordId();
+        const rawData = record.toRawData();
+        const fields = record.getFields().filter(field => field.isDirty()).map(field => field.getColumn().name);
+        const result = await onSave({ updatedData: Object.fromEntries(fields.map(name => [name, rawData[name]])), recordId });
+        if (result.success) {
+            return { recordId, success: true, fields };
+        }
+        return { recordId, success: false, fields, errors: [{ message: result.error }] };
     }
 
     private async _executeClientApiConfigScript(): Promise<void> {
@@ -78,7 +122,7 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
             this._getRequiredParameterValue(this._context.parameters.ClientApiWebResourceName?.raw, 'ClientApiWebResourceName'),
             this._getRequiredParameterValue(this._context.parameters.ClientApiConfigFunctionName?.raw, 'ClientApiConfigFunctionName'),
             [{
-                setConfig: (config: IFormConfig) => this._setStrategy(config),
+                setConfig: (config: IFormConfig) => this._setConfig(config),
             }],
         );
     }

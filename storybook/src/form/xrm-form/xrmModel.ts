@@ -1,4 +1,4 @@
-import { IXrmFormStrategy, MemoryStrategy } from "@talxis/base-controls"
+import { IXrmFormLoadResult, createMemoryRecord } from "@talxis/base-controls"
 import { formMetadata, getDemoRecord } from "../shared/formModel"
 import { defaultFormXml } from "./defaultFormXml"
 import { createModelStore } from "../shared/modelStore"
@@ -6,22 +6,14 @@ import { createModelStore } from "../shared/modelStore"
 let currentFormXml = defaultFormXml
 export const xrmModelStore = createModelStore()
 
-class SandboxXrmStrategy extends MemoryStrategy implements IXrmFormStrategy {
-    public onGetFormXml(): string {
-        return currentFormXml
-    }
-}
-
 const xrmRecord = getDemoRecord()
-const xrmStrategy = new SandboxXrmStrategy({
-    onGetData: () => xrmRecord,
-    onGetColumns: () => xrmModelStore.getRuntimeColumns(),
-    onGetMetadata: () => formMetadata,
-})
 
 export const getXrmRecord = () => xrmRecord
 
-export const getXrmStrategy = () => xrmStrategy
+export const loadXrmForm = async (): Promise<IXrmFormLoadResult> => ({
+    record: createMemoryRecord({ data: xrmRecord, columns: xrmModelStore.getRuntimeColumns(), metadata: formMetadata }),
+    formXml: currentFormXml,
+})
 
 export const getCurrentFormXml = () => currentFormXml
 

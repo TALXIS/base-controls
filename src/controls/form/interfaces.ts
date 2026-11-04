@@ -1,6 +1,5 @@
-import { IFieldValidationResult } from "@talxis/client-libraries";
+import { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import type { ReactNode } from "react";
-import type { IFormStrategy } from "./runtime/strategies/interfaces";
 
 /**
  * Minimal public field API exposed through {@link IFormApi}.
@@ -93,14 +92,18 @@ export interface IFormApi {
     getField: (fieldName: string) => IApiField;
 }
 
+/** What a form's `onLoad` resolves. */
+export interface IFormLoadResult {
+    /** Edited in place and never destroyed, so a grid's record can be passed as is. */
+    record: IRecord;
+}
+
 /**
  * Props for the React-composed `Form.Root` runtime.
  */
 export interface IFormProps extends Partial<IFormEventHandlers> {
-    /**
-     * Strategy responsible for loading and saving the form record.
-     */
-    strategy: IFormStrategy;
+    /** Runs on mount and on refresh; remount with a `key` to load another record. */
+    onLoad: () => Promise<IFormLoadResult>;
 
     /**
      * Form layout composed from `Form.*` components.

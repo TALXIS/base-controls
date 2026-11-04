@@ -1,13 +1,12 @@
 import React from "react"
 import { Form } from "@talxis/base-controls"
-import { getMemoryStrategy } from "../../form/shared/formModel"
+import { getMemoryRecord } from "../../form/shared/formModel"
 
 export const ReactComposeOverviewFormPreview = () => {
-    const strategy = React.useMemo(() => getMemoryStrategy(), [])
     const [activeTab, setActiveTab] = React.useState("general")
 
     return (
-        <Form.Root strategy={strategy}>
+        <Form.Root onLoad={async () => ({ record: getMemoryRecord() })}>
             <Form.Notifications />
             <Form.Ribbon />
             <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>

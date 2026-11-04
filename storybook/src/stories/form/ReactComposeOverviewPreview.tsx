@@ -5,7 +5,7 @@ import { Form, useField } from "@talxis/base-controls"
 import type { IFormApi } from "@talxis/base-controls"
 import { LiveFormCode } from "../../form/react-form/LiveFormCode"
 import { OpenMap } from "../../form/react-form/OpenMap"
-import { getDemoRecord, getMemoryStrategy } from "../../form/shared/formModel"
+import { getMemoryRecord } from "../../form/shared/formModel"
 
 const styles = mergeStyleSets({
     root: {
@@ -40,8 +40,6 @@ interface IReactComposeOverviewPreviewProps {
 
 export const ReactComposeOverviewPreview = (props: IReactComposeOverviewPreviewProps) => {
     const formApiRef = React.useRef<IFormApi | null>(null)
-    const currentRecord = React.useMemo(() => getDemoRecord(), [])
-    const strategy = React.useMemo(() => getMemoryStrategy(), [])
     const fluent = React.useMemo(
         () => ({
             Stack,
@@ -62,7 +60,7 @@ export const ReactComposeOverviewPreview = (props: IReactComposeOverviewPreviewP
 
     const formProps = React.useMemo(
         () => ({
-            strategy,
+            onLoad: async () => ({ record: getMemoryRecord() }),
             onFormReady: (api: IFormApi) => {
                 formApiRef.current = api
             },
@@ -71,7 +69,7 @@ export const ReactComposeOverviewPreview = (props: IReactComposeOverviewPreviewP
                 console.log(success ? "Form saved" : "Save failed", { success, currentData })
             },
         } as React.ComponentProps<typeof Form.Root>),
-        [currentRecord, strategy],
+        [],
     )
 
     return (
