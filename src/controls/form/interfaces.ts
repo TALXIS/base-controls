@@ -1,4 +1,5 @@
 import { IFieldValidationResult, IRecord } from "@talxis/client-libraries";
+import type { IServiceLocator } from "@core";
 import type { ReactNode } from "react";
 
 /**
@@ -74,9 +75,18 @@ export interface IFormEventHandlers {
 /**
  * Imperative API exposed through `onFormReady`.
  */
+/** The parts rendered inside the form; each part adds its own entry. */
+export interface IFormPartMap { }
+
+/** Looks up the parts rendered right now. */
+export type IFormPartLocator = IServiceLocator<IFormPartMap>;
+
 export interface IFormApi {
+    /** The parts rendered inside the form. */
+    readonly parts: IFormPartLocator;
+
     /**
-     * Re-runs the strategy load pipeline and rebuilds the form with the latest data.
+     * Calls `onLoad` again and rebuilds the form with the record it returns.
      */
     refresh: () => void;
 

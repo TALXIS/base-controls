@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { IRecord } from "@talxis/client-libraries";
 import { useEventEmitter, useIsMounted, useLatest } from "@core";
 import { initializeIcons } from "@fluentui/react";
-import { FormModel, IFormEvents } from '../../runtime/FormModel';
+import { FormRuntime, IFormEvents } from '../../runtime/FormRuntime';
 import { FormContext } from "./context";
 import { getFormStyles } from "./styles";
 import React from "react";
@@ -44,7 +44,7 @@ export const Root = (props: IFormProps) => {
 
 export const RootInternal = (props: IFormProps & { record: IRecord, onRefreshRequested: () => void }) => {
     const { children, onFormReady, onRefreshRequested } = props;
-    const form = useMemo(() => new FormModel({ record: props.record }), []);
+    const form = useMemo(() => new FormRuntime({ record: props.record }), []);
 
     const formApi = useMemo(() => {
         return new FormApi(form);
