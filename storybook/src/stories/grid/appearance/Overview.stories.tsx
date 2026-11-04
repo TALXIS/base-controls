@@ -21,7 +21,7 @@ The grid draws in the app theme (see [**Theming**](?path=/docs/concepts-theming-
 
 ## Changing how it looks
 
-What the grid draws takes a \`components\` map: on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`. How its pieces and slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+What the grid draws takes a \`components\` map: on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`. How its pieces and slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 - Each Grid page that takes \`components\` has a *Changing how it looks* table: a piece's key, its slots, the default set and what it draws.
 - A slot can call the default set's function of the same name to draw the grid's own element.

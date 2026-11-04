@@ -3749,12 +3749,17 @@ interface IRibbonProps {
     };
 }
 
+/** Replacements for the ribbon's slots, and for the pieces inside it by name. */
+type IRibbonComponents = NonNullable<IRibbonProps['components']>;
+
 /** A command bar of the commands onLoad returns, each run when clicked. */
 declare const Ribbon: (props: IRibbonProps) => JSX.Element;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
 declare const RibbonUi: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
+/** The ribbon's default slot: the command bar. */
+declare const RibbonUiComponents: { onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
 /** The loading boundary's default slots: a spinner with a text beside it. */
-declare const LoadingBoundaryComponents: Required<NonNullable<IRibbonProps['components']>['loadingBoundary']>;
+declare const LoadingBoundaryComponents: Required<NonNullable<NonNullable<IRibbonProps['components']>['loadingBoundary']>>;
 
 /** Subscribing to an emitter's events, without dispatching them. */
 type IEventSubscriber<T> = {
@@ -4022,7 +4027,7 @@ interface IDatasetControlNamespace {
     ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
     /** Reach it through control.parts.get('ribbon'). */
-    Ribbon: (props: Omit<IRibbonProps, 'onReady' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean }) => JSX.Element;
+    Ribbon: (props: Omit<IRibbonProps, 'onReady' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
     QuickFind: (props: {
         components?: Partial<IQuickFindUiComponents>;
     }) => JSX.Element;

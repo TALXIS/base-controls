@@ -14,7 +14,7 @@ A cell draws its value with the control for its column's data type, and that typ
 
 Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`, as the example above does; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
-\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's pieces and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's pieces and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

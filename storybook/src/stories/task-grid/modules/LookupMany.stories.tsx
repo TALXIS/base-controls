@@ -32,7 +32,7 @@ Clicking a pill opens its record through the store. Editing needs \`enableEditin
 
 ## Changing how it looks
 
-\`createLookupManyModule\` and its variants take \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`createLookupManyModule\` and its variants take \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

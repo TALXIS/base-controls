@@ -36,7 +36,7 @@ Every part is split in two:
 - **The UI** takes plain props and owns the look: its styles, its default texts and its replaceable pieces (\`components\`). It never reads a runtime, the PCF context or a store.
 - **The adapter** reads the runtime and draws the UI. It translates from the runtime to props, and from the UI's events back.
 
-How the pieces of each part are named and replaced: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+How the pieces of each part are named and replaced: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 ## A field of your own
 
@@ -73,7 +73,7 @@ On top sit the PCF entry points and every part's labels gathered per language. T
 const EXPLORE: IExploreCard[] = [
     { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'Install the package, set up the root providers and add a first control.' },
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Put your records in a provider, from memory, Dataverse or your own API.' },
-    { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Replace the pieces a part draws, or draw the whole part yourself.' },
+    { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace the pieces a part draws, or draw the whole part yourself.' },
 ]
 
 const meta = {

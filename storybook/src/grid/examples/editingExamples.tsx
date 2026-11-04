@@ -23,38 +23,23 @@ const GridExample = () => {
 export const REVIEW_CHANGES_CODE = `const entries = (count: number) => count === 1 ? '1 entry' : \`\${count} entries\`
 
 const GridExample = () => {
-    const control = React.useRef<IDatasetControl>()
     const [message, setMessage] = React.useState('')
 
     const onAfterSaved = (results: IRecordSaveOperationResult[]) => {
         const refused = results.filter(result => !result.success).length
         setMessage(refused > 0 ? \`\${refused} of \${entries(results.length)} refused: see the red icons on their rows.\` : \`Saved \${entries(results.length)}.\`)
-        reloadCommands()
     }
 
-    const discard = () => {
-        provider.clearChanges()
-        setMessage('Changes discarded.')
-    }
-
-    const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'discard', label: 'Discard', iconName: 'Undo', isDisabled: provider.getDirtyRecordIds().length === 0, onExecute: discard },
-    ]
-
-    //Save follows the changes by itself, Discard is reloaded here
-    const reloadCommands = () => control.current?.parts.find('ribbon')?.reload()
-
-    return <DatasetControl onLoad={async () => ({ provider: provider })} onMounted={datasetControl => control.current = datasetControl}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon enableSave onLoad={loadCommands} />
+                <DatasetControl.Ribbon enableSave enableDiscard />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule()]}
-                onRecordValueChanged={reloadCommands}
                 onAfterSaved={onAfterSaved}
                 height='400px' />
         </DatasetControl.Body>

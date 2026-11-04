@@ -37,7 +37,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 
 ## Changing how it looks
 
-\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`createMarkersModule\` and \`createMemoryMarkersModule\` take \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

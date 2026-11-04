@@ -44,7 +44,7 @@ Base Controls' versions take the same props as Fluent's. Use them where there is
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Theming', iconName: 'Color', href: '?path=/docs/concepts-theming--overview', text: 'Build a theme from your brand colours, and draw your own components in it.' },
-    { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Replace the pieces a part draws, with Fluent UI or a design system of your own.' },
+    { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace the pieces a part draws, with Fluent UI or a design system of your own.' },
 ]
 
 const meta = {

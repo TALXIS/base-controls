@@ -29,7 +29,7 @@ A task without items shows an empty cell.
 
 ## Changing how it looks
 
-Every checklist factory takes \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+Every checklist factory takes \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

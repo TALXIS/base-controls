@@ -12,7 +12,7 @@ const DESCRIPTION = `
 
 ## The pieces
 
-Each key of \`components\` is a piece, holding the slot of one part of \`Form\`. How pieces and slots work is on DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview), and what each of these slots gets is on the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
+Each key of \`components\` is a piece, holding the slot of one part of \`Form\`. How pieces and slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview), and what each of these slots gets is on the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
 
 | Piece | Part | Slot |
 |---|---|---|

@@ -131,7 +131,7 @@ export const RIBBON_FILE: IGridExampleFile = {
     code: `const WON_STAGE = 4
 
 //DatasetControl.Ribbon calls onLoad again on every selection
-export const DealsRibbon = () => {
+export const DealsRibbon = (props: { enableSave?: boolean; enableDiscard?: boolean; enableRefresh?: boolean }) => {
     const provider = useDataProvider()
     const control = useDatasetControl()
 
@@ -164,7 +164,7 @@ export const DealsRibbon = () => {
         return commands
     }
 
-    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
+    return <DatasetControl.Ribbon {...props} onLoad={onLoad} />
 }
 `,
 }

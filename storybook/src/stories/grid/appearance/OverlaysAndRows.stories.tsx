@@ -12,7 +12,7 @@ While the provider loads, or when it holds no records, the grid draws an overlay
 
 ## Changing how it looks
 
-These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

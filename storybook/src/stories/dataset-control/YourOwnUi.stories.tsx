@@ -15,25 +15,7 @@ The parts are drawn in Fluent UI, and you can change what they draw at two level
 
 ## Pieces and slots
 
-The control and every part take a \`components\` map:
-
-- A *slot* is a function named \`onRender…\`: it gets the props its default draws with and returns an element, or \`null\`.
-- A part's own slots sit directly in the map, such as the view switcher's \`onRenderButton\`.
-- A *piece* is a key that names something inside the part, such as the quick find's \`callout\`, and holds that piece's slots.
-- A slot you leave out keeps its default, and a piece merges over its default slot by slot.
-- Most parts' defaults are exported, such as \`ViewSwitcherUiComponents\`, so a slot can draw the default.
-
-| To | Write |
-|---|---|
-| Change one prop of the default | \`props => QuickFindUiComponents.onRenderTextField({ ...props, disabled: true })\` |
-| Wrap the default | \`props => <TooltipHost content='Views'>{ViewSwitcherUiComponents.onRenderButton(props)}</TooltipHost>\` |
-| Replace it | \`props => <SearchBox {...props} />\` |
-| Remove it | \`() => null\` |
-
-- Spread the props you get: they carry the class names, handlers and refs that make the piece work.
-- A slot is called during render. To use hooks there, return a component of your own: \`props => <MyViewButton {...props} />\`.
-- \`TooltipHost\` comes from \`@talxis/base-controls\`.
-- Menu items and commands are added through the part, with \`registerItems\`, \`registerCommands\` or \`registerColumnCommands\`, not a slot: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+The control and every part take a \`components\` map of pieces and slots: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). Every one of them is listed under *Reference*. Menu items and commands are added through the part, with \`registerItems\`, \`registerCommands\` or \`registerColumnCommands\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## Wrap the control
 

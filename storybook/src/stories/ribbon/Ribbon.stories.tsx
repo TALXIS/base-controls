@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { RibbonExample } from './ribbonExamples'
+import { RibbonExample, SlowLoadExample } from './ribbonExamples'
 
 const DESCRIPTION = `
 The ribbon is a bar of commands, such as **Send** or **Download**, that act on what your page shows. You return the commands from its \`onLoad\`, and it draws them as buttons and menus, disables a button while its command runs and moves what does not fit into an overflow menu. Try it below: send the invoice, then send a reminder.
@@ -26,9 +26,11 @@ A command either runs or opens a menu of further commands, as **Download** does 
 
 ## How it behaves
 
-The commands show in the order they are returned. A shimmer stands in for them until the first load finishes, and later loads keep the previous commands until the new ones arrive. A button is disabled while its \`onExecute\` runs.
+The commands show in the order they are returned. A shimmer stands in for them until a load finishes, and a reload keeps the previous commands until the new ones arrive, as changing the invoice's status does above. A button is disabled while its \`onExecute\` runs.
 
 When \`onLoad\` throws, the error shows in place of the commands, with **Try again** and **Details**. When \`onExecute\` throws, the error dialog opens: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+
+{{story: A slow load}}
 
 ## Props
 
@@ -60,7 +62,7 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 
 ## Changing how it looks
 
-\`Ribbon\` takes \`components\`. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`Ribbon\` takes \`components\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -77,7 +79,7 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The ribbon in DatasetControl: commands for the selected records.' },
-    { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'How pieces and slots replace what a control draws.' },
+    { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace what the ribbon draws, piece by piece.' },
     { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate the strings the ribbon draws itself.' },
 ]
 
@@ -100,4 +102,16 @@ type Story = StoryObj<typeof meta>
 export const CommandsForAnInvoice: Story = {
     name: 'Commands for an invoice',
     render: () => renderStory(<RibbonExample />),
+}
+
+export const ASlowLoad: Story = {
+    name: 'A slow load',
+    render: () => renderStory(<SlowLoadExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `An \`onLoad\` that takes two seconds and fails the first time. Try: press **Try again**, then **Mount again**.`,
+            },
+        },
+    },
 }

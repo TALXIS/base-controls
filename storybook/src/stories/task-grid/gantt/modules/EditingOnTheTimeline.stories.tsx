@@ -37,7 +37,7 @@ Three Gantt modules let the user change tasks on the timeline: move and resize b
 
 ## Changing how it looks
 
-\`createTaskDrawingModule\` takes \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`createTaskDrawingModule\` takes \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

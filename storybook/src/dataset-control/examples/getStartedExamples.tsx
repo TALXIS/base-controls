@@ -31,7 +31,7 @@ const GridExample = () => {
                 </DatasetControl.ViewSwitcher>
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
-                <DealsRibbon />
+                <DealsRibbon enableRefresh />
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
             </DatasetControl.Header.End>

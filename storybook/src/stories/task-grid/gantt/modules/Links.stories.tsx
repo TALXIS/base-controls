@@ -29,7 +29,7 @@ While a link saves, its tasks show as saving.
 
 ## Changing how it looks
 
-\`createLinksModule\` takes \`components\` for the default link tooltip, read at mount, under \`tooltip\`; each part of \`LinkTooltip\` takes the same slots in its own \`components\`. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`createLinksModule\` takes \`components\` for the default link tooltip, read at mount, under \`tooltip\`; each part of \`LinkTooltip\` takes the same slots in its own \`components\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Part | Slots | Default | Draws |
 |---|---|---|---|---|

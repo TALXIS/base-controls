@@ -19,7 +19,7 @@ Four parts of the form draw through slots you can replace: the control of a fiel
 - A \`Form.Cell\` outside a \`Form.Field\` holds content of your own beside its \`label\`, as *Last contact* does.
 - \`FormUi\` holds \`Tabs\`, \`Tab\`, \`Section\`, \`Column\`, \`Cell\` and \`Skeleton\` as plain UI with no record behind them, for a screen that looks like a form.
 
-How slots work, such as wrapping a default, is on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) of DatasetControl.
+How slots work, such as wrapping a default: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 ## Your own tabs
 

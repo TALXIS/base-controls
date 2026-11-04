@@ -47,8 +47,11 @@ export class DatasetControlRibbonCommands {
         const labels = this._datasetControl.getLabels(RIBBON_LABELS);
         const ownCommands: IRibbonCommand[] = [];
         this._wasDirty = this._provider.isDirty();
-        if (props.enableSave) {
-            ownCommands.push({ id: 'save', label: labels.get('ribbon.save'), iconName: 'Save', isDisabled: !this._wasDirty, onExecute: () => this._save() });
+        if (props.enableSave && this._wasDirty) {
+            ownCommands.push({ id: 'save', label: labels.get('ribbon.save'), iconName: 'Save', onExecute: () => this._save() });
+        }
+        if (props.enableDiscard && this._wasDirty) {
+            ownCommands.push({ id: 'discard', label: labels.get('ribbon.discard'), iconName: 'Undo', onExecute: () => this._provider.clearChanges() });
         }
         if (props.enableRefresh) {
             ownCommands.push({ id: 'refresh', label: labels.get('ribbon.refresh'), iconName: 'Refresh', onExecute: () => this._refresh() });
@@ -68,9 +71,10 @@ export class DatasetControlRibbonCommands {
         this._ribbon?.reload();
     };
 
-    //only when Save turns on or off, so typing does not reload the ribbon
+    //only when Save and Discard appear or go, so typing does not reload the ribbon
     private _onDirtyStateChanged = (): void => {
-        if (this._onGetProps().enableSave && this._provider.isDirty() !== this._wasDirty) {
+        const props = this._onGetProps();
+        if ((props.enableSave || props.enableDiscard) && this._provider.isDirty() !== this._wasDirty) {
             this._ribbon?.reload();
         }
     };

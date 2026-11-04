@@ -108,7 +108,7 @@ To change the menu texts, tooltips and totals' names, see [**Localization**](?pa
 
 ## Changing how it looks
 
-Both modules take \`components\` (see *Options*). How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+Both modules take \`components\` (see *Options*). How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Module | Key | Slots | Default | Draws |
 |---|---|---|---|---|

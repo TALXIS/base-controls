@@ -11,8 +11,10 @@ import { getDatasetControlRibbonStyles } from "./styles";
 export interface IDatasetControlRibbonProps extends Omit<IRibbonProps, 'onReady' | 'align'> {
     /** Adds Refresh, which loads the records again; asks first when there are unsaved changes. */
     enableRefresh?: boolean;
-    /** Adds Save, which saves every changed record; disabled while nothing has changed. */
+    /** Adds Save while there are unsaved changes, which saves every changed record. */
     enableSave?: boolean;
+    /** Adds Discard changes while there are unsaved changes, which undoes them all. */
+    enableDiscard?: boolean;
 }
 
 /** The ribbon, loaded again whenever the selected records change; in an `End` region its commands sit against the right. */
@@ -24,7 +26,7 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
     const region = useDatasetControlRegion();
     const propsRef = useLatest(props);
     const commands = useMemo(() => new DatasetControlRibbonCommands({ provider, datasetControl: runtime, onGetProps: () => propsRef.current }), []);
-    const { enableRefresh, enableSave, ...ribbonProps } = props;
+    const { enableRefresh, enableSave, enableDiscard, ...ribbonProps } = props;
 
     useEffect(() => () => {
         commands.destroy();

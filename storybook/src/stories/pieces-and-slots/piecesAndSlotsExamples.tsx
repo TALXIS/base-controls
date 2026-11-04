@@ -1,0 +1,39 @@
+import React from 'react'
+import { GridExampleRunner } from '../../grid/GridExampleRunner'
+
+const PIECES_AND_SLOTS_CODE = `import { IRibbonCommand, IRibbonComponents, LoadingBoundaryComponents, Ribbon, RibbonUiComponents } from '@talxis/base-controls'
+import { DefaultButton, Stack } from '@fluentui/react'
+
+//stands in for a server call
+const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+const loadCommands = async (): Promise<IRibbonCommand[]> => {
+    await callServer(2000)
+    return [
+        { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => callServer(1000) },
+        { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => callServer(1000) },
+    ]
+}
+
+const components: IRibbonComponents = {
+    //a slot of the ribbon itself: draws its default with one prop changed
+    onRenderCommandBar: props => RibbonUiComponents.onRenderCommandBar({ ...props, items: props.items.map(item => ({ ...item, iconOnly: true })) }),
+    //a piece: the slots of what the ribbon shows while it loads
+    loadingBoundary: {
+        //the default container, a spinner and its text, in place of the ribbon's shimmer
+        onRenderContainer: LoadingBoundaryComponents.onRenderContainer,
+        onRenderText: props => LoadingBoundaryComponents.onRenderText({ ...props, children: 'Fetching commands' }),
+    },
+}
+
+const GridExample = () => {
+    const [mountKey, setMountKey] = React.useState(0)
+
+    return <Stack tokens={{ childrenGap: 8 }} horizontalAlign='start'>
+        <Ribbon key={mountKey} onLoad={loadCommands} components={components} />
+        <DefaultButton text='Mount again' onClick={() => setMountKey(mountKey + 1)} />
+    </Stack>
+}
+`
+
+export const PiecesAndSlotsExample = () => <GridExampleRunner seedCode={PIECES_AND_SLOTS_CODE} tabs={['preview', 'code']} />

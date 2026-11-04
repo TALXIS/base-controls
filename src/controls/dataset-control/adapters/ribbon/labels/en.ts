@@ -4,4 +4,5 @@ import { defineLabels } from "@labels";
 export const RIBBON_LABELS = defineLabels({
     'ribbon.refresh': 'Refresh',
     'ribbon.save': 'Save',
+    'ribbon.discard': 'Discard changes',
 });

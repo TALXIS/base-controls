@@ -113,7 +113,7 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 
 ## Changing how it looks
 
-The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+The editing module takes no \`components\` option. It draws two columns of its own, and you restyle them in \`colDefs\` by handing the module's cell its \`components\` through \`cellRendererParams\`, or by setting \`cellRenderer\` to a component that renders the cell. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -196,7 +196,7 @@ export const ReviewChangesThenSaveThemAll: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Corrections wait for the ribbon's Save, from \`enableSave\`, and a Discard built on \`provider.clearChanges()\`. Try: change two entries and save them from the ribbon.`,
+                story: `Corrections wait for the ribbon's Save and Discard changes, from \`enableSave\` and \`enableDiscard\`. Try: change two entries and save them from the ribbon.`,
             },
         },
     },

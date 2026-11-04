@@ -42,7 +42,7 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 
 ## Changing how it looks
 
-\`TaskGantt\`, \`TaskGantt.Split\` and \`TaskGantt.ZoomSlider\` take \`components\`, and so do the Gantt modules that draw something: see *Changing how it looks* on each module's page. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`TaskGantt\`, \`TaskGantt.Split\` and \`TaskGantt.ZoomSlider\` take \`components\`, and so do the Gantt modules that draw something: see *Changing how it looks* on each module's page. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|

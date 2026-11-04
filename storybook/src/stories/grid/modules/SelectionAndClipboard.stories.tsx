@@ -100,7 +100,7 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 
 ## Changing how it looks
 
-The row selection module takes no \`components\` option. Its checkbox column draws its cells with \`SelectionCell\` and its header with \`SelectionHeader\`; restyle them in \`colDefs\` through \`cellRendererParams\` and \`headerComponentParams\`, or set \`cellRenderer\` and \`headerComponent\` to a component that renders them. How slots work is on the DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+The row selection module takes no \`components\` option. Its checkbox column draws its cells with \`SelectionCell\` and its header with \`SelectionHeader\`; restyle them in \`colDefs\` through \`cellRendererParams\` and \`headerComponentParams\`, or set \`cellRenderer\` and \`headerComponent\` to a component that renders them. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|

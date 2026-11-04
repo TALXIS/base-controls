@@ -24,11 +24,12 @@ const addSortMenu = (control: IDatasetControl) => {
 const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onMounted={addSortMenu} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DealsRibbon />
+            {/* the built-in commands, each off unless asked for */}
+            <DealsRibbon enableSave enableDiscard enableRefresh />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+        <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 `

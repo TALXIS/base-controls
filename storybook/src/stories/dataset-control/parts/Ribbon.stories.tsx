@@ -6,9 +6,19 @@ import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-The ribbon is the bar of commands above the records, such as **Mark as won**, that act on the view or on the records the user selected. You add it with \`DatasetControl.Ribbon\` and return from its \`onLoad\` the commands that apply to the current selection. Try it below: select a few deals and mark them won.
+The ribbon is the bar of commands above the records. It has built-in **Save**, **Discard changes** and **Refresh**, each switched on by a prop, and your own commands, such as **Mark as won**, returned from its \`onLoad\` for the current selection. Try it below: change a deal's value, then save it from the ribbon.
 
 {{canvas: Act on the selected deals}}
+
+## Built-in commands
+
+Each is off until its prop is set, and they come first, before the commands from \`onLoad\`:
+
+- **Save** (\`enableSave\`): saves every changed record.
+- **Discard changes** (\`enableDiscard\`): undoes every unsaved change.
+- **Refresh** (\`enableRefresh\`): loads the records again: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) for the unsaved-changes prompt.
+
+**Save** and **Discard changes** show only while there are unsaved changes.
 
 ## How it behaves
 
@@ -25,8 +35,9 @@ The ribbon is the bar of commands above the records, such as **Mark as won**, th
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | None | Returns the commands. Called at mount, whenever the selection changes, and on \`reload()\`. |
-| \`enableSave\` | \`boolean\` | \`false\` | Adds **Save** first, which saves every changed record; disabled while nothing has changed. |
-| \`enableRefresh\` | \`boolean\` | \`false\` | Adds **Refresh**, which loads the records again: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) for the unsaved-changes prompt. |
+| \`enableSave\` | \`boolean\` | \`false\` | Adds **Save**. |
+| \`enableDiscard\` | \`boolean\` | \`false\` | Adds **Discard changes**. |
+| \`enableRefresh\` | \`boolean\` | \`false\` | Adds **Refresh**. |
 | \`disabled\` | \`boolean\` | \`false\` | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Added to the ribbon's box. |
 | \`components\` | \`IRibbonComponents\` | Defaults | See *Changing how it looks* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). |
@@ -37,7 +48,7 @@ The ribbon is the bar of commands above the records, such as **Mark as won**, th
 
 A module adds its own commands with \`registerCommands\`, as \`addSortMenu\` adds the example's **Sort** menu.
 
-**Strings:** **Save** and **Refresh** come from the keys \`ribbon.save\` and \`ribbon.refresh\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+**Strings:** the built-in commands' labels come from the keys \`ribbon.save\`, \`ribbon.discard\` and \`ribbon.refresh\`. See [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 
