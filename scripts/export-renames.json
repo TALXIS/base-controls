@@ -22,5 +22,7 @@
     ". IXrmFormStrategy": "IXrmFormLoadResult",
     ". IFormStrategy": null,
     ". IOnSaveParams": null,
-    ". XrmClientApiStrategyFactory": null
+    ". XrmClientApiStrategyFactory": null,
+    ". useDatasetControlPart": "useRegisterDatasetControlPart",
+    "./gantt useCreateGanttService": "useRegisterGanttService"
 }

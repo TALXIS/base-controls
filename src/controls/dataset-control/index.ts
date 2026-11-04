@@ -8,7 +8,7 @@ export type {
     IDatasetControlView, IDatasetControlViewDefinition, IDatasetControlResolvedView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
     IDatasetControlRuntime, DatasetControlViewsHook,
 } from './runtime';
-export { useDatasetControl, useControlStateStore, useDatasetControlPart, useDatasetControlModule } from './adapters/root';
+export { useDatasetControl, useControlStateStore, useRegisterDatasetControlPart, useDatasetControlModule } from './adapters/root';
 export { useDatasetControlHeader } from './ui/header';
 export type { IDatasetControlHeader } from './ui/header';
 export type { IDatasetControlProps, IDatasetControlComponents } from './adapters/root';

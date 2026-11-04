@@ -61,9 +61,9 @@ A part of your own is any component you put inside the control: a total in the f
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it except the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 | \`useCompact()\` | Whether the header is compact. See *Your own part in a compact header* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`useDatasetControlPart(key, onCreate)\` | Creates an object once and registers it under \`key\` for \`control.parts\`, while the component is mounted. |
+| \`useRegisterDatasetControlPart(key, onCreate)\` | Creates an object once and registers it under \`key\` for \`control.parts\`, while the component is mounted. |
 
-A part of your own needs its key declared before \`useDatasetControlPart\` takes it, as *types.ts* in *Total the selected deals* does.
+A part of your own needs its key declared before \`useRegisterDatasetControlPart\` takes it, as *types.ts* in *Total the selected deals* does.
 
 \`DatasetControl.Ui\` (also exported as \`DatasetControlUi\`) holds the regions and most parts as plain UI, with no control behind them, for a part that looks like a built-in one. The ribbon and the notifications are not in it: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 

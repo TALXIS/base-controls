@@ -7,7 +7,7 @@ import { IErrorMessageBarComponents } from "@ui/error-message-bar";
 import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
 import { ErrorMessageBoundary } from "@ui";
 import { useDataProviderEvents } from "@data";
-import { useDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
+import { useRegisterDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
 import { EDIT_COLUMNS_LABELS } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "../../runtime/parts/edit-columns/DatasetControlEditColumns";
 import { IDatasetControlEditColumnsSessionEvents } from "../../runtime/parts/edit-columns/DatasetControlEditColumnsSession";
@@ -40,7 +40,7 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 export const EditColumns = (props: IEditColumnsProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);
-    const editColumns = useDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
+    const editColumns = useRegisterDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
     const labels = useLabels(EDIT_COLUMNS_LABELS);
     const openErrorDialog = useOpenErrorDialog();
     const components = props.components ?? NO_COMPONENTS;

@@ -3,7 +3,7 @@ import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
 import { DatasetControlUi, IPageSizeSwitcherUiComponents } from "../../ui";
 import { useDataProvider } from "@data";
-import { useDatasetControlPart } from "../root";
+import { useRegisterDatasetControlPart } from "../root";
 import { PAGE_SIZE_SWITCHER_LABELS } from "./labels";
 import { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents } from "../../runtime/parts/page-size-switcher/DatasetControlPageSizeSwitcher";
 
@@ -18,7 +18,7 @@ export interface IPageSizeSwitcherProps {
 /** Which records the page shows, and how many a page holds. */
 export const PageSizeSwitcher = (props: IPageSizeSwitcherProps) => {
     const provider = useDataProvider();
-    const pageSizeSwitcher = useDatasetControlPart('pageSizeSwitcher', () => new DatasetControlPageSizeSwitcher({ provider, pageSizes: props.pageSizes }));
+    const pageSizeSwitcher = useRegisterDatasetControlPart('pageSizeSwitcher', () => new DatasetControlPageSizeSwitcher({ provider, pageSizes: props.pageSizes }));
     const labels = useLabels(PAGE_SIZE_SWITCHER_LABELS);
     const { rerender } = useRerender();
     const range = pageSizeSwitcher.getRecordRange();

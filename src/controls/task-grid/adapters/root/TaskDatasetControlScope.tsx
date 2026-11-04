@@ -4,7 +4,7 @@ import { useEventEmitter, useContextWithNullCheck } from "@core";
 import { DataProviderContext } from "@data";
 import type { ITaskDataProvider, ITaskDataProviderEvents } from "../../runtime/provider";
 import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
-import { useDatasetControlPart } from "@controls/dataset-control";
+import { useRegisterDatasetControlPart } from "@controls/dataset-control";
 import { TaskRuntime } from "../../runtime/TaskRuntime";
 import { TaskRuntimeContext, TaskDatasetControlPropsContext } from "./context";
 
@@ -16,7 +16,7 @@ export interface ITaskDatasetControlScopeProps {
 export const TaskDatasetControlScope = (props: ITaskDatasetControlScopeProps) => {
     const datasetControl = useRequiredDatasetControlRuntime();
     const { pcfContext, propsRef } = useContextWithNullCheck(TaskDatasetControlPropsContext);
-    const runtime = useDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }));
+    const runtime = useRegisterDatasetControlPart('taskRuntime', () => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }));
 
     //the provider of this mount's last load
     const provider = useContext(DataProviderContext) as ITaskDataProvider | null;

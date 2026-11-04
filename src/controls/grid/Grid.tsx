@@ -5,7 +5,7 @@ import { IRecord } from "@talxis/client-libraries";
 
 import { useControlStateStore } from "@controls/dataset-control/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
-import { useDatasetControlPart } from "@controls/dataset-control/adapters/root/useDatasetControlPart";
+import { useRegisterDatasetControlPart } from "@controls/dataset-control/adapters/root/useRegisterDatasetControlPart";
 import { BaseControls, usePcfContext } from "@pcf";
 import { getClassNames, useLatest } from "@core";
 import { useLabelsService } from "@labels";
@@ -39,7 +39,7 @@ export const GridRoot = (props: IGridProps) => {
     const labelsServiceRef = useLatest(useLabelsService());
     const propsRef = useLatest(props);
 
-    const runtime = useDatasetControlPart('grid', () => new GridRuntime({
+    const runtime = useRegisterDatasetControlPart('grid', () => new GridRuntime({
         onGetProps: () => propsRef.current,
         provider: provider,
         pcfContext: pcfContext,

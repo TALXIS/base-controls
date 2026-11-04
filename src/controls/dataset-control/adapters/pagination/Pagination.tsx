@@ -3,7 +3,7 @@ import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
 import { DatasetControlUi, IPaginationUiComponents } from "../../ui";
 import { useDataProvider } from "@data";
-import { useDatasetControlPart } from "../root";
+import { useRegisterDatasetControlPart } from "../root";
 import { useDatasetControlRegion } from "../region";
 import { PAGINATION_LABELS } from "./labels";
 import { DatasetControlPagination, IDatasetControlPaginationEvents } from "../../runtime/parts/pagination/DatasetControlPagination";
@@ -17,7 +17,7 @@ export interface IPaginationProps {
 /** Moves between the provider's pages. */
 export const Pagination = (props: IPaginationProps) => {
     const provider = useDataProvider();
-    const pagination = useDatasetControlPart('pagination', () => new DatasetControlPagination({ provider }));
+    const pagination = useRegisterDatasetControlPart('pagination', () => new DatasetControlPagination({ provider }));
     const labels = useLabels(PAGINATION_LABELS);
     const { rerender } = useRerender();
     const region = useDatasetControlRegion();

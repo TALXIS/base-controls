@@ -3876,7 +3876,7 @@ declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
 /** A module the control loaded, by name; throws when it was not given. */
 declare function useDatasetControlModule(name: string): any;
 /** Makes a part once and registers it on the control under name, for control.parts. */
-declare function useDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, onCreate: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
+declare function useRegisterDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, onCreate: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
 
 /** The overlay that covers the whole control while something runs. */
 interface IDatasetControlLoadingOverlay {

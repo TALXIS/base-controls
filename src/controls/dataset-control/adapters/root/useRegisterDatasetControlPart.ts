@@ -2,8 +2,8 @@ import { useEffect, useMemo } from "react";
 import type { IDatasetControlPartMap, IDatasetControlServiceMap } from "../../runtime/interfaces";
 import { useDatasetControlRuntime } from "./context";
 
-/** Creates the part once and registers it under `name` on the enclosing `DatasetControl` while the component is mounted. */
-export const useDatasetControlPart = <TName extends keyof IDatasetControlPartMap, TPart extends IDatasetControlServiceMap[TName]>(name: TName, onCreate: () => TPart): TPart => {
+/** Creates a part once and registers it on the control while the calling component is mounted. */
+export const useRegisterDatasetControlPart = <TName extends keyof IDatasetControlPartMap, TPart extends IDatasetControlServiceMap[TName]>(name: TName, onCreate: () => TPart): TPart => {
     const runtime = useDatasetControlRuntime();
     //registered as it is made: a part can be read before the first effect, such as the grid before AG Grid mounts
     const part = useMemo(() => {
