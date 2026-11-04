@@ -47,6 +47,47 @@ const FormExample = () => {
   );
 };`
 
+const autoSaveCode = `const record = createMemoryRecord({
+  columns: [
+    { name: "name", alias: "name", displayName: "Name", dataType: "SingleLine.Text" },
+    { name: "telephone1", alias: "telephone1", displayName: "Phone", dataType: "SingleLine.Phone" },
+  ],
+  data: {
+    accountid: "11111111-1111-1111-1111-111111111111",
+    name: "Contoso Ltd.",
+    telephone1: "+420 123 456 789",
+  },
+  metadata: { PrimaryIdAttribute: "accountid", PrimaryNameAttribute: "name" },
+  //a moment's wait, so the ribbon's Saving… can be seen
+  onSave: async (record) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const fields = record.getColumns().map((column) => column.name).filter((name) => record.isDirty(name));
+    console.log("Saved", fields);
+    return { success: true, fields, recordId: record.getRecordId() };
+  },
+});
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+
+  return (
+    //saves each time a changed field is left; read as the form mounts
+    <Form.Root onLoad={async () => ({ record })} autoSave>
+      <Form.Ribbon />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="general" label="General">
+          <Form.Column>
+            <Form.Section label="Account">
+              <Form.Field name="name"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="telephone1"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`
+
 const switchRecordsCode = `const columns = [
   { name: "name", alias: "name", displayName: "Name", dataType: "SingleLine.Text" },
   { name: "telephone1", alias: "telephone1", displayName: "Phone", dataType: "SingleLine.Phone" },
@@ -119,6 +160,12 @@ A form edits one record: an \`IRecord\`, the same object a grid row or any data 
 
 \`onSave\` gets the record on every save and returns \`{ recordId, success, fields, errors? }\`. When it succeeds the change is committed in memory; when it fails nothing is. Without \`onSave\` a save only commits in memory.
 
+## Save as you go
+
+With \`autoSave\`, the form saves each change as soon as the user commits it, by leaving the field, instead of waiting for Save. Changes made while a save is running are saved right after it. A save it starts runs the same checks as any other: invalid values stop it and show their errors, and an \`XrmForm\` runs its OnSave handlers.
+
+{{story: Save as you go}}
+
 ## Pass a record you already have
 
 A record from a grid or any other data provider goes to \`onLoad\` as is, and saving runs through that provider. \`onLoad\` runs on mount and on refresh; to show another record, remount the form with a new \`key\`.
@@ -150,6 +197,18 @@ export const LoadARecord: Story = {
         docs: {
             description: {
                 story: 'One account held in memory. Try: change the phone, save, and check the console.',
+            },
+        },
+    },
+}
+
+export const SaveAsYouGo: Story = {
+    name: 'Save as you go',
+    render: () => renderStory(<LiveExample seedCode={autoSaveCode} />),
+    parameters: {
+        docs: {
+            description: {
+                story: 'The same account, saved as you edit. Try: change the phone, click away, and watch the ribbon.',
             },
         },
     },
