@@ -42,7 +42,7 @@ The grid takes no strings as props: its labels are on [**Localization**](?path=/
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`modules\` | \`IGridModule[]\` | Required | At mount | The features, in load order; a row model is required. See [**Modules**](?path=/docs/controls-grid-modules--overview). |
-| \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws emails, phones, URLs, lookups and the primary column as links, and opens a record on a double-click while editing is off. |
+| \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws lookups, emails, phones, URLs and the primary column as links, and opens a record on a double-click in a grid without the editing module. |
 | \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. |
 | \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. |
 | \`rowHeight\` | \`number\` | \`42\` | At mount | A row's height, in pixels. |

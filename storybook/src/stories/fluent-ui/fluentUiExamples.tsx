@@ -25,7 +25,7 @@ const FAR_ITEMS: ICommandBarItemProps[] = [
     { key: 'filter', text: 'Filter', iconOnly: true, iconProps: { iconName: 'Filter' } },
 ]
 
-//each bar sits on a strip in TALXIS green, which is a theme of its own
+//each bar sits on a green strip with a theme of its own
 const Bar = (props: { title: string, children: JSX.Element }) => {
     const pageTheme = useTheme()
     const strip = useThemeBuilder({ theme: pageTheme }, { tint: { hue: '#2f9b70', strength: 'solid' } })
@@ -37,7 +37,7 @@ const Bar = (props: { title: string, children: JSX.Element }) => {
 
 const GridExample = () => {
     const bars = React.useRef<HTMLDivElement>(null)
-    //sets the width on the element, so the bars resize without re-rendering, like a splitter would
+    //resizes the bars without a render, as a splitter does
     const resize = (percent: number) => bars.current!.style.width = \`\${percent}%\`
 
     return <Stack tokens={{ childrenGap: 12 }}>

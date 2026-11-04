@@ -183,7 +183,7 @@ export const FollowAGridFromMountToUnmount: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module that logs each step the grid takes it through, from \`onLoad\` to \`onDestroyed\`. Try: press *Close and reopen*.`,
+                story: `A module that logs each step the grid takes it through, from \`onLoad\` to \`onDestroy\`. Try: close the grid, then open it again.`,
             },
         },
     },

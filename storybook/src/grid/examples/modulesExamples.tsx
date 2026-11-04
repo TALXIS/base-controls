@@ -18,7 +18,7 @@ const GridExample = (props: IGridExampleProps) => <DatasetControl onLoad={async 
         <Grid
             key={props.rowModel}
             modules={[
-                //the key is required, so leave the module out without one
+                //the module requires a key
                 ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
                 props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
                 createGroupingModule(),

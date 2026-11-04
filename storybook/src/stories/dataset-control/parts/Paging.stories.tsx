@@ -6,7 +6,7 @@ import { PagingExample } from '../../../dataset-control/examples/partsExamples'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and lets the user pick how many a page shows, and \`DatasetControl.Pagination\` moves to the first, previous and next page. Try it below: press *Pages of 10*, then move to the next page.
+Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows which records the page holds and lets the user pick how many a page shows, and \`DatasetControl.Pagination\` moves to the first, previous and next page. Try it below: press **Pages of 10**, then move to the next page.
 
 {{canvas: Page through the deals}}
 
@@ -36,7 +36,7 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 
 ## From your code
 
-\`control.parts.get('pageSizeSwitcher')\` and \`control.parts.get('pagination')\` return the parts once they are drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). The example's *Pages of 10* and *First page* go through them. To page the provider directly, see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+\`control.parts.get('pageSizeSwitcher')\` and \`control.parts.get('pagination')\` return the parts once they are drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). The example's **Pages of 10** and **First page** go through them. To page the provider directly, see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ### PageSizeSwitcher
 

@@ -14,9 +14,9 @@ const OTHER_APP_STYLES = \`
 .ag-row { border-bottom: 2px dashed #e3008c !important; }
 \`
 
-//the page knows only the key, the props and where the frame's code is: it never imports FramedDeals
+//the page names the key, the props and the frame's scripts, never FramedDeals
 const IsolatedDeals = createIsolatedHost<{ theme: ITheme }>('deals', {
-    //in your app, the frame's entry script; here, the docs' runner, which runs these files
+    //your frame's entry script; here, the docs runner that runs these files
     scripts: SANDBOX_FRAME_SCRIPTS,
     //runs on the frame's window before its scripts load
     onPrepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by onPrepareWindow' }),
@@ -37,7 +37,7 @@ const GridExample = () => {
             <DealsGrid heading='In the page' />
         </Stack.Item>
         <Stack.Item grow styles={{ root: { flexBasis: 0, minWidth: 0 } }}>
-            {/* frame goes to the iframe; every other prop crosses into the frame on every render */}
+            {/* frame sets up the iframe; every other prop goes to the content */}
             <IsolatedDeals theme={theme} frame={{ title: 'Deals' }} />
         </Stack.Item>
     </Stack>
@@ -48,12 +48,12 @@ const GridExample = () => {
         name: 'FramedDeals.tsx',
         code: `import { DealsGrid } from './deals'
 
-//the frame's own entry: only the frame runs this file, so the page's bundle never holds it
+//the frame's entry: only the frame runs this file
 
-//the frame starts empty: it registers its own icons, and the content brings its providers and theme
+//the frame starts with no icons registered
 initializeIcons()
 
-//a props type shared with the page can be a type-only import, which leaves no code in either bundle
+//the frame starts empty, so the content brings its own providers
 const FramedDeals = (props: { theme: ITheme }) => {
     const { greeting } = window as Window & { greeting?: string }
     return <PcfContextProvider>

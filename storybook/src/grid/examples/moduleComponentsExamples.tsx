@@ -126,7 +126,7 @@ const COMPONENTS: IGridAggregationComponents = {
     },
 }
 
-//laid over the module's totalCell key by key, so the label stays
+//merged over the module's totalCell key by key
 const STOCK_TOTAL: ITotalCellComponents = {
     totalValue: { onRenderValue: props => <StockValue {...props} /> },
 }

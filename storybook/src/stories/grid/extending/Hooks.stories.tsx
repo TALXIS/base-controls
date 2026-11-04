@@ -16,7 +16,7 @@ Register a hook on a service in a module's \`onLoad\`, and change the result it 
 
 The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
 
-Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`, which runs before every built-in module except the legacy client API's, so a module that sets the same thing later overwrites yours. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
+Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`: the legacy client API module shares it, and every other built-in module runs later, so where both set the same thing, the module wins. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
 
 | Module | \`GRID_MODULE_PRIORITY\` |
 |---|---|

@@ -6,7 +6,7 @@ import { RibbonExample } from '../../../dataset-control/examples/partsExamples'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-The ribbon is the bar of commands above the records, such as *Mark as won*, that act on the view or on the records the user selected. You add it with \`DatasetControl.Ribbon\` and return the commands from its \`onLoad\`, which runs again whenever the selection changes, so you return only those that apply. Try it below: select a few deals and mark them won.
+The ribbon is the bar of commands above the records, such as **Mark as won**, that act on the view or on the records the user selected. You add it with \`DatasetControl.Ribbon\` and return the commands from its \`onLoad\`, which runs again whenever the selection changes, so you return only those that apply. Try it below: select a few deals and mark them won.
 
 {{canvas: Act on the selected deals}}
 
@@ -15,12 +15,12 @@ The ribbon is the bar of commands above the records, such as *Mark as won*, that
 - **Order:** commands show in the order they are returned, and those that do not fit move into the overflow menu.
 - **Loading:** a shimmer stands in for the commands on the first load; later loads keep the previous commands until the new ones arrive.
 - **Running:** a command's button is disabled while its \`onExecute\` runs, and every button while the provider loads.
-- **Errors:** when \`onLoad\` throws, the error shows with *Try again*; when \`onExecute\` throws, the error dialog opens: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
-- **Compact header:** a command with an \`iconName\` shows only its icon; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
+- **Errors:** when \`onLoad\` throws, the error shows with **Try again**; when \`onExecute\` throws, the error dialog opens: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+- **Compact header:** a command with an \`iconName\` shows only its icon: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Commands
 
-A command either runs or opens a menu of further commands, as *Sort* does in the example.
+A command either runs or opens a menu of further commands, as **Sort** does in the example.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
@@ -45,14 +45,14 @@ The same command bar is exported as \`Ribbon\`, for use outside DatasetControl. 
 
 ## From your code
 
-\`control.parts.get('ribbon')\` returns the ribbon once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). When a command changes what applies without changing the selection, call \`reload()\`, as *Mark as won* does in the example.
+\`control.parts.get('ribbon')\` returns the ribbon once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). When a command changes what applies without changing the selection, call \`reload()\`, as **Mark as won** does in the example.
 
 | Member | Does |
 |---|---|
 | \`getCommands()\` | The commands of the last load; \`undefined\` until the first one finishes. |
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Loads the commands again. |
-| \`registerCommands(hook, priority?)\` | Adds to the commands on every load; see *Add your own commands*. |
+| \`registerCommands(hook, priority?)\` | Adds to the commands on every load. |
 | \`getError()\` | What the last load threw, until the next one starts. |
 | \`events\` | \`onBeforeLoad\`, \`onLoaded\`, \`onBeforeExecute(command)\`, \`onExecuteFailed(command, error)\` and \`onAfterExecute(command)\`. |
 
@@ -60,9 +60,9 @@ The same command bar is exported as \`Ribbon\`, for use outside DatasetControl. 
 
 \`registerCommands\` lets a module add its commands to whatever ribbon the page draws. \`hook(commands)\` changes them in place after \`onLoad\`, a higher \`priority\` runs later, and it returns its unregistration; call \`reload()\` to apply it now.
 
-The example's *Sort* menu is added this way, in \`addSortMenu\`.
+The example's **Sort** menu is added this way, in \`addSortMenu\`.
 
-**Strings:** the commands carry your own labels; a failed load's *Try again* and *Details* come from \`ERROR_MESSAGE_BAR_LABELS\`, keys \`errorMessageBar.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+**Strings:** the commands carry your own labels; a failed load's **Try again** and **Details** come from \`ERROR_MESSAGE_BAR_LABELS\`, keys \`errorMessageBar.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

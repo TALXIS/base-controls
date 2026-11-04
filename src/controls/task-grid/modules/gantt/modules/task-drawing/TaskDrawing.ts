@@ -20,7 +20,7 @@ export interface ITaskDrawingParameters {
 export interface ITaskDrawing {
     /** Whether tasks can be created at all. */
     isEnabled(): boolean;
-    /** Creates a task first under the row's parent, running over the span. */
+    /** Creates a task under the row's parent at the default position, over the span. */
     create(rowTaskId: string, span: IGanttSpan): Promise<void>;
     getComponents(): ITaskDrawingComponents;
 }

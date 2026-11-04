@@ -14,7 +14,7 @@ const account = createMemoryRecord({
         await new Promise(resolve => setTimeout(resolve, 800))
         const fields = record.getFields().filter(field => field.isDirty()).map(field => field.getColumn().name)
         if (record.getValue('creditlimit') > 50000) {
-            //commits nothing; Form.Notifications shows the errors
+            //Form.Notifications shows these errors
             return { recordId: record.getRecordId(), success: false, fields, errors: [{ fieldName: 'creditlimit', message: 'Over 50,000 needs a manager to approve it.' }] }
         }
         return { recordId: record.getRecordId(), success: true, fields }
@@ -45,7 +45,7 @@ const account = createMemoryRecord({
     },
 })
 
-//saves each change the user commits; read as the form mounts
+//saves each change the user commits
 const GridExample = () => <Form.Root onLoad={async () => ({ record: account })} autoSave>
     <Form.Ribbon />
     <Form.Notifications />
@@ -78,7 +78,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Account' selectedKey={recordId} options={records.map(item => ({ key: item.getRecordId(), text: item.getValue('name') }))} onChange={(_, option) => setRecordId(String(option!.key))} />
-        {/* a new key mounts a new form, which loads the other record */}
+        {/* a new key mounts a new form for the other record */}
         <Form.Root key={recordId} onLoad={async () => ({ record })}>
             <Form.Ribbon />
             <Form.Section label='Account'>

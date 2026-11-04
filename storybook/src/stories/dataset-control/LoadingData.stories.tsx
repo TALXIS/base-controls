@@ -18,7 +18,7 @@ Every load mounts the control anew, with a new \`IDatasetControl\`, new modules,
 - the first mount;
 - picking a view, or \`loadView()\`;
 - saving *Edit columns*, saving a new user view, closing *Manage views*, or \`reload()\`;
-- *Try again*, or \`retry()\`.
+- **Try again**, or \`retry()\`.
 
 A placeholder stands in for the parts until the first page is in, so put what must show at once, such as a page title, outside the control. Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
@@ -26,7 +26,7 @@ A placeholder stands in for the parts until the first page is in, so put what mu
 
 Before anything reloads records that have unsaved changes, the control asks the user whether to discard them:
 
-- It asks before every load except the first mount and *Try again* or \`retry()\`, which have no changes to lose.
+- It asks before every load except the first mount and **Try again** or \`retry()\`, which have no changes to lose.
 - It asks before a part reloads the provider: searching, paging, changing the page size, and sorting, filtering or grouping in a grid.
 - Discarding clears the changes and goes ahead; keeping them cancels the action.
 - The question is the \`dataset.unsavedChangesConfirmation\` label: see [**Localization**](?path=/docs/concepts-localization--overview).
@@ -37,7 +37,7 @@ Each mount runs these steps; what the user changed is on [**State**](?path=/docs
 
 {{block: lifecycle}}
 
-## Load what every view needs once
+## Load what every view needs
 
 \`onLoadDependencies\` loads what both the modules and \`onLoad\` read, such as the entity's metadata or the signed-in user, ahead of them on every load. \`onLoad\` reads it through the control, which \`onMounted\` hands you before the load; a module reads it from the control its \`onLoad\` gets.
 

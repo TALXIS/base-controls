@@ -135,7 +135,7 @@ const GridExample = () => {
 }
 `
 
-const HAND_DOWN_CODE = `//reads its events once, at mount
+const HAND_DOWN_CODE = `//draws again on each of these events
 const LoadStatus = () => {
     const provider = useDataProviderEvents(['onLoading', 'onError'])
     if (provider.isError()) {

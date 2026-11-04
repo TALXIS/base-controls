@@ -21,7 +21,6 @@ const GridExample = () => {
         createAggregationModule(),
     ], [])
 
-    //onLoad returns the provider for the view the user is on; stateKey brings them back where they left off
     //saveDealViewData keeps the sorting, filters and search with every saved view
     return <DatasetControl modules={controlModules} onLoadViews={loadDealViews} stateKey='deals-get-started' onLoad={loadDeals} onMounted={saveDealViewData} height='560px'>
         {/* every part inside works on the provider onLoad returned */}

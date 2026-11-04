@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FromInsideExample, FromOutsideExample } from '../../form/react-form/talkingExamples'
 
 const DESCRIPTION = `
-Your code reaches the form from outside through \`onFormReady\` and the events of \`Form.Root\`, and from inside through \`useForm\` and \`useField\`. Through them it reads and sets values, saves, loads again and follows every change. Try it below: press *Set the phone*, then **Save**, and read the log under the form.
+Your code reaches the form from outside through \`onFormReady\` and the events of \`Form.Root\`, and from inside through \`useForm\` and \`useField\`. Through them it reads and sets values, saves, loads again and follows every change. Try it below: press **Set the phone**, then **Save**, and read the log under the form.
 
 {{canvas: Follow the form}}
 
@@ -18,7 +18,7 @@ Your code reaches the form from outside through \`onFormReady\` and the events o
 |---|---|
 | \`getData()\` | The values by column name, unsaved changes included. |
 | \`getField(name)\` | The field, with \`getValue()\` and \`setValue(value)\`. |
-| \`refresh()\` | Runs \`onLoad\` again: see *Load again* on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview). |
+| \`refresh()\` | Runs \`onLoad\` again: see [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview). |
 
 ## Events
 
@@ -41,7 +41,7 @@ Any component of yours inside \`Form.Root\` reaches the form through these hooks
 |---|---|
 | \`useForm()\` | The form. Throws outside \`Form.Root\`. |
 | \`useField(name?)\` | The field named, or the field of the \`Form.Field\` around the component; \`null\` with neither. Draws again when its value changes and after each save. |
-| \`useValidationSummary()\` | The validation summary, drawing again when it changes. |
+| \`useValidationSummary()\` | The validation summary as \`{ fieldName?, error, errorMessage }\` items, drawing again when it changes. |
 
 {{story: A part inside the form}}
 
@@ -55,10 +55,10 @@ What \`useForm()\` returns:
 | \`getField(name)\` | The field, with \`getValue()\`, \`setValue(value)\`, \`getColumn()\` and the rest. |
 | \`getValidationSummary()\` | The validation summary of the last save. |
 | \`refresh()\` | Runs \`onLoad\` again. |
-| \`events\` | The events above; \`addEventListener\` returns what removes the listener again. |
+| \`events\` | The events of \`Form.Root\`; \`addEventListener\` returns what removes the listener again. |
 | \`registerSaveBlocker(blocker)\` | Runs \`blocker(request)\` before every save from now on; \`request.isBlocked = true\` stops the save. Returns what removes it. |
 
-\`useForm()\` does not draw the component again: follow \`events\`, as *SaveBar* does with \`onDirtyStateChanged\`.
+\`useForm()\` does not draw the component again: follow \`events\`, as \`SaveBar\` does with \`onDirtyStateChanged\`.
 
 ## Where next
 

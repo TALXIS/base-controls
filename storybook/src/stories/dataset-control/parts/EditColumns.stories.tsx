@@ -13,17 +13,17 @@ Edit columns lets the user choose the columns of a view: a button opens a panel 
 ## How it behaves
 
 - **Adding:** an added column goes first in the list; drag it to where it belongs.
-- **Loading:** the pickers say *Loading...* while the columns load, and a failed load shows its error with *Try again*.
+- **Loading:** the pickers say *Loading...* while the columns load, and a failed load shows its error with **Try again**.
 - **Hidden columns:** the editor does not list them, and saving keeps them as they are.
-- **Disabled:** the button while the provider loads, and *Save* while no visible column is left.
-- **Cancel:** *Cancel*, or closing the panel, drops the changes.
+- **Disabled:** the button while the provider loads, and **Save** while no visible column is left.
+- **Cancel:** pressing it, or closing the panel, drops the changes.
 - **Saving:** writes the columns, clears the selection and remounts the control; the columns are kept per view (see [**State**](?path=/docs/controls-datasetcontrol-state--overview)).
 - **Unsaved changes:** saving asks about them first: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
-- **Compact header:** only the icon shows, with the label as its tooltip; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
+- **Compact header:** only the icon shows, with the label as its tooltip: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Columns it offers
 
-The provider supplies what the pickers list, fetched anew each time the editor opens; the example's *views.ts* sets \`onGetAvailableColumns\`.
+The provider supplies what the pickers list, fetched anew each time the editor opens; the example's \`views.ts\` sets \`onGetAvailableColumns\`.
 
 | Provider hook | What it feeds |
 |---|---|
@@ -38,7 +38,7 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 
 ## From your code
 
-\`control.parts.get('editColumns')\` returns the part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Open the editor from a button of your own, as *Columns* in the example's footer does.
+\`control.parts.get('editColumns')\` returns the part once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). Open the editor from a button of your own, as **Columns** in the example's footer does.
 
 | Member | Does |
 |---|---|
@@ -48,8 +48,8 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 | \`getSession()\` | The edit in progress, while the editor is open. |
-| \`registerCommands(hook, priority?)\` | Adds commands above the pickers; see *Add your own commands*. |
-| \`registerColumnCommands(hook, priority?)\` | Adds commands to each chosen column; see *Add your own commands*. |
+| \`registerCommands(hook, priority?)\` | Adds commands above the pickers. |
+| \`registerColumnCommands(hook, priority?)\` | Adds commands to each chosen column. |
 
 The session holds the edit until it is saved:
 
@@ -68,7 +68,7 @@ The session holds the edit until it is saved:
 
 \`hook(commands, session)\` changes the commands above the pickers in place, and \`hook(commands, column, session)\` those of each chosen column, with Remove first. Both return their unregistration, and a higher \`priority\` runs later.
 
-The example adds *Keep only the deal* above the pickers.
+The example adds **Keep only the deal** above the pickers.
 
 Dragging swallows clicks: give column commands \`onMouseUp\`, not \`onClick\`.
 

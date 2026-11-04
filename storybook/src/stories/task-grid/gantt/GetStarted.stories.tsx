@@ -32,13 +32,13 @@ Names stay in the grid. Started, done, inactive, locked and saving tasks each ha
 | Date columns | The end date is | Bars snap to | Zoom goes down to |
 |---|---|---|---|
 | both date only | the task's last day | whole days | days |
-| either with a time of day | the moment it ends | 15 minutes to 12 hours, by zoom | hours |
+| either with a time of day | the moment it ends | 15 minutes to a day, by zoom | hours |
 
 With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, a day counted as \`hoursPerDay\` hours, [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline saves like an edit in the grid. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 ## Zoom and navigation
 
-Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit* and *Go to today*, and every subject cell *Show on timeline*. With a \`stateKey\`, the zoom and the split's width are kept per view and saved with user views.
+Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit* and *Go to today*, and the subject cell of every task with a date *Show on timeline*. With a \`stateKey\`, the zoom and the split's width are kept per view and saved with user views.
 
 ## Changing how it looks
 
@@ -61,12 +61,12 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 | \`TaskGantt\` | \`modules\` | Required | The Gantt's modules. A library module is required. At mount. |
 | | \`stateKey\` | None | Where the zoom is kept, per view. |
 | | \`timelineLimits\` | Today ± 25 years | \`{ start?, end? }\`, how far the timeline scrolls. Widened to fit the tasks. |
-| | \`components\` | Defaults | See *Changing how it looks* below. |
+| | \`components\` | Defaults | See *Changing how it looks* above. |
 | \`TaskGantt.Split\` | \`children\` | Required | The \`TaskGrid\`, then the \`TaskGantt\`. |
 | | \`defaultGanttSize\` | \`60\` | The Gantt's share of the width, in percent. |
 | | \`stateKey\` | None | Where the user's width is kept, per view. |
-| | \`components\` | Defaults | See *Changing how it looks* below. |
-| \`TaskGantt.ZoomSlider\` | \`components\` | Defaults | See *Changing how it looks* below. |
+| | \`components\` | Defaults | See *Changing how it looks* above. |
+| \`TaskGantt.ZoomSlider\` | \`components\` | Defaults | See *Changing how it looks* above. |
 
 The Gantt's strings are labels: see [**Localization**](?path=/docs/concepts-localization--overview).
 

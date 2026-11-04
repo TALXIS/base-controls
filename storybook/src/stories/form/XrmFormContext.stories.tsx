@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { CancelSaveExample, CheckWebsiteExample, DigitalOnlyExample, StartQualificationExample } from '../../form/xrm-form/examples/formContextExamples'
 
 const DESCRIPTION = `
-\`formContext\` is the object Dataverse hands a form script, and \`XrmForm\` hands the same object to your code. Scripts written for a model-driven app read and change values, show and hide parts of the form, raise notifications and check saves through it, here as there. Try it below: press *Start qualification*.
+\`formContext\` is the object Dataverse hands a form script, and \`XrmForm\` hands the same object to your code. Scripts written for a model-driven app read and change values, show and hide parts of the form, raise notifications and check saves through it, here as there. Try it below: press **Start qualification**.
 
 {{canvas: Start qualification}}
 
@@ -42,8 +42,8 @@ Tabs, sections and controls each have \`getLabel()\`, \`setLabel(label)\`, \`get
 
 ## Saving
 
-- \`data.save()\` saves as the ribbon's *Save* does, and \`data.getIsDirty()\` says whether there is anything to save.
-- \`data.entity.addOnSave(handler)\` runs the handler before every save, whoever starts it: *Save*, \`autoSave\` or \`data.save()\`. It runs only when every value is valid.
+- \`data.save()\` saves as the ribbon's **Save** does, and \`data.getIsDirty()\` says whether there is anything to save.
+- \`data.entity.addOnSave(handler)\` runs the handler before every save, whoever starts it: **Save**, \`autoSave\` or \`data.save()\`. It runs only when every value is valid.
 - \`context.getEventArgs().preventDefault()\` in the handler cancels the save. A handler that returns a promise is waited for.
 
 {{story: Cancel a save}}
@@ -131,7 +131,7 @@ export const CancelASave: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An OnSave handler cancels the save of an account on credit hold until *Description* says why. Try: save.`,
+                story: `An OnSave handler cancels the save of an account on credit hold until *Description* says why. Try: press **Save**.`,
             },
         },
     },

@@ -25,7 +25,7 @@ Each key of \`components\` is a piece, holding the slot of one part of \`Form\`.
 
 - \`control\`: the slot is called for every control, with its \`id\` in the FormXml as \`props.id\`, and \`props.disabled\` following the FormXml and \`setDisabled()\`. Draw the controls you pick by \`id\`, and hand the rest to \`ControlComponents.onRenderControl(props)\`.
 - \`tabs\`: \`children\` holds the FormXml's visible tabs, each with its \`id\`, or its \`name\` when it has none, and its \`label\`. A tab's \`setFocus()\` and \`setVisible()\` keep working.
-- \`ribbon\`: *Save* calls \`formContext.data.save()\`, so OnSave handlers run. A command of your own reaches the form through \`formContext\`.
+- \`ribbon\`: **Save** calls \`formContext.data.save()\`. A command of your own reaches the form through \`formContext\`.
 - \`notifications\`: \`messages\` holds what \`setFormNotification()\` raised, then the validation errors.
 
 {{story: A command of your own}}
@@ -68,7 +68,7 @@ export const ACommandOfYourOwn: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The ribbon keeps *Save* and gets a command that sets a value through \`formContext\`. Try: press *Release credit hold*.`,
+                story: `The ribbon keeps **Save** and gets a command that sets a value through \`formContext\`. Try: press **Release credit hold**.`,
             },
         },
     },

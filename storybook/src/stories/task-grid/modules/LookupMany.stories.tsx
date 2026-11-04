@@ -47,7 +47,7 @@ An \`appearance\` draws its pills and options first, and \`cell\`, \`editor\` an
 
 ### Dataverse
 
-Each column of \`createDataverseLookupManyModule\` also takes:
+The module also takes \`hostRecord\`, as \`DataverseTaskStore\` does, and each of its columns also takes:
 
 | Column key | Description |
 |---|---|

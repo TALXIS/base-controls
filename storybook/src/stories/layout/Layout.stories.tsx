@@ -14,12 +14,9 @@ Layout tools fit a component to the box it is given, not to the window: the same
 
 \`WrapCompactProvider\` keeps its parts full size while they fit on one line, and turns them compact the moment they would wrap. In the toolbar above, a button drops its label and a search box narrows.
 
-It notices a wrap by its box growing taller, so:
+After every render and every resize, it checks whether a part has moved onto a second line, so the row must be allowed to wrap: give it \`flexWrap: 'wrap'\`.
 
-- The row must be allowed to wrap: give it \`flexWrap: 'wrap'\`.
-- Full and compact parts must be the same height.
-
-Adding a part needs nothing: if it does not fit, the box grows and the parts turn compact. They turn back to full size only once the box is wider than it was when they wrapped, so the toolbar does not flicker at the edge.
+Adding a part needs nothing: if it does not fit, the parts turn compact. They turn back to full size only once the box is wider than it was when they wrapped, so the toolbar does not flicker at the edge.
 
 ## Remove a part
 

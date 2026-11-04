@@ -58,7 +58,7 @@ const SaveBar = () => {
     //addEventListener returns what removes the listener again
     React.useEffect(() => form.events.addEventListener('onDirtyStateChanged', setIsDirty), [form])
 
-    //asks before every save; registerSaveBlocker returns what stops asking
+    //asks before every save
     React.useEffect(() => form.registerSaveBlocker(async request => {
         const { confirmed } = await navigation.openConfirmDialog({ text: \`Save the changes to \${form.getRecord().getValue('name')}?\` })
         request.isBlocked = !confirmed

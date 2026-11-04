@@ -14,7 +14,6 @@ A form edits one \`IRecord\`, the same object a data provider holds for each of 
 
 - \`onLoad\` returns \`{ record }\`. It runs as the form mounts, behind a placeholder, and again on every refresh.
 - When it throws, \`onError\` gets the error and the placeholder stays.
-- A record of a data provider, such as a grid's, goes in as it is: see *Pass a record you already have* below.
 
 \`createMemoryRecord\` makes a record for a form with no data provider behind it:
 
@@ -24,9 +23,6 @@ A form edits one \`IRecord\`, the same object a data provider holds for each of 
 | \`data\` | The values by column name, as Dataverse returns a record. |
 | \`metadata\` | \`PrimaryIdAttribute\` and \`PrimaryNameAttribute\`, the columns of the record's id and name. |
 | \`onSave\` | Optional. Called with the record on every save; without it, a save only commits in memory. |
-
-- A lookup's value comes as Dataverse returns it: \`_primarycontactid_value\`, with \`@OData.Community.Display.V1.FormattedValue\` and \`@Microsoft.Dynamics.CRM.lookuplogicalname\` after the same key.
-- A lookup field searches only where \`window.Xrm\` exists, such as in a model-driven app.
 
 ## Save the record
 
@@ -102,7 +98,7 @@ export const SaveAsYouGo: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The account saves a second after each change. Try: change the phone, then click outside the field.`,
+                story: `The account saves each change as the user leaves the field. Try: change the phone, then click outside the field.`,
             },
         },
     },

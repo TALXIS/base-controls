@@ -16,11 +16,11 @@ Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`on
 
 ## Tasks
 
-\`taskRuntime.tasks\` makes the same changes the user does. Each one shows the loading overlay while it runs, and its failure in a dialog.
+\`taskRuntime.tasks\` makes the same changes the user does. Each one shows its failure in a dialog, and the loading overlay while it runs, except \`create\`: the new task's row shows the wait.
 
 | Member | Description |
 |---|---|
-| \`create(parentId?, { position?, data? })\` | Creates a task under \`parentId\`, or at the top level, starting with the column values in \`data\`. Returns the task, or \`null\` while \`enableCreation\` is off. |
+| \`create(parentId?, { position?, data? })\` | Creates a task under \`parentId\`, or at the top level, starting with the column values in \`data\`. Returns the task once the store has created it, or \`null\`, such as while \`enableCreation\` is off. |
 | \`open(taskIds)\` | Opens the tasks outside the grid, such as in their form. |
 | \`delete(taskIds)\` | Asks the user, then deletes the tasks with their subtasks. Does nothing while \`enableDeletion\` is off. |
 | \`move(taskId, targetTaskId, position)\` | Moves a task \`'above'\`, \`'below'\` or as a \`'child'\` of another, and saves it. Returns \`true\`, or \`null\` when it cannot go there. |

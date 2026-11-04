@@ -48,7 +48,7 @@ const PRODUCTS = [
     { Value: 40, Label: 'Training', Color: '#ca5010' },
 ]
 
-//without colours, so Recurring reads as plain text
+//no colours: Recurring reads as plain text
 const YES_NO = [
     { Value: 0, Label: 'No', Color: '' },
     { Value: 1, Label: 'Yes', Color: '' },
@@ -185,7 +185,7 @@ const statusIcons: IGridModule = {
 const colourRules: IGridModule = {
     name: 'colourRules',
     onLoad: grid => {
-        //after grouping, which repaints every row while the deals are grouped
+        //after grouping, which repaints grouped rows
         grid.services.get('cells').registerCellTheme((builder, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             if (value == null || isClosed(record)) {
@@ -468,7 +468,7 @@ const dealCommands: IGridModule = {
 const closedDealColours: IGridModule = {
     name: 'closedDealColours',
     onLoad: grid => {
-        //after grouping, which repaints every row while the deals are grouped
+        //after grouping, which repaints grouped rows
         grid.services.get('cells').registerCellTheme((builder, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
@@ -497,7 +497,7 @@ import { PIPELINE_REVIEW, useStageGrouping } from './pipelineReview'
 import { READ_ONLY_LIST } from './readOnlyList'
 import { SPREADSHEET } from './spreadsheet'
 
-//turns the switches of the Features panel into grid props; a grid of your own sets them directly
+//turns the Features panel's switches into grid props
 
 /** What the Features panel has switched on, with the row selection mode when rows can be selected. */
 export interface IFeatureSwitches {
@@ -536,7 +536,7 @@ export type IFeature = (context: IFeatureContext) => IFeatureProps
 
 const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS }
 
-//the deal's name stays in view while nothing is grouped, which the grid checks on every load
+//the deal's name stays in view while nothing is grouped
 const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
     //the grid shades every other row unless told not to
     enableZebra: false,

@@ -6,7 +6,7 @@ import { BasicUsageExample, ShowcaseExample } from '../../dataset-control/exampl
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-DatasetControl is the frame around a list of records: it loads them for the view the user is on and holds the parts around them, such as a view switcher, a ribbon, quick find and paging. What shows the records is up to you, usually a [**Grid**](?path=/docs/controls-grid-get-started--overview). Try it below: group by a column, then pick *Save as new view* in the view switcher.
+DatasetControl is the frame around a list of records: it loads them for the view the user is on and holds the parts around them, such as a view switcher, a ribbon, quick find and paging. What shows the records is up to you, usually a [**Grid**](?path=/docs/controls-grid-get-started--overview). Try it below: group by a column, then pick **Save as new view** in the view switcher.
 
 {{canvas: Overview}}
 
@@ -34,14 +34,9 @@ Each part has a page of its own:
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'When the control loads, what each step does, and loading what every view needs once.' },
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'When the control loads, and the steps each load runs.' },
     { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'Named views of the same records, each with its own columns, filter and sorting.' },
     { title: 'Layout', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-layout--overview', text: 'Place the parts in the header and footer, size the control and fit a narrow screen.' },
-    { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'What the user sees when a load, a command or a saved view fails.' },
-    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Switch views, reload and reach every part from your own code.' },
-    { title: 'State', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-state--overview', text: 'Each view comes back with its sorting, search, page and scroll.' },
-    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Replace what a part draws, add parts of your own, or show the records as cards.' },
-    { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate or reword every string the control and its parts show.' },
 ]
 
 const meta = {

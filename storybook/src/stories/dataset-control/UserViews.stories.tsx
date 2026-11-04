@@ -6,7 +6,7 @@ import { OwnStoreExample, UserViewsExample } from '../../dataset-control/example
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-User views let each user keep a view the way they sorted, filtered and arranged it: they save it as a view of their own, listed under *My views* in the view switcher, and open it later like any other. Add a user queries module to the control and put \`DatasetControl.UserQueries\` in the view switcher, which then offers *Save as new view*, *Save changes* and *Manage views*. Try it below: sort a column, then pick *Save as new view*.
+User views let each user keep a view the way they sorted, filtered and arranged it: they save it as a view of their own, listed under *My views* in the view switcher, and open it later like any other. Add a user queries module to the control and put \`DatasetControl.UserQueries\` in the view switcher, which then offers **Save as new view**, **Save changes** and **Manage views**. Try it below: sort a column, then pick **Save as new view**.
 
 {{canvas: Save your own views}}
 
@@ -132,7 +132,7 @@ export const KeepViewsInYourOwnStore: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A store of your own, logging each call the control makes to it. Try: sort a column and pick *Save as new view*.`,
+                story: `A store of your own, logging each call the control makes to it. Try: sort a column and pick **Save as new view**.`,
             },
         },
     },

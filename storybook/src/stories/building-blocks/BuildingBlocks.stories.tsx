@@ -16,7 +16,6 @@ The controls started as parts of PCF controls in Power Apps, so every part reads
 
 - **In a PCF**, pass the host's context to \`PcfContextProvider\`, and every part uses the host's dialogs, navigation and Web API.
 - **Standalone**, \`PcfContextProvider\` without a context builds one, so the same parts run in any React application.
-- **One is required either way.** It is the application's single way to reach its host.
 
 Which providers go at the root: [**Quick start**](?path=/docs/concepts-quick-start--overview). What the context holds: [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 

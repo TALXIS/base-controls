@@ -63,7 +63,7 @@ Every DatasetControl part works inside a \`TaskDatasetControl\`. Three are its o
 | Prop | Default | Description |
 |---|---|---|
 | \`modules\` | None | Grid modules, with \`createTaskEditingModule()\` for editing. Grouping, totals and the plain editing module are left out. At mount. |
-| \`components\` | Defaults | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* below. |
+| \`components\` | Defaults | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* above. |
 | \`enableZebra\` | \`false\` | |
 | \`enableOptionSetColors\` | \`true\` | |
 | \`onOpenRecord\` | Opens the task, or the record a lookup points to | Through the store. |

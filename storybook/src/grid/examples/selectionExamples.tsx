@@ -5,7 +5,7 @@ export const APPROVE_IN_BULK_CODE = `const SUBMITTED = 2
 const APPROVED = 3
 const REJECTED = 4
 
-//approved entries are final, so the grid never selects them
+//approved entries are final
 const keepApprovedUnselected: IGridModule = {
     name: 'keepApprovedUnselected',
     onLoad: grid => {
@@ -35,7 +35,7 @@ const GridExample = () => {
         provider.setSelectedRecordIds(submitted.map(entry => entry.getRecordId()))
     }
 
-    //loaded again whenever the selection changes, so it reads the selection off the provider
+    //loaded again whenever the selection changes
     const loadCommands = async (): Promise<IRibbonCommand[]> => {
         const entries = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
         const isEmpty = entries.length === 0

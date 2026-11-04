@@ -200,7 +200,7 @@ const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
 
-    //the totals load on their own, so the headers are redrawn once they arrive
+    //the headers redraw once the totals arrive
     React.useEffect(() => totals.getDataProvider().addEventListener('onLoading', isLoading => {
         if (!isLoading) {
             gridRef.current?.services.get('columns').headers.render()
@@ -321,7 +321,7 @@ export const ERROR_ROWS_CODE = `const RetryMessageBar = (props: IMessageBarProps
         messageBarType={MessageBarType.warning}
         isMultiline={false}
         actions={<MessageBarButton text='Try again' onClick={() => gridApi?.retryServerSideLoads()} />}>
-        The warehouse didn't answer for this category.
+        The warehouse did not answer for this category.
     </MessageBar>
 }
 
@@ -361,7 +361,7 @@ class WarehouseProductsProvider extends MemoryDataProvider {
     }
 }
 
-//stands in for a warehouse that drops the first category asked for, and answers once asked again
+//stands in for a warehouse that drops the first category it is asked for
 class FlakyWarehouseProvider extends WarehouseProductsProvider {
     public hasFailed = false
 
@@ -411,7 +411,7 @@ export const RICH_TEXT_CODE = `const styles = mergeStyleSets({
     editor: { width: 460, background: '#ffffff', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18)', borderRadius: 4 },
 })
 
-//what users type is HTML, so it is sanitized before the cell draws it
+//sanitized: users type this HTML
 const HtmlValue = () => {
     const field = useGridField()!
     return <div className={styles.html} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(field.getValue() ?? '') }} />

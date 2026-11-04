@@ -60,7 +60,7 @@ const Chip = (props: IChipProps) => {
     </Stack>
 }
 
-//tells the provider when the chip goes, so the chips left can try their full size again
+//tells the provider when the chip goes
 const TrackedChip = (props: IChipProps) => {
     useCompactItem()
     return <Chip {...props} />
@@ -93,7 +93,7 @@ const SECTION_TABS_CODE = `const SECTIONS = [
     { key: 'documents', text: 'Documents', content: 'Proposal v3.pdf, Price list 2026.xlsx' },
 ]
 
-//tabs while there is room, a dropdown on a phone; the open section survives the switch
+//tabs while there is room, a dropdown on a phone
 const Sections = (props: { selectedKey: string; onChange: (key: string) => void }) => {
     const isCompact = useCompact()
     if (isCompact) {

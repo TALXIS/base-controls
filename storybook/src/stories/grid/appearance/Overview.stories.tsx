@@ -47,7 +47,7 @@ With a \`height\`, the grid is exactly that tall and its rows scroll inside it, 
 
 A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
 
-- \`builder.tint(hue)\` colours a cell by a hue, and \`builder.tint(hue, 'strong')\` fills it.
+- \`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it.
 - For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`); the cell's value, links, tags and editor all follow.
 - Colour formats and helpers such as \`getTextColorForBackground\` are under *Your own components* on [**Theming**](?path=/docs/concepts-theming--overview).
 - The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).

@@ -111,7 +111,7 @@ const AccountRibbon = (props: ICommandBarProps) => {
 
 const LEVELS = { ERROR: MessageBarType.error, WARNING: MessageBarType.warning, INFO: MessageBarType.info }
 
-//each message in a bar of its own; a field's message names the field in <strong>
+//each message in a bar of its own
 const MessageList = (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <Stack tokens={{ childrenGap: 4 }}>
     {props.messages?.map((message, index) => <MessageBar key={index} messageBarType={LEVELS[message.level]}>
         <span dangerouslySetInnerHTML={{ __html: message.text }} />
@@ -119,7 +119,7 @@ const MessageList = (props: { messages?: { text: string; level: 'ERROR' | 'WARNI
 </Stack>
 
 const GridExample = () => <Form.Root onLoad={async () => ({ record: account })}>
-    {/* the slots are called as the part renders, so a component of yours holds any hooks */}
+    {/* a component of yours holds the hooks a slot needs */}
     <Form.Ribbon components={{ onRenderCommandBar: props => <AccountRibbon {...props} /> }} />
     <Form.Notifications messages={[{ text: 'Contoso is a key account.', level: 'INFO' }]} components={{ onRenderNotifications: props => <MessageList messages={props.messages} /> }} />
     <Form.Section label='Account' layout={{ lg: 2 }}>

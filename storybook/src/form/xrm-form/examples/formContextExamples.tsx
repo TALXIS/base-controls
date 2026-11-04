@@ -51,7 +51,7 @@ import type { IXrmFormContext } from '@talxis/base-controls'
 import { Stack, Toggle } from '@fluentui/react'
 import { loadAccount } from './account'
 
-//one script for both ways, as form scripts tend to be
+//one script switches both ways
 const setDigitalOnly = (formContext: IXrmFormContext, isDigitalOnly: boolean) => {
     formContext.getControl('telephone1').setVisible(!isDigitalOnly)
     formContext.getControl('websiteurl').setLabel(isDigitalOnly ? 'Primary web address' : 'Website')

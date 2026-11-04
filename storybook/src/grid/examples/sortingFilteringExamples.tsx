@@ -87,7 +87,7 @@ const SAVED_VIEWS: ISavedView[] = [
     },
 ]
 
-//every view loads a provider of its own, sorted and filtered the way the view says
+//each view loads a provider of its own
 const loadView = async (parameters: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
     const view = SAVED_VIEWS.find(view => view.id === parameters.view?.id) ?? SAVED_VIEWS[0]
     const tickets = createTicketsProvider()

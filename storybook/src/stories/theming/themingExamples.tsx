@@ -102,11 +102,11 @@ const escalatedTicketsModule: IGridModule = {
             if (record.getValue('escalated') === '1') {
                 builder.tint(ESCALATED, 'strong')
             }
-        }, GRID_MODULE_PRIORITY.grouping + 1)
+        })
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider })}>
     <DatasetControl.Body>
         <Grid modules={[createClientSideRowModelModule(), createEditingModule(), escalatedTicketsModule]} height='440px' />
     </DatasetControl.Body>
@@ -115,10 +115,10 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 
 const DERIVED_CODE = `const HUE = '#d13438'
 
-//outside React, the builder holds three colours; tint and edit change it, getTheme generates the theme
+//outside React, tint and edit the builder, then call getTheme
 const createAlertTheme = (theme: ITheme) => {
     const builder = createThemeBuilder({ theme })
-    //'strong' fills with the hue, 'solid' is the hue under black or white text; 'subtle', the default, is a wash
+    //'subtle' by default, or 'strong' or 'solid'
     builder.tint(HUE, 'strong')
     builder.edit('bold', theme => { theme.fonts.medium.fontWeight = 600 })
     return builder.getTheme()
@@ -135,11 +135,11 @@ const Card = (props: { title: string }) => {
 
 const GridExample = () => {
     const pageTheme = useTheme()
-    //a source of three colours; { fluentDesignLanguage } takes the Fluent v9 theme a PCF host hands you
+    //three colours, or { fluentDesignLanguage } from a PCF host
     const ocean = useThemeBuilder({ colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } })
     //or an existing theme, here tinted by a hue
     const tinted = useThemeBuilder({ theme: pageTheme }, { tint: { hue: HUE } })
-    //edit changes what the colours do not; the theme is cached by its key, so a new edit needs a new key
+    //the edited theme is cached by key: a different edit needs a different key
     const compact = useThemeBuilder({ theme: pageTheme }, { edit: { key: 'compact-12', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
     const alert = React.useMemo(() => createAlertTheme(pageTheme), [pageTheme])
     const cards = [{ title: 'colors', theme: ocean }, { title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }]

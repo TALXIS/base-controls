@@ -17,7 +17,7 @@ const GridExample = () => {
         <div style={{ width, maxWidth: '100%' }}>
             <Form.Root onLoad={async () => ({ record: account })}>
                 <Form.Tabs expandedTab={tab} onTabChange={setTab}>
-                    {/* lg 3; md, sm and xs fall back to min(lg, 3), min(lg, 2) and 1 */}
+                    {/* md, sm and xs fall back to min(lg, 3), min(lg, 2) and 1 */}
                     <Form.Tab id='summary' label='Summary' layout={{ lg: 3 }} onColumnsPerRowChanged={setColumnsPerRow}>
                         <Form.Column>
                             {/* one cell in a row at any width */}

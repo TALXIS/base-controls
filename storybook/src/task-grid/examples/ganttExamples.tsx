@@ -221,7 +221,7 @@ const criticalTasksModule = {
     onLoad: (gantt: any) => {
         //the tasks service comes with the chart, so observe it
         gantt.services.observe('tasks', (tasks: any) => tasks.registerTask((task: any, { record }: { record: IRecord }) => {
-            if (record.getValue('priority') === '3') {
+            if (record.getValue('priority') === 3) {
                 task.color = '#d13438'
             }
         }))

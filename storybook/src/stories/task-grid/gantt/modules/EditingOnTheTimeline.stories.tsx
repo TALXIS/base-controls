@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCar
 import { GanttEditingExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-On the timeline, a task's dates are the ends of its bar, so the quickest way to reschedule a task is to drag it. Three modules let the user change tasks right there: move and resize bars, draw new tasks, and select tasks, each change saved as an edit in the grid is. Try it below: drag a bar a week later.
+Three Gantt modules let the user change tasks on the timeline: move and resize bars, draw new tasks, and select tasks. Each change saves as an edit in the grid does. Try it below: drag a bar a week later.
 
 {{canvas: Plan on the timeline}}
 
@@ -21,7 +21,7 @@ On the timeline, a task's dates are the ends of its bar, so the quickest way to 
 
 ## Draw a task
 
-\`createTaskDrawingModule()\`: hold Ctrl and drag over a row to draw a new task, with its dates shown as you go. The task is created under the row's parent, first among its siblings. It needs \`enableCreation\`, and takes \`components\` (see *Changing how it looks* below).
+\`createTaskDrawingModule()\`: hold Ctrl and drag over a row to draw a new task, with its dates shown as you go. The task goes under the row's parent, placed as on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). It needs \`enableCreation\`, and takes \`components\` (see *Changing how it looks* below).
 
 ## Select tasks
 
@@ -37,7 +37,7 @@ On the timeline, a task's dates are the ends of its bar, so the quickest way to 
 
 ## Changing how it looks
 
-\`createTaskDrawingModule\` takes \`components\`, read at mount; bar dragging and selection draw nothing of their own. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+\`createTaskDrawingModule\` takes \`components\`, read at mount. How slots work: [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|

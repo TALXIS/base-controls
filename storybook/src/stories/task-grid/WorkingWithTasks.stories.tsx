@@ -49,7 +49,7 @@ These props of \`TaskDatasetControl\` follow every change, whichever way it was 
 |---|---|
 | \`onTasksCreated(records, parentId?)\` | After tasks are created, with the parent they went under. |
 | \`onTasksDeleted(taskIds)\` | After tasks are deleted. |
-| \`onTasksUpdated(records)\` | After tasks change, from a form or a move. |
+| \`onTasksUpdated(records)\` | After tasks take new values from the store, such as what a form or the backend changed. |
 
 ## Where next
 

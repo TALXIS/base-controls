@@ -50,7 +50,7 @@ The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are 
 
 - *Edit* opens the task's form in a side dialog, or the bulk edit form for several, read-only for inactive tasks or without \`enableEditing\`.
 - New tasks are created straight away in their place, with the project lookup filled in when the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module is there.
-- Every method is \`protected\`, for a subclass to change.
+- Its helper methods are \`protected\`, for a subclass to change.
 
 ## Rescheduled dates
 

@@ -36,8 +36,7 @@ Controls take their provider from around them, not from a prop. A [**DatasetCont
 \`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost.
 
 - When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why.
-- Loading clears the selection.
-- Inside a DatasetControl, loading a provider with unsaved changes asks the user first. If they cancel, nothing loads and \`refresh()\` resolves with \`undefined\`.
+- A DatasetControl asks the user before a load throws unsaved changes away, as [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) describes. If they keep them, nothing loads and \`refresh()\` resolves with \`undefined\`.
 - \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest, and \`isLoading()\` says whether a load is running.
 
 Some types come back from \`getValue()\` in another shape than the raw data holds them:
@@ -139,6 +138,7 @@ When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the 
 | \`onAfterSaved(results)\` | After \`save()\` has saved every record |
 | \`onAfterRecordsDeleted(results)\` | After \`deleteRecords()\` |
 | \`onRecordCommandsRetrieved(commands)\` | When the commands available on records are read |
+| \`onRenderRequested\` | When \`requestRender()\` asks whatever shows the records to draw again |
 | \`onNestedProviderPagingLimitReached\` | When a group's records reach the 5,000 record limit |
 | \`onDestroyed\` | When the provider is destroyed |
 

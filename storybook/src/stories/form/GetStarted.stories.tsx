@@ -23,7 +23,7 @@ The parts nest in JSX, outermost first:
 - \`Form.Cell\` draws the label, the required mark and the control.
 - \`Form.Control\` draws the Base Controls field for the column's data type.
 
-The form needs the root providers every control needs: see [**Quick start**](?path=/docs/concepts-quick-start--overview). Each part draws through slots of its own: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview). Your code reads, changes and saves the form through \`onFormReady\`, the events of \`Form.Root\` and \`useForm\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
+The form needs the root providers every control needs: see [**Quick start**](?path=/docs/concepts-quick-start--overview). The control, the tabs, the ribbon and the notifications draw through slots you can replace: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview). Your code reads, changes and saves the form through \`onFormReady\`, the events of \`Form.Root\` and \`useForm\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 ## Lay it out in FormXml
 

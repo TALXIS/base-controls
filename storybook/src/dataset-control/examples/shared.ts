@@ -45,7 +45,7 @@ export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealVie
     await new Promise(resolve => setTimeout(resolve, 800))
     //a new provider on every load: a view switch or reload mounts everything anew
     const provider = createDealsProvider()
-    //the view sets its columns and hands back what else it carries
+    //what the view carries besides its columns
     const { data = {} } = view ? await view.resolve(provider) : {}
     provider.setSorting(data.sorting ?? [])
     provider.setFiltering(data.filtering ?? null)
@@ -130,7 +130,7 @@ export const RIBBON_FILE: IGridExampleFile = {
     name: 'DealsRibbon.tsx',
     code: `const WON_STAGE = 4
 
-//which buttons show depends on what is selected; DatasetControl.Ribbon loads them again on every selection
+//DatasetControl.Ribbon calls onLoad again on every selection
 export const DealsRibbon = () => {
     const provider = useDataProvider()
     const control = useDatasetControl()

@@ -51,10 +51,7 @@ const GridExample = () => {
                     </DatasetControl.Header>
                     <DatasetControl.Body>
                         {/* click a deal's name to open it */}
-                        <Grid
-                            modules={[createClientSideRowModelModule()]}
-                            enableNavigation
-                            onOpenRecord={({ record }) => setOpenedDeal(record)} />
+                        <Grid modules={[createClientSideRowModelModule()]} onOpenRecord={({ record }) => setOpenedDeal(record)} />
                     </DatasetControl.Body>
                 </DatasetControl>
                 {/* drawn in the same theme as the grid */}

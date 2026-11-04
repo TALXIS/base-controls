@@ -6,25 +6,25 @@ import { FailedActionsExample, FailedLoadExample } from '../../dataset-control/e
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Loading records, running a command or saving a view can fail, and the user needs to see what went wrong. Your code only has to throw: a failed load shows the error in place of the parts, with *Try again*, and a failed action, such as a ribbon command, opens the error dialog. Try it below: open *Details*, then press *Try again*.
+Loading records, running a command or saving a view can fail, and the user needs to see what went wrong. Your code only has to throw: a failed load shows the error in place of the parts, with **Try again**, and a failed action, such as a ribbon command, opens the error dialog. Try it below: open **Details**, then press **Try again**.
 
 {{canvas: Recover from a failed load}}
 
 ## What the user sees
 
-- **A load fails**, in \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page: the error replaces the parts, with *Details* and *Try again*.
-- **A part throws while it renders**: the same error; *Try again* draws the parts again, without loading.
+- **A load fails**, in \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page: the error replaces the parts, with **Details** and **Try again**.
+- **A part throws while it renders**: the same error; **Try again** draws the parts again, without loading.
 - **The provider fails a later load**, such as a search or another page: the error shows in \`DatasetControl.Notifications\`, see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
-- **The ribbon's \`onLoad\` throws**: the error replaces the commands, with *Details* and *Try again*.
-- **Loading the columns *Edit columns* offers throws**: the error replaces the pickers, with *Details* and *Try again*.
+- **The ribbon's \`onLoad\` throws**: the error replaces the commands, with **Details** and **Try again**.
+- **Loading the columns *Edit columns* offers throws**: the error replaces the pickers, with **Details** and **Try again**.
 - **A ribbon command's \`onExecute\` throws, or saving or deleting a user view fails**: the error dialog opens.
 
 ## Failed loads
 
-The error's \`message\` is the title, and *Details* opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws.
+The error's \`message\` is the title, and **Details** opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws.
 
 - A failed load leaves no provider behind: the parts are not drawn until a load succeeds.
-- *Try again* calls \`control.retry()\`: the control mounts anew and loads the view that failed, from the first step.
+- **Try again** calls \`control.retry()\`: the control mounts anew and loads the view that failed, from the first step.
 
 ## Failed actions
 
@@ -90,7 +90,7 @@ export const TakeTheServerDown: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A ribbon command and the user's views go through a server you can take down. Try: turn on *Server is down*, then press *Sync to CRM*.`,
+                story: `A ribbon command and the user's views go through a server you can take down. Try: turn on *Server is down*, then press **Sync to CRM**.`,
             },
         },
     },

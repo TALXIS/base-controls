@@ -124,7 +124,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortC
         <CheckList
             fieldMapping={FIELD_MAPPING}
             colDefs={{
-                //the completion column keeps its cell and its behaviour: only the check inside is replaced
+                //only the check is replaced: ticking and saving work as before
                 completed: { cellRendererParams: { components: { checkbox: { onRenderCheck: props => <StarCheck {...props} /> } } } },
             }} />
     </DatasetControl.Body>

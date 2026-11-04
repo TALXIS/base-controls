@@ -11,8 +11,8 @@ const FORMAT_CODE = `const CULTURES = [
 
 export const Invoice = () => {
     const { formatting } = usePcfContext()
-    const issued = new Date(2026, 2, 15, 14, 30)
-    const due = new Date(2026, 3, 14)
+    const issued = dayjs('2026-03-15T14:30').toDate()
+    const due = dayjs('2026-04-14').toDate()
     return <Stack tokens={{ childrenGap: 4 }}>
         <Text>Issued: {formatting.formatDateShort(issued, true)}</Text>
         <Text>Due: {formatting.formatDateLong(due)}</Text>
@@ -61,7 +61,7 @@ const GridExample = () => <PcfContextProvider>
 
 const PCF_CONTROL_FILE: IGridExampleFile = {
     name: 'index.tsx',
-    code: `//in a PCF control, hand the provider the host's context instead of the userSettings GridExample.tsx passes
+    code: `//a PCF control hands the provider the host's context
 import ReactDOM from 'react-dom'
 import { PcfContextProvider } from '@talxis/base-controls'
 import { Invoice } from './GridExample'

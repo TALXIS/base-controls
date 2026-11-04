@@ -120,7 +120,7 @@ const GridExample = () => {
 
 const PCF_CONTROL_FILE: IGridExampleFile = {
     name: 'index.tsx',
-    code: `//in a PCF control, keep the state for the session with the host instead of in GridExample.tsx's memory
+    code: `//a PCF control keeps the state for the session with the host
 import ReactDOM from 'react-dom'
 import { AppThemeProvider, PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
 import { Deals } from './GridExample'

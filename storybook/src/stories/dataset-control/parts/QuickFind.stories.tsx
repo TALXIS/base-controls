@@ -18,11 +18,11 @@ Quick find is a search field: the user types and sees only the records that matc
 - **Placeholder:** names the records from the provider's metadata, or says *records*.
 - **Disabled:** while the provider loads, and when there is no column to search.
 - **Unsaved changes:** searching asks about them first: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
-- **Compact header:** the field collapses to a search button; see *Fit a narrow screen* on [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
+- **Compact header:** the field collapses to a search button: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 
 ## Columns it searches
 
-The provider decides which columns are searched and what matches, and the field is disabled while it names none: see *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The provider decides which columns are searched and what matches, and the field is disabled while it names none: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## Props
 
@@ -32,7 +32,7 @@ The provider decides which columns are searched and what matches, and the field 
 
 ## From your code
 
-\`control.parts.get('quickFind')\` returns the quick find once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Follow what the user types with \`onQueryChanged\`, as the example does below the control.
+\`control.parts.get('quickFind')\` returns the quick find once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). Follow what the user types with \`onQueryChanged\`, as the example does below the control.
 
 | Member | Does |
 |---|---|

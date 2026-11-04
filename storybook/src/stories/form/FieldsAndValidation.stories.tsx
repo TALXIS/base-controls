@@ -43,7 +43,7 @@ A column whose metadata has \`RequiredLevel\` 1 or 2 is required wherever it is 
 - \`Form.Notifications\` shows its \`messages\` first, then the validation summary, each failure after its column's display name. A failed save's \`errors\` land there too: see [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
 - A message is \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. \`text\` is HTML.
 - Several messages fold into one bar headed by their count, coloured by the most severe; a click unfolds them.
-- Inside the form, \`useValidationSummary()\` returns the summary as \`{ fieldName?, error, errorMessage }\` items and draws again when it changes. Outside, \`onValidationSummaryChanged\` on \`Form.Root\` reports it.
+- \`useValidationSummary()\` and \`onValidationSummaryChanged\` hand the summary to your code: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 ## Reference
 

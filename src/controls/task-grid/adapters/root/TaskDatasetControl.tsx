@@ -29,7 +29,7 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     onTasksCreated?: (records: IRecord[], parentId?: string) => void;
     /** Called after tasks are deleted. */
     onTasksDeleted?: (taskIds: string[]) => void;
-    /** Called after tasks change, from a form save or a move. */
+    /** Called after tasks take new values from the store. */
     onTasksUpdated?: (records: IRecord[]) => void;
     /** Called on every mount with its task runtime, before its load. */
     onMounted?: (taskRuntime: ITaskRuntime) => void;

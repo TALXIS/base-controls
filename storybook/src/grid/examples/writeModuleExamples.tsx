@@ -46,7 +46,7 @@ const unsavedChangesModule: IGridModule = {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
 
-        //the provider outlives the grid, so its listeners go when AG Grid does
+        //the provider outlives the grid
         grid.services.observe('gridApi', () => {
             const unsubscribes = [
                 provider.addEventListener('onRecordColumnValueChanged', notify),
@@ -70,7 +70,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 
 const UNSAVED_CHANGES_TYPES_FILE: IGridExampleFile = {
     name: 'types.ts',
-    code: `//next to the module in your project, so the unsavedChanges instance is typed wherever it is reached
+    code: `//types the unsavedChanges instance wherever it is reached
 export interface IUnsavedChanges {
     getCount(): number
     subscribe(listener: (count: number) => void): () => void

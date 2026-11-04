@@ -14,11 +14,9 @@ The links module draws the task grid's dependencies as arrows between the bars, 
 
 With \`enableEditing\`:
 
-| To | The user |
-|---|---|
-| Draw a link | drags from the handle at either end of a bar to another bar. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate or a cycle is refused while drawing. |
-| Delete a link | double-clicks it and confirms |
-| See what it joins | points at it |
+- Dragging from the handle at either end of a bar to another bar draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate or a cycle is refused.
+- Double-clicking a link and confirming deletes it.
+- Pointing at a link shows what it joins.
 
 While a link saves, its tasks show as saving.
 

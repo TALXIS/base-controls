@@ -38,7 +38,7 @@ A map provider is any component that takes \`locations\`, each \`{ id, latitude,
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Where the records behind the pins come from.' },
-    { title: 'PCF context', iconName: 'Plug', href: '?path=/docs/concepts-pcf-context--overview', text: 'The context the map takes, inside and outside a PCF control.' },
+    { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'The context the map takes, inside and outside a PCF control.' },
 ]
 
 const meta = {

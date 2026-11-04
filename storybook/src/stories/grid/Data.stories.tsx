@@ -29,7 +29,7 @@ A column's \`metadata\` says what can be done with it, and the provider fills in
 
 ## Data types
 
-Each data type has its own way of drawing a value, and its own editor while the editing module is on; every type is under *Reference* below. Emails, phones, URLs, lookups and the primary column draw as links while \`enableNavigation\` is on, the default.
+Each data type has its own way of drawing a value, and its own editor while the editing module is on; every type is under *Reference* below. Emails, phones, URLs, lookups and the primary column draw as links while \`enableNavigation\` is on.
 
 {{story: See every data type}}
 
@@ -73,8 +73,8 @@ How \`record.getValue()\` shapes option sets, two options, dates and lookups is 
 | \`IsValidForUpdate\` | \`true\`; \`false\` for files and images | \`false\` locks the column, with editing. |
 | \`RequiredLevel\` | Not required | \`1\` or \`2\` make an empty value invalid. |
 | \`SupportedFilterConditionOperators\` | Every operator of the data type | The operators its filter offers; \`[]\` turns filtering off. |
-| \`CanBeGrouped\` | \`true\`; \`false\` for files, images and multi-select option sets | Lets the column be grouped by. |
-| \`SupportedAggregations\` | All for numbers, currency and durations; \`count\`, \`countcolumn\`, \`min\`, \`max\` for dates; \`count\`, \`countcolumn\` for the rest | The totals its menu offers. |
+| \`CanBeGrouped\` | \`true\`; \`false\` for files and images | Lets the column be grouped by; a multi-select option set never is. |
+| \`SupportedAggregations\` | All for numbers, currency and durations; \`count\`, \`countcolumn\`, \`min\`, \`max\` for dates; none for files and images; \`count\`, \`countcolumn\` for the rest | The totals its menu offers. |
 | \`OptionSet\` | No labels | The options, as \`{ Value, Label, Color }\`; two options need \`0\` and \`1\`. |
 | \`Precision\` | The user's number format | Decimal places of a decimal or currency value. |
 | \`MaxLength\`, \`MinValue\`, \`MaxValue\` | No limit | A text length or a number outside them is invalid. |

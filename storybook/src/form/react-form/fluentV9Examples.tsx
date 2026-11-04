@@ -81,7 +81,7 @@ const V9Control = (props: { disabled?: boolean }) => {
     }
 }
 
-//draws its own Save, since props.items holds the Fluent v8 one
+//draws its own Save in place of the Fluent v8 one in props.items
 const V9Ribbon = (props: ICommandBarProps) => {
     const form = useForm()
     const [isSaving, setIsSaving] = React.useState(false)
@@ -127,7 +127,7 @@ const V9Notifications = (props: { messages?: { text: string; level: 'ERROR' | 'W
     </MessageBar>)}
 </MessageBarGroup>
 
-/** The pieces of each part, drawn with Fluent UI v9. */
+/** The components of each part, drawn with Fluent UI v9. */
 export const V9 = {
     control: { onRenderControl: (props: { disabled?: boolean }) => <V9Control disabled={props.disabled} /> },
     ribbon: { onRenderCommandBar: (props: ICommandBarProps) => <V9Ribbon {...props} /> },

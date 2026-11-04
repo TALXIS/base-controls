@@ -27,7 +27,7 @@ The key is any string unique within your app. With the two sides in separate bun
 
 {{block: lifecycle}}
 
-If the frame fails to load, the error shows in its place, with a Retry that starts over with a fresh iframe.
+If the frame fails to load, the error shows in its place, with *Try again*, which starts over with a fresh iframe.
 
 ## Options
 

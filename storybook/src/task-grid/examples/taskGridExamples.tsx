@@ -8,7 +8,7 @@ const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskVie
 //sample data from these docs: LOOKUP_MANY_*, CHECKLIST_*, DEPENDENC*, TEMPLATES, getTaskColumns
 const VIEW_COLUMNS = [...LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, ...DEPENDENCY_COLUMNS]
 
-//*Every task on its own* in the view switcher draws the tasks without the tree
+//All tasks adds the modules' columns and searches assignees and tags
 const loadViews = async () => (await loadTaskViews()).map(view => view.id === 'all'
     ? { ...view, resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(VIEW_COLUMNS), data: { quickFindColumns: ['subject', 'assignedto', 'tags'] } }) }
     : view)
@@ -42,7 +42,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <TaskDatasetControl.Ribbon />
-                {/* adds a checklist, a dependency or a custom column */}
+                {/* picks module columns or adds a custom one */}
                 <DatasetControl.EditColumns />
                 <DatasetControl.QuickFind />
                 <TaskDatasetControl.Settings />

@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const ACCOUNT_FORM_CODE = `//one account held in memory; any data provider's record works the same way
+const ACCOUNT_FORM_CODE = `//one account held in memory
 const account = createMemoryRecord({
     columns: [
         //RequiredLevel 2 makes the column required
@@ -32,7 +32,7 @@ const GridExample = () => {
             <Form.Tab id='general' label='General'>
                 <Form.Column>
                     <Form.Section label='Contact'>
-                        {/* binds to the column of that name; the cell shows its display name */}
+                        {/* binds to the column of that name */}
                         <Form.Field name='name'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         <Form.Field name='telephone1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         <Form.Field name='emailaddress1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>

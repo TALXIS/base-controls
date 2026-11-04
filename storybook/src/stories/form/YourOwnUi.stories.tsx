@@ -16,10 +16,10 @@ Four parts of the form draw through slots you can replace: the control of a fiel
 - \`components.onRenderControl\` of \`Form.Control\` draws the field in place of the Base Controls one, and gets \`{ disabled }\`.
 - Inside it, \`useField()\` returns the field it sits in, with \`getValue()\`, \`setValue(value)\`, \`getColumn()\` and \`getFormattedValue()\`, and draws again when the value changes.
 - \`Form.Control\` still shows the error under the control after a save, and the lock by the label.
-- A \`Form.Cell\` outside a \`Form.Field\` holds content of your own under its \`label\`, as *Last contact* does.
+- A \`Form.Cell\` outside a \`Form.Field\` holds content of your own beside its \`label\`, as *Last contact* does.
 - \`FormUi\` holds \`Tabs\`, \`Tab\`, \`Section\`, \`Column\`, \`Cell\` and \`Skeleton\` as plain UI with no record behind them, for a screen that looks like a form.
 
-How slots work, such as wrapping a default or returning \`null\`, is on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) of DatasetControl.
+How slots work, such as wrapping a default, is on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) of DatasetControl.
 
 ## Your own tabs
 
@@ -43,7 +43,6 @@ Every slot gets the props its default would, so another design system can draw t
 
 - In v9: the inputs, the tab headers, the ribbon and the notifications.
 - Left as they are: the sections, the labels and required marks of the cells, the error under a control and the loading placeholder.
-- v9 components need a \`FluentProvider\` around them, light or dark to match the Fluent v8 theme.
 
 {{story: Everything in Fluent UI v9}}
 
@@ -106,7 +105,7 @@ export const CommandsAndMessagesOfYourOwn: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A *Deactivate* command beside **Save**, and every message in a bar of its own. Try: clear *Account name*, then press **Save**.`,
+                story: `A **Deactivate** command beside **Save**, and every message in a bar of its own. Try: clear *Account name*, then press **Save**.`,
             },
         },
     },
@@ -118,7 +117,7 @@ export const EverythingInFluentV9: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The inputs, tabs, ribbon and notifications drawn with Fluent UI v9; open *v9.tsx*.`,
+                story: `The form drawn in Fluent UI v9, through the slots in the example's \`v9.tsx\`. Try: clear *Account name* and press **Save**.`,
             },
         },
     },

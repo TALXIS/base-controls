@@ -21,7 +21,7 @@ The control and every part take a \`components\` map:
 - A part's own slots sit directly in the map, such as the view switcher's \`onRenderButton\`.
 - A *piece* is a key that names something inside the part, such as the quick find's \`callout\`, and holds that piece's slots.
 - A slot you leave out keeps its default, and a piece merges over its default slot by slot.
-- Every part's defaults are exported, such as \`ViewSwitcherUiComponents\`, so a slot can draw the default.
+- Most parts' defaults are exported, such as \`ViewSwitcherUiComponents\`, so a slot can draw the default.
 
 | To | Write |
 |---|---|
@@ -77,7 +77,7 @@ The parts work on the provider, not on the grid, so anything that shows records 
 
 ### Every slot
 
-A piece of – is the part's own slots; a blank *Defaults* is not exported.
+A piece of – means the part's own slots; a blank default is not exported.
 
 | Part | Piece (\`components\` key) | Slots | Defaults |
 |---|---|---|---|

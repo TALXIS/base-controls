@@ -28,7 +28,7 @@ The grid builds a column for each of the provider's columns, with its header tex
 
 ## Link to the record
 
-\`context.isPrimary: true\` draws the value as a link to its record. Clicking it, or double-clicking a row while editing is off, opens the record; pass \`onOpenRecord\` to \`<Grid />\` to do something else. \`enableNavigation={false}\` turns links and opening off.
+\`context.isPrimary: true\` draws the value as a link to its record. Clicking it, or double-clicking a row in a grid without the editing module, opens the record; pass \`onOpenRecord\` to \`<Grid />\` to do something else. \`enableNavigation={false}\` turns links and opening off.
 
 {{story: Open a product from its name}}
 

@@ -12,9 +12,7 @@ A template is a task with subtasks, created again in one go. The templates modul
 
 ## What the user can do
 
-It needs \`enableCreation\` and \`TaskDatasetControl.Ribbon\`.
-
-*From template* sits in the ribbon's *New* menu, for top-level tasks, and in the menu of a row's **+**, for subtasks; the user picks from a searchable list. *Save as template*, with one task selected, saves it and all its subtasks as a template named after it, when the store can save templates.
+With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for top-level tasks, and in the menu of a row's **+**, for subtasks; the user picks from a searchable list. *Save as template* in the ribbon, with one task selected, saves it and all its subtasks as a template named after it, when the store can save templates.
 
 ## Where templates are kept
 

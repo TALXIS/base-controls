@@ -6,13 +6,13 @@ import { EmptyStateExample, NotificationsExample } from '../../../dataset-contro
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-\`DatasetControl.Notifications\` shows messages in a bar above the records: your own, and the provider's error when a load fails. \`DatasetControl.EmptyState\` takes the place of the records when there are none. Try it below: press *Break the connection*, then open the summary.
+\`DatasetControl.Notifications\` shows messages in a bar above the records: your own, and the provider's error when a load fails. \`DatasetControl.EmptyState\` takes the place of the records when there are none. Try it below: press **Break the connection**, then open the summary.
 
 {{canvas: Show the provider's error}}
 
 ## Show messages
 
-Put \`DatasetControl.Notifications\` between the header and the body. It draws the provider's load error next to messages of your own, in the same notification bar as on [**Form**](?path=/docs/controls-form-get-started--overview).
+Put \`DatasetControl.Notifications\` between the header and the body. It draws the provider's load error next to messages of your own.
 
 ## Say when there is nothing to show
 
@@ -46,7 +46,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 
 ## From your code
 
-\`control.parts.get('notifications')\` returns the notifications part once it is drawn (see *Reach the parts* on [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). \`EmptyState\` has no part to reach: read \`provider.getRecords()\` instead.
+\`control.parts.get('notifications')\` returns the notifications part once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). \`EmptyState\` has no part to reach: read \`provider.getRecords()\` instead.
 
 | Member | Does |
 |---|---|

@@ -35,7 +35,7 @@ const GridExample = () => {
                 <DatasetControl.QuickFind components={V9.quickFind} />
             </DatasetControl.Header.End>
         </DatasetControl.Header>
-        {/* Break the connection in the ribbon adds a second message, and both collapse under a summary */}
+        {/* with Break the connection, both messages fold under a summary */}
         <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} components={V9.notifications} />
         <DatasetControl.Body>
             {/* search for something no deal has to see the empty state */}
@@ -107,7 +107,7 @@ export const RecordDataGrid = (props: { editable?: boolean }) => {
             //a click in the field edits it, rather than selecting the row
             ? <Input appearance='underline' size='small' style={{ width: '100%' }} value={record.getValue(column.name) ?? ''} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={(_, data) => record.setValue(column.name, data.value)} />
             : record.getFormattedValue(column.name),
-        //v9 counts the parameters to tell a sortable column; the provider sorts, so the rows keep its order
+        //two parameters make v9 offer sorting, which the provider does
         compare: (_a: IRecord, _b: IRecord) => 0,
     }))
     const [sorting] = provider.getSorting()
@@ -222,7 +222,7 @@ const CommandToolbar = (props: ICommandBarProps & { align?: 'start' | 'end', fix
     if (items.length === 0) {
         return null
     }
-    //a few commands in a box sized to its content, such as an error's, have nothing to overflow into
+    //a few commands in a box sized to its content have nothing to overflow into
     if (props.fixed) {
         return <Toolbar size='small'>{items.map(item => <ToolbarItem key={item.key} item={item} />)}</Toolbar>
     }
@@ -407,7 +407,7 @@ export const V9 = {
                     ribbon: V9.ribbon,
                     quickFind: V9.quickFind,
                     pagination: V9.pagination,
-                    //the body's slot draws the views in v9's DataGrid, in place of the grid it is handed
+                    //the body's slot draws v9's DataGrid in place of the grid
                     body: { onRenderContainer: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}><RecordDataGrid editable /></div> },
                 },
             },

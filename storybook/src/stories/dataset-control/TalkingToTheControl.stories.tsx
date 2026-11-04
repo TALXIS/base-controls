@@ -6,7 +6,7 @@ import { DriveTheControlExample, ModuleExample, WatchTheControlExample } from '.
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-Your code can do what the user does through the parts: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through the \`IDatasetControl\`, which every mount of the control creates and hands to you. Try it below: press *Search Contoso* in the footer.
+Your code can do what the user does through the parts: switch the view, reload, search or open the column editor, from a button of your own or from a module. It does so through the \`IDatasetControl\`, which every mount of the control creates and hands to you. Try it below: press **Search Contoso** in the footer.
 
 {{canvas: Drive the control from a toolbar}}
 
@@ -105,7 +105,7 @@ Each \`register…\` returns its unregistration.
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'The steps each mount runs, and when onMounted, onReady and onDestroyed are called.' },
-    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The first of the parts, with its members under From your code.' },
+    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The first of the parts, and what your code can do with it.' },
     { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Parts of your own, registered on the control like the built-in ones.' },
 ]
 

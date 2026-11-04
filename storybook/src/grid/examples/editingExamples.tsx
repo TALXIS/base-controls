@@ -59,7 +59,7 @@ const GridExample = () => {
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule()]}
                 onRecordValueChanged={reloadCommands}
-                //a successful save changes no value, so onRecordValueChanged misses it
+                //onRecordValueChanged misses a successful save
                 onAfterSaved={reloadCommands}
                 height='400px' />
         </DatasetControl.Body>

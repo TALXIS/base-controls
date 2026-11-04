@@ -52,7 +52,7 @@ const GridExample = () => {
                 </DatasetControl.Header>
                 <DatasetControl.Body>
                     <Grid
-                        //the modules are read at mount, so auto-save mounts the grid again
+                        //modules are read at mount
                         key={mountCount + String(isAutoSaveOn)}
                         modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
                         height='440px'

@@ -29,7 +29,7 @@ Base Controls' versions take the same props as Fluent's. Use them where there is
 | \`ComboBox\`, \`DatePicker\`, \`TimePicker\`, \`TagPicker\` | Lists and calendars in the app theme |
 | \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme: see [**Theming**](?path=/docs/concepts-theming--overview) |
 | \`useSurfaceMenuProps(menuProps)\` | A Fluent button's \`menuProps\`, drawn in the app theme |
-| \`useTheme()\` | Fluent's theme, and it requires an \`AppThemeProvider\` |
+| \`useTheme()\` | Throws outside an \`AppThemeProvider\` |
 
 ## Fluent UI v9
 
