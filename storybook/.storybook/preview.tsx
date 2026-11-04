@@ -206,6 +206,7 @@ const preview: Preview = {
               ['Overview', 'Form context', 'Your own UI'],
             ],
             'Map',
+            'Ribbon',
           ],
           'Dev',
           ['DatasetControl', 'Grid', 'TaskGrid', 'Checklist', 'Form', ['Validation scenarios', 'FormXml builder', 'Scratch']],

@@ -21,7 +21,7 @@ const ScratchRibbon = () => {
     const onLoad = async (): Promise<IRibbonCommand[]> => {
         await new Promise(resolve => setTimeout(resolve, 400))
         const count = provider.getSelectedRecordIds().length
-        const commands: IRibbonCommand[] = [{ id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } }]
+        const commands: IRibbonCommand[] = []
         if (count === 1) {
             commands.push({ id: 'open', label: 'Open', iconName: 'OpenInNewWindow', onExecute: () => new Promise(resolve => setTimeout(resolve, 1500)) })
         }
@@ -30,7 +30,7 @@ const ScratchRibbon = () => {
         }
         return commands
     }
-    return <DatasetControl.Ribbon onLoad={onLoad} />
+    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
 }
 
 const ViewSwitcherWithCommand = (props: IButtonProps) => ViewSwitcherUiComponents.onRenderButton({

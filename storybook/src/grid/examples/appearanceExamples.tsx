@@ -213,14 +213,13 @@ const GridExample = () => {
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'save', label: 'Save', iconName: 'Save', onExecute: async () => { await provider.save() } },
         { id: 'discard', label: 'Discard', iconName: 'Undo', onExecute: discard },
     ]
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} />
+                <DatasetControl.Ribbon enableSave onLoad={loadCommands} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>

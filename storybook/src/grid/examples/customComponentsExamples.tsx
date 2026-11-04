@@ -266,14 +266,10 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const loadCommands = async (): Promise<IRibbonCommand[]> => [
-    { id: 'refresh', label: 'Check stock again', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
-]
-
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            <DatasetControl.Ribbon onLoad={loadCommands} />
+            <DatasetControl.Ribbon enableRefresh />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>

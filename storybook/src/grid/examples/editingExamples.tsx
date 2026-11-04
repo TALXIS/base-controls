@@ -26,10 +26,10 @@ const GridExample = () => {
     const control = React.useRef<IDatasetControl>()
     const [message, setMessage] = React.useState('')
 
-    const saveAll = async () => {
-        const results = await provider.save()
+    const onAfterSaved = (results: IRecordSaveOperationResult[]) => {
         const refused = results.filter(result => !result.success).length
         setMessage(refused > 0 ? \`\${refused} of \${entries(results.length)} refused: see the red icons on their rows.\` : \`Saved \${entries(results.length)}.\`)
+        reloadCommands()
     }
 
     const discard = () => {
@@ -37,21 +37,17 @@ const GridExample = () => {
         setMessage('Changes discarded.')
     }
 
-    const loadCommands = async (): Promise<IRibbonCommand[]> => {
-        const changedCount = provider.getDirtyRecordIds().length
-        return [
-            { id: 'save', label: \`Save \${entries(changedCount)}\`, iconName: 'Save', isDisabled: changedCount === 0, onExecute: saveAll },
-            { id: 'discard', label: 'Discard', iconName: 'Undo', isDisabled: changedCount === 0, onExecute: discard },
-        ]
-    }
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [
+        { id: 'discard', label: 'Discard', iconName: 'Undo', isDisabled: provider.getDirtyRecordIds().length === 0, onExecute: discard },
+    ]
 
-    //the ribbon reloads on its own only when the selection changes
+    //Save follows the changes by itself, Discard is reloaded here
     const reloadCommands = () => control.current?.parts.find('ribbon')?.reload()
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+    return <DatasetControl onLoad={async () => ({ provider: provider })} onMounted={datasetControl => control.current = datasetControl}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} />
+                <DatasetControl.Ribbon enableSave onLoad={loadCommands} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
@@ -59,8 +55,7 @@ const GridExample = () => {
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule()]}
                 onRecordValueChanged={reloadCommands}
-                //onRecordValueChanged misses a successful save
-                onAfterSaved={reloadCommands}
+                onAfterSaved={onAfterSaved}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>

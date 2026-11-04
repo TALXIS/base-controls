@@ -35,8 +35,6 @@ const GridExample = () => {
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'reload', label: 'Reload', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
-        { id: 'save', label: 'Save all', iconName: 'Save', onExecute: async () => { await provider.save() } },
         { id: 'remount', label: 'Remount', iconName: 'Sync', onExecute: () => setMountCount(count => count + 1) },
         { id: 'clear', label: 'Clear log', iconName: 'Clear', onExecute: () => setEntries([]) },
     ]
@@ -47,7 +45,7 @@ const GridExample = () => {
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         <Toggle inlineLabel label='Auto-save' checked={isAutoSaveOn} onChange={(_, checked) => setIsAutoSaveOn(!!checked)} />
-                        <DatasetControl.Ribbon onLoad={loadCommands} />
+                        <DatasetControl.Ribbon enableSave enableRefresh onLoad={loadCommands} />
                     </DatasetControl.Header.Start>
                 </DatasetControl.Header>
                 <DatasetControl.Body>

@@ -145,7 +145,7 @@ export const DealsRibbon = () => {
 
     const onLoad = async (): Promise<IRibbonCommand[]> => {
         const selectedIds = provider.getSelectedRecordIds()
-        const commands: IRibbonCommand[] = [{ id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } }]
+        const commands: IRibbonCommand[] = []
         if (selectedIds.length === 0) {
             return commands
         }
@@ -164,7 +164,7 @@ export const DealsRibbon = () => {
         return commands
     }
 
-    return <DatasetControl.Ribbon onLoad={onLoad} />
+    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
 }
 `,
 }

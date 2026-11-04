@@ -10,10 +10,7 @@ const LAYOUT_RIBBON_FILE: IGridExampleFile = {
 const serverCall = () => new Promise<void>(resolve => setTimeout(resolve, 1000))
 
 export const DealsRibbon = () => {
-    const provider = useDataProvider()
-
     const onLoad = async (): Promise<IRibbonCommand[]> => [
-        { id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
         { id: 'newDeal', label: 'New deal', iconName: 'Add', onExecute: serverCall },
         { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: serverCall },
         { id: 'share', label: 'Share', iconName: 'Share', onExecute: serverCall },
@@ -22,7 +19,7 @@ export const DealsRibbon = () => {
         { id: 'flow', label: 'Run flow', iconName: 'Flow', onExecute: serverCall },
     ]
 
-    return <DatasetControl.Ribbon onLoad={onLoad} />
+    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
 }
 `,
 }

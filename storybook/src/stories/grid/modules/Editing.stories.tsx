@@ -196,7 +196,7 @@ export const ReviewChangesThenSaveThemAll: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Corrections wait for a ribbon built on \`provider.getDirtyRecordIds()\`, \`provider.save()\` and \`provider.clearChanges()\`. Try: change two entries and save them from the ribbon.`,
+                story: `Corrections wait for the ribbon's Save, from \`enableSave\`, and a Discard built on \`provider.clearChanges()\`. Try: change two entries and save them from the ribbon.`,
             },
         },
     },

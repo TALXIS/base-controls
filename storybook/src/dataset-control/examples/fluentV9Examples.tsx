@@ -71,7 +71,6 @@ export const DealsRibbon = () => {
     const onLoad = async (): Promise<IRibbonCommand[]> => {
         const selectedIds = provider.getSelectedRecordIds()
         const commands: IRibbonCommand[] = [
-            { id: 'refresh', label: 'Refresh', iconName: 'Refresh', onExecute: async () => { await provider.refresh() } },
             { id: 'breakConnection', label: 'Break the connection', iconName: 'PlugDisconnected', onExecute: () => provider.setError(true, 'The deals service is not reachable.') },
             { id: 'failNextLoad', label: 'Fail the next load', iconName: 'Warning', onExecute: async () => { failNextLoad.current = true; await control.reload() } },
         ]
@@ -85,7 +84,7 @@ export const DealsRibbon = () => {
         return commands
     }
 
-    return <DatasetControl.Ribbon onLoad={onLoad} components={V9.ribbon} />
+    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} components={V9.ribbon} />
 }
 `,
 }
