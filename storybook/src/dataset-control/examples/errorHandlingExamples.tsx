@@ -21,7 +21,7 @@ const GridExample = () => {
 
     //logs each failed load beside what the control shows
     const onMounted = (control: IDatasetControl<IDealViewData>) => {
-        control.events.addEventListener('onLoadFailed', error => setLogged(logged => [...logged, (error as Error).message]))
+        control.lifecycle.events.addEventListener('onInitFailed', error => setLogged(logged => [...logged, (error as Error).message]))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>

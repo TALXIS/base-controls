@@ -3667,14 +3667,34 @@ declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
 
 
 
-interface IDatasetControlEvents {
-    /** A load started: the first one, a view switch or a reload. */
-    onLoadStarted: () => void;
-    /** A load finished, and its provider is now the one shown. */
-    onLoaded: (provider: IDataProvider) => void;
-    /** A load failed, and the error shows in place of the parts. */
-    onLoadFailed: (error: unknown) => void;
+type RuntimeStatus = 'initializing' | 'ready' | 'failed' | 'destroyed';
+
+/** What every runtime raises over its one mount. */
+interface IRuntimeEvents {
+    /** Init succeeded; the control is drawn and usable. */
+    onReady: () => void;
+    onInitFailed: (error: unknown) => void;
+    /** The runtime asks the host to replace it with a new one. */
+    onRemountRequested: () => void;
     onDestroyed: () => void;
+}
+
+type IEventSubscriber<TEvents> = { addEventListener<K extends keyof TEvents>(event: K, listener: TEvents[K]): () => void; removeEventListener<K extends keyof TEvents>(event: K, listener: TEvents[K]): void };
+
+/** A runtime's lifecycle as the code using the runtime sees it. */
+interface IRuntimeLifecycle {
+    readonly events: IEventSubscriber<IRuntimeEvents>;
+    getStatus(): RuntimeStatus;
+    /** What init threw, while the status is failed. */
+    getError(): unknown;
+    isDestroyed(): boolean;
+    /** Replaces the runtime with a new one; this one is destroyed. */
+    remount(): void;
+}
+
+/** What every runtime offers the code that uses it. */
+interface IRuntime {
+    readonly lifecycle: IRuntimeLifecycle;
 }
 
 /** What every ribbon command has. */
@@ -3705,29 +3725,29 @@ interface IRibbonMenuCommand extends IRibbonCommandBase {
 type IRibbonCommand = IRibbonActionCommand | IRibbonMenuCommand;
 
 interface IRibbonRuntimeEvents {
-    onBeforeLoad: () => void;
-    onLoaded: () => void;
+    /** The commands were loaded again, after init. */
+    onCommandsChanged: () => void;
+    /** A reload failed; the commands before it stay. */
+    onReloadFailed: (error: unknown) => void;
     onBeforeExecute: (command: IRibbonActionCommand) => void;
     onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
     onAfterExecute: (command: IRibbonActionCommand) => void;
 }
 
 /** The ribbon's commands, and which of them are running. */
-interface IRibbonRuntime {
-    readonly events: { addEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): () => void; removeEventListener<K extends keyof IRibbonRuntimeEvents>(event: K, listener: IRibbonRuntimeEvents[K]): void };
-    /** undefined until the first load finishes. */
+interface IRibbonRuntime extends IRuntime {
+    readonly events: IEventSubscriber<IRibbonRuntimeEvents>;
+    /** undefined until init finishes. */
     getCommands(): IRibbonCommand[] | undefined;
-    /** What the last load threw, until the next one starts. */
-    getError(): unknown;
     isRunning(commandId: string): boolean;
-    /** Calls onLoad again; the latest call's commands win. */
+    /** Loads the commands again in place; the latest call wins. */
     reload(): Promise<void>;
     /** Registers a hook over the commands, run after onLoad on every load; call reload to apply it now. A higher priority gets the later word. Returns what takes it back off. */
     registerCommands(hook: (commands: IRibbonCommand[]) => void, priority?: number): () => void;
 }
 
 interface IRibbonProps {
-    /** Called at mount and on every reload(); the commands registered through registerCommands follow. */
+    /** Called on init and on every reload(); the commands registered through registerCommands follow. */
     onLoad?: () => Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
@@ -3735,8 +3755,8 @@ interface IRibbonProps {
     className?: string;
     /** Disables every command, menus included. */
     disabled?: boolean;
-    /** Called with the runtime once it exists, before the first load. */
-    onReady?: (ribbon: IRibbonRuntime) => void;
+    /** Called with the runtime of each mount, before its init; register commands and subscribe here. */
+    onMounted?: (ribbon: IRibbonRuntime) => void;
     components?: {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
         /** Its container is a shimmer the height of the command bar by default. */
@@ -3754,6 +3774,12 @@ type IRibbonComponents = NonNullable<IRibbonProps['components']>;
 
 /** A command bar of the commands onLoad returns, each run when clicked. */
 declare const Ribbon: (props: IRibbonProps) => JSX.Element;
+/** One runtime per mount: creates it, drives its lifecycle, shows a failed init with a retry, and makes a new one on remount. */
+declare const RuntimeHost: typeof import('@talxis/base-controls').RuntimeHost;
+/** One mount's status, error and events; a runtime owns one, and the host drives it. */
+declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLifecycle;
+/** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
+declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
 declare const RibbonUi: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
 /** The ribbon's default slot: the command bar. */
@@ -3908,15 +3934,14 @@ interface IDatasetControlSurfaces {
     registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void;
 }
 
-/** The DatasetControl as its consumer drives it. */
-interface IDatasetControl<TData = unknown> {
-    readonly events: IEventSubscriber<IDatasetControlEvents>;
+/** The DatasetControl as its consumer drives it; a new one for every mount. */
+interface IDatasetControl<TData = unknown> extends IRuntime {
     readonly parts: IDatasetControlPartLocator;
     /** The modules the control loaded, by name. */
     readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (module: any) => void | (() => void)): () => void };
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
-    /** The provider shown, from the last load that succeeded. */
+    /** The provider shown, once the status is ready. */
     getProvider(): IDataProvider | undefined;
     /** The views of this mount, from onLoadViews; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
@@ -3926,16 +3951,10 @@ interface IDatasetControl<TData = unknown> {
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
     getView(): IDatasetControlResolvedView<TData> | undefined;
-    /** Whether a view is loading, behind the skeleton. */
-    isLoadingView(): boolean;
-    /** What the last load threw, until the next one starts. */
-    getError(): unknown;
     /** Loads the view on a new provider; asks first when there are unsaved changes. */
     loadView(viewId: string): Promise<void>;
     /** Loads the current view again on a new provider; asks first when there are unsaved changes. */
     reload(): Promise<void>;
-    /** Runs the load that failed again. */
-    retry(): Promise<void>;
     /** A label set's strings, as the LabelsProvider around the control gives them. */
     getLabels(set: ILabelSet): ILabels;
     getTheme(): ITheme;
@@ -3961,11 +3980,8 @@ interface IDatasetControlProps<TData = unknown> {
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
-    /** Called on every mount once the control exists, before its load; subscribe to its events here. */
+    /** Called with the control of each mount, before its init; subscribe to its events here. */
     onMounted?: (control: IDatasetControl<TData>) => void;
-    /** Called on every mount once its load succeeded. */
-    onReady?: (control: IDatasetControl<TData>) => void;
-    onDestroyed?: (control: IDatasetControl<TData>) => void;
 }
 
 interface IErrorMessageBarComponents {
@@ -4027,7 +4043,7 @@ interface IDatasetControlNamespace {
     ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
     /** Reach it through control.parts.get('ribbon'). */
-    Ribbon: (props: Omit<IRibbonProps, 'onReady' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
+    Ribbon: (props: Omit<IRibbonProps, 'onMounted' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
     QuickFind: (props: {
         components?: Partial<IQuickFindUiComponents>;
     }) => JSX.Element;

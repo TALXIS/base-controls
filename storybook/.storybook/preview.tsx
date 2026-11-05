@@ -143,7 +143,7 @@ const preview: Preview = {
       storySort: {
         order: [
           'Concepts',
-          ['Introduction', 'Building blocks', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Fluent UI', 'Pieces and slots', 'Layout', 'State persistence', 'PCF context', 'Control isolation'],
+          ['Introduction', 'Building blocks', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Fluent UI', 'Pieces and slots', 'Layout', 'State persistence', 'PCF context'],
           'Controls',
           [
             'DatasetControl',
@@ -207,6 +207,8 @@ const preview: Preview = {
             ],
             'Map',
             'Ribbon',
+            'RuntimeHost',
+            'IsolatedFrame',
           ],
           'Dev',
           ['DatasetControl', 'Grid', 'TaskGrid', 'Checklist', 'Form', ['Validation scenarios', 'FormXml builder', 'Scratch']],

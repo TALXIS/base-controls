@@ -63,9 +63,9 @@ const GridExample = () => {
     const onMounted = (control: IDatasetControl) => {
         controlRef.current = control
         write('onMounted')
-        control.events.addEventListener('onLoadStarted', () => write('onLoadStarted'))
-        control.events.addEventListener('onLoaded', () => write(\`onLoaded, view \${control.getViewId()}\`))
-        control.events.addEventListener('onLoadFailed', () => write('onLoadFailed'))
+        control.lifecycle.events.addEventListener('onReady', () => write(\`onReady, view \${control.getViewId()}\`))
+        control.lifecycle.events.addEventListener('onInitFailed', () => write('onInitFailed'))
+        control.lifecycle.events.addEventListener('onDestroyed', () => write('onDestroyed'))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
@@ -73,7 +73,7 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => controlRef.current?.loadView('won')} />
             <DefaultButton text='Remount' onClick={() => setMountKey(key => key + 1)} />
         </Stack>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' key={mountKey} onLoad={loadDeals} onMounted={onMounted} onReady={() => write('onReady')} onDestroyed={() => write('onDestroyed')} height='380px'>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' key={mountKey} onLoad={loadDeals} onMounted={onMounted} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

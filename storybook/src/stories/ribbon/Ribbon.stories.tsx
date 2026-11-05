@@ -40,12 +40,12 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Added to the ribbon's box and to its shimmer. |
-| \`onReady\` | \`(ribbon: IRibbonRuntime) => void\` | None | Hands over the ribbon before the first load. At mount. |
+| \`onMounted\` | \`(ribbon: IRibbonRuntime) => void\` | None | Hands over the ribbon before its first load. At mount. |
 | \`components\` | \`IRibbonComponents\` | Defaults | See *Changing how it looks*. |
 
 ## From your code
 
-\`onReady\` hands over the ribbon. The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
+\`onMounted\` hands over the ribbon of each mount, with the status and lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
 
 | Member | Does |
 |---|---|
@@ -53,8 +53,7 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Loads the commands again; the latest call's commands win. |
 | \`registerCommands(hook, priority?)\` | Adds to the commands on every load. |
-| \`getError()\` | What the last load threw, until the next one starts. |
-| \`events\` | \`onBeforeLoad\`, \`onLoaded\`, \`onBeforeExecute(command)\`, \`onExecuteFailed(command, error)\` and \`onAfterExecute(command)\`. |
+| \`events\` | Its own events; the lifecycle's are on \`lifecycle.events\`: \`onCommandsChanged\`, \`onReloadFailed(error)\`, \`onBeforeExecute(command)\`, \`onExecuteFailed(command, error)\` and \`onAfterExecute(command)\`. |
 
 ## Add your own commands
 

@@ -84,7 +84,7 @@ const LIFECYCLE: ILifecycleStep[] = [
 ]
 
 const meta = {
-    title: 'Concepts/Control isolation',
+    title: 'Controls/IsolatedFrame/Get started',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },

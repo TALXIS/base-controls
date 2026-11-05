@@ -1,9 +1,9 @@
 import type { ITheme } from "@fluentui/react";
-import { IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, EventEmitter, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ServiceLocator } from "@core";
+import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
+import { HookRegistry, IStateStore, RuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlEvents, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
+import { IDatasetControl, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
@@ -26,7 +26,6 @@ export type DatasetControlViewsHook = (views: IDatasetControlView[]) => void;
 
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
 export interface IDatasetControlRuntime extends IDatasetControl {
-    readonly events: IEventEmitter<IDatasetControlEvents>;
     readonly services: IDatasetControlServiceLocator;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
@@ -41,16 +40,17 @@ export interface IDatasetControlRuntime extends IDatasetControl {
 
 export interface IDatasetControlRuntimeParameters {
     onGetProps: () => IDatasetControlProps;
-    /** The control's state, which outlives the runtime. */
+    /** The control's state, which outlives the runtime: the next mount opens the view it is on. */
     state: DatasetControlState;
     onGetLabelsService: () => LabelsService;
     theme: ITheme;
-    /** Mounts the control anew on the view the state is on. */
-    onRemount: () => void;
 }
 
 export class DatasetControlRuntime implements IDatasetControlRuntime {
-    public readonly events: IEventEmitter<IDatasetControlEvents> = new EventEmitter<IDatasetControlEvents>();
+    public readonly lifecycle = new RuntimeLifecycle({
+        onInit: () => this._init(),
+        onDestroy: () => this._destroy(),
+    });
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
     private _modules = new ServiceLocator<IDatasetControlModuleMap>();
     private _loadedModules: { module: IDatasetControlModule; instance: unknown }[] = [];
@@ -58,23 +58,17 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _onGetProps: () => IDatasetControlProps;
     private _theme: ITheme;
     private _state: DatasetControlState;
-    private _onRemount: () => void;
     private _provider?: IDataProvider;
     private _views: IDatasetControlView[] = [];
     private _viewsHooks = new HookRegistry<DatasetControlViewsHook>();
     private _viewId?: string;
     private _view?: IDatasetControlResolvedView;
-    private _requestedViewId?: string;
-    private _isLoadingView = false;
-    private _isDestroyed = false;
-    private _error?: unknown;
     private _dependencies?: unknown;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
         this._onGetProps = parameters.onGetProps;
         this._theme = parameters.theme;
         this._state = parameters.state;
-        this._onRemount = parameters.onRemount;
         this._services.register('runtime', () => this);
         this._services.register('labels', parameters.onGetLabelsService);
         this._services.register('surfaces', () => this._surfaces);
@@ -121,10 +115,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._state.getViewStore(viewId);
     }
 
-    public isLoadingView(): boolean {
-        return this._isLoadingView;
-    }
-
     public registerViews(hook: DatasetControlViewsHook, priority?: number): () => void {
         return this._viewsHooks.register(hook, priority);
     }
@@ -141,13 +131,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._onGetProps().height;
     }
 
-    public getError(): unknown {
-        return this._error;
-    }
-
-    public async load(): Promise<void> {
-        await this._load(this._state.getViewId());
-    }
 
     public async loadView(viewId: string): Promise<void> {
         await this._remountBehindBlocker(viewId);
@@ -157,16 +140,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         await this._remountBehindBlocker(this._viewId);
     }
 
-    public async retry(): Promise<void> {
-        if (!this._isDestroyed) {
-            this._remount(this._requestedViewId);
-        }
-    }
-
-    public destroy(): void {
-        this._isDestroyed = true;
-        this.events.dispatchEvent('onDestroyed');
-        this._loadedModules.forEach(({ module, instance }) => module.onDestroy?.(instance as never));
+    private _destroy(): void {
+        this._destroyModules();
         if (this._provider) {
             this._state.save(this._provider, this._viewId);
             this._releaseProvider(this._provider);
@@ -176,45 +151,35 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private async _remountBehindBlocker(viewId: string | undefined): Promise<void> {
+        const remount = () => {
+            this._state.setViewId(viewId);
+            this.lifecycle.remount();
+        };
         const provider = this._provider as IInternalDataProvider | undefined;
-        if (this._isDestroyed) {
-            return;
-        }
         if (!provider) {
-            this._remount(viewId);
+            remount();
             return;
         }
         //resolves without remounting when the user keeps their unsaved changes
-        await provider.executeWithUnsavedChangesBlocker(() => this._remount(viewId));
+        await provider.executeWithUnsavedChangesBlocker(remount);
     }
 
-    private _remount(viewId: string | undefined): void {
-        this._state.setViewId(viewId);
-        this._onRemount();
-    }
-
-    private async _load(requestedViewId: string | undefined): Promise<void> {
-        this._isLoadingView = true;
-        this._requestedViewId = requestedViewId;
-        this._error = undefined;
-        this.events.dispatchEvent('onLoadStarted');
-        let result: IDatasetControlLoadResult | undefined;
-        let viewId: string | undefined;
+    private async _init(): Promise<void> {
+        this._dependencies = await this._onGetProps().onLoadDependencies?.();
+        await this._loadModules();
+        //a copy: the hooks change it in place
+        const views = [...await this._onGetProps().onLoadViews?.() ?? []];
+        this._viewsHooks.apply(views);
+        this._views = views;
+        //a failed view stays on the state, so the remount that retries it opens it again
+        const viewId = this._resolveViewId(this._state.getViewId());
+        const listed = this._views.find(view => view.id === viewId);
+        let resolving: Promise<IDatasetControlViewDefinition> | undefined;
+        //onLoad may resolve the view itself; it is resolved once either way
+        const resolve = (provider: IDataProvider) => resolving ??= Promise.resolve(listed!.resolve(provider));
+        const { provider } = await this._onGetProps().onLoad({ view: listed && { ...listed, resolve } });
         let view: IDatasetControlResolvedView | undefined;
         try {
-            this._dependencies = await this._onGetProps().onLoadDependencies?.();
-            await this._loadModules();
-            //a copy: the hooks change it in place
-            const views = [...await this._onGetProps().onLoadViews?.() ?? []];
-            this._viewsHooks.apply(views);
-            this._views = views;
-            viewId = this._resolveViewId(requestedViewId);
-            const listed = this._views.find(view => view.id === viewId);
-            let resolving: Promise<IDatasetControlViewDefinition> | undefined;
-            //onLoad may resolve the view itself; it is resolved once either way
-            const resolve = (provider: IDataProvider) => resolving ??= Promise.resolve(listed!.resolve(provider));
-            result = await this._onGetProps().onLoad({ view: listed && { ...listed, resolve } });
-            const provider = result.provider;
             if (listed) {
                 view = { ...listed, ...await resolve(provider) };
                 //before the columns, which a related column is resolved through
@@ -230,17 +195,18 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             }
         }
         catch (error) {
-            if (result) {
-                this._releaseProvider(result.provider);
-            }
-            this._onLoadFailed(error);
+            this._releaseProvider(provider);
+            throw error;
+        }
+        //the mount went while it loaded, so _destroy has already run without it
+        if (this.lifecycle.isDestroyed()) {
+            this._releaseProvider(provider);
             return;
         }
-        if (this._isDestroyed) {
-            this._releaseProvider(result.provider);
-            return;
-        }
-        this._onLoaded(result, viewId, view);
+        this._provider = provider;
+        this._viewId = viewId;
+        this._view = view;
+        this._state.setViewId(viewId);
     }
 
     //a column the provider does not offer is kept as the view gives it
@@ -275,9 +241,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return scope.name === link.to && scope.relatedEntityPrimaryIdAttribute === link.from;
     }
 
-    //a retried load starts the modules again from scratch
     private async _loadModules(): Promise<void> {
-        this._destroyModules();
         const names = new Set<string>();
         for (const module of this._onGetProps().modules ?? []) {
             if (names.has(module.name)) {
@@ -285,7 +249,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
             }
             names.add(module.name);
             const instance = await module.onLoad(this);
-            if (this._isDestroyed) {
+            if (this.lifecycle.isDestroyed()) {
                 module.onDestroy?.(instance as never);
                 return;
             }
@@ -305,24 +269,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     //a kept view may have been removed since
     private _resolveViewId(viewId: string | undefined): string | undefined {
         return this._views.some(view => view.id === viewId) ? viewId : this._views[0]?.id;
-    }
-
-    private _onLoaded(result: IDatasetControlLoadResult, viewId: string | undefined, view: IDatasetControlResolvedView | undefined): void {
-        this._provider = result.provider;
-        this._viewId = viewId;
-        this._view = view;
-        this._state.setViewId(viewId);
-        this._isLoadingView = false;
-        this.events.dispatchEvent('onLoaded', result.provider);
-    }
-
-    private _onLoadFailed(error: unknown): void {
-        if (this._isDestroyed) {
-            return;
-        }
-        this._error = error;
-        this._isLoadingView = false;
-        this.events.dispatchEvent('onLoadFailed', error);
     }
 
     private _releaseProvider(provider: IDataProvider): void {

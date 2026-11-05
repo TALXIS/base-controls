@@ -25,6 +25,10 @@ Which providers go at the root: [**Quick start**](?path=/docs/concepts-quick-sta
 - **A single record** is a [**Form**](?path=/docs/controls-form-get-started--overview).
 - Views, quick find, paging, selection and saving work the same in every list, whether the records come from memory, Dataverse or your own API: [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
+## The runtime
+
+Each control that loads something keeps its state and its work in a **runtime**, one for every mount, which \`onMounted\` hands to you and the adapters read. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+
 ## Customise a control
 
 - **Set its options.** Every control has its own extension points, such as the grid's modules, column definitions and hooks: see [**Modules**](?path=/docs/controls-grid-modules--overview) and [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).

@@ -31,26 +31,34 @@
         "labelSets"
     ],
     "widgets": {
-        "ribbon": [],
+        "runtime-host": [],
+        "ribbon": [
+            "runtime-host"
+        ],
         "dataset-control": [
-            "ribbon"
+            "ribbon",
+            "runtime-host"
         ],
         "grid": [
             "dataset-control",
-            "ribbon"
+            "ribbon",
+            "runtime-host"
         ],
         "check-list": [
             "grid",
             "dataset-control",
-            "ribbon"
+            "ribbon",
+            "runtime-host"
         ],
         "task-grid": [
             "grid",
             "dataset-control",
-            "ribbon"
+            "ribbon",
+            "runtime-host"
         ],
         "form": [
-            "ribbon"
+            "ribbon",
+            "runtime-host"
         ],
         "map": [],
         "isolated-frame": []

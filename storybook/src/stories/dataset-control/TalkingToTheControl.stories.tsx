@@ -13,25 +13,21 @@ Your code can do what the user does through the parts: switch the view, reload, 
 ## Get the control
 
 - Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does.
-- Outside it, \`onMounted\`, \`onReady\` and \`onDestroyed\` hand it to you, at the steps on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
-- Add your listeners in \`onMounted\`: every load is a new mount with a new \`IDatasetControl\`.
+- Outside it, \`onMounted\` hands it to you as each mount starts. Add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
 
 {{story: Watch the control load}}
 
 ## Switch and reload views
 
-\`loadView(viewId)\` opens a view as picking it does, \`reload()\` opens the current one again, and \`retry()\` the one that failed. Each mounts the control anew; all but \`retry()\` first ask about unsaved changes, as on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+\`loadView(viewId)\` opens a view as picking it does, \`reload()\` opens the current one again, and \`lifecycle.remount()\` the one that failed. Each mounts the control anew; all but \`lifecycle.remount()\` first ask about unsaved changes, as on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
 ## Follow the load
 
-| Event | Arguments | When it fires |
-|---|---|---|
-| \`onLoadStarted\` | None | The mount's load starts. |
-| \`onLoaded\` | \`provider\` | The load succeeded, and the parts are drawn on \`provider\`. |
-| \`onLoadFailed\` | \`error\` | The load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
-| \`onDestroyed\` | None | The mount goes. |
+\`control.lifecycle.events\` raises the steps every runtime has, described on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). For the control:
 
-Each fires at most once per \`IDatasetControl\`, on \`control.events\`. \`addEventListener\` returns its own unsubscribe.
+- \`onReady\`: the load succeeded, and the parts are drawn on \`getProvider()\`.
+- \`onInitFailed(error)\`: the load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+- \`onRemountRequested\`: the control is about to mount anew, by \`loadView\`, \`reload\` or \`remount\`.
 
 ## Reach the parts
 
@@ -65,13 +61,11 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 |---|---|
 | \`loadView(viewId)\` | Mounts the control anew on the view, as picking it in the view switcher does. |
 | \`reload()\` | Mounts the control anew on the view shown. |
-| \`retry()\` | Mounts the control anew on the view that failed to load. |
 | \`getViews()\` | The views of this mount. See [**Views**](?path=/docs/controls-datasetcontrol-views--overview). |
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
 | \`getDependencies<T>()\` | What \`onLoadDependencies\` loaded for this mount. |
-| \`isLoadingView()\` | Whether the load is running, behind the placeholder. |
-| \`getError()\` | What the load threw. |
+| \`lifecycle\` | The status, the error and the lifecycle events, and \`remount()\` for the view that failed to load. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in: see [**Theming**](?path=/docs/concepts-theming--overview). |
 

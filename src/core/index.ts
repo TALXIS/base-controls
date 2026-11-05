@@ -6,3 +6,4 @@ export * from './service-locator';
 export * from './stack-rank';
 export * from './state';
 export * from './styling';
+export * from './runtime';

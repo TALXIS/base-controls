@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IEventSubscriber, IServiceLocator, IServiceRegistry } from "@core";
+import type { IRuntime, IServiceLocator, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
@@ -47,18 +47,6 @@ export interface IDatasetControlView<TData = unknown> {
 /** A view as it is opened, with what it sets up. */
 export type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
-/** What the control raises as it loads and goes. */
-export interface IDatasetControlEvents {
-    /** A load started: the first one, a view switch or a reload. */
-    onLoadStarted: () => void;
-    /** A load finished, and its provider is now the one shown. */
-    onLoaded: (provider: IDataProvider) => void;
-    /** A load failed, and the error shows in place of the parts. */
-    onLoadFailed: (error: unknown) => void;
-    /** The control is unmounting. */
-    onDestroyed: () => void;
-}
-
 /** The parts rendered inside the control, each there only while it is rendered. */
 export interface IDatasetControlPartMap {
     /** `DatasetControl.ViewSwitcher`. */
@@ -98,17 +86,15 @@ export interface IDatasetControlModule<TName extends keyof IDatasetControlModule
 /** Looks up the modules the control loaded. */
 export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModuleMap>;
 
-/** The DatasetControl as its consumer drives it. */
-export interface IDatasetControl<TData = unknown> {
-    /** Subscribe to the control's events. */
-    readonly events: IEventSubscriber<IDatasetControlEvents>;
+/** The DatasetControl as its consumer drives it; a new one for every mount. */
+export interface IDatasetControl<TData = unknown> extends IRuntime {
     /** The parts rendered inside the control. */
     readonly parts: IDatasetControlPartLocator;
     /** The modules the control loaded, by name. */
     readonly modules: IDatasetControlModuleLocator;
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
-    /** The provider shown, from the last load that succeeded. */
+    /** The provider shown, once the status is `ready`. */
     getProvider(): IDataProvider | undefined;
     /** The views of this mount, from `onLoadViews`; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
@@ -118,16 +104,10 @@ export interface IDatasetControl<TData = unknown> {
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
     getView(): IDatasetControlResolvedView<TData> | undefined;
-    /** Whether a view is loading, behind the skeleton. */
-    isLoadingView(): boolean;
-    /** What the last load threw, until the next one starts. */
-    getError(): unknown;
     /** Mounts the control anew on the view; asks first when there are unsaved changes. */
     loadView(viewId: string): Promise<void>;
     /** Mounts the control anew on the current view; asks first when there are unsaved changes. */
     reload(): Promise<void>;
-    /** Mounts the control anew on the view that failed to load. */
-    retry(): Promise<void>;
     /** The strings of one set, as the control's `LabelsProvider` gives them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** The Fluent theme the control is drawn in. */

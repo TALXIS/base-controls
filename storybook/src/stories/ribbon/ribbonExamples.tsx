@@ -52,7 +52,7 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Ribbon onLoad={onLoad} onReady={ribbon => { ribbonRef.current = ribbon }} />
+        <Ribbon onLoad={onLoad} onMounted={ribbon => { ribbonRef.current = ribbon }} />
         <Text>Invoice INV-0042: {status}</Text>
         <Text variant='small'>{note}</Text>
     </Stack>

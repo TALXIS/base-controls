@@ -10,7 +10,7 @@ import type { ITaskRuntime } from "../../runtime";
 import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
 import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
 
-export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
+export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'scope' | 'modules'> {
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes, `first` by default. */
@@ -51,16 +51,14 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
 
     const onMounted = (datasetControl: IDatasetControl<ITaskViewData>) => {
         datasetControlRef.current = datasetControl;
+        datasetControl.lifecycle.events.addEventListener('onReady', () => propsRef.current.onReady?.(datasetControl.parts.get('taskRuntime')));
+        datasetControl.lifecycle.events.addEventListener('onDestroyed', () => {
+            const taskRuntime = datasetControl.parts.find('taskRuntime');
+            if (taskRuntime) {
+                propsRef.current.onDestroyed?.(taskRuntime);
+            }
+        });
         propsRef.current.onMounted?.(datasetControl.parts.get('taskRuntime'));
-    };
-
-    const onReady = (datasetControl: IDatasetControl<ITaskViewData>) => propsRef.current.onReady?.(datasetControl.parts.get('taskRuntime'));
-
-    const onDestroyed = (datasetControl: IDatasetControl<ITaskViewData>) => {
-        const taskRuntime = datasetControl.parts.find('taskRuntime');
-        if (taskRuntime) {
-            propsRef.current.onDestroyed?.(taskRuntime);
-        }
     };
 
     const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskRuntime').load(parameters);
@@ -68,6 +66,6 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
 
     return <TaskDatasetControlPropsContext.Provider value={propsContext}>
-        <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onReady={onReady} onDestroyed={onDestroyed} onLoad={onLoad} />
+        <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onMounted={onMounted} onLoad={onLoad} />
     </TaskDatasetControlPropsContext.Provider>;
 };

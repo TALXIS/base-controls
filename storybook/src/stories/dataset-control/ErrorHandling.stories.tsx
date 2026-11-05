@@ -24,7 +24,7 @@ Loading records, running a command or saving a view can fail, and the user needs
 The error's \`message\` is the title, and **Details** opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws.
 
 - A failed load leaves no provider behind: the parts are not drawn until a load succeeds.
-- **Try again** calls \`control.retry()\`: the control mounts anew and loads the view that failed, from the first step.
+- **Try again** calls \`control.lifecycle.remount()\`: the control mounts anew and loads the view that failed, from the first step.
 
 ## Failed actions
 
@@ -46,7 +46,7 @@ The control shows the failure either way. To also log it, or show it elsewhere, 
 
 | Event | On | Arguments |
 |---|---|---|
-| \`onLoadFailed\` | \`control.events\` | \`error\` |
+| \`onInitFailed\` | \`control.lifecycle.events\` | \`error\` |
 | \`onExecuteFailed\` | The ribbon's \`events\` | \`command\`, \`error\` |
 | \`onOperationFailed\` | The \`userQueries\` module's \`events\` | \`error\` |
 

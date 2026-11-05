@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
-import { StateStore, useStateStore } from "@core";
-import { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModule, IDatasetControlView } from "../../runtime";
+import { useMemo } from "react";
+import { StateStore, useLatest, useStateStore } from "@core";
+import { useLabelsService } from "@labels";
+import { useTheme } from "@theme";
+import { RuntimeHost } from "@controls/runtime-host";
+import { DatasetControlRuntime, IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModule, IDatasetControlView } from "../../runtime";
 import { DatasetControlState } from "../../runtime/DatasetControlState";
 import { IDatasetControlComponents } from "./components";
 import { DatasetControlMount } from "./DatasetControlMount";
@@ -29,21 +32,28 @@ export interface IDatasetControlProps<TData = unknown> {
     components?: IDatasetControlComponents;
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
-    /** Called on every mount once the control exists, before its load; subscribe to its events here. */
+    /** Called with the control of each mount, before its init; subscribe to its events here. */
     onMounted?: (control: IDatasetControl<TData>) => void;
-    /** Called on every mount once its load succeeded. */
-    onReady?: (control: IDatasetControl<TData>) => void;
-    /** Called as each mount goes, while its provider still holds its data. */
-    onDestroyed?: (control: IDatasetControl<TData>) => void;
 }
 
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
 export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
     const stateStore = useStateStore();
+    //outlives every runtime: the next mount opens the view and state this one leaves
     const state = useMemo(() => new DatasetControlState({ store: props.stateKey ? stateStore.scope(props.stateKey) : new StateStore() }), []);
-    //React keys can't be symbols
-    const [mountKey, setMountKey] = useState(() => crypto.randomUUID());
+    const propsRef = useLatest(props as IDatasetControlProps);
+    const labelsServiceRef = useLatest(useLabelsService());
+    const theme = useTheme();
 
-    //the mount never reads view data
-    return <DatasetControlMount key={mountKey} {...props as IDatasetControlProps} state={state} onRemount={() => setMountKey(crypto.randomUUID())} />;
+    const onCreate = () => new DatasetControlRuntime({
+        onGetProps: () => propsRef.current,
+        state,
+        onGetLabelsService: () => labelsServiceRef.current,
+        theme,
+    });
+
+    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onMounted={runtime => propsRef.current.onMounted?.(runtime)} components={{ errorMessage: props.components?.errorMessage }}>
+        {/* the mount never reads view data */}
+        <DatasetControlMount {...props as IDatasetControlProps} />
+    </RuntimeHost>;
 };

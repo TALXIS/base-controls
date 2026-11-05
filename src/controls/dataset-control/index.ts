@@ -4,7 +4,7 @@ export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModulePar
 export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQuerySavedValueMap, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
-    IDatasetControl, IDatasetControlEvents, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
+    IDatasetControl, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadParameters, IDatasetControlLoadResult,
     IDatasetControlView, IDatasetControlViewDefinition, IDatasetControlResolvedView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
     IDatasetControlRuntime, DatasetControlViewsHook,
 } from './runtime';

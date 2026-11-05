@@ -6,6 +6,7 @@ export * from '@controls/grid';
 export * from '@controls/map';
 export * from '@controls/task-grid';
 export * from '@controls/isolated-frame';
+export * from '@controls/runtime-host';
 export { Ribbon as LegacyRibbon } from '../legacy/react-components/ribbon/Ribbon';
 export type { IRibbon as ILegacyRibbon, IRibbonComponentProps as ILegacyRibbonComponentProps, IRibbonParameters as ILegacyRibbonParameters } from '../legacy/react-components/ribbon/interfaces';
 export { DatasetControl as LegacyDatasetControl } from '../legacy/react-components/dataset-control/DatasetControl';
