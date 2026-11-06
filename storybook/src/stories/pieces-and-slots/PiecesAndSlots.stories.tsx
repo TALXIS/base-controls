@@ -27,7 +27,7 @@ Spread the props you get: they carry the class names, handlers and refs that mak
 
 ## Pieces
 
-A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`loadingBoundary\` does in the example. A piece merges over its default slot by slot, so the example's \`onRenderSpinner\` stays the default.
+A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`shimmer\` does in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
 
 Each control lists its pieces and slots under *Changing how it looks*, or for DatasetControl under *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 

@@ -19,7 +19,7 @@ The control and every part take a \`components\` map of pieces and slots: see [*
 
 ## Wrap the control
 
-\`className\` adds a class to the control's box. \`scope\` is a component that wraps everything inside each mount, such as a context provider of yours; it renders inside the control, so it can call \`useDatasetControl()\`. Pass the same component on every render.
+\`className\` adds a class to the control's box. To wrap the parts in a context provider of yours, put it inside the control around them; it renders once the control has loaded, so it can call \`useDatasetControl()\`.
 
 ## Use a design system
 
@@ -66,7 +66,7 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 | \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRenderContainer\` | \`HeaderStartUiComponents\` and the like | The region's box |
 | \`ViewSwitcher\` | Top level | \`onRenderButton\`, with the views as \`menuProps.items\` | \`ViewSwitcherUiComponents\` | The button and its menu |
 | \`Ribbon\` | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
-| \`Ribbon\` | \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The shimmer before the first load |
+| \`Ribbon\` | \`shimmer\` | \`onRenderShimmer\` | \`RibbonShimmerUiComponents\` | The shimmer before the first load |
 | \`Ribbon\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` | A failed first load |
 | \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\` | \`QuickFindUiComponents\` | The box and the search field |
 | \`QuickFind\` | \`compact\` | \`onRenderButton\` | \`QuickFindCompactButtonComponents\` | The search button in a compact header |

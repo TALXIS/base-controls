@@ -95,7 +95,8 @@ const GridExample = () => {
     const isClosed = React.useRef(false)
     const ribbonRef = React.useRef<IRibbonRuntime>()
 
-    const onLoad = async (): Promise<IRibbonCommand[]> => [
+    //returned directly, so the ribbon draws them without a shimmer
+    const onLoad = (): IRibbonCommand[] => [
         { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => setNote('Approved') },
         { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => setNote('Rejected') },
     ]

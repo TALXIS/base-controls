@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { IRuntime, IRuntimeEvents, RuntimeLifecycle, useEventEmitter, useLatest, useRerender } from "@core";
 import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui/error-message-bar";
+import { LoadingBoundary } from "@ui/loading-boundary";
 import { RuntimeContext, RuntimeStatusContext } from "./context";
 import { IRuntimeHostComponents } from "./components";
 
@@ -16,7 +17,7 @@ export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     onCreate: () => TRuntime;
     /** Called with each new runtime, before its init; subscribe to its events here. */
     onSetup?: (runtime: TRuntime) => void;
-    /** Drawn while it initializes too, so it can show its own loading state; reads the runtime with `useRuntime()`. */
+    /** Rendered once the runtime is ready; reads it with `useRuntime()`. */
     children?: React.ReactNode;
     /** Replacements for what the host draws itself. */
     components?: Partial<IRuntimeHostComponents>;
@@ -40,20 +41,25 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
     useEventEmitter<IRuntimeEvents>(lifecycle.events, STATUS_EVENTS, rerender);
     useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onRemountRequested', () => propsRef.current.onRemount());
 
-    useEffect(() => {
+    //before the paint, so a runtime that loads without waiting is drawn ready
+    useLayoutEffect(() => {
         propsRef.current.onSetup?.(runtime);
         lifecycle.init();
         return () => lifecycle.destroy();
     }, []);
 
+    const status = lifecycle.getStatus();
+
     return <RuntimeContext.Provider value={runtime}>
-        <RuntimeStatusContext.Provider value={lifecycle.getStatus()}>
+        <RuntimeStatusContext.Provider value={status}>
             <ErrorMessageBoundary
-                error={lifecycle.getStatus() === 'failed' ? lifecycle.getError() : undefined}
+                error={status === 'failed' ? lifecycle.getError() : undefined}
                 onRetry={() => lifecycle.remount()}
                 onOpenDetails={openErrorDialog}
                 components={props.components?.errorMessage}>
-                {props.children}
+                <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.loadingBoundary}>
+                    {props.children}
+                </LoadingBoundary>
             </ErrorMessageBoundary>
         </RuntimeStatusContext.Provider>
     </RuntimeContext.Provider>;

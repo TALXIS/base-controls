@@ -1,16 +1,16 @@
-import { useMemo } from "react";
 import type { IRecord } from "@talxis/client-libraries";
 import { useLatest } from "@core";
 import { usePcfContext } from "@pcf";
-import { DatasetControl } from "@controls/dataset-control";
+import { DatasetControl, useDatasetControl } from "@controls/dataset-control";
 import type { IDatasetControl, IDatasetControlModule, IDatasetControlProps } from "@controls/dataset-control";
+import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { ITaskGridLoadResult } from "../../interfaces";
 import type { ITaskViewData, TaskCreatePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
-import { ITaskDatasetControlPropsContext, TaskDatasetControlPropsContext } from "./context";
-import { TaskDatasetControlScope } from "./TaskDatasetControlScope";
+import { TaskRuntime } from "../../runtime/TaskRuntime";
+import { TaskRuntimeContext } from "./context";
 
-export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onSetup' | 'scope' | 'modules'> {
+export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onSetup' | 'modules'> {
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes, `first` by default. */
@@ -24,7 +24,7 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     /** The control's modules, read on every mount. */
     modules?: IDatasetControlModule[];
     /** Returns the view's provider and field mapping on every mount. */
-    onLoad: (taskRuntime: ITaskRuntime) => Promise<ITaskGridLoadResult>;
+    onLoad: (taskRuntime: ITaskRuntime) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
     /** Called after tasks are created, with the parent they went under. */
     onTasksCreated?: (records: IRecord[], parentId?: string) => void;
     /** Called after tasks are deleted. */
@@ -39,17 +39,26 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
 export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     const propsRef = useLatest(props);
     const pcfContext = usePcfContext();
-    const propsContext = useMemo((): ITaskDatasetControlPropsContext => ({
-        pcfContext,
-        propsRef,
-    }), []);
 
-    const onSetup = (datasetControl: IDatasetControl<ITaskViewData>) => propsRef.current.onSetup?.(datasetControl.parts.get('taskRuntime'));
+    //one task runtime per mount, there before the modules and onLoad read it
+    const onSetup = (datasetControl: IDatasetControl<ITaskViewData>) => {
+        const runtime = datasetControl as unknown as IDatasetControlRuntime;
+        const taskRuntime = new TaskRuntime({ datasetControl: runtime, pcfContext, onGetProps: () => propsRef.current });
+        runtime.services.register('taskRuntime', () => taskRuntime);
+        runtime.lifecycle.events.addEventListener('onDestroyed', () => taskRuntime.destroy());
+        propsRef.current.onSetup?.(taskRuntime);
+    };
     const onLoad = (datasetControl: IDatasetControl<ITaskViewData>) => datasetControl.parts.get('taskRuntime').load();
 
-    const { onLoad: _onLoad, onSetup: _onSetup, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, onSetup: _onSetup, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, children, ...datasetControlProps } = props;
 
-    return <TaskDatasetControlPropsContext.Provider value={propsContext}>
-        <DatasetControl {...datasetControlProps} scope={TaskDatasetControlScope} onSetup={onSetup} onLoad={onLoad} />
-    </TaskDatasetControlPropsContext.Provider>;
+    return <DatasetControl {...datasetControlProps} onSetup={onSetup} onLoad={onLoad}>
+        <TaskRuntimeProvider>{children}</TaskRuntimeProvider>
+    </DatasetControl>;
+};
+
+//the parts render on a ready control, so its task runtime is there
+const TaskRuntimeProvider = (props: { children: React.ReactNode }) => {
+    const taskRuntime = useDatasetControl().parts.get('taskRuntime');
+    return <TaskRuntimeContext.Provider value={taskRuntime}>{props.children}</TaskRuntimeContext.Provider>;
 };

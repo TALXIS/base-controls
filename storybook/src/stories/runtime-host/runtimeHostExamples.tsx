@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
 const DEAL_SUMMARY_CODE = `import { IRuntime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
-import { DefaultButton, Spinner, Stack, Text, Toggle, mergeStyleSets } from '@fluentui/react'
+import { DefaultButton, Stack, Text, Toggle, mergeStyleSets } from '@fluentui/react'
 
 const OPEN_DEALS = [4000, 21500, 9000]
 
@@ -37,12 +37,9 @@ class DealSummaryRuntime implements IRuntime {
     }
 }
 
-//drawn inside the host; useRuntime draws it again when the status changes
+//drawn once the runtime is ready, so it reads what the runtime loaded
 const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
-    if (runtime.lifecycle.getStatus() === 'initializing') {
-        return <Spinner label='Loading the open deals...' />
-    }
     return <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign='center'>
         <Text variant='large'>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
         {/* a new runtime, which loads again */}
@@ -114,12 +111,15 @@ class DealSummaryRuntime implements IRuntime {
     }
 }
 
-//drawn inside the host; useRuntime draws it again when the status changes
+//shown while the runtime loads; it can read the runtime too
+const LoadingDeals = () => {
+    const runtime = useRuntime<DealSummaryRuntime>()
+    return <Spinner label={\`Loading the deals of \${runtime.getOwner()}...\`} />
+}
+
+//drawn once the runtime is ready, so it reads what the runtime loaded
 const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
-    if (runtime.lifecycle.getStatus() === 'initializing') {
-        return <Spinner label={\`Loading the deals of \${runtime.getOwner()}...\`} />
-    }
     return <Stack horizontal tokens={{ childrenGap: 16 }} verticalAlign='end'>
         <Dropdown label='Account manager' selectedKey={runtime.getOwner()} options={OWNERS.map(owner => ({ key: owner, text: owner }))} onChange={(_, option) => runtime.setOwner(String(option!.key))} styles={{ root: { width: 200 } }} />
         <Text variant='large'>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
@@ -129,7 +129,7 @@ const DealSummary = () => {
 const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
-    return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)}>
+    return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)} components={{ loadingBoundary: { onRenderContainer: () => <LoadingDeals /> } }}>
         <DealSummary />
     </RuntimeHost>
 }

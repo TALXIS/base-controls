@@ -36,7 +36,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`(ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>\` | None | Live | Returns the commands. Called at mount and on \`reload()\`. |
+| \`onLoad\` | \`(ribbon: IRibbonRuntime) => IRibbonCommand[] \\| Promise<IRibbonCommand[]>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Live | Added to the ribbon's box and to its shimmer. |
@@ -76,7 +76,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
-| \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The shimmer before the first load |
+| \`shimmer\` | \`onRenderShimmer\` | \`RibbonShimmerUiComponents\` | The shimmer before the first load |
 | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
 
 The commands carry your own labels. To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).

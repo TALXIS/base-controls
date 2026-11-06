@@ -3745,7 +3745,7 @@ interface IRibbonRuntime extends IRuntime {
 
 interface IRibbonProps {
     /** Called on init and on every reload(); the commands registered through registerCommands follow. */
-    onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
@@ -3756,12 +3756,8 @@ interface IRibbonProps {
     onSetup?: (ribbon: IRibbonRuntime) => void;
     components?: {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
-        /** Its container is a shimmer the height of the command bar by default. */
-        loadingBoundary?: Partial<{
-            onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-            onRenderSpinner: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element | null;
-            onRenderText: (props: import('@fluentui/react').ITextProps) => JSX.Element | null;
-        }>;
+        /** The shimmer that stands in for the commands until the first load finishes. */
+        shimmer?: Partial<{ onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null }>;
         errorMessage?: Partial<IErrorMessageBarComponents>;
     };
 }
@@ -3782,7 +3778,13 @@ declare const RibbonUi: (props: { items: ICommandBarItemProps[]; align?: 'start'
 /** The ribbon's default slot: the command bar. */
 declare const RibbonUiComponents: { onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
 /** The loading boundary's default slots: a spinner with a text beside it. */
-declare const LoadingBoundaryComponents: Required<NonNullable<NonNullable<IRibbonProps['components']>['loadingBoundary']>>;
+declare const LoadingBoundaryComponents: {
+    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRenderSpinner: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element | null;
+    onRenderText: (props: import('@fluentui/react').ITextProps) => JSX.Element | null;
+};
+/** The ribbon shimmer's default slot. */
+declare const RibbonShimmerUiComponents: { onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null };
 
 /** Subscribing to an emitter's events, without dispatching them. */
 type IEventSubscriber<T> = {
@@ -3959,7 +3961,7 @@ interface IDatasetControlProps<TData = unknown> {
     /** The control's modules, each with a unique name; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Creates the provider and lists the views; called on every mount. */
-    onLoad: (control: IDatasetControl<TData>) => Promise<IDatasetControlLoadResult<TData>>;
+    onLoad: (control: IDatasetControl<TData>) => IDatasetControlLoadResult<TData> | Promise<IDatasetControlLoadResult<TData>>;
     children: React.ReactNode;
     /** '100%' fills the parent; the content's height when left out. */
     height?: string;
@@ -3969,8 +3971,6 @@ interface IDatasetControlProps<TData = unknown> {
     /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to true. */
     destroyProviderOnUnmount?: boolean;
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
-    /** A stable component wrapping each mount's content, rendered before its load. */
-    scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
 }
@@ -4254,7 +4254,7 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     /** Hours in a day of a task's duration; 24 when left out. */
     hoursPerDay?: number;
     /** Returns the provider, field mapping and views; called on every mount. */
-    onLoad: (taskRuntime: ITaskRuntime) => Promise<ITaskGridLoadResult>;
+    onLoad: (taskRuntime: ITaskRuntime) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes; first when left out. */

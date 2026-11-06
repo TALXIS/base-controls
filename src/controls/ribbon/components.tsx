@@ -1,11 +1,10 @@
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
-import { ILoadingBoundaryComponents } from "@ui/loading-boundary";
-import { IRibbonUiComponents } from "./ui";
+import { IRibbonShimmerUiComponents, IRibbonUiComponents } from "./ui";
 
 /** Replacements for the ribbon's slots, and for the pieces inside it by name. */
 export interface IRibbonComponents extends Partial<IRibbonUiComponents> {
-    /** Its container is a shimmer the height of the command bar by default. */
-    loadingBoundary?: Partial<ILoadingBoundaryComponents>;
+    /** The shimmer that stands in for the commands until the first load finishes. */
+    shimmer?: Partial<IRibbonShimmerUiComponents>;
     /** How a failed load of the commands looks. */
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }

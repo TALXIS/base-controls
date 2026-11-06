@@ -46,14 +46,15 @@ A runtime is a class with a \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit
 
 ## Draw the mount
 
-The host draws a failed load; the control draws everything else, its loading state included. Put the control's component inside the host and read the runtime there with \`useRuntime()\`: the component draws again whenever the status changes. If it throws while it draws, the host shows that error too, and **Try again** draws it again.
+The host draws the loading state and a failed load; the control draws the rest. Put the control's component inside the host and read the runtime there with \`useRuntime()\`: the host draws it only once the runtime is ready, so it never has to check the status. An \`onInit\` that returns without waiting is ready before the first paint, so its loading state never shows. If the component throws while it draws, the host shows that error too, and **Try again** draws it again.
 
 ## Changing how it looks
 
-\`RuntimeHost\` takes \`components\` for the error it shows. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`RuntimeHost\` takes \`components\` for what it draws itself: the loading state and the error. A component in \`loadingBoundary\` can read the runtime with \`useRuntime()\`, as the second example's spinner does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
+| \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
 | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
 
 To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).
@@ -64,7 +65,7 @@ To change the wording of **Try again** and **Details**, see [**Localization**](?
 |---|---|---|---|---|
 | \`onCreate\` | \`() => TRuntime\` | Required | At mount | Makes the runtime of a mount. |
 | \`onSetup\` | \`(runtime: TRuntime) => void\` | None | At mount | Called with each new runtime, before it loads. |
-| \`children\` | \`ReactNode\` | None | Live | The control, drawn from the start; reads the runtime with \`useRuntime()\`. |
+| \`children\` | \`ReactNode\` | None | Live | The control, drawn once the runtime is ready; reads it with \`useRuntime()\`. |
 | \`components\` | \`IRuntimeHostComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## Where next
@@ -75,8 +76,8 @@ To change the wording of **Try again** and **Details**, see [**Localization**](?
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The runtime is created', hook: 'onCreate', text: 'The host calls `onCreate` for a new runtime, whose status is `initializing`.' },
     { title: 'The mount starts', hook: 'onSetup', text: '`onSetup` gets the runtime before it loads, so subscribe to its events here.' },
-    { title: 'It loads', hook: 'onInit', text: 'The lifecycle runs `onInit` once, while the control draws its loading state.' },
-    { title: 'It is ready, or it failed', hook: 'onReady', text: '`onReady` fires, or `onInitFailed` fires and the host shows the error with a retry.' },
+    { title: 'It loads', hook: 'onInit', text: 'The lifecycle runs `onInit` once, before the first paint, while the host draws the loading state.' },
+    { title: 'It is ready, or it failed', hook: 'onReady', text: '`onReady` fires and the host draws the control, or `onInitFailed` fires and the host shows the error with a retry.' },
     { title: 'It remounts', hook: 'remount()', text: '`remount()`, or the retry, ends the runtime and starts again from the first step.' },
     { title: 'It is destroyed', hook: 'onDestroy', text: '`onDestroyed` fires, then `onDestroy` releases what the runtime holds.' },
 ]

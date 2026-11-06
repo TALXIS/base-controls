@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { ILoadingBoundaryComponents } from "@ui/loading-boundary";
 import { StateStore, useLatest, useStateStore } from "@core";
 import { useLabelsService } from "@labels";
 import { useTheme } from "@theme";
@@ -7,13 +8,14 @@ import { DatasetControlRuntime, IDatasetControl, IDatasetControlLoadResult, IDat
 import { DatasetControlState } from "../../runtime/DatasetControlState";
 import { IDatasetControlComponents } from "./components";
 import { DatasetControlMount } from "./DatasetControlMount";
+import { DatasetControlUi } from "../../ui";
 
 /** Props for `DatasetControl`. */
 export interface IDatasetControlProps<TData = unknown> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Creates the provider and lists the views, behind the skeleton; called on every mount. */
-    onLoad: (control: IDatasetControl<TData>) => Promise<IDatasetControlLoadResult<TData>>;
+    onLoad: (control: IDatasetControl<TData>) => IDatasetControlLoadResult<TData> | Promise<IDatasetControlLoadResult<TData>>;
     /** The parts, laid out in its header, body and footer. */
     children: React.ReactNode;
     /** `'100%'` fills the parent; the content's height when left out. */
@@ -26,8 +28,6 @@ export interface IDatasetControlProps<TData = unknown> {
     destroyProviderOnUnmount?: boolean;
     /** Replacements for the box, the skeleton and the error. */
     components?: IDatasetControlComponents;
-    /** A stable component wrapping each mount's content, rendered before its load. */
-    scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
 }
@@ -48,7 +48,16 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         theme,
     });
 
-    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage: props.components?.errorMessage }}>
+    const { errorMessage, skeleton, loadingOverlay, ...container } = props.components ?? {};
+    const { loadingBoundary: skeletonBoundary, ...skeletonUi } = skeleton ?? {};
+    const loadingBoundary: Partial<ILoadingBoundaryComponents> = {
+        onRenderContainer: () => <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
+            <DatasetControlUi.Skeleton height={props.height} components={skeletonUi} />
+        </DatasetControlUi.Container>,
+        ...skeletonBoundary,
+    };
+
+    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loadingBoundary }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

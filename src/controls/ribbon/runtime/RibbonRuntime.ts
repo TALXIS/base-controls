@@ -35,7 +35,7 @@ export interface IRibbonRuntime extends IRuntime {
 }
 
 export interface IRibbonRuntimeParameters {
-    onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
 }
 
 export class RibbonRuntime implements IRibbonRuntime {
@@ -44,7 +44,7 @@ export class RibbonRuntime implements IRibbonRuntime {
         onDestroy: () => this._destroy(),
     });
     public readonly events = new EventEmitter<IRibbonRuntimeEvents>();
-    private _onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
+    private _onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     private _commandsHooks = new HookRegistry<RibbonCommandsHook>();
     private _commands?: IRibbonCommand[];
     //a slower earlier reload must not overwrite a newer one
