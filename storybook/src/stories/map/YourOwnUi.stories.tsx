@@ -6,29 +6,29 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { CustomPopupExample, CustomUiExample } from './mapExamples'
 
 const DESCRIPTION = `
-The map draws a few things through slots you can replace: its box, its loading and error states, and, through the adapter, each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Try it below: click one of the large red pins.
+The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Try it below: click one of the large red pins.
 
 {{canvas: Mark the large cities}}
 
 ## Changing how it looks
 
-\`Map\` takes \`components\` for its own slots, and each adapter takes \`components\`: \`<Leaflet>\` and \`<GoogleMaps>\` for the map, \`<LeafletMarkers>\` and \`<GoogleMapsMarkers>\` for the pins. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`Map\` takes \`components\` for its own slots, and each library module takes \`components\` for the map's under \`map\` and the pins' under \`marker\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`Map\` | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the adapter draws in |
+| \`Map\` | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in |
 | \`Map\` | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded |
 | \`Map\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library |
-| \`Leaflet\` | None | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles |
-| \`LeafletMarkers\` | None | \`onRenderMarker\`, \`onRenderPopup\` | \`LeafletUiMarkerComponents\` | Each pin: a circle whose popup shows the record's id |
-| \`GoogleMaps\` | None | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map |
-| \`GoogleMapsMarkers\` | None | \`onRenderMarker\` | \`GoogleMapsUiMarkerComponents\` | Each pin: a vis.gl marker |
+| \`createLeafletModule\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles |
+| \`createLeafletModule\` | \`marker\` | \`onRenderMarker\`, \`onRenderPopup\` | \`LeafletUiMarkerComponents\` | Each pin: a circle whose popup shows the record's id |
+| \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map |
+| \`createGoogleMapsModule\` | \`marker\` | \`onRenderMarker\` | \`GoogleMapsUiMarkerComponents\` | Each pin: a vis.gl marker |
 
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Your own pins
 
-Each slot of \`<LeafletMarkers>\` and \`<GoogleMapsMarkers>\` gets the library's own props and draws inside the library's map. For Leaflet, return react-leaflet layers, such as \`CircleMarker\` and \`Popup\`; for Google Maps, components of \`@vis.gl/react-google-maps\`, such as \`Marker\` and \`InfoWindow\`. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityMarker\` and \`CityPopup\` do in the example, and hands the rest to the default slot.
+Each slot under \`marker\` gets the library's own props and draws inside the library's map. For Leaflet, return react-leaflet layers, such as \`CircleMarker\` and \`Popup\`; for Google Maps, components of \`@vis.gl/react-google-maps\`, such as \`Marker\` and \`InfoWindow\`. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityMarker\` and \`CityPopup\` do in the example, and hands the rest to the default slot.
 
 \`onRenderPopup\` draws the popup a pin opens on click. Its content is drawn into Leaflet's popup, so a component of yours there can use hooks too: \`CityCard\` below reads its record and where it sits.
 

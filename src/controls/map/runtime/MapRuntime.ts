@@ -1,6 +1,7 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IRuntime, IServiceRegistry, ModuleLoader, RuntimeLifecycle, ServiceRegistry } from "@core";
 import type { IMapModuleLocator, IMapModuleMap, IMapPoint, IMapProps } from "../interfaces";
+import { IMapSurfaces, MapSurfaces } from "./MapSurfaces";
 import { MapViewport } from "./viewport/MapViewport";
 
 export interface IMapServiceMap {
@@ -15,6 +16,8 @@ export interface IMap extends IRuntime {
     readonly services: IMapServiceRegistry;
     /** The loaded modules, by name; `library` is always among them. */
     readonly modules: IMapModuleLocator;
+    /** What the modules draw in the map's box; the library module adds its map here. */
+    readonly surfaces: IMapSurfaces;
     /** Where the record's pin goes; `undefined` when its position is not a number. */
     getPoint(record: IRecord): IMapPoint | undefined;
 }
@@ -30,6 +33,7 @@ export class MapRuntime implements IMap {
         onDestroy: () => this._destroy(),
     });
     public readonly services = new ServiceRegistry<IMapServiceMap>();
+    public readonly surfaces = new MapSurfaces();
     private _moduleLoader = new ModuleLoader<IMapModuleMap, IMap>();
     private _getProps: () => IMapProps;
 

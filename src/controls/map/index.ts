@@ -8,3 +8,4 @@ export * from './labels';
 export * from './modules/google-maps';
 export * from './modules/leaflet';
 export type { MapViewport, IMapViewRequest, IMapViewportEvents } from './runtime/viewport/MapViewport';
+export type { IMapSurface, IMapSurfaces, IMapSurfacesHooks, MapSurfacesHook } from './runtime/MapSurfaces';

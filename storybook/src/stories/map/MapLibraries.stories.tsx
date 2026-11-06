@@ -6,18 +6,18 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { LibrariesExample } from './mapExamples'
 
 const DESCRIPTION = `
-The map works out its pins and where to look, but a *map library* draws them, over the map tiles of a tile service. Two libraries come with the package, Leaflet and Google Maps, and each is a module the map loads plus an adapter that draws inside the map. Try it below: pick **Leaflet, CARTO light**, then paste a Google Maps API key and pick **Google Maps**.
+The map works out its pins and where to look, but a *map library* draws them, over the map tiles of a tile service. Two libraries come with the package, Leaflet and Google Maps, and each is a module the map loads, which draws the map and its pins. Try it below: pick **Leaflet, CARTO light**, then paste a Google Maps API key and pick **Google Maps**.
 
 {{canvas: Switch the library}}
 
 ## The libraries
 
-| Module | Adapters | Draws with |
-|---|---|---|
-| \`createLeafletModule({ tileUrl?, attribution? })\` | \`<Leaflet>\` with \`<LeafletMarkers />\` | Leaflet, over OpenStreetMap tiles unless \`tileUrl\` and \`attribution\` name others. Needs no key |
-| \`createGoogleMapsModule({ apiKey })\` | \`<GoogleMaps>\` with \`<GoogleMapsMarkers />\` | The Google Maps JavaScript API, under a key of yours |
+| Module | Draws with |
+|---|---|
+| \`createLeafletModule({ tileUrl?, attribution?, components? })\` | Leaflet, over OpenStreetMap tiles unless \`tileUrl\` and \`attribution\` name others. Needs no key |
+| \`createGoogleMapsModule({ apiKey, components? })\` | The Google Maps JavaScript API, under a key of yours |
 
-The module goes in \`modules\` and its own adapter in the map's children. The map reads \`modules\` only as it mounts, so to switch libraries, mount it again with a new \`key\`, as the example does. Whichever library draws, the map moves the view the same way: see *Where the map looks* on [**Map**](?path=/docs/controls-map-get-started--overview).
+The module goes in \`modules\`; \`components\` replaces its slots, as [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview) shows. Google Maps holds the map in its loading state until its API has loaded. The map reads \`modules\` only as it mounts, so to switch libraries, mount it again with a new \`key\`, as the example does. Whichever library draws, the map moves the view the same way: see *Where the map looks* on [**Map**](?path=/docs/controls-map-get-started--overview).
 
 ## Leaflet
 

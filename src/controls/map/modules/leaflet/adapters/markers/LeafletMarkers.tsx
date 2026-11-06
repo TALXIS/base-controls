@@ -6,7 +6,7 @@ export interface ILeafletMarkersProps {
     components?: Partial<ILeafletUiMarkerComponents>;
 }
 
-/** Draws a pin for each record with a position, its id in the popup; it goes inside `<Leaflet>`. */
+/** Draws a pin for each record with a position, its id in the popup inside the library's map. */
 export const LeafletMarkers = (props: ILeafletMarkersProps) => {
     const map = useMap();
     return <>{useMapRecords().map(record => {

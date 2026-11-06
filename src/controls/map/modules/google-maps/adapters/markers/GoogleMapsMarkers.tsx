@@ -6,7 +6,7 @@ export interface IGoogleMapsMarkersProps {
     components?: Partial<IGoogleMapsUiMarkerComponents>;
 }
 
-/** Draws a pin for each record with a position; it goes inside `<GoogleMaps>`. */
+/** Draws a pin for each record with a position inside the library's map. */
 export const GoogleMapsMarkers = (props: IGoogleMapsMarkersProps) => {
     const map = useMap();
     return <>{useMapRecords().map(record => {

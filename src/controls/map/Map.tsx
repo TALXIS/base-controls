@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { useLatest } from "@core";
 import { useDataProvider } from "@data";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
@@ -6,7 +7,7 @@ import { MapRuntime } from "./runtime/MapRuntime";
 import { MapContext } from "./context";
 import { MapUiContainer } from "./ui";
 
-/** Shows the records of the provider around it as pins, drawn by the library adapter in its children. */
+/** Shows the records of the provider around it as pins, drawn by its library module. */
 export const Map = (props: IMapProps) => {
     const provider = useDataProvider();
     const propsRef = useLatest(props);
@@ -23,7 +24,7 @@ const MapMount = (props: IMapProps) => {
 
     return <MapContext.Provider value={runtime}>
         <MapUiContainer className={props.className} components={containerComponents}>
-            {props.children}
+            {runtime.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
         </MapUiContainer>
     </MapContext.Provider>;
 };

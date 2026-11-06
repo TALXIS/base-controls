@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import type { IRuntimeModule, IServiceLocator } from "@core";
 import type { IMap } from "./runtime/MapRuntime";
 import type { IMapComponents } from "./components";
@@ -21,7 +20,7 @@ export interface IMapFieldMapping {
     longitude: string;
 }
 
-/** What draws the map: Google Maps, Leaflet or a library of your own, loaded as the `library` module; its adapter goes in `children`. */
+/** What draws the map: Google Maps, Leaflet or a library of your own, loaded as the `library` module, which adds its map to the map's surfaces. */
 export interface IMapLibrary {
     /** The library's own map, once its adapter has drawn it. */
     getInstance(): unknown;
@@ -48,6 +47,4 @@ export interface IMapProps {
     className?: string;
     /** Replacements for the map's slots. */
     components?: IMapComponents;
-    /** The library's adapter, such as `<GoogleMapsAdapter />` for `createGoogleMapsModule`. */
-    children?: ReactNode;
 }

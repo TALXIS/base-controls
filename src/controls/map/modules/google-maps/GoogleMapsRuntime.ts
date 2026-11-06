@@ -1,12 +1,17 @@
+import { createElement } from "react";
 import { EventEmitter } from "@talxis/client-libraries";
 import type { IEventSubscriber } from "@core";
 import type { IMapLibrary } from "../../interfaces";
 import type { IMap } from "../../runtime/MapRuntime";
+import type { IMapSurface } from "../../runtime/MapSurfaces";
 import type { IMapViewRequest, MapViewport } from "../../runtime/viewport/MapViewport";
+import { GoogleMaps, IGoogleMapsComponents } from "./adapters/google-maps";
 
 export interface IGoogleMapsParameters {
     /** A Google Maps JavaScript API key. */
     apiKey: string;
+    /** Replacements for the map's slots and its pins' slots. */
+    components?: IGoogleMapsComponents;
 }
 
 export interface IGoogleMapsEvents {
@@ -33,17 +38,22 @@ export interface IGoogleMapsConstructorParameters {
     parameters: IGoogleMapsParameters;
 }
 
+//the map comes before anything else drawn in the box
+const MAP_SURFACE_PRIORITY = -100;
+
 export class GoogleMapsRuntime implements IGoogleMapsInternal {
     public readonly events = new EventEmitter<IGoogleMapsEvents>();
     private _viewport: MapViewport;
     private _parameters: IGoogleMapsParameters;
     private _instance?: google.maps.Map;
     private _stopListening: () => void;
+    private _removeSurface: () => void;
 
     constructor(parameters: IGoogleMapsConstructorParameters) {
         this._viewport = parameters.map.services.get('viewport');
         this._parameters = parameters.parameters;
         this._stopListening = this._viewport.events.addEventListener('onViewRequested', this._onViewRequested);
+        this._removeSurface = parameters.map.surfaces.hooks.surfaces.add(this._onSurfaces, MAP_SURFACE_PRIORITY);
     }
 
     public getInstance(): google.maps.Map | undefined {
@@ -67,8 +77,13 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
 
     public destroy(): void {
         this._stopListening();
+        this._removeSurface();
         this.events.clearEventListeners();
     }
+
+    private _onSurfaces = (surfaces: IMapSurface[]): void => {
+        surfaces.push({ key: 'library', onRender: () => createElement(GoogleMaps, { components: this._parameters.components }) });
+    };
 
     private _onViewRequested = (request: IMapViewRequest): void => {
         if (!this._instance) {

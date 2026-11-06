@@ -18,7 +18,6 @@ Like every control, the map needs the root providers from [**Quick start**](?pat
 |---|---|
 | \`fieldMapping\` | The columns that hold each record's position, as \`{ latitude, longitude }\`, in decimal degrees |
 | \`modules\` | The map's modules, with one map library, such as \`createLeafletModule()\`. Without one, the map shows an error |
-| \`children\` | The library's adapter, such as \`<Leaflet>\`, which draws the map; put \`<LeafletMarkers />\` inside it for the pins |
 
 The map fills its parent, and is at least 200 pixels tall. A record whose latitude or longitude is not a number gets no pin. The pins are worked out again each time the provider loads records, so a search, a filter or a refresh moves them.
 
@@ -46,9 +45,8 @@ It moves again each time the pins are worked out again; in between, the user pan
 |---|---|---|---|---|
 | \`fieldMapping\` | \`IMapFieldMapping\` | Required | Live | The latitude and longitude columns, read each time the pins are worked out. |
 | \`modules\` | \`IMapModule[]\` | Required | At mount | The map's modules, with one \`library\`. To change them, mount the map again with a new \`key\`. |
-| \`children\` | \`ReactNode\` | None | Live | The library's adapter, and anything else to draw in the map's box. |
 | \`onSetup\` | \`(map: IMap) => void\` | None | At mount | Called with each new map, before it loads: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
-| \`onLoad\` | \`(map: IMap) => void\`, or a promise | None | At mount | Called once the modules have loaded; the pins are worked out after it settles. |
+| \`onLoad\` | \`(map: IMap) => void\`, or a promise | None | At mount | Called once the modules have loaded; the map waits for a promise it returns. |
 | \`className\` | \`string\` | None | Live | A class for the map's box. |
 | \`components\` | \`IMapComponents\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
 

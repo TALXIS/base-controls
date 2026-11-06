@@ -40,7 +40,7 @@ export const createCities = () => {
 
 const run = (code: string, files: IGridExampleFile[] = []) => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code }, ...files, CITIES_FILE]} tabs={['preview', 'code']} />
 
-const GET_STARTED_CODE = `import { createLeafletModule, DataProviderScope, Leaflet, LeafletMarkers, Map } from '@talxis/base-controls'
+const GET_STARTED_CODE = `import { createLeafletModule, DataProviderScope, Map } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -49,7 +49,7 @@ const styles = mergeStyleSets({
     map: { height: 420 },
 })
 
-//the library that draws the map; Leaflet over OpenStreetMap needs no key
+//the library that draws the map and its pins; Leaflet over OpenStreetMap needs no key
 const MODULES = [createLeafletModule()]
 
 const GridExample = () => {
@@ -57,12 +57,7 @@ const GridExample = () => {
 
     return <div className={styles.map}>
         <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES}>
-                {/* the library's adapter draws the map inside the map's box */}
-                <Leaflet>
-                    <LeafletMarkers />
-                </Leaflet>
-            </Map>
+            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
         </DataProviderScope>
     </div>
 }
@@ -70,7 +65,7 @@ const GridExample = () => {
 
 export const GetStartedExample = () => run(GET_STARTED_CODE)
 
-const DATASET_CONTROL_CODE = `import { createLeafletModule, DatasetControl, Leaflet, LeafletMarkers, Map } from '@talxis/base-controls'
+const DATASET_CONTROL_CODE = `import { createLeafletModule, DatasetControl, Map } from '@talxis/base-controls'
 import { createCities, FIELD_MAPPING } from './data'
 
 const MODULES = [createLeafletModule()]
@@ -83,18 +78,14 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: creat
     </DatasetControl.Header>
     <DatasetControl.Body>
         {/* shows the control's provider, so the pins follow the search */}
-        <Map fieldMapping={FIELD_MAPPING} modules={MODULES}>
-            <Leaflet>
-                <LeafletMarkers />
-            </Leaflet>
-        </Map>
+        <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
 export const DatasetControlExample = () => run(DATASET_CONTROL_CODE)
 
-const LIBRARIES_CODE = `import { createGoogleMapsModule, createLeafletModule, DataProviderScope, GoogleMaps, GoogleMapsMarkers, Leaflet, LeafletMarkers, Map } from '@talxis/base-controls'
+const LIBRARIES_CODE = `import { createGoogleMapsModule, createLeafletModule, DataProviderScope, Map } from '@talxis/base-controls'
 import { ChoiceGroup, mergeStyleSets, Stack, TextField } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -136,11 +127,7 @@ const GridExample = () => {
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
                 {/* modules are read at mount, so a new library needs a new key */}
-                <Map key={library} fieldMapping={FIELD_MAPPING} modules={modules}>
-                    {library === 'google'
-                        ? <GoogleMaps><GoogleMapsMarkers /></GoogleMaps>
-                        : <Leaflet><LeafletMarkers /></Leaflet>}
-                </Map>
+                <Map key={library} fieldMapping={FIELD_MAPPING} modules={modules} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -149,7 +136,7 @@ const GridExample = () => {
 
 export const LibrariesExample = () => run(LIBRARIES_CODE)
 
-const FILTER_CODE = `import { createLeafletModule, DataProviderScope, Leaflet, LeafletMarkers, Map, useMapRecords } from '@talxis/base-controls'
+const FILTER_CODE = `import { createLeafletModule, DataProviderScope, IMap, Map, useMapRecords } from '@talxis/base-controls'
 import { mergeStyleSets, Slider, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -159,8 +146,15 @@ const styles = mergeStyleSets({
 
 const MODULES = [createLeafletModule()]
 
-//drawn inside the map, under it; useMapRecords() draws it again when the provider loads new data
+//drawn in the map's box, under the map; useMapRecords() draws it again when the provider loads new data
 const CityCount = () => <Text>{useMapRecords().length} cities on the map</Text>
+
+//called with each new map, before it loads; a surface draws in the map's box
+const onSetup = (map: IMap) => {
+    map.surfaces.hooks.surfaces.add(surfaces => {
+        surfaces.push({ key: 'cityCount', onRender: () => <CityCount /> })
+    })
+}
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
@@ -177,12 +171,7 @@ const GridExample = () => {
         <Slider label='Smallest population' min={0} max={2000000} step={100000} value={minPopulation} valueFormat={value => value.toLocaleString()} onChange={onChange} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map fieldMapping={FIELD_MAPPING} modules={MODULES}>
-                    <Leaflet>
-                        <LeafletMarkers />
-                    </Leaflet>
-                    <CityCount />
-                </Map>
+                <Map fieldMapping={FIELD_MAPPING} modules={MODULES} onSetup={onSetup} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -191,7 +180,7 @@ const GridExample = () => {
 
 export const FilterExample = () => run(FILTER_CODE)
 
-const LEAFLET_CODE = `import { createLeafletModule, DataProviderScope, ILeaflet, IMap, Leaflet, LeafletMarkers, Map, useMapModule } from '@talxis/base-controls'
+const LEAFLET_CODE = `import { createLeafletModule, DataProviderScope, ILeaflet, IMap, Map, useMapModule } from '@talxis/base-controls'
 import { DefaultButton, mergeStyleSets, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -207,11 +196,18 @@ const WorldButton = () => {
     return <DefaultButton text='Show the world' onClick={() => leaflet.getInstance()?.setView([20, 0], 2)} />
 }
 
+//a surface draws in the map's box, under the map
+const onSetup = (map: IMap) => {
+    map.surfaces.hooks.surfaces.add(surfaces => {
+        surfaces.push({ key: 'worldButton', onRender: () => <WorldButton /> })
+    })
+}
+
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
     const [clicked, setClicked] = React.useState('Nowhere yet')
 
-    //the modules have loaded, but the adapter has not drawn Leaflet's map yet
+    //the modules have loaded, but Leaflet's map is not drawn yet
     const onLoad = (map: IMap) => {
         const leaflet = map.modules.get('library') as ILeaflet
         leaflet.events.addEventListener('onInstanceReady', instance => {
@@ -223,12 +219,7 @@ const GridExample = () => {
         <Text>Clicked: {clicked}</Text>
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map fieldMapping={FIELD_MAPPING} modules={MODULES} onLoad={onLoad}>
-                    <Leaflet>
-                        <LeafletMarkers />
-                    </Leaflet>
-                    <WorldButton />
-                </Map>
+                <Map fieldMapping={FIELD_MAPPING} modules={MODULES} onSetup={onSetup} onLoad={onLoad} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -237,7 +228,7 @@ const GridExample = () => {
 
 export const LeafletInstanceExample = () => run(LEAFLET_CODE)
 
-const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, IMapComponents, Leaflet, LeafletMarkers, LeafletUiMarkerComponents, Map, MapUiContainerComponents, useMapRecord } from '@talxis/base-controls'
+const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, IMapComponents, LeafletUiMarkerComponents, Map, MapUiContainerComponents, useMapRecord } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -245,8 +236,6 @@ const styles = mergeStyleSets({
     map: { height: 420 },
     box: { border: '1px solid #c8c6c4', borderRadius: 8, overflow: 'hidden' },
 })
-
-const MODULES = [createLeafletModule()]
 
 //each pin slot gets react-leaflet's own props
 type MarkerProps = Parameters<ILeafletUiMarkerComponents['onRenderMarker']>[0]
@@ -278,16 +267,15 @@ const MARKER_COMPONENTS: Partial<ILeafletUiMarkerComponents> = {
     onRenderPopup: props => <CityPopup {...props} />,
 }
 
+//the library module draws the map and its pins, with these slots
+const MODULES = [createLeafletModule({ components: { marker: MARKER_COMPONENTS } })]
+
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
 
     return <div className={styles.map}>
         <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} components={MAP_COMPONENTS}>
-                <Leaflet>
-                    <LeafletMarkers components={MARKER_COMPONENTS} />
-                </Leaflet>
-            </Map>
+            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} components={MAP_COMPONENTS} />
         </DataProviderScope>
     </div>
 }
@@ -295,15 +283,13 @@ const GridExample = () => {
 
 export const CustomUiExample = () => run(CUSTOM_UI_CODE)
 
-const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, Leaflet, LeafletMarkers, LeafletUiMarkerComponents, Map, useMap, useMapRecord } from '@talxis/base-controls'
+const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, LeafletUiMarkerComponents, Map, useMap, useMapRecord } from '@talxis/base-controls'
 import { Link, mergeStyleSets, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
 const styles = mergeStyleSets({
     map: { height: 420 },
 })
-
-const MODULES = [createLeafletModule()]
 
 //the popup slot gets react-leaflet's own Popup props
 type PopupProps = Parameters<ILeafletUiMarkerComponents['onRenderPopup']>[0]
@@ -327,16 +313,15 @@ const MARKER_COMPONENTS: Partial<ILeafletUiMarkerComponents> = {
     onRenderPopup: (props: PopupProps) => LeafletUiMarkerComponents.onRenderPopup({ ...props, minWidth: 180, children: <CityCard /> }),
 }
 
+//the library module draws the map and its pins, with these slots
+const MODULES = [createLeafletModule({ components: { marker: MARKER_COMPONENTS } })]
+
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
 
     return <div className={styles.map}>
         <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES}>
-                <Leaflet>
-                    <LeafletMarkers components={MARKER_COMPONENTS} />
-                </Leaflet>
-            </Map>
+            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
         </DataProviderScope>
     </div>
 }
@@ -346,7 +331,7 @@ export const CustomPopupExample = () => run(CUSTOM_POPUP_CODE)
 
 const DOT_MAP_FILE: IGridExampleFile = {
     name: 'DotMap.tsx',
-    code: `import { IMapBounds, IMapLibrary, IMapModule, IMapPoint, IMapViewRequest, useMap, useMapModule, useMapRecords } from '@talxis/base-controls'
+    code: `import { IMap, IMapLibrary, IMapModule, IMapPoint, IMapViewRequest, useMap, useMapModule, useMapRecords } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
 
 const WIDTH = 800
@@ -357,9 +342,16 @@ const styles = mergeStyleSets({
     label: { fontSize: 13, fill: '#323130' },
 })
 
-//the library's own map is the svg the adapter draws
+//the library's own map is the svg DotMap draws
 class DotMapRuntime implements IMapLibrary {
     public svg: SVGSVGElement | null = null
+
+    //the library adds its map to the map's box
+    constructor(map: IMap) {
+        map.surfaces.hooks.surfaces.add(surfaces => {
+            surfaces.push({ key: 'library', onRender: () => <DotMap /> })
+        }, -100)
+    }
 
     public getInstance() {
         return this.svg
@@ -369,7 +361,7 @@ class DotMapRuntime implements IMapLibrary {
 //the map needs one module named library
 export const createDotMapModule = (): IMapModule => ({
     name: 'library',
-    onLoad: () => new DotMapRuntime(),
+    onLoad: map => new DotMapRuntime(map),
 })
 
 interface IView {
@@ -391,7 +383,7 @@ const toView = (request: IMapViewRequest): IView => {
     }
 }
 
-export const DotMap = () => {
+const DotMap = () => {
     const map = useMap()
     const dotMap = useMapModule('library') as DotMapRuntime
     //draws again each time the provider loads new data
@@ -425,7 +417,7 @@ export const DotMap = () => {
 
 const OWN_LIBRARY_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
-import { createDotMapModule, DotMap } from './DotMap'
+import { createDotMapModule } from './DotMap'
 import { createCities, FIELD_MAPPING } from './data'
 
 const styles = mergeStyleSets({
@@ -440,9 +432,7 @@ const GridExample = () => {
 
     return <div className={styles.map}>
         <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES}>
-                <DotMap />
-            </Map>
+            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
         </DataProviderScope>
     </div>
 }

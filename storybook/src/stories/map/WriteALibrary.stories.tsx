@@ -6,17 +6,17 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { OwnLibraryExample } from './mapExamples'
 
 const DESCRIPTION = `
-When neither Leaflet nor Google Maps fits, such as for another map service or a drawing of your own, the map can be drawn by a library you write. It is a module the map loads, which hands out the library's own map, and an adapter that draws the pins and moves the view when the map asks for it. Try it below: open **Code** and add Kyiv, at 50.4501, 30.5234, to \`data.ts\`.
+When neither Leaflet nor Google Maps fits, such as for another map service or a drawing of your own, the map can be drawn by a library you write. It is a module the map loads, which hands out the library's own map and adds a component that draws the pins and moves the view when the map asks for it. Try it below: open **Code** and add Kyiv, at 50.4501, 30.5234, to \`data.ts\`.
 
 {{canvas: A map drawn as dots}}
 
 ## The module
 
-The module is an \`IMapModule\` named \`library\`. Its \`onLoad(map)\` returns an \`IMapLibrary\`: an object whose \`getInstance()\` returns the library's own map once the adapter has drawn it. The map loads only with one module named \`library\`.
+The module is an \`IMapModule\` named \`library\`. Its \`onLoad(map)\` returns an \`IMapLibrary\`: an object whose \`getInstance()\` returns the library's own map once it is drawn. The map loads only with one module named \`library\`. The library adds its component to the map's box with \`map.surfaces.hooks.surfaces.add(hook)\`, pushing \`{ key, onRender }\`, as \`DotMapRuntime\` does.
 
-## The adapter
+## The component
 
-The adapter is a component that goes in the map's children, as \`DotMap\` does in \`DotMap.tsx\`:
+The component is what the library's surface draws, as \`DotMap\` is in \`DotMap.tsx\`:
 
 | To | Use |
 |---|---|

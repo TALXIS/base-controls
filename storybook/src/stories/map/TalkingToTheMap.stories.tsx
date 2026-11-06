@@ -18,7 +18,7 @@ The map draws a pin for each of its data provider's records that has a position,
 
 | Prop | Called | Use it to |
 |---|---|---|
-| \`onSetup(map)\` | With each new map, before it loads | Subscribe to what the map offers |
+| \`onSetup(map)\` | With each new map, before it loads | Add surfaces and subscribe to what the map offers |
 | \`onLoad(map)\` | Once the modules have loaded; the map waits for a promise it returns | Read the modules, or load what you need first |
 
 A remount, such as a new \`key\`, brings a new map and calls both again. How mounts work: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
@@ -27,16 +27,17 @@ A remount, such as a new \`key\`, brings a new map and calls both again. How mou
 |---|---|
 | \`getPoint(record)\` | Where the record's pin goes, as \`{ latitude, longitude }\`; \`undefined\` when its position is not a number. |
 | \`modules\` | The loaded modules: \`modules.get('library')\` is the map library. |
+| \`surfaces\` | What is drawn in the map's box: the library's map, and anything you add. See *From inside the map*. |
 | \`services\` | \`provider\`, the records' data provider, and \`viewport\`, which asks the library to move the view: see [**Write a library**](?path=/docs/controls-map-write-a-library--overview). |
 | \`lifecycle\` | The mount's status and events: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 
 ## From inside the map
 
-A component in the map's children, beside the adapter, is drawn in the map's box, under the map, as \`CityCount\` is in the example. \`useMap()\` returns the map, and \`useMapModule(name)\` one of its modules; both throw outside a map. \`useMapRecords()\` returns the records that have a pin and draws the component again when the provider loads new data.
+A component of yours is drawn in the map's box, under the map, as a surface: add a hook with \`map.surfaces.hooks.surfaces.add(hook)\` in \`onSetup\` and push \`{ key, onRender }\`, as the example does for \`CityCount\`. \`useMap()\` returns the map, and \`useMapModule(name)\` one of its modules; both throw outside a map. \`useMapRecords()\` returns the records that have a pin and draws the component again when the provider loads new data.
 
 ## Reach the library's map
 
-\`map.modules.get('library')\` returns the map library, and its \`getInstance()\` the library's own map once the adapter has drawn it: a Leaflet \`Map\` or a \`google.maps.Map\`, and \`undefined\` before. To follow the moment it is drawn, type the library as \`ILeaflet\` or \`IGoogleMaps\` and listen to \`onInstanceReady\` on its \`events\`.
+\`map.modules.get('library')\` returns the map library, and its \`getInstance()\` the library's own map once it is drawn: a Leaflet \`Map\` or a \`google.maps.Map\`, and \`undefined\` before. To follow the moment it is drawn, type the library as \`ILeaflet\` or \`IGoogleMaps\` and listen to \`onInstanceReady\` on its \`events\`.
 
 {{story: Reach Leaflet}}
 
