@@ -30,7 +30,7 @@ The grid starts from these, and its modules add their own. Change the others, an
 |---|---|---|
 | \`animateRows: false\`, \`enableGroupEdit: true\` | The grid, at creation | Yes |
 | \`suppressDragLeaveHidesColumns\`, \`enterNavigatesVertically\`, \`enterNavigatesVerticallyAfterEdit\`, all \`true\` | The grid | Yes |
-| \`onGridReady\`, \`onGridPreDestroyed\` | The grid, at creation | No: use \`onReady\` and \`onDestroyed\` |
+| \`onGridReady\`, \`onGridPreDestroyed\` | The grid, at creation | No: observe the \`gridApi\` service, see *AG Grid's api* below |
 | \`rowModelType\`, \`getRowId\`, \`rowData\`, \`serverSideDatasource\`, \`treeData\`, \`getDataPath\` | The grid and the row model | No |
 | \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`, \`rowClassRules\` | The grid | No: use the column definitions hooks, \`colDefs\`, the row height and row class hooks, and \`height\` |
 | \`loadingOverlayComponent\`, \`noRowsOverlayComponent\`, \`suppressOverlays\`, \`activeOverlay\`, \`loadingCellRenderer\` | The grid | No: use \`components\`, see [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
@@ -45,8 +45,8 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 
 | From | Reach it with |
 |---|---|
-| A module's \`onLoad\` | \`grid.services.observe('gridApi', gridApi => { ... })\`. \`find('gridApi')\` is still \`undefined\` there. |
-| Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.find('gridApi')\` |
+| A module's \`onLoad\`, or \`onSetup\` and \`onLoad\` on the grid | \`grid.services.observe('gridApi', gridApi => { ... })\`. \`find('gridApi')\` is still \`undefined\` there, as AG Grid renders after them. |
+| Code outside the grid, such as a ribbon command | Keep the grid \`onSetup\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
 Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. An option a hook also sets is replaced by the hook's value, so set it through a hook rather than \`gridApi.setGridOption\`.

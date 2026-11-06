@@ -6,6 +6,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { useControlStateStore } from "@controls/dataset-control/adapters/root/useControlStateStore";
 import { useDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
 import { useRegisterDatasetControlPart } from "@controls/dataset-control/adapters/root/useRegisterDatasetControlPart";
+import { RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { BaseControls, usePcfContext } from "@pcf";
 import { getClassNames, useLatest } from "@core";
 import { useLabelsService } from "@labels";
@@ -39,16 +40,26 @@ export const GridRoot = (props: IGridProps) => {
     const labelsServiceRef = useLatest(useLabelsService());
     const propsRef = useLatest(props);
 
-    const runtime = useRegisterDatasetControlPart('grid', () => new GridRuntime({
+    const onCreate = () => new GridRuntime({
         onGetProps: () => propsRef.current,
-        provider: provider,
-        pcfContext: pcfContext,
-        theme: theme,
-        state: state,
-        datasetControl: datasetControl,
+        provider,
+        pcfContext,
+        theme,
+        state,
+        datasetControl,
         onGetLabelsService: () => labelsServiceRef.current,
-    }));
+    });
 
+    return <RuntimeHost<GridRuntime> onCreate={onCreate} onSetup={grid => propsRef.current.onSetup?.(grid)}>
+        <GridMount {...props} />
+    </RuntimeHost>;
+};
+
+/** One mount of the grid: AG Grid, drawn once the modules have loaded. */
+const GridMount = (props: IGridProps) => {
+    const runtime = useRuntime<GridRuntime>();
+    //registered before AG Grid reads its initial options below, so the control's modules add to them
+    useRegisterDatasetControlPart('grid', () => runtime);
     const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const maxVisibleRows = settings.getMaxVisibleRows();
@@ -69,9 +80,6 @@ export const GridRoot = (props: IGridProps) => {
     //`domLayout` follows whether the grid has a height
     useEffect(() => runtime.refreshAgGridOptions(), [height]);
 
-    //AG Grid's teardown and its `onDestroyed` run before this cleanup
-    useEffect(() => () => runtime.destroy(), []);
-
     //the locator holds everything a component needs
     return <GridServicesContext.Provider value={runtime.services}>
         <GridComponentsContext.Provider value={components}>
@@ -80,5 +88,5 @@ export const GridRoot = (props: IGridProps) => {
                 <Surfaces />
             </div>
         </GridComponentsContext.Provider>
-    </GridServicesContext.Provider>
-}
+    </GridServicesContext.Provider>;
+};

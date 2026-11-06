@@ -188,7 +188,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onReady={grid => gridRef.current = grid}
+                onSetup={grid => gridRef.current = grid}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -248,7 +248,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 onRecordValueChanged={redrawHeaders}
                 height='440px' />
         </DatasetControl.Body>

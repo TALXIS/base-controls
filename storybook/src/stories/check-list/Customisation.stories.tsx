@@ -30,7 +30,7 @@ Make the name column primary to draw names as links, and handle \`onOpenRecord\`
 
 ## From your code
 
-The checklist adds a module to the grid: \`useGridModule('checkList')\` returns it in a part the grid draws, and \`grid.modules.find('checkList')\` from \`onReady\`, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+The checklist adds a module to the grid: \`useGridModule('checkList')\` returns it in a part the grid draws, and \`grid.modules.find('checkList')\` on the grid \`onSetup\` passes you, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Changing how it looks
 

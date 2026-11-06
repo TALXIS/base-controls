@@ -68,7 +68,7 @@ const supportDeskScript: IGridModule = {
         //a reload or a save clears a record's expressions
         const unsubscribe = provider.addEventListener('onRecordLoaded', addRecommendations)
         //the provider outlives the grid
-        grid.events.addEventListener('onDestroyed', unsubscribe)
+        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 
@@ -117,7 +117,7 @@ const stockScript: IGridModule = {
     onLoad: grid => {
         provider.getRecords().forEach(addStockScript)
         const unsubscribe = provider.addEventListener('onRecordLoaded', addStockScript)
-        grid.events.addEventListener('onDestroyed', unsubscribe)
+        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 
@@ -169,7 +169,7 @@ const triageScript: IGridModule = {
     onLoad: grid => {
         provider.getRecords().forEach(addAssigneePlaceholder)
         const unsubscribe = provider.addEventListener('onRecordLoaded', addAssigneePlaceholder)
-        grid.events.addEventListener('onDestroyed', unsubscribe)
+        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 

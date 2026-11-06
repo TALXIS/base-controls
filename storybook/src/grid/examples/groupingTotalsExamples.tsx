@@ -142,7 +142,7 @@ const GridExample = () => {
                     createAggregationModule(),
                 ]}
                 enableOptionSetColors
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -201,7 +201,7 @@ const GridExample = () => {
                 ]}
                 rowSettings={{ onGetLock: lockSubmittedEntries }}
                 enableOptionSetColors
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

@@ -38,7 +38,7 @@ export class GridValidation implements IGridValidationInternal {
     constructor(parameters: IGridValidationParameters) {
         this._services = parameters.services;
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').events.addEventListener('onDestroyed', this._onDestroyed);
+        this._services.get('grid').lifecycle.events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public get(params: { record: IRecord; columnName: string }): IFieldValidationResult {

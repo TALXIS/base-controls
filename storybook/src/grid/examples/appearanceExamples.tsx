@@ -200,7 +200,7 @@ const reviewModule: IGridModule = {
             provider.addEventListener('onRecordColumnValueChanged', redraw),
             provider.addEventListener('onAfterSaved', redraw),
         ]
-        grid.events.addEventListener('onDestroyed', () => unsubscribes.forEach(unsubscribe => unsubscribe()))
+        grid.lifecycle.events.addEventListener('onDestroyed', () => unsubscribes.forEach(unsubscribe => unsubscribe()))
     },
 }
 
@@ -226,7 +226,7 @@ const GridExample = () => {
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule(), reviewModule]}
                 colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
-                onReady={grid => gridRef.current = grid}
+                onSetup={grid => gridRef.current = grid}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>

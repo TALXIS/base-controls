@@ -53,13 +53,14 @@ The grid takes no strings as props: its labels are on [**Localization**](?path=/
 | \`stateKey\` | \`string\` | None | At mount | The key the user's place is kept under. See [**State**](?path=/docs/controls-grid-state--overview). |
 | \`rowSettings\` | \`IGridRowSettings\` | None | Live | \`onGetHeight\` for one row's height and, with editing, \`onGetLock\` for a record. |
 | \`onOpenRecord\` | \`(params: IGridOpenRecordParams) => void\` | The provider's \`openDatasetItem\` | Live | Replaces opening a record; receives \`{ record, reference, columnName }\`. |
+| \`onSetup\` | \`(grid: IGrid) => void\` | None | At mount | Gets each new grid before it loads; keep it and subscribe here. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| \`onLoad\` | \`(grid: IGrid) => void \\| Promise<void>\` | None | At mount | Awaited after the modules load and before AG Grid renders, on every mount. |
 | The events | Functions | None | Live | See *Events*. |
 
 ### Events
 
 | Event | Arguments | When it fires |
 |---|---|---|
-| \`onReady\` | \`grid: IGrid\` | Once, when AG Grid is ready. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
 | \`onDataLoaded\` | None | After every load of the provider, once the grid has its new columns and rows. |
 | \`onLoadingChanged\` | \`isLoading: boolean\` | When the provider starts or stops loading. |
 | \`onRecordValueChanged\` | \`record\`, \`columnName\`, \`newValue\` | When a value changes, edited by the user or set by \`record.setValue()\`. |
@@ -69,7 +70,6 @@ The grid takes no strings as props: its labels are on [**Localization**](?path=/
 | \`onRowClicked\` | \`record: IRecord\` | On a click on a row, group rows and the totals row included. With row selection, a click on the checkbox, on a cell's commands or a plain click on a group row does not fire it. |
 | \`onFocusedCellChanged\` | \`record?\`, \`columnName?\` | Each time a cell takes focus; both are \`undefined\` when the focus leaves the rows. |
 | \`onColumnsChanged\` | \`columns: IColumn[]\` | After the user resizes or moves a column, with the provider's columns updated. |
-| \`onDestroyed\` | \`grid: IGrid\` | Once, as AG Grid is destroyed; the \`gridApi\` service is already gone, see *AG Grid's api* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
 ## Where next
 
@@ -77,7 +77,7 @@ The grid takes no strings as props: its labels are on [**Localization**](?path=/
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Talking to the grid', iconName: 'Plug', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Keep the grid onReady passes you and drive it from your code.' },
+    { title: 'Talking to the grid', iconName: 'Plug', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Keep the grid onSetup passes you and drive it from your code.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'The features you pass in modules, and their options.' },
     { title: 'Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Edit values in place and save them, one by one or all at once.' },
 ]

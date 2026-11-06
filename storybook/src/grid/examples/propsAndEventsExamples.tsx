@@ -34,6 +34,16 @@ const GridExample = () => {
         setEntries(current => [entry, ...current].slice(0, 200))
     }
 
+    const onSetup = (grid: IGrid) => {
+        log('onSetup')
+        grid.lifecycle.events.addEventListener('onReady', () => log('lifecycle onReady'))
+        grid.services.observe('gridApi', () => {
+            log('gridApi', 'AG Grid is ready')
+            return () => log('gridApi cleanup', 'AG Grid still answers')
+        })
+        grid.lifecycle.events.addEventListener('onDestroyed', () => log('lifecycle onDestroyed'))
+    }
+
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'remount', label: 'Remount', iconName: 'Sync', onExecute: () => setMountCount(count => count + 1) },
         { id: 'clear', label: 'Clear log', iconName: 'Clear', onExecute: () => setEntries([]) },
@@ -54,8 +64,8 @@ const GridExample = () => {
                         key={mountCount + String(isAutoSaveOn)}
                         modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
                         height='440px'
-                        onReady={() => log('onReady')}
-                        onDestroyed={() => log('onDestroyed')}
+                        onSetup={onSetup}
+                        onLoad={() => log('onLoad')}
                         onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
                         onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
                         onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}

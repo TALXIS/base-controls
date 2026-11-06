@@ -76,7 +76,7 @@ const heatmapModule: IGridModule = {
         }
         provider.addEventListener('onRecordColumnValueChanged', onValueChanged)
         provider.addEventListener('onNewDataLoaded', onDataLoaded)
-        runtime.events.addEventListener('onDestroyed', () => {
+        runtime.lifecycle.events.addEventListener('onDestroyed', () => {
             provider.removeEventListener('onRecordColumnValueChanged', onValueChanged)
             provider.removeEventListener('onNewDataLoaded', onDataLoaded)
         })
@@ -478,7 +478,10 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     enableOptionSetColors={props.enableOptionSetColors}
                     rowHeight={props.rowHeight}
                     stateKey='scratch-grid'
-                    onReady={grid => { (window as any).__scratchGridApi = grid.services.find('gridApi'); (window as any).__scratchGrid = grid }} />
+                    onSetup={grid => {
+                        (window as any).__scratchGrid = grid
+                        grid.services.observe('gridApi', gridApi => { (window as any).__scratchGridApi = gridApi })
+                    }} />
             </DatasetControl.Body>
         </DatasetControl>
     </div>

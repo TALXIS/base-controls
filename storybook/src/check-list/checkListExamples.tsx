@@ -109,7 +109,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onReady={grid => gridRef.current = grid} />
+                onSetup={grid => gridRef.current = grid} />
         </DatasetControl.Body>
     </DatasetControl>
 }

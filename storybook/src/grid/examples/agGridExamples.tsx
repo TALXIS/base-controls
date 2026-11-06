@@ -42,7 +42,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), columnOrderLock]}
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 onColumnsChanged={columns => setOrder(describeOrder(columns))}
                 height='420px' />
         </DatasetControl.Body>
@@ -97,7 +97,7 @@ const GridExample = () => {
             <Grid
                 modules={[createClientSideRowModelModule(), createSortingModule(), highlightChangesModule]}
                 enableOptionSetColors
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>

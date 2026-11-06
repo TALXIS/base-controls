@@ -107,7 +107,7 @@ const GridExample = () => {
                         },
                     },
                 }}
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -216,7 +216,7 @@ const GridExample = () => {
                     value: { headerComponent: SummaryHeader },
                     probability: { headerComponent: SummaryHeader },
                 }}
-                onReady={grid => { gridRef.current = grid }}
+                onSetup={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

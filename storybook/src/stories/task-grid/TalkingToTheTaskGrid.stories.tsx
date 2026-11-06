@@ -48,7 +48,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## The grid
 
-\`TaskGrid\` is a Grid, so \`onReady\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
+\`TaskGrid\` is a Grid, so \`onSetup\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
 
 ## Reference
 

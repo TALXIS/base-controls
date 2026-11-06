@@ -1932,15 +1932,13 @@ interface IGridTheme {
 }
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
-/** What the grid raises as it loads and goes. */
+/** What the grid raises while it shows data; its mount's events are on lifecycle. */
 interface IGridEvents {
     onDataLoaded: () => void;
-    /** The grid is tearing down. */
-    onDestroyed: () => void;
 }
 
-/** The running grid: what onReady and onDestroyed hand you, and what a module's onLoad gets. */
-interface IGrid {
+/** The running grid: what onSetup and onLoad hand you, and what a module's onLoad gets. */
+interface IGrid extends IRuntime {
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */
     readonly services: IGridServiceLocator;
@@ -2223,7 +2221,7 @@ interface IGridModule {
     name: string;
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
-    /** Called once as the grid mounts, before AG Grid exists. */
+    /** Called once as the grid loads, before AG Grid exists; may return a promise. */
     onLoad(grid: IGrid): any;
     /** Called as the grid tears down. */
     onDestroy?(instance: any): void;
@@ -3022,10 +3020,10 @@ interface IGridProps extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
-    /** Hands you the grid once AG Grid is ready. */
-    onReady?: (grid: IGrid) => void;
-    /** Hands you the grid before it tears down, while AG Grid still answers. */
-    onDestroyed?: (grid: IGrid) => void;
+    /** Called with each new grid, before it loads; subscribe and keep refs here. */
+    onSetup?: (grid: IGrid) => void;
+    /** Awaited after the modules load and before AG Grid renders, on every mount. */
+    onLoad?: (grid: IGrid) => void | Promise<void>;
 }
 
 /** The parts a grid is drawn from, attached to the grid itself. */

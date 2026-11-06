@@ -12,8 +12,8 @@ const GridExample = () => {
         setSummary(sorting ? 'Sorted by ' + provider.getColumnsMap()[sorting.name]?.displayName : 'Not sorted')
     }
 
-    //the grid onReady passes is what your code talks to
-    const onReady = (grid: IGrid) => {
+    //the grid onSetup passes is what your code talks to
+    const onSetup = (grid: IGrid) => {
         gridRef.current = grid
         grid.events.addEventListener('onDataLoaded', summarize)
         summarize()
@@ -53,7 +53,7 @@ const GridExample = () => {
                     createSortingModule(),
                 ]}
                 enableOptionSetColors
-                onReady={onReady}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -63,25 +63,29 @@ const GridExample = () => {
 export const GRID_LIFE_CODE = `const createLifeLogModule = (log: (message: string) => void): IGridModule => ({
     name: 'lifeLog',
     onLoad: grid => {
-        log('onLoad: the grid mounts, AG Grid is not there yet')
-        grid.services.observe('gridApi', gridApi => {
-            log('gridApi: AG Grid is ready')
-            //the cleanup runs while AG Grid still works
-            return () => log(\`gridApi cleanup: the focused column was \${gridApi.getFocusedCell()?.column.getColId() ?? 'none'}\`)
-        })
+        log('module onLoad: AG Grid is not there yet')
         grid.events.addEventListener('onDataLoaded', () => log(\`onDataLoaded: \${grid.services.get('provider').getRecords().length} tickets\`))
-        grid.events.addEventListener('onDestroyed', () => log('onDestroyed: AG Grid is gone'))
     },
-    onDestroy: () => log('onDestroy: the module goes with the grid'),
+    onDestroy: () => log('module onDestroy: the module goes with the grid'),
 })
 
 const GridExample = () => {
     const theme = useTheme()
     const [lines, setLines] = React.useState<string[]>([])
     const [isOpen, setIsOpen] = React.useState(true)
-    //deferred: onLoad runs while the grid renders
-    const log = (message: string) => window.setTimeout(() => setLines(current => [...current, message]))
+    const log = (message: string) => setLines(current => [...current, message])
     const lifeLog = React.useMemo(() => createLifeLogModule(log), [])
+
+    const onSetup = (grid: IGrid) => {
+        log('onSetup: the grid hands itself to your code')
+        grid.lifecycle.events.addEventListener('onReady', () => log('lifecycle onReady: the modules have loaded'))
+        grid.services.observe('gridApi', gridApi => {
+            log('gridApi: AG Grid is ready')
+            //the cleanup runs while AG Grid still works
+            return () => log(\`gridApi cleanup: the focused column was \${gridApi.getFocusedCell()?.column.getColId() ?? 'none'}\`)
+        })
+        grid.lifecycle.events.addEventListener('onDestroyed', () => log('lifecycle onDestroyed: the grid unmounts'))
+    }
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -91,7 +95,7 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                {isOpen && <Grid modules={[createClientSideRowModelModule(), lifeLog]} onReady={() => log('onReady: the grid hands itself to your code')} height='320px' />}
+                {isOpen && <Grid modules={[createClientSideRowModelModule(), lifeLog]} onSetup={onSetup} onLoad={() => log('onLoad: awaited before AG Grid renders')} height='320px' />}
             </DatasetControl.Body>
         </DatasetControl>
         <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 4, background: theme.semanticColors.bodyStandoutBackground } }}>

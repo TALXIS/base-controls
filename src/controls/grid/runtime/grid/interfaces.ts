@@ -1,17 +1,14 @@
-import type { IEventSubscriber } from "@core";
+import type { IEventSubscriber, IRuntime } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
 import type { IGridEventHandlers, IGridModuleLocator, IGridOpenRecordParams } from "../../interfaces";
 import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
 
-/** What the grid raises as it loads and goes. */
-export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> {
-    /** The grid is tearing down. */
-    onDestroyed: () => void;
-}
+/** What the grid raises while it shows data; its mount's events are on `lifecycle`. */
+export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> { }
 
-/** The running grid: what `onReady` and `onDestroyed` hand you, and what a module's `onLoad` gets. */
-export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> {
+/** The running grid: what `onSetup` and `onLoad` hand you, and what a module's `onLoad` gets. */
+export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> extends IRuntime {
     /** Subscribe to the grid's events. */
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */

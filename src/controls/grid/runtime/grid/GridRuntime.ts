@@ -3,7 +3,7 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, RuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
@@ -63,6 +63,10 @@ export interface IGridRuntimeParameters {
 }
 
 export class GridRuntime implements IGrid {
+    public readonly lifecycle = new RuntimeLifecycle({
+        onInit: () => this._init(),
+        onDestroy: () => this._destroy(),
+    });
     private _services = new ServiceLocator<IGridInternalServiceMap>();
     private _modules = new ServiceLocator<IGridModuleMap>();
     private _loadedModules: { module: IGridModule; instance: IGridModuleMap[keyof IGridModuleMap] }[] = [];
@@ -112,9 +116,6 @@ export class GridRuntime implements IGrid {
         this._services.register('fields', () => fields);
         this._services.register('viewport', () => viewport);
 
-        this._loadModules(onGetProps().modules);
-        //after the modules so their api and provider listeners run first
-        this._services.observe('gridApi', () => this._onGridApiAvailable());
     }
 
     public get services(): IGridInternalServiceLocator {
@@ -171,30 +172,49 @@ export class GridRuntime implements IGrid {
         this._provider.openDatasetItem(params.reference, { columnName: params.columnName });
     }
 
-    public destroy(): void {
-        this.events.dispatchEvent('onDestroyed');
-        for (const { module, instance } of this._loadedModules) {
-            module.onDestroy?.(instance as never);
+    private async _init(): Promise<void> {
+        const modules = this._onGetProps().modules;
+        await this._loadModules(modules);
+        if (this.lifecycle.isDestroyed()) {
+            return;
         }
-        this._loadedModules = [];
-        this._services.destroy();
-        this._modules.destroy();
+        //before AG Grid is constructed, which the host renders once the grid is ready
+        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
+        await this._onGetProps().onLoad?.(this);
+        //after the modules so their api and provider listeners run first
+        this._services.observe('gridApi', () => this._onGridApiAvailable());
     }
 
-    private _loadModules(modules: IGridModule[]): void {
+    private async _loadModules(modules: IGridModule[]): Promise<void> {
         for (const module of modules) {
             if (this._loadedModules.some(loaded => loaded.module.name === module.name)) {
                 throw new Error(`Module "${module.name}" is registered twice.`);
             }
-            const instance = module.onLoad(this);
+            const instance = await module.onLoad(this);
+            //the mount went while it loaded, so _destroy has already run without it
+            if (this.lifecycle.isDestroyed()) {
+                module.onDestroy?.(instance as never);
+                return;
+            }
             this._loadedModules.push({ module, instance });
             this._modules.register(module.name, () => instance as never);
         }
         if (!this._modules.find('rowModel')) {
             throw new Error('The grid needs a row model module, such as createClientSideRowModelModule().');
         }
-        //before AG Grid is constructed on this same render
-        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
+    }
+
+    private _destroy(): void {
+        //AG Grid may unmount after this, so its api listeners clean up while it still answers
+        if (this._services.find('gridApi')) {
+            this._services.unregister('gridApi');
+        }
+        for (const { module, instance } of this._loadedModules) {
+            module.onDestroy?.(instance as never);
+        }
+        this._loadedModules = [];
+        this._services.destroy();
+        this._modules.destroy();
     }
 
     private _evaluateAgGridInitialOptions(): IGridAgGridInitialOptions['options'] {
@@ -257,13 +277,14 @@ export class GridRuntime implements IGrid {
 
     private _onGridReady = (event: GridReadyEvent<IRecord>): void => {
         this._services.register('gridApi', () => event.api);
-        this._onGetProps().onReady?.(this);
     };
 
     private _onGridPreDestroyed = (): void => {
-        this._services.unregister('gridApi');
+        //the grid's own teardown may have let go of the api already
+        if (this._services.find('gridApi')) {
+            this._services.unregister('gridApi');
+        }
         this._appliedAgGridOptions = {};
-        this._onGetProps().onDestroyed?.(this);
     };
 
     private get _provider(): IDataProvider {

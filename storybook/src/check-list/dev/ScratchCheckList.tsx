@@ -42,9 +42,9 @@ export const ScratchCheckList = () => {
     }, [entries])
 
     //parked on window so the provider and the grid can be poked at from the browser console
-    const onReady = React.useCallback((grid: IGrid) => {
+    const onSetup = React.useCallback((grid: IGrid) => {
         Object.assign(window, { checkListProvider: provider, checkListGrid: grid })
-        log('onReady', `${provider.getRecords().length} items`)
+        log('onSetup', `${provider.getRecords().length} items`)
     }, [])
 
     return (
@@ -81,7 +81,7 @@ export const ScratchCheckList = () => {
                     <DatasetControl.Body>
                         <CheckList
                             fieldMapping={FIELD_MAPPING}
-                            onReady={onReady}
+                            onSetup={onSetup}
                             onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
                             onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
                             onError={message => log('onError', message)} />

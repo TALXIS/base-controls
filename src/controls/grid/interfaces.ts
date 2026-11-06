@@ -14,8 +14,8 @@ export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridMod
     /** Unique within the grid; what `onLoad` returns is registered under it. */
     name: TName;
     agGridModules?: Module[];
-    /** Called once as the grid mounts, before AG Grid exists. */
-    onLoad(grid: IGrid): IGridModuleMap[TName];
+    /** Called once as the grid loads, before AG Grid exists; may return a promise. */
+    onLoad(grid: IGrid): IGridModuleMap[TName] | Promise<IGridModuleMap[TName]>;
     /** Called as the grid tears down. */
     onDestroy?(instance: IGridModuleMap[TName]): void;
 }
@@ -86,8 +86,8 @@ export interface IGridProps extends Partial<IGridEventHandlers> {
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
     onOpenRecord?: (params: IGridOpenRecordParams) => void;
-    /** Hands you the grid once AG Grid is ready. */
-    onReady?: (grid: IGrid) => void;
-    /** Hands you the grid as it tears down, once the `gridApi` service is gone. */
-    onDestroyed?: (grid: IGrid) => void;
+    /** Called with each new grid, before it loads; subscribe and keep refs here. */
+    onSetup?: (grid: IGrid) => void;
+    /** Awaited after the modules load and before AG Grid renders, on every mount. */
+    onLoad?: (grid: IGrid) => void | Promise<void>;
 }

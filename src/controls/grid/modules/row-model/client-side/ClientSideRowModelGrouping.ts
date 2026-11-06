@@ -29,7 +29,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         //ahead of the grid's refresh on the same event
         const unsubscribe = this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         //the provider outlives the grid
-        this._services.get('grid').events.addEventListener('onDestroyed', unsubscribe);
+        this._services.get('grid').lifecycle.events.addEventListener('onDestroyed', unsubscribe);
         //a provider that loaded before the grid mounted sends no event for it
         if (!this._provider.isLoading()) {
             this._loadEveryLevel();
