@@ -6,7 +6,7 @@ import { ProviderViewsExample } from '../../dataset-control/examples/viewsExampl
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A view is a named way of looking at the same records, such as *All deals* or *Won deals*: it decides which columns show, and can carry its own filter or sorting. You list the views in \`onLoadViews\`, show them with \`DatasetControl.ViewSwitcher\`, and set up the one the user picks in \`onLoad\`. Try it below: switch to *Biggest deals*, listed under *Reports*.
+A view is a named way of looking at the same records, such as *All deals* or *Won deals*: it decides which columns show, and can carry its own filter or sorting. You return the views from \`onLoad\` beside the provider, show them with \`DatasetControl.ViewSwitcher\`, and each view sets the provider up as the user opens it. Try it below: switch to *Biggest deals*, listed under *Reports*.
 
 {{canvas: Views that set up the provider}}
 
@@ -19,19 +19,19 @@ The switcher needs only a view's name; what the view shows is resolved when it o
 | \`id\` | Identifies the view. |
 | \`name\` | Shown in the switcher. |
 | \`group\` | \`{ id, name }\`: the header the view is listed under. Views without one go under *System views*. |
-| \`resolve(provider)\` | Required. Returns what the view shows, given the provider it opens on; can be async. |
+| \`resolve(provider)\` | Required. Sets up the provider the view opens on, such as its filter or sorting, and returns what the view shows; can be async. |
 
 | \`resolve\` returns | Default | Description |
 |---|---|---|
 | \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override. The rest comes from the provider's available columns; a column the provider does not offer is used as given. |
 | \`linking\` | The provider's own | The related entities its columns come from, as \`alias.column\`. |
-| \`data\` | None | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
+| \`data\` | None | Anything else the view carries, read through \`getView().data\`. Its type is the control's \`TData\`. |
 
 ## Load the view
 
-\`onLoad\` gets the view as listed, as \`loadDeals\` in the example's \`views.ts\` shows: create the provider, \`await view.resolve(provider)\`, set the provider up from the view's \`data\` and return \`{ provider }\`. Do not set the columns or linking: the control does. The full sequence is on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+\`onLoad\` returns \`{ provider, views }\`, as \`loadDeals\` in the example's \`views.ts\` shows. The control picks the view and calls its \`resolve(provider)\`, where *Won deals* sets its filter and *Biggest deals* its sorting. Do not set the columns or linking there: the control does. The full sequence is on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
-Inside the control, \`useDatasetControl<IDealViewData>().getView()\` returns the open view with its \`data\`, for example to draw it as cards: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+Inside the control, \`useDatasetControl().getView()\` returns the open view with its \`data\`, for example to draw it as cards: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 ## Let users save their own views
 

@@ -2,12 +2,12 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const SHOWCASE_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
+const SHOWCASE_CODE = `import { loadDeals, saveDealViewData } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
 const GridExample = () => {
     //the user's own views, kept in localStorage and listed under My views
-    const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'get-started.deals.views' })], [])
+    const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'get-started.deals.views' })], [])
     //every grid module, so the grid edits, selects, copies, sorts, filters, groups and totals
     const gridModules = React.useMemo(() => [
         createClientSideRowModelModule(),
@@ -22,7 +22,7 @@ const GridExample = () => {
     ], [])
 
     //saveDealViewData keeps the sorting, filters and search with every saved view
-    return <DatasetControl modules={controlModules} onLoadViews={loadDealViews} stateKey='deals-get-started' onLoad={loadDeals} onMounted={saveDealViewData} height='560px'>
+    return <DatasetControl modules={controlModules} stateKey='deals-get-started' onLoad={loadDeals} onMounted={saveDealViewData} height='560px'>
         {/* every part inside works on the provider onLoad returned */}
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -53,11 +53,7 @@ const GridExample = () => {
 }
 `
 
-const BASIC_USAGE_CODE = `interface IDealViewData {
-    filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression
-}
-
-//your own records, usually fetched from your API
+const BASIC_USAGE_CODE = `//your own records, usually fetched from your API
 const DEALS = [
     { dealid: '1', name: 'Office chairs', stage: 'Won' },
     { dealid: '2', name: 'Standing desks', stage: 'Open' },
@@ -69,22 +65,26 @@ const COLUMNS = [
     { name: 'stage', displayName: 'Stage', dataType: DataTypes.SingleLineText },
 ]
 
-//the switcher lists the views by name; what a view shows is resolved when it opens
-const loadViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => [
+//the switcher lists the views by name; a view sets the provider up as it opens
+const VIEWS: IDatasetControlView[] = [
     { id: 'all', name: 'All deals', resolve: () => ({ columns: COLUMNS }) },
-    { id: 'won', name: 'Won deals', resolve: () => ({ columns: COLUMNS, data: { filtering: { filterOperator: Type.And.Value, conditions: [{ attributeName: 'stage', conditionOperator: Operators.Equal.Value, value: 'Won' }] } } }) },
+    {
+        id: 'won',
+        name: 'Won deals',
+        resolve: provider => {
+            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'stage', conditionOperator: Operators.Equal.Value, value: 'Won' }] })
+            return { columns: COLUMNS }
+        },
+    },
 ]
 
-//called on every load with the view the user is on; returns the provider the parts work on
-const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+//called on every load; returns the provider the parts work on and the views to switch between
+const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     const provider = new MemoryDataProvider({ dataSource: DEALS, metadata: { PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name', LogicalName: 'deal', QuickFindColumns: ['name'] } })
-    //the control sets the view's columns; what else the view carries is yours to apply
-    const resolved = view && await view.resolve(provider)
-    provider.setFiltering(resolved?.data?.filtering ?? null)
-    return { provider }
+    return { provider, views: VIEWS }
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadViews} onLoad={loadDeals} stateKey='deals-basic-usage' height='320px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-basic-usage' height='320px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

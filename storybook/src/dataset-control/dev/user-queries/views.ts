@@ -5,13 +5,22 @@ export const VIEWS_FILE: IGridExampleFile = {
     code: `/** How a view draws the deals. */
 export type DealLayout = 'grid' | 'gallery' | 'board' | 'timeline' | 'leaderboard'
 
-/** What a view keeps beside its columns. */
+/** What a user view keeps beside its columns. */
 export interface IDealViewData {
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
     searchQuery?: string
     /** A grid when not given. */
     layout?: DealLayout
+}
+
+declare module '@talxis/base-controls' {
+    interface IUserQuerySavedValueMap {
+        sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
+        filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
+        searchQuery: string
+        layout: DealLayout
+    }
 }
 
 export const where = (attributeName: string, operator: IOperator, value: string) => ({ filterOperator: 0, conditions: [{ attributeName, conditionOperator: operator.Value, value }] })
@@ -27,13 +36,50 @@ const hidden = (...names: string[]) => names.map(name => ({ ...getDealColumn(nam
 
 const WON = '4'
 
+const byValue = (provider: IDataProvider) => provider.setSorting([{ name: 'value', sortDirection: 1 }])
+
 const SYSTEM_VIEWS: IDatasetControlView<IDealViewData>[] = [
     { id: 'all', name: 'All deals', resolve: () => ({ columns: columns('name', 'owner', 'stage', 'value', 'probability', 'closedate') }) },
-    { id: 'won', name: 'Won deals', resolve: () => ({ columns: [...columns('name', 'owner', 'value', 'closedate'), ...hidden('stage')], data: { filtering: where('stage', Operators.Equal, WON) } }) },
-    { id: 'likely', name: 'Likely to close', resolve: () => ({ columns: columns('name', 'owner', 'probability'), data: { filtering: where('probability', Operators.GreaterThanOrEqual, '70') } }) },
-    { id: 'pipeline', name: 'Board: Pipeline', resolve: () => ({ columns: columns('name', 'owner', 'stage', 'value'), data: { sorting: [{ name: 'value', sortDirection: 1 }], layout: 'board' } }) },
-    { id: 'biggest', name: 'Gallery: Biggest deals', resolve: () => ({ columns: columns('name', 'value', 'stage'), data: { sorting: [{ name: 'value', sortDirection: 1 }], layout: 'gallery' } }) },
-    { id: 'closing', name: 'Timeline: Closing dates', resolve: () => ({ columns: [...columns('name', 'owner', 'closedate'), ...hidden('stage')], data: { filtering: where('stage', Operators.LessThan, WON), layout: 'timeline' } }) },
+    {
+        id: 'won',
+        name: 'Won deals',
+        resolve: provider => {
+            provider.setFiltering(where('stage', Operators.Equal, WON))
+            return { columns: [...columns('name', 'owner', 'value', 'closedate'), ...hidden('stage')] }
+        },
+    },
+    {
+        id: 'likely',
+        name: 'Likely to close',
+        resolve: provider => {
+            provider.setFiltering(where('probability', Operators.GreaterThanOrEqual, '70'))
+            return { columns: columns('name', 'owner', 'probability') }
+        },
+    },
+    {
+        id: 'pipeline',
+        name: 'Board: Pipeline',
+        resolve: provider => {
+            byValue(provider)
+            return { columns: columns('name', 'owner', 'stage', 'value'), data: { layout: 'board' } }
+        },
+    },
+    {
+        id: 'biggest',
+        name: 'Gallery: Biggest deals',
+        resolve: provider => {
+            byValue(provider)
+            return { columns: columns('name', 'value', 'stage'), data: { layout: 'gallery' } }
+        },
+    },
+    {
+        id: 'closing',
+        name: 'Timeline: Closing dates',
+        resolve: provider => {
+            provider.setFiltering(where('stage', Operators.LessThan, WON))
+            return { columns: [...columns('name', 'owner', 'closedate'), ...hidden('stage')], data: { layout: 'timeline' } }
+        },
+    },
     { id: 'owners', name: 'Leaderboard: Account managers', resolve: () => ({ columns: columns('name', 'owner', 'value'), data: { layout: 'leaderboard' } }) },
 ]
 
@@ -43,21 +89,16 @@ export const withCopies = <T extends { id: string, name: string }>(items: T[], r
     ...Array.from({ length: rounds }, (_, round) => items.map(item => ({ ...item, id: \`\${item.id}-\${round + 2}\`, name: \`\${item.name} \${round + 2}\` }))).flat(),
 ]
 
-export const loadSystemViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return withCopies(SYSTEM_VIEWS, 4)
-}
-
-/** Saves what the deals show beside their columns with every user view, drawn the way the current view draws them. */
+/** Saves what the deals show beside their columns with every user view and puts it back as it opens. */
 export const createDealViewDataModule = (): IDatasetControlModule => ({
     name: 'dealViewData',
     onLoad: datasetControl => {
         const provider = () => datasetControl.getProvider()!
         datasetControl.modules.observe('userQueries', userQueries => {
             const unsaveWithViews = [
-                userQueries.saveWithView('sorting', () => provider().getSorting()),
-                userQueries.saveWithView('filtering', () => provider().getFiltering()),
-                userQueries.saveWithView('searchQuery', () => provider().getSearchQuery() || undefined),
+                userQueries.saveWithView('sorting', () => provider().getSorting(), (sorting, provider) => provider.setSorting(sorting)),
+                userQueries.saveWithView('filtering', () => provider().getFiltering(), (filtering, provider) => provider.setFiltering(filtering)),
+                userQueries.saveWithView('searchQuery', () => provider().getSearchQuery() || undefined, (searchQuery, provider) => provider.setSearchQuery(searchQuery)),
                 userQueries.saveWithView('layout', () => datasetControl.getView()?.data?.layout),
             ]
             return () => unsaveWithViews.forEach(unsaveWithView => unsaveWithView())
@@ -73,18 +114,14 @@ class DealsProvider extends MemoryDataProvider {
     }
 }
 
-/** The deals as a view shows them; the control sets the view's columns on the provider. */
-export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+/** The deals and the system views; the control opens a view on the provider. */
+export const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     await new Promise(resolve => setTimeout(resolve, 600))
     const provider = new DealsProvider({
         dataSource: DEAL_ROWS.map(row => ({ ...row })),
         metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
     })
-    const { data = {} } = view ? await view.resolve(provider) : {}
-    provider.setSorting(data.sorting ?? [])
-    provider.setFiltering(data.filtering ?? null)
-    provider.setSearchQuery(data.searchQuery)
-    return { provider }
+    return { provider, views: withCopies(SYSTEM_VIEWS, 4) }
 }
 `,
 }

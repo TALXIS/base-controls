@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const YOUR_OWN_PIECES_CODE = `import { loadDeals, loadDealViews } from './views'
+const YOUR_OWN_PIECES_CODE = `import { loadDeals } from './views'
 
 const copyLink = async (viewId: string) => {
     const url = new URL(window.location.href)
@@ -24,7 +24,7 @@ const addCommands = (control: IDatasetControl) => {
     }))
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='yourOwnPieces' onLoad={loadDeals} onMounted={addCommands} height='480px'>
+const GridExample = () => <DatasetControl stateKey='yourOwnPieces' onLoad={loadDeals} onMounted={addCommands} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher components={{

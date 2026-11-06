@@ -34,7 +34,7 @@ Where the tasks come from, and which columns make the tree, is on [**Loading tas
 
 | Prop | Default | Description |
 |---|---|---|
-| \`onLoad\` | Required | Returns the provider and the field mapping for a view. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
+| \`onLoad\` | Required | Returns the provider, the field mapping and the views. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
 | \`hoursPerDay\` | \`24\` | How many hours a day of a task's duration holds. |
 | \`modules\` | None | The task modules, and DatasetControl modules such as user views. At mount. See [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
 | \`onMounted\`, \`onReady\`, \`onDestroyed\` | None | Pass you the task runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |

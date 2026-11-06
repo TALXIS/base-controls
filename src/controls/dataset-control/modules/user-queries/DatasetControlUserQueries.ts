@@ -10,18 +10,17 @@ import type { IUserQueriesStore, IUserQueryColumn, IUserQueryListItem, IUserQuer
 /** The id of the group the user's views are listed under. */
 export const USER_QUERIES_GROUP = 'userQueries';
 
-export interface IDatasetControlUserQueriesParameters {
-    datasetControl: IDatasetControlRuntime;
-    store: IUserQueriesStore;
-    commands?: IUserQueriesCommands;
-}
-
 /** Which of the user views' commands the view switcher offers; each is on unless set to `false`. */
 export interface IUserQueriesCommands {
     enableSaveAsNewView?: boolean;
     /** Save changes, while a user view is shown. */
     enableSaveChanges?: boolean;
     enableManageViews?: boolean;
+}
+
+export interface IDatasetControlUserQueriesParameters extends IUserQueriesCommands {
+    datasetControl: IDatasetControlRuntime;
+    store: IUserQueriesStore;
 }
 
 export interface IDatasetControlUserQueriesEvents {
@@ -31,45 +30,55 @@ export interface IDatasetControlUserQueriesEvents {
     onOperationFailed: (error: unknown) => void;
 }
 
-/** The user's views of one mount: listing, adding and saving them, and their commands in the view switcher. */
+type SavedValues = { [key: string]: unknown };
+
+interface ISavedValue {
+    get: () => unknown;
+    apply?: (value: unknown, provider: IDataProvider) => void;
+}
+
+/** The user's views of one mount: listed with the control's, saved, and opened with what they kept. */
 export class DatasetControlUserQueries {
     private _events = new EventEmitter<IDatasetControlUserQueriesEvents>();
     private _datasetControl: IDatasetControlRuntime;
     private _store: IUserQueriesStore;
-    private _savedValues = new Map<string, () => unknown>();
     private _commands: IUserQueriesCommands;
+    private _savedValues = new Map<string, ISavedValue>();
     private _views: IUserQueryListItem[] = [];
     private _manageProvider?: IDataProvider;
 
     constructor(parameters: IDatasetControlUserQueriesParameters) {
-        this._datasetControl = parameters.datasetControl;
-        this._store = parameters.store;
-        this._commands = parameters.commands ?? {};
-        this._datasetControl.registerViews(this._addViews);
-        this._datasetControl.parts.observe('viewSwitcher', viewSwitcher => {
-            viewSwitcher.registerItems(this._addViewSwitcherItems);
-        });
-    }
-
-    private get _labels(): LabelsOf<typeof USER_QUERIES_LABELS> {
-        return this._datasetControl.getLabels(USER_QUERIES_LABELS);
+        const { datasetControl, store, ...commands } = parameters;
+        this._datasetControl = datasetControl;
+        this._store = store;
+        this._commands = commands;
+        datasetControl.registerViews(this._addViews);
+        datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addCommands));
     }
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {
         return this._events;
     }
 
+    /** Lists the user's views. */
+    public async load(): Promise<void> {
+        this._views = await this._store.getViews();
+    }
+
     /**
      * Saves what `onGetValue` returns with every user view, under its key.
      * @param onGetValue Called on every save; `undefined` saves nothing under the key.
+     * @param onApplyValue Called with the saved value as a user view opens, before its first page loads.
      */
-    public saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined): () => void {
+    public saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined, onApplyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void {
         if (this._savedValues.has(key)) {
             throw new Error(`The saved value "${key}" is registered twice.`);
         }
-        this._savedValues.set(key, onGetValue);
+        //what a view kept comes back from the store untyped
+        const savedValue: ISavedValue = { get: onGetValue, apply: onApplyValue && ((value, provider) => onApplyValue(value as IUserQuerySavedValueMap[TKey], provider)) };
+        this._savedValues.set(key, savedValue);
         return () => {
-            if (this._savedValues.get(key) === onGetValue) {
+            if (this._savedValues.get(key) === savedValue) {
                 this._savedValues.delete(key);
             }
         };
@@ -81,48 +90,15 @@ export class DatasetControlUserQueries {
         return this._manageProvider;
     }
 
-    /** Lists the user's views. */
-    public async load(): Promise<void> {
-        this._views = await this._store.getViews();
-    }
-
-    public isUserView(viewId: string | undefined): boolean {
-        return this._views.some(view => view.id === viewId);
-    }
-
-    /** Saves a new view under the name, and opens it. */
-    public async create(name: string): Promise<void> {
-        await this._execute(async () => {
-            const viewId = await this._store.createView(name, await this._getView());
-            await this._datasetControl.loadView(viewId);
-        });
-    }
-
-    /** Asks for a name, then saves a new view under it and opens it. */
-    public async saveAsNew(): Promise<void> {
-        const name = window.prompt(this._labels.get('userQueries.viewName'))?.trim();
-        if (name) {
-            await this.create(name);
-        }
-    }
-
-    /** Saves what the control shows into the user view it is on. */
-    public async save(): Promise<void> {
-        const viewId = this._datasetControl.getViewId();
-        if (viewId && this.isUserView(viewId)) {
-            await this._execute(async () => this._store.updateView(viewId, await this._getView()));
-        }
-    }
-
     /** Deletes the views, then lists the ones left in Manage views. */
     public async deleteViews(viewIds: string[]): Promise<void> {
-        await this._execute(async () => {
+        await this._run(async () => {
             const provider = this.getManageProvider();
             const { results } = await provider.deleteRecords(viewIds);
             await provider.refresh();
-            const failed = results.filter(result => !result.success);
-            if (failed.length > 0) {
-                throw new Error(failed.map(result => result.errorMessage ?? this._labels.get('userQueries.deleteFailed')).join('\n'));
+            const errors = results.filter(result => !result.success).map(result => result.errorMessage ?? this._labels.get('userQueries.deleteFailed'));
+            if (errors.length > 0) {
+                throw new Error(errors.join('\n'));
             }
         });
     }
@@ -131,65 +107,97 @@ export class DatasetControlUserQueries {
         this._manageProvider?.destroy();
     }
 
+    private get _labels(): LabelsOf<typeof USER_QUERIES_LABELS> {
+        return this._datasetControl.getLabels(USER_QUERIES_LABELS);
+    }
+
     //listed after the control's own, in their own group
     private _addViews = (views: IDatasetControlView[]): void => {
         const group = { id: USER_QUERIES_GROUP, name: this._labels.get('userQueries.myViewsHeader') };
-        views.push(...this._views.map(({ id, name }) => ({ id, name, group, resolve: () => this._resolveView(id) })));
+        for (const { id, name } of this._views) {
+            views.push({ id, name, group, resolve: provider => this._resolveView(id, provider) });
+        }
     };
 
-    private _resolveView = async (viewId: string): Promise<IDatasetControlViewDefinition> => {
+    private _resolveView = async (viewId: string, provider: IDataProvider): Promise<IDatasetControlViewDefinition> => {
         const { columns, linking = [], data } = await this._store.getView(viewId);
+        this._applySavedValues(data as SavedValues | undefined, provider);
         return { columns, linking, data };
     };
 
     //the switcher reads its items as its menu opens
-    private _addViewSwitcherItems = (items: IContextualMenuItem[]): void => {
+    private _addCommands = (items: IContextualMenuItem[]): void => {
         const commands: IContextualMenuItem[] = [];
-        if (this._commands.enableSaveChanges !== false && this.isUserView(this._datasetControl.getViewId())) {
-            commands.push({ key: 'saveChanges', text: this._labels.get('userQueries.saveChanges'), iconProps: { iconName: 'Save' }, onClick: () => { this.save(); } });
+        if (this._commands.enableSaveChanges !== false && this._isOnUserView()) {
+            commands.push({ key: 'saveChanges', text: this._labels.get('userQueries.saveChanges'), iconProps: { iconName: 'Save' }, onClick: this._saveChanges });
         }
         if (this._commands.enableSaveAsNewView !== false) {
-            commands.push({ key: 'saveAsNewView', text: this._labels.get('userQueries.saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: () => { this.saveAsNew(); } });
+            commands.push({ key: 'saveAsNewView', text: this._labels.get('userQueries.saveAsNewView'), iconProps: { iconName: 'SaveAs' }, onClick: this._saveAsNewView });
         }
         if (this._commands.enableManageViews !== false) {
-            commands.push({ key: 'manageViews', text: this._labels.get('userQueries.manageViews'), iconProps: { iconName: 'Settings' }, onClick: () => this._events.dispatchEvent('onManageRequested') });
+            commands.push({ key: 'manageViews', text: this._labels.get('userQueries.manageViews'), iconProps: { iconName: 'Settings' }, onClick: this._openManageViews });
         }
         if (commands.length > 0) {
             items.push({ key: 'userQueriesDivider', itemType: ContextualMenuItemType.Divider }, ...commands);
         }
     };
 
-    //what the control shows, as a view keeps it
-    private async _getView(): Promise<IUserQueryView> {
-        const provider = this._datasetControl.getProvider();
-        const columns = (provider?.getColumns() ?? []).map(({ name, isHidden, order, visualSizeFactor, grouping, aggregation }): IUserQueryColumn => ({ name, isHidden, order, visualSizeFactor, grouping, aggregation }));
-        const linking = this._getUsedLinking(provider?.getLinking() ?? [], columns);
-        return { columns, linking, data: this._getSavedValues() };
+    private _saveChanges = (): void => {
+        const viewId = this._datasetControl.getViewId()!;
+        this._run(() => this._store.updateView(viewId, this._getView()));
+    };
+
+    private _saveAsNewView = (): void => {
+        const name = window.prompt(this._labels.get('userQueries.viewName'))?.trim();
+        if (name) {
+            this._run(async () => this._datasetControl.loadView(await this._store.createView(name, this._getView())));
+        }
+    };
+
+    private _openManageViews = (): void => {
+        this._events.dispatchEvent('onManageRequested');
+    };
+
+    private _isOnUserView(): boolean {
+        const viewId = this._datasetControl.getViewId();
+        return this._views.some(view => view.id === viewId);
     }
 
-    private _getSavedValues(): { [key: string]: unknown } | undefined {
-        const values = [...this._savedValues].map(([key, onGetValue]) => [key, onGetValue()]).filter(([, value]) => value !== undefined);
+    //what the control shows, as a view keeps it
+    private _getView(): IUserQueryView {
+        const provider = this._datasetControl.getProvider();
+        const columns = (provider?.getColumns() ?? []).map(({ name, isHidden, order, visualSizeFactor, grouping, aggregation }): IUserQueryColumn => ({ name, isHidden, order, visualSizeFactor, grouping, aggregation }));
+        return { columns, linking: this._getUsedLinking(provider?.getLinking() ?? [], columns), data: this._getSavedValues() };
+    }
+
+    private _getSavedValues(): SavedValues | undefined {
+        const values = [...this._savedValues].map(([key, { get }]) => [key, get()]).filter(([, value]) => value !== undefined);
         return values.length > 0 ? Object.fromEntries(values) : undefined;
     }
 
-    //the links a related column's alias names, with the links they hang off
-    private _getUsedLinking(linking: ILinkEntityExposedExpression[], columns: IUserQueryColumn[]): ILinkEntityExposedExpression[] {
-        const usedAliases = new Set(columns.filter(column => column.name.includes('.')).map(column => column.name.split('.')[0]));
-        let isGrowing = true;
-        while (isGrowing) {
-            isGrowing = false;
-            for (const link of linking) {
-                if (link.alias && usedAliases.has(link.alias) && link.parentLinkedEntityAlias && !usedAliases.has(link.parentLinkedEntityAlias)) {
-                    usedAliases.add(link.parentLinkedEntityAlias);
-                    isGrowing = true;
-                }
-            }
+    private _applySavedValues(values: SavedValues = {}, provider: IDataProvider): void {
+        for (const [key, value] of Object.entries(values)) {
+            this._savedValues.get(key)?.apply?.(value, provider);
         }
-        return linking.filter(link => !!link.alias && usedAliases.has(link.alias));
+    }
+
+    //the link each related column comes through, with the links that one hangs off
+    private _getUsedLinking(linking: ILinkEntityExposedExpression[], columns: IUserQueryColumn[]): ILinkEntityExposedExpression[] {
+        const linksByAlias = new Map(linking.filter(link => link.alias).map(link => [link.alias!, link]));
+        const usedAliases = new Set<string>();
+        const use = (alias: string | undefined) => {
+            const link = alias === undefined ? undefined : linksByAlias.get(alias);
+            if (link && !usedAliases.has(alias!)) {
+                usedAliases.add(alias!);
+                use(link.parentLinkedEntityAlias);
+            }
+        };
+        columns.filter(column => column.name.includes('.')).forEach(column => use(column.name.split('.')[0]));
+        return linking.filter(link => link.alias && usedAliases.has(link.alias));
     }
 
     //the menu calls operations without awaiting them
-    private async _execute(operation: () => Promise<void>): Promise<void> {
+    private async _run(operation: () => Promise<void>): Promise<void> {
         try {
             await operation();
         }

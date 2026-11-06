@@ -12,7 +12,7 @@ A task grid loads every task of the view at once, through a task provider that r
 
 ## Load the tasks
 
-\`onLoad\` gets the \`view\` to load, whose \`data\` the control applies for you (see [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview)), and the \`taskRuntime\` to pass to the data source. It returns the \`provider\` and the \`fieldMapping\`, and a \`rootTaskId\` to show only part of the tree (see *Start from a task* below). Everything else works as on a DatasetControl, errors included: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) and [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+\`onLoad\` gets the \`taskRuntime\` to pass to the data source. It returns the \`provider\` and the \`fieldMapping\`, the \`views\` to switch between (see [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview)), and a \`rootTaskId\` to show only part of the tree (see *Start from a task* below). Everything else works as on a DatasetControl, errors included: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) and [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 
 ## Field mapping
 

@@ -18,7 +18,7 @@ export interface IViewSwitcherProps {
     children?: ReactNode;
 }
 
-/** Switches the control between the views its `onLoadViews` returns, listed by their group. */
+/** Switches the control between the views its `onLoad` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useRequiredDatasetControlRuntime();
     const provider = useDataProviderEvents(['onLoading']);

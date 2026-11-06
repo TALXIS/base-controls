@@ -1,16 +1,9 @@
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
-/** Three views of the deals, one of them a report, each resolving the columns it shows as it opens. */
+/** Three views of the deals, one of them a report, each setting the provider up as it opens. */
 export const VIEWS_FILE: IGridExampleFile = {
     name: 'views.ts',
-    code: `/** What a view keeps beside its columns, for onLoad. */
-export interface IDealViewData {
-    sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
-    filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
-    searchQuery?: string
-}
-
-//the deal name is what quick find searches
+    code: `//the deal name is what quick find searches
 const DEALS = DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name' }))
 const getDealColumn = (name: string) => DEALS.find(column => column.name === name)!
 
@@ -19,12 +12,27 @@ const columns = (...names: string[]) => names.map((name, order) => ({ ...getDeal
 //what a view filters by without showing it
 const hidden = (...names: string[]) => names.map(name => ({ ...getDealColumn(name), isHidden: true }))
 
-//listed by name; what a view shows is resolved only when it is opened
-const VIEWS: IDatasetControlView<IDealViewData>[] = [
+//listed by name; a view sets the provider up as it is opened
+const VIEWS: IDatasetControlView[] = [
     { id: 'all', name: 'All deals', resolve: () => ({ columns: columns('name', 'owner', 'stage', 'value', 'probability', 'closedate') }) },
-    { id: 'won', name: 'Won deals', resolve: () => ({ columns: [...columns('name', 'owner', 'value', 'closedate'), ...hidden('stage')], data: { filtering: { filterOperator: Type.And.Value, conditions: [{ attributeName: 'stage', conditionOperator: Operators.Equal.Value, value: '4' }] } } }) },
-    //sortDirection 1 is descending
-    { id: 'biggest', name: 'Biggest deals', group: { id: 'reports', name: 'Reports' }, resolve: () => ({ columns: columns('name', 'value', 'stage'), data: { sorting: [{ name: 'value', sortDirection: 1 }] } }) },
+    {
+        id: 'won',
+        name: 'Won deals',
+        resolve: provider => {
+            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'stage', conditionOperator: Operators.Equal.Value, value: '4' }] })
+            return { columns: [...columns('name', 'owner', 'value', 'closedate'), ...hidden('stage')] }
+        },
+    },
+    {
+        id: 'biggest',
+        name: 'Biggest deals',
+        group: { id: 'reports', name: 'Reports' },
+        resolve: provider => {
+            //sortDirection 1 is descending
+            provider.setSorting([{ name: 'value', sortDirection: 1 }])
+            return { columns: columns('name', 'value', 'stage') }
+        },
+    },
 ]
 
 //offers every deal column to Edit columns and user views, not only the ones a view shows
@@ -39,18 +47,12 @@ const createDealsProvider = () => new DealsProvider({
     metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
 })
 
-//the control sets the view's columns; the rest of the view is set up here
-export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealViewData>): Promise<IDatasetControlLoadResult> => {
+//the provider and the views to switch between; the control opens a view on the provider
+export const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     //stands in for fetching the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
     //a new provider on every load: a view switch or reload mounts everything anew
-    const provider = createDealsProvider()
-    //what the view carries besides its columns
-    const { data = {} } = view ? await view.resolve(provider) : {}
-    provider.setSorting(data.sorting ?? [])
-    provider.setFiltering(data.filtering ?? null)
-    provider.setSearchQuery(data.searchQuery)
-    return { provider }
+    return { provider: createDealsProvider(), views: VIEWS }
 }
 
 //the keys saveDealViewData saves, declared once in your project
@@ -62,20 +64,14 @@ declare module '@talxis/base-controls' {
     }
 }
 
-/** Saves the sorting, filter and search with every user view; pass it as the control's onMounted. */
-export const saveDealViewData = (control: IDatasetControl<IDealViewData>) => {
+/** Saves the sorting, filter and search with every user view and puts them back as it opens. */
+export const saveDealViewData = (control: IDatasetControl) => {
     const provider = () => control.getProvider()!
     control.modules.observe('userQueries', userQueries => {
-        userQueries.saveWithView('sorting', () => provider().getSorting())
-        userQueries.saveWithView('filtering', () => provider().getFiltering())
-        userQueries.saveWithView('searchQuery', () => provider().getSearchQuery())
+        userQueries.saveWithView('sorting', () => provider().getSorting(), (sorting, provider) => provider.setSorting(sorting))
+        userQueries.saveWithView('filtering', () => provider().getFiltering(), (filtering, provider) => provider.setFiltering(filtering))
+        userQueries.saveWithView('searchQuery', () => provider().getSearchQuery(), (searchQuery, provider) => provider.setSearchQuery(searchQuery))
     })
-}
-
-//the views to switch between
-export const loadDealViews = async (): Promise<IDatasetControlView<IDealViewData>[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400))
-    return VIEWS
 }
 `,
 }

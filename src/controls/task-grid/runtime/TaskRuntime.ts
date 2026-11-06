@@ -1,8 +1,8 @@
 import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
-import type { IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
+import type { IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
+import type { IDatasetControl, IDatasetControlView } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
 import { HookRegistry, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels } from "@labels";
@@ -28,7 +28,6 @@ export class TaskRuntime implements ITaskRuntime {
     public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
-    private _view?: ITaskView;
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
     private _savingChains = new TaskSavingChains();
@@ -42,29 +41,25 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.observe('provider', provider => this._savingChains.attach(provider));
         datasetControl.parts.observe('ribbon', ribbon => { ribbon.registerCommands(this._addCommands); });
         datasetControl.modules.observe('userQueries', userQueries => {
-            userQueries.saveWithView('sorting', () => this.getProvider().getSorting());
-            userQueries.saveWithView('filtering', () => this.getProvider().getFiltering());
-            userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name));
-            userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined);
+            userQueries.saveWithView('sorting', () => this.getProvider().getSorting(), sorting => this.getProvider().setSorting(sorting));
+            userQueries.saveWithView('filtering', () => this.getProvider().getFiltering(), filtering => this.getProvider().setFiltering(filtering));
+            userQueries.saveWithView('quickFindColumns', () => this.getProvider().getQuickFindColumns().map(column => column.name), columns => this.getProvider().setQuickFindColumns(columns));
+            userQueries.saveWithView('searchQuery', () => this.getProvider().getSearchQuery() || undefined, searchQuery => this.getProvider().setSearchQuery(searchQuery));
         });
     }
 
-    public async load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult> {
-        const { provider, fieldMapping, rootTaskId } = await this._onGetProps().onLoad({ ...parameters, taskRuntime: this });
+    public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
+        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad({ taskRuntime: this });
         provider.initialize({ fieldMapping, rootTaskId, defaultCreatePosition: this._onGetProps().defaultCreatePosition, hoursPerDay: this._onGetProps().hoursPerDay });
         provider.registerAvailableColumns(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.register('provider', () => provider);
-        if (parameters.view) {
-            const definition = await parameters.view.resolve(provider);
-            this._view = { ...parameters.view, ...definition };
-            this._applyView(provider, definition.data ?? {});
-        }
-        return { provider };
+        //a task view is only ever resolved with this task provider
+        return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
     }
 
     public getView(): ITaskView | undefined {
-        return this._view;
+        return this.services.get('datasetControl').getView();
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -116,13 +111,6 @@ export class TaskRuntime implements ITaskRuntime {
         this.events.dispatchEvent('onDestroyed');
         this._savingChains.destroy();
         this.services.destroy();
-    }
-
-    private _applyView(provider: ITaskDataProvider, view: ITaskViewData): void {
-        provider.setSorting(view.sorting ?? []);
-        provider.setFiltering(view.filtering ?? null);
-        provider.setQuickFindColumns(view.quickFindColumns ?? []);
-        provider.setSearchQuery(view.searchQuery);
     }
 
     private _applyRibbonCommandUi = (item: IContextualMenuItem): IContextualMenuItem => {

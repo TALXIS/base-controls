@@ -24,7 +24,7 @@ export const DealsRibbon = () => {
 `,
 }
 
-const PICK_PARTS_CODE = `import { loadDeals, loadDealViews } from './views'
+const PICK_PARTS_CODE = `import { loadDeals } from './views'
 import { DealsRibbon } from './DealsRibbon'
 
 const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Notifications', 'Page size', 'Pagination']
@@ -52,7 +52,7 @@ const GridExample = () => {
         </Stack>
         <Slider label='Width (%)' min={30} max={100} value={width} onChange={setWidth} />
         <div style={{ width: \`\${width}%\` }}>
-            <DatasetControl onLoadViews={loadDealViews} stateKey='layoutParts' onLoad={loadDeals} height='420px'>
+            <DatasetControl stateKey='layoutParts' onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         {has('View switcher') && <DatasetControl.ViewSwitcher />}
@@ -85,7 +85,7 @@ const GridExample = () => {
 
 export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, LAYOUT_RIBBON_FILE)} tabs={['preview', 'code']} />
 
-const FULL_PAGE_CODE = `import { loadDeals, loadDealViews } from './views'
+const FULL_PAGE_CODE = `import { loadDeals } from './views'
 
 const getPageStyles = (theme: ITheme) => mergeStyleSets({
     //stands in for the window the page fills
@@ -98,7 +98,7 @@ const GridExample = () => {
 
     //height='100%' fills the parent, which needs a height of its own
     return <div className={styles.window}>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
+        <DatasetControl stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

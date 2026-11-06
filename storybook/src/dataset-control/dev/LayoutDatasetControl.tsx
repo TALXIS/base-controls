@@ -3,7 +3,7 @@ import { DefaultButton } from '@fluentui/react'
 import {
     createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, PcfContextProvider,
 } from '@talxis/base-controls'
-import { loadDeals, loadDealViews } from '../dealViews'
+import { loadDeals } from '../dealViews'
 
 export interface ILayoutDatasetControlProps {
     viewSwitcher: boolean
@@ -34,7 +34,7 @@ export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
 
     return <PcfContextProvider>
         <div style={{ width: props.width }}>
-            <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='520px'>
+            <DatasetControl stateKey='deals' onLoad={loadDeals} height='520px'>
                 {(start.length > 0 || end.length > 0) && <DatasetControl.Header>
                     {start.length > 0 && <DatasetControl.Header.Start>{start}</DatasetControl.Header.Start>}
                     {end.length > 0 && <DatasetControl.Header.End>{end}</DatasetControl.Header.End>}

@@ -11,11 +11,8 @@ export interface IUserQueriesModuleParameters<TData> extends IUserQueriesCommand
 export const createUserQueriesModule = <TData,>(parameters: IUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => ({
     name: 'userQueries',
     onLoad: async datasetControl => {
-        const userQueries = new DatasetControlUserQueries({
-            datasetControl,
-            store: parameters.onCreateStore(datasetControl as IDatasetControl<TData>) as IUserQueriesStore,
-            commands: { enableSaveAsNewView: parameters.enableSaveAsNewView, enableSaveChanges: parameters.enableSaveChanges, enableManageViews: parameters.enableManageViews },
-        });
+        const { onCreateStore, ...commands } = parameters;
+        const userQueries = new DatasetControlUserQueries({ ...commands, datasetControl, store: onCreateStore(datasetControl as IDatasetControl<TData>) as IUserQueriesStore });
         await userQueries.load();
         return userQueries;
     },

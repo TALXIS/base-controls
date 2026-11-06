@@ -1,10 +1,10 @@
 import React from 'react'
 import { ContextualMenuItemType, IButtonProps } from '@fluentui/react'
 import {
-    createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControlLoadParameters, IDatasetControl,
+    createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControl,
     IRibbonCommand, PcfContextProvider, useDataProvider, ViewSwitcherUiComponents,
 } from '@talxis/base-controls'
-import { IDealViewData, loadDeals, loadDealViews } from '../dealViews'
+import { loadDeals } from '../dealViews'
 
 interface IScratchDatasetControlProps {
     /** Whether the parts' slots are replaced, to see the overrides take effect. */
@@ -58,20 +58,20 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
     //parked on window so the control can be poked at from the browser console
     const onMounted = (control: IDatasetControl) => Object.assign(window, { datasetControl: control })
 
-    const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
+    const onLoad = async () => {
         if (failNextLoadRef.current) {
             failNextLoadRef.current = false
             await new Promise(resolve => setTimeout(resolve, 600))
             throw new Error('The deals could not be loaded.')
         }
-        return loadDeals(params)
+        return loadDeals()
     }
 
     return <PcfContextProvider>
         <button onClick={() => setMountKey(key => key + 1)}>Remount</button>
         <button onClick={() => failNextLoadRef.current = true}>Fail next load</button>
         <button onClick={() => setIsThrowing(true)}>Throw while rendering</button>
-        <DatasetControl onLoadViews={loadDealViews} key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onMounted={onMounted} height="640px">
+        <DatasetControl key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onMounted={onMounted} height="640px">
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />

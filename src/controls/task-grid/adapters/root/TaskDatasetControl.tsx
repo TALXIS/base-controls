@@ -3,7 +3,7 @@ import type { IRecord } from "@talxis/client-libraries";
 import { useLatest } from "@core";
 import { usePcfContext } from "@pcf";
 import { DatasetControl } from "@controls/dataset-control";
-import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlModule, IDatasetControlProps } from "@controls/dataset-control";
+import type { IDatasetControl, IDatasetControlModule, IDatasetControlProps } from "@controls/dataset-control";
 import type { ITaskGridLoadParameters, ITaskGridLoadResult } from "../../interfaces";
 import type { ITaskViewData, TaskCreatePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
@@ -61,7 +61,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
         propsRef.current.onMounted?.(datasetControl.parts.get('taskRuntime'));
     };
 
-    const onLoad = (parameters: IDatasetControlLoadParameters<ITaskViewData>) => datasetControlRef.current!.parts.get('taskRuntime').load(parameters);
+    const onLoad = () => datasetControlRef.current!.parts.get('taskRuntime').load();
 
     const { onLoad: _onLoad, onMounted: _onMounted, onReady: _onReady, onDestroyed: _onDestroyed, enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, ...datasetControlProps } = props;
 

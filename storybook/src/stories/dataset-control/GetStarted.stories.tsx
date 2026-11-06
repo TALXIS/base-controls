@@ -12,7 +12,7 @@ DatasetControl is the frame around a list of records: it loads them for the view
 
 ## Build your first control
 
-A control needs an \`onLoad\` that returns \`{ provider }\` with the records, and the parts you want around them. \`onLoadViews\` is optional: it lists views for the user to switch between, and \`onLoad\` gets the one they are on. Open **Code**: its comments walk through each step.
+A control needs an \`onLoad\` that returns \`{ provider }\` with the records, and the parts you want around them. \`views\` beside the provider is optional: it lists views for the user to switch between. Open **Code**: its comments walk through each step.
 
 {{story: Three deals, two views}}
 

@@ -10,17 +10,18 @@ A task view looks at the tasks a particular way, such as sorted by start date or
 
 {{canvas: Switch between task views}}
 
-## Task view data
+## Set up a view
 
-\`onLoadViews\` lists the views, \`DatasetControl.ViewSwitcher\` shows them, and each one resolves its columns as it opens, as on a DatasetControl (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)). A task view's \`data\` is an \`ITaskViewData\`:
+\`onLoad\` returns the views with the tasks, \`DatasetControl.ViewSwitcher\` shows them, and each view's \`resolve(provider)\` sets the provider up and returns its columns as the view opens, as on a DatasetControl (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)). In \`resolve\`, a task view calls:
 
-| Key | Description |
+| Method | Description |
 |---|---|
-| \`sorting\` | Sorts each task's subtasks. Without it, tasks keep their stack rank order. |
-| \`filtering\` | Filters the tasks. |
-| \`quickFindColumns\` | The columns quick find searches. The subject column when left out. |
-| \`searchQuery\` | Starts the view searched. |
-| \`isFlatList\` | Starts the view as a flat list. See *Flat list* below. |
+| \`setSorting(sorting)\` | Sorts each task's subtasks. Without it, tasks keep their stack rank order. |
+| \`setFiltering(filtering)\` | Filters the tasks. |
+| \`setQuickFindColumns(columnNames)\` | The columns quick find searches. The subject column when not called. On \`ITaskDataProvider\`. |
+| \`setSearchQuery(query)\` | Starts the view searched. |
+
+The \`data\` it returns is an \`ITaskViewData\`, whose \`isFlatList\` starts the view as a flat list. See *Flat list* below.
 
 ## The tree
 

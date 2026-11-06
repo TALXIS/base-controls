@@ -14,11 +14,11 @@ User views let each user keep a view the way they sorted, filtered and arranged 
 
 A user view keeps every column, hidden ones too, with its order, width, visibility, grouping and aggregation, and the links its related columns come through. On opening, the columns are completed from the provider's available columns, as for any view.
 
-It also keeps what each \`saveWithView\` getter returns, under its key. That comes back as \`data\` from \`view.resolve(provider)\`, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+It also keeps what each \`saveWithView\` getter returns, under its key. As the view opens, each applier puts its value back on the provider, and all of them come back as the view's \`data\`: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## Save more with a view
 
-\`control.modules.get('userQueries').saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
+\`control.modules.get('userQueries').saveWithView(key, getter, applier?)\` saves what \`getter\` returns with every user view. \`applier(value, provider)\` puts the saved value back as a user view opens, before its first page, such as \`provider.setSorting(sorting)\`; leave it out for a value your own UI reads from \`getView().data\`. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
 
 Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`, as the example's \`views.ts\` does for sorting, filtering and search. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
 
@@ -39,7 +39,7 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 
 ## Keep views in your own store
 
-\`createUserQueriesModule({ onCreateStore })\` keeps the views in a store of yours. \`onCreateStore\` gets the control, so the store can read \`control.getDependencies()\`.
+\`createUserQueriesModule({ onCreateStore })\` keeps the views in a store of yours. \`onCreateStore\` gets the control on every mount.
 
 {{story: Keep views in your own store}}
 
@@ -91,7 +91,7 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'The views you list, and how onLoad sets each one up.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'The views you list, and how each one sets the provider up.' },
     { title: 'State', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-state--overview', text: 'What each view keeps between switches without being saved.' },
     { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'What the user sees when saving a view fails.' },
 ]

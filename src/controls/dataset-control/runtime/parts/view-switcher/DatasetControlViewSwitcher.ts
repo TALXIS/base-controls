@@ -12,7 +12,7 @@ export interface IDatasetControlViewSwitcherParameters {
 
 /** The control's views, and switching between them. */
 export interface IDatasetControlViewSwitcher {
-    /** The views of this mount, from the control's `onLoadViews`. */
+    /** The views of this mount, from the control's `onLoad`. */
     getViews(): IDatasetControlView[];
     /** `undefined` when the loaded view is not among the views. */
     getCurrentView(): IDatasetControlView | undefined;

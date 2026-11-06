@@ -3,21 +3,17 @@ import { StateStore, useLatest, useStateStore } from "@core";
 import { useLabelsService } from "@labels";
 import { useTheme } from "@theme";
 import { RuntimeHost } from "@controls/runtime-host";
-import { DatasetControlRuntime, IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult, IDatasetControlModule, IDatasetControlView } from "../../runtime";
+import { DatasetControlRuntime, IDatasetControl, IDatasetControlLoadResult, IDatasetControlModule } from "../../runtime";
 import { DatasetControlState } from "../../runtime/DatasetControlState";
 import { IDatasetControlComponents } from "./components";
 import { DatasetControlMount } from "./DatasetControlMount";
 
 /** Props for `DatasetControl`. */
 export interface IDatasetControlProps<TData = unknown> {
-    /** Loads what the modules and `onLoad` read through `getDependencies()`; awaited first on every mount. */
-    onLoadDependencies?: () => Promise<unknown>;
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
-    /** The views to switch between; called before `onLoad` on every mount. */
-    onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
-    /** Loads the provider for the view the control resolved, behind the skeleton; called on every mount. */
-    onLoad: (parameters: IDatasetControlLoadParameters<TData>) => Promise<IDatasetControlLoadResult>;
+    /** Creates the provider and lists the views, behind the skeleton; called on every mount. */
+    onLoad: () => Promise<IDatasetControlLoadResult<TData>>;
     /** The parts, laid out in its header, body and footer. */
     children: React.ReactNode;
     /** `'100%'` fills the parent; the content's height when left out. */

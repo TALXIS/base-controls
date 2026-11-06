@@ -20,13 +20,20 @@ const createGanttCode = (data: IGanttStoryData) => `const fieldMapping: IFieldMa
     percentComplete: 'percentcomplete',
 }
 
-//the control sets a view's columns; the task grid sets up the rest from its data
-const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
+//the task grid reads isFlatList from a view's data
+const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}, onResolve?: (provider: ITaskDataProvider) => void): ITaskGridView => ({
+    id,
+    name,
+    resolve: provider => {
+        onResolve?.(provider)
+        return { columns, data }
+    },
+})
 
-const VIEWS: IDatasetControlView<ITaskViewData>[] = [
-    taskView('all', 'All tasks', ${data.getColumns}('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS), { quickFindColumns: ['subject', 'assignedto', 'tags', 'teams'] }),
-    taskView('planning', 'Planning', ${data.getColumns}('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', ${data.getColumns}('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description', 'assignedto'] }),
+const VIEWS: ITaskGridView[] = [
+    taskView('all', 'All tasks', ${data.getColumns}('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS), {}, provider => provider.setQuickFindColumns(['subject', 'assignedto', 'tags', 'teams'])),
+    taskView('planning', 'Planning', ${data.getColumns}('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort', 'actualeffort'), {}, provider => provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])),
+    taskView('flat', 'Every task on its own', ${data.getColumns}('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true }, provider => provider.setQuickFindColumns(['subject', 'description', 'assignedto'])),
 ]
 
 const betaCutoffStyles = mergeStyleSets({
@@ -166,9 +173,9 @@ const GridExample = () => {
         createLinksModule(),
     ], [])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping, views: VIEWS })
 
-    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>
+    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

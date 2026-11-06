@@ -66,7 +66,7 @@ const GridExample = () => {
 }
 `
 
-const EDIT_COLUMNS_CODE = `import { loadDeals, loadDealViews } from './views'
+const EDIT_COLUMNS_CODE = `import { loadDeals } from './views'
 
 //adds a command above the column pickers
 const addCommands = (control: IDatasetControl) => {
@@ -82,7 +82,7 @@ const ColumnsButton = () => {
     return <DefaultButton text='Columns' iconProps={{ iconName: 'ColumnOptions' }} onClick={() => control.parts.get('editColumns').open()} />
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='editColumnsDeals' onLoad={loadDeals} onMounted={addCommands} height='440px'>
+const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={loadDeals} onMounted={addCommands} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

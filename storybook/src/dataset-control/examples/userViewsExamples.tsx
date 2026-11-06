@@ -3,14 +3,14 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const USER_VIEWS_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
+const USER_VIEWS_CODE = `import { loadDeals, saveDealViewData } from './views'
 
 const GridExample = () => {
     //keeps the user's views in this browser's localStorage
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.dealViews' })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.dealViews' })], [])
 
-    //saveDealViewData, in views.ts, saves the sorting, filter and search with every view
-    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViews' height='480px'>
+    //saveDealViewData, in views.ts, saves the sorting, filter and search with every view and puts them back
+    return <DatasetControl modules={modules} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViews' height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -30,12 +30,12 @@ const GridExample = () => {
 }
 `
 
-const OWN_STORE_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
+const OWN_STORE_CODE = `import { loadDeals, saveDealViewData } from './views'
 
 interface IStoredView {
     id: string
     name: string
-    view: IUserQueryView<IDealViewData>
+    view: IUserQueryView
 }
 
 //Manage views renames through onRecordSave and deletes through onRecordsDelete
@@ -62,7 +62,7 @@ class ManageViewsProvider extends MemoryDataProvider {
 }
 
 //stands in for your server, logging every call
-class MemoryViewsStore implements IUserQueriesStore<IDealViewData> {
+class MemoryViewsStore implements IUserQueriesStore {
     private _views: IStoredView[] = []
 
     constructor(private _log: (line: string) => void) { }
@@ -77,14 +77,14 @@ class MemoryViewsStore implements IUserQueriesStore<IDealViewData> {
         return this._views.find(stored => stored.id === viewId)!.view
     }
 
-    public async createView(name: string, view: IUserQueryView<IDealViewData>) {
+    public async createView(name: string, view: IUserQueryView) {
         this._log(\`createView('\${name}')\`)
         const id = crypto.randomUUID()
         this._views.push({ id, name, view })
         return id
     }
 
-    public async updateView(viewId: string, view: IUserQueryView<IDealViewData>) {
+    public async updateView(viewId: string, view: IUserQueryView) {
         this._log(\`updateView('\${viewId}')\`)
         this._views.find(stored => stored.id === viewId)!.view = view
     }
@@ -108,11 +108,11 @@ const GridExample = () => {
     //one store across mounts
     const modules = React.useMemo(() => {
         const store = new MemoryViewsStore(line => setLog(log => [line, ...log].slice(0, 6)))
-        return [createUserQueriesModule<IDealViewData>({ onCreateStore: () => store })]
+        return [createUserQueriesModule({ onCreateStore: () => store })]
     }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViewsOwnStore' height='400px'>
+        <DatasetControl modules={modules} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViewsOwnStore' height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>
@@ -135,13 +135,12 @@ const USER_VIEWS_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
     code: `//in a model-driven app, use one of these modules instead of the localStorage one in GridExample.tsx
 import { createDataverseUserQueriesModule, createTalxisUserQueriesModule } from '@talxis/base-controls'
-import type { IDealViewData } from './views'
 
 //as talxis_userquery records
-export const createTalxisViewsModule = (context: ComponentFramework.Context) => createTalxisUserQueriesModule<IDealViewData>({ entityName: 'deal', ownerId: context.userSettings.userId })
+export const createTalxisViewsModule = (context: ComponentFramework.Context) => createTalxisUserQueriesModule({ entityName: 'deal', ownerId: context.userSettings.userId })
 
 //as records of a table of your own
-export const createDataverseViewsModule = (context: ComponentFramework.Context) => createDataverseUserQueriesModule<IDealViewData>({
+export const createDataverseViewsModule = (context: ComponentFramework.Context) => createDataverseUserQueriesModule({
     entityName: 'deal',
     ownerId: context.userSettings.userId,
     table: { name: 'new_savedview', fieldMapping: { name: 'new_name', layout: 'new_layout', returnedTypeCode: 'new_entity' } },

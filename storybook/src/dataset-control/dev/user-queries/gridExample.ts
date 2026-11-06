@@ -2,14 +2,14 @@ import type { IGridExampleFile } from '../../../grid/GridLivePreview'
 
 export const GRID_EXAMPLE_FILE: IGridExampleFile = {
     name: 'GridExample.tsx',
-    code: `import { createDealViewDataModule, loadDeals, loadSystemViews } from './views'
+    code: `import { createDealViewDataModule, loadDeals } from './views'
 import { createDealUserQueriesModule } from './userQueries'
 import { DealsBody } from './DealsBody'
 
 const GridExample = () => {
     const datasetControlModules = React.useMemo(() => [createDealUserQueriesModule(), createDealViewDataModule()], [])
 
-    return <DatasetControl modules={datasetControlModules} onLoadViews={loadSystemViews} onLoad={loadDeals} stateKey='scratch-user-queries' height='600px'>
+    return <DatasetControl modules={datasetControlModules} onLoad={loadDeals} stateKey='scratch-user-queries' height='600px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

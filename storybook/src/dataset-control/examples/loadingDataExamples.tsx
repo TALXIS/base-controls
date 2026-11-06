@@ -2,10 +2,10 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const WAITING_CODE = `import { loadDeals, loadDealViews } from './views'
+const WAITING_CODE = `import { loadDeals } from './views'
 
 //loadDeals, in views.ts, runs on every load: the first mount and every view switch
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='deals-loading-data' onLoad={loadDeals} height='420px'>
+const GridExample = () => <DatasetControl stateKey='deals-loading-data' onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -24,36 +24,33 @@ const loadUser = async () => {
     return { name: 'Anna Novak' }
 }
 
-const VIEWS: IDatasetControlView[] = [
-    { id: 'mine', name: 'My deals', resolve: () => ({ columns: DEAL_COLUMNS }) },
-    { id: 'all', name: 'All deals', resolve: () => ({ columns: DEAL_COLUMNS }) },
-]
-
-const GridExample = () => {
-    const controlRef = React.useRef<IDatasetControl>()
-
-    const loadDeals = async ({ view }: IDatasetControlLoadParameters): Promise<IDatasetControlLoadResult> => {
-        //loaded by loadUser before onLoad on every mount
-        const user = controlRef.current!.getDependencies<{ name: string }>()
-        const provider = createDealsProvider()
-        if (view!.id === 'mine') {
-            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'owner', conditionOperator: Operators.Equal.Value, value: user.name }] })
-        }
-        return { provider }
-    }
-
-    //onMounted hands over the control before its load
-    return <DatasetControl onLoadDependencies={loadUser} onLoadViews={async () => VIEWS} onLoad={loadDeals} onMounted={control => controlRef.current = control} stateKey='deals-dependencies' height='420px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher />
-            </DatasetControl.Header.Start>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
-        </DatasetControl.Body>
-    </DatasetControl>
+//loaded first on every mount, so the views can read the user
+const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
+    const user = await loadUser()
+    const views: IDatasetControlView[] = [
+        {
+            id: 'mine',
+            name: 'My deals',
+            resolve: provider => {
+                provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'owner', conditionOperator: Operators.Equal.Value, value: user.name }] })
+                return { columns: DEAL_COLUMNS }
+            },
+        },
+        { id: 'all', name: 'All deals', resolve: () => ({ columns: DEAL_COLUMNS }) },
+    ]
+    return { provider: createDealsProvider(), views }
 }
+
+const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-dependencies' height='420px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher />
+        </DatasetControl.Header.Start>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const WaitingExample = () => <GridExampleRunner seedCode={withFiles(WAITING_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

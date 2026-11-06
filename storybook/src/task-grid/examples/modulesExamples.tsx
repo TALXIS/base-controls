@@ -16,17 +16,17 @@ interface IModuleExample {
 
 const createModuleCode = (example: IModuleExample) => `import { createLoadTasks, createTaskDatabase } from './tasks'
 ${example.setup}
-const loadViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
+const VIEWS: ITaskGridView[] = [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: ${example.columns} }) },
 ]
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createFilteringModule()], [])
     const controlModules = React.useMemo(() => ${example.modules}, [database])
 
-    return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoadViews={loadViews} onLoad={loadTasks} height='480px'>
+    return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoad={loadTasks} height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.End>${example.headerParts ?? ''}
                 <TaskDatasetControl.Ribbon />
@@ -118,7 +118,7 @@ const COUNTS: IColumn[] = [
 
 const MODULES_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
-const loadViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
+const VIEWS: ITaskGridView[] = [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode', 'percentcomplete'), CHECKLIST_COLUMN] }) },
 ]
 
@@ -128,7 +128,7 @@ const createChecklistStore = (): IChecklistStore => ({
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
     //task and DatasetControl modules, read on every mount
     const controlModules = React.useMemo(() => [
         createTaskDraggingModule(),
@@ -139,7 +139,7 @@ const GridExample = () => {
     //Grid modules, read at mount
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule()], [])
 
-    return <TaskDatasetControl modules={controlModules} enableEditing onLoadViews={loadViews} onLoad={loadTasks} stateKey='taskGridDocs.modules' height='440px'>
+    return <TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks} stateKey='taskGridDocs.modules' height='440px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -154,7 +154,7 @@ const GridExample = () => {
 }
 `
 
-const PROJECT_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const PROJECT_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const GridExample = () => {
     const [project, setProject] = React.useState<IProject>()
@@ -169,7 +169,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {project && <MessageBar>{project.getName()}: {project.getStartDate()?.format('D MMM YYYY')} to {project.getEndDate()?.format('D MMM YYYY')}</MessageBar>}
-        <TaskDatasetControl modules={controlModules} onLoadViews={loadTaskViews} onLoad={loadTasks} onReady={onReady} height='400px'>
+        <TaskDatasetControl modules={controlModules} onLoad={loadTasks} onReady={onReady} height='400px'>
             <DatasetControl.Body>
                 <TaskGrid />
             </DatasetControl.Body>

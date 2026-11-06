@@ -15,12 +15,17 @@ export const TASKS_FILE: IGridExampleFile = {
     percentComplete: 'percentcomplete',
 }
 
-const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
-
-export const loadTaskViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
-    taskView('all', 'All tasks', getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete')),
-    taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode', 'priority'), { isFlatList: true }),
+export const TASK_VIEWS: ITaskGridView[] = [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete') }) },
+    {
+        id: 'planning',
+        name: 'Planning',
+        resolve: provider => {
+            provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])
+            return { columns: getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'scheduleddurationminutes', 'estimatedeffort') }
+        },
+    },
+    { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority'), data: { isFlatList: true } }) },
 ]
 
 //one database for the whole example, so changes survive a view switch
@@ -29,6 +34,7 @@ export const createTaskDatabase = () => new MemoryTaskDatabase({ records: TASKS,
 export const createLoadTasks = (database: MemoryTaskDatabase) => async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
     provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
     fieldMapping,
+    views: TASK_VIEWS,
 })
 `,
 }

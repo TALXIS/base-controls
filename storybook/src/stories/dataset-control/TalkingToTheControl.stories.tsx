@@ -43,7 +43,7 @@ Every part on the page registers itself on the control under its own key, for as
 
 ## Add a module
 
-A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, before \`onLoadViews\`. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
+A module adds a feature to the control, such as the user's own views. Pass modules in \`modules\`: each mount loads them anew, before the control's \`onLoad\`. \`control.modules\` finds them by name with \`get\`, \`find\` and \`observe\`, and \`useDatasetControlModule(name)\` does inside the control.
 
 {{story: Add a view from a module}}
 
@@ -66,7 +66,6 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | \`getViews()\` | The views of this mount. See [**Views**](?path=/docs/controls-datasetcontrol-views--overview). |
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
-| \`getDependencies<T>()\` | What \`onLoadDependencies\` loaded for this mount. |
 | \`parts\`, \`modules\` | The parts and the modules, under *Reach the parts* and *Add a module*. |
 | \`surfaces.registerSurface(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 | \`lifecycle\` | The status, the error and the lifecycle events, and \`remount()\` for the view that failed to load. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
@@ -90,7 +89,7 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 
 | Member | Description |
 |---|---|
-| \`registerViews(hook, priority?)\` | Adds to or changes the views \`onLoadViews\` returned: \`hook(views)\` changes them in place. |
+| \`registerViews(hook, priority?)\` | Adds to or changes the views \`onLoad\` returned: \`hook(views)\` changes them in place. |
 | \`getViewStateStore()\` | The open view's entry in the state store. |
 
 Each \`register…\` returns its unregistration, and a higher \`priority\` runs later.
@@ -145,7 +144,7 @@ export const AddAViewFromAModule: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module of your own adds *Closing soon* to the views \`onLoadViews\` lists, through \`registerViews\`. Try: pick *Closing soon* under *Reports* in the view switcher.`,
+                story: `A module of your own adds *Closing soon* to the views \`onLoad\` returns, through \`registerViews\`. Try: pick *Closing soon* under *Reports* in the view switcher.`,
             },
         },
     },

@@ -14,7 +14,7 @@ interface IGanttExample {
     controlProps?: string
 }
 
-const createGanttCode = (example: IGanttExample) => `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const createGanttCode = (example: IGanttExample) => `import { createLoadTasks, createTaskDatabase } from './tasks'
 ${example.setup ?? ''}
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
@@ -26,7 +26,7 @@ const GridExample = () => {
         createLibraryModule(),${example.ganttModules}
     ], [])
 
-    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoadViews={loadTaskViews} onLoad={loadTasks} height='520px'>
+    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoad={loadTasks} height='520px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />
@@ -69,7 +69,7 @@ const SHOWCASE_CODE = createGanttCode({
         createLinksModule(),`,
 })
 
-const BASIC_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const BASIC_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
@@ -78,7 +78,7 @@ const GridExample = () => {
     //the library module is required
     const ganttModules = React.useMemo(() => [createLibraryModule()], [])
 
-    return <TaskDatasetControl onLoadViews={loadTaskViews} onLoad={loadTasks} height='480px'>
+    return <TaskDatasetControl onLoad={loadTasks} height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <TaskGantt.ZoomSlider />

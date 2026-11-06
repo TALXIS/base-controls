@@ -28,20 +28,20 @@ export interface IDatasetControlViewDefinition<TData = unknown> {
     columns: IDatasetControlViewColumn[];
     /** The related entities the view's columns come from, set on the provider with them. */
     linking?: ILinkEntityExposedExpression[];
-    /** What `onLoad` needs to build the view, user views included. */
+    /** What else the view carries, read through `getView().data`. */
     data?: TData;
 }
 
 /** A view the user can switch to. */
-export interface IDatasetControlView<TData = unknown> {
-    /** The id `onLoad` is called with. */
+export interface IDatasetControlView<TData = unknown, TProvider extends IDataProvider = IDataProvider> {
+    /** Unique among the control's views. */
     id: string;
     /** Shown in the view switcher. */
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: IDatasetControlViewGroup;
-    /** Returns what the view sets up, read from the provider it is opened on. */
-    resolve: (provider: IDataProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
+    /** Sets the provider up for the view, such as its sorting, and returns its columns. */
+    resolve: (provider: TProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
 
 /** A view as it is opened, with what it sets up. */
@@ -77,7 +77,7 @@ export interface IDatasetControlModuleMap { }
 export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> {
     /** Unique within the control; what `onLoad` returns is registered under it. */
     name: TName;
-    /** Registers what the module adds, on every load before `onLoadViews`. */
+    /** Registers what the module adds, on every load before the control's `onLoad`. */
     onLoad(datasetControl: IDatasetControlRuntime): IDatasetControlModuleMap[TName] | Promise<IDatasetControlModuleMap[TName]>;
     /** Called as the mount goes, with what `onLoad` returned, before the provider is released. */
     onDestroy?(instance: IDatasetControlModuleMap[TName]): void;
@@ -96,10 +96,8 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
     readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, once the status is `ready`. */
     getProvider(): IDataProvider | undefined;
-    /** The views of this mount, from `onLoadViews`; empty before they loaded. */
+    /** The views of this mount, from `onLoad`; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
-    /** What `onLoadDependencies` loaded; there from the first module's `onLoad` on. */
-    getDependencies<TDependencies>(): TDependencies;
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */

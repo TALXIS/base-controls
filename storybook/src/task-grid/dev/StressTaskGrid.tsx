@@ -11,13 +11,20 @@ const STRESS_CODE = `const fieldMapping: IFieldMapping = {
     percentComplete: 'percentcomplete',
 }
 
-//the control sets a view's columns; the task grid sets up the rest from its data
-const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
+//the task grid reads isFlatList from a view's data
+const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}, onResolve?: (provider: ITaskDataProvider) => void): ITaskGridView => ({
+    id,
+    name,
+    resolve: provider => {
+        onResolve?.(provider)
+        return { columns, data }
+    },
+})
 
-const VIEWS: IDatasetControlView<ITaskViewData>[] = [
+const VIEWS: ITaskGridView[] = [
     taskView('all', 'All tasks', getTaskColumns('subject', 'description', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, DEPENDENCY_COLUMNS)),
-    taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] }),
-    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true, quickFindColumns: ['subject', 'description'] }),
+    taskView('planning', 'Planning', getTaskColumns('subject', 'scheduledstart', 'scheduledend', 'estimatedeffort', 'actualeffort'), {}, provider => provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])),
+    taskView('flat', 'Every task on its own', getTaskColumns('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true }, provider => provider.setQuickFindColumns(['subject', 'description'])),
 ]
 
 const GridExample = () => {
@@ -46,9 +53,9 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
     ], [database])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping })
+    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS })
 
-    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devStressTasks' height='100%' onLoad={onLoad}>
+    return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devStressTasks' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>

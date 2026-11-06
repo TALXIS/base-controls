@@ -11,10 +11,9 @@ const ROOT_CODE = `const fieldMapping: IFieldMapping = {
     percentComplete: 'percentcomplete',
 }
 
-//the control sets a view's columns; the task grid sets up the rest from its data
-const taskView = (id: string, name: string, columns: IColumn[], data: ITaskViewData = {}): IDatasetControlView<ITaskViewData> => ({ id, name, resolve: () => ({ columns, data }) })
+const taskView = (id: string, name: string, columns: IColumn[]): ITaskGridView => ({ id, name, resolve: () => ({ columns }) })
 
-const VIEWS: IDatasetControlView<ITaskViewData>[] = [
+const VIEWS: ITaskGridView[] = [
     taskView('all', 'All tasks', getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete')),
 ]
 
@@ -50,13 +49,14 @@ const GridExample = () => {
     const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
         provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
         fieldMapping,
+        views: VIEWS,
         rootTaskId: rootTaskId || undefined,
     })
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Root task' styles={{ root: { maxWidth: 360 } }} options={ROOT_OPTIONS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option?.key ?? ''))} />
         {/* the root is read on load */}
-        <TaskDatasetControl key={rootTaskId} modules={datasetControlModules} enableCreation enableEditing enableDeletion onLoadViews={async () => VIEWS} stateKey='devRootTasks' height='600px' onLoad={onLoad}>
+        <TaskDatasetControl key={rootTaskId} modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devRootTasks' height='600px' onLoad={onLoad}>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

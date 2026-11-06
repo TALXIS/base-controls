@@ -7,7 +7,7 @@ import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A DatasetControl does not hold records itself: it loads them on its first mount and again whenever the user switches the view or reloads. You decide how in \`onLoad\`, which gets the view the user is on and returns \`{ provider }\` with its records, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
+A DatasetControl does not hold records itself: it loads them on its first mount and again whenever the user switches the view or reloads. You decide how in \`onLoad\`, which returns \`{ provider }\` with its records and the views to switch between, while a placeholder stands in for the parts. Try it below: switch the view and watch the placeholder come back.
 
 {{canvas: Wait for the deals}}
 
@@ -38,7 +38,7 @@ Each mount runs these steps. The lifecycle events every runtime raises are on [*
 
 ## Load what every view needs
 
-\`onLoadDependencies\` loads what both the modules and \`onLoad\` read, such as the entity's metadata or the signed-in user, ahead of them on every load. \`onLoad\` reads it through the control, which \`onMounted\` hands you before the load; a module reads it from the control its \`onLoad\` gets.
+Load what the views need, such as the entity's metadata or the signed-in user, at the start of \`onLoad\`, and build the views over it: each view's \`resolve(provider)\` can then read it.
 
 {{story: Filter by the signed-in user}}
 
@@ -52,17 +52,17 @@ The control destroys every provider it lets go of. To keep one the rest of your 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'List the views and set up the one the user picks in onLoad.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'List the views and set the provider up for the one the user picks.' },
     { title: 'Error handling', iconName: 'Error', href: '?path=/docs/controls-datasetcontrol-error-handling--overview', text: 'What the user sees when a load fails, and Try again.' },
     { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'Follow every load and start one from your own code.' },
 ]
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The control mounts', hook: 'onMounted', text: '`onMounted` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
-    { title: 'Dependencies and modules load', hook: 'onLoadDependencies', text: '`onLoadDependencies` runs first, then each module\'s `onLoad` in the order of `modules`.' },
-    { title: 'The view is picked', hook: 'onLoadViews', text: '`onLoadViews` lists the views, the modules add theirs, and the control picks the one asked for or the one the user was on while it is listed, else the first.' },
-    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` gets that view and returns `{ provider }`, and `view.resolve(provider)` gives the view\'s `data`, resolved once either way.' },
-    { title: 'The view is applied', text: 'The control sets the view\'s linking and columns on the provider and puts back what the user changed in the view.' },
+    { title: 'The modules load', text: 'Each module\'s `onLoad` runs in the order of `modules`.' },
+    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` returns `{ provider, views }`, and the modules add their views.' },
+    { title: 'The view is picked', text: 'The control picks the view asked for, or the one the user was on while it is listed, else the first.' },
+    { title: 'The view is applied', hook: 'resolve', text: 'The view\'s `resolve(provider)` sets the provider up, then the control sets its linking and columns and puts back what the user changed in the view.' },
     { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `control.lifecycle.events` raises `onReady`.' },
     { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `control.lifecycle.events` raises `onDestroyed` before its modules and provider are destroyed.' },
 ]
@@ -94,7 +94,7 @@ export const FilterByTheSignedInUser: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onLoadDependencies\` loads the signed-in user, and \`onLoad\` filters *My deals* by them. Try: change the name in \`loadUser\` to *Ben Carter*.`,
+                story: `\`onLoad\` loads the signed-in user first, and *My deals* filters by them as it opens. Try: change the name in \`loadUser\` to *Ben Carter*.`,
             },
         },
     },

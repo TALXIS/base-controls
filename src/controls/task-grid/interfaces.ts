@@ -1,6 +1,6 @@
 import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
-import type { IDatasetControlLoadParameters } from "@controls/dataset-control";
+import type { IDatasetControlView } from "@controls/dataset-control";
 import type { ITaskDataProvider, ITaskDataProviderInitializeParameters, ITaskViewData } from "./runtime/provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./adapters";
 
@@ -11,15 +11,19 @@ export interface ITaskGridGridModuleMap { }
 export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'editing' | 'grouping' | 'aggregation' | 'taskTree'>> | ITaskGridGridModuleMap[keyof ITaskGridGridModuleMap];
 
 /** What a `TaskDatasetControl`'s `onLoad` is called with. */
-export interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
+export interface ITaskGridLoadParameters {
     /** The mount the provider is loaded for, to register what the provider's platform adds. */
     taskRuntime: ITaskRuntime;
 }
 
+/** A view of the tasks, set up on the task provider it is opened on. */
+export type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
+
 /** What a `TaskDatasetControl`'s `onLoad` returns. */
 export interface ITaskGridLoadResult extends Omit<ITaskDataProviderInitializeParameters, 'defaultCreatePosition'> {
-    /** The provider for the view. */
     provider: ITaskDataProvider;
+    /** The views to switch between; leave out for a task grid with one view. */
+    views?: ITaskGridView[];
 }
 
 /** The replaceable pieces of what a task grid draws, the grid's own included. */

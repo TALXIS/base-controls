@@ -1,6 +1,6 @@
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { ITaskSavingChains } from "./saving";
-import type { IDatasetControl, IDatasetControlLoadParameters, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
+import type { IDatasetControl, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@pcf/interfaces";
 import type { IEventSubscriber, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
@@ -66,7 +66,7 @@ export interface ITaskRuntime {
     /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
     /** Calls `onLoad`, then initializes and registers the provider it returns. */
-    load(parameters: IDatasetControlLoadParameters<ITaskViewData>): Promise<IDatasetControlLoadResult>;
+    load(): Promise<IDatasetControlLoadResult<ITaskViewData>>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
     getFieldMapping(): IFieldMapping;

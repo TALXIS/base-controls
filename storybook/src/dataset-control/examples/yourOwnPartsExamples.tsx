@@ -4,7 +4,7 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
 const SELECTED_VALUE_CODE = `import { useRegisterDatasetControlPart } from '@talxis/base-controls'
-import { loadDeals, loadDealViews } from './views'
+import { loadDeals } from './views'
 
 const getTotal = (provider: IDataProvider): number => provider.getSelectedRecordIds().reduce((sum, id) => sum + (provider.getRecordsMap()[id]?.getValue('value') ?? 0), 0)
 
@@ -17,7 +17,7 @@ const SelectedValue = () => {
     return <Text styles={{ root: { alignSelf: 'center' } }}>Selected: {total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</Text>
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='selectedValue' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl stateKey='selectedValue' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

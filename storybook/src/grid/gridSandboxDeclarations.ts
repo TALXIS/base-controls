@@ -3515,40 +3515,37 @@ type ILinkEntityExposedExpression = import('@talxis/client-libraries').ILinkEnti
 
 /** What a view sets up, resolved only when it is opened. */
 interface IDatasetControlViewDefinition<TData = unknown> {
-    /** The columns the view shows, set on the provider onLoad returns. */
+    /** The columns the view shows, completed from the provider's available columns and set on it. */
     columns: IColumn[];
     /** The related entities the view's columns come from, set on the provider with them. */
     linking?: ILinkEntityExposedExpression[];
-    /** What else onLoad needs to build the view, user views included. */
+    /** What else the view carries, read through getView().data. */
     data?: TData;
 }
 
 /** A view the user can switch to. */
-interface IDatasetControlView<TData = unknown> {
+interface IDatasetControlView<TData = unknown, TProvider extends IDataProvider = IDataProvider> {
     id: string;
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: { id: string; name: string };
-    /** Returns what the view sets up, read from the provider it is opened on. */
-    resolve: (provider: IDataProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
+    /** Sets the provider up for the view, such as its sorting, and returns its columns. */
+    resolve: (provider: TProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
 
 /** A view as it is opened, with what it sets up. */
 type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
-interface IDatasetControlLoadParameters<TData = unknown> {
-    /** The view to load as listed, the one asked for or kept, else the first; view.resolve(provider) returns the rest. */
-    view?: IDatasetControlView<TData>;
-}
-
-interface IDatasetControlLoadResult {
+interface IDatasetControlLoadResult<TData = unknown> {
     provider: IDataProvider;
+    /** The views to switch between; leave out for a control with one view. */
+    views?: IDatasetControlView<TData>[];
 }
 
 
 /** The views the switcher's onLoad returns, and switching between them. */
 interface IDatasetControlViewSwitcher {
-    /** The views of this mount, from the control's onLoadViews. */
+    /** The views of this mount, from the control's onLoad. */
     getViews(): IDatasetControlView[];
     getCurrentView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
@@ -3619,8 +3616,8 @@ interface IUserQuerySavedValueMap {
 /** The userQueries module, as datasetControl.modules.get('userQueries') returns it. */
 interface IDatasetControlUserQueries {
     readonly events: IEventSubscriber<{ onOperationFailed: (error: unknown) => void }>;
-    /** Saves the value onGetValue returns under key with every user view; undefined saves nothing, a throw stops the save. */
-    saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined): () => void;
+    /** Saves what onGetValue returns with every user view; onApplyValue puts it back as a user view opens. */
+    saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined, onApplyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void;
 }
 
 /** A Dataverse table the user's views are kept in. */
@@ -3943,10 +3940,8 @@ interface IDatasetControl<TData = unknown> extends IRuntime {
     readonly surfaces: IDatasetControlSurfaces;
     /** The provider shown, once the status is ready. */
     getProvider(): IDataProvider | undefined;
-    /** The views of this mount, from onLoadViews; empty before they loaded. */
+    /** The views of this mount, from onLoad; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
-    /** What onLoadDependencies loaded; there from the first module's onLoad on. */
-    getDependencies<TDependencies>(): TDependencies;
     /** The view the provider shown is for. */
     getViewId(): string | undefined;
     /** That view as it was resolved, with its columns and data. */
@@ -3961,14 +3956,10 @@ interface IDatasetControl<TData = unknown> extends IRuntime {
 }
 
 interface IDatasetControlProps<TData = unknown> {
-    /** Loads what the modules and onLoad read through getDependencies(); awaited first on every mount. */
-    onLoadDependencies?: () => Promise<unknown>;
     /** The control's modules, each with a unique name; read on every mount. */
     modules?: IDatasetControlModule[];
-    /** The views to switch between; called before onLoad on every mount. */
-    onLoadViews?: () => Promise<IDatasetControlView<TData>[]>;
-    /** Loads the provider for the view the control resolved; called on every mount. */
-    onLoad: (parameters: IDatasetControlLoadParameters<TData>) => Promise<IDatasetControlLoadResult>;
+    /** Creates the provider and lists the views; called on every mount. */
+    onLoad: () => Promise<IDatasetControlLoadResult<TData>>;
     children: React.ReactNode;
     /** '100%' fills the parent; the content's height when left out. */
     height?: string;
@@ -4130,6 +4121,8 @@ type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
 /** The tasks of one view, loaded at once and shown as a tree. */
 interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
+    /** The columns quick find searches, by name. */
+    setQuickFindColumns(columnNames: string[]): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
     registerAvailableColumns(hook: (columns: IColumn[]) => void, priority?: number): () => void;
     /** Reads the tasks with this column whatever the view shows; returns its unregistration. */
@@ -4202,10 +4195,13 @@ interface IDatasetControlPartMap {
 }
 
 /** What a TaskDatasetControl's onLoad is called with. */
-interface ITaskGridLoadParameters extends IDatasetControlLoadParameters<ITaskViewData> {
+interface ITaskGridLoadParameters {
     /** The mount the provider is loaded for, to register what the provider's platform adds. */
     taskRuntime: ITaskRuntime;
 }
+
+/** A view of the tasks, set up on the task provider it is opened on. */
+type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 
 /** What a TaskDatasetControl's onLoad returns. */
 interface ITaskGridLoadResult {
@@ -4215,6 +4211,8 @@ interface ITaskGridLoadResult {
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
+    /** The views to switch between; leave out for a task grid with one view. */
+    views?: ITaskGridView[];
 }
 
 /** The project the tasks belong to, as its store loads it. */

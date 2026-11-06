@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { PRODUCT_GALLERY_FILE, VIEWS_FILE, withFiles } from './shared'
 
-const PROVIDER_VIEWS_CODE = `import { loadDeals, loadDealViews } from './views'
+const PROVIDER_VIEWS_CODE = `import { loadDeals } from './views'
 
 const GridExample = () => {
     const modules = React.useMemo(() => [
@@ -13,7 +13,7 @@ const GridExample = () => {
         createFilteringModule(),
     ], [])
 
-    return <DatasetControl onLoadViews={loadDealViews} stateKey='dealViews' onLoad={loadDeals} height='440px'>
+    return <DatasetControl stateKey='dealViews' onLoad={loadDeals} height='440px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />
@@ -30,10 +30,10 @@ const GridExample = () => {
 }
 `
 
-const CUSTOM_UI_CODE = `import { loadProducts, loadProductViews } from './views'
+const CUSTOM_UI_CODE = `import { loadProducts } from './views'
 import { ProductsBody } from './ProductsBody'
 
-const GridExample = () => <DatasetControl onLoadViews={loadProductViews} stateKey='productViews' onLoad={loadProducts} height='560px'>
+const GridExample = () => <DatasetControl stateKey='productViews' onLoad={loadProducts} height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -61,31 +61,33 @@ export type ProductUi = 'grid' | 'datagrid' | 'gallery'
 const TABLES = { id: 'tables', name: 'Tables' }
 const GALLERIES = { id: 'galleries', name: 'Galleries' }
 
-//each view keeps the UI it is drawn with, and the category it shows
-/** What a view keeps for onLoad and the body. */
+/** What a view keeps for the body: the UI it is drawn with. */
 export interface IProductViewData {
     ui: ProductUi
-    category?: number
 }
 
 //the product name is what the quick find searches
 const COLUMNS = createProductsProvider().getColumns().map(column => ({ ...column, isPrimary: column.name === 'name' }))
 
+//a gallery of one category, filtered as it opens
+const categoryGallery = (id: string, name: string, category: number): IDatasetControlView<IProductViewData> => ({
+    id,
+    name,
+    group: GALLERIES,
+    resolve: provider => {
+        provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'category', conditionOperator: Operators.Equal.Value, value: \`\${category}\` }] })
+        return { columns: COLUMNS, data: { ui: 'gallery' } }
+    },
+})
+
 const VIEWS: IDatasetControlView<IProductViewData>[] = [
     { id: 'all', name: 'All products', group: TABLES, resolve: () => ({ columns: COLUMNS, data: { ui: 'grid' } }) },
     { id: 'priceList', name: 'Price list', group: TABLES, resolve: () => ({ columns: COLUMNS, data: { ui: 'datagrid' } }) },
-    { id: 'seating', name: 'Seating', group: GALLERIES, resolve: () => ({ columns: COLUMNS, data: { ui: 'gallery', category: 2 } }) },
-    { id: 'lighting', name: 'Lighting', group: GALLERIES, resolve: () => ({ columns: COLUMNS, data: { ui: 'gallery', category: 3 } }) },
+    categoryGallery('seating', 'Seating', 2),
+    categoryGallery('lighting', 'Lighting', 3),
 ]
 
-export const loadProductViews = async (): Promise<IDatasetControlView<IProductViewData>[]> => VIEWS
-
-export const loadProducts = async ({ view }: IDatasetControlLoadParameters<IProductViewData>): Promise<IDatasetControlLoadResult> => {
-    const provider = createProductsProvider()
-    const category = view && (await view.resolve(provider)).data?.category
-    provider.setFiltering(category ? { filterOperator: Type.And.Value, conditions: [{ attributeName: 'category', conditionOperator: Operators.Equal.Value, value: \`\${category}\` }] } : null)
-    return { provider }
-}
+export const loadProducts = async (): Promise<IDatasetControlLoadResult<IProductViewData>> => ({ provider: createProductsProvider(), views: VIEWS })
 `,
 }
 

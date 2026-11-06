@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const BACK_WHERE_YOU_LEFT_OFF_CODE = `import { loadDeals, loadDealViews } from './views'
+const BACK_WHERE_YOU_LEFT_OFF_CODE = `import { loadDeals } from './views'
 
 const GridExample = () => {
     const [isShown, setIsShown] = React.useState(true)
@@ -10,7 +10,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Show the deals' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
         {/* the stateKey reopens the last view after a remount */}
-        {isShown && <DatasetControl onLoadViews={loadDealViews} stateKey='deals-state' onLoad={loadDeals} height='400px'>
+        {isShown && <DatasetControl stateKey='deals-state' onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
@@ -27,7 +27,7 @@ const GridExample = () => {
 }
 `
 
-const INSIDE_THE_STORE_CODE = `import { loadDeals, loadDealViews } from './views'
+const INSIDE_THE_STORE_CODE = `import { loadDeals } from './views'
 
 const styles = mergeStyleSets({
     store: { flex: '0 0 340px', height: 440, margin: 0, padding: 12, overflow: 'auto', boxSizing: 'border-box', fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
@@ -56,7 +56,7 @@ const GridExample = () => {
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <Stack.Item grow styles={{ root: { minWidth: 0 } }}>
             <StateProvider store={store}>
-                <DatasetControl onLoadViews={loadDealViews} stateKey='deals' onLoad={loadDeals} height='440px'>
+                <DatasetControl stateKey='deals' onLoad={loadDeals} height='440px'>
                     <DatasetControl.Header>
                         <DatasetControl.Header.Start>
                             <DatasetControl.ViewSwitcher />

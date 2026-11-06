@@ -5,7 +5,7 @@ import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
 const COME_BACK_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, StateProvider, StateStore } from '@talxis/base-controls'
 import { DefaultButton, mergeStyleSets, Stack, Text } from '@fluentui/react'
-import { loadDeals, loadDealViews } from './views'
+import { loadDeals } from './views'
 
 const styles = mergeStyleSets({
     layout: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 },
@@ -14,7 +14,7 @@ const styles = mergeStyleSets({
 
 const modules = [createClientSideRowModelModule(), createSortingModule()]
 
-export const Deals = () => <DatasetControl stateKey='deals' onLoadViews={loadDealViews} onLoad={loadDeals} height='420px'>
+export const Deals = () => <DatasetControl stateKey='deals' onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

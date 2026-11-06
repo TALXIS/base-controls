@@ -3,25 +3,21 @@ import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider,
 import { HookRegistry, IStateStore, RuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn, IDatasetControlViewDefinition } from "./interfaces";
+import { IDatasetControl, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
-/** What `onLoad` is called with. */
-export interface IDatasetControlLoadParameters<TData = unknown> {
-    /** The view to load as listed, the one asked for or kept, else the first; `view.resolve(provider)` returns the rest. */
-    view?: IDatasetControlView<TData>;
-}
-
 /** What `onLoad` returns. */
-export interface IDatasetControlLoadResult {
+export interface IDatasetControlLoadResult<TData = unknown> {
     /** The provider every part works on. */
     provider: IDataProvider;
+    /** The views to switch between; leave out for a control with one view. */
+    views?: IDatasetControlView<TData>[];
 }
 
-/** A hook over the views `onLoadViews` returned, which it adds to or changes in place. */
+/** A hook over the views `onLoad` returned, which it adds to or changes in place. */
 export type DatasetControlViewsHook = (views: IDatasetControlView[]) => void;
 
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
@@ -32,7 +28,7 @@ export interface IDatasetControlRuntime extends IDatasetControl {
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
     getViewStateStore(viewId?: string): IStateStore;
     /**
-     * Registers a hook over the views, applied on every load after `onLoadViews`.
+     * Registers a hook over the views, applied on every load after `onLoad`.
      * @param priority Ascending: a higher number gets the later word.
      */
     registerViews(hook: DatasetControlViewsHook, priority?: number): () => void;
@@ -63,7 +59,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _viewsHooks = new HookRegistry<DatasetControlViewsHook>();
     private _viewId?: string;
     private _view?: IDatasetControlResolvedView;
-    private _dependencies?: unknown;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
         this._onGetProps = parameters.onGetProps;
@@ -97,10 +92,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     public getViews(): IDatasetControlView[] {
         return this._views;
-    }
-
-    public getDependencies<TDependencies>(): TDependencies {
-        return this._dependencies as TDependencies;
     }
 
     public getViewId(): string | undefined {
@@ -165,48 +156,42 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private async _init(): Promise<void> {
-        this._dependencies = await this._onGetProps().onLoadDependencies?.();
         await this._loadModules();
-        //a copy: the hooks change it in place
-        const views = [...await this._onGetProps().onLoadViews?.() ?? []];
-        this._viewsHooks.apply(views);
-        this._views = views;
-        //a failed view stays on the state, so the remount that retries it opens it again
-        const viewId = this._resolveViewId(this._state.getViewId());
-        const listed = this._views.find(view => view.id === viewId);
-        let resolving: Promise<IDatasetControlViewDefinition> | undefined;
-        //onLoad may resolve the view itself; it is resolved once either way
-        const resolve = (provider: IDataProvider) => resolving ??= Promise.resolve(listed!.resolve(provider));
-        const { provider } = await this._onGetProps().onLoad({ view: listed && { ...listed, resolve } });
-        let view: IDatasetControlResolvedView | undefined;
+        const { provider, views = [] } = await this._onGetProps().onLoad();
         try {
+            //a copy: the hooks change it in place
+            const listedViews = [...views];
+            this._viewsHooks.apply(listedViews);
+            this._views = listedViews;
+            //a failed view stays on the state, so the remount that retries it opens it again
+            const viewId = this._resolveViewId(this._state.getViewId());
+            const listed = this._views.find(view => view.id === viewId);
             if (listed) {
-                view = { ...listed, ...await resolve(provider) };
+                this._view = { ...listed, ...await listed.resolve(provider) };
                 //before the columns, which a related column is resolved through
-                const linking = view.linking ?? provider.getLinking();
+                const linking = this._view.linking ?? provider.getLinking();
                 provider.setLinking(linking);
-                provider.setColumns(await this._completeColumns(provider, view.columns, linking));
+                provider.setColumns(await this._completeColumns(provider, this._view.columns, linking));
             }
             this._state.restore(provider, viewId);
-            //onLoad may have prepared and started the first load itself
+            //the provider may have prepared and started the first load itself
             if (!provider.isFirstLoadRequested()) {
                 await provider.preload();
                 await provider.getPaging().loadExactPage(provider.getPaging().pageNumber);
             }
+            //the mount went while it loaded, so _destroy has already run without it
+            if (this.lifecycle.isDestroyed()) {
+                this._releaseProvider(provider);
+                return;
+            }
+            this._provider = provider;
+            this._viewId = viewId;
+            this._state.setViewId(viewId);
         }
         catch (error) {
             this._releaseProvider(provider);
             throw error;
         }
-        //the mount went while it loaded, so _destroy has already run without it
-        if (this.lifecycle.isDestroyed()) {
-            this._releaseProvider(provider);
-            return;
-        }
-        this._provider = provider;
-        this._viewId = viewId;
-        this._view = view;
-        this._state.setViewId(viewId);
     }
 
     //a column the provider does not offer is kept as the view gives it

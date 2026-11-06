@@ -1,5 +1,6 @@
 {
     ". IDatasetControlEvents": null,
+    ". IDatasetControlLoadParameters": null,
     ". useIsLoading": null,
     ". DatasetAdapter": "DatasetControlEntry",
     ". VirtualDatasetAdapter": "VirtualDatasetControlEntry",

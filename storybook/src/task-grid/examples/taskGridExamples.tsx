@@ -3,19 +3,23 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
-const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const SHOWCASE_CODE = `import { createLoadTasks, createTaskDatabase, TASK_VIEWS } from './tasks'
 
 //sample data from these docs: LOOKUP_MANY_*, CHECKLIST_*, DEPENDENC*, TEMPLATES, getTaskColumns
 const VIEW_COLUMNS = [...LOOKUP_MANY_VIEW_COLUMNS, CHECKLIST_COLUMN, ...DEPENDENCY_COLUMNS]
 
 //All tasks adds the modules' columns and searches assignees and tags
-const loadViews = async () => (await loadTaskViews()).map(view => view.id === 'all'
-    ? { ...view, resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(VIEW_COLUMNS), data: { quickFindColumns: ['subject', 'assignedto', 'tags'] } }) }
-    : view)
+const VIEWS: ITaskGridView[] = TASK_VIEWS.map(view => view.id !== 'all' ? view : {
+    ...view,
+    resolve: provider => {
+        provider.setQuickFindColumns(['subject', 'assignedto', 'tags'])
+        return { columns: getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend', 'percentcomplete').concat(VIEW_COLUMNS) }
+    },
+})
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
     const gridModules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -33,7 +37,7 @@ const GridExample = () => {
     ], [database])
 
     //enableCreation adds the + at the start of a row, which adds a subtask
-    return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoadViews={loadViews} onLoad={loadTasks} stateKey='taskGridDocs.showcase' height='560px'>
+    return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoad={loadTasks} stateKey='taskGridDocs.showcase' height='560px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -138,7 +142,7 @@ const GridExample = () => {
 }
 `
 
-const ROOT_TASK_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const ROOT_TASK_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const getParentId = (task: IRawRecord): string | undefined => task.parentid?.[0]?.id.guid
 
@@ -159,7 +163,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Project' styles={{ root: { maxWidth: 320 } }} options={ROOT_OPTIONS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option?.key ?? ''))} />
         {/* the root is read at mount, so a new key mounts the control again */}
-        <TaskDatasetControl key={rootTaskId} enableCreation onLoadViews={loadTaskViews} onLoad={loadTasks} height='420px'>
+        <TaskDatasetControl key={rootTaskId} enableCreation onLoad={loadTasks} height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <TaskDatasetControl.Ribbon />
@@ -177,22 +181,38 @@ const VIEWS_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks
 
 const COLUMNS = getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend')
 
-//the control applies each view's data for you
-const loadViews = async (): Promise<IDatasetControlView<ITaskViewData>[]> => [
+//each view sets the provider up as it opens
+const VIEWS: ITaskGridView[] = [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: COLUMNS }) },
-    //sorts each task's subtasks
-    { id: 'planning', name: 'Planning', resolve: () => ({ columns: COLUMNS, data: { sorting: [{ name: 'scheduledstart', sortDirection: 0 }] } }) },
-    //matches keep their ancestors
-    { id: 'design', name: 'Design work', resolve: () => ({ columns: COLUMNS, data: { searchQuery: 'design' } }) },
+    {
+        id: 'planning',
+        name: 'Planning',
+        resolve: provider => {
+            //sorts each task's subtasks
+            provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])
+            return { columns: COLUMNS }
+        },
+    },
+    {
+        id: 'design',
+        name: 'Design work',
+        resolve: provider => {
+            //matches keep their ancestors
+            provider.setSearchQuery('design')
+            return { columns: COLUMNS }
+        },
+    },
+    //the task grid reads isFlatList from the view's data
     { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: COLUMNS, data: { isFlatList: true } }) },
 ]
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
+    //the views come with the tasks
+    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
     const gridModules = React.useMemo(() => [createSortingModule(), createFilteringModule()], [])
 
-    return <TaskDatasetControl onLoadViews={loadViews} onLoad={loadTasks} stateKey='taskGridDocs.views' height='480px'>
+    return <TaskDatasetControl onLoad={loadTasks} stateKey='taskGridDocs.views' height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />
@@ -214,7 +234,7 @@ const GridExample = () => {
 }
 `
 
-const WORKING_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const WORKING_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const subjects = (records: IRecord[]) => records.map(record => record.getValue('subject')).join(', ')
 
@@ -236,7 +256,6 @@ const GridExample = () => {
             enableCreation
             enableEditing
             enableDeletion
-            onLoadViews={loadTaskViews}
             onLoad={loadTasks}
             onTasksCreated={records => setMessage('Created ' + subjects(records))}
             onTasksDeleted={taskIds => setMessage('Deleted ' + taskIds.length + ' tasks')}
@@ -257,7 +276,7 @@ const GridExample = () => {
 }
 `
 
-const TALKING_CODE = `import { createLoadTasks, createTaskDatabase, loadTaskViews } from './tasks'
+const TALKING_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const GridExample = () => {
     const runtimeRef = React.useRef<ITaskRuntime>()
@@ -311,7 +330,7 @@ const GridExample = () => {
             <DefaultButton text='Complete the selected' onClick={() => { completeSelected() }} />
             <DefaultButton text='Toggle the hierarchy' onClick={toggleHierarchy} />
         </Stack>}
-        <TaskDatasetControl enableCreation enableEditing onLoadViews={loadTaskViews} onLoad={loadTasks} onReady={onReady} height='440px'>
+        <TaskDatasetControl enableCreation enableEditing onLoad={loadTasks} onReady={onReady} height='440px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <TaskDatasetControl.Settings />

@@ -14,7 +14,7 @@ Loading records, running a command or saving a view can fail, and the user needs
 
 | What fails | What the user sees |
 |---|---|
-| A load: \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page | The error in place of the parts, with **Details** and **Try again** |
+| A load: a module's \`onLoad\`, the control's \`onLoad\`, a view's \`resolve\` or the provider's first page | The error in place of the parts, with **Details** and **Try again** |
 | A part, while it renders | The same error; **Try again** draws the parts again, without loading |
 | A later load of the provider, such as a search or another page | The error in \`DatasetControl.Notifications\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) |
 | The ribbon's first \`onLoad\` | The error in place of the commands, with **Details** and **Try again** |

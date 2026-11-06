@@ -3,25 +3,25 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const FLUENT_V9_CODE = `import { IDealViewData, loadDeals, loadDealViews, saveDealViewData } from './views'
+const FLUENT_V9_CODE = `import { loadDeals, saveDealViewData } from './views'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
 
 //fails once after the ribbon asks it to, to show the error in Fluent v9 too
-const onLoad = async (params: IDatasetControlLoadParameters<IDealViewData>) => {
+const onLoad = async () => {
     if (failNextLoad.current) {
         failNextLoad.current = false
         await new Promise(resolve => setTimeout(resolve, 600))
         throw new Error('The deals service is not reachable.')
     }
-    return loadDeals(params)
+    return loadDeals()
 }
 
 const GridExample = () => {
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule<IDealViewData>({ storageKey: 'docs.fluentV9DealViews' })], [])
+    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.fluentV9DealViews' })], [])
 
-    return <DatasetControl modules={modules} onLoadViews={loadDealViews} onLoad={onLoad} onMounted={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
+    return <DatasetControl modules={modules} onLoad={onLoad} onMounted={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 {/* save a view of your own, then open Manage views to see its drawer in v9 */}

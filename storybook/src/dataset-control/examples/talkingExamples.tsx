@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const DRIVE_CODE = `import { loadDeals, loadDealViews } from './views'
+const DRIVE_CODE = `import { loadDeals } from './views'
 
 //a toolbar of your own: it talks to the control, and through it to the parts
 const Shortcuts = () => {
@@ -23,7 +23,7 @@ const Shortcuts = () => {
     </Stack>
 }
 
-const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='talkingDrive' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl stateKey='talkingDrive' onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -44,7 +44,7 @@ const GridExample = () => <DatasetControl onLoadViews={loadDealViews} stateKey='
 </DatasetControl>
 `
 
-const WATCH_CONTROL_CODE = `import { loadDeals, loadDealViews } from './views'
+const WATCH_CONTROL_CODE = `import { loadDeals } from './views'
 
 const getLogStyles = (theme: ITheme) => mergeStyleSets({
     log: { padding: '8px 12px', minHeight: 176, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontFamily: 'Consolas, monospace', fontSize: theme.fonts.medium.fontSize, lineHeight: '22px' },
@@ -75,7 +75,7 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => { controlRef.current?.loadView('won') }} />
             <DefaultButton text='Reload' onClick={() => { controlRef.current?.reload() }} />
         </Stack>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' onLoad={loadDeals} onMounted={onMounted} height='380px'>
+        <DatasetControl stateKey='talkingWatch' onLoad={loadDeals} onMounted={onMounted} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
@@ -92,17 +92,20 @@ const GridExample = () => {
 }
 `
 
-const MODULE_CODE = `import { loadDeals, loadDealViews } from './views'
+const MODULE_CODE = `import { loadDeals } from './views'
 
 const CLOSING_SOON: IDatasetControlView = {
     id: 'closingSoon',
     name: 'Closing soon',
     group: { id: 'reports', name: 'Reports' },
-    //sortDirection 0 is ascending
-    resolve: () => ({ columns: DEAL_COLUMNS, data: { sorting: [{ name: 'closedate', sortDirection: 0 }] } }),
+    resolve: provider => {
+        //sortDirection 0 is ascending
+        provider.setSorting([{ name: 'closedate', sortDirection: 0 }])
+        return { columns: DEAL_COLUMNS }
+    },
 }
 
-//loaded anew on every mount, before onLoadViews
+//loaded anew on every mount, before the control's onLoad
 const closingSoonModule: IDatasetControlModule = {
     name: 'closingSoon',
     onLoad: control => {
@@ -112,7 +115,7 @@ const closingSoonModule: IDatasetControlModule = {
     },
 }
 
-const GridExample = () => <DatasetControl modules={[closingSoonModule]} onLoadViews={loadDealViews} stateKey='talkingModule' onLoad={loadDeals} height='420px'>
+const GridExample = () => <DatasetControl modules={[closingSoonModule]} stateKey='talkingModule' onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
