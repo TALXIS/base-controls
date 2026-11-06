@@ -26,8 +26,8 @@ const STATUS_EVENTS: (keyof IRuntimeEvents)[] = ['onReady', 'onInitFailed'];
 
 /** One runtime per mount: creates it, drives its lifecycle, shows a failed init with a retry, and makes a new one on remount. */
 export const RuntimeHost = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<TRuntime>) => {
-    const [mountKey, setMountKey] = useState(() => crypto.randomUUID());
-    return <RuntimeMount key={mountKey} {...props} onRemount={() => setMountKey(crypto.randomUUID())} />;
+    const [mountKey, setMountKey] = useState(0);
+    return <RuntimeMount key={mountKey} {...props} onRemount={() => setMountKey(key => key + 1)} />;
 };
 
 const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<TRuntime> & { onRemount: () => void }) => {
