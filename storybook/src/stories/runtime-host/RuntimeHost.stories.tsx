@@ -50,11 +50,11 @@ The host draws the loading state and a failed load; the control draws the rest. 
 
 ## Changing how it looks
 
-\`RuntimeHost\` takes \`components\` for what it draws itself: the loading state and the error. A component in \`loadingBoundary\` can read the runtime with \`useRuntime()\`, as the second example's spinner does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`RuntimeHost\` takes \`components\` for what it draws itself: the loading state and the error. A component in \`loading\` can read the runtime with \`useRuntime()\`, as the second example's spinner does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
+| \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
 | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
 
 To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).

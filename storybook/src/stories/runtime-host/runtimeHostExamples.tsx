@@ -129,7 +129,7 @@ const DealSummary = () => {
 const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
-    return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)} components={{ loadingBoundary: { onRenderContainer: () => <LoadingDeals /> } }}>
+    return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)} components={{ loading: { onRenderContainer: () => <LoadingDeals /> } }}>
         <DealSummary />
     </RuntimeHost>
 }

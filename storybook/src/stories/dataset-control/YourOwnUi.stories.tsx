@@ -59,7 +59,6 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 |---|---|---|---|---|
 | \`DatasetControl\` | Top level | \`onRenderContainer\` | \`ContainerUiComponents\` | The control's box |
 | \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\` | \`SkeletonUiComponents\` | The placeholder while the first page loads |
-| \`DatasetControl\` | \`skeleton.loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | What holds the placeholder |
 | \`DatasetControl\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
 | \`DatasetControl\` | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | The overlay \`loadingOverlay.show()\` puts over the control |
 | \`Header\` | Top level | \`onRenderContainer\` | \`HeaderUiComponents\` | The header's box, a \`WrapCompactProvider\` |
@@ -84,7 +83,6 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 | \`UserQueries\` | \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
 | \`UserQueries\` | \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
 
-- \`skeleton.loadingBoundary.onRenderContainer\` is the placeholder itself, so \`<div {...props} />\` there shows a spinner instead.
 - The column editor's command bar is drawn only with commands, and a column's \`commands\` start with Remove.
 - \`Notifications\` draws a \`NotificationMessageBar\`; call that from your slot to keep the default.
 

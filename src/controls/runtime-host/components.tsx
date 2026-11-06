@@ -6,5 +6,5 @@ export interface IRuntimeHostComponents {
     /** How a failed init looks. */
     errorMessage: Partial<IErrorMessageBarComponents>;
     /** What shows until the runtime is ready. */
-    loadingBoundary: Partial<ILoadingBoundaryComponents>;
+    loading: Partial<ILoadingBoundaryComponents>;
 }

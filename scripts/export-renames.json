@@ -3,6 +3,7 @@
     ". IDatasetControlLoadParameters": null,
     ". ITaskGridLoadParameters": null,
     ". ITaskRuntimeEvents": null,
+    ". IDatasetControlSkeletonComponents": "ISkeletonUiComponents",
     ". useIsLoading": null,
     ". DatasetAdapter": "DatasetControlEntry",
     ". VirtualDatasetAdapter": "VirtualDatasetControlEntry",

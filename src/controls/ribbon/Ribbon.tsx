@@ -28,11 +28,11 @@ export const Ribbon = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
     const onCreate = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (ribbon => propsRef.current.onLoad!(ribbon)) });
 
-    const loadingBoundary: Partial<ILoadingBoundaryComponents> = {
+    const loading: Partial<ILoadingBoundaryComponents> = {
         onRenderContainer: () => <RibbonShimmerUi align={props.align} className={props.className} components={props.components?.shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> onCreate={onCreate} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ errorMessage: props.components?.errorMessage, loadingBoundary }}>
+    return <RuntimeHost<RibbonRuntime> onCreate={onCreate} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ errorMessage: props.components?.errorMessage, loading }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };

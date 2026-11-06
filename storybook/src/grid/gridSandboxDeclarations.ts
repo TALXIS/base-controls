@@ -3970,7 +3970,7 @@ interface IDatasetControlProps<TData = unknown> {
     stateKey?: string;
     /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to true. */
     destroyProviderOnUnmount?: boolean;
-    components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null; loadingBoundary?: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null; onRenderSpinner: (props: any) => JSX.Element | null; onRenderText: (props: any) => JSX.Element | null }> } };
+    components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null } };
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
 }

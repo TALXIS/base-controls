@@ -20,7 +20,6 @@ export { PAGE_SIZE_SWITCHER_LABELS, PAGE_SIZE_SWITCHER_LABELS_CS, DEFAULT_PAGE_S
 export { EMPTY_STATE_LABELS, EMPTY_STATE_LABELS_CS } from './adapters/empty-state';
 export type { IEmptyStateProps } from './adapters/empty-state';
 export { EDIT_COLUMNS_LABELS, EDIT_COLUMNS_LABELS_CS } from './adapters/edit-columns';
-export type { ISkeletonComponents as IDatasetControlSkeletonComponents } from './adapters/skeleton';
 export type { IHeaderProps as IDatasetControlHeaderProps, IHeaderStartProps as IDatasetControlHeaderStartProps, IHeaderEndProps as IDatasetControlHeaderEndProps } from './adapters/header';
 export type { IDatasetControlRegion } from './adapters/region';
 export { useDatasetControlRegion } from './adapters/region';

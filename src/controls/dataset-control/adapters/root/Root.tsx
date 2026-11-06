@@ -49,15 +49,13 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
     });
 
     const { errorMessage, skeleton, loadingOverlay, ...container } = props.components ?? {};
-    const { loadingBoundary: skeletonBoundary, ...skeletonUi } = skeleton ?? {};
-    const loadingBoundary: Partial<ILoadingBoundaryComponents> = {
+    const loading: Partial<ILoadingBoundaryComponents> = {
         onRenderContainer: () => <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-            <DatasetControlUi.Skeleton height={props.height} components={skeletonUi} />
+            <DatasetControlUi.Skeleton height={props.height} components={skeleton} />
         </DatasetControlUi.Container>,
-        ...skeletonBoundary,
     };
 
-    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loadingBoundary }}>
+    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loading }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;
