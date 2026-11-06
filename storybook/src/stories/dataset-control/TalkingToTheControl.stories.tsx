@@ -33,7 +33,7 @@ Inside the control, any component gets it from \`useDatasetControl()\`, as the t
 
 ## Reach the parts
 
-Every part on the page registers itself on the control under its own key, for as long as it is rendered, and \`control.parts\` finds it. The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's own page lists its members.
+Every part on the page provides itself on the control under its own key, for as long as it is rendered, and \`control.parts\` finds it. The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's own page lists its members.
 
 | Member | Does |
 |---|---|
@@ -49,7 +49,7 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 
 | Member | Description |
 |---|---|
-| \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it. |
+| \`name\` | Unique within the control; two modules of one name throw "listed twice". What \`onLoad\` returns is provided under it. |
 | \`priority\` | Optional, \`0\` by default. Lower loads first, and modules of the same priority load at the same time. |
 | \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the mount goes. A throw fails the load, and the modules already loaded are destroyed. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, the last loaded first, before the provider is released. |

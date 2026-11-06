@@ -1,5 +1,5 @@
 import { PinnedRowModule } from "ag-grid-community";
-import { ServiceLocator } from "@core";
+import { ServiceRegistry } from "@core";
 import { IGridModule } from "../../interfaces";
 import { IGridAggregationComponents } from "./components";
 import { GridAggregation } from "./GridAggregation";
@@ -20,9 +20,9 @@ export const createAggregationModule = (parameters?: IAggregationModuleParameter
     agGridModules: [PinnedRowModule],
     onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
-        const services = new ServiceLocator<IGridAggregationServiceMap>();
-        services.register('gridServices', () => gridServices);
-        services.register('components', () => parameters?.components ?? {});
+        const services = new ServiceRegistry<IGridAggregationServiceMap>();
+        services.provide('gridServices', gridServices);
+        services.provide('components', parameters?.components ?? {});
         return new GridAggregation({ services, enableUserAggregation: parameters?.enableUserAggregation });
     },
     onDestroy: aggregation => aggregation.destroy(),

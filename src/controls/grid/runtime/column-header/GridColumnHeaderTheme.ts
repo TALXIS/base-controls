@@ -1,9 +1,9 @@
 import { createThemeBuilder, ITheme } from "@theme";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { IGridColumnHeader } from "./GridColumnHeader";
 
 export interface IGridColumnHeaderThemeParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
     /** The header this is the theme of. */
     header: IGridColumnHeader;
 }
@@ -16,7 +16,7 @@ export interface IGridColumnHeaderTheme {
 }
 
 export class GridColumnHeaderTheme implements IGridColumnHeaderTheme {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _header: IGridColumnHeader;
     private _seed?: ITheme;
 

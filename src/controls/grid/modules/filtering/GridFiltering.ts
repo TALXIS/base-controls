@@ -8,7 +8,7 @@ import { GRID_FILTERING_LABELS } from "./labels";
 import { GridFilteringIconComponents, IGridFilteringComponents } from "./components";
 import { FilterCalloutHost } from "./adapters/filter-callout-host/FilterCalloutHost";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
-import { IGridFilteringServiceLocator } from "./runtime";
+import { IGridFilteringServiceRegistry } from "./runtime";
 import { IGridSurface } from "../../runtime/surfaces";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
@@ -42,7 +42,7 @@ export type GridFilterControlParametersHook = (result: IParameters, parameters: 
 
 export interface IGridFilteringParameters {
     /** This module's own locator. */
-    services: IGridFilteringServiceLocator;
+    services: IGridFilteringServiceRegistry;
 }
 
 export interface IGridFilteringHooks {
@@ -80,7 +80,7 @@ export interface IGridFiltering {
 }
 
 export class GridFiltering implements IGridFiltering {
-    private _services: IGridFilteringServiceLocator;
+    private _services: IGridFilteringServiceRegistry;
     private _filtering: Filtering;
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();
     private _openColumnName?: string;

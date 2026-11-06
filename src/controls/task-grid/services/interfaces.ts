@@ -1,4 +1,4 @@
-import type { IGridServiceLocator, IGridServiceMap } from "@controls/grid";
+import type { IGridServiceRegistry, IGridServiceMap } from "@controls/grid";
 import type { ITaskDataProvider } from "../runtime/provider";
 import type { ITaskExpansion } from "../runtime/tree";
 
@@ -9,4 +9,4 @@ export interface ITaskGridServiceMap extends IGridServiceMap {
     taskExpansion: ITaskExpansion;
 }
 
-export type ITaskGridServiceLocator = IGridServiceLocator<ITaskGridServiceMap>;
+export type ITaskGridServiceRegistry = IGridServiceRegistry<ITaskGridServiceMap>;

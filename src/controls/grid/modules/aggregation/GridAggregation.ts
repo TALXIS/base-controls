@@ -13,7 +13,7 @@ import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/Cell
 import { TotalCell } from "./adapters/total-cell/TotalCell";
 import { AggregateCell } from "./adapters/aggregate-cell/AggregateCell";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
-import { IGridAggregationServiceLocator } from "./runtime";
+import { IGridAggregationServiceRegistry } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridAgTheme } from "../../runtime/theme";
 
@@ -43,7 +43,7 @@ const TOTAL_LABELS: Record<string, keyof typeof GRID_AGGREGATION_LABELS.defaults
 
 export interface IGridAggregationParameters {
     /** This module's own locator. */
-    services: IGridAggregationServiceLocator;
+    services: IGridAggregationServiceRegistry;
     /** Whether a column's menu offers the totals. */
     enableUserAggregation?: boolean;
 }
@@ -67,7 +67,7 @@ export interface IGridAggregation {
 }
 
 export class GridAggregation implements IGridAggregation {
-    private _services: IGridAggregationServiceLocator;
+    private _services: IGridAggregationServiceRegistry;
     private _allowUserAggregation: boolean;
     private _totalRow?: TotalRow;
     private _totalRecord?: IRecord;

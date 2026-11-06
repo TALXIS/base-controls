@@ -6,7 +6,7 @@ import { CellFieldRenderer } from "../../adapters/cells/field-cell-renderer/Cell
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../adapters/column-header/ColumnHeaderRenderer";
 import { IGridColumnContext } from "./colDef";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { GridColumnHeaders, IGridColumnHeaders, IGridColumnHeadersInternal } from "../column-header";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
 
@@ -22,7 +22,7 @@ const MIN_COLUMN_WIDTH = 40;
 export type GridColumnDefinitionsHook = (columnDefs: ColDef<IRecord>[]) => void;
 
 export interface IGridColumnsParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 export interface IGridColumnsEvents {
@@ -53,7 +53,7 @@ export interface IGridColumnsInternal extends IGridColumns {
 }
 
 export class GridColumns implements IGridColumnsInternal {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     public readonly hooks = {
         columnDefinitions: new HookRegistry<GridColumnDefinitionsHook>(),
     };

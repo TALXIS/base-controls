@@ -1,7 +1,7 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IHookPoint } from "@core";
-import { IGridServiceLocator } from "../../runtime";
+import { IGridServiceRegistry } from "../../runtime";
 import { getColumnContext } from "../../runtime/columns/colDef";
 
 declare module "../../runtime/columns/colDef" {
@@ -47,7 +47,7 @@ export interface IGridLock {
 export type GridLockHook = (result: IGridLock, parameters: IGridLockHookParameters) => void;
 
 export interface IGridLocksParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
 }
 
 export interface IGridLocksHooks {
@@ -63,7 +63,7 @@ export interface IGridLocks {
 }
 
 export class GridLocks implements IGridLocks {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     public readonly hooks = {
         lock: new HookRegistry<GridLockHook>(),
     };

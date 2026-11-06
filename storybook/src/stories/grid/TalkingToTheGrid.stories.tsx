@@ -37,13 +37,13 @@ The grid is made of services, and \`grid.services\` finds them by key; every key
 
 | Member | Returns |
 |---|---|
-| \`get(key)\` | The service. Throws when nothing registered it, so use it for the services every grid has. |
+| \`get(key)\` | The service. Throws when nothing provided it, so use it for the services every grid has. |
 | \`find(key)\` | The service, or \`undefined\`. Use it for \`gridApi\` before AG Grid is ready. |
-| \`observe(key, callback)\` | Calls \`callback\` with the service now if there is one, and again each time something registers it. Returns the function that stops observing. |
-| \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
-| \`unregister(key)\` | Removes the service, until something registers it again. |
+| \`has(key)\` | Whether the service is there. |
+| \`observe(key, effect)\` | Calls \`effect\` with the service now if there is one, and again each time something provides it. Returns the function that stops observing. |
+| \`provide(key, service, { onDestroy? })\` | Adds a service of your own, or replaces one, and returns the function that removes it; \`onDestroy\` releases it when it goes. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
 
-A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered (\`gridApi\` as AG Grid is destroyed), when you stop observing and when the grid unmounts. Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup. Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
+A function the \`observe\` effect returns is its cleanup. It runs before the effect runs again, when the service goes (\`gridApi\` as AG Grid is destroyed), when you stop observing and when the grid unmounts. Whatever the effect returns counts, so write it with braces unless you mean to return a cleanup. Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, \`observe\` does nothing, and \`provide\` releases the service at once.
 
 ## Modules
 
@@ -148,7 +148,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The modules load', hook: 'onLoad', text: 'Each module\'s `onLoad` gets the `IGrid`, in the order of `modules`, before AG Grid exists; a promise it returns is awaited. A module that throws shows the error inside the grid with *Try again*.' },
     { title: 'The grid loads', hook: 'onLoad', text: 'The `onLoad` prop is awaited, after the modules and before AG Grid renders.' },
     { title: 'The grid is ready', hook: 'onReady', text: '`grid.lifecycle.events` fires `onReady`, and AG Grid is created with the options the initial option hooks set.' },
-    { title: 'AG Grid is ready', hook: "observe('gridApi')", text: 'The `gridApi` service registers, so its observers run, and the grid draws the provider\'s data if it has loaded, firing `onDataLoaded`.' },
+    { title: 'AG Grid is ready', hook: "observe('gridApi')", text: 'The `gridApi` service is provided, so its observers run, and the grid draws the provider\'s data if it has loaded, firing `onDataLoaded`.' },
     { title: 'The provider loads', hook: 'onDataLoaded', text: 'After every load of the provider, the grid draws its new columns and rows and fires `onDataLoaded`.' },
     { title: 'The grid unmounts', hook: 'onDestroyed', text: '`grid.lifecycle.events` fires `onDestroyed`, then the `gridApi` service unregisters, so the cleanups its observers returned run while AG Grid still works.' },
     { title: 'The modules go', hook: 'onDestroy', text: 'Each module\'s `onDestroy` gets what its `onLoad` returned.' },

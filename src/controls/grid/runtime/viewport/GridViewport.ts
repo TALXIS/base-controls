@@ -1,7 +1,8 @@
 import { GridApi, IRowNode } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocatorInternal } from "../interfaces";
+import { IGridServiceRegistryInternal } from "../interfaces";
 import { getRowNode } from "../rows/getRowNode";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 const VIEWPORT_STATE_KEY = 'viewport';
 
@@ -23,12 +24,12 @@ export interface IGridViewport {
 }
 
 export interface IGridViewportParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 /** Where the user is scrolled and focused, kept in the grid's state. */
 export class GridViewport implements IGridViewport {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _pending?: IGridViewportState;
     private _hasLoaded = false;
 
@@ -59,14 +60,14 @@ export class GridViewport implements IGridViewport {
         return this._services.find('gridRoot')?.querySelector<HTMLElement>('.ag-header')?.offsetHeight ?? 0;
     }
 
-    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
-        gridApi.addEventListener('bodyScrollEnd', this._onBodyScrollEnd);
-        gridApi.addEventListener('cellFocused', this._onCellFocused);
-        if (this._pending) {
-            gridApi.addEventListener('gridSizeChanged', this._restore);
-            //fired once rows are drawn; rows inside groups only exist once their groups have loaded
-            gridApi.addEventListener('viewportChanged', this._restore);
-        }
+    private _onGridApiAvailable = (gridApi: GridApi<IRecord>): () => void => {
+        const stop = listenToGridApi(gridApi, { bodyScrollEnd: this._onBodyScrollEnd, cellFocused: this._onCellFocused });
+        //viewportChanged fires once rows are drawn; rows inside groups only exist once their groups have loaded
+        const stopRestoring = this._pending ? listenToGridApi(gridApi, { gridSizeChanged: this._restore, viewportChanged: this._restore }) : undefined;
+        return () => {
+            stop();
+            stopRestoring?.();
+        };
     };
 
     private _onDataLoaded = (): void => {

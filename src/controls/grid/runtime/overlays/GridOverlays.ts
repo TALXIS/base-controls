@@ -1,7 +1,8 @@
 import { GridApi } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import type { IGridAgGridOptions } from "../grid";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 /** How long a load may take before it is worth telling anyone about. */
 const LOADING_OVERLAY_DELAY = 150;
@@ -17,12 +18,12 @@ const ACTIVE_OVERLAYS: { [overlay in GridOverlay]: string | undefined } = {
 };
 
 export interface IGridOverlaysParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 /** The spinner and the empty state. */
 export class GridOverlays {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _visibleOverlay: GridOverlay = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
@@ -37,10 +38,22 @@ export class GridOverlays {
 
     /** Listens to the two things an overlay is decided from. */
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
-        gridApi.addEventListener('modelUpdated', () => this._reconcile());
-        gridApi.addEventListener('gridPreDestroyed', () => this._clearPendingLoading());
-        return this._provider.addEventListener('onLoading', this._onLoading);
+        const stopGridApi = listenToGridApi(gridApi, { modelUpdated: this._onModelUpdated, gridPreDestroyed: this._onGridPreDestroyed });
+        const stopProvider = this._provider.addEventListener('onLoading', this._onLoading);
+        return () => {
+            stopGridApi();
+            stopProvider();
+            this._clearPendingLoading();
+        };
     }
+
+    private _onModelUpdated = (): void => {
+        this._reconcile();
+    };
+
+    private _onGridPreDestroyed = (): void => {
+        this._clearPendingLoading();
+    };
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.activeOverlay = ACTIVE_OVERLAYS[this._visibleOverlay];

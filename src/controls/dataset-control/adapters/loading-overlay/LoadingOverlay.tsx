@@ -1,6 +1,6 @@
 import { useEventEmitter, useRerender } from "@core";
 import { ILoadingOverlayComponents, LoadingOverlay as LoadingOverlayUi } from "@ui/loading";
-import { useRegisterDatasetControlPart } from "../root/useRegisterDatasetControlPart";
+import { useProvideDatasetControlPart } from "../root/useProvideDatasetControlPart";
 import { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlayEvents } from "../../runtime/parts/loading-overlay/DatasetControlLoadingOverlay";
 
 export interface ILoadingOverlayProps {
@@ -10,7 +10,7 @@ export interface ILoadingOverlayProps {
 
 /** What it wraps, covered while the `loadingOverlay` part is set loading. */
 export const LoadingOverlay = (props: ILoadingOverlayProps) => {
-    const loadingOverlay = useRegisterDatasetControlPart('loadingOverlay', () => new DatasetControlLoadingOverlay());
+    const loadingOverlay = useProvideDatasetControlPart('loadingOverlay', () => new DatasetControlLoadingOverlay());
     const { rerender } = useRerender();
     useEventEmitter<IDatasetControlLoadingOverlayEvents>(loadingOverlay.events, 'onLoadingChanged', rerender);
 

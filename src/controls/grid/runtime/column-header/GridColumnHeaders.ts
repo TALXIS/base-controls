@@ -3,7 +3,7 @@ import { Column } from "ag-grid-community";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { GridColumnHeader, IGridColumnHeader } from "./GridColumnHeader";
 
 /** Something a module draws in a column header beside its name. */
@@ -38,7 +38,7 @@ export type GridColumnHeaderThemeHook = (builder: ThemeBuilder, header: IGridCol
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void;
 
 export interface IGridColumnHeadersParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 /** What a column header offers and what it draws. */
@@ -81,7 +81,7 @@ export interface IGridColumnHeadersInternal extends IGridColumnHeaders {
 }
 
 export class GridColumnHeaders implements IGridColumnHeadersInternal {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     public readonly events: IEventEmitter<IGridColumnHeadersEvents> = new EventEmitter<IGridColumnHeadersEvents>();
     public readonly hooks = {
         menuSections: new HookRegistry<GridColumnMenuSectionsHook>(),

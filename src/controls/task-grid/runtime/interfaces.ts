@@ -18,7 +18,7 @@ export interface ITaskGridTree {
     revealTask(taskId: string): void;
 }
 
-/** The services a provider's platform registers by augmenting this. */
+/** The services a provider's platform provides, by augmenting this. */
 export interface ITaskRuntimeModuleServiceMap { }
 
 export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
@@ -64,7 +64,7 @@ export interface ITaskRuntime extends IRuntime {
     readonly services: IServiceRegistry<ITaskRuntimeServiceMap>;
     /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
-    /** Calls `onLoad`, then configures and registers the provider it returns. */
+    /** Calls `onLoad`, then configures and provides the provider it returns. */
     load(): Promise<IDatasetControlLoadResult<ITaskViewData>>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;

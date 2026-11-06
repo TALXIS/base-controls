@@ -1,16 +1,16 @@
-import { IGridServiceLocator } from "../../runtime";
+import { IGridServiceRegistry } from "../../runtime";
 import { IGridAgGridOptions } from "../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridClipboardOptions } from "./createClipboardModule";
 
 export interface IGridClipboardParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     options?: IGridClipboardOptions;
 }
 
 /** Copying out of the grid. */
 export class GridClipboard {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _options?: IGridClipboardOptions;
 
     constructor(parameters: IGridClipboardParameters) {

@@ -1,4 +1,4 @@
-import { ServiceLocator } from "@core";
+import { ServiceRegistry } from "@core";
 import { IGridModule } from "../../interfaces";
 import { IGridSortingComponents } from "./components";
 import { GridSorting } from "./GridSorting";
@@ -16,9 +16,9 @@ export const createSortingModule = (parameters?: ISortingModuleParameters): ISor
     name: 'sorting',
     onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
-        const services = new ServiceLocator<IGridSortingServiceMap>();
-        services.register('gridServices', () => gridServices);
-        services.register('components', () => parameters?.components ?? {});
+        const services = new ServiceRegistry<IGridSortingServiceMap>();
+        services.provide('gridServices', gridServices);
+        services.provide('components', parameters?.components ?? {});
         return new GridSorting({ services });
     },
 });

@@ -1,18 +1,18 @@
 import { GridApi, IsGroupOpenByDefaultParams } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../../runtime";
+import { IGridServiceRegistry } from "../../../runtime";
 import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../runtime/row-model";
 import { ClientSideRowModelGrouping } from "./ClientSideRowModelGrouping";
 import { IGridAgGridOptions } from "../../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../../priorities";
 
 export interface IClientSideRowModelParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
 }
 
 /** Every row at once, handed over as data. */
 export class ClientSideRowModel implements IGridRowModel {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _grouping?: ClientSideRowModelGrouping;
     //never unset: tree data switched on before any rows leaves AG Grid's tree without a root
     private _rows: IRecord[] = [];

@@ -107,7 +107,7 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
 
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     runtime: IDatasetControlInternal;
-    labels: LabelsService;
+    labels: Pick<LabelsService, 'getLabels'>;
     surfaces: DatasetControlSurfaces;
     viewSwitcher: DatasetControlViewSwitcher;
     quickFind: DatasetControlQuickFind;
@@ -118,4 +118,4 @@ export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     loadingOverlay: DatasetControlLoadingOverlay;
 }
 
-export type IDatasetControlServiceLocator = IServiceRegistry<IDatasetControlServiceMap>;
+export type IDatasetControlServiceRegistry = IServiceRegistry<IDatasetControlServiceMap>;

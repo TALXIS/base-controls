@@ -35,7 +35,7 @@ A part of your own is any component you put inside the control: a total in the f
 
 {{story: Total the selected deals}}
 
-- \`useRegisterDatasetControlPart(key, create)\` registers the part for \`control.parts\`; declare its key first, as the example's \`types.ts\` does.
+- \`useProvideDatasetControlPart(key, create)\` provides the part for \`control.parts\`; declare its key first, as the example's \`types.ts\` does.
 - \`DatasetControl.Ui\`, also exported as \`DatasetControlUi\`, holds the regions and most parts as plain UI with no control behind them, for a part that looks like a built-in one.
 - The ribbon and the notifications are not in \`DatasetControl.Ui\`: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 
@@ -98,7 +98,7 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it but the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 | \`useCompact()\` | Whether the header is compact: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`useRegisterDatasetControlPart(key, create)\` | Nothing; creates an object once and registers it under \`key\` for \`control.parts\`, while the component is mounted. |
+| \`useProvideDatasetControlPart(key, create)\` | Nothing; creates an object once and provides it under \`key\` for \`control.parts\`, while the component is mounted. |
 
 ## Where next
 

@@ -22,7 +22,7 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
     const runtime = useDatasetControlInternal();
     const provider = useDataProviderEvents(['onLoading']);
     const styles = useMemo(() => getDatasetControlRibbonStyles(), []);
-    const ribbonRef = useRef<IRibbon>();
+    const removeRef = useRef<() => void>();
     const detachRef = useRef<() => void>();
     const region = useDatasetControlRegion();
     const propsRef = useLatest(props);
@@ -31,16 +31,13 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
 
     useEffect(() => () => {
         detachRef.current?.();
-        if (runtime.services.find('ribbon') === ribbonRef.current) {
-            runtime.services.unregister('ribbon');
-        }
+        removeRef.current?.();
     }, []);
 
     const onSetup = (ribbon: IRibbon) => {
-        ribbonRef.current = ribbon;
         detachRef.current?.();
         detachRef.current = commands.attach(ribbon);
-        runtime.services.register('ribbon', () => ribbon);
+        removeRef.current = runtime.services.provide('ribbon', ribbon);
     };
 
     return <SharedRibbon {...ribbonProps} disabled={props.disabled || provider.isLoading()} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onSetup={onSetup} />;

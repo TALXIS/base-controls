@@ -146,17 +146,17 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public addColumnHandler(handler: ITaskColumnHandler): () => void {
         this._columnHandlers.push(handler);
-        return () => this._columnHandlers = this._columnHandlers.filter(registered => registered !== handler);
+        return () => this._columnHandlers = this._columnHandlers.filter(entry => entry !== handler);
     }
 
     public addRequiredColumn(column: IColumn): () => void {
         this._requiredColumns.push(column);
-        return () => this._requiredColumns = this._requiredColumns.filter(registered => registered !== column);
+        return () => this._requiredColumns = this._requiredColumns.filter(entry => entry !== column);
     }
 
     public addColumnMatcher(matcher: ITaskColumnMatcher): () => void {
         this._columnMatchers.push(matcher);
-        return () => this._columnMatchers = this._columnMatchers.filter(registered => registered !== matcher);
+        return () => this._columnMatchers = this._columnMatchers.filter(entry => entry !== matcher);
     }
 
     public isColumnQueried(columnName: string): boolean {
@@ -168,7 +168,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public addLoadWaiter(waiter: TaskLoadWaiter): () => void {
         this._loadWaiters.push(waiter);
-        return () => this._loadWaiters = this._loadWaiters.filter(registered => registered !== waiter);
+        return () => this._loadWaiters = this._loadWaiters.filter(entry => entry !== waiter);
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {

@@ -13,7 +13,7 @@ export interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
 
 /** Opens and closes the groups a level at a time. */
 export const GroupExpansionHeader = (props: IGroupExpansionHeaderProps) => {
-    //the grouping module is registered wherever this header draws
+    //the grouping module is loaded wherever this header draws
     const grouping = useGridModule('grouping');
     const labels = useLabels(GRID_GROUPING_LABELS);
     const { rerender } = useRerender();

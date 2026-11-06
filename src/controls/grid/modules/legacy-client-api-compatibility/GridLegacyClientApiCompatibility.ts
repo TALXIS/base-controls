@@ -7,7 +7,7 @@ import { createThemeBuilder, getTextColorForBackground } from "@theme";
 import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../runtime/cells";
 import type { GridLockHook } from "../editing/GridLocks";
 import type { IGridSurface } from "../../runtime/surfaces";
-import type { IGridServiceLocator } from "../../runtime";
+import type { IGridServiceRegistry } from "../../runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { NotificationCalloutHost } from "./adapters/notification-callout-host";
 import type { IEventSubscriber } from "@core";
@@ -20,7 +20,7 @@ export interface IGridLegacyClientApiCompatibilityEvents {
 }
 
 export interface IGridLegacyClientApiCompatibilityParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
 }
 
 /** The notification a cell has open, for the callout that shows it. */
@@ -35,7 +35,7 @@ export interface IGridLegacyClientApiCompatibility {
 
 /** What the legacy client API sets on a record's field, handed to the cells hooks. */
 export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCompatibility {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _openNotification?: IAddControlNotificationOptions;
     private _openTarget?: Target;
     public readonly events: IEventEmitter<IGridLegacyClientApiCompatibilityEvents> = new EventEmitter<IGridLegacyClientApiCompatibilityEvents>();
@@ -44,7 +44,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         this._services = parameters.services;
         const cells = parameters.services.get('cells');
         parameters.services.get('surfaces').hooks.surfaces.add(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
-        //locks come with the editing module, which may register after this one
+        //locks come with the editing module, which may load after this one
         parameters.services.get('grid').modules.observe('editing', editing => {
             editing.locks.hooks.lock.add(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
         });

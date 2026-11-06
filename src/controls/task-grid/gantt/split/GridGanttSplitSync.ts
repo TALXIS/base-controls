@@ -26,7 +26,7 @@ export class GridGanttSplitSync {
     private _hoverSync?: GridGanttHoverSync;
     private _removers: (() => void)[];
 
-    //registered as the grid is made, before AG Grid reads its options
+    //made with the grid, before AG Grid reads its options
     constructor(parameters: IGridGanttSplitSyncParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._state = parameters.state;

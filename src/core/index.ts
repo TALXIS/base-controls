@@ -2,7 +2,7 @@ export * from './hooks';
 export * from './error-handling';
 export * from './events';
 export * from './hook-registry';
-export * from './service-locator';
+export * from './services';
 export * from './stack-rank';
 export * from './state';
 export * from './styling';

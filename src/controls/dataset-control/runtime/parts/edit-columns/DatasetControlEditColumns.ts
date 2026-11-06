@@ -2,7 +2,7 @@ import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } fro
 import type { IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
-import { IDatasetControlServiceLocator } from "../../interfaces";
+import { IDatasetControlServiceRegistry } from "../../interfaces";
 import { DatasetControlEditColumnsSession } from "./DatasetControlEditColumnsSession";
 
 /** What the column editor raises. */
@@ -12,7 +12,7 @@ export interface IDatasetControlEditColumnsEvents {
 }
 
 export interface IDatasetControlEditColumnsParameters {
-    services: IDatasetControlServiceLocator;
+    services: IDatasetControlServiceRegistry;
     provider: IDataProvider;
 }
 
@@ -49,7 +49,7 @@ export interface IDatasetControlEditColumns {
 /** Whether the column editor is open, and the edit it holds while it is. */
 export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     public readonly events: IEventEmitter<IDatasetControlEditColumnsEvents> = new EventEmitter<IDatasetControlEditColumnsEvents>();
-    private _services: IDatasetControlServiceLocator;
+    private _services: IDatasetControlServiceRegistry;
     private _provider: IDataProvider;
     private _session?: DatasetControlEditColumnsSession;
     public readonly hooks = {

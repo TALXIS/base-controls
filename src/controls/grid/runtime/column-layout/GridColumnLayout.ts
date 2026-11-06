@@ -1,16 +1,17 @@
 import { Column, ColumnMovedEvent, ColumnResizedEvent, ColumnState, GridApi } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { DEFAULT_COLUMN_WIDTH } from "../columns/GridColumns";
 import { getColumnContext } from "../columns/colDef";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 export interface IGridColumnLayoutParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 /** Lays out column widths and writes the user's resizes back to the provider. */
 export class GridColumnLayout {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     /** What the widths were last laid out for so a user's drag outlives a reload. */
     private _layoutKey?: string;
     //colDefs are rebuilt on load only, so a drag would otherwise revert to the definition's width
@@ -21,13 +22,20 @@ export class GridColumnLayout {
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
 
-    private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
-        gridApi.addEventListener('columnResized', this._onColumnResized);
-        gridApi.addEventListener('columnMoved', this._onColumnMoved);
-        gridApi.addEventListener('gridSizeChanged', () => this._applyLayout(gridApi));
-        gridApi.addEventListener('displayedColumnsChanged', () => this._applyLayout(gridApi));
+    private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
+        const stop = listenToGridApi(gridApi, {
+            columnResized: this._onColumnResized,
+            columnMoved: this._onColumnMoved,
+            gridSizeChanged: this._onLayoutChanged,
+            displayedColumnsChanged: this._onLayoutChanged,
+        });
         this._applyLayout(gridApi);
+        return stop;
     }
+
+    private _onLayoutChanged = (event: { api: GridApi<IRecord> }): void => {
+        this._applyLayout(event.api);
+    };
 
     /** Columns flex by their widths while they fit and scroll once they don't. */
     private _applyLayout(gridApi: GridApi<IRecord>): void {

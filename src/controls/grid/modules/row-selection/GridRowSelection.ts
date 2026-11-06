@@ -3,7 +3,7 @@ import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHan
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
-import { IGridRowSelectionServiceLocator } from "./runtime";
+import { IGridRowSelectionServiceRegistry } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridAgGridOptions } from "../../runtime/grid";
 import { CELL_COMMANDS_CLASS } from "../../ui/cells/commands/styles";
@@ -52,7 +52,7 @@ export interface IGridRowSelectionEvents {
 
 export interface IGridRowSelectionParameters {
     /** This module's own locator. */
-    services: IGridRowSelectionServiceLocator;
+    services: IGridRowSelectionServiceRegistry;
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
     onSelectionChanged?: IGridRowSelectionEvents['onSelectionChanged'];
@@ -83,7 +83,7 @@ export interface IGridRowSelection {
 }
 
 export class GridRowSelection implements IGridRowSelection {
-    private _services: IGridRowSelectionServiceLocator;
+    private _services: IGridRowSelectionServiceRegistry;
     private _mode: 'single' | 'multiple';
     /** The persisted selection waiting for its records to load. */
     private _pendingRestoreRecordIds: string[] = [];

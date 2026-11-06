@@ -201,9 +201,10 @@ A private field that holds or implements a callback is `_on<What>`.
 |---|---|---|
 | `x.hooks.<thing>.add(hook, priority?)` | Adds to a priority-ordered hook point typed `IHookPoint<<Host><Thing>Hook>` | its remover |
 | `add<Thing>(thing)` | Adds an unordered contributor: a blocker, matcher, handler | its remover |
+| `provide(key, service, { onDestroy })` | Puts a service on a registry; `onDestroy` releases it when it goes | its remover |
 | `define<Thing>(…)` | Registers globally for good, like `defineLabels` | — |
 
-`register` is used only by the `ServiceLocator`. A `priority` is documented as
+`register` is never used. A `priority` is documented as
 `@param priority Ascending: a higher number runs later.`
 
 ### Lifecycle verbs

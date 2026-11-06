@@ -41,7 +41,7 @@ The grid starts from these, and its modules add their own. Change the others, an
 
 ## AG Grid's api
 
-The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Grid is ready and unregistered as it is destroyed:
+The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, provided once AG Grid is ready and unregistered as it is destroyed:
 
 | From | Reach it with |
 |---|---|

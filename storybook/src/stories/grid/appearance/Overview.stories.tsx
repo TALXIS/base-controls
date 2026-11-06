@@ -59,7 +59,7 @@ The theme is applied again whenever the record changes; if it depends on anythin
 
 ## Colour column headers
 
-A column colours its header with \`context.header.themeHook(builder)\`. To colour any header, register \`grid.services.get('columns').headers.hooks.theme.add(hook, priority?)\` in a module; \`themeHook\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
+A column colours its header with \`context.header.themeHook(builder)\`. To colour any header, add \`grid.services.get('columns').headers.hooks.theme.add(hook, priority?)\` in a module; \`themeHook\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
 
 {{story: Show which columns need a review}}
 

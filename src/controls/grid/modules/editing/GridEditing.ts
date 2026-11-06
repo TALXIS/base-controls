@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { CellEditingStartedEvent, CellEditingStoppedEvent, CellEditRequestEvent, CellFocusedEvent, ColDef, EditableCallbackParams, GridApi } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { IGridServiceLocator } from "../../runtime";
+import { IGridServiceRegistry } from "../../runtime";
 import type { IGridCell } from "../../runtime/cells";
 import { IColumnHeaderAdornment, IGridColumnHeader } from "../../runtime/column-header";
 import { CellUi } from "../../ui/cells";
@@ -40,7 +40,7 @@ export interface IGridEditingEvents {
 }
 
 export interface IGridEditingParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     enableAutoSave?: boolean;
     onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'];
 }
@@ -66,7 +66,7 @@ export interface IGridEditing {
 }
 
 export class GridEditing implements IGridEditing {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     //by record and column, not by cell
     private _editedCell?: IGridEditedCell;
     private _recordsToSave = new Set<IRecord>();

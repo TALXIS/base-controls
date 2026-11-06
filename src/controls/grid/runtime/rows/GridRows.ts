@@ -1,8 +1,9 @@
 import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClassParams, RowClassRules, RowClickedEvent, RowHeightParams } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IHookPoint } from "@core";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { getRowNode } from "./getRowNode";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 export interface IGridRowsEvents {
     /** Fires when the rows the user is at change. */
@@ -29,7 +30,7 @@ export interface IGridRowSettings {
 }
 
 export interface IGridRowsParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 export interface IGridRowsHooks {
@@ -57,7 +58,7 @@ export interface IGridRowsInternal extends IGridRows {
 
 export class GridRows implements IGridRowsInternal {
     public readonly events = new EventEmitter<IGridRowsEvents>();
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
@@ -136,18 +137,30 @@ export class GridRows implements IGridRowsInternal {
     };
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
-        gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setHighlightedRow('hovered', event.data?.getRecordId()));
-        //AG Grid reports the cell the pointer left
-        gridApi.addEventListener('cellMouseOut', (event: CellMouseOutEvent<IRecord>) => {
-            if (this._hoveredRecordId === event.data?.getRecordId()) {
-                this._setHighlightedRow('hovered', undefined);
-            }
+        const stopGridApi = listenToGridApi(gridApi, {
+            cellMouseOver: this._onCellMouseOver,
+            cellMouseOut: this._onCellMouseOut,
+            cellFocused: this._onCellFocused,
+            rowClicked: this._onRowClicked,
         });
-        gridApi.addEventListener('cellFocused', this._onCellFocused);
-        gridApi.addEventListener('rowClicked', this._onRowClicked);
         //a selection reaches the cells nowhere else
-        return this._services.get('provider').addEventListener('onRecordsSelected', this._onSelectionChanged);
+        const stopProvider = this._services.get('provider').addEventListener('onRecordsSelected', this._onSelectionChanged);
+        return () => {
+            stopGridApi();
+            stopProvider();
+        };
     }
+
+    private _onCellMouseOver = (event: CellMouseOverEvent<IRecord>): void => {
+        this._setHighlightedRow('hovered', event.data?.getRecordId());
+    };
+
+    //AG Grid reports the cell the pointer left
+    private _onCellMouseOut = (event: CellMouseOutEvent<IRecord>): void => {
+        if (this._hoveredRecordId === event.data?.getRecordId()) {
+            this._setHighlightedRow('hovered', undefined);
+        }
+    };
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
         const record = getRowNode(event.api, event.rowIndex, event.rowPinned)?.data;

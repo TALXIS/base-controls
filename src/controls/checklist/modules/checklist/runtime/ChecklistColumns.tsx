@@ -1,6 +1,6 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, IGridCellCommands, IGridColumnContext, IGridServiceLocator } from "@controls/grid";
+import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, IGridCellCommands, IGridColumnContext, IGridServiceRegistry } from "@controls/grid";
 import { IGridChecklist } from "../GridChecklist";
 import { CHECKLIST_LABELS } from "../../../labels";
 import { CompletionCell } from "../adapters/completion-cell";
@@ -21,13 +21,13 @@ const CONTROL_COLUMN_DEFINITION: ColDef<IRecord> = {
 };
 
 export interface IChecklistColumnsParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     checklist: IGridChecklist;
 }
 
 /** The checkbox column first, the delete column last, and the stack rank hidden. */
 export class ChecklistColumns {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _checklist: IGridChecklist;
     private _deleteColumnDefinition: ColDef<IRecord>;
 

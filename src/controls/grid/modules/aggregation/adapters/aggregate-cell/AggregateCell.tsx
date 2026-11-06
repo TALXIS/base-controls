@@ -26,7 +26,7 @@ export interface IAggregateCellProps extends ICellRendererParams<IRecord> {
 
 /** What a column that totals something draws in a group's row: what that group adds up to. */
 export const AggregateCell = (props: IAggregateCellProps) => {
-    //the aggregation module is registered wherever this cell draws
+    //the aggregation module is loaded wherever this cell draws
     const aggregation = useGridModule('aggregation');
     const components = { ...aggregation.components.aggregateCell, ...props.components };
     const onRenderControl = components.columnControl?.onRenderControl ?? CellColumnControlComponents.onRenderControl;

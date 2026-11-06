@@ -4,7 +4,7 @@ import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadResult, IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl, IDatasetControlView } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
-import { HookRegistry, IRuntimeLifecycle, ServiceLocator } from "@core";
+import { HookRegistry, IRuntimeLifecycle, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import { PATH_COLUMN_NAME } from "./provider/record-tree";
@@ -24,7 +24,7 @@ export interface ITaskRuntimeParameters {
 }
 
 export class TaskRuntime implements ITaskRuntime {
-    public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
+    public readonly services = new ServiceRegistry<ITaskRuntimeServiceMap>();
     private _getProps: () => ITaskDatasetControlProps;
     public readonly hooks = {
         ribbonCommandUi: new HookRegistry<TaskRibbonCommandUiHook>(),
@@ -36,9 +36,9 @@ export class TaskRuntime implements ITaskRuntime {
     constructor(parameters: ITaskRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
         this._getProps = parameters.getProps;
-        this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
-        this.services.register('pcfContext', () => parameters.pcfContext);
-        this.services.register('savingChains', () => this._savingChains);
+        this.services.provide('datasetControl', datasetControl as IDatasetControl<ITaskViewData>);
+        this.services.provide('pcfContext', parameters.pcfContext);
+        this.services.provide('savingChains', this._savingChains, { onDestroy: () => this._savingChains.destroy() });
         this.services.observe('provider', provider => this._savingChains.attach(provider));
         datasetControl.parts.observe('ribbon', ribbon => { ribbon.hooks.commands.add(this._addCommands); });
         datasetControl.modules.observe('userQueries', userQueries => {
@@ -54,7 +54,7 @@ export class TaskRuntime implements ITaskRuntime {
         provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay: this._getProps().hoursPerDay });
         provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
-        this.services.register('provider', () => provider);
+        this.services.provide('provider', provider);
         provider.taskEvents.addEventListener('onTasksCreated', (records, parentId) => this._getProps().onTasksCreated?.(records, parentId));
         provider.taskEvents.addEventListener('onTasksDeleted', taskIds => this._getProps().onTasksDeleted?.(taskIds));
         provider.taskEvents.addEventListener('onTasksUpdated', records => this._getProps().onTasksUpdated?.(records));
@@ -112,7 +112,6 @@ export class TaskRuntime implements ITaskRuntime {
 
     /** Called as the mount goes. */
     public destroy(): void {
-        this._savingChains.destroy();
         this.services.destroy();
     }
 

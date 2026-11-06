@@ -1020,21 +1020,21 @@ interface ILabelsService {
     getLabels(set: ILabelSet): ILabels;
 }
 
-/** Finds services by name. */
-interface IServiceLocator<TServiceMap extends object> {
-    /** Throws while nothing registered the service. */
-    get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey];
-    /** Undefined while nothing registered the service. */
-    find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined;
-    /** Runs the callback now and after every registration; what it returns runs before the next call. */
-    observe<TKey extends keyof TServiceMap>(key: TKey, callback: (service: TServiceMap[TKey]) => void | (() => void)): () => void;
+/** Finds the services of one mount by name. */
+interface IServiceLocator<TMap extends object> {
+    /** Throws while nothing is provided under key. */
+    get<TKey extends keyof TMap>(key: TKey): TMap[TKey];
+    /** Undefined while nothing is provided under key. */
+    find<TKey extends keyof TMap>(key: TKey): TMap[TKey] | undefined;
+    has(key: keyof TMap): boolean;
+    /** Runs effect with the service now if it is there, and again for every later one; what it returns runs when that service goes. */
+    observe<TKey extends keyof TMap>(key: TKey, effect: (service: TMap[TKey]) => void | (() => void)): () => void;
 }
 
-/** A locator that services are registered on. */
-interface IServiceRegistry<TServiceMap extends object> extends IServiceLocator<TServiceMap> {
-    /** The getter runs on every lookup. */
-    register<TKey extends keyof TServiceMap>(key: TKey, getter: () => TServiceMap[TKey]): void;
-    unregister<TKey extends keyof TServiceMap>(key: TKey): void;
+/** Holds the services of one mount, and ends them all with it. */
+interface IServiceRegistry<TMap extends object> extends IServiceLocator<TMap> {
+    /** Provides service under key, ending what was there; returns the remover of this one only. */
+    provide<TKey extends keyof TMap>(key: TKey, service: TMap[TKey], parameters?: { onDestroy?: (service: TMap[TKey]) => void }): () => void;
     destroy(): void;
 }
 
@@ -1792,7 +1792,7 @@ interface IGridCells {
 }
 
 interface IGridCellParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     record: IRecord;
     /** The column AG Grid is drawing. */
     colDef: IGridColDef;
@@ -1961,7 +1961,7 @@ interface IGridEvents {
 interface IGrid extends IRuntime {
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */
-    readonly services: IGridServiceLocator;
+    readonly services: IGridServiceRegistry;
     /** The modules the grid was given, by name. */
     readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (instance: any) => void | (() => void)): () => void };
     readonly hooks: {
@@ -2144,7 +2144,7 @@ interface IGridServiceMap {
 
 type IGridDeferredService = 'gridApi';
 
-type IGridServiceLocator = IServiceRegistry<IGridServiceMap>;
+type IGridServiceRegistry = IServiceRegistry<IGridServiceMap>;
 
 /** Reads a grid service from inside something the grid draws. */
 declare function useGridService<TKey extends keyof IGridServiceMap>(key: TKey): TKey extends IGridDeferredService ? IGridServiceMap[TKey] | undefined : IGridServiceMap[TKey];
@@ -2249,7 +2249,7 @@ interface IModuleLoadParameters {
 }
 
 interface IGridModule {
-    /** Unique within the grid; what onLoad returns is registered under it. */
+    /** Unique within the grid; what onLoad returns is provided under it. */
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
@@ -3596,7 +3596,7 @@ interface IViewSwitcherProps {
 
 /** A feature of the control, loaded on every mount. */
 interface IDatasetControlModule {
-    /** Unique within the control; what onLoad returns is registered under it, for datasetControl.modules. */
+    /** Unique within the control; what onLoad returns is provided under it, for datasetControl.modules. */
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
@@ -3782,7 +3782,7 @@ interface IRibbon extends IRuntime {
 }
 
 interface IRibbonProps {
-    /** Called on init and on every reload(); the commands registered through hooks.commands follow. */
+    /** Called on init and on every reload(); the commands added through hooks.commands follow. */
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
@@ -3790,7 +3790,7 @@ interface IRibbonProps {
     className?: string;
     /** Disables every command, menus included. */
     disabled?: boolean;
-    /** Called with the runtime of each mount, before its init; register commands and subscribe here. */
+    /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
     onSetup?: (ribbon: IRibbon) => void;
     components?: {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
@@ -3941,8 +3941,8 @@ interface IDatasetControlProviderState {
 declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
 /** A module the control loaded, by name; throws when it was not given. */
 declare function useDatasetControlModule(name: string): any;
-/** Makes a part once and registers it on the control under name, for control.parts. */
-declare function useRegisterDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, create: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
+/** Makes a part once and provides it on the control under name, for control.parts. */
+declare function useProvideDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, create: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
 
 /** The overlay that covers the whole control while something runs. */
 interface IDatasetControlLoadingOverlay {
@@ -4181,7 +4181,7 @@ interface ITaskDataProvider extends IDataProvider {
     updateTaskData(rawRecords: IRawRecord[]): void;
 }
 
-/** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
+/** One mount of a TaskDatasetControl: what its modules provide on and its parts read. */
 /** How execute shows a run and handles its failure; by default it shows the loading, and the dialog before rethrowing. */
 interface ITaskExecuteParameters {
     loading?: {
@@ -4214,7 +4214,7 @@ interface ITaskActions {
 }
 
 interface ITaskRuntime extends IRuntime {
-    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, callback: (service: any) => void | (() => void)): () => void; register(key: string, resolve: () => any): void };
+    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, effect: (service: any) => void | (() => void)): () => void; register(key: string, resolve: () => any): void };
     getProvider(): ITaskDataProvider;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
@@ -4848,9 +4848,9 @@ declare namespace ComponentFramework {
 declare module 'react-dom';
 declare module 'dhtmlx-gantt-pro';
 
-/** The instances grid modules register, by name; extend it for a module of your own. */
+/** The instances grid modules provide, by name; extend it for a module of your own. */
 interface IGridModuleMap {}
-/** The instances DatasetControl modules register, by name; extend it for a module of your own. */
+/** The instances DatasetControl modules provide, by name; extend it for a module of your own. */
 interface IDatasetControlModuleMap {}
 
 /** The record a Dataverse task grid sits on, such as the one the form shows. */

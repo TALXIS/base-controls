@@ -2,6 +2,7 @@ import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowNode, RowGroupOpenedEvent } from "ag-grid-community";
 import type { IEventSubscriber } from "@core";
 import type { ITaskDataProvider } from "../provider";
+import { listenToGridApi } from "@controls/grid";
 
 /** One change to which tasks are expanded. */
 export interface ITaskExpansionDelta {
@@ -62,9 +63,16 @@ export class TaskExpansion implements ITaskExpansion {
     }
 
     /** Keeps AG Grid's expanded rows in step with this. */
-    public attach(gridApi: GridApi<IRecord>): void {
+    /** @returns Detaches from `gridApi`. */
+    public attach(gridApi: GridApi<IRecord>): () => void {
         this._gridApi = gridApi;
-        gridApi.addEventListener('rowGroupOpened', this._onRowGroupOpened);
+        const stop = listenToGridApi(gridApi, { rowGroupOpened: this._onRowGroupOpened });
+        return () => {
+            stop();
+            if (this._gridApi === gridApi) {
+                this._gridApi = undefined;
+            }
+        };
     }
 
     public isExpanded(recordId: string): boolean {

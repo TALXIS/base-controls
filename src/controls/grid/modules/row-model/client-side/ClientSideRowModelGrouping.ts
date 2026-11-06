@@ -1,18 +1,18 @@
 import { GridApi, IRowNode } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../../runtime";
+import { IGridServiceRegistry } from "../../../runtime";
 import { IGridRowModelGrouping, IGridRowModelGroupingParameters } from "../../../runtime/row-model";
 import { IGridAgGridOptions } from "../../../runtime/grid";
 
 export interface IClientSideRowModelGroupingParameters extends IGridRowModelGroupingParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     /** Hands the rows to the grid again, once every level has arrived. */
     onRowsLoaded: () => void;
 }
 
 /** Grouping where every level is in the grid at once, as a tree. */
 export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _onRowsLoaded: () => void;
     private _isTree: boolean;
     /** Which load the walk in flight belongs to. */

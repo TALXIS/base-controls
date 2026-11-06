@@ -23,12 +23,12 @@ export interface IGanttModule<TName extends keyof IGanttModuleMap = keyof IGantt
 
 export type IGanttModuleLocator = IServiceLocator<IGanttModuleMap>;
 
-/** The services the modules register by augmenting this. */
+/** The services the modules provide, by augmenting this. */
 export interface IGanttModuleServiceMap { }
 
 export interface IGanttServiceMap extends IGanttModuleServiceMap {
     taskRuntime: ITaskRuntime;
-    labels: LabelsService;
+    labels: Pick<LabelsService, 'getLabels'>;
     theme: IGanttTheme;
     overlay: IGanttOverlay;
     /** What the Gantt keeps per view. */
@@ -46,13 +46,13 @@ export interface IGanttServiceMap extends IGanttModuleServiceMap {
     tasks: IGanttTasks;
 }
 
-export type IGanttServiceLocator = IServiceRegistry<IGanttServiceMap>;
+export type IGanttServiceRegistry = IServiceRegistry<IGanttServiceMap>;
 
 /** The services there only once the chart, or the module adding them, is. */
 export type IGanttDeferredService = keyof IGanttModuleServiceMap | 'chart' | 'zooming' | 'timeline' | 'dragging' | 'grid' | 'tasks';
 
 export interface IGanttEvents {
-    /** The chart is drawn with its services registered. */
+    /** The chart is drawn with its services provided. */
     onChartReady: (chart: GanttStatic) => void;
     /** The chart's tasks were rebuilt from the grid's rows. */
     onTasksParsed: (isFirstLoad: boolean) => void;
@@ -70,7 +70,7 @@ export interface IGanttHooks {
 /** One mount of a `TaskGantt`: what its modules load on and its parts read. */
 export interface IGantt {
     readonly events: IEventSubscriber<IGanttEvents>;
-    readonly services: IGanttServiceLocator;
+    readonly services: IGanttServiceRegistry;
     readonly modules: IGanttModuleLocator;
     /** What the modules draw over the chart. */
     readonly surfaces: IGanttSurfaces;

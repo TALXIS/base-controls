@@ -8,7 +8,7 @@ import { ThemeBuilder } from "@theme";
 import { GRID_GROUPING_LABELS } from "./labels";
 import { GridGroupingIconComponents, IGridGroupingComponents } from "./components";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
-import { IGridGroupingServiceLocator } from "./runtime";
+import { IGridGroupingServiceRegistry } from "./runtime";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GroupCell } from "./adapters/group-cell/GroupCell";
@@ -63,7 +63,7 @@ export interface IGroupingSettings {
 
 export interface IGridGroupingParameters {
     /** This module's own locator. */
-    services: IGridGroupingServiceLocator;
+    services: IGridGroupingServiceRegistry;
     /** Anything left out takes its default. */
     settings?: Partial<IGroupingSettings>;
 }
@@ -104,7 +104,7 @@ export interface IGridGrouping {
 }
 
 export class GridGrouping implements IGridGrouping {
-    private _services: IGridGroupingServiceLocator;
+    private _services: IGridGroupingServiceRegistry;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;
     private _rowModelGrouping?: IGridRowModelGrouping;
@@ -155,7 +155,7 @@ export class GridGrouping implements IGridGrouping {
         this._gridServices.get('grid').hooks.agGridOptions.add(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
         cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
-        //locks come with the editing module, which may register after this one
+        //locks come with the editing module, which may load after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
             editing.locks.hooks.lock.add(this._onLock, GRID_MODULE_PRIORITY.grouping);
         });

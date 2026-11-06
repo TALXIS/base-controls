@@ -24,7 +24,7 @@ export interface IGroupCellProps extends ICellRendererParams<IRecord> {
 
 /** What a group row draws in its grouped column: its value and its chevron. */
 export const GroupCell = (props: IGroupCellProps) => {
-    //the grouping module is registered wherever this cell draws
+    //the grouping module is loaded wherever this cell draws
     const grouping = useGridModule('grouping');
     const node = props.node;
     const { rerender } = useRerender();

@@ -1,4 +1,4 @@
-import { ServiceLocator } from "@core";
+import { ServiceRegistry } from "@core";
 import { RowGroupingModule, TreeDataModule } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
 import { IGridGroupingComponents } from "./components";
@@ -27,9 +27,9 @@ export const createGroupingModule = (parameters: IGroupingModuleParameters = {})
     name: 'grouping',
     agGridModules: [RowGroupingModule, TreeDataModule],
     onLoad: ({ services: gridServices }) => {
-        const services = new ServiceLocator<IGridGroupingServiceMap>();
-        services.register('gridServices', () => gridServices);
-        services.register('components', () => parameters.components ?? {});
+        const services = new ServiceRegistry<IGridGroupingServiceMap>();
+        services.provide('gridServices', gridServices);
+        services.provide('components', parameters.components ?? {});
         return new GridGrouping({ services, settings: parameters });
     },
     onDestroy: grouping => grouping.destroy(),

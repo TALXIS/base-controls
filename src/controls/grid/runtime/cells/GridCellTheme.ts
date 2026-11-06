@@ -2,14 +2,14 @@ import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyleProps
 import { DeepPartial } from "@talxis/client-libraries";
 import { createThemeBuilder, ITheme } from "@theme";
 import { getJustifyContent, IAlignment } from "@core";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import type { IGridCell } from "./GridCell";
 
 //the component styles depend only on the column alignment
 const componentStylesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['components']>();
 
 export interface IGridCellThemeParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
     /** The cell this is the theme of. */
     cell: IGridCell;
 }
@@ -22,7 +22,7 @@ export interface IGridCellTheme {
 }
 
 export class GridCellTheme implements IGridCellTheme {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _cell: IGridCell;
     private _seed?: ITheme;
 

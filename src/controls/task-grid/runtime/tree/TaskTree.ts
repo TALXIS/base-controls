@@ -38,6 +38,7 @@ export class TaskTree implements ITaskGridTree {
     private _state: IStateStore;
     private _provider: ITaskDataProvider;
     private _expansion: TaskExpansion;
+    private _removeFromRuntime: () => void;
     private _isFlatList: boolean;
     private _treeRows?: IRecord[];
     private _flatRows: IRecord[] = [];
@@ -57,8 +58,8 @@ export class TaskTree implements ITaskGridTree {
             isFlatList: () => this._isFlatList,
             onExpandedIdsChanged: expandedIds => this._setState({ expandedIds }),
         });
-        parameters.runtime.services.register('taskTree', () => this);
-        services.register('taskExpansion', () => this._expansion);
+        this._removeFromRuntime = parameters.runtime.services.provide('taskTree', this);
+        services.provide('taskExpansion', this._expansion);
 
         this._grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
         this._grid.hooks.agGridOptions.add(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
@@ -109,9 +110,7 @@ export class TaskTree implements ITaskGridTree {
         return this._grid.services.find('gridApi');
     }
 
-    private _onGridApi = (gridApi: GridApi<IRecord>): void => {
-        this._expansion.attach(gridApi);
-    };
+    private _onGridApi = (gridApi: GridApi<IRecord>): (() => void) => this._expansion.attach(gridApi);
 
     private _onAgGridInitialOptions = (result: IGridAgGridInitialOptions): void => {
         result.options.getDataPath = record => this._provider.getRecordTree().view.getPath(record.getRecordId());
@@ -332,8 +331,7 @@ export class TaskTree implements ITaskGridTree {
     /** Called as the grid tears down. */
     public destroy(): void {
         this._unsubscribes.forEach(unsubscribe => unsubscribe());
-        if (this._runtime.services.find('taskTree') === this) {
-            this._runtime.services.unregister('taskTree');
-        }
+        //the runtime outlives the grid, and the next grid's tree may already be there
+        this._removeFromRuntime();
     }
 }

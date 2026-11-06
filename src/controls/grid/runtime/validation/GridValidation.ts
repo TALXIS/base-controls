@@ -1,14 +1,15 @@
 import { ColDef, GridApi } from "ag-grid-community";
 import { IDataProvider, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IHookPoint } from "@core";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { getColumnContext } from "../columns/colDef";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 /** A hook over whether a record's value in a column is valid. */
 export type GridValidationHook = (result: IFieldValidationResult, parameters: { record: IRecord; columnName: string }) => void;
 
 export interface IGridValidationParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 export interface IGridValidationHooks {
@@ -28,7 +29,7 @@ export interface IGridValidationInternal extends IGridValidation {
 }
 
 export class GridValidation implements IGridValidationInternal {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     public readonly hooks = {
         validation: new HookRegistry<GridValidationHook>({ onChange: () => this._onHooksChanged() }),
     };
@@ -40,7 +41,6 @@ export class GridValidation implements IGridValidationInternal {
     constructor(parameters: IGridValidationParameters) {
         this._services = parameters.services;
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').lifecycle.events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
     public get(parameters: { record: IRecord; columnName: string }): IFieldValidationResult {
@@ -61,13 +61,22 @@ export class GridValidation implements IGridValidationInternal {
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {
         this._syncValidatedColumns();
-        gridApi.addEventListener('newColumnsLoaded', () => this._syncValidatedColumns());
-        return this._provider.addEventListener('onRecordLoaded', this._onRecordLoaded);
+        const stopGridApi = listenToGridApi(gridApi, { newColumnsLoaded: this._onNewColumnsLoaded });
+        const stopProvider = this._provider.addEventListener('onRecordLoaded', this._onRecordLoaded);
+        return () => {
+            stopGridApi();
+            stopProvider();
+        };
     }
 
-    private _onDestroyed = (): void => {
-        this._isDestroyed = true;
+    private _onNewColumnsLoaded = (): void => {
+        this._syncValidatedColumns();
     };
+
+    /** Leaves the records' validators in place but has them answer valid from now on. */
+    public destroy(): void {
+        this._isDestroyed = true;
+    }
 
     //a reload clears a record's fields, and the expressions set on them
     private _onRecordLoaded = (record: IRecord): void => {

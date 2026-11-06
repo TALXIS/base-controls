@@ -5,7 +5,7 @@ import { LabelsOf } from "@labels";
 import { GRID_SORTING_LABELS } from "./labels";
 import { GridSortingIconComponents, IGridSortingComponents } from "./components";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
-import { IGridSortingServiceLocator } from "./runtime";
+import { IGridSortingServiceRegistry } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 
 declare module "../../interfaces" {
@@ -18,7 +18,7 @@ declare module "../../interfaces" {
 
 export interface IGridSortingParameters {
     /** This module's own locator. */
-    services: IGridSortingServiceLocator;
+    services: IGridSortingServiceRegistry;
 }
 
 /** Sorting the grid by a column. */
@@ -45,7 +45,7 @@ export interface IGridSorting {
 }
 
 export class GridSorting implements IGridSorting {
-    private _services: IGridSortingServiceLocator;
+    private _services: IGridSortingServiceRegistry;
     private _sorting: Sorting;
 
     constructor(parameters: IGridSortingParameters) {

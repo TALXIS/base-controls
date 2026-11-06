@@ -20,7 +20,7 @@ export interface ITotalCellProps extends ICellRendererParams<IRecord> {
 
 /** What a column that totals something draws in the row pinned under the rest. */
 export const TotalCell = (props: ITotalCellProps) => {
-    //the aggregation module is registered wherever this cell draws
+    //the aggregation module is loaded wherever this cell draws
     const aggregation = useGridModule('aggregation');
     const components = { ...aggregation.components.totalCell, ...props.components };
     //the selector draws this only for the total row, so the record is there

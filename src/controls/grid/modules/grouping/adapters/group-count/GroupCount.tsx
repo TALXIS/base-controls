@@ -9,7 +9,7 @@ export interface IGroupCountProps {
 /** How many records the group holds, after what it is grouped by. */
 export const GroupCount = (props: IGroupCountProps) => {
     const cell = useGridCell();
-    //the grouping module is registered wherever this cell draws
+    //the grouping module is loaded wherever this cell draws
     const grouping = useGridModule('grouping');
     const count = grouping.getGroupedCount(cell.getRecord(), cell.getColumnName());
 

@@ -35,7 +35,7 @@ When a module's \`onLoad\` throws, the error shows in place of the control's par
 | \`getLibrary()\` | \`{ Gantt, isPro }\`, the DHTMLX build. |
 | \`getProps()\`, \`getLabels(set)\`, \`render()\` | The \`TaskGantt\`'s props, a label set's strings, and a redraw after a hook's answer changed. |
 
-Every \`register…\` returns the function that unregisters it, and takes an optional \`priority\`: a higher number gets the later word.
+Every \`hooks.<thing>.add\` returns the function that removes the hook, and takes an optional \`priority\`: a higher number runs later.
 
 ## Services
 

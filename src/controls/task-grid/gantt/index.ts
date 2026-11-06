@@ -4,7 +4,7 @@ export * from './labels';
 export type { IGanttSurface, IGanttSurfaces, GanttSurfacesHook } from './surfaces';
 export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export type { IGanttOverlay, IGanttOverlayEvents } from './overlay';
-export { useGantt, useGanttModule, useGanttService, useRegisterGanttService } from './context';
+export { useGantt, useGanttModule, useGanttService, useProvideGanttService } from './context';
 export type { ITaskGanttProps, ITaskGanttComponents } from './TaskGantt';
 export { GanttUi } from "./ui";
 export type { IGanttUi } from "./ui";

@@ -28,8 +28,8 @@
     ". IFormStrategy": null,
     ". IOnSaveParams": null,
     ". XrmClientApiStrategyFactory": null,
-    ". useDatasetControlPart": "useRegisterDatasetControlPart",
-    "./gantt useCreateGanttService": "useRegisterGanttService",
+    ". useDatasetControlPart": "useProvideDatasetControlPart",
+    "./gantt useCreateGanttService": "useProvideGanttService",
     ". registerIsolatedContent": "defineIsolatedContent",
     ". IAggregationModuleOptions": "IAggregationModuleParameters",
     ". IColumnHeaderRendererOptions": "IColumnHeaderRendererParameters",
@@ -211,5 +211,15 @@
     ". Skeleton": "FormUiSkeleton",
     ". Tab": "FormUiTab",
     ". TabComponents": "FormUiTabComponents",
-    ". Tabs": "FormUiTabs"
+    ". Tabs": "FormUiTabs",
+    ". IGridAggregationServiceLocator": "IGridAggregationServiceRegistry",
+    ". IGridFilteringServiceLocator": "IGridFilteringServiceRegistry",
+    ". IGridGroupingServiceLocator": "IGridGroupingServiceRegistry",
+    ". IGridRowSelectionServiceLocator": "IGridRowSelectionServiceRegistry",
+    ". IGridServiceLocator": "IGridServiceRegistry",
+    ". IGridSortingServiceLocator": "IGridSortingServiceRegistry",
+    ". ITaskGridServiceLocator": "ITaskGridServiceRegistry",
+    "./gantt IGanttServiceLocator": "IGanttServiceRegistry",
+    ". ServiceLocator": "ServiceRegistry",
+    ". ServiceObserver": "ServiceEffect"
 }

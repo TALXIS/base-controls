@@ -1,9 +1,9 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator, IHookPoint } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceRegistry, IHookPoint } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
+import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
@@ -27,7 +27,7 @@ export interface IDatasetControlHooks {
 }
 
 export interface IDatasetControlInternal extends IDatasetControl {
-    readonly services: IDatasetControlServiceLocator;
+    readonly services: IDatasetControlServiceRegistry;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
@@ -48,7 +48,7 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
     });
-    private _services = new ServiceLocator<IDatasetControlServiceMap>();
+    private _services = new ServiceRegistry<IDatasetControlServiceMap>();
     private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlInternal>();
     private _surfaces = new DatasetControlSurfaces();
     private _getProps: () => IDatasetControlProps;
@@ -66,13 +66,13 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
         this._getProps = parameters.getProps;
         this._theme = parameters.theme;
         this._state = parameters.state;
-        this._services.register('runtime', () => this);
-        this._services.register('labels', parameters.getLabelsService);
-        this._services.register('surfaces', () => this._surfaces);
+        this._services.provide('runtime', this);
+        this._services.provide('labels', { getLabels: set => parameters.getLabelsService().getLabels(set) });
+        this._services.provide('surfaces', this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this });
     }
 
-    public get services(): IDatasetControlServiceLocator {
+    public get services(): IDatasetControlServiceRegistry {
         return this._services;
     }
 

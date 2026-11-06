@@ -2,14 +2,14 @@ import { IPcfContext, IParameters } from "@pcf/interfaces";
 import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@pcf";
 import { IGridValueRenderer, IGridValueRendererParameters } from "../../adapters/value-renderer";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 import { hasResizeGrip } from "../../adapters/cells/resize-grip/hasResizeGrip";
 
 export interface IGridControlParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
     /** The cell this draws. */
     cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
@@ -34,7 +34,7 @@ export interface IGridControl {
 }
 
 export class GridControl implements IGridControl {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;

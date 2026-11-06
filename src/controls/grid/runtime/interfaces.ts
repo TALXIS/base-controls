@@ -31,7 +31,7 @@ export interface IGridServiceMap {
     /** The host context. */
     pcfContext: IPcfContext;
     /** Resolves the strings of the grid and its modules. */
-    labels: LabelsService;
+    labels: Pick<LabelsService, 'getLabels'>;
     /** The theme the control was given. */
     theme: ITheme;
     /** The AG Grid theme made from it, and the hooks modules edit it through. */
@@ -70,6 +70,6 @@ export interface IGridServiceMapInternal extends IGridServiceMap {
 export type IGridDeferredService = 'gridRoot' | 'gridApi';
 
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
-export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceRegistry<TServices>;
+export type IGridServiceRegistry<TServices extends IGridServiceMap = IGridServiceMap> = IServiceRegistry<TServices>;
 
-export type IGridServiceLocatorInternal<TServices extends IGridServiceMapInternal = IGridServiceMapInternal> = IServiceRegistry<TServices>;
+export type IGridServiceRegistryInternal<TServices extends IGridServiceMapInternal = IGridServiceMapInternal> = IServiceRegistry<TServices>;

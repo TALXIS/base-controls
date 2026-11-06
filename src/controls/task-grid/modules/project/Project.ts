@@ -48,7 +48,7 @@ export class Project<TData = { [key: string]: unknown }> implements IProject<TDa
         this._store = parameters.createStore(taskRuntime);
     }
 
-    /** Loads the project before the module registers. */
+    /** Loads the project before the module is provided. */
     public async load(): Promise<void> {
         this._project = await this._store.loadProject();
     }

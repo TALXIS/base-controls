@@ -1,16 +1,16 @@
-import { IGridServiceLocator } from "../../runtime";
+import { IGridServiceRegistry } from "../../runtime";
 import { IGridAgGridOptions } from "../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridCellSelectionOptions } from "./createCellSelectionModule";
 
 export interface IGridCellSelectionParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
     options?: IGridCellSelectionOptions;
 }
 
 /** Cells highlighted by dragging across them. */
 export class GridCellSelection {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _options?: IGridCellSelectionOptions;
 
     constructor(parameters: IGridCellSelectionParameters) {

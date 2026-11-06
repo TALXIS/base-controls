@@ -1,8 +1,8 @@
 import { elementContains } from "@fluentui/react";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 
 export interface IGridKeyboardParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 export type GridKeyDownHandler = (event: KeyboardEvent) => void;
@@ -20,7 +20,7 @@ export interface IGridKeyboard {
 }
 
 export class GridKeyboard implements IGridKeyboard {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _keyBeingPressed?: KeyboardEvent;
     private _keyDownHandlers: GridKeyDownHandler[] = [];
     private _gridRoot?: HTMLElement;
@@ -37,7 +37,7 @@ export class GridKeyboard implements IGridKeyboard {
     public onKeyDown(handler: GridKeyDownHandler): () => void {
         this._keyDownHandlers.push(handler);
         return () => {
-            this._keyDownHandlers = this._keyDownHandlers.filter(registered => registered !== handler);
+            this._keyDownHandlers = this._keyDownHandlers.filter(entry => entry !== handler);
         };
     }
 

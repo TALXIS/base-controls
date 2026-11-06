@@ -1,4 +1,4 @@
-import { ServiceLocator } from "@core";
+import { ServiceRegistry } from "@core";
 import { IGridModule } from "../../interfaces";
 import { GridFiltering } from "./GridFiltering";
 import { IGridFilteringServiceMap } from "./runtime";
@@ -15,9 +15,9 @@ export interface IFilteringModule extends IGridModule<'filtering'> { }
 export const createFilteringModule = (parameters?: IFilteringModuleParameters): IFilteringModule => ({
     name: 'filtering',
     onLoad: ({ services: gridServices }) => {
-        const services = new ServiceLocator<IGridFilteringServiceMap>();
-        services.register('gridServices', () => gridServices);
-        services.register('components', () => parameters?.components ?? {});
+        const services = new ServiceRegistry<IGridFilteringServiceMap>();
+        services.provide('gridServices', gridServices);
+        services.provide('components', parameters?.components ?? {});
         return new GridFiltering({ services });
     },
 });

@@ -1,6 +1,6 @@
 import { GridApi, IsServerSideGroupOpenByDefaultParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridServiceLocator } from "../../../runtime";
+import { IGridServiceRegistry } from "../../../runtime";
 import { IGridRowModel, IGridRowModelGroupingParameters, IGridRowModelType } from "../../../runtime/row-model";
 import { ServerSideDatasource } from "./ServerSideDatasource";
 import { ServerSideRowModelGrouping } from "./ServerSideRowModelGrouping";
@@ -8,12 +8,12 @@ import { IGridAgGridOptions } from "../../../runtime/grid";
 import { GRID_MODULE_PRIORITY } from "../../priorities";
 
 export interface IServerSideRowModelParameters {
-    services: IGridServiceLocator;
+    services: IGridServiceRegistry;
 }
 
 /** Rows read a level at a time, through a datasource. */
 export class ServerSideRowModel implements IGridRowModel {
-    private _services: IGridServiceLocator;
+    private _services: IGridServiceRegistry;
     private _datasource: ServerSideDatasource;
     private _grouping?: ServerSideRowModelGrouping;
     public readonly type: IGridRowModelType = 'serverSide';

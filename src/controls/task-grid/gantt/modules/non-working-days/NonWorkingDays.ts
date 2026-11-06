@@ -235,7 +235,7 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         timeline.hooks.scaleCellClass.add(addNonWorkingDayClass);
     };
 
-    //read while drawing: the zoom is registered after the chart
+    //read while drawing: the zoom is provided after the chart
     private _isDayScaleVisible(): boolean {
         return this._gantt.services.find('zooming')?.isDayScaleVisible() ?? false;
     }

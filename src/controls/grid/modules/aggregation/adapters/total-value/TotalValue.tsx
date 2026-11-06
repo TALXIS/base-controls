@@ -11,7 +11,7 @@ export interface ITotalValueProps {
 export const TotalValue = (props: ITotalValueProps) => {
     const cell = useGridCell();
     const field = useGridField();
-    //the aggregation module is registered wherever this cell draws
+    //the aggregation module is loaded wherever this cell draws
     const aggregation = useGridModule('aggregation');
 
     return <AggregationUi.TotalValue

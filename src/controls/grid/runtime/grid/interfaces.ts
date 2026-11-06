@@ -1,7 +1,7 @@
 import type { IEventSubscriber, IRuntime, IHookPoint } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
 import type { IGridEventProps, IGridModuleLocator, IGridOpenRecordParameters } from "../../interfaces";
-import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
+import type { IGridServiceRegistry, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
 
 /** What the grid raises while it shows data; its mount's events are on `lifecycle`. */
@@ -19,7 +19,7 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> exte
     /** Subscribe to the grid's events. */
     readonly events: IEventSubscriber<IGridEvents>;
     /** Every part of the grid, by key. */
-    readonly services: IGridServiceLocator<TServices>;
+    readonly services: IGridServiceRegistry<TServices>;
     /** The modules the grid was given, by name. */
     readonly modules: IGridModuleLocator;
     readonly hooks: IGridHooks;

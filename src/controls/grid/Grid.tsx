@@ -5,7 +5,7 @@ import { IRecord } from "@talxis/client-libraries";
 
 import { useControlStateStore } from "@controls/dataset-control/adapters/root/useControlStateStore";
 import { useOptionalDatasetControlInternal } from "@controls/dataset-control/adapters/root/context";
-import { useRegisterDatasetControlPart } from "@controls/dataset-control/adapters/root/useRegisterDatasetControlPart";
+import { useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root/useProvideDatasetControlPart";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { BaseControls, usePcfContext } from "@pcf";
 import { getClassNames, useLatest } from "@core";
@@ -58,8 +58,8 @@ export const GridRoot = (props: IGridProps) => {
 /** One mount of the grid: AG Grid, drawn once the modules have loaded. */
 const GridMount = (props: IGridProps) => {
     const runtime = useRuntime<GridRuntime>();
-    //registered before AG Grid reads its initial options below, so the control's modules add to them
-    useRegisterDatasetControlPart('grid', () => runtime);
+    //provided before AG Grid reads its initial options below, so the control's modules add to them
+    useProvideDatasetControlPart('grid', () => runtime);
     const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const maxVisibleRows = settings.getMaxVisibleRows();
@@ -73,7 +73,7 @@ const GridMount = (props: IGridProps) => {
     //parts listening ahead of AG Grid need this element once it is mounted
     const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
         if (gridRoot) {
-            runtime.services.register('gridRoot', () => gridRoot);
+            runtime.services.provide('gridRoot', gridRoot);
         }
     }, [runtime]);
 

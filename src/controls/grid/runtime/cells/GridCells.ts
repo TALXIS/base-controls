@@ -4,9 +4,10 @@ import { CellFocusedEvent } from "ag-grid-community";
 import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import { IParameters } from "@pcf/interfaces";
-import { IGridServiceLocatorInternal } from "..";
+import { IGridServiceRegistryInternal } from "..";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
 import { getRowNode } from "../rows/getRowNode";
+import { listenToGridApi } from "../grid/listenToGridApi";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -55,7 +56,7 @@ export interface IGridCellsRenderParameters {
 }
 
 export interface IGridCellsParameters {
-    services: IGridServiceLocatorInternal;
+    services: IGridServiceRegistryInternal;
 }
 
 export interface IGridCellsHooks {
@@ -114,7 +115,7 @@ export interface IGridCellsInternal extends IGridCells {
 }
 
 export class GridCells implements IGridCellsInternal {
-    private _services: IGridServiceLocatorInternal;
+    private _services: IGridServiceRegistryInternal;
     private _renderedCells = new Map<string, IGridCell>();
     public readonly hooks = {
         control: new HookRegistry<GridControlHook>(),
@@ -127,9 +128,7 @@ export class GridCells implements IGridCellsInternal {
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
-        this._services.observe('gridApi', gridApi => {
-            gridApi.addEventListener('cellFocused', this._onCellFocused);
-        });
+        this._services.observe('gridApi', gridApi => listenToGridApi(gridApi, { cellFocused: this._onCellFocused }));
     }
 
     public createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell {

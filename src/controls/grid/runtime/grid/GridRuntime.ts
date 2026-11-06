@@ -3,14 +3,14 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
 import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps, IGridEventProps, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
-import { IGridServiceLocatorInternal, IGridServiceMapInternal } from "../interfaces";
+import { IGridServiceRegistryInternal, IGridServiceMapInternal } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
@@ -67,7 +67,7 @@ export class GridRuntime implements IGrid {
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
     });
-    private _services = new ServiceLocator<IGridServiceMapInternal>();
+    private _services = new ServiceRegistry<IGridServiceMapInternal>();
     private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
     private _getProps: () => IGridProps;
     public readonly hooks = {
@@ -77,25 +77,26 @@ export class GridRuntime implements IGrid {
     private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
+    private _removeGridApi?: () => void;
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
     constructor({ getProps, provider, pcfContext, theme, state, datasetControl, getLabelsService }: IGridRuntimeParameters) {
         this._getProps = getProps;
-        this._services.register('grid', () => this);
+        this._services.provide('grid', this);
         //first api listener so the others find the options applied
         this._services.observe('gridApi', () => this.refreshAgGridOptions());
 
         //everything below reads the props and the provider through these
         const settings = new GridSettings({ getProps, datasetControl });
-        this._services.register('labels', getLabelsService);
-        this._services.register('settings', () => settings);
-        this._services.register('state', () => state);
-        this._services.register('pcfContext', () => pcfContext);
-        this._services.register('provider', () => provider);
-        this._services.register('theme', () => theme);
+        this._services.provide('labels', { getLabels: set => getLabelsService().getLabels(set) });
+        this._services.provide('settings', settings);
+        this._services.provide('state', state);
+        this._services.provide('pcfContext', pcfContext);
+        this._services.provide('provider', provider);
+        this._services.provide('theme', theme);
         const gridTheme = new GridTheme({ theme, rowHeight: settings.getDefaultRowHeight() });
-        this._services.register('gridTheme', () => gridTheme);
+        this._services.provide('gridTheme', gridTheme);
         //constructed once since a resolver runs on every lookup
         const columns = new GridColumns({ services: this._services });
         const cells = new GridCells({ services: this._services });
@@ -108,18 +109,18 @@ export class GridRuntime implements IGrid {
         new GridColumnLayout({ services: this._services });
         new GridOverlays({ services: this._services });
         const viewport = new GridViewport({ services: this._services });
-        this._services.register('columns', () => columns);
-        this._services.register('cells', () => cells);
-        this._services.register('rows', () => rows);
-        this._services.register('validation', () => validation);
-        this._services.register('keyboard', () => keyboard);
-        this._services.register('surfaces', () => surfaces);
-        this._services.register('fields', () => fields);
-        this._services.register('viewport', () => viewport);
+        this._services.provide('columns', columns);
+        this._services.provide('cells', cells);
+        this._services.provide('rows', rows);
+        this._services.provide('validation', validation, { onDestroy: () => validation.destroy() });
+        this._services.provide('keyboard', keyboard);
+        this._services.provide('surfaces', surfaces);
+        this._services.provide('fields', fields);
+        this._services.provide('viewport', viewport);
 
     }
 
-    public get services(): IGridServiceLocatorInternal {
+    public get services(): IGridServiceRegistryInternal {
         return this._services;
     }
 
@@ -183,9 +184,7 @@ export class GridRuntime implements IGrid {
 
     private _destroy(): void {
         //AG Grid may unmount after this, so its api listeners clean up while it still answers
-        if (this._services.find('gridApi')) {
-            this._services.unregister('gridApi');
-        }
+        this._removeGridApi?.();
         this._moduleLoader.destroy();
         this._services.destroy();
     }
@@ -249,14 +248,11 @@ export class GridRuntime implements IGrid {
     private _getRowId = (params: GetRowIdParams<IRecord>): string => `${params.data.getRecordId()}`;
 
     private _onGridReady = (event: GridReadyEvent<IRecord>): void => {
-        this._services.register('gridApi', () => event.api);
+        this._removeGridApi = this._services.provide('gridApi', event.api);
     };
 
     private _onGridPreDestroyed = (): void => {
-        //the grid's own teardown may have let go of the api already
-        if (this._services.find('gridApi')) {
-            this._services.unregister('gridApi');
-        }
+        this._removeGridApi?.();
         this._appliedAgGridOptions = {};
     };
 

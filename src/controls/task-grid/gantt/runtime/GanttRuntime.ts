@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, ServiceLocator } from "@core";
+import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
@@ -36,7 +36,7 @@ export interface IGanttRuntimeParameters {
 
 export class GanttRuntime implements IGantt {
     public readonly events = new EventEmitter<IGanttEvents>();
-    public readonly services = new ServiceLocator<IGanttServiceMap>();
+    public readonly services = new ServiceRegistry<IGanttServiceMap>();
     public readonly surfaces = new GanttSurfaces();
     public readonly theme = new GanttTheme();
     private _taskRuntime: ITaskRuntime;
@@ -46,7 +46,6 @@ export class GanttRuntime implements IGantt {
     public readonly hooks = {
         chartConfig: new HookRegistry<GanttChartConfigHook>(),
     };
-    private _destroyables: { destroy(): void }[] = [];
     private _removeCellCommandsHook?: () => void;
     private _unsubscribes: (() => void)[] = [];
     private _gridApi?: GridApi<IRecord>;
@@ -62,15 +61,14 @@ export class GanttRuntime implements IGantt {
         this._taskRuntime = parameters.taskRuntime;
         this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
         this._getProps = parameters.getProps;
-        this.services.register('taskRuntime', () => parameters.taskRuntime);
-        this.services.register('labels', parameters.getLabelsService);
-        this.services.register('theme', () => this.theme);
-        this.services.register('state', () => parameters.state);
+        this.services.provide('taskRuntime', parameters.taskRuntime);
+        this.services.provide('labels', { getLabels: set => parameters.getLabelsService().getLabels(set) });
+        this.services.provide('theme', this.theme);
+        this.services.provide('state', parameters.state);
         const schedule = new GanttSchedule(this);
-        this.services.register('schedule', () => schedule);
+        this.services.provide('schedule', schedule);
         const overlay = new GanttOverlay(parameters.taskRuntime.getProvider());
-        this.services.register('overlay', () => overlay);
-        this._destroyables.push(overlay);
+        this.services.provide('overlay', overlay, { onDestroy: () => overlay.destroy() });
         this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(this._addCommands)));
     }
 
@@ -119,9 +117,7 @@ export class GanttRuntime implements IGantt {
         if (this._removeCellCommandsHook && this._gridApi && !this._gridApi.isDestroyed()) {
             this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
         }
-        this._destroyables.forEach(destroyable => destroyable.destroy());
         this._moduleLoader.destroy();
-        this.services.find('chart')?.destructor();
         this.services.destroy();
     }
 
@@ -133,7 +129,7 @@ export class GanttRuntime implements IGantt {
         await this._moduleLoader.load(modules, this);
     }
 
-    //config hooks run before init and the services register after it
+    //config hooks run before init and the services are provided after it
     private _draw(container: HTMLElement, grid: IGrid<ITaskGridServiceMap>, gridApi: GridApi<IRecord>): void {
         const chart = this._createChart(grid);
         this._gridApi = gridApi;
@@ -142,16 +138,15 @@ export class GanttRuntime implements IGantt {
         const dragging = new GanttDragging(chart);
         const zooming = new GanttZooming({ chart, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ chart, gridApi, gantt: this, schedule, onParsed: this._onTasksParsed });
-        this._destroyables.push(timeline, zooming, tasks);
         this.hooks.chartConfig.apply(chart);
         chart.init(container);
 
-        this.services.register('chart', () => chart);
-        this.services.register('timeline', () => timeline);
-        this.services.register('dragging', () => dragging);
-        this.services.register('zooming', () => zooming);
-        this.services.register('grid', () => grid);
-        this.services.register('tasks', () => tasks);
+        this.services.provide('chart', chart, { onDestroy: () => chart.destructor() });
+        this.services.provide('timeline', timeline, { onDestroy: () => timeline.destroy() });
+        this.services.provide('dragging', dragging);
+        this.services.provide('zooming', zooming, { onDestroy: () => zooming.destroy() });
+        this.services.provide('grid', grid);
+        this.services.provide('tasks', tasks, { onDestroy: () => tasks.destroy() });
         this._watchTaskRange();
         tasks.parse();
         this.events.dispatchEvent('onChartReady', chart);

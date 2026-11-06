@@ -31,19 +31,14 @@ export const useGanttService = <TKey extends keyof IGanttServiceMap>(key: TKey):
     return service as any;
 };
 
-/** Creates a service once and registers it on the Gantt while the calling component is mounted. */
-export const useRegisterGanttService = <TKey extends keyof IGanttServiceMap, TService extends IGanttServiceMap[TKey]>(key: TKey, create: () => TService): TService => {
+/** Creates a service once and provides it on the Gantt while the calling component is mounted. */
+export const useProvideGanttService = <TKey extends keyof IGanttServiceMap, TService extends IGanttServiceMap[TKey]>(key: TKey, create: () => TService): TService => {
     const services = useGantt().services;
-    //registered as it is made: the modules load after the first render and may read it
-    const service = useMemo(() => {
+    //provided as it is made: the modules load after the first render and may read it
+    const [service, remove] = useMemo(() => {
         const created = create();
-        services.register(key, () => created);
-        return created;
+        return [created, services.provide(key, created)] as const;
     }, []);
-    useEffect(() => () => {
-        if (services.find(key) as unknown === service) {
-            services.unregister(key);
-        }
-    }, []);
+    useEffect(() => remove, []);
     return service;
 };

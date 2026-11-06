@@ -1,12 +1,12 @@
 import type { IContextualMenuItem } from "@fluentui/react";
 import { HookRegistry, IHookPoint } from "@core";
-import { IDatasetControlServiceLocator, IDatasetControlView } from "../../interfaces";
+import { IDatasetControlServiceRegistry, IDatasetControlView } from "../../interfaces";
 
 /** A hook over the switcher's menu, which it adds to or changes in place; it runs after the views are listed. */
 export type ViewSwitcherItemsHook = (items: IContextualMenuItem[]) => void;
 
 export interface IDatasetControlViewSwitcherParameters {
-    services: IDatasetControlServiceLocator;
+    services: IDatasetControlServiceRegistry;
 }
 
 export interface IDatasetControlViewSwitcherHooks {
@@ -26,7 +26,7 @@ export interface IDatasetControlViewSwitcher {
 }
 
 export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
-    private _services: IDatasetControlServiceLocator;
+    private _services: IDatasetControlServiceRegistry;
     public readonly hooks = {
         items: new HookRegistry<ViewSwitcherItemsHook>(),
     };

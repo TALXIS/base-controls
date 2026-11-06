@@ -1,5 +1,5 @@
 import { RowSelectionModule } from "ag-grid-community";
-import { ServiceLocator } from "@core";
+import { ServiceRegistry } from "@core";
 import { IGridModule } from "../../interfaces";
 import { GridRowSelection } from "./GridRowSelection";
 import { IGridRowSelectionServiceMap } from "./runtime";
@@ -18,8 +18,8 @@ export const createRowSelectionModule = (parameters: IRowSelectionModuleParamete
     name: 'rowSelection',
     agGridModules: [RowSelectionModule],
     onLoad: ({ services: gridServices }) => {
-        const services = new ServiceLocator<IGridRowSelectionServiceMap>();
-        services.register('gridServices', () => gridServices);
+        const services = new ServiceRegistry<IGridRowSelectionServiceMap>();
+        services.provide('gridServices', gridServices);
         return new GridRowSelection({ services, mode: parameters.mode, onSelectionChanged: parameters.onSelectionChanged });
     },
 });
